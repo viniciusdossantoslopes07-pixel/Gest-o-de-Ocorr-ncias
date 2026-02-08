@@ -106,8 +106,6 @@ const App: FC = () => {
         rank: data.rank,
         saram: data.saram,
         sector: data.sector,
-        saram: data.saram,
-        sector: data.sector,
         accessLevel: data.access_level, // Map from snake_case
         approved: data.approved // Ensure this is mapped if it exists in DB, or handle default
       };
