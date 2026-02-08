@@ -14,11 +14,21 @@ interface DashboardProps {
 }
 
 const Dashboard: FC<DashboardProps> = ({ occurrences }) => {
-  const [aiInsights, setAiInsights] = useState<string>('Gerando insights inteligentes...');
+  const [aiInsights, setAiInsights] = useState<string>('');
+  const [isAiLoading, setIsAiLoading] = useState(false);
 
-  useEffect(() => {
-    getDashboardInsights(occurrences).then(setAiInsights);
-  }, [occurrences]);
+  const handleGenerateInsights = async () => {
+    setIsAiLoading(true);
+    setAiInsights('Conectando à Inteligência Artificial e analisando dados...');
+    try {
+      const insights = await getDashboardInsights(occurrences);
+      setAiInsights(insights);
+    } catch (error) {
+      setAiInsights('Erro ao gerar análise. Tente novamente.');
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
 
   const stats = useMemo(() => {
     const byType = occurrences.reduce((acc: any, curr) => {
@@ -133,18 +143,49 @@ const Dashboard: FC<DashboardProps> = ({ occurrences }) => {
         </div>
       </div>
 
-      <div className="bg-blue-900 text-white p-6 rounded-xl shadow-lg border border-blue-800 relative overflow-hidden">
+      <div className="bg-blue-900 text-white p-6 rounded-xl shadow-lg border border-blue-800 relative overflow-hidden transition-all hover:shadow-blue-900/40 hover:shadow-2xl">
         <div className="absolute top-0 right-0 p-4 opacity-10">
           <Sparkles className="w-24 h-24" />
         </div>
-        <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="w-5 h-5 text-blue-300" />
-          <h3 className="text-lg font-semibold">Análise de Tendências (Gemini AI)</h3>
+        <div className="flex items-center justify-between mb-4 relative z-10">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-blue-300" />
+            <h3 className="text-lg font-semibold">Análise de Tendências (Gemini AI)</h3>
+          </div>
+          {!aiInsights && !isAiLoading && (
+            <button
+              onClick={handleGenerateInsights}
+              className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-bold backdrop-blur-sm transition-all flex items-center gap-2 border border-white/10"
+            >
+              <Sparkles className="w-4 h-4" />
+              Gerar Análise Inteligente
+            </button>
+          )}
         </div>
-        <div className="prose prose-invert max-w-none">
-          <p className="whitespace-pre-line text-blue-50 leading-relaxed">
-            {aiInsights}
-          </p>
+
+        <div className="prose prose-invert max-w-none relative z-10 min-h-[60px]">
+          {isAiLoading ? (
+            <div className="flex items-center gap-3 text-blue-200 animate-pulse">
+              <div className="w-4 h-4 border-2 border-blue-300 border-t-transparent rounded-full animate-spin"></div>
+              <span>Processando dados de segurança com IA...</span>
+            </div>
+          ) : aiInsights ? (
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <p className="whitespace-pre-line text-blue-50 leading-relaxed mb-4">
+                {aiInsights}
+              </p>
+              <button
+                onClick={handleGenerateInsights}
+                className="text-xs text-blue-300 hover:text-white underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity"
+              >
+                Atualizar análise
+              </button>
+            </div>
+          ) : (
+            <p className="text-blue-200/60 italic text-sm">
+              Clique no botão acima para solicitar uma análise de inteligência artificial baseada nos dados atuais.
+            </p>
+          )}
         </div>
       </div>
     </div>
