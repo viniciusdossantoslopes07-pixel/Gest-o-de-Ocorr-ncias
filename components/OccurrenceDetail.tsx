@@ -14,11 +14,13 @@ interface OccurrenceDetailProps {
   user: User;
   onClose: () => void;
   onUpdateStatus: (id: string, newStatus: Status, comment: string) => void;
+  onUpdateStatus: (id: string, newStatus: Status, comment: string) => void;
   onUpdateOccurrence?: (id: string, updates: Partial<Occurrence>) => void;
+  users?: User[];
 }
 
 const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
-  occurrence, user, onClose, onUpdateStatus, onUpdateOccurrence
+  occurrence, user, onClose, onUpdateStatus, onUpdateOccurrence, users = []
 }) => {
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -269,6 +271,41 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                     {isOM ? <Crown className="w-4 h-4 text-amber-500" /> : <ShieldCheck className="w-4 h-4 text-blue-500" />}
                     Despacho de Comando
                   </h3>
+
+                  {/* Assignment Dropdown */}
+                  <div className="bg-slate-100 p-3 rounded-xl border border-slate-200">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Atribuir Responsável</label>
+                    <div className="flex gap-2">
+                      <select
+                        className="flex-1 bg-white border border-slate-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                        value={occurrence.assigned_to || ''}
+                        onChange={(e) => {
+                          if (onUpdateOccurrence) {
+                            onUpdateOccurrence(occurrence.id, { assigned_to: e.target.value });
+
+                            // WhatsApp Notification Logic
+                            const assignedUser = users.find(u => u.name === e.target.value);
+                            if (assignedUser && assignedUser.phoneNumber) {
+                              const message = `Olá ${assignedUser.name}, uma nova ocorrência foi atribuída a você.\n\n*Título:* ${occurrence.title}\n*Local:* ${occurrence.location}\n*Urgência:* ${occurrence.urgency}\n\nAcesse o sistema para mais detalhes.`;
+                              const encodedMessage = encodeURIComponent(message);
+                              // Simply cleaning the phone number to ensure digits only
+                              const cleanPhone = assignedUser.phoneNumber.replace(/\D/g, '');
+                              const whatsappLink = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+
+                              // Open in new tab
+                              window.open(whatsappLink, '_blank');
+                            }
+                          }
+                        }}
+                      >
+                        <option value="">Selecione um responsável...</option>
+                        {users.map(u => (
+                          <option key={u.id} value={u.name}>{u.name} ({u.rank})</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
                   <textarea
                     className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none"
                     rows={4}

@@ -463,6 +463,7 @@ const App: FC = () => {
           onClose={() => setSelectedOccurrence(null)}
           onUpdateStatus={handleUpdateStatus}
           onUpdateOccurrence={handleUpdateOccurrence}
+          users={users}
         />
       )}
     </div>

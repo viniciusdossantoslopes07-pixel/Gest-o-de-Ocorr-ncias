@@ -33,6 +33,7 @@ export interface User {
   saram: string;
   sector: string;
   accessLevel?: 'N1' | 'N2' | 'N3' | 'OM';
+  phoneNumber?: string;
 }
 
 export interface Attachment {

@@ -19,7 +19,9 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     saram: '',
     sector: '',
     role: UserRole.OPERATIONAL,
-    accessLevel: 'N1' as 'N1' | 'N2' | 'N3' | 'OM'
+    role: UserRole.OPERATIONAL,
+    accessLevel: 'N1' as 'N1' | 'N2' | 'N3' | 'OM',
+    phoneNumber: ''
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -53,7 +55,9 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
       saram: user.saram,
       sector: user.sector,
       role: user.role,
-      accessLevel: user.accessLevel || 'N1'
+      role: user.role,
+      accessLevel: user.accessLevel || 'N1',
+      phoneNumber: user.phoneNumber || ''
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -129,6 +133,20 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
               <Key className="w-3 h-3" /> Login (Usuário)
             </label>
             <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <UserIcon className="w-3 h-3" /> WhatsApp / Telefone
+            </label>
+            <input
+              type="tel"
+              placeholder="5511999999999"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+              value={formData.phoneNumber || ''}
+              onChange={e => setFormData({ ...formData, phoneNumber: e.target.value })}
+            />
+            <p className="text-[9px] text-slate-400">Formato: 55 + DDD + Número (ex: 5511999998888)</p>
           </div>
 
           <div className="space-y-2">
