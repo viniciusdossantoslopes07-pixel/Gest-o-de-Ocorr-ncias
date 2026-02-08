@@ -1,9 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, type FC, Fragment } from 'react';
 import { Occurrence, Status, UserRole, User, Urgency } from '../types';
 import { STATUS_COLORS, URGENCY_COLORS } from '../constants';
-import { 
-  X, Clock, MapPin, Sparkles, ShieldCheck, Undo2, 
+import {
+  X, Clock, MapPin, Sparkles, ShieldCheck, Undo2,
   FileText, Edit2, Save, Building2, Printer, ChevronRight, SendHorizontal, Crown,
   ArrowUpRight, AlertCircle
 } from 'lucide-react';
@@ -17,12 +17,12 @@ interface OccurrenceDetailProps {
   onUpdateOccurrence?: (id: string, updates: Partial<Occurrence>) => void;
 }
 
-const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({ 
-  occurrence, user, onClose, onUpdateStatus, onUpdateOccurrence 
+const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
+  occurrence, user, onClose, onUpdateStatus, onUpdateOccurrence
 }) => {
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [comment, setComment] = useState('');
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(occurrence.title);
   const [editedDescription, setEditedDescription] = useState(occurrence.description);
@@ -79,7 +79,8 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
         </head>
         <body>
           <div class="header">
-            <h1>SECUREGUARD - SISTEMA DE DEFESA</h1>
+            <img src="/logo_gsd.jpg" alt="Logo GSD-SP" style="width: 80px; height: auto; margin-bottom: 10px;" />
+            <h1>GUARDIÃO GSD-SP - SISTEMA DE DEFESA</h1>
             <p>RELATÓRIO TÉCNICO DE OCORRÊNCIA PARA O COMANDO DA UNIDADE</p>
             <p style="font-size: 12px; margin-top: 10px;">ID: ${occurrence.id}</p>
           </div>
@@ -113,7 +114,7 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
         {/* Top Header */}
         <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-white shrink-0">
           <div className="flex items-center gap-4 flex-1">
-             <div className={`p-3 rounded-2xl ${STATUS_COLORS[occurrence.status]}`}>
+            <div className={`p-3 rounded-2xl ${STATUS_COLORS[occurrence.status]}`}>
               {occurrence.status === Status.COMMAND_REVIEW || isOM ? <Crown className="w-6 h-6" /> : <ShieldCheck className="w-6 h-6" />}
             </div>
             <div className="flex-1">
@@ -121,10 +122,10 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                 <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${URGENCY_COLORS[occurrence.urgency]}`}>
                   {occurrence.urgency}
                 </span>
-                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">ID #{occurrence.id.slice(0,8)}</span>
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">ID #{occurrence.id.slice(0, 8)}</span>
               </div>
               {isEditing ? (
-                <input 
+                <input
                   type="text"
                   value={editedTitle}
                   onChange={(e) => setEditedTitle(e.target.value)}
@@ -169,13 +170,13 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
           ].map((step, i, arr) => {
             const isActive = occurrence.timeline.some(t => t.status === step.s) || occurrence.status === step.s;
             return (
-              <React.Fragment key={i}>
+              <Fragment key={i}>
                 <div className="flex items-center gap-2 shrink-0">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ${isActive ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'}`}>{i+1}</div>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ${isActive ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'}`}>{i + 1}</div>
                   <span className={`text-[10px] font-bold uppercase tracking-tighter ${isActive ? 'text-blue-600' : 'text-slate-400'}`}>{step.label}</span>
                 </div>
                 {i < arr.length - 1 && <div className={`w-12 h-[1px] ${isActive ? 'bg-blue-600' : 'bg-slate-200'}`}></div>}
-              </React.Fragment>
+              </Fragment>
             );
           })}
         </div>
@@ -227,7 +228,7 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                     {isOM ? <Crown className="w-4 h-4 text-amber-500" /> : <ShieldCheck className="w-4 h-4 text-blue-500" />}
                     Despacho de Comando
                   </h3>
-                  <textarea 
+                  <textarea
                     className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none"
                     rows={4}
                     placeholder="Escreva seu parecer..."
@@ -238,14 +239,14 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
 
                 <div className="space-y-3 border-t border-slate-200 pt-4">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Ações Hierárquicas</p>
-                  
+
                   {/* PAINEL ESPECIAL COMANDANTE OM - GERENCIAMENTO TOTAL */}
                   {isOM && (
                     <div className="space-y-3 p-4 bg-slate-900 rounded-2xl border border-amber-500/30 shadow-2xl">
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-[9px] font-black text-amber-400 uppercase tracking-widest flex items-center gap-1"><Crown className="w-3 h-3"/> Console de Comando Superior</p>
+                        <p className="text-[9px] font-black text-amber-400 uppercase tracking-widest flex items-center gap-1"><Crown className="w-3 h-3" /> Console de Comando Superior</p>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 gap-2">
                         {/* Escalonamento Direto Indiferente do Status Atual */}
                         <button onClick={() => onUpdateStatus(occurrence.id, Status.TRIAGE, comment || 'Escalonamento Direto via Comando OM p/ N1.')} className="w-full py-2 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-lg font-bold text-[10px] uppercase hover:bg-blue-600/30 transition-all flex items-center justify-between px-3">
@@ -280,7 +281,7 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                           <button onClick={() => onUpdateStatus(occurrence.id, Status.RETURNED, comment || 'Solicitado ajuste de informações pelo N1.')} className="w-full py-3 bg-red-50 text-red-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2"><Undo2 className="w-4 h-4" /> Devolver p/ Ajuste</button>
                         </div>
                       )}
-                      
+
                       {userLevel === 'N2' && occurrence.status === Status.ESCALATED && (
                         <div className="grid grid-cols-1 gap-2">
                           <button onClick={() => onUpdateStatus(occurrence.id, Status.RESOLVED, comment || 'Parecer de inteligência N2 concluído.')} className="w-full py-3 bg-orange-600 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2">Enviar p/ N3 (OSD)</button>
@@ -303,11 +304,11 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                       {((userLevel === 'N1' && occurrence.status !== Status.REGISTERED && occurrence.status !== Status.TRIAGE) ||
                         (userLevel === 'N2' && occurrence.status !== Status.ESCALATED) ||
                         (userLevel === 'N3' && occurrence.status !== Status.RESOLVED)) && (
-                        <div className="text-center p-6 bg-slate-100/50 border border-dashed border-slate-300 rounded-2xl">
-                          <AlertCircle className="w-6 h-6 text-slate-400 mx-auto mb-2" />
-                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-tight">Este registro está sob gestão de outro patamar hierárquico.</p>
-                        </div>
-                      )}
+                          <div className="text-center p-6 bg-slate-100/50 border border-dashed border-slate-300 rounded-2xl">
+                            <AlertCircle className="w-6 h-6 text-slate-400 mx-auto mb-2" />
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-tight">Este registro está sob gestão de outro patamar hierárquico.</p>
+                          </div>
+                        )}
                     </>
                   )}
                 </div>

@@ -1,12 +1,12 @@
 
-import React from 'react';
-import { 
-  PlusCircle, 
-  AlertTriangle, 
-  Lock, 
-  Camera, 
-  UserCheck, 
-  Bell, 
+import { type FC } from 'react';
+import {
+  PlusCircle,
+  AlertTriangle,
+  Lock,
+  Camera,
+  UserCheck,
+  Bell,
   ArrowRight,
   ShieldAlert,
   Activity,
@@ -28,12 +28,12 @@ interface HomeViewProps {
   onSelectOccurrence: (occ: Occurrence) => void;
 }
 
-const HomeView: React.FC<HomeViewProps> = ({ 
-  user, 
-  onNewOccurrence, 
-  onViewAll, 
-  recentOccurrences, 
-  onSelectOccurrence 
+const HomeView: React.FC<HomeViewProps> = ({
+  user,
+  onNewOccurrence,
+  onViewAll,
+  recentOccurrences,
+  onSelectOccurrence
 }) => {
   const quickActions = [
     { title: 'Emergências', icon: <Zap className="w-8 h-8" />, color: 'bg-red-600', category: 'Ocorrências de Emergência' },
@@ -95,7 +95,7 @@ const HomeView: React.FC<HomeViewProps> = ({
             <span className="w-8 h-[2px] bg-orange-500"></span>
             Atividade Recente na Unidade
           </h3>
-          <button 
+          <button
             onClick={onViewAll}
             className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-2 group"
           >
@@ -103,12 +103,12 @@ const HomeView: React.FC<HomeViewProps> = ({
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
-        
+
         <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 divide-y divide-slate-100 overflow-hidden">
           {recentOccurrences.length > 0 ? (
             recentOccurrences.map((occ) => (
-              <div 
-                key={occ.id} 
+              <div
+                key={occ.id}
                 className="p-6 hover:bg-slate-50 cursor-pointer flex items-center justify-between group transition-colors"
                 onClick={() => onSelectOccurrence(occ)}
               >

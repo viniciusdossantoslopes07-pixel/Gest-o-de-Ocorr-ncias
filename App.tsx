@@ -275,8 +275,10 @@ const App: FC = () => {
 
         <div className={`p-6 h-full flex flex-col ${isSidebarCollapsed ? 'items-center px-4' : ''}`}>
           <div className={`flex items-center gap-3 mb-10 overflow-hidden ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-            <div className="bg-blue-600 p-2 rounded-xl shadow-lg shrink-0"><ShieldCheck className="w-6 h-6" /></div>
-            {!isSidebarCollapsed && <h1 className="text-xl font-black tracking-tighter uppercase whitespace-nowrap">SECUREGUARD</h1>}
+            <div className="shrink-0 relative w-12 h-12 rounded-full overflow-hidden shadow-md ring-2 ring-white/10">
+              <img src="/logo_gsd.jpg" alt="Logo" className="w-full h-full object-cover scale-125" />
+            </div>
+            {!isSidebarCollapsed && <h1 className="text-xl font-black tracking-tighter uppercase whitespace-nowrap">GUARDIÃO GSD-SP</h1>}
           </div>
 
           <nav className="flex-1 space-y-1.5 overflow-y-auto pr-1">

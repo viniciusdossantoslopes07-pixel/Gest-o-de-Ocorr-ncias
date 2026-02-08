@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import { useState, type FC, type FormEvent } from 'react';
 import { User, UserRole } from '../types';
 import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown } from 'lucide-react';
 
@@ -10,7 +10,7 @@ interface UserManagementProps {
   onDeleteUser: (id: string) => void;
 }
 
-const UserManagement: React.FC<UserManagementProps> = ({ users, onCreateUser, onUpdateUser, onDeleteUser }) => {
+const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdateUser, onDeleteUser }) => {
   const initialFormState = {
     name: '',
     username: '',
@@ -25,7 +25,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onCreateUser, on
   const [formData, setFormData] = useState(initialFormState);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     const userData: User = {
       ...formData,
@@ -83,7 +83,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onCreateUser, on
             </div>
           </div>
           {editingUserId && (
-            <button 
+            <button
               onClick={handleCancelEdit}
               className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 bg-slate-100 rounded-xl transition-all"
             >
@@ -97,14 +97,14 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onCreateUser, on
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <UserIcon className="w-3 h-3" /> Nome Completo
             </label>
-            <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+            <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
           </div>
 
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <BadgeCheck className="w-3 h-3" /> Posto / Graduação
             </label>
-            <select required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.rank} onChange={e => setFormData({...formData, rank: e.target.value})}>
+            <select required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.rank} onChange={e => setFormData({ ...formData, rank: e.target.value })}>
               <option value="">Selecione...</option>
               {ranks.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
@@ -114,37 +114,37 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onCreateUser, on
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <Hash className="w-3 h-3" /> SARAM
             </label>
-            <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.saram} onChange={e => setFormData({...formData, saram: e.target.value})} />
+            <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.saram} onChange={e => setFormData({ ...formData, saram: e.target.value })} />
           </div>
 
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <Building2 className="w-3 h-3" /> Setor
             </label>
-            <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.sector} onChange={e => setFormData({...formData, sector: e.target.value})} />
+            <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.sector} onChange={e => setFormData({ ...formData, sector: e.target.value })} />
           </div>
 
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <Key className="w-3 h-3" /> Login (Usuário)
             </label>
-            <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} />
+            <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} />
           </div>
 
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <Key className="w-3 h-3" /> {editingUserId ? 'Alterar Senha' : 'Senha Inicial'}
             </label>
-            <input required type="password" placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
+            <input required type="password" placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
           </div>
 
           <div className="md:col-span-3 pt-4 border-t border-slate-100">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Perfil de Acesso</label>
             <div className="flex gap-4 mb-6">
-              <button type="button" onClick={() => setFormData({...formData, role: UserRole.OPERATIONAL})} className={`flex-1 py-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-3 transition-all ${formData.role === UserRole.OPERATIONAL ? 'bg-blue-50 text-blue-600 border-2 border-blue-500' : 'bg-slate-50 text-slate-400 border-2 border-transparent hover:bg-slate-100'}`}>
+              <button type="button" onClick={() => setFormData({ ...formData, role: UserRole.OPERATIONAL })} className={`flex-1 py-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-3 transition-all ${formData.role === UserRole.OPERATIONAL ? 'bg-blue-50 text-blue-600 border-2 border-blue-500' : 'bg-slate-50 text-slate-400 border-2 border-transparent hover:bg-slate-100'}`}>
                 <UserIcon className="w-4 h-4" /> Perfil Operador (Lançador)
               </button>
-              <button type="button" onClick={() => setFormData({...formData, role: UserRole.ADMIN})} className={`flex-1 py-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-3 transition-all ${formData.role === UserRole.ADMIN ? 'bg-blue-50 text-blue-600 border-2 border-blue-500' : 'bg-slate-50 text-slate-400 border-2 border-transparent hover:bg-slate-100'}`}>
+              <button type="button" onClick={() => setFormData({ ...formData, role: UserRole.ADMIN })} className={`flex-1 py-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-3 transition-all ${formData.role === UserRole.ADMIN ? 'bg-blue-50 text-blue-600 border-2 border-blue-500' : 'bg-slate-50 text-slate-400 border-2 border-transparent hover:bg-slate-100'}`}>
                 <Shield className="w-4 h-4" /> Perfil Administrador (Gestor)
               </button>
             </div>
@@ -153,36 +153,36 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onCreateUser, on
               <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 animate-in fade-in slide-in-from-top-2">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-4">Nível de Atuação Hierárquica Militar</label>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                  <button 
-                    type="button" 
-                    onClick={() => setFormData({...formData, accessLevel: 'N1'})}
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, accessLevel: 'N1' })}
                     className={`p-4 rounded-xl border-2 transition-all text-left flex flex-col gap-1 ${formData.accessLevel === 'N1' ? 'border-blue-500 bg-white shadow-sm' : 'border-slate-200 bg-transparent opacity-60 hover:opacity-100'}`}
                   >
                     <span className={`text-[10px] font-black uppercase tracking-tighter ${formData.accessLevel === 'N1' ? 'text-blue-600' : 'text-slate-400'}`}>Nível 1</span>
                     <span className="text-xs font-bold text-slate-800">Equipe de Serviço</span>
                   </button>
-                  
-                  <button 
-                    type="button" 
-                    onClick={() => setFormData({...formData, accessLevel: 'N2'})}
+
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, accessLevel: 'N2' })}
                     className={`p-4 rounded-xl border-2 transition-all text-left flex flex-col gap-1 ${formData.accessLevel === 'N2' ? 'border-purple-500 bg-white shadow-sm' : 'border-slate-200 bg-transparent opacity-60 hover:opacity-100'}`}
                   >
                     <span className={`text-[10px] font-black uppercase tracking-tighter ${formData.accessLevel === 'N2' ? 'text-purple-600' : 'text-slate-400'}`}>Nível 2</span>
                     <span className="text-xs font-bold text-slate-800">Inteligência</span>
                   </button>
 
-                  <button 
-                    type="button" 
-                    onClick={() => setFormData({...formData, accessLevel: 'N3'})}
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, accessLevel: 'N3' })}
                     className={`p-4 rounded-xl border-2 transition-all text-left flex flex-col gap-1 ${formData.accessLevel === 'N3' ? 'border-orange-500 bg-white shadow-sm' : 'border-slate-200 bg-transparent opacity-60 hover:opacity-100'}`}
                   >
                     <span className={`text-[10px] font-black uppercase tracking-tighter ${formData.accessLevel === 'N3' ? 'text-orange-600' : 'text-slate-400'}`}>Nível 3</span>
                     <span className="text-xs font-bold text-slate-800">Comando OSD</span>
                   </button>
 
-                  <button 
-                    type="button" 
-                    onClick={() => setFormData({...formData, accessLevel: 'OM'})}
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, accessLevel: 'OM' })}
                     className={`p-4 rounded-xl border-2 transition-all text-left flex flex-col gap-1 ${formData.accessLevel === 'OM' ? 'border-amber-500 bg-slate-900 text-amber-400 shadow-xl' : 'border-slate-200 bg-transparent opacity-60 hover:opacity-100'}`}
                   >
                     <div className="flex items-center justify-between">
@@ -251,16 +251,16 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onCreateUser, on
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-1">
-                      <button 
-                        onClick={() => handleEditClick(u)} 
+                      <button
+                        onClick={() => handleEditClick(u)}
                         className="p-2 text-slate-300 hover:text-blue-600 transition-colors"
                         title="Editar usuário"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       {u.username !== 'admin' && (
-                        <button 
-                          onClick={() => onDeleteUser(u.id)} 
+                        <button
+                          onClick={() => onDeleteUser(u.id)}
                           className="p-2 text-slate-300 hover:text-red-500 transition-colors"
                           title="Excluir usuário"
                         >

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, type FC } from 'react';
 import { OCCURRENCE_CATEGORIES, TYPES_BY_CATEGORY } from '../constants';
 import { Urgency, Status, Occurrence, User } from '../types';
 import { MapPin, Camera, Upload, Send, X, FileText, ChevronDown } from 'lucide-react';
@@ -28,9 +28,9 @@ const OccurrenceForm: React.FC<OccurrenceFormProps> = ({ user, onSubmit, onCance
   // Atualiza o tipo quando a categoria muda
   useEffect(() => {
     if (TYPES_BY_CATEGORY[formData.category]) {
-      setFormData(prev => ({ 
-        ...prev, 
-        type: TYPES_BY_CATEGORY[formData.category][0] 
+      setFormData(prev => ({
+        ...prev,
+        type: TYPES_BY_CATEGORY[formData.category][0]
       }));
     }
   }, [formData.category]);
@@ -97,7 +97,7 @@ const OccurrenceForm: React.FC<OccurrenceFormProps> = ({ user, onSubmit, onCance
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2 col-span-full">
             <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Título da Ocorrência</label>
-            <input 
+            <input
               required
               className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
               placeholder="Ex: Falha técnica no sistema de alarme"
@@ -109,7 +109,7 @@ const OccurrenceForm: React.FC<OccurrenceFormProps> = ({ user, onSubmit, onCance
           <div className="space-y-2">
             <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Categoria Principal</label>
             <div className="relative">
-              <select 
+              <select
                 className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium pr-10"
                 value={formData.category}
                 onChange={e => setFormData(prev => ({ ...prev, category: e.target.value }))}
@@ -123,7 +123,7 @@ const OccurrenceForm: React.FC<OccurrenceFormProps> = ({ user, onSubmit, onCance
           <div className="space-y-2">
             <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Tipo Específico</label>
             <div className="relative">
-              <select 
+              <select
                 className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium pr-10"
                 value={formData.type}
                 onChange={e => setFormData(prev => ({ ...prev, type: e.target.value }))}
@@ -136,7 +136,7 @@ const OccurrenceForm: React.FC<OccurrenceFormProps> = ({ user, onSubmit, onCance
 
           <div className="space-y-2">
             <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Nível de Urgência</label>
-            <select 
+            <select
               className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
               value={formData.urgency}
               onChange={e => setFormData(prev => ({ ...prev, urgency: e.target.value as Urgency }))}
@@ -148,14 +148,14 @@ const OccurrenceForm: React.FC<OccurrenceFormProps> = ({ user, onSubmit, onCance
           <div className="space-y-2">
             <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Localização / Posto</label>
             <div className="flex gap-2">
-              <input 
+              <input
                 required
                 className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
                 placeholder="Ex: Guarita Sul"
                 value={formData.location}
                 onChange={e => setFormData(prev => ({ ...prev, location: e.target.value }))}
               />
-              <button 
+              <button
                 type="button"
                 onClick={getCurrentLocation}
                 disabled={gettingLocation}
@@ -169,7 +169,7 @@ const OccurrenceForm: React.FC<OccurrenceFormProps> = ({ user, onSubmit, onCance
 
         <div className="space-y-2">
           <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Relato Detalhado</label>
-          <textarea 
+          <textarea
             required
             rows={4}
             className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium resize-none"
@@ -187,14 +187,14 @@ const OccurrenceForm: React.FC<OccurrenceFormProps> = ({ user, onSubmit, onCance
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Capturar / Subir</span>
               <input type="file" multiple className="hidden" onChange={handleFileChange} />
             </label>
-            
+
             {attachments.map((file, i) => (
               <div key={i} className="relative group aspect-square bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden flex items-center justify-center">
                 <div className="text-center p-2">
                   <FileText className="w-8 h-8 text-blue-500 mx-auto mb-1" />
                   <p className="text-[10px] text-slate-500 truncate px-2 font-bold">{file.name}</p>
                 </div>
-                <button 
+                <button
                   type="button"
                   onClick={() => removeAttachment(i)}
                   className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
@@ -208,14 +208,14 @@ const OccurrenceForm: React.FC<OccurrenceFormProps> = ({ user, onSubmit, onCance
       </div>
 
       <div className="bg-slate-50 p-6 border-t border-slate-200 flex justify-end gap-3 shrink-0">
-        <button 
-          type="button" 
+        <button
+          type="button"
           onClick={onCancel}
           className="px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-200 transition-colors"
         >
           Cancelar
         </button>
-        <button 
+        <button
           type="submit"
           className="bg-blue-600 px-8 py-3 rounded-xl font-bold text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex items-center gap-2 transition-all active:scale-95"
         >

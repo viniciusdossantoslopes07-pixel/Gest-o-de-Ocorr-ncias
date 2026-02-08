@@ -1,5 +1,5 @@
 
-import React from 'react';
+
 
 export const OCCURRENCE_CATEGORIES = [
   'Ocorrências de Emergência',

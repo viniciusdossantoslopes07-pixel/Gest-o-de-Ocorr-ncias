@@ -33,6 +33,9 @@
       ],
       "@supabase/supabase-js": [
         "./node_modules/@supabase/supabase-js/dist/index.d.mts"
+      ],
+      "@google/genai": [
+        "./node_modules/@google/genai/dist/genai.d.ts"
       ]
     },
     "allowImportingTsExtensions": true,

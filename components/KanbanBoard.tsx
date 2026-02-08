@@ -1,5 +1,5 @@
 
-import React from 'react';
+import { type FC } from 'react';
 import { Occurrence, Status, Urgency } from '../types';
 import { STATUS_COLORS, URGENCY_COLORS } from '../constants';
 import { Clock, AlertCircle, User as UserIcon, ArrowRight, Crown } from 'lucide-react';
@@ -41,10 +41,10 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ occurrences, onSelect }) => {
               </span>
             </h3>
           </div>
-          
+
           <div className={`flex-1 rounded-xl p-3 space-y-3 overflow-y-auto border ${col.status === Status.COMMAND_REVIEW ? 'bg-slate-900/5 border-amber-500/20' : 'bg-slate-100/50 border-slate-200'}`}>
             {occurrences.filter(o => o.status === col.status).map(occ => (
-              <div 
+              <div
                 key={occ.id}
                 onClick={() => onSelect(occ)}
                 className={`bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group ${col.status === Status.COMMAND_REVIEW ? 'hover:border-amber-500' : ''}`}
@@ -53,15 +53,15 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ occurrences, onSelect }) => {
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${URGENCY_COLORS[occ.urgency]}`}>
                     {occ.urgency}
                   </span>
-                  <div className={`flex items-center gap-1 text-[10px] ${getSLAColor(occ.slaDeadline)}`}>
+                  <div className={`flex items-center gap-1 text-[10px] ${getSLAColor(occ.sla_deadline)}`}>
                     <Clock className="w-3 h-3" />
-                    {occ.slaDeadline ? 'SLA: ' + new Date(occ.slaDeadline).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'SLA N/A'}
+                    {occ.sla_deadline ? 'SLA: ' + new Date(occ.sla_deadline).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'SLA N/A'}
                   </div>
                 </div>
-                
+
                 <h4 className={`font-bold text-slate-800 text-sm mb-1 group-hover:text-blue-600 truncate ${col.status === Status.COMMAND_REVIEW ? 'group-hover:text-amber-600' : ''}`}>{occ.title}</h4>
                 <p className="text-xs text-slate-500 mb-3 line-clamp-2">{occ.description}</p>
-                
+
                 <div className="flex items-center justify-between pt-3 border-t border-slate-50">
                   <div className="flex items-center gap-1.5">
                     <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold border ${col.status === Status.COMMAND_REVIEW ? 'bg-amber-100 text-amber-600 border-amber-200' : 'bg-blue-100 text-blue-600 border-blue-200'}`}>
