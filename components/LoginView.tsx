@@ -1,6 +1,7 @@
 
 import { useState, type FC, type FormEvent } from 'react';
 import { User } from '../types';
+import { RANKS } from '../constants';
 import { ShieldCheck, ArrowRight, Lock, User as UserIcon, Megaphone } from 'lucide-react';
 
 interface LoginViewProps {
@@ -114,7 +115,10 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess }) 
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Posto/Grad</label>
-                    <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="Ex: Cap" value={regData.rank} onChange={e => setRegData({ ...regData, rank: e.target.value })} />
+                    <select required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" value={regData.rank} onChange={e => setRegData({ ...regData, rank: e.target.value })}>
+                      <option value="">Selecione...</option>
+                      {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">

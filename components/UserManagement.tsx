@@ -1,6 +1,7 @@
 
 import { useState, type FC, type FormEvent } from 'react';
 import { User, UserRole } from '../types';
+import { RANKS } from '../constants';
 import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown, ShieldCheck } from 'lucide-react';
 
 interface UserManagementProps {
@@ -67,7 +68,6 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     setFormData(initialFormState);
   };
 
-  const ranks = ['Soldado', 'Cabo', 'Sargento', 'Tenente', 'Capitão', 'Major', 'Ten-Coronel', 'Coronel', 'Brigadeiro'];
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 pb-20">
@@ -110,7 +110,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
             </label>
             <select required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.rank} onChange={e => setFormData({ ...formData, rank: e.target.value })}>
               <option value="">Selecione...</option>
-              {ranks.map(r => <option key={r} value={r}>{r}</option>)}
+              {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
           </div>
 

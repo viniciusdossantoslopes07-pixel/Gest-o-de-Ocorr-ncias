@@ -39,3 +39,5 @@ export const URGENCY_COLORS: Record<string, string> = {
   Alta: 'bg-orange-50 text-orange-600',
   Crítica: 'bg-red-50 text-red-600 border border-red-100',
 };
+
+export const RANKS = ['Soldado', 'Cabo', 'Sargento', 'Tenente', 'Capitão', 'Major', 'Ten-Coronel', 'Coronel', 'Brigadeiro'];
