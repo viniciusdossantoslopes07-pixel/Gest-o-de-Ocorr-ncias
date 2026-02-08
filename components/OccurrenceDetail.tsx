@@ -21,6 +21,7 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
   occurrence, user, onClose, onUpdateStatus, onUpdateOccurrence
 }) => {
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const [comment, setComment] = useState('');
 
   const [isEditing, setIsEditing] = useState(false);
@@ -29,9 +30,18 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
   const [editedLocation, setEditedLocation] = useState(occurrence.location);
   const [editedUrgency, setEditedUrgency] = useState(occurrence.urgency);
 
-  useEffect(() => {
-    analyzeOccurrenceWithAI(occurrence).then(setAiAnalysis);
-  }, [occurrence.id]);
+  const handleGenerateAiAnalysis = async () => {
+    setIsAiLoading(true);
+    setAiAnalysis(null);
+    try {
+      const analysis = await analyzeOccurrenceWithAI(occurrence);
+      setAiAnalysis(analysis);
+    } catch (error) {
+      setAiAnalysis("Erro ao gerar análise. Tente novamente.");
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
 
   const isAdmin = user.role === UserRole.ADMIN;
   const userLevel = user.accessLevel || 'N1';
@@ -195,9 +205,40 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                   <p className="text-slate-600 leading-relaxed italic line-clamp-6">{occurrence.description}</p>
                 </div>
               </div>
-              <div className="bg-blue-900 rounded-2xl p-6 text-blue-50 border border-blue-800 shadow-xl overflow-y-auto max-h-[250px]">
-                <h3 className="text-[10px] font-black text-blue-300 uppercase tracking-widest flex items-center gap-2 mb-4"><Sparkles className="w-4 h-4" /> Análise IA</h3>
-                <p className="text-sm leading-relaxed italic">{aiAnalysis || "Analisando..."}</p>
+              <div className="bg-blue-900 rounded-2xl p-6 text-blue-50 border border-blue-800 shadow-xl overflow-y-auto max-h-[300px]">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-[10px] font-black text-blue-300 uppercase tracking-widest flex items-center gap-2"><Sparkles className="w-4 h-4" /> Análise IA</h3>
+                  {!aiAnalysis && !isAiLoading && (
+                    <button
+                      onClick={handleGenerateAiAnalysis}
+                      className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold backdrop-blur-sm transition-all flex items-center gap-2 border border-white/10"
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      Analisar Ocorrência
+                    </button>
+                  )}
+                </div>
+
+                {isAiLoading ? (
+                  <div className="flex flex-col items-center justify-center py-4 gap-3 text-blue-200 animate-pulse">
+                    <div className="w-6 h-6 border-2 border-blue-300 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-xs">Processando dados da ocorrência...</span>
+                  </div>
+                ) : aiAnalysis ? (
+                  <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <p className="text-sm leading-relaxed italic mb-4">{aiAnalysis}</p>
+                    <button
+                      onClick={handleGenerateAiAnalysis}
+                      className="text-[10px] text-blue-300 hover:text-white underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity"
+                    >
+                      Refazer análise
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-blue-200/60 italic text-xs">
+                    <p>Clique em "Analisar Ocorrência" para obter uma avaliação de risco e sugestões de ação baseadas em IA.</p>
+                  </div>
+                )}
               </div>
             </div>
 

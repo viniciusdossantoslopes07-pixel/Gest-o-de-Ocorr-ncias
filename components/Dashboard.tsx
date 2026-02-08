@@ -46,6 +46,64 @@ const Dashboard: FC<DashboardProps> = ({ occurrences }) => {
       return acc;
     }, {});
 
+    // BI Logic: Top Reporters (Quem abriu)
+    const byCreator = occurrences.reduce((acc: any, curr) => {
+      acc[curr.creator] = (acc[curr.creator] || 0) + 1;
+      return acc;
+    }, {});
+    const topReporters = Object.entries(byCreator)
+      .map(([name, count]) => ({ name, count: count as number }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    // BI Logic: Top Resolvers (Quem atuou na timeline)
+    const resolverCounts: Record<string, number> = {};
+    occurrences.forEach(occurrence => {
+      occurrence.timeline.forEach(event => {
+        // Ignorar o criador se ele aparecer na timeline apenas registrando (opcional, mas timeline costuma ter atualizações)
+        // Vamos contar todas as iterações como "atuação"
+        if (event.updatedBy) {
+          resolverCounts[event.updatedBy] = (resolverCounts[event.updatedBy] || 0) + 1;
+        }
+      });
+    });
+    const topResolvers = Object.entries(resolverCounts)
+      .map(([name, count]) => ({ name, count: count as number }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    // BI Logic: Top Locations
+    const byLocation = occurrences.reduce((acc: any, curr) => {
+      acc[curr.location] = (acc[curr.location] || 0) + 1;
+      return acc;
+    }, {});
+    const topLocations = Object.entries(byLocation)
+      .map(([name, count]) => ({ name, count: count as number }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    // BI Logic: Top Sectors
+    const bySector = occurrences.reduce((acc: any, curr) => {
+      const sector = curr.sector || 'Não Informado';
+      acc[sector] = (acc[sector] || 0) + 1;
+      return acc;
+    }, {});
+    const topSectors = Object.entries(bySector)
+      .map(([name, count]) => ({ name, count: count as number }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    // BI Logic: Peak Hours
+    const hours = Array(24).fill(0);
+    occurrences.forEach(o => {
+      const hour = new Date(o.date).getHours();
+      hours[hour]++;
+    });
+    const peakHours = hours.map((count, hour) => ({
+      hour: hour.toString().padStart(2, '0'),
+      count
+    }));
+
     return {
       total: occurrences.length,
       critical: occurrences.filter(o => o.urgency === Urgency.CRITICAL).length,
@@ -54,6 +112,11 @@ const Dashboard: FC<DashboardProps> = ({ occurrences }) => {
       typeData: Object.keys(byType).map(key => ({ name: key, value: byType[key] })),
       statusData: Object.keys(byStatus).map(key => ({ name: key, value: byStatus[key] })),
       urgencyData: Object.keys(byUrgency).map(key => ({ name: key, value: byUrgency[key] })),
+      topReporters,
+      topResolvers,
+      topLocations,
+      topSectors,
+      peakHours,
     };
   }, [occurrences]);
 
@@ -92,19 +155,19 @@ const Dashboard: FC<DashboardProps> = ({ occurrences }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
           <h3 className="text-lg font-semibold mb-6">Ocorrências por Tipo</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stats.typeData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis fontSize={12} tickLine={false} axisLine={false} />
+              <BarChart data={stats.typeData} layout="vertical" margin={{ left: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                <XAxis type="number" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis dataKey="name" type="category" fontSize={12} tickLine={false} axisLine={false} width={100} />
                 <Tooltip
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
-                <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={40} />
+                <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -132,13 +195,113 @@ const Dashboard: FC<DashboardProps> = ({ occurrences }) => {
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="grid grid-cols-2 gap-2 mt-4 text-xs">
+          <div className="flex flex-wrap justify-center gap-4 mt-4 text-xs">
             {stats.urgencyData.map((item, i) => (
               <div key={item.name} className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
                 <span className="text-slate-600 truncate">{item.name}: {item.value}</span>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Top Relatores */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h3 className="text-xs font-bold uppercase text-slate-400 mb-4 tracking-wider">Top Relatores</h3>
+          <div className="space-y-4">
+            {stats.topReporters.map((reporter, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0 ${index === 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-slate-100 text-slate-600'}`}>
+                    {index + 1}
+                  </div>
+                  <span className="text-xs font-medium text-slate-700 truncate">{reporter.name}</span>
+                </div>
+                <span className="text-xs font-bold text-slate-900">{reporter.count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Top Resolvers (Atuantes) */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h3 className="text-xs font-bold uppercase text-slate-400 mb-4 tracking-wider">Top Atuantes (Resoluções)</h3>
+          <div className="space-y-4">
+            {stats.topResolvers.map((resolver, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0 ${index === 0 ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
+                    {index + 1}
+                  </div>
+                  <span className="text-xs font-medium text-slate-700 truncate">{resolver.name}</span>
+                </div>
+                <span className="text-xs font-bold text-slate-900">{resolver.count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Top Locais */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h3 className="text-xs font-bold uppercase text-slate-400 mb-4 tracking-wider">Locais Críticos</h3>
+          <div className="space-y-4">
+            {stats.topLocations.map((location, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></div>
+                  <span className="text-xs font-medium text-slate-700 truncate" title={location.name}>{location.name}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-12 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-red-400" style={{ width: `${(location.count / stats.total) * 100}%` }}></div>
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-600">{location.count}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Top Setores */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h3 className="text-xs font-bold uppercase text-slate-400 mb-4 tracking-wider">Setores Demandantes</h3>
+          <div className="space-y-4">
+            {stats.topSectors.map((sector, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></div>
+                  <span className="text-xs font-medium text-slate-700 truncate" title={sector.name}>{sector.name}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-12 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-400" style={{ width: `${(sector.count / stats.total) * 100}%` }}></div>
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-600">{sector.count}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
+        {/* Pico de Horário - Full Width */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h3 className="text-sm font-bold uppercase text-slate-400 mb-4 tracking-wider">Pico de Horário (24h) - Distribuição Temporal</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={stats.peakHours}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="hour" fontSize={10} tickLine={false} axisLine={false} interval={1} />
+                <Tooltip
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  labelFormatter={(label) => `${label}h`}
+                />
+                <Line type="monotone" dataKey="count" stroke="#f59e0b" strokeWidth={3} dot={false} activeDot={{ r: 6 }} />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
