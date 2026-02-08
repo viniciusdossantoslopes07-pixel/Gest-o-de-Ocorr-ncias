@@ -1,0 +1,8 @@
+{
+  "name": "Copy of SecureGuard - Gestão de Ocorrências",
+  "description": "Sistema avançado de registro, triagem, escalonamento e análise de ocorrências de segurança com dashboards interativos e inteligência artificial.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}

@@ -1,0 +1,41 @@
+
+import React from 'react';
+
+export const OCCURRENCE_CATEGORIES = [
+  'Ocorrências de Emergência',
+  'Controle de Acesso e Credenciamento',
+  'Segurança Orgânica / Patrimonial',
+  'Segurança Operacional',
+  'Segurança de Sistemas e Tecnologia',
+  'Veículos e Tráfego Interno',
+  'Pessoas e Conduta',
+  'Materiais e Logística'
+];
+
+export const TYPES_BY_CATEGORY: Record<string, string[]> = {
+  'Ocorrências de Emergência': ['Incêndio em edificação', 'Princípio de incêndio', 'Vazamento de gás', 'Explosão', 'Acionamento de alarme'],
+  'Controle de Acesso e Credenciamento': ['Tentativa de acesso indevido', 'Uso de credencial de terceiro', 'Veículo não credenciado'],
+  'Segurança Orgânica / Patrimonial': ['Arrombamento', 'Tentativa de invasão', 'Furto', 'Vandalismo', 'Dano ao patrimônio'],
+  'Segurança Operacional': ['Disparo indevido', 'Falha em procedimento', 'Posto abandonado'],
+  'Segurança de Sistemas e Tecnologia': ['Falha sistema acesso', 'Indisponibilidade CFTV', 'Câmera inoperante'],
+  'Veículos e Tráfego Interno': ['Acidente interno', 'Excesso velocidade', 'Estacionamento proibido'],
+  'Pessoas e Conduta': ['Aglomeração restrita', 'Comportamento suspeito', 'Conflito usuários'],
+  'Materiais e Logística': ['Entrada sem registro', 'Saída sem autorização', 'Item proibido']
+};
+
+export const STATUS_COLORS: Record<string, string> = {
+  'Registrada (Aguardando N1)': 'bg-blue-100 text-blue-700',
+  'N1: Adjunto / Oficial de Dia': 'bg-amber-100 text-amber-700',
+  'N2: Contrainteligência / Seg. Orgânica': 'bg-purple-100 text-purple-700',
+  'N3: Homologação OSD': 'bg-orange-100 text-orange-700',
+  'OM: Revisão do Comandante': 'bg-slate-900 text-amber-400 border border-amber-900/50',
+  'Arquivado / Finalizado': 'bg-emerald-100 text-emerald-700',
+  'Retornado para Ajuste': 'bg-red-100 text-red-700',
+};
+
+export const URGENCY_COLORS: Record<string, string> = {
+  Baixa: 'bg-slate-100 text-slate-600',
+  Média: 'bg-blue-50 text-blue-600',
+  Alta: 'bg-orange-50 text-orange-600',
+  Crítica: 'bg-red-50 text-red-600 border border-red-100',
+};
