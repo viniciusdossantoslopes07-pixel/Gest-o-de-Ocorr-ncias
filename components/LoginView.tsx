@@ -55,7 +55,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onPublicAccess }) => {
             </div>
 
             <div className="text-center mb-6">
-              <h1 className="text-2xl font-black text-slate-900 tracking-tighter uppercase mb-2">GUARDIÃO GSD-SP</h1>
+              <h1 className="text-2xl font-black text-slate-900 tracking-tighter mb-2">Guardião GSD-SP</h1>
               <p className="text-slate-500 font-medium">Sistema de Segurança e Defesa</p>
             </div>
 

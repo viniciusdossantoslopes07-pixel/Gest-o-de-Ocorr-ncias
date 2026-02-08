@@ -278,7 +278,7 @@ const App: FC = () => {
             <div className="shrink-0 relative w-12 h-12 rounded-full overflow-hidden shadow-md ring-2 ring-white/10">
               <img src="/logo_gsd.jpg" alt="Logo" className="w-full h-full object-cover scale-125" />
             </div>
-            {!isSidebarCollapsed && <h1 className="text-xl font-black tracking-tighter uppercase whitespace-nowrap">GUARDIÃO GSD-SP</h1>}
+            {!isSidebarCollapsed && <h1 className="text-xl font-black tracking-tighter whitespace-nowrap">Guardião GSD-SP</h1>}
           </div>
 
           <nav className="flex-1 space-y-1.5 overflow-y-auto pr-1">

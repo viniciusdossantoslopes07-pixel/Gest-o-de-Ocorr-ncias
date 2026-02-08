@@ -51,16 +51,16 @@ const HomeView: React.FC<HomeViewProps> = ({
       <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden">
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-6">
-            <div className="bg-blue-600 p-2 rounded-xl">
-              <ShieldAlert className="w-6 h-6" />
+            <div className="bg-white p-1 rounded-full w-12 h-12 flex items-center justify-center overflow-hidden shadow-lg">
+              <img src="/logo_gsd.jpg" alt="Logo GSD-SP" className="w-full h-full object-cover scale-110" />
             </div>
             <span className="text-blue-400 font-black tracking-widest text-xs uppercase">Comando de Operações</span>
           </div>
-          <h2 className="text-4xl font-bold mb-3 tracking-tight">Sistema de Atendimento Militar</h2>
+          <h2 className="text-4xl font-bold mb-3 tracking-tight">Guardião GSD-SP</h2>
           <p className="text-slate-400 max-w-md text-lg leading-relaxed">Olá, {user.name}. Selecione uma categoria para abrir um novo chamado técnico ou operacional.</p>
         </div>
         <div className="absolute top-0 right-0 p-8 opacity-5">
-          <ShieldAlert className="w-64 h-64" />
+          <img src="/logo_gsd.jpg" alt="Logo Background" className="w-64 h-64 grayscale" />
         </div>
       </div>
 
