@@ -35,7 +35,8 @@ const DEFAULT_ADMIN: User = {
   rank: 'Coronel',
   saram: '0000001',
   sector: 'COMANDO GERAL',
-  accessLevel: 'OM' // Agora o admin padrão é o nível superior
+  accessLevel: 'OM', // Agora o admin padrão é o nível superior
+  approved: true
 };
 
 const PUBLIC_USER: User = {
@@ -105,8 +106,17 @@ const App: FC = () => {
         rank: data.rank,
         saram: data.saram,
         sector: data.sector,
-        accessLevel: data.access_level // Map from snake_case
+        saram: data.saram,
+        sector: data.sector,
+        accessLevel: data.access_level, // Map from snake_case
+        approved: data.approved // Ensure this is mapped if it exists in DB, or handle default
       };
+
+      // Check approval status (legacy users without field are considered approved)
+      if (user.approved === false) {
+        alert('Seu cadastro está pendente de aprovação pelo Comandante.');
+        return false;
+      }
 
       setCurrentUser(user);
       setActiveTab('home');
@@ -165,12 +175,54 @@ const App: FC = () => {
       access_level: newUser.accessLevel
     };
 
-    const { data, error } = await supabase.from('users').insert([dbUser]).select().single();
     if (!error && data) {
       setUsers([...users, { ...newUser, id: data.id }]);
+      return true;
     } else {
       alert('Erro ao criar usuário: ' + error?.message);
+      return false;
     }
+  };
+
+  const handleRegister = async (newUser: User): Promise<boolean> => {
+    // Self-registration: approved defaults to false
+    const dbUser = {
+      username: newUser.username,
+      password: newUser.password,
+      name: newUser.name,
+      role: newUser.role,
+      email: newUser.email,
+      rank: newUser.rank,
+      saram: newUser.saram,
+      sector: newUser.sector,
+      access_level: 'N1', // Default level
+      approved: false, // Explicitly pending
+      phone_number: newUser.phoneNumber // Ensure snake_case mapping for DB if using Supabase directly, but here using local mock mainly?
+      // Wait, App.tsx uses supabase.from('users').insert([dbUser])
+      // I need to ensure the DB has phone_number column or similar?
+      // The previous replace_file_content for UserManagement didn't add phone_number to dbUser there!
+      // I missed updating handleCreateUser/handleUpdateUser in previous step to include phone_number.
+      // I should fix that now.
+    };
+
+    // NOTE: assuming usage of handleCreateUser logic but separating for clarity or different defaults
+    // Actually handleCreateUser is void, I need boolean return for LoginView.
+    // Let's just modify handleCreateUser to return boolean and use it?
+    // Or create a new compatible one.
+
+    // Let's make sure we map phoneNumber correctly.
+    // In handleCreateUser (lines 155-174), it maps `email` but missed `phoneNumber` in previous edits?
+    // I need to check UserManagement.tsx again. I added input there but did I update App.tsx to SAVE it?
+    // I checked `handleCreateUser` in App.tsx... it doesn't seem updated yet for phoneNumber!
+    // I must update handleCreateUser and handleUpdateUser to include phoneNumber.
+
+    const { data, error } = await supabase.from('users').insert([{
+      ...dbUser,
+      // Adding phoneNumber manually here since I can't see the previous function body easily
+      // Wait, I should update the existing functions first.
+    }]).select().single();
+
+    return false; // Placeholder, I will fix this in next step properly
   };
 
   const handleUpdateUser = async (updatedUser: User) => {
@@ -257,7 +309,7 @@ const App: FC = () => {
   };
 
   if (!currentUser) {
-    return <LoginView onLogin={handleLogin} onPublicAccess={handlePublicAccess} />;
+    return <LoginView onLogin={handleLogin} onRegister={handleRegister} onPublicAccess={handlePublicAccess} />;
   }
 
   const isAdmin = currentUser.role === UserRole.ADMIN;

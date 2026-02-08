@@ -1,7 +1,7 @@
 
 import { useState, type FC, type FormEvent } from 'react';
 import { User, UserRole } from '../types';
-import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown } from 'lucide-react';
+import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown, ShieldCheck } from 'lucide-react';
 
 interface UserManagementProps {
   users: User[];
@@ -18,7 +18,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     rank: '',
     saram: '',
     sector: '',
-    role: UserRole.OPERATIONAL,
+    email: '',
     role: UserRole.OPERATIONAL,
     accessLevel: 'N1' as 'N1' | 'N2' | 'N3' | 'OM',
     phoneNumber: ''
@@ -32,7 +32,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     const userData: User = {
       ...formData,
       id: editingUserId || Math.random().toString(36).substr(2, 9),
-      email: `${formData.username}@secureguard.mil.br`,
+      email: formData.email || `${formData.username}@secureguard.mil.br`,
       accessLevel: formData.role === UserRole.ADMIN ? formData.accessLevel : undefined
     };
 
@@ -54,7 +54,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
       rank: user.rank,
       saram: user.saram,
       sector: user.sector,
-      role: user.role,
+      email: user.email,
       role: user.role,
       accessLevel: user.accessLevel || 'N1',
       phoneNumber: user.phoneNumber || ''
@@ -126,6 +126,13 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
               <Building2 className="w-3 h-3" /> Setor
             </label>
             <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.sector} onChange={e => setFormData({ ...formData, sector: e.target.value })} />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <Hash className="w-3 h-3" /> Email
+            </label>
+            <input required type="email" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
           </div>
 
           <div className="space-y-2">
@@ -229,6 +236,54 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
       </div>
 
       <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
+        {users.filter(u => u.approved === false).length > 0 && (
+          <div className="mb-8 border-b-4 border-slate-100 pb-8">
+            <div className="p-6 bg-amber-50/50 border-b border-amber-100 flex items-center gap-3">
+              <ShieldCheck className="w-5 h-5 text-amber-600" />
+              <h3 className="text-sm font-black text-amber-700 uppercase tracking-widest">Pendências de Aprovação</h3>
+            </div>
+            <table className="w-full text-left text-sm">
+              <thead className="bg-amber-50/20">
+                <tr>
+                  <th className="px-6 py-4 text-[10px] font-black text-amber-400 uppercase tracking-widest">Militar</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-amber-400 uppercase tracking-widest">Dados</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-amber-400 uppercase tracking-widest text-right">Ação de Comando</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-amber-50">
+                {users.filter(u => u.approved === false).map(u => (
+                  <tr key={u.id}>
+                    <td className="px-6 py-4">
+                      <div className="font-bold text-slate-900">{u.name}</div>
+                      <div className="text-[10px] text-slate-400 font-bold uppercase">{u.rank}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-slate-600">@{u.username}</div>
+                      <div className="text-[10px] text-slate-400 font-bold uppercase">SARAM: {u.saram}</div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => onUpdateUser({ ...u, approved: true })}
+                          className="px-4 py-2 bg-green-100 text-green-700 hover:bg-green-200 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+                        >
+                          <ShieldCheck className="w-3 h-3" /> Aprovar
+                        </button>
+                        <button
+                          onClick={() => onDeleteUser(u.id)}
+                          className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+                        >
+                          <Trash2 className="w-3 h-3" /> Recusar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
         <div className="p-6 border-b border-slate-100 bg-slate-50/50">
           <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Usuários com Acesso ao Sistema</h3>
         </div>
@@ -244,7 +299,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {users.map(u => (
+              {users.filter(u => u.approved !== false).map(u => (
                 <tr key={u.id} className={`hover:bg-slate-50/50 transition-colors ${editingUserId === u.id ? 'bg-amber-50/50' : ''}`}>
                   <td className="px-6 py-4">
                     <div className="font-bold text-slate-900">{u.name}</div>

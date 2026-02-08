@@ -34,6 +34,7 @@ export interface User {
   sector: string;
   accessLevel?: 'N1' | 'N2' | 'N3' | 'OM';
   phoneNumber?: string;
+  approved?: boolean;
 }
 
 export interface Attachment {

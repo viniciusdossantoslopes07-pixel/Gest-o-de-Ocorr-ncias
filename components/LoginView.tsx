@@ -1,32 +1,57 @@
 
 import { useState, type FC, type FormEvent } from 'react';
+import { User } from '../types';
 import { ShieldCheck, ArrowRight, Lock, User as UserIcon, Megaphone } from 'lucide-react';
 
 interface LoginViewProps {
   onLogin: (username: string, password: string) => Promise<boolean> | boolean;
+  onRegister: (user: User) => Promise<boolean> | boolean;
   onPublicAccess: () => void;
 }
 
-const LoginView: FC<LoginViewProps> = ({ onLogin, onPublicAccess }) => {
+const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [regData, setRegData] = useState({
+    name: '', rank: '', saram: '', sector: '', email: '', phoneNumber: ''
+  });
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
-    // Remove timeout to allow real async wait
     try {
-      const success = await onLogin(username, password);
-      if (!success) {
-        setError('Credenciais inválidas. Verifique usuário e senha.');
+      if (isRegistering) {
+        const newUser = {
+          id: '',
+          username,
+          password,
+          role: 'Lançador Operacional' as any,
+          ...regData
+        };
+        const success = await onRegister(newUser as any);
+        if (success) {
+          setError('');
+          alert('Cadastro realizado com sucesso! Aguarde aprovação do Comandante.');
+          setIsRegistering(false);
+        } else {
+          setError('Erro ao realizar cadastro.');
+        }
+        setIsLoading(false);
+      } else {
+        const success = await onLogin(username, password);
+        if (!success) {
+          setError('Acesso negado. Verifique credenciais ou status de aprovação.');
+        }
         setIsLoading(false);
       }
     } catch (err) {
-      setError('Erro ao processar login.');
+      setError('Erro ao processar solicitação.');
       setIsLoading(false);
     }
   };
@@ -80,50 +105,104 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onPublicAccess }) => {
               </div>
             )}
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <UserIcon className="w-3 h-3" /> Usuário
-                </label>
-                <input
-                  required
-                  type="text"
-                  className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                  placeholder="Nome de usuário"
-                  value={username}
-                  onChange={e => setUsername(e.target.value)}
-                />
-              </div>
+            {isRegistering ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Nome Completo</label>
+                    <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="Nome" value={regData.name} onChange={e => setRegData({ ...regData, name: e.target.value })} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Posto/Grad</label>
+                    <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="Ex: Cap" value={regData.rank} onChange={e => setRegData({ ...regData, rank: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">SARAM</label>
+                    <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="0000000" value={regData.saram} onChange={e => setRegData({ ...regData, saram: e.target.value })} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Setor</label>
+                    <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="Ex: S-2" value={regData.sector} onChange={e => setRegData({ ...regData, sector: e.target.value })} />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Email</label>
+                  <input required type="email" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="email@fab.mil.br" value={regData.email} onChange={e => setRegData({ ...regData, email: e.target.value })} />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Celular / WhatsApp</label>
+                  <input required type="tel" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="5511999999999" value={regData.phoneNumber} onChange={e => setRegData({ ...regData, phoneNumber: e.target.value })} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Usuário</label>
+                    <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="user" value={username} onChange={e => setUsername(e.target.value)} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Senha</label>
+                    <input required type="password" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="***" value={password} onChange={e => setPassword(e.target.value)} />
+                  </div>
+                </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Lock className="w-3 h-3" /> Senha
-                </label>
-                <input
-                  required
-                  type="password"
-                  className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                />
+                <button type="submit" disabled={isLoading} className="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-all mt-4">
+                  {isLoading ? 'Cadastrando...' : 'Solicitar Cadastro'}
+                </button>
+                <button type="button" onClick={() => setIsRegistering(false)} className="w-full text-slate-500 text-xs font-bold uppercase tracking-widest hover:text-slate-700 mt-2">
+                  Voltar para Login
+                </button>
               </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <UserIcon className="w-3 h-3" /> Usuário
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    placeholder="Nome de usuário"
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
+                  />
+                </div>
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-blue-700 shadow-xl shadow-blue-600/20 transition-all active:scale-[0.98] mt-6"
-              >
-                {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                ) : (
-                  <>
-                    Autenticar Militar
-                    <ArrowRight className="w-5 h-5" />
-                  </>
-                )}
-              </button>
-            </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Lock className="w-3 h-3" /> Senha
+                  </label>
+                  <input
+                    required
+                    type="password"
+                    className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-blue-700 shadow-xl shadow-blue-600/20 transition-all active:scale-[0.98] mt-6"
+                >
+                  {isLoading ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      Autenticar Militar
+                      <ArrowRight className="w-5 h-5" />
+                    </>
+                  )}
+                </button>
+
+                <button type="button" onClick={() => setIsRegistering(true)} className="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all mt-4">
+                  Criar Conta Militar
+                </button>
+              </div>
+            )}
 
             <div className="mt-8 flex flex-col items-center">
               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Ministério da Defesa • Uso Restrito</p>
