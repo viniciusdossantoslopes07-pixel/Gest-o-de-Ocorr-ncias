@@ -172,11 +172,33 @@ const App: FC = () => {
       rank: newUser.rank,
       saram: newUser.saram,
       sector: newUser.sector,
-      access_level: newUser.accessLevel
+      access_level: newUser.accessLevel,
+      phone_number: newUser.phoneNumber,
+      approved: true // Created by admin, so approved by default
     };
 
+    const { data, error } = await supabase
+      .from('users')
+      .insert([dbUser])
+      .select()
+      .single();
+
     if (!error && data) {
-      setUsers([...users, { ...newUser, id: data.id }]);
+      const createdUser: User = {
+        id: data.id,
+        username: data.username,
+        name: data.name,
+        role: data.role as UserRole,
+        email: data.email,
+        rank: data.rank,
+        saram: data.saram,
+        sector: data.sector,
+        accessLevel: data.access_level,
+        phoneNumber: data.phone_number,
+        approved: data.approved,
+        password: data.password
+      };
+      setUsers([...users, createdUser]);
       return true;
     } else {
       alert('Erro ao criar usuário: ' + error?.message);
@@ -185,7 +207,6 @@ const App: FC = () => {
   };
 
   const handleRegister = async (newUser: User): Promise<boolean> => {
-    // Self-registration: approved defaults to false
     const dbUser = {
       username: newUser.username,
       password: newUser.password,
@@ -197,32 +218,18 @@ const App: FC = () => {
       sector: newUser.sector,
       access_level: 'N1', // Default level
       approved: false, // Explicitly pending
-      phone_number: newUser.phoneNumber // Ensure snake_case mapping for DB if using Supabase directly, but here using local mock mainly?
-      // Wait, App.tsx uses supabase.from('users').insert([dbUser])
-      // I need to ensure the DB has phone_number column or similar?
-      // The previous replace_file_content for UserManagement didn't add phone_number to dbUser there!
-      // I missed updating handleCreateUser/handleUpdateUser in previous step to include phone_number.
-      // I should fix that now.
+      phone_number: newUser.phoneNumber
     };
 
-    // NOTE: assuming usage of handleCreateUser logic but separating for clarity or different defaults
-    // Actually handleCreateUser is void, I need boolean return for LoginView.
-    // Let's just modify handleCreateUser to return boolean and use it?
-    // Or create a new compatible one.
+    const { error } = await supabase
+      .from('users')
+      .insert([dbUser]);
 
-    // Let's make sure we map phoneNumber correctly.
-    // In handleCreateUser (lines 155-174), it maps `email` but missed `phoneNumber` in previous edits?
-    // I need to check UserManagement.tsx again. I added input there but did I update App.tsx to SAVE it?
-    // I checked `handleCreateUser` in App.tsx... it doesn't seem updated yet for phoneNumber!
-    // I must update handleCreateUser and handleUpdateUser to include phoneNumber.
-
-    const { data, error } = await supabase.from('users').insert([{
-      ...dbUser,
-      // Adding phoneNumber manually here since I can't see the previous function body easily
-      // Wait, I should update the existing functions first.
-    }]).select().single();
-
-    return false; // Placeholder, I will fix this in next step properly
+    if (error) {
+      console.error('Registration error:', error);
+      return false;
+    }
+    return true;
   };
 
   const handleUpdateUser = async (updatedUser: User) => {
@@ -237,7 +244,9 @@ const App: FC = () => {
         rank: updatedUser.rank,
         saram: updatedUser.saram,
         sector: updatedUser.sector,
-        access_level: updatedUser.accessLevel
+        access_level: updatedUser.accessLevel,
+        phone_number: updatedUser.phoneNumber,
+        approved: updatedUser.approved
       })
       .eq('id', updatedUser.id);
 
