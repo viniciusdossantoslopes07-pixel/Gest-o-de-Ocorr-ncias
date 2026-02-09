@@ -29,6 +29,7 @@ import KanbanBoard from './components/KanbanBoard';
 import LoginView from './components/LoginView';
 import UserManagement from './components/UserManagement';
 import MissionDashboard from './components/MissionDashboard';
+import UserProfile from './components/UserProfile';
 import MissionOrderList from './components/MissionOrderList';
 import MissionOrderForm from './components/MissionOrderForm';
 import MissionOrderPrintView from './components/MissionOrderPrintView';
@@ -69,7 +70,7 @@ const PUBLIC_USER: User = {
 const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-orders' | 'mission-request' | 'mission-management'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile'>('home');
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [selectedOccurrence, setSelectedOccurrence] = useState<Occurrence | null>(null);
   const [missionOrders, setMissionOrders] = useState<MissionOrder[]>([]);
