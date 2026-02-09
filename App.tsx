@@ -76,6 +76,7 @@ const App: FC = () => {
   const [selectedMissionOrder, setSelectedMissionOrder] = useState<MissionOrder | null>(null);
   const [showMissionOrderForm, setShowMissionOrderForm] = useState(false);
   const [showMissionOrderPrintView, setShowMissionOrderPrintView] = useState(false);
+  const [activeMissionRequestId, setActiveMissionRequestId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [filter, setFilter] = useState('');
@@ -455,502 +456,493 @@ const App: FC = () => {
       ]
     };
 
-      ]
+    // Store origin request ID
+    setActiveMissionRequestId(mission.id);
+
+    // Set state to open form
+    setSelectedMissionOrder(initialOrderData as MissionOrder); // Cast as it's partial but form handles it
+    setShowMissionOrderForm(true);
+
+    // Switch tab - We need to be careful if 'mission-orders' is restricted to OM only
+    // If user is SOP, they might not have access to 'mission-orders' tab in the sidebar logic
+    // We update the sidebar logic to allow SOP to see 'mission-orders' OR handle it differently.
+    // For now, let's assume we want to show the form.
+    // Wait, Lines 598-600 restrict 'mission-orders' tab to isOM.
+    // We need to allow SOP to access Mission Orders too to create them.
+    setActiveTab('mission-orders');
+  };
+
+  // Mission Order Functions
+  const fetchMissionOrders = async () => {
+    const { data, error } = await supabase
+      .from('mission_orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching mission orders:', error);
+    } else if (data) {
+      setMissionOrders(data.map((mo: any) => ({
+        id: mo.id,
+        omisNumber: mo.omis_number,
+        date: mo.date,
+        isInternal: mo.is_internal,
+        mission: mo.mission,
+        location: mo.location,
+        description: mo.description,
+        requester: mo.requester,
+        transport: mo.transport,
+        food: mo.food,
+        personnel: mo.personnel || [],
+        schedule: mo.schedule || [],
+        permanentOrders: mo.permanent_orders || '',
+        specialOrders: mo.special_orders || '',
+        createdBy: mo.created_by,
+        createdAt: mo.created_at,
+        updatedAt: mo.updated_at,
+        status: mo.status,
+        timeline: mo.timeline || [],
+        missionCommanderId: mo.mission_commander_id
+      })));
+    }
+  };
+
+  const generateOMISNumber = async (): Promise<string> => {
+    const year = new Date().getFullYear();
+    const { count } = await supabase
+      .from('mission_orders')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', `${year}-01-01`);
+
+    return `${(count || 0) + 1}/GSD-SP`;
+  };
+
+  const handleCreateMissionOrder = async (orderData: Partial<MissionOrder>) => {
+    const omisNumber = await generateOMISNumber();
+
+    const dbOrder = {
+      omis_number: omisNumber,
+      date: orderData.date,
+      is_internal: orderData.isInternal,
+      mission: orderData.mission,
+      location: orderData.location,
+      description: orderData.description,
+      requester: orderData.requester,
+      transport: orderData.transport,
+      food: orderData.food,
+      personnel: orderData.personnel || [],
+      schedule: orderData.schedule || [],
+      permanent_orders: orderData.permanentOrders,
+      special_orders: orderData.specialOrders,
+      created_by: currentUser?.name || 'Sistema',
+      status: 'GERADA',
+      timeline: [],
+      mission_commander_id: currentUser?.id // Or try to resolve from requester if possible, but safely default to creator for now if not specified
     };
 
-// Store origin request ID
-setActiveMissionRequestId(mission.id);
+    const { data, error } = await supabase
+      .from('mission_orders')
+      .insert([dbOrder])
+      .select()
+      .single();
 
-// Set state to open form
-setSelectedMissionOrder(initialOrderData as MissionOrder); // Cast as it's partial but form handles it
-setShowMissionOrderForm(true);
+    if (error) {
+      console.error('Error creating mission order:', error);
+      alert('Erro ao criar ordem de missão: ' + error.message);
+    } else {
+      // If there was an active request ID, update its status
+      if (activeMissionRequestId) {
+        const { error: reqError } = await supabase
+          .from('missoes_gsd')
+          .update({ status: 'FINALIZADA' })
+          .eq('id', activeMissionRequestId);
 
-// Switch tab - We need to be careful if 'mission-orders' is restricted to OM only
-// If user is SOP, they might not have access to 'mission-orders' tab in the sidebar logic
-// We update the sidebar logic to allow SOP to see 'mission-orders' OR handle it differently.
-// For now, let's assume we want to show the form.
-// Wait, Lines 598-600 restrict 'mission-orders' tab to isOM.
-// We need to allow SOP to access Mission Orders too to create them.
-setActiveTab('mission-orders');
-  };
-
-// Mission Order Functions
-const fetchMissionOrders = async () => {
-  const { data, error } = await supabase
-    .from('mission_orders')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching mission orders:', error);
-  } else if (data) {
-    setMissionOrders(data.map((mo: any) => ({
-      id: mo.id,
-      omisNumber: mo.omis_number,
-      date: mo.date,
-      isInternal: mo.is_internal,
-      mission: mo.mission,
-      location: mo.location,
-      description: mo.description,
-      requester: mo.requester,
-      transport: mo.transport,
-      food: mo.food,
-      personnel: mo.personnel || [],
-      schedule: mo.schedule || [],
-      permanentOrders: mo.permanent_orders || '',
-      specialOrders: mo.special_orders || '',
-      createdBy: mo.created_by,
-      createdAt: mo.created_at,
-      updatedAt: mo.updated_at,
-      status: mo.status,
-      timeline: mo.timeline || [],
-      missionCommanderId: mo.mission_commander_id
-    })));
-  }
-};
-
-const generateOMISNumber = async (): Promise<string> => {
-  const year = new Date().getFullYear();
-  const { count } = await supabase
-    .from('mission_orders')
-    .select('*', { count: 'exact', head: true })
-    .gte('created_at', `${year}-01-01`);
-
-  return `${(count || 0) + 1}/GSD-SP`;
-};
-
-const handleCreateMissionOrder = async (orderData: Partial<MissionOrder>) => {
-  const omisNumber = await generateOMISNumber();
-
-  const dbOrder = {
-    omis_number: omisNumber,
-    date: orderData.date,
-    is_internal: orderData.isInternal,
-    mission: orderData.mission,
-    location: orderData.location,
-    description: orderData.description,
-    requester: orderData.requester,
-    transport: orderData.transport,
-    food: orderData.food,
-    personnel: orderData.personnel || [],
-    schedule: orderData.schedule || [],
-    permanent_orders: orderData.permanentOrders,
-    special_orders: orderData.specialOrders,
-    created_by: currentUser?.name || 'Sistema',
-    status: 'GERADA',
-    timeline: [],
-    mission_commander_id: currentUser?.id // Or try to resolve from requester if possible, but safely default to creator for now if not specified
-  };
-
-  const { data, error } = await supabase
-    .from('mission_orders')
-    .insert([dbOrder])
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating mission order:', error);
-    alert('Erro ao criar ordem de missão: ' + error.message);
-
-    // If there was an active request ID, update its status
-    if (activeMissionRequestId) {
-      const { error: reqError } = await supabase
-        .from('missoes_gsd')
-        .update({ status: 'FINALIZADA' })
-        .eq('id', activeMissionRequestId);
-
-      if (reqError) {
-        console.error('Error finalising mission request:', reqError);
-      } else {
-        // Refresh requests
-        // We need to call fetchMissionRequests() but it's defined inside useEffect or handled via real-time ideally
-        // For now, let's manually update valid state if available or force refresh
-        // Note: fetchMissionRequests logic exists but not globally exposed easily here without refactor, 
-        // but we can assume user will refresh or we can trigger it. 
-        // Actually, verify where requests are fetched. It is fetchMissionRequests on line 65 (approx).
-        await fetchMissionRequests();
+        if (reqError) {
+          console.error('Error finalising mission request:', reqError);
+        } else {
+          await fetchMissionRequests();
+        }
+        setActiveMissionRequestId(null);
       }
-      setActiveMissionRequestId(null);
+
+      await fetchMissionOrders();
+      setShowMissionOrderForm(false);
+      setSelectedMissionOrder(null);
+      alert(`OMIS ${omisNumber} criada com sucesso!`);
     }
-
-    await fetchMissionOrders();
-    setShowMissionOrderForm(false);
-    setSelectedMissionOrder(null);
-    alert(`OMIS ${omisNumber} criada com sucesso!`);
-  }
-};
-
-const handleUpdateMissionOrder = async (orderData: Partial<MissionOrder>) => {
-  if (!selectedMissionOrder) return;
-
-  const dbOrder = {
-    date: orderData.date,
-    is_internal: orderData.isInternal,
-    mission: orderData.mission,
-    location: orderData.location,
-    description: orderData.description,
-    requester: orderData.requester,
-    transport: orderData.transport,
-    food: orderData.food,
-    personnel: orderData.personnel || [],
-    schedule: orderData.schedule || [],
-    permanent_orders: orderData.permanentOrders,
-    special_orders: orderData.specialOrders,
-    updated_at: new Date().toISOString(),
-    status: orderData.status,
-    timeline: orderData.timeline
   };
 
-  const { error } = await supabase
-    .from('mission_orders')
-    .update(dbOrder)
-    .eq('id', selectedMissionOrder.id);
+  const handleUpdateMissionOrder = async (orderData: Partial<MissionOrder>) => {
+    if (!selectedMissionOrder) return;
 
-  if (error) {
-    console.error('Error updating mission order:', error);
-    alert('Erro ao atualizar ordem de missão: ' + error.message);
-  } else {
-    await fetchMissionOrders();
-    setShowMissionOrderForm(false);
-    setSelectedMissionOrder(null);
-    alert('OMIS atualizada com sucesso!');
+    const dbOrder = {
+      date: orderData.date,
+      is_internal: orderData.isInternal,
+      mission: orderData.mission,
+      location: orderData.location,
+      description: orderData.description,
+      requester: orderData.requester,
+      transport: orderData.transport,
+      food: orderData.food,
+      personnel: orderData.personnel || [],
+      schedule: orderData.schedule || [],
+      permanent_orders: orderData.permanentOrders,
+      special_orders: orderData.specialOrders,
+      updated_at: new Date().toISOString(),
+      status: orderData.status,
+      timeline: orderData.timeline
+    };
+
+    const { error } = await supabase
+      .from('mission_orders')
+      .update(dbOrder)
+      .eq('id', selectedMissionOrder.id);
+
+    if (error) {
+      console.error('Error updating mission order:', error);
+      alert('Erro ao atualizar ordem de missão: ' + error.message);
+    } else {
+      await fetchMissionOrders();
+      setShowMissionOrderForm(false);
+      setSelectedMissionOrder(null);
+      alert('OMIS atualizada com sucesso!');
+    }
+  };
+
+  const handleDeleteMissionOrder = async (id: string) => {
+    const { error } = await supabase
+      .from('mission_orders')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting mission order:', error);
+      alert('Erro ao excluir ordem de missão');
+    } else {
+      await fetchMissionOrders();
+      alert('OMIS excluída com sucesso!');
+    }
+  };
+
+  if (!currentUser) {
+    return <LoginView onLogin={handleLogin} onRegister={handleRegister} onPublicAccess={handlePublicAccess} />;
   }
-};
-
-const handleDeleteMissionOrder = async (id: string) => {
-  const { error } = await supabase
-    .from('mission_orders')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    console.error('Error deleting mission order:', error);
-    alert('Erro ao excluir ordem de missão');
-  } else {
-    await fetchMissionOrders();
-    alert('OMIS excluída com sucesso!');
-  }
-};
-
-if (!currentUser) {
-  return <LoginView onLogin={handleLogin} onRegister={handleRegister} onPublicAccess={handlePublicAccess} />;
-}
 
 
 
-return (
-  <div className="min-h-screen bg-slate-50 flex">
-    {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
+  return (
+    <div className="min-h-screen bg-slate-50 flex">
+      {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
 
-    <aside className={`fixed inset-y-0 left-0 z-50 bg-slate-900 text-white transform transition-all duration-300 lg:relative lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${isSidebarCollapsed ? 'w-20' : 'w-72'}`}>
-      <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="hidden lg:flex absolute -right-3 top-20 bg-blue-600 w-6 h-6 rounded-full items-center justify-center border-2 border-slate-900 hover:bg-blue-500 z-[60]">
-        {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-      </button>
+      <aside className={`fixed inset-y-0 left-0 z-50 bg-slate-900 text-white transform transition-all duration-300 lg:relative lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${isSidebarCollapsed ? 'w-20' : 'w-72'}`}>
+        <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="hidden lg:flex absolute -right-3 top-20 bg-blue-600 w-6 h-6 rounded-full items-center justify-center border-2 border-slate-900 hover:bg-blue-500 z-[60]">
+          {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        </button>
 
-      <div className={`p-6 h-full flex flex-col ${isSidebarCollapsed ? 'items-center px-4' : ''}`}>
-        <div className={`flex items-center gap-3 mb-10 overflow-hidden ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-          <div className="shrink-0 relative w-12 h-12 rounded-full overflow-hidden shadow-md ring-2 ring-white/10">
-            <img src="/logo_gsd.jpg" alt="Logo" className="w-full h-full object-cover scale-125" />
-          </div>
-          {!isSidebarCollapsed && <h1 className="text-xl font-black tracking-tighter whitespace-nowrap">Guardião GSD-SP</h1>}
-        </div>
-
-        <nav className="flex-1 space-y-1.5 overflow-y-auto pr-1">
-          {!isPublic && (
-            <>
-              <button onClick={() => setActiveTab('home')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'home' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                <Home className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Painel Geral</span>
-              </button>
-              <button onClick={() => setActiveTab('new')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'new' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                <PlusCircle className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Novo Registro</span>
-              </button>
-
-              {canRequestMission && (
-                <button onClick={() => setActiveTab('mission-request')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-request' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                  <ShieldCheck className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Solicitar Missão</span>
-                </button>
-              )}
-
-              {canManageMissions && (
-                <button onClick={() => setActiveTab('mission-management')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-management' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                  <ShieldCheck className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão de Missões</span>
-                </button>
-              )}
-            </>
-          )}
-
-          {isAdmin && (
-            <>
-              <button onClick={() => setActiveTab('kanban')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'kanban' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                <Kanban className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Fila de Serviço</span>
-              </button>
-
-              {canManageUsers && (
-                <button onClick={() => setActiveTab('users')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'users' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                  <UsersIcon className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão Militar</span>
-                </button>
-              )}
-
-              {canManageMissions && (
-                <button onClick={() => { setActiveTab('mission-orders'); fetchMissionOrders(); }} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-orders' ? 'bg-amber-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                  <ShieldAlert className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Ordens de Missão</span>
-                </button>
-              )}
-
-              <button onClick={() => setActiveTab('dashboard')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'dashboard' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                <LayoutDashboard className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Estatísticas BI</span>
-              </button>
-            </>
-          )}
-
-          {!isPublic && (
-            <button onClick={() => setActiveTab('list')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'list' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-              <FileText className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Arquivo Geral</span>
-            </button>
-          )}
-
-          <div className="py-4 border-t border-slate-800/50 my-4">
-            <button onClick={handleLogout} className={`w-full flex items-center rounded-xl transition-all text-slate-400 hover:text-red-400 hover:bg-red-500/10 ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-              <LogOut className="w-5 h-5 shrink-0" />
-              {!isSidebarCollapsed && <span className="text-sm font-bold">Encerrar Sessão</span>}
-            </button>
-          </div>
-        </nav>
-
-        <div className={`pt-6 border-t border-slate-800 ${isSidebarCollapsed ? 'flex flex-col items-center' : ''}`}>
-          <div className={`px-4 py-4 mb-4 bg-slate-800/50 rounded-2xl flex flex-col gap-2 overflow-hidden ${isSidebarCollapsed ? 'items-center px-2' : ''}`}>
-            <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-              <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-sm shrink-0 shadow-lg uppercase">{currentUser.name[0]}</div>
-              {!isSidebarCollapsed && (
-                <div className="overflow-hidden">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{currentUser.rank}</p>
-                  <p className="text-sm font-black truncate">{currentUser.name}</p>
-                </div>
-              )}
+        <div className={`p-6 h-full flex flex-col ${isSidebarCollapsed ? 'items-center px-4' : ''}`}>
+          <div className={`flex items-center gap-3 mb-10 overflow-hidden ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+            <div className="shrink-0 relative w-12 h-12 rounded-full overflow-hidden shadow-md ring-2 ring-white/10">
+              <img src="/logo_gsd.jpg" alt="Logo" className="w-full h-full object-cover scale-125" />
             </div>
-            {!isSidebarCollapsed && (
-              <div className="pt-2 border-t border-slate-700/50 space-y-1">
-                <span className="inline-block px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded-md text-[8px] font-black uppercase tracking-widest border border-blue-500/20">{currentUser.role}</span>
-                {currentUser.accessLevel && (
-                  <span className={`block text-[8px] font-bold uppercase tracking-widest ${currentUser.accessLevel === 'OM' ? 'text-amber-500' : 'text-slate-500'}`}>Nível {currentUser.accessLevel}</span>
+            {!isSidebarCollapsed && <h1 className="text-xl font-black tracking-tighter whitespace-nowrap">Guardião GSD-SP</h1>}
+          </div>
+
+          <nav className="flex-1 space-y-1.5 overflow-y-auto pr-1">
+            {!isPublic && (
+              <>
+                <button onClick={() => setActiveTab('home')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'home' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                  <Home className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Painel Geral</span>
+                </button>
+                <button onClick={() => setActiveTab('new')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'new' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                  <PlusCircle className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Novo Registro</span>
+                </button>
+
+                {canRequestMission && (
+                  <button onClick={() => setActiveTab('mission-request')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-request' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                    <ShieldCheck className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Solicitar Missão</span>
+                  </button>
+                )}
+
+                {canManageMissions && (
+                  <button onClick={() => setActiveTab('mission-management')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-management' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                    <ShieldCheck className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão de Missões</span>
+                  </button>
+                )}
+              </>
+            )}
+
+            {isAdmin && (
+              <>
+                <button onClick={() => setActiveTab('kanban')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'kanban' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                  <Kanban className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Fila de Serviço</span>
+                </button>
+
+                {canManageUsers && (
+                  <button onClick={() => setActiveTab('users')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'users' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                    <UsersIcon className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão Militar</span>
+                  </button>
+                )}
+
+                {canManageMissions && (
+                  <button onClick={() => { setActiveTab('mission-orders'); fetchMissionOrders(); }} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-orders' ? 'bg-amber-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                    <ShieldAlert className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Ordens de Missão</span>
+                  </button>
+                )}
+
+                <button onClick={() => setActiveTab('dashboard')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'dashboard' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                  <LayoutDashboard className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Estatísticas BI</span>
+                </button>
+              </>
+            )}
+
+            {!isPublic && (
+              <button onClick={() => setActiveTab('list')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'list' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                <FileText className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Arquivo Geral</span>
+              </button>
+            )}
+
+            <div className="py-4 border-t border-slate-800/50 my-4">
+              <button onClick={handleLogout} className={`w-full flex items-center rounded-xl transition-all text-slate-400 hover:text-red-400 hover:bg-red-500/10 ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                <LogOut className="w-5 h-5 shrink-0" />
+                {!isSidebarCollapsed && <span className="text-sm font-bold">Encerrar Sessão</span>}
+              </button>
+            </div>
+          </nav>
+
+          <div className={`pt-6 border-t border-slate-800 ${isSidebarCollapsed ? 'flex flex-col items-center' : ''}`}>
+            <div className={`px-4 py-4 mb-4 bg-slate-800/50 rounded-2xl flex flex-col gap-2 overflow-hidden ${isSidebarCollapsed ? 'items-center px-2' : ''}`}>
+              <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-sm shrink-0 shadow-lg uppercase">{currentUser.name[0]}</div>
+                {!isSidebarCollapsed && (
+                  <div className="overflow-hidden">
+                    <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{currentUser.rank}</p>
+                    <p className="text-sm font-black truncate">{currentUser.name}</p>
+                  </div>
                 )}
               </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </aside>
-
-    <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-      <header className="bg-white border-b border-slate-200 px-8 py-5 flex items-center justify-between z-40">
-        <div className="flex items-center gap-4">
-          <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-slate-500"><Menu className="w-6 h-6" /></button>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-            {isPublic ? 'Registro de Ocorrência Pública' :
-              activeTab === 'new' ? 'Novo Registro Militar' :
-                activeTab === 'home' ? 'Central de Comando' :
-                  activeTab === 'users' ? 'Gestão de Acessos' :
-                    activeTab === 'dashboard' ? 'Painel de Inteligência' :
-                      activeTab === 'kanban' ? 'Fluxo de Gestão' :
-                        activeTab === 'mission-request' ? 'Nova Missão' :
-                          activeTab === 'mission-management' ? 'Gestão de Missões' : 'Arquivo Digital'}
-          </h2>
-        </div>
-        {!isPublic && (
-          <div className="flex items-center gap-4">
-            <div className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input type="text" placeholder="Filtrar registros..." className="pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-2xl text-sm w-72 focus:ring-2 focus:ring-blue-500" value={filter} onChange={e => setFilter(e.target.value)} />
-            </div>
-          </div>
-        )}
-      </header>
-
-      <div className="p-8 flex-1 overflow-y-auto bg-slate-50">
-        {activeTab === 'home' && !isPublic && (
-          <HomeView
-            user={currentUser}
-            onNewOccurrence={(cat) => { setInitialCategory(cat); setActiveTab('new'); }}
-            onViewAll={() => setActiveTab('list')}
-            recentOccurrences={occurrences}
-            onSelectOccurrence={setSelectedOccurrence}
-            onRefresh={fetchOccurrences}
-            onRequestMission={canRequestMission ? () => setActiveTab('mission-request') : undefined}
-          />
-        )}
-
-        {(activeTab === 'new' || isPublic) && (
-          <div className="max-w-4xl mx-auto">
-            {isPublic && (
-              <div className="mb-6 p-6 bg-blue-600 text-white rounded-[2rem] shadow-xl flex items-center gap-5">
-                <ShieldAlert className="w-12 h-12 shrink-0" />
-                <div>
-                  <h3 className="text-lg font-bold">Relato ao Oficial de Segurança</h3>
-                  <p className="text-blue-100 text-sm">Seu relato será enviado diretamente para análise militar (N1).</p>
+              {!isSidebarCollapsed && (
+                <div className="pt-2 border-t border-slate-700/50 space-y-1">
+                  <span className="inline-block px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded-md text-[8px] font-black uppercase tracking-widest border border-blue-500/20">{currentUser.role}</span>
+                  {currentUser.accessLevel && (
+                    <span className={`block text-[8px] font-bold uppercase tracking-widest ${currentUser.accessLevel === 'OM' ? 'text-amber-500' : 'text-slate-500'}`}>Nível {currentUser.accessLevel}</span>
+                  )}
                 </div>
-              </div>
-            )}
-            <OccurrenceForm
-              user={currentUser}
-              onCancel={() => isPublic ? handleLogout() : setActiveTab('home')}
-              initialCategory={initialCategory}
-              onSubmit={async (data) => {
-                const newOccStub = {
-                  ...data,
-                  timeline: data.timeline || [],
-                  status: Status.TRIAGE
-                };
-
-                const { data: insertedData, error } = await supabase
-                  .from('occurrences')
-                  .insert([newOccStub])
-                  .select()
-                  .single();
-
-                if (error) {
-                  console.error('Error creating occurrence:', error);
-                  alert('Erro ao criar ocorrência');
-                } else {
-                  setOccurrences([insertedData as Occurrence, ...occurrences]);
-                  isPublic ? handleLogout() : setActiveTab('home');
-                }
-              }}
-            />
-          </div>
-        )}
-
-        {activeTab === 'kanban' && isAdmin && <KanbanBoard occurrences={occurrences} onSelect={setSelectedOccurrence} />}
-        {activeTab === 'dashboard' && isAdmin && <Dashboard occurrences={occurrences} />}
-
-        {activeTab === 'mission-request' && canRequestMission && (
-          <div className="max-w-4xl mx-auto">
-            <MissionRequestForm
-              user={currentUser}
-              onCancel={() => setActiveTab('home')}
-              onSubmit={handleCreateMissionRequest}
-            />
-          </div>
-        )}
-
-
-
-        {/* Somente Perfil Comandante OM ou SOP-01/CH-SOP podem ver o UserManagement */}
-        {activeTab === 'users' && canManageUsers && (
-          <UserManagement
-            users={users}
-            onCreateUser={handleCreateUser}
-            onUpdateUser={handleUpdateUser}
-            onDeleteUser={handleDeleteUser}
-            onRefreshUsers={fetchUsers}
-          />
-        )}
-
-        {/* SOMENTE Comandante OM ou SOP pode ver Ordens de Missão (SOP precisa gerar) */}
-        {activeTab === 'mission-orders' && (isOM || canManageMissions) && (
-          <>
-            {showMissionOrderForm ? (
-              <MissionOrderForm
-                order={selectedMissionOrder || undefined}
-                onSubmit={(selectedMissionOrder && selectedMissionOrder.id) ? handleUpdateMissionOrder : handleCreateMissionOrder}
-                onCancel={() => {
-                  setShowMissionOrderForm(false);
-                  setSelectedMissionOrder(null);
-                }}
-                currentUser={currentUser.name}
-              />
-            ) : (
-              <MissionOrderList
-                orders={missionOrders}
-                onCreate={() => {
-                  setSelectedMissionOrder(null);
-                  setShowMissionOrderForm(true);
-                }}
-                onEdit={(order) => {
-                  setSelectedMissionOrder(order);
-                  setShowMissionOrderForm(true);
-                }}
-                onView={(order) => {
-                  setSelectedMissionOrder(order);
-                  setShowMissionOrderPrintView(true);
-                }}
-                onDelete={handleDeleteMissionOrder}
-              />
-            )}
-          </>
-        )}
-
-
-        {activeTab === 'mission-management' && canManageMissions && (
-          <div className="space-y-8">
-            <MissionDashboard orders={missionOrders} requests={missionRequests} />
-
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-                <h3 className="font-bold text-slate-700">Solicitações de Missão Recebidas</h3>
-              </div>
-              <MissionRequestList
-                missions={missionRequests.filter(r => r.status !== 'FINALIZADA')} // Filter out finalized
-                onProcess={handleProcessMissionRequest}
-                onGenerateOrder={handleGenerateOrderFromRequest}
-              />
+              )}
             </div>
           </div>
-        )}
+        </div>
+      </aside>
 
-
-        {activeTab === 'list' && !isPublic && (
-          <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 border-b border-slate-200">
-                <tr>
-                  <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Registro</th>
-                  <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Categoria</th>
-                  <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Cadeia de Comando</th>
-                  <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Risco</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {occurrences.filter(o => o.title.toLowerCase().includes(filter.toLowerCase())).map(occ => (
-                  <tr key={occ.id} className="hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => setSelectedOccurrence(occ)}>
-                    <td className="px-8 py-5">
-                      <div className="font-bold text-slate-900">{occ.title}</div>
-                      <div className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">ID: {occ.id}</div>
-                    </td>
-                    <td className="px-8 py-5 text-slate-500 font-medium">{occ.category}</td>
-                    <td className="px-8 py-5"><span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${STATUS_COLORS[occ.status]}`}>{occ.status}</span></td>
-                    <td className="px-8 py-5"><span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${URGENCY_COLORS[occ.urgency]}`}>{occ.urgency}</span></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        <header className="bg-white border-b border-slate-200 px-8 py-5 flex items-center justify-between z-40">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-slate-500"><Menu className="w-6 h-6" /></button>
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+              {isPublic ? 'Registro de Ocorrência Pública' :
+                activeTab === 'new' ? 'Novo Registro Militar' :
+                  activeTab === 'home' ? 'Central de Comando' :
+                    activeTab === 'users' ? 'Gestão de Acessos' :
+                      activeTab === 'dashboard' ? 'Painel de Inteligência' :
+                        activeTab === 'kanban' ? 'Fluxo de Gestão' :
+                          activeTab === 'mission-request' ? 'Nova Missão' :
+                            activeTab === 'mission-management' ? 'Gestão de Missões' : 'Arquivo Digital'}
+            </h2>
           </div>
-        )}
-      </div>
-    </main>
+          {!isPublic && (
+            <div className="flex items-center gap-4">
+              <div className="relative hidden md:block">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input type="text" placeholder="Filtrar registros..." className="pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-2xl text-sm w-72 focus:ring-2 focus:ring-blue-500" value={filter} onChange={e => setFilter(e.target.value)} />
+              </div>
+            </div>
+          )}
+        </header>
 
-    {selectedOccurrence && (
-      <OccurrenceDetail
-        occurrence={selectedOccurrence}
-        user={currentUser}
-        onClose={() => setSelectedOccurrence(null)}
-        onUpdateStatus={handleUpdateStatus}
-        onUpdateOccurrence={handleUpdateOccurrence}
-        users={users}
-      />
-    )}
+        <div className="p-8 flex-1 overflow-y-auto bg-slate-50">
+          {activeTab === 'home' && !isPublic && (
+            <HomeView
+              user={currentUser}
+              onNewOccurrence={(cat) => { setInitialCategory(cat); setActiveTab('new'); }}
+              onViewAll={() => setActiveTab('list')}
+              recentOccurrences={occurrences}
+              onSelectOccurrence={setSelectedOccurrence}
+              onRefresh={fetchOccurrences}
+              onRequestMission={canRequestMission ? () => setActiveTab('mission-request') : undefined}
+            />
+          )}
 
-    {/* Mission Order Print View */}
-    {showMissionOrderPrintView && selectedMissionOrder && (
-      <MissionOrderPrintView
-        order={selectedMissionOrder}
-        onClose={() => {
-          setShowMissionOrderPrintView(false);
-          setSelectedMissionOrder(null);
-        }}
-      />
-    )}
-  </div>
-);
+          {(activeTab === 'new' || isPublic) && (
+            <div className="max-w-4xl mx-auto">
+              {isPublic && (
+                <div className="mb-6 p-6 bg-blue-600 text-white rounded-[2rem] shadow-xl flex items-center gap-5">
+                  <ShieldAlert className="w-12 h-12 shrink-0" />
+                  <div>
+                    <h3 className="text-lg font-bold">Relato ao Oficial de Segurança</h3>
+                    <p className="text-blue-100 text-sm">Seu relato será enviado diretamente para análise militar (N1).</p>
+                  </div>
+                </div>
+              )}
+              <OccurrenceForm
+                user={currentUser}
+                onCancel={() => isPublic ? handleLogout() : setActiveTab('home')}
+                initialCategory={initialCategory}
+                onSubmit={async (data) => {
+                  const newOccStub = {
+                    ...data,
+                    timeline: data.timeline || [],
+                    status: Status.TRIAGE
+                  };
+
+                  const { data: insertedData, error } = await supabase
+                    .from('occurrences')
+                    .insert([newOccStub])
+                    .select()
+                    .single();
+
+                  if (error) {
+                    console.error('Error creating occurrence:', error);
+                    alert('Erro ao criar ocorrência');
+                  } else {
+                    setOccurrences([insertedData as Occurrence, ...occurrences]);
+                    isPublic ? handleLogout() : setActiveTab('home');
+                  }
+                }}
+              />
+            </div>
+          )}
+
+          {activeTab === 'kanban' && isAdmin && <KanbanBoard occurrences={occurrences} onSelect={setSelectedOccurrence} />}
+          {activeTab === 'dashboard' && isAdmin && <Dashboard occurrences={occurrences} />}
+
+          {activeTab === 'mission-request' && canRequestMission && (
+            <div className="max-w-4xl mx-auto">
+              <MissionRequestForm
+                user={currentUser}
+                onCancel={() => setActiveTab('home')}
+                onSubmit={handleCreateMissionRequest}
+              />
+            </div>
+          )}
+
+
+
+          {/* Somente Perfil Comandante OM ou SOP-01/CH-SOP podem ver o UserManagement */}
+          {activeTab === 'users' && canManageUsers && (
+            <UserManagement
+              users={users}
+              onCreateUser={handleCreateUser}
+              onUpdateUser={handleUpdateUser}
+              onDeleteUser={handleDeleteUser}
+              onRefreshUsers={fetchUsers}
+            />
+          )}
+
+          {/* SOMENTE Comandante OM ou SOP pode ver Ordens de Missão (SOP precisa gerar) */}
+          {activeTab === 'mission-orders' && (isOM || canManageMissions) && (
+            <>
+              {showMissionOrderForm ? (
+                <MissionOrderForm
+                  order={selectedMissionOrder || undefined}
+                  onSubmit={(selectedMissionOrder && selectedMissionOrder.id) ? handleUpdateMissionOrder : handleCreateMissionOrder}
+                  onCancel={() => {
+                    setShowMissionOrderForm(false);
+                    setSelectedMissionOrder(null);
+                  }}
+                  currentUser={currentUser.name}
+                />
+              ) : (
+                <MissionOrderList
+                  orders={missionOrders}
+                  onCreate={() => {
+                    setSelectedMissionOrder(null);
+                    setShowMissionOrderForm(true);
+                  }}
+                  onEdit={(order) => {
+                    setSelectedMissionOrder(order);
+                    setShowMissionOrderForm(true);
+                  }}
+                  onView={(order) => {
+                    setSelectedMissionOrder(order);
+                    setShowMissionOrderPrintView(true);
+                  }}
+                  onDelete={handleDeleteMissionOrder}
+                />
+              )}
+            </>
+          )}
+
+
+          {activeTab === 'mission-management' && canManageMissions && (
+            <div className="space-y-8">
+              <MissionDashboard orders={missionOrders} requests={missionRequests} />
+
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
+                  <h3 className="font-bold text-slate-700">Solicitações de Missão Recebidas</h3>
+                </div>
+                <MissionRequestList
+                  missions={missionRequests.filter(r => r.status !== 'FINALIZADA')} // Filter out finalized
+                  onProcess={handleProcessMissionRequest}
+                  onGenerateOrder={handleGenerateOrderFromRequest}
+                />
+              </div>
+            </div>
+          )}
+
+
+          {activeTab === 'list' && !isPublic && (
+            <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Registro</th>
+                    <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Categoria</th>
+                    <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Cadeia de Comando</th>
+                    <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Risco</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {occurrences.filter(o => o.title.toLowerCase().includes(filter.toLowerCase())).map(occ => (
+                    <tr key={occ.id} className="hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => setSelectedOccurrence(occ)}>
+                      <td className="px-8 py-5">
+                        <div className="font-bold text-slate-900">{occ.title}</div>
+                        <div className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">ID: {occ.id}</div>
+                      </td>
+                      <td className="px-8 py-5 text-slate-500 font-medium">{occ.category}</td>
+                      <td className="px-8 py-5"><span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${STATUS_COLORS[occ.status]}`}>{occ.status}</span></td>
+                      <td className="px-8 py-5"><span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${URGENCY_COLORS[occ.urgency]}`}>{occ.urgency}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {selectedOccurrence && (
+        <OccurrenceDetail
+          occurrence={selectedOccurrence}
+          user={currentUser}
+          onClose={() => setSelectedOccurrence(null)}
+          onUpdateStatus={handleUpdateStatus}
+          onUpdateOccurrence={handleUpdateOccurrence}
+          users={users}
+        />
+      )}
+
+      {/* Mission Order Print View */}
+      {showMissionOrderPrintView && selectedMissionOrder && (
+        <MissionOrderPrintView
+          order={selectedMissionOrder}
+          onClose={() => {
+            setShowMissionOrderPrintView(false);
+            setSelectedMissionOrder(null);
+          }}
+        />
+      )}
+    </div>
+  );
 };
 
 export default App;
