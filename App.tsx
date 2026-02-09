@@ -14,7 +14,8 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldAlert,
-  Send
+  Send,
+  Loader
 } from 'lucide-react';
 import MissionRequestForm from './components/MissionRequestForm';
 import MissionRequestList from './components/MissionRequestList';
@@ -396,6 +397,48 @@ const App: FC = () => {
     }
   };
 
+  const handleGenerateOrderFromRequest = async (mission: Mission) => {
+    // Switch to OM tab (if allowed, checking permission manually just in case)
+    if (!canManageMissions) {
+      alert('Permissão negada para gerar Ordem de Missão.');
+      return;
+    }
+
+    // Prepare initial data for MissionOrder
+    const initialOrderData: Partial<MissionOrder> = {
+      date: mission.dados_missao.data,
+      isInternal: true, // Assuming internal by default, can be changed
+      mission: mission.dados_missao.tipo_missao,
+      location: mission.dados_missao.local,
+      requester: `${mission.dados_missao.posto} ${mission.dados_missao.nome_guerra}`,
+      description: `SOLICITAÇÃO DE MISSÃO ID: ${mission.id}\nResponsável: ${mission.dados_missao.responsavel?.nome || 'O próprio'}\nEfetivo Solicitado: ${mission.dados_missao.efetivo}\nViaturas: ${mission.dados_missao.viaturas}`,
+      food: Object.values(mission.dados_missao.alimentacao).some(Boolean),
+      transport: !!mission.dados_missao.viaturas,
+      personnel: [],
+      schedule: [
+        {
+          id: Math.random().toString(),
+          activity: mission.dados_missao.tipo_missao,
+          location: mission.dados_missao.local,
+          date: mission.dados_missao.data,
+          time: mission.dados_missao.inicio
+        }
+      ]
+    };
+
+    // Set state to open form
+    setSelectedMissionOrder(initialOrderData as MissionOrder); // Cast as it's partial but form handles it
+    setShowMissionOrderForm(true);
+
+    // Switch tab - We need to be careful if 'mission-orders' is restricted to OM only
+    // If user is SOP, they might not have access to 'mission-orders' tab in the sidebar logic
+    // We update the sidebar logic to allow SOP to see 'mission-orders' OR handle it differently.
+    // For now, let's assume we want to show the form.
+    // Wait, Lines 598-600 restrict 'mission-orders' tab to isOM.
+    // We need to allow SOP to access Mission Orders too to create them.
+    setActiveTab('mission-orders');
+  };
+
   // Mission Order Functions
   const fetchMissionOrders = async () => {
     const { data, error } = await supabase
@@ -589,16 +632,21 @@ const App: FC = () => {
                   <Kanban className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Fila de Serviço</span>
                 </button>
 
-                {/* Somente Perfil Comandante OM pode gerenciar acessos */}
-                {isOM && (
-                  <>
-                    <button onClick={() => setActiveTab('users')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'users' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                      <UsersIcon className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão Militar</span>
-                    </button>
-                    <button onClick={() => { setActiveTab('mission-orders'); fetchMissionOrders(); }} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-orders' ? 'bg-amber-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                      <ShieldAlert className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Ordens de Missão</span>
-                    </button>
-                  </>
+                <>
+                  <button onClick={() => setActiveTab('users')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'users' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                    <UsersIcon className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão Militar</span>
+                  </button>
+                  <button onClick={() => { setActiveTab('mission-orders'); fetchMissionOrders(); }} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-orders' ? 'bg-amber-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                    <ShieldAlert className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Ordens de Missão</span>
+                  </button>
+                </>
+                )}
+
+                {/* Allow SOP to view Mission Orders too (for generating them) */}
+                {ehSOP && !isOM && (
+                  <button onClick={() => { setActiveTab('mission-orders'); fetchMissionOrders(); }} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-orders' ? 'bg-purple-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                    <ShieldAlert className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Ordens de Missão</span>
+                  </button>
                 )}
 
                 <button onClick={() => setActiveTab('dashboard')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'dashboard' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
@@ -768,8 +816,8 @@ const App: FC = () => {
             />
           )}
 
-          {/* Somente Perfil Comandante OM pode ver Ordens de Missão */}
-          {activeTab === 'mission-orders' && isOM && (
+          {/* SOMENTE Comandante OM ou SOP pode ver Ordens de Missão (SOP precisa gerar) */}
+          {activeTab === 'mission-orders' && (isOM || ehSOP) && (
             <>
               {showMissionOrderForm ? (
                 <MissionOrderForm
@@ -816,6 +864,7 @@ const App: FC = () => {
             <MissionRequestList
               missions={missionRequests}
               onProcess={handleProcessMissionRequest}
+              onGenerateOrder={handleGenerateOrderFromRequest}
             />
           )}
 

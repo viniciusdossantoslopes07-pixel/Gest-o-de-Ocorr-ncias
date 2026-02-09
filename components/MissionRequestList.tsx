@@ -5,9 +5,10 @@ import { CheckCircle, XCircle, ArrowUpCircle, Clock, Calendar, MapPin, User as U
 interface MissionRequestListProps {
     missions: Mission[];
     onProcess: (id: string, decision: 'APROVADA' | 'REJEITADA' | 'ESCALONADA', parecer?: string) => void;
+    onGenerateOrder?: (mission: Mission) => void;
 }
 
-const MissionRequestList: FC<MissionRequestListProps> = ({ missions, onProcess }) => {
+const MissionRequestList: FC<MissionRequestListProps> = ({ missions, onProcess, onGenerateOrder }) => {
     const [filterStatus, setFilterStatus] = useState<string>('PENDENTE');
     const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
     const [parecer, setParecer] = useState('');
@@ -53,9 +54,9 @@ const MissionRequestList: FC<MissionRequestListProps> = ({ missions, onProcess }
                             <div className="flex justify-between items-start mb-2">
                                 <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{mission.dados_missao.tipo_missao}</span>
                                 <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${mission.status === 'PENDENTE' ? 'bg-yellow-100 text-yellow-700' :
-                                        mission.status === 'APROVADA' ? 'bg-emerald-100 text-emerald-700' :
-                                            mission.status === 'REJEITADA' ? 'bg-red-100 text-red-700' :
-                                                'bg-slate-100 text-slate-700'
+                                    mission.status === 'APROVADA' ? 'bg-emerald-100 text-emerald-700' :
+                                        mission.status === 'REJEITADA' ? 'bg-red-100 text-red-700' :
+                                            'bg-slate-100 text-slate-700'
                                     }`}>{mission.status}</span>
                             </div>
                             <h4 className="font-bold text-slate-900 mb-1">{mission.dados_missao.local}</h4>
@@ -129,24 +130,36 @@ const MissionRequestList: FC<MissionRequestListProps> = ({ missions, onProcess }
                             </div>
 
                             <div className="flex gap-2 pt-4 border-t border-slate-100">
-                                <button
-                                    onClick={() => handleAction('APROVADA')}
-                                    className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
-                                >
-                                    <CheckCircle className="w-5 h-5" /> Aprovar
-                                </button>
-                                <button
-                                    onClick={() => handleAction('REJEITADA')}
-                                    className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all flex items-center justify-center gap-2"
-                                >
-                                    <XCircle className="w-5 h-5" /> Rejeitar
-                                </button>
-                                <button
-                                    onClick={() => handleAction('ESCALONADA')}
-                                    className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-all flex items-center justify-center gap-2"
-                                >
-                                    <ArrowUpCircle className="w-5 h-5" /> Escalonar
-                                </button>
+                                {selectedMission.status === 'PENDENTE' && (
+                                    <>
+                                        <button
+                                            onClick={() => handleAction('APROVADA')}
+                                            className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <CheckCircle className="w-5 h-5" /> Aprovar
+                                        </button>
+                                        <button
+                                            onClick={() => handleAction('REJEITADA')}
+                                            className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <XCircle className="w-5 h-5" /> Rejeitar
+                                        </button>
+                                        <button
+                                            onClick={() => handleAction('ESCALONADA')}
+                                            className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <ArrowUpCircle className="w-5 h-5" /> Escalonar
+                                        </button>
+                                    </>
+                                )}
+                                {selectedMission.status === 'APROVADA' && onGenerateOrder && (
+                                    <button
+                                        onClick={() => onGenerateOrder(selectedMission)}
+                                        className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <FileText className="w-5 h-5" /> Gerar Ordem de Missão
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ) : (
