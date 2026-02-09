@@ -14,7 +14,8 @@ export enum Status {
   RESOLVED = 'N3: Homologação OSD',
   COMMAND_REVIEW = 'OM: Revisão do Comandante',
   CLOSED = 'Arquivado / Finalizado',
-  RETURNED = 'Retornado para Ajuste'
+  RETURNED = 'Retornado para Ajuste',
+  FINALIZED = 'Finalizada'
 }
 
 export enum UserRole {
