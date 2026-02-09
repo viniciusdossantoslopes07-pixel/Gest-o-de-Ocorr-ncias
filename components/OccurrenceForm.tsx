@@ -64,7 +64,7 @@ const OccurrenceForm: React.FC<OccurrenceFormProps> = ({ user, onSubmit, onCance
     onSubmit({
       ...formData,
       creator: user.name,
-      status: Status.REGISTERED,
+      status: Status.TRIAGE,
       attachments: attachments.map((f, i) => ({
         id: Math.random().toString(),
         name: f.name,
@@ -73,7 +73,7 @@ const OccurrenceForm: React.FC<OccurrenceFormProps> = ({ user, onSubmit, onCance
       })),
       timeline: [{
         id: Math.random().toString(),
-        status: Status.REGISTERED,
+        status: Status.TRIAGE,
         updatedBy: user.name,
         timestamp: new Date().toISOString(),
         comment: 'Ocorrência registrada no sistema.'

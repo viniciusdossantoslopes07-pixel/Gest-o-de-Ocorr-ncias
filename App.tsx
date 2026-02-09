@@ -472,7 +472,7 @@ const App: FC = () => {
                   const newOccStub = {
                     ...data,
                     timeline: data.timeline || [],
-                    status: Status.REGISTERED
+                    status: Status.TRIAGE
                   };
 
                   const { data: insertedData, error } = await supabase
