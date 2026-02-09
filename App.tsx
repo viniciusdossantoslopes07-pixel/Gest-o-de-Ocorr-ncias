@@ -697,17 +697,19 @@ const App: FC = () => {
             )}
 
             {!isPublic && (
-              <button onClick={() => setActiveTab('list')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'list' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                <FileText className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Arquivo Geral</span>
-              </button>
+              <>
+                <button onClick={() => setActiveTab('list')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'list' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                  <FileText className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Arquivo Geral</span>
+                </button>
 
-              <button 
-                onClick={() => setActiveTab('profile')} 
-                className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'profile' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}
-              >
-                <UsersIcon className="w-5 h-5 shrink-0" />
-                <span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Meu Perfil</span>
-              </button>
+                <button
+                  onClick={() => setActiveTab('profile')}
+                  className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'profile' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}
+                >
+                  <UsersIcon className="w-5 h-5 shrink-0" />
+                  <span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Meu Perfil</span>
+                </button>
+              </>
             )}
 
             <div className="py-4 border-t border-slate-800/50 my-4">
