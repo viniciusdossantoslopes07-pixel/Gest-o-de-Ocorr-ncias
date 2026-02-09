@@ -7,10 +7,12 @@ interface UserProfileProps {
     user: User;
     occurrences: Occurrence[];
     missionRequests: Mission[];
+    missionRequests: Mission[];
     missionOrders: MissionOrder[];
+    onDownloadOrder?: (order: MissionOrder) => void;
 }
 
-const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests, missionOrders }) => {
+const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests, missionOrders, onDownloadOrder }) => {
     // Filter items for this user
     // For occurrences, we match by creator name as per App.tsx logic (mock)
     const myOccurrences = occurrences.filter(o => o.creator === user.name);
@@ -132,10 +134,16 @@ const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests,
                                         </div>
 
                                         {/* Check if there is a linked order */}
-                                        {myMissionOrders.some(o => o.description.includes(req.id)) && (
-                                            <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-1 rounded">
-                                                Ver OM
-                                            </span>
+                                        {myMissionOrders.some(o => o.description.includes(req.id)) && req.status === 'FINALIZADA' && onDownloadOrder && (
+                                            <button
+                                                onClick={() => {
+                                                    const order = myMissionOrders.find(o => o.description.includes(req.id));
+                                                    if (order) onDownloadOrder(order);
+                                                }}
+                                                className="text-[10px] text-blue-600 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 font-bold flex items-center gap-1"
+                                            >
+                                                <FileText className="w-3 h-3" /> Baixar OMISS
+                                            </button>
                                         )}
                                     </div>
                                     {req.parecer_sop && (

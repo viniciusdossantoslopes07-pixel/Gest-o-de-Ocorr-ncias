@@ -853,7 +853,12 @@ const App: FC = () => {
               user={currentUser}
               occurrences={occurrences}
               missionRequests={missionRequests}
+              missionRequests={missionRequests}
               missionOrders={missionOrders}
+              onDownloadOrder={(order) => {
+                setSelectedMissionOrder(order);
+                setShowMissionOrderPrintView(true);
+              }}
             />
           )}
 
