@@ -395,6 +395,16 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                     </div>
                   )}
 
+                  {/* BOTÃO MARCAR COMO PENDENTE - Disponível para todos */}
+                  {occurrence.status !== Status.PENDING && occurrence.status !== Status.CLOSED && (
+                    <button
+                      onClick={() => onUpdateStatus(occurrence.id, Status.PENDING, comment || 'Marcado como pendente')}
+                      className="w-full py-3 bg-yellow-600 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-yellow-700 transition-all shadow-sm"
+                    >
+                      <Clock className="w-4 h-4" /> Marcar como Pendente
+                    </button>
+                  )}
+
                   {/* MENSAGEM DE BLOQUEIO HIERÁRQUICO (Exceto p/ OM) */}
                   {!isOM && (
                     <>

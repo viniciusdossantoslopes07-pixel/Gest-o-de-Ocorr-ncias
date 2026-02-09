@@ -25,6 +25,7 @@ export const TYPES_BY_CATEGORY: Record<string, string[]> = {
 
 export const STATUS_COLORS: Record<string, string> = {
   'Registrada (Aguardando N1)': 'bg-blue-100 text-blue-700',
+  'Pendente': 'bg-yellow-100 text-yellow-700',
   'N1: Adjunto / Oficial de Dia': 'bg-amber-100 text-amber-700',
   'N2: Contrainteligência / Seg. Orgânica': 'bg-purple-100 text-purple-700',
   'N3: Homologação OSD': 'bg-orange-100 text-orange-700',

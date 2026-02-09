@@ -8,6 +8,7 @@ export enum Urgency {
 
 export enum Status {
   REGISTERED = 'Registrada (Aguardando N1)',
+  PENDING = 'Pendente',
   TRIAGE = 'N1: Adjunto / Oficial de Dia',
   ESCALATED = 'N2: Contrainteligência / Seg. Orgânica',
   RESOLVED = 'N3: Homologação OSD',
