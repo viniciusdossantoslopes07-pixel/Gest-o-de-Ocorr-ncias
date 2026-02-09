@@ -7,7 +7,6 @@ interface UserProfileProps {
     user: User;
     occurrences: Occurrence[];
     missionRequests: Mission[];
-    missionRequests: Mission[];
     missionOrders: MissionOrder[];
     onDownloadOrder?: (order: MissionOrder) => void;
 }
@@ -33,7 +32,7 @@ const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests,
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-2xl font-bold">
-                        {user.initials || user.name.charAt(0)}
+                        {user.name.charAt(0)}
                     </div>
                     <div>
                         <h2 className="text-2xl font-bold text-slate-900">{user.rank} {user.warName || user.name}</h2>
