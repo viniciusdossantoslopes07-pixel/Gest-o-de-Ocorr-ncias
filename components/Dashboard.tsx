@@ -108,6 +108,7 @@ const Dashboard: FC<DashboardProps> = ({ occurrences }) => {
       total: occurrences.length,
       critical: occurrences.filter(o => o.urgency === Urgency.CRITICAL).length,
       pending: occurrences.filter(o => o.status !== Status.CLOSED && o.status !== Status.RESOLVED).length,
+      pendingStatus: occurrences.filter(o => o.status === Status.PENDING).length,
       resolved: occurrences.filter(o => o.status === Status.RESOLVED || o.status === Status.CLOSED).length,
       typeData: Object.keys(byType).map(key => ({ name: key, value: byType[key] })),
       statusData: Object.keys(byStatus).map(key => ({ name: key, value: byStatus[key] })),
@@ -124,7 +125,7 @@ const Dashboard: FC<DashboardProps> = ({ occurrences }) => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
           <div className="flex items-center justify-between mb-2">
             <span className="text-slate-500 text-sm font-medium">Total Ocorrências</span>
@@ -145,6 +146,13 @@ const Dashboard: FC<DashboardProps> = ({ occurrences }) => {
             <Clock className="w-5 h-5 text-orange-500" />
           </div>
           <div className="text-3xl font-bold text-orange-600">{stats.pending}</div>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-yellow-200 bg-yellow-50">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-yellow-700 text-sm font-bold">Pendentes</span>
+            <Clock className="w-5 h-5 text-yellow-600" />
+          </div>
+          <div className="text-3xl font-bold text-yellow-600">{stats.pendingStatus}</div>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
           <div className="flex items-center justify-between mb-2">
