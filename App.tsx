@@ -15,7 +15,7 @@ import {
   ChevronRight,
   ShieldAlert
 } from 'lucide-react';
-import { Occurrence, User, UserRole, Status, Urgency } from './types';
+import { Occurrence, User, UserRole, Status, Urgency, MissionOrder } from './types';
 import Dashboard from './components/Dashboard';
 import OccurrenceForm from './components/OccurrenceForm';
 import OccurrenceDetail from './components/OccurrenceDetail';
@@ -23,6 +23,8 @@ import HomeView from './components/HomeView';
 import KanbanBoard from './components/KanbanBoard';
 import LoginView from './components/LoginView';
 import UserManagement from './components/UserManagement';
+import MissionOrderList from './components/MissionOrderList';
+import MissionOrderForm from './components/MissionOrderForm';
 import { STATUS_COLORS, URGENCY_COLORS } from './constants';
 
 const DEFAULT_ADMIN: User = {
@@ -53,9 +55,12 @@ const PUBLIC_USER: User = {
 const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-orders'>('home');
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [selectedOccurrence, setSelectedOccurrence] = useState<Occurrence | null>(null);
+  const [missionOrders, setMissionOrders] = useState<MissionOrder[]>([]);
+  const [selectedMissionOrder, setSelectedMissionOrder] = useState<MissionOrder | null>(null);
+  const [showMissionOrderForm, setShowMissionOrderForm] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [filter, setFilter] = useState('');
@@ -324,6 +329,135 @@ const App: FC = () => {
     }
   };
 
+  // Mission Order Functions
+  const fetchMissionOrders = async () => {
+    const { data, error } = await supabase
+      .from('mission_orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching mission orders:', error);
+    } else if (data) {
+      setMissionOrders(data.map((mo: any) => ({
+        id: mo.id,
+        omisNumber: mo.omis_number,
+        date: mo.date,
+        isInternal: mo.is_internal,
+        mission: mo.mission,
+        location: mo.location,
+        description: mo.description,
+        requester: mo.requester,
+        transport: mo.transport,
+        food: mo.food,
+        personnel: mo.personnel || [],
+        schedule: mo.schedule || [],
+        permanentOrders: mo.permanent_orders || '',
+        specialOrders: mo.special_orders || '',
+        createdBy: mo.created_by,
+        createdAt: mo.created_at,
+        updatedAt: mo.updated_at
+      })));
+    }
+  };
+
+  const generateOMISNumber = async (): Promise<string> => {
+    const year = new Date().getFullYear();
+    const { count } = await supabase
+      .from('mission_orders')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', `${year}-01-01`);
+
+    return `${(count || 0) + 1}/GSD-SP`;
+  };
+
+  const handleCreateMissionOrder = async (orderData: Partial<MissionOrder>) => {
+    const omisNumber = await generateOMISNumber();
+
+    const dbOrder = {
+      omis_number: omisNumber,
+      date: orderData.date,
+      is_internal: orderData.isInternal,
+      mission: orderData.mission,
+      location: orderData.location,
+      description: orderData.description,
+      requester: orderData.requester,
+      transport: orderData.transport,
+      food: orderData.food,
+      personnel: orderData.personnel || [],
+      schedule: orderData.schedule || [],
+      permanent_orders: orderData.permanentOrders,
+      special_orders: orderData.specialOrders,
+      created_by: currentUser?.name || 'Sistema'
+    };
+
+    const { data, error } = await supabase
+      .from('mission_orders')
+      .insert([dbOrder])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating mission order:', error);
+      alert('Erro ao criar ordem de missão');
+    } else if (data) {
+      await fetchMissionOrders();
+      setShowMissionOrderForm(false);
+      setSelectedMissionOrder(null);
+      alert(`OMIS ${omisNumber} criada com sucesso!`);
+    }
+  };
+
+  const handleUpdateMissionOrder = async (orderData: Partial<MissionOrder>) => {
+    if (!selectedMissionOrder) return;
+
+    const dbOrder = {
+      date: orderData.date,
+      is_internal: orderData.isInternal,
+      mission: orderData.mission,
+      location: orderData.location,
+      description: orderData.description,
+      requester: orderData.requester,
+      transport: orderData.transport,
+      food: orderData.food,
+      personnel: orderData.personnel || [],
+      schedule: orderData.schedule || [],
+      permanent_orders: orderData.permanentOrders,
+      special_orders: orderData.specialOrders,
+      updated_at: new Date().toISOString()
+    };
+
+    const { error } = await supabase
+      .from('mission_orders')
+      .update(dbOrder)
+      .eq('id', selectedMissionOrder.id);
+
+    if (error) {
+      console.error('Error updating mission order:', error);
+      alert('Erro ao atualizar ordem de missão');
+    } else {
+      await fetchMissionOrders();
+      setShowMissionOrderForm(false);
+      setSelectedMissionOrder(null);
+      alert('OMIS atualizada com sucesso!');
+    }
+  };
+
+  const handleDeleteMissionOrder = async (id: string) => {
+    const { error } = await supabase
+      .from('mission_orders')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting mission order:', error);
+      alert('Erro ao excluir ordem de missão');
+    } else {
+      await fetchMissionOrders();
+      alert('OMIS excluída com sucesso!');
+    }
+  };
+
   if (!currentUser) {
     return <LoginView onLogin={handleLogin} onRegister={handleRegister} onPublicAccess={handlePublicAccess} />;
   }
@@ -369,9 +503,14 @@ const App: FC = () => {
 
                 {/* Somente Perfil Comandante OM pode gerenciar acessos */}
                 {isOM && (
-                  <button onClick={() => setActiveTab('users')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'users' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                    <UsersIcon className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão Militar</span>
-                  </button>
+                  <>
+                    <button onClick={() => setActiveTab('users')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'users' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                      <UsersIcon className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão Militar</span>
+                    </button>
+                    <button onClick={() => { setActiveTab('mission-orders'); fetchMissionOrders(); }} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-orders' ? 'bg-amber-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                      <ShieldAlert className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Ordens de Missão</span>
+                    </button>
+                  </>
                 )}
 
                 <button onClick={() => setActiveTab('dashboard')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'dashboard' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
@@ -505,6 +644,40 @@ const App: FC = () => {
               onDeleteUser={handleDeleteUser}
               onRefreshUsers={fetchUsers}
             />
+          )}
+
+          {/* Somente Perfil Comandante OM pode ver Ordens de Missão */}
+          {activeTab === 'mission-orders' && isOM && (
+            <>
+              {showMissionOrderForm ? (
+                <MissionOrderForm
+                  order={selectedMissionOrder || undefined}
+                  onSubmit={selectedMissionOrder ? handleUpdateMissionOrder : handleCreateMissionOrder}
+                  onCancel={() => {
+                    setShowMissionOrderForm(false);
+                    setSelectedMissionOrder(null);
+                  }}
+                  currentUser={currentUser.name}
+                />
+              ) : (
+                <MissionOrderList
+                  orders={missionOrders}
+                  onCreate={() => {
+                    setSelectedMissionOrder(null);
+                    setShowMissionOrderForm(true);
+                  }}
+                  onEdit={(order) => {
+                    setSelectedMissionOrder(order);
+                    setShowMissionOrderForm(true);
+                  }}
+                  onView={(order) => {
+                    setSelectedMissionOrder(order);
+                    setShowMissionOrderForm(true);
+                  }}
+                  onDelete={handleDeleteMissionOrder}
+                />
+              )}
+            </>
           )}
 
           {activeTab === 'list' && !isPublic && (

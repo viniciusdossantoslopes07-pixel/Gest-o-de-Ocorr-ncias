@@ -74,3 +74,42 @@ export interface Occurrence {
     lng: number;
   };
 }
+
+export interface MissionOrderPersonnel {
+  id: string;
+  function: string;
+  rank: string;
+  warName: string;
+  saram: string;
+  uniform: string;
+  armament: string;
+  ammunition: string;
+}
+
+export interface MissionOrderSchedule {
+  id: string;
+  activity: string;
+  location: string;
+  date: string;
+  time: string;
+}
+
+export interface MissionOrder {
+  id: string;
+  omisNumber: string;
+  date: string;
+  isInternal: boolean;
+  mission: string;
+  location: string;
+  description: string;
+  requester: string;
+  transport: boolean;
+  food: boolean;
+  personnel: MissionOrderPersonnel[];
+  schedule: MissionOrderSchedule[];
+  permanentOrders: string;
+  specialOrders: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
