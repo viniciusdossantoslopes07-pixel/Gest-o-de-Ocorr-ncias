@@ -154,7 +154,7 @@ export interface Mission {
       lanche: boolean;
     };
   };
-  status: 'PENDENTE' | 'APROVADA' | 'REJEITADA' | 'ESCALONADA' | 'AGUARDANDO_ORDEM' | 'ATRIBUIDA';
+  status: 'PENDENTE' | 'APROVADA' | 'REJEITADA' | 'ESCALONADA' | 'AGUARDANDO_ORDEM' | 'ATRIBUIDA' | 'FINALIZADA';
   parecer_sop?: string;
   data_criacao: string;
 }
