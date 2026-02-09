@@ -114,6 +114,16 @@ export interface MissionOrder {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  status?: 'GERADA' | 'EM_ANDAMENTO' | 'CONCLUIDA';
+  timeline?: {
+    id: string;
+    timestamp: string;
+    userId: string;
+    userName: string;
+    text: string;
+    type: 'STATUS_CHANGE' | 'REPORT';
+  }[];
+  missionCommanderId?: string;
 }
 
 export interface Mission {

@@ -446,6 +446,87 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                     Cancelar
                 </button>
             </div>
+
+            {/* Workflow Actions */}
+            {order && order.id && (
+                <div className="border-t border-slate-200 pt-6 mt-6">
+                    <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest mb-4">Fluxo da Missão</h3>
+
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest ${order.status === 'CONCLUIDA' ? 'bg-green-100 text-green-700' :
+                                order.status === 'EM_ANDAMENTO' ? 'bg-blue-100 text-blue-700' :
+                                    'bg-slate-100 text-slate-600'
+                            }`}>
+                            Status: {order.status || 'GERADA'}
+                        </div>
+
+                        {order.status === 'GERADA' && (
+                            <button
+                                type="button"
+                                onClick={() => onSubmit({ ...order, status: 'EM_ANDAMENTO' })}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-all flex items-center gap-2"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                Iniciar Missão
+                            </button>
+                        )}
+
+                        {order.status === 'EM_ANDAMENTO' && (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const report = prompt('Digite o relato:');
+                                        if (report) {
+                                            const newTimeline = [
+                                                ...(order.timeline || []),
+                                                {
+                                                    id: Math.random().toString(),
+                                                    timestamp: new Date().toISOString(),
+                                                    userId: currentUser, //Ideally ID
+                                                    userName: currentUser, //Ideally Name
+                                                    text: report,
+                                                    type: 'REPORT'
+                                                }
+                                            ];
+                                            onSubmit({ ...order, timeline: newTimeline as any });
+                                        }
+                                    }}
+                                    className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-all flex items-center gap-2"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                    Adicionar Relato
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => onSubmit({ ...order, status: 'CONCLUIDA' })}
+                                    className="px-4 py-2 bg-green-600 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition-all flex items-center gap-2"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    Concluir Missão
+                                </button>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Timeline / Reports */}
+                    {order.timeline && order.timeline.length > 0 && (
+                        <div className="space-y-4 bg-slate-50 p-4 rounded-xl">
+                            {order.timeline.map((event: any) => (
+                                <div key={event.id} className="flex gap-3">
+                                    <div className="mt-1 w-2 h-2 rounded-full bg-slate-300"></div>
+                                    <div>
+                                        <p className="text-xs text-slate-500 font-bold mb-1">
+                                            {new Date(event.timestamp).toLocaleString()} - {event.userName}
+                                        </p>
+                                        <p className="text-sm text-slate-700">{event.text}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
         </form>
     );
 };

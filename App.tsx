@@ -487,7 +487,10 @@ const App: FC = () => {
         specialOrders: mo.special_orders || '',
         createdBy: mo.created_by,
         createdAt: mo.created_at,
-        updatedAt: mo.updated_at
+        updatedAt: mo.updated_at,
+        status: mo.status,
+        timeline: mo.timeline || [],
+        missionCommanderId: mo.mission_commander_id
       })));
     }
   };
@@ -519,7 +522,10 @@ const App: FC = () => {
       schedule: orderData.schedule || [],
       permanent_orders: orderData.permanentOrders,
       special_orders: orderData.specialOrders,
-      created_by: currentUser?.name || 'Sistema'
+      created_by: currentUser?.name || 'Sistema',
+      status: 'GERADA',
+      timeline: [],
+      mission_commander_id: currentUser?.id // Or try to resolve from requester if possible, but safely default to creator for now if not specified
     };
 
     const { data, error } = await supabase
@@ -530,7 +536,7 @@ const App: FC = () => {
 
     if (error) {
       console.error('Error creating mission order:', error);
-      alert('Erro ao criar ordem de missão');
+      alert('Erro ao criar ordem de missão: ' + error.message);
     } else if (data) {
       await fetchMissionOrders();
       setShowMissionOrderForm(false);
@@ -555,7 +561,9 @@ const App: FC = () => {
       schedule: orderData.schedule || [],
       permanent_orders: orderData.permanentOrders,
       special_orders: orderData.specialOrders,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      status: orderData.status,
+      timeline: orderData.timeline
     };
 
     const { error } = await supabase
@@ -565,7 +573,7 @@ const App: FC = () => {
 
     if (error) {
       console.error('Error updating mission order:', error);
-      alert('Erro ao atualizar ordem de missão');
+      alert('Erro ao atualizar ordem de missão: ' + error.message);
     } else {
       await fetchMissionOrders();
       setShowMissionOrderForm(false);
