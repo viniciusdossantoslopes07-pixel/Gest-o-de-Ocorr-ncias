@@ -13,9 +13,13 @@ import {
   Users as UsersIcon,
   ChevronLeft,
   ChevronRight,
-  ShieldAlert
+  ShieldAlert,
+  Send
 } from 'lucide-react';
-import { Occurrence, User, UserRole, Status, Urgency, MissionOrder } from './types';
+import MissionRequestForm from './components/MissionRequestForm';
+import MissionRequestList from './components/MissionRequestList';
+import { verificarAcesso } from './utils/accessControl';
+import { Occurrence, User, UserRole, Status, Urgency, MissionOrder, Mission } from './types';
 import Dashboard from './components/Dashboard';
 import OccurrenceForm from './components/OccurrenceForm';
 import OccurrenceDetail from './components/OccurrenceDetail';
@@ -26,8 +30,6 @@ import UserManagement from './components/UserManagement';
 import MissionOrderList from './components/MissionOrderList';
 import MissionOrderForm from './components/MissionOrderForm';
 import MissionOrderPrintView from './components/MissionOrderPrintView';
-import MissionRequestForm from './components/MissionRequestForm';
-import MissionManager from './components/MissionManager';
 import { STATUS_COLORS, URGENCY_COLORS, GRADUACOES } from './constants';
 
 const DEFAULT_ADMIN: User = {
@@ -69,6 +71,10 @@ const App: FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [filter, setFilter] = useState('');
   const [initialCategory, setInitialCategory] = useState<string | undefined>(undefined);
+  const [missionRequests, setMissionRequests] = useState<Mission[]>([]);
+
+  // Access Control
+  const { podeSolicitar, ehSOP } = verificarAcesso(currentUser);
 
   useEffect(() => {
     supabase.from('test').select('*').then(({ data, error }) => {
@@ -90,6 +96,63 @@ const App: FC = () => {
       console.error('Error fetching occurrences:', error);
     } else {
       setOccurrences(data as Occurrence[]);
+    }
+  };
+
+  // Fetch Mission Requests (for Requester or SOP)
+  useEffect(() => {
+    // Only fetch if user is logged in and has permission
+    // We check this inside the effect to avoid unnecessary calls or errors
+    if (currentUser && (podeSolicitar || ehSOP)) {
+      fetchMissionRequests();
+    }
+  }, [currentUser, activeTab, podeSolicitar, ehSOP]);
+
+  const fetchMissionRequests = async () => {
+    const { data, error } = await supabase
+      .from('missoes_gsd')
+      .select('*')
+      .order('data_criacao', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching mission requests:', error);
+    } else {
+      setMissionRequests(data as Mission[]);
+    }
+  };
+
+  const handleCreateMissionRequest = async (missionData: any) => {
+    const { error } = await supabase
+      .from('missoes_gsd')
+      .insert([missionData]);
+
+    if (error) {
+      console.error('Error creating mission request:', error);
+      alert('Erro ao enviar solicitação de missão.');
+    } else {
+      alert('Solicitação enviada com sucesso! Aguarde análise da SOP.');
+      setActiveTab('home');
+      fetchMissionRequests();
+    }
+  };
+
+  const handleProcessMissionRequest = async (id: string, decision: 'APROVADA' | 'REJEITADA' | 'ESCALONADA', parecer?: string) => {
+    const { error } = await supabase
+      .from('missoes_gsd')
+      .update({
+        status: decision,
+        parecer_sop: parecer
+      })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error processing mission request:', error);
+      alert('Erro ao processar missão.');
+    } else {
+      alert(`Missão ${decision} com sucesso!`);
+      fetchMissionRequests();
+      // Simulate notification
+      console.log(`Notificação para solicitante: Sua missão foi ${decision}. Parecer: ${parecer}`);
     }
   };
 
@@ -544,6 +607,20 @@ const App: FC = () => {
               </>
             )}
 
+            {/* Mission Request - Visible to users with rank >= 3S */}
+            {podeSolicitar && (
+              <button onClick={() => setActiveTab('mission-request')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-request' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                <Send className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Solicitar Missão</span>
+              </button>
+            )}
+
+            {/* Mission Management - Visible to SOP profiles */}
+            {ehSOP && (
+              <button onClick={() => setActiveTab('mission-management')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-management' ? 'bg-purple-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                <ShieldCheck className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão de Missões</span>
+              </button>
+            )}
+
             {!isPublic && (
               <button onClick={() => setActiveTab('list')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'list' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
                 <FileText className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Arquivo Geral</span>
@@ -616,7 +693,7 @@ const App: FC = () => {
               recentOccurrences={occurrences}
               onSelectOccurrence={setSelectedOccurrence}
               onRefresh={fetchOccurrences}
-              onRequestMission={canRequestMission ? () => setActiveTab('mission-request') : undefined}
+              onRequestMission={podeSolicitar ? () => setActiveTab('mission-request') : undefined}
             />
           )}
 
@@ -663,16 +740,21 @@ const App: FC = () => {
           {activeTab === 'kanban' && isAdmin && <KanbanBoard occurrences={occurrences} onSelect={setSelectedOccurrence} />}
           {activeTab === 'dashboard' && isAdmin && <Dashboard occurrences={occurrences} />}
 
-          {activeTab === 'mission-request' && canRequestMission && (
-            <MissionRequestForm
-              user={currentUser}
-              onCancel={() => setActiveTab('home')}
-              onSubmit={() => setActiveTab('home')}
-            />
+          {activeTab === 'mission-request' && podeSolicitar && (
+            <div className="max-w-4xl mx-auto">
+              <MissionRequestForm
+                user={currentUser}
+                onCancel={() => setActiveTab('home')}
+                onSubmit={handleCreateMissionRequest}
+              />
+            </div>
           )}
 
-          {activeTab === 'mission-management' && canManageMissions && (
-            <MissionManager user={currentUser} />
+          {activeTab === 'mission-management' && ehSOP && (
+            <MissionRequestList
+              missions={missionRequests}
+              onProcess={handleProcessMissionRequest}
+            />
           )}
 
           {/* Somente Perfil Comandante OM pode ver o UserManagement */}
@@ -718,6 +800,23 @@ const App: FC = () => {
                 />
               )}
             </>
+          )}
+
+          {activeTab === 'mission-request' && podeSolicitar && (
+            <div className="max-w-4xl mx-auto">
+              <MissionRequestForm
+                user={currentUser}
+                onSubmit={handleCreateMissionRequest}
+                onCancel={() => setActiveTab('home')}
+              />
+            </div>
+          )}
+
+          {activeTab === 'mission-management' && ehSOP && (
+            <MissionRequestList
+              missions={missionRequests}
+              onProcess={handleProcessMissionRequest}
+            />
           )}
 
           {activeTab === 'list' && !isPublic && (
