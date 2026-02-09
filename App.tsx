@@ -728,7 +728,7 @@ const App: FC = () => {
               recentOccurrences={occurrences}
               onSelectOccurrence={setSelectedOccurrence}
               onRefresh={fetchOccurrences}
-              onRequestMission={podeSolicitar ? () => setActiveTab('mission-request') : undefined}
+              onRequestMission={canRequestMission ? () => setActiveTab('mission-request') : undefined}
             />
           )}
 
@@ -775,7 +775,7 @@ const App: FC = () => {
           {activeTab === 'kanban' && isAdmin && <KanbanBoard occurrences={occurrences} onSelect={setSelectedOccurrence} />}
           {activeTab === 'dashboard' && isAdmin && <Dashboard occurrences={occurrences} />}
 
-          {activeTab === 'mission-request' && podeSolicitar && (
+          {activeTab === 'mission-request' && canRequestMission && (
             <div className="max-w-4xl mx-auto">
               <MissionRequestForm
                 user={currentUser}
@@ -785,7 +785,7 @@ const App: FC = () => {
             </div>
           )}
 
-          {activeTab === 'mission-management' && ehSOP && (
+          {activeTab === 'mission-management' && canManageMissions && (
             <MissionRequestList
               missions={missionRequests}
               onProcess={handleProcessMissionRequest}
