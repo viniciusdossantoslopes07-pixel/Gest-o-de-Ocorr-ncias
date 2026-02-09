@@ -141,7 +141,7 @@ const App: FC = () => {
 
     if (error) {
       console.error('Error creating mission request:', error);
-      alert('Erro ao enviar solicitação de missão.');
+      alert(`Erro ao enviar solicitação de missão: ${error.message || JSON.stringify(error)}`);
     } else {
       alert('Solicitação enviada com sucesso! Aguarde análise da SOP.');
       setActiveTab('home');
@@ -837,22 +837,12 @@ const App: FC = () => {
             </>
           )}
 
-          {activeTab === 'mission-request' && canRequestMission && (
-            <div className="max-w-4xl mx-auto">
-              <MissionRequestForm
-                user={currentUser}
-                onSubmit={handleCreateMissionRequest}
-                onCancel={() => setActiveTab('home')}
-              />
-            </div>
-          )}
 
-          {activeTab === 'mission-management' && canManageMissions && (
-            <MissionRequestList
-              missions={missionRequests}
-              onProcess={handleProcessMissionRequest}
-              onGenerateOrder={handleGenerateOrderFromRequest}
-            />
+          <MissionRequestList
+            missions={missionRequests}
+            onProcess={handleProcessMissionRequest}
+            onGenerateOrder={handleGenerateOrderFromRequest}
+          />
           )}
 
           {activeTab === 'list' && !isPublic && (
