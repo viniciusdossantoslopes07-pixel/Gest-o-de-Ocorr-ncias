@@ -1,7 +1,8 @@
 import { useState, type FC, type FormEvent } from 'react';
 import { User } from '../types';
 import { RANKS, SETORES, TIPOS_MISSAO } from '../constants';
-import { Save, X, Calendar, Clock, MapPin, Users, Truck, Coffee } from 'lucide-react';
+import { Save, X, Calendar, Clock, MapPin, Users, Truck, Coffee, Search } from 'lucide-react';
+import { supabase } from '../services/supabase';
 
 interface MissionRequestFormProps {
     user: User;
@@ -10,7 +11,10 @@ interface MissionRequestFormProps {
 }
 
 const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCancel }) => {
+    const [requesterId, setRequesterId] = useState(user.id);
+
     const [formData, setFormData] = useState({
+        saram: user.saram || '',
         posto: user.rank || '',
         nome_guerra: user.name.split(' ').pop() || '', // Sugestão inicial
         setor: user.sector || '',
@@ -35,6 +39,33 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
         }
     });
 
+    const handleSaramBlur = async () => {
+        if (!formData.saram) return;
+
+        try {
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('saram', formData.saram)
+                .single();
+
+            if (error) throw error;
+
+            if (data) {
+                setRequesterId(data.id);
+                setFormData(prev => ({
+                    ...prev,
+                    posto: data.rank || '',
+                    nome_guerra: data.warName || data.name.split(' ').pop() || '',
+                    setor: data.sector || ''
+                }));
+            }
+        } catch (error) {
+            console.error('Erro ao buscar usuário por SARAM:', error);
+            alert('Usuário não encontrado com este SARAM.');
+        }
+    };
+
     const [isExternalCmd, setIsExternalCmd] = useState(false);
 
     const handleSubmit = (e: FormEvent) => {
@@ -48,7 +79,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
 
         // Prepare data package
         const submissionData = {
-            solicitante_id: user.id,
+            solicitante_id: requesterId,
             dados_missao: {
                 ...formData
             },
@@ -77,7 +108,27 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                     <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
                         <Users className="w-4 h-4 text-blue-600" /> Identificação
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-600 mb-2">SARAM</label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={formData.saram}
+                                    onChange={e => setFormData({ ...formData, saram: e.target.value })}
+                                    onBlur={handleSaramBlur}
+                                    className="w-full pl-3 pr-10 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                                    placeholder="Digite..."
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleSaramBlur}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600"
+                                >
+                                    <Search className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
                         <div>
                             <label className="block text-xs font-bold text-slate-600 mb-2">Posto/Graduação</label>
                             <select
