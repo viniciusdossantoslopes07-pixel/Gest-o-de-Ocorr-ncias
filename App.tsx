@@ -31,7 +31,14 @@ import UserManagement from './components/UserManagement';
 import MissionOrderList from './components/MissionOrderList';
 import MissionOrderForm from './components/MissionOrderForm';
 import MissionOrderPrintView from './components/MissionOrderPrintView';
-import { STATUS_COLORS, URGENCY_COLORS, GRADUACOES } from './constants';
+import {
+  STATUS_COLORS,
+  OCCURRENCE_CATEGORIES,
+  TYPES_BY_CATEGORY,
+  URGENCY_COLORS,
+  RANKS,
+  SETORES
+} from './constants';
 
 const DEFAULT_ADMIN: User = {
   id: 'root',
@@ -40,7 +47,7 @@ const DEFAULT_ADMIN: User = {
   name: 'Comandante da Unidade (OM)',
   role: UserRole.ADMIN,
   email: 'comandante@secureguard.mil.br',
-  rank: 'Coronel',
+  rank: 'CEL',
   saram: '0000001',
   sector: 'COMANDO GERAL',
   accessLevel: 'OM', // Agora o admin padrão é o nível superior
@@ -81,8 +88,8 @@ const App: FC = () => {
   const isPublic = currentUser?.role === UserRole.PUBLIC;
 
   // RBAC para Missões
-  const rankIndex = currentUser ? GRADUACOES.indexOf(currentUser.rank) : -1;
-  const minRankIndex = GRADUACOES.indexOf("3S");
+  const rankIndex = currentUser ? RANKS.indexOf(currentUser.rank) : -1;
+  const minRankIndex = RANKS.indexOf("3S");
   const canRequestMission = !!currentUser && (isOM || (rankIndex >= 0 && rankIndex <= minRankIndex));
 
   // RBAC para Gestão de Missões (SOP-01 e CH-SOP)
