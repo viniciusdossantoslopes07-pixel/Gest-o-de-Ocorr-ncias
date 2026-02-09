@@ -75,7 +75,19 @@ const App: FC = () => {
   const [missionRequests, setMissionRequests] = useState<Mission[]>([]);
 
   // Access Control
-  const { podeSolicitar, ehSOP } = verificarAcesso(currentUser);
+  // Access Control - Defined early for use in Effects and Render
+  const isAdmin = currentUser?.role === UserRole.ADMIN;
+  const isOM = currentUser?.accessLevel === 'OM';
+  const isPublic = currentUser?.role === UserRole.PUBLIC;
+
+  // RBAC para Missões
+  const rankIndex = currentUser ? GRADUACOES.indexOf(currentUser.rank) : -1;
+  const minRankIndex = GRADUACOES.indexOf("3S");
+  const canRequestMission = !!currentUser && (isOM || (rankIndex >= 0 && rankIndex <= minRankIndex));
+
+  // RBAC para Gestão de Missões (SOP-01 e CH-SOP)
+  const isSOP = currentUser ? ["CH-SOP", "SOP-01", "SOP-02", "SOP-03"].includes(currentUser.sector) : false;
+  const canManageMissions = !!currentUser && (isOM || isSOP);
 
   useEffect(() => {
     supabase.from('test').select('*').then(({ data, error }) => {
@@ -104,10 +116,10 @@ const App: FC = () => {
   useEffect(() => {
     // Only fetch if user is logged in and has permission
     // We check this inside the effect to avoid unnecessary calls or errors
-    if (currentUser && (podeSolicitar || ehSOP)) {
+    if (currentUser && (canRequestMission || canManageMissions)) {
       fetchMissionRequests();
     }
-  }, [currentUser, activeTab, podeSolicitar, ehSOP]);
+  }, [currentUser, activeTab, canRequestMission, canManageMissions]);
 
   const fetchMissionRequests = async () => {
     const { data, error } = await supabase
@@ -572,18 +584,7 @@ const App: FC = () => {
     return <LoginView onLogin={handleLogin} onRegister={handleRegister} onPublicAccess={handlePublicAccess} />;
   }
 
-  const isAdmin = currentUser.role === UserRole.ADMIN;
-  const isOM = currentUser.accessLevel === 'OM';
-  const isPublic = currentUser.role === UserRole.PUBLIC;
 
-  // RBAC para Missões
-  const rankIndex = GRADUACOES.indexOf(currentUser.rank);
-  const minRankIndex = GRADUACOES.indexOf("3S");
-  const canRequestMission = isOM || (rankIndex >= 0 && rankIndex <= minRankIndex); // Índices menores são patentes maiores
-
-  // RBAC para Gestão de Missões (SOP-01 e CH-SOP)
-  const isSOP = ["CH-SOP", "SOP-01", "SOP-02", "SOP-03"].includes(currentUser.sector);
-  const canManageMissions = isOM || isSOP;
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -643,7 +644,7 @@ const App: FC = () => {
 
 
                 {/* Allow SOP to view Mission Orders too (for generating them) */}
-                {ehSOP && !isOM && (
+                {canManageMissions && !isOM && (
                   <button onClick={() => { setActiveTab('mission-orders'); fetchMissionOrders(); }} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-orders' ? 'bg-purple-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
                     <ShieldAlert className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Ordens de Missão</span>
                   </button>
@@ -653,20 +654,6 @@ const App: FC = () => {
                   <LayoutDashboard className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Estatísticas BI</span>
                 </button>
               </>
-            )}
-
-            {/* Mission Request - Visible to users with rank >= 3S */}
-            {podeSolicitar && (
-              <button onClick={() => setActiveTab('mission-request')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-request' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                <Send className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Solicitar Missão</span>
-              </button>
-            )}
-
-            {/* Mission Management - Visible to SOP profiles */}
-            {ehSOP && (
-              <button onClick={() => setActiveTab('mission-management')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-management' ? 'bg-purple-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                <ShieldCheck className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão de Missões</span>
-              </button>
             )}
 
             {!isPublic && (
@@ -817,7 +804,7 @@ const App: FC = () => {
           )}
 
           {/* SOMENTE Comandante OM ou SOP pode ver Ordens de Missão (SOP precisa gerar) */}
-          {activeTab === 'mission-orders' && (isOM || ehSOP) && (
+          {activeTab === 'mission-orders' && (isOM || canManageMissions) && (
             <>
               {showMissionOrderForm ? (
                 <MissionOrderForm
@@ -850,7 +837,7 @@ const App: FC = () => {
             </>
           )}
 
-          {activeTab === 'mission-request' && podeSolicitar && (
+          {activeTab === 'mission-request' && canRequestMission && (
             <div className="max-w-4xl mx-auto">
               <MissionRequestForm
                 user={currentUser}
@@ -860,7 +847,7 @@ const App: FC = () => {
             </div>
           )}
 
-          {activeTab === 'mission-management' && ehSOP && (
+          {activeTab === 'mission-management' && canManageMissions && (
             <MissionRequestList
               missions={missionRequests}
               onProcess={handleProcessMissionRequest}
