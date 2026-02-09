@@ -785,12 +785,7 @@ const App: FC = () => {
             </div>
           )}
 
-          {activeTab === 'mission-management' && canManageMissions && (
-            <MissionRequestList
-              missions={missionRequests}
-              onProcess={handleProcessMissionRequest}
-            />
-          )}
+
 
           {/* Somente Perfil Comandante OM pode ver o UserManagement */}
           {activeTab === 'users' && isOM && (
