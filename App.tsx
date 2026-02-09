@@ -838,11 +838,13 @@ const App: FC = () => {
           )}
 
 
-          <MissionRequestList
-            missions={missionRequests}
-            onProcess={handleProcessMissionRequest}
-            onGenerateOrder={handleGenerateOrderFromRequest}
-          />
+          {activeTab === 'mission-management' && canManageMissions && (
+            <MissionRequestList
+              missions={missionRequests}
+              onProcess={handleProcessMissionRequest}
+              onGenerateOrder={handleGenerateOrderFromRequest}
+            />
+          )}
 
 
           {activeTab === 'list' && !isPublic && (
