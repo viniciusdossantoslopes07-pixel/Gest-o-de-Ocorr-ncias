@@ -69,6 +69,11 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
   };
 
 
+  // Debug logging
+  console.log('🔍 DEBUG UserManagement - All users received:', users);
+  console.log('🔍 DEBUG UserManagement - Pending users (approved === false):', users.filter(u => u.approved === false));
+  console.log('🔍 DEBUG UserManagement - Users with approved field:', users.map(u => ({ name: u.name, approved: u.approved })));
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 pb-20">
       <div className={`bg-white rounded-[2rem] p-8 border shadow-sm transition-all duration-300 ${editingUserId ? 'border-amber-400 ring-2 ring-amber-400/20' : 'border-slate-200'}`}>

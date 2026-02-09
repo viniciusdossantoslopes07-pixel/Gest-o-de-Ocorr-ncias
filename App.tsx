@@ -134,7 +134,8 @@ const App: FC = () => {
   const fetchUsers = async () => {
     const { data } = await supabase.from('users').select('*');
     if (data) {
-      setUsers(data.map((u: any) => ({
+      console.log('🔍 DEBUG fetchUsers - Raw data from DB:', data);
+      const mappedUsers = data.map((u: any) => ({
         id: u.id,
         username: u.username,
         name: u.name,
@@ -147,7 +148,10 @@ const App: FC = () => {
         phoneNumber: u.phone_number,
         approved: u.approved,
         password: u.password // Store password in state for editing (normally unsafe, but required for this flow)
-      })));
+      }));
+      console.log('🔍 DEBUG fetchUsers - Mapped users:', mappedUsers);
+      console.log('🔍 DEBUG fetchUsers - Pending users:', mappedUsers.filter(u => u.approved === false));
+      setUsers(mappedUsers);
     }
   };
 
@@ -221,6 +225,8 @@ const App: FC = () => {
       phone_number: newUser.phoneNumber
     };
 
+    console.log('🔍 DEBUG handleRegister - Inserting user:', dbUser);
+
     const { error } = await supabase
       .from('users')
       .insert([dbUser]);
@@ -229,6 +235,7 @@ const App: FC = () => {
       console.error('Registration error:', error);
       return false;
     }
+    console.log('✅ DEBUG handleRegister - User registered successfully with approved=false');
     return true;
   };
 
