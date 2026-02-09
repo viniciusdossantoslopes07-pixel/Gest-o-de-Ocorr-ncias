@@ -53,8 +53,10 @@ export const RANKS = [
 ];
 
 export const SETORES = [
-  'SOP-01', 'SOP-02', 'SOP-03', 'SOP-04', 'SOP-05',
-  'CH-SOP', 'CMD', 'SEC', 'INT', 'LOG', 'COM', 'JUR'
+  'CMT-GSD-SP', 'SECCMD', 'SGOP', 'CH-SOP',
+  'SOP-01', 'SOP-02', 'SOP-03',
+  'CH-SAP', 'SAP-01', 'SAP-02', 'SAP-03', 'SAP-04',
+  'EPA', 'ESI', 'EFSD'
 ];
 
 export const ARMAMENT_OPTIONS = ['Pistola', 'Fuzil', 'Nenhum'];
