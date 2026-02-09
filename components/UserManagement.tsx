@@ -1,5 +1,5 @@
 
-import { useState, type FC, type FormEvent } from 'react';
+import { useState, useEffect, type FC, type FormEvent } from 'react';
 import { User, UserRole } from '../types';
 import { RANKS } from '../constants';
 import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown, ShieldCheck } from 'lucide-react';
@@ -9,9 +9,10 @@ interface UserManagementProps {
   onCreateUser: (user: User) => void;
   onUpdateUser: (user: User) => void;
   onDeleteUser: (id: string) => void;
+  onRefreshUsers?: () => void;
 }
 
-const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdateUser, onDeleteUser }) => {
+const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdateUser, onDeleteUser, onRefreshUsers }) => {
   const initialFormState = {
     name: '',
     username: '',
@@ -68,6 +69,13 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     setFormData(initialFormState);
   };
 
+  // Refresh users when component mounts to ensure we have latest data with approved field
+  useEffect(() => {
+    if (onRefreshUsers) {
+      console.log('🔄 UserManagement mounted - refreshing users data');
+      onRefreshUsers();
+    }
+  }, [onRefreshUsers]);
 
   // Debug logging
   console.log('🔍 DEBUG UserManagement - All users received:', users);

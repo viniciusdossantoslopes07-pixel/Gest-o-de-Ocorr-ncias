@@ -491,7 +491,13 @@ const App: FC = () => {
 
           {/* Somente Perfil Comandante OM pode ver o UserManagement */}
           {activeTab === 'users' && isOM && (
-            <UserManagement users={users} onCreateUser={handleCreateUser} onUpdateUser={handleUpdateUser} onDeleteUser={handleDeleteUser} />
+            <UserManagement
+              users={users}
+              onCreateUser={handleCreateUser}
+              onUpdateUser={handleUpdateUser}
+              onDeleteUser={handleDeleteUser}
+              onRefreshUsers={fetchUsers}
+            />
           )}
 
           {activeTab === 'list' && !isPublic && (
