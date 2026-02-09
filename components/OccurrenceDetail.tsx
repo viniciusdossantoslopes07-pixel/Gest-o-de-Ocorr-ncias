@@ -14,7 +14,6 @@ interface OccurrenceDetailProps {
   user: User;
   onClose: () => void;
   onUpdateStatus: (id: string, newStatus: Status, comment: string) => void;
-  onUpdateStatus: (id: string, newStatus: Status, comment: string) => void;
   onUpdateOccurrence?: (id: string, updates: Partial<Occurrence>) => void;
   users?: User[];
 }
@@ -373,6 +372,22 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                           <button onClick={() => onUpdateStatus(occurrence.id, Status.ESCALATED, comment || 'Necessário nova análise técnica N2.')} className="w-full py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2"><Undo2 className="w-4 h-4" /> Devolver ao N2</button>
                         </div>
                       )}
+
+                      {/* Botão de Finalização Direta (Qualquer Nível) */}
+                      <div className="pt-2 border-t border-slate-200 mt-2">
+                        <button
+                          onClick={() => {
+                            if (!comment) {
+                              alert('Por favor, descreva a tratativa realizada no campo de despacho antes de finalizar.');
+                              return;
+                            }
+                            onUpdateStatus(occurrence.id, Status.CLOSED, comment);
+                          }}
+                          className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-sm"
+                        >
+                          <ShieldCheck className="w-4 h-4" /> Finalizar Atendimento (Com Tratativa)
+                        </button>
+                      </div>
                     </div>
                   )}
 
