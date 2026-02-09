@@ -20,6 +20,8 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     rank: '',
     saram: '',
     sector: '',
+    cpf: '',
+    warName: '',
     email: '',
     role: UserRole.OPERATIONAL,
     accessLevel: 'N1' as 'N1' | 'N2' | 'N3' | 'OM',
@@ -55,6 +57,8 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
       password: user.password || '',
       rank: user.rank,
       saram: user.saram,
+      cpf: user.cpf || '',
+      warName: user.warName || '',
       sector: user.sector,
       email: user.email,
       role: user.role,
@@ -132,6 +136,20 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
               <Hash className="w-3 h-3" /> SARAM
             </label>
             <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.saram} onChange={e => setFormData({ ...formData, saram: e.target.value })} />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <Hash className="w-3 h-3" /> CPF
+            </label>
+            <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.cpf} onChange={e => setFormData({ ...formData, cpf: e.target.value })} placeholder="000.000.000-00" />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <UserIcon className="w-3 h-3" /> Nome de Guerra
+            </label>
+            <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.warName} onChange={e => setFormData({ ...formData, warName: e.target.value })} placeholder="Ex: SGT SILVA" />
           </div>
 
           <div className="space-y-2">

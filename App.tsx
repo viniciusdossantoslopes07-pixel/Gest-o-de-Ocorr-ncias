@@ -86,8 +86,11 @@ const App: FC = () => {
   const canRequestMission = !!currentUser && (isOM || (rankIndex >= 0 && rankIndex <= minRankIndex));
 
   // RBAC para Gestão de Missões (SOP-01 e CH-SOP)
-  const isSOP = currentUser ? ["CH-SOP", "SOP-01", "SOP-02", "SOP-03"].includes(currentUser.sector) : false;
+  const isSOP = currentUser ? ["CH-SOP", "SOP-01"].includes(currentUser.sector) : false;
   const canManageMissions = !!currentUser && (isOM || isSOP);
+
+  // RBAC para Gestão de Usuários (SOP-01, CH-SOP e OM)
+  const canManageUsers = !!currentUser && (isOM || ["CH-SOP", "SOP-01"].includes(currentUser.sector));
 
   useEffect(() => {
     supabase.from('test').select('*').then(({ data, error }) => {
@@ -204,8 +207,8 @@ const App: FC = () => {
       setCurrentUser(user);
       setActiveTab('home');
 
-      // Fetch users list only if admin to populate management screen
-      if (user.role === UserRole.ADMIN) {
+      // Fetch users list if has permission
+      if (user.role === UserRole.ADMIN || ["CH-SOP", "SOP-01"].includes(user.sector)) {
         fetchUsers();
       }
 
@@ -228,6 +231,8 @@ const App: FC = () => {
         email: u.email,
         rank: u.rank,
         saram: u.saram,
+        cpf: u.cpf, // Mapper CPF
+        warName: u.war_name, // Map War Name
         sector: u.sector,
         accessLevel: u.access_level,
         phoneNumber: u.phone_number,
@@ -638,9 +643,11 @@ const App: FC = () => {
                 </button>
 
                 <>
-                  <button onClick={() => setActiveTab('users')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'users' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                    <UsersIcon className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão Militar</span>
-                  </button>
+                  {canManageUsers && (
+                    <button onClick={() => setActiveTab('users')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'users' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                      <UsersIcon className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão Militar</span>
+                    </button>
+                  )}
                   <button onClick={() => { setActiveTab('mission-orders'); fetchMissionOrders(); }} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-orders' ? 'bg-amber-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
                     <ShieldAlert className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Ordens de Missão</span>
                   </button>
@@ -791,8 +798,8 @@ const App: FC = () => {
 
 
 
-          {/* Somente Perfil Comandante OM pode ver o UserManagement */}
-          {activeTab === 'users' && isOM && (
+          {/* Somente Perfil Comandante OM ou SOP-01/CH-SOP podem ver o UserManagement */}
+          {activeTab === 'users' && canManageUsers && (
             <UserManagement
               users={users}
               onCreateUser={handleCreateUser}
