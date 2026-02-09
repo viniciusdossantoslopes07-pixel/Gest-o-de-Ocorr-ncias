@@ -67,3 +67,5 @@ export const TIPOS_MISSAO = [
 ];
 
 export const RANKS = ['Soldado', 'Cabo', 'Sargento', 'Tenente', 'Capitão', 'Major', 'Ten-Coronel', 'Coronel', 'Brigadeiro'];
+
+export const ARMAMENT_OPTIONS = ['Pistola', 'Fuzil'];

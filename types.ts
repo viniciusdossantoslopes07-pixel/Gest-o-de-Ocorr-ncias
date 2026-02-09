@@ -36,6 +36,8 @@ export interface User {
   accessLevel?: 'N1' | 'N2' | 'N3' | 'OM';
   phoneNumber?: string;
   approved?: boolean;
+  cpf?: string;
+  warName?: string;
 }
 
 export interface Attachment {
