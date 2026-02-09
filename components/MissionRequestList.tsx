@@ -1,6 +1,6 @@
 import { useState, FC } from 'react';
 import { Mission } from '../types';
-import { CheckCircle, XCircle, ArrowUpCircle, Clock, Calendar, MapPin, User as UserIcon } from 'lucide-react';
+import { CheckCircle, XCircle, ArrowUpCircle, Clock, Calendar, MapPin, User as UserIcon, FileText } from 'lucide-react';
 
 interface MissionRequestListProps {
     missions: Mission[];

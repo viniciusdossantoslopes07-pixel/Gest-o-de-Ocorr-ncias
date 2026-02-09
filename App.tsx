@@ -640,7 +640,7 @@ const App: FC = () => {
                     <ShieldAlert className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Ordens de Missão</span>
                   </button>
                 </>
-                )}
+
 
                 {/* Allow SOP to view Mission Orders too (for generating them) */}
                 {ehSOP && !isOM && (
