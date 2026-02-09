@@ -1,6 +1,6 @@
 import { useState, type FC, type FormEvent } from 'react';
 import { User } from '../types';
-import { GRADUACOES, SETORES, TIPOS_MISSAO } from '../constants';
+import { RANKS, SETORES, TIPOS_MISSAO } from '../constants';
 import { Save, X, Calendar, Clock, MapPin, Users, Truck, Coffee } from 'lucide-react';
 
 interface MissionRequestFormProps {
@@ -87,7 +87,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                 required
                             >
                                 <option value="">Selecione</option>
-                                {GRADUACOES.map(g => <option key={g} value={g}>{g}</option>)}
+                                {RANKS.map(g => <option key={g} value={g}>{g}</option>)}
                             </select>
                         </div>
                         <div>
