@@ -16,6 +16,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess }) 
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const [isRegistering, setIsRegistering] = useState(false);
   const [regData, setRegData] = useState({
     name: '',
     rank: '',

@@ -2,7 +2,7 @@
 import { useState, type FC, type FormEvent } from 'react';
 import { MissionOrder, MissionOrderPersonnel, MissionOrderSchedule } from '../types';
 import { Save, X, Plus, Trash2 } from 'lucide-react';
-import { RANKS } from '../constants';
+import { RANKS, ARMAMENT_OPTIONS } from '../constants';
 
 interface MissionOrderFormProps {
     order?: MissionOrder;
@@ -288,12 +288,16 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                             />
                                         </td>
                                         <td className="px-2 py-2">
-                                            <input
-                                                type="text"
+                                            <select
                                                 value={p.armament}
                                                 onChange={e => updatePersonnel(p.id, 'armament', e.target.value)}
                                                 className="w-full px-2 py-1 border border-slate-200 rounded text-xs"
-                                            />
+                                            >
+                                                <option value="">Selecione</option>
+                                                {ARMAMENT_OPTIONS.map(opt => (
+                                                    <option key={opt} value={opt}>{opt}</option>
+                                                ))}
+                                            </select>
                                         </td>
                                         <td className="px-2 py-2">
                                             <input
