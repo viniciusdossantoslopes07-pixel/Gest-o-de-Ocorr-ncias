@@ -616,6 +616,7 @@ const App: FC = () => {
               recentOccurrences={occurrences}
               onSelectOccurrence={setSelectedOccurrence}
               onRefresh={fetchOccurrences}
+              onRequestMission={canRequestMission ? () => setActiveTab('mission-request') : undefined}
             />
           )}
 

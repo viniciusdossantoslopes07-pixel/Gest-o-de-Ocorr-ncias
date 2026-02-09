@@ -28,6 +28,7 @@ interface HomeViewProps {
   recentOccurrences: Occurrence[];
   onSelectOccurrence: (occ: Occurrence) => void;
   onRefresh?: () => Promise<void>;
+  onRequestMission?: () => void;
 }
 
 const HomeView: React.FC<HomeViewProps> = ({
@@ -36,7 +37,8 @@ const HomeView: React.FC<HomeViewProps> = ({
   onViewAll,
   recentOccurrences,
   onSelectOccurrence,
-  onRefresh
+  onRefresh,
+  onRequestMission
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -58,7 +60,19 @@ const HomeView: React.FC<HomeViewProps> = ({
     { title: 'Tráfego', icon: <Truck className="w-8 h-8" />, color: 'bg-slate-700', category: 'Veículos e Tráfego Interno' },
     { title: 'Conduta', icon: <Users className="w-8 h-8" />, color: 'bg-purple-600', category: 'Pessoas e Conduta' },
     { title: 'Logística', icon: <Box className="w-8 h-8" />, color: 'bg-emerald-600', category: 'Materiais e Logística' },
+    { title: 'Conduta', icon: <Users className="w-8 h-8" />, color: 'bg-purple-600', category: 'Pessoas e Conduta' },
+    { title: 'Logística', icon: <Box className="w-8 h-8" />, color: 'bg-emerald-600', category: 'Materiais e Logística' },
   ];
+
+  // Add Mission button if handler is provided
+  if (onRequestMission) {
+    quickActions.unshift({
+      title: 'Missão', // User asked for "Solicitar missão" but title spacing in grid might be tight. "Missão" is concise. Let's try "Solicitar Missão" if space permits, or just "Missões".
+      icon: <ShieldAlert className="w-8 h-8" />,
+      color: 'bg-slate-900',
+      category: 'MISSION_REQUEST'
+    });
+  }
 
   return (
     <div className="space-y-12 max-w-6xl mx-auto pb-12">
@@ -103,7 +117,7 @@ const HomeView: React.FC<HomeViewProps> = ({
           {quickActions.map((action, idx) => (
             <button
               key={idx}
-              onClick={() => onNewOccurrence(action.category)}
+              onClick={() => action.category === 'MISSION_REQUEST' && onRequestMission ? onRequestMission() : onNewOccurrence(action.category)}
               className="flex flex-col items-center justify-center p-6 bg-white rounded-3xl shadow-sm border border-slate-200 hover:border-blue-500 hover:shadow-xl transition-all group relative overflow-hidden active:scale-95"
             >
               <div className={`${action.color} p-4 rounded-2xl text-white mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
