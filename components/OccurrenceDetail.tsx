@@ -281,19 +281,6 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                         onChange={(e) => {
                           if (onUpdateOccurrence) {
                             onUpdateOccurrence(occurrence.id, { assigned_to: e.target.value });
-
-                            // WhatsApp Notification Logic
-                            const assignedUser = users.find(u => u.name === e.target.value);
-                            if (assignedUser && assignedUser.phoneNumber) {
-                              const message = `Olá ${assignedUser.name}, uma nova ocorrência foi atribuída a você.\n\n*Título:* ${occurrence.title}\n*Local:* ${occurrence.location}\n*Urgência:* ${occurrence.urgency}\n\nAcesse o sistema para mais detalhes.`;
-                              const encodedMessage = encodeURIComponent(message);
-                              // Simply cleaning the phone number to ensure digits only
-                              const cleanPhone = assignedUser.phoneNumber.replace(/\D/g, '');
-                              const whatsappLink = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
-
-                              // Open in new tab
-                              window.open(whatsappLink, '_blank');
-                            }
                           }
                         }}
                       >
