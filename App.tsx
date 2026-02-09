@@ -473,11 +473,11 @@ const App: FC = () => {
   // RBAC para Missões
   const rankIndex = GRADUACOES.indexOf(currentUser.rank);
   const minRankIndex = GRADUACOES.indexOf("3S");
-  const canRequestMission = rankIndex >= 0 && rankIndex <= minRankIndex; // Índices menores são patentes maiores
+  const canRequestMission = isOM || (rankIndex >= 0 && rankIndex <= minRankIndex); // Índices menores são patentes maiores
 
   // RBAC para Gestão de Missões (SOP-01 e CH-SOP)
   const isSOP = ["CH-SOP", "SOP-01", "SOP-02", "SOP-03"].includes(currentUser.sector);
-  const canManageMissions = isSOP;
+  const canManageMissions = isOM || isSOP;
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
