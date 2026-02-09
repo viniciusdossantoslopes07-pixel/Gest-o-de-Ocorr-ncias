@@ -443,7 +443,14 @@ const App: FC = () => {
 
         <div className="p-8 flex-1 overflow-y-auto bg-slate-50">
           {activeTab === 'home' && !isPublic && (
-            <HomeView user={currentUser} onNewOccurrence={(cat) => { setInitialCategory(cat); setActiveTab('new'); }} onViewAll={() => setActiveTab('list')} recentOccurrences={occurrences} onSelectOccurrence={setSelectedOccurrence} />
+            <HomeView
+              user={currentUser}
+              onNewOccurrence={(cat) => { setInitialCategory(cat); setActiveTab('new'); }}
+              onViewAll={() => setActiveTab('list')}
+              recentOccurrences={occurrences}
+              onSelectOccurrence={setSelectedOccurrence}
+              onRefresh={fetchOccurrences}
+            />
           )}
 
           {(activeTab === 'new' || isPublic) && (

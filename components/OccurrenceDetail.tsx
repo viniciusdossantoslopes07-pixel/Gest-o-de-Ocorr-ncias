@@ -299,6 +299,23 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                     value={comment}
                     onChange={e => setComment(e.target.value)}
                   />
+
+                  {/* Botão Salvar Comentário */}
+                  {comment.trim() && (
+                    <button
+                      onClick={() => {
+                        if (!comment.trim()) {
+                          alert('Digite um comentário antes de salvar.');
+                          return;
+                        }
+                        onUpdateStatus(occurrence.id, occurrence.status, comment);
+                        setComment('');
+                      }}
+                      className="w-full mt-2 py-2 bg-slate-600 text-white rounded-lg font-bold text-xs hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
+                    >
+                      <Save className="w-4 h-4" /> Salvar Comentário
+                    </button>
+                  )}
                 </div>
 
                 <div className="space-y-3 border-t border-slate-200 pt-4">

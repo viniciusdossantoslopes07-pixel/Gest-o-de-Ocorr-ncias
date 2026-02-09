@@ -1,5 +1,5 @@
 
-import { type FC } from 'react';
+import { type FC, useState } from 'react';
 import {
   PlusCircle,
   AlertTriangle,
@@ -15,7 +15,8 @@ import {
   Truck,
   Users,
   Box,
-  Clock
+  Clock,
+  RefreshCw
 } from 'lucide-react';
 import { User, Occurrence } from '../types';
 import { STATUS_COLORS, URGENCY_COLORS } from '../constants';
@@ -26,6 +27,7 @@ interface HomeViewProps {
   onViewAll: () => void;
   recentOccurrences: Occurrence[];
   onSelectOccurrence: (occ: Occurrence) => void;
+  onRefresh?: () => Promise<void>;
 }
 
 const HomeView: React.FC<HomeViewProps> = ({
@@ -33,8 +35,21 @@ const HomeView: React.FC<HomeViewProps> = ({
   onNewOccurrence,
   onViewAll,
   recentOccurrences,
-  onSelectOccurrence
+  onSelectOccurrence,
+  onRefresh
 }) => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (!onRefresh) return;
+    setIsRefreshing(true);
+    try {
+      await onRefresh();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const quickActions = [
     { title: 'Emergências', icon: <Zap className="w-8 h-8" />, color: 'bg-red-600', category: 'Ocorrências de Emergência' },
     { title: 'Acesso', icon: <Lock className="w-8 h-8" />, color: 'bg-orange-600', category: 'Controle de Acesso e Credenciamento' },
@@ -50,11 +65,23 @@ const HomeView: React.FC<HomeViewProps> = ({
       {/* Welcome Section */}
       <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden">
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="bg-white p-1 rounded-full w-12 h-12 flex items-center justify-center overflow-hidden shadow-lg">
-              <img src="/logo_gsd.jpg" alt="Logo GSD-SP" className="w-full h-full object-cover scale-110" />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="bg-white p-1 rounded-full w-12 h-12 flex items-center justify-center overflow-hidden shadow-lg">
+                <img src="/logo_gsd.jpg" alt="Logo GSD-SP" className="w-full h-full object-cover scale-110" />
+              </div>
+              <span className="text-blue-400 font-black tracking-widest text-xs uppercase">Comando de Operações</span>
             </div>
-            <span className="text-blue-400 font-black tracking-widest text-xs uppercase">Comando de Operações</span>
+            {onRefresh && (
+              <button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-white font-bold text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-white/20"
+              >
+                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? 'Atualizando...' : 'Atualizar'}
+              </button>
+            )}
           </div>
           <h2 className="text-4xl font-bold mb-3 tracking-tight">Guardião GSD-SP</h2>
           <p className="text-slate-400 max-w-md text-lg leading-relaxed">Olá, {user.name}. Selecione uma categoria para abrir um novo chamado técnico ou operacional.</p>
