@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { Mission, User, MissionOrder } from '../types';
 import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, ArrowRight } from 'lucide-react';
@@ -35,7 +35,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
         }
     };
 
-    const handleUpdateStatus = async (id: string, status: 'APROVADA' | 'REJEITADA' | 'ESCALONADA' | 'AGUARDANDO_ORDEM') => {
+    const handleUpdateStatus = async (id: string, status: 'APROVADA' | 'REJEITADA' | 'ESCALONADA' | 'AGUARDANDO_ORDEM' | 'ATRIBUIDA') => {
         try {
             const { error } = await supabase
                 .from('missoes_gsd')
@@ -111,7 +111,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
         'ATRIBUIDA': 'bg-emerald-100 text-emerald-700'
     };
 
-    const statusIcons: Record<string, JSX.Element> = {
+    const statusIcons: Record<string, React.ReactElement> = {
         'PENDENTE': <Clock className="w-4 h-4" />,
         'APROVADA': <CheckCircle className="w-4 h-4" />,
         'AGUARDANDO_ORDEM': <FileText className="w-4 h-4" />,
