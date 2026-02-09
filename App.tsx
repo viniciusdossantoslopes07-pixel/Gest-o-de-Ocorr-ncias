@@ -26,7 +26,9 @@ import UserManagement from './components/UserManagement';
 import MissionOrderList from './components/MissionOrderList';
 import MissionOrderForm from './components/MissionOrderForm';
 import MissionOrderPrintView from './components/MissionOrderPrintView';
-import { STATUS_COLORS, URGENCY_COLORS } from './constants';
+import MissionRequestForm from './components/MissionRequestForm';
+import MissionManager from './components/MissionManager';
+import { STATUS_COLORS, URGENCY_COLORS, GRADUACOES } from './constants';
 
 const DEFAULT_ADMIN: User = {
   id: 'root',
@@ -56,7 +58,7 @@ const PUBLIC_USER: User = {
 const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-orders'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-orders' | 'mission-request' | 'mission-management'>('home');
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [selectedOccurrence, setSelectedOccurrence] = useState<Occurrence | null>(null);
   const [missionOrders, setMissionOrders] = useState<MissionOrder[]>([]);
@@ -468,6 +470,15 @@ const App: FC = () => {
   const isOM = currentUser.accessLevel === 'OM';
   const isPublic = currentUser.role === UserRole.PUBLIC;
 
+  // RBAC para Missões
+  const rankIndex = GRADUACOES.indexOf(currentUser.rank);
+  const minRankIndex = GRADUACOES.indexOf("3S");
+  const canRequestMission = rankIndex >= 0 && rankIndex <= minRankIndex; // Índices menores são patentes maiores
+
+  // RBAC para Gestão de Missões (SOP-01 e CH-SOP)
+  const isSOP = ["CH-SOP", "SOP-01", "SOP-02", "SOP-03"].includes(currentUser.sector);
+  const canManageMissions = isSOP;
+
   return (
     <div className="min-h-screen bg-slate-50 flex">
       {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
@@ -494,6 +505,18 @@ const App: FC = () => {
                 <button onClick={() => setActiveTab('new')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'new' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
                   <PlusCircle className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Novo Registro</span>
                 </button>
+
+                {canRequestMission && (
+                  <button onClick={() => setActiveTab('mission-request')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-request' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                    <ShieldCheck className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Solicitar Missão</span>
+                  </button>
+                )}
+
+                {canManageMissions && (
+                  <button onClick={() => setActiveTab('mission-management')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-management' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                    <ShieldCheck className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão de Missões</span>
+                  </button>
+                )}
               </>
             )}
 
@@ -569,7 +592,9 @@ const App: FC = () => {
                   activeTab === 'home' ? 'Central de Comando' :
                     activeTab === 'users' ? 'Gestão de Acessos' :
                       activeTab === 'dashboard' ? 'Painel de Inteligência' :
-                        activeTab === 'kanban' ? 'Fluxo de Gestão' : 'Arquivo Digital'}
+                        activeTab === 'kanban' ? 'Fluxo de Gestão' :
+                          activeTab === 'mission-request' ? 'Nova Missão' :
+                            activeTab === 'mission-management' ? 'Gestão de Missões' : 'Arquivo Digital'}
             </h2>
           </div>
           {!isPublic && (
@@ -636,6 +661,18 @@ const App: FC = () => {
 
           {activeTab === 'kanban' && isAdmin && <KanbanBoard occurrences={occurrences} onSelect={setSelectedOccurrence} />}
           {activeTab === 'dashboard' && isAdmin && <Dashboard occurrences={occurrences} />}
+
+          {activeTab === 'mission-request' && canRequestMission && (
+            <MissionRequestForm
+              user={currentUser}
+              onCancel={() => setActiveTab('home')}
+              onSubmit={() => setActiveTab('home')}
+            />
+          )}
+
+          {activeTab === 'mission-management' && canManageMissions && (
+            <MissionManager user={currentUser} />
+          )}
 
           {/* Somente Perfil Comandante OM pode ver o UserManagement */}
           {activeTab === 'users' && isOM && (

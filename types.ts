@@ -113,3 +113,35 @@ export interface MissionOrder {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface Mission {
+  id: string;
+  solicitante_id: string;
+  dados_missao: {
+    posto: string;
+    nome_guerra: string;
+    setor: string;
+    tipo_missao: string;
+    data: string;
+    inicio: string;
+    termino: string;
+    local: string;
+    responsavel?: {
+      nome: string;
+      om: string;
+      telefone: string;
+    };
+    efetivo: string;
+    viaturas: string;
+    alimentacao: {
+      cafe: boolean;
+      almoco: boolean;
+      janta: boolean;
+      ceia: boolean;
+      lanche: boolean;
+    };
+  };
+  status: 'PENDENTE' | 'APROVADA' | 'REJEITADA' | 'ESCALONADA';
+  parecer_sop?: string;
+  data_criacao: string;
+}
