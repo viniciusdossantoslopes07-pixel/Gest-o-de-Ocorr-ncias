@@ -1,7 +1,7 @@
 
 import { useState, useEffect, type FC, type FormEvent } from 'react';
 import { User, UserRole } from '../types';
-import { RANKS } from '../constants';
+import { RANKS, SETORES } from '../constants';
 import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown, ShieldCheck } from 'lucide-react';
 
 interface UserManagementProps {
@@ -138,7 +138,10 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <Building2 className="w-3 h-3" /> Setor
             </label>
-            <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.sector} onChange={e => setFormData({ ...formData, sector: e.target.value })} />
+            <select required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.sector} onChange={e => setFormData({ ...formData, sector: e.target.value })}>
+              <option value="">Selecione...</option>
+              {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
           </div>
 
           <div className="space-y-2">
