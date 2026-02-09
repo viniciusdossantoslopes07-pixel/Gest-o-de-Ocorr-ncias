@@ -114,7 +114,7 @@ export interface MissionOrder {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
-  status?: 'GERADA' | 'EM_ANDAMENTO' | 'CONCLUIDA';
+  status?: 'GERADA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'CANCELADA';
   timeline?: {
     id: string;
     timestamp: string;

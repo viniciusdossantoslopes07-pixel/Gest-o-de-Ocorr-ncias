@@ -454,8 +454,8 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
 
                     <div className="flex items-center gap-4 mb-6">
                         <div className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest ${order.status === 'CONCLUIDA' ? 'bg-green-100 text-green-700' :
-                                order.status === 'EM_ANDAMENTO' ? 'bg-blue-100 text-blue-700' :
-                                    'bg-slate-100 text-slate-600'
+                            order.status === 'EM_ANDAMENTO' ? 'bg-blue-100 text-blue-700' :
+                                'bg-slate-100 text-slate-600'
                             }`}>
                             Status: {order.status || 'GERADA'}
                         </div>
@@ -506,6 +506,22 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                     Concluir Missão
                                 </button>
                             </>
+                        )}
+
+                        {/* Cancel Button - Available for all active statuses */}
+                        {order.status !== 'CANCELADA' && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (confirm('Tem certeza que deseja CANCELAR esta missão?')) {
+                                        onSubmit({ ...order, status: 'CANCELADA' });
+                                    }
+                                }}
+                                className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-xs font-bold hover:bg-red-200 transition-all flex items-center gap-2 ml-auto"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                                Cancelar Missão
+                            </button>
                         )}
                     </div>
 
