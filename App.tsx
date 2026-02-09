@@ -304,9 +304,11 @@ const App: FC = () => {
       email: newUser.email,
       rank: newUser.rank,
       saram: newUser.saram,
+      cpf: newUser.cpf,           // Novo
+      war_name: newUser.warName,  // Novo
       sector: newUser.sector,
-      access_level: 'N1', // Default level
-      approved: false, // Explicitly pending
+      access_level: 'N1',
+      approved: false,
       phone_number: newUser.phoneNumber
     };
 
@@ -335,6 +337,8 @@ const App: FC = () => {
         email: updatedUser.email,
         rank: updatedUser.rank,
         saram: updatedUser.saram,
+        cpf: updatedUser.cpf,             // Novo
+        war_name: updatedUser.warName,    // Novo
         sector: updatedUser.sector,
         access_level: updatedUser.accessLevel,
         phone_number: updatedUser.phoneNumber,

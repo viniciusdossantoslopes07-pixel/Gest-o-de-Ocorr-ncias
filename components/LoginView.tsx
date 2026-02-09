@@ -16,9 +16,15 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess }) 
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const [isRegistering, setIsRegistering] = useState(false);
   const [regData, setRegData] = useState({
-    name: '', rank: '', saram: '', sector: '', email: '', phoneNumber: ''
+    name: '',
+    rank: '',
+    warName: '', // Novo
+    saram: '',
+    cpf: '',     // Novo
+    sector: '',
+    email: '',
+    phoneNumber: ''
   });
 
   const handleSubmit = async (e: FormEvent) => {
@@ -28,9 +34,10 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess }) 
 
     try {
       if (isRegistering) {
+        // Agora o Username é o SARAM
         const newUser = {
           id: '',
-          username,
+          username: regData.saram, // SARAM como username
           password,
           role: 'Lançador Operacional' as any,
           ...regData
@@ -40,6 +47,8 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess }) 
           setError('');
           alert('Cadastro realizado com sucesso! Aguarde aprovação do Comandante.');
           setIsRegistering(false);
+          // Opcional: Auto-fill login com o novo usuário
+          setUsername(regData.saram);
         } else {
           setError('Erro ao realizar cadastro.');
         }
@@ -159,18 +168,19 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess }) 
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <UserIcon className="w-3 h-3" /> Usuário
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                    placeholder="Nome de usuário"
-                    value={username}
-                    onChange={e => setUsername(e.target.value)}
-                  />
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Usuário (SARAM)</label>
+                  <div className="relative">
+                    <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl pl-12 pr-4 py-3 outline-none focus:border-blue-500 transition-all"
+                      placeholder="Digite seu SARAM"
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
