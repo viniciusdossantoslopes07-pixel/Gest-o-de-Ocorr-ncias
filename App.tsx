@@ -25,6 +25,7 @@ import LoginView from './components/LoginView';
 import UserManagement from './components/UserManagement';
 import MissionOrderList from './components/MissionOrderList';
 import MissionOrderForm from './components/MissionOrderForm';
+import MissionOrderPrintView from './components/MissionOrderPrintView';
 import { STATUS_COLORS, URGENCY_COLORS } from './constants';
 
 const DEFAULT_ADMIN: User = {
@@ -61,6 +62,7 @@ const App: FC = () => {
   const [missionOrders, setMissionOrders] = useState<MissionOrder[]>([]);
   const [selectedMissionOrder, setSelectedMissionOrder] = useState<MissionOrder | null>(null);
   const [showMissionOrderForm, setShowMissionOrderForm] = useState(false);
+  const [showMissionOrderPrintView, setShowMissionOrderPrintView] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [filter, setFilter] = useState('');
@@ -672,7 +674,7 @@ const App: FC = () => {
                   }}
                   onView={(order) => {
                     setSelectedMissionOrder(order);
-                    setShowMissionOrderForm(true);
+                    setShowMissionOrderPrintView(true);
                   }}
                   onDelete={handleDeleteMissionOrder}
                 />
@@ -718,6 +720,17 @@ const App: FC = () => {
           onUpdateStatus={handleUpdateStatus}
           onUpdateOccurrence={handleUpdateOccurrence}
           users={users}
+        />
+      )}
+
+      {/* Mission Order Print View */}
+      {showMissionOrderPrintView && selectedMissionOrder && (
+        <MissionOrderPrintView
+          order={selectedMissionOrder}
+          onClose={() => {
+            setShowMissionOrderPrintView(false);
+            setSelectedMissionOrder(null);
+          }}
         />
       )}
     </div>
