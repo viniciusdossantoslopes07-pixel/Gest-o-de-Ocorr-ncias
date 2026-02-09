@@ -843,7 +843,7 @@ const App: FC = () => {
             onProcess={handleProcessMissionRequest}
             onGenerateOrder={handleGenerateOrderFromRequest}
           />
-          )}
+
 
           {activeTab === 'list' && !isPublic && (
             <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
