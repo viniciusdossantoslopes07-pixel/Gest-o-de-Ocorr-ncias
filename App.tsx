@@ -144,6 +144,8 @@ const App: FC = () => {
         saram: u.saram,
         sector: u.sector,
         accessLevel: u.access_level,
+        phoneNumber: u.phone_number,
+        approved: u.approved,
         password: u.password // Store password in state for editing (normally unsafe, but required for this flow)
       })));
     }
