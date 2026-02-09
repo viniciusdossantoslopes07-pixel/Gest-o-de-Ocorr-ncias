@@ -89,7 +89,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
             {/* Header */}
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-slate-900">
-                    {order ? 'Editar OMIS' : 'Nova Ordem de Missão'}
+                    {order && order.id ? 'Editar OMIS' : 'Nova Ordem de Missão'}
                 </h2>
                 <button
                     type="button"
@@ -436,7 +436,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                     className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
                 >
                     <Save className="w-5 h-5" />
-                    {order ? 'Salvar Alterações' : 'Criar Ordem de Missão'}
+                    {order && order.id ? 'Salvar Alterações' : 'Criar Ordem de Missão'}
                 </button>
                 <button
                     type="button"

@@ -823,7 +823,7 @@ const App: FC = () => {
               {showMissionOrderForm ? (
                 <MissionOrderForm
                   order={selectedMissionOrder || undefined}
-                  onSubmit={selectedMissionOrder ? handleUpdateMissionOrder : handleCreateMissionOrder}
+                  onSubmit={(selectedMissionOrder && selectedMissionOrder.id) ? handleUpdateMissionOrder : handleCreateMissionOrder}
                   onCancel={() => {
                     setShowMissionOrderForm(false);
                     setSelectedMissionOrder(null);
