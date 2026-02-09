@@ -117,6 +117,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess }) 
             )}
 
             {isRegistering ? (
+              // Formulário de Cadastro
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
@@ -131,10 +132,22 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess }) 
                     </select>
                   </div>
                 </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">SARAM</label>
                     <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="0000000" value={regData.saram} onChange={e => setRegData({ ...regData, saram: e.target.value })} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">CPF</label>
+                    <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="000.000.000-00" value={regData.cpf} onChange={e => setRegData({ ...regData, cpf: e.target.value })} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Nome de Guerra</label>
+                    <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="Ex: SGT SILVA" value={regData.warName} onChange={e => setRegData({ ...regData, warName: e.target.value })} />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Setor</label>
@@ -144,23 +157,20 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess }) 
                     </select>
                   </div>
                 </div>
+
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Email</label>
                   <input required type="email" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="email@fab.mil.br" value={regData.email} onChange={e => setRegData({ ...regData, email: e.target.value })} />
                 </div>
+
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Celular / WhatsApp</label>
                   <input required type="tel" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="5511999999999" value={regData.phoneNumber} onChange={e => setRegData({ ...regData, phoneNumber: e.target.value })} />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Usuário</label>
-                    <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="user" value={username} onChange={e => setUsername(e.target.value)} />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Senha</label>
-                    <input required type="password" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="***" value={password} onChange={e => setPassword(e.target.value)} />
-                  </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Senha</label>
+                  <input required type="password" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="***" value={password} onChange={e => setPassword(e.target.value)} />
                 </div>
 
                 <button type="submit" disabled={isLoading} className="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-all mt-4">
