@@ -1,7 +1,7 @@
 
 import { useState, type FC, type FormEvent } from 'react';
 import { User } from '../types';
-import { RANKS } from '../constants';
+import { RANKS, SETORES } from '../constants';
 import { ShieldCheck, ArrowRight, Lock, User as UserIcon, Megaphone } from 'lucide-react';
 
 interface LoginViewProps {
@@ -138,7 +138,10 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess }) 
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">Setor</label>
-                    <input required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" placeholder="Ex: S-2" value={regData.sector} onChange={e => setRegData({ ...regData, sector: e.target.value })} />
+                    <select required className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" value={regData.sector} onChange={e => setRegData({ ...regData, sector: e.target.value })}>
+                      <option value="">Selecione...</option>
+                      {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
                   </div>
                 </div>
                 <div className="space-y-1">
