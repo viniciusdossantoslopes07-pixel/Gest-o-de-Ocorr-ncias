@@ -22,6 +22,7 @@ import { InventoryManager } from './components/InventoryManager'; // Import
 import SideMenu from './components/SideMenu'; // Import SideMenu
 import SettingsView from './components/SettingsView'; // Import SettingsView
 import FAQModal from './components/FAQModal'; // Import FAQModal
+import UserMenu from './components/UserMenu'; // Import UserMenu
 
 import LoanRequestForm from './components/LoanRequestForm';
 import MaterialDashboard from './components/MaterialDashboard';
@@ -728,6 +729,16 @@ const App: FC = () => {
                                     activeTab === 'settings' ? 'Minhas Configurações' : 'Arquivo Digital'}
               </h2>
             </div>
+
+            {/* Top Right User Menu */}
+            <UserMenu
+              currentUser={currentUser}
+              onLogout={handleLogout}
+              onToggleTheme={toggleTheme}
+              isDarkMode={isDarkMode}
+              onOpenFAQ={() => setShowFAQ(true)}
+              setActiveTab={setActiveTab}
+            />
           </header>
         )}
 
