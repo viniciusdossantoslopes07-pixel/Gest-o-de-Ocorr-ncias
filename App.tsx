@@ -28,6 +28,7 @@ import LoanRequestForm from './components/LoanRequestForm';
 import MaterialDashboard from './components/MaterialDashboard';
 import MissionManager from './components/MissionManager';
 import MyMaterialLoans from './components/MyMaterialLoans';
+import MeuPlanoView from './components/MeuPlanoView';
 import {
   STATUS_COLORS,
   OCCURRENCE_CATEGORIES,
@@ -65,7 +66,7 @@ const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   // Added 'settings' to activeTab type
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano'>('home');
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [selectedOccurrence, setSelectedOccurrence] = useState<Occurrence | null>(null);
   const [missionOrders, setMissionOrders] = useState<MissionOrder[]>([]);
@@ -831,42 +832,9 @@ const App: FC = () => {
             />
           )}
 
-          {/* My Mission Requests - Personal View */}
-          {activeTab === 'my-mission-requests' && (
-            <div className="max-w-6xl mx-auto">
-              <div className={`rounded-2xl border overflow-hidden shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-                <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-200'}`}>
-                  <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Minhas Solicitações de Missão</h2>
-                  <p className={`text-sm mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                    Acompanhe o status das suas solicitações
-                  </p>
-                </div>
-                <div className="p-6">
-                  <MissionRequestList
-                    missions={missionRequests.filter(r => r.solicitante_id === currentUser.id)}
-                    onProcess={handleProcessMissionRequest}
-                    onGenerateOrder={handleGenerateOrderFromRequest}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* My Material Loans - Personal View */}
-          {activeTab === 'my-material-loans' && (
-            <div className="max-w-6xl mx-auto">
-              <div className={`rounded-2xl border overflow-hidden shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-                <div className={`p-6 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-200'}`}>
-                  <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Minhas Cautelas de Material</h2>
-                  <p className={`text-sm mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                    Visualize seus materiais cautelados
-                  </p>
-                </div>
-                <div className="p-6">
-                  <MyMaterialLoans userId={currentUser.id} />
-                </div>
-              </div>
-            </div>
+          {/* Meu Plano - Unified Personal View */}
+          {activeTab === 'meu-plano' && (
+            <MeuPlanoView user={currentUser} isDarkMode={isDarkMode} />
           )}
 
           {/* Legacy Profile tab mapped to Settings for now, or kept separate if needed. 
