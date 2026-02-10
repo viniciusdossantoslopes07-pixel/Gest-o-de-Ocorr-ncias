@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../services/supabase';
 import { InventoryItem } from '../types';
 import { Plus, Edit2, Trash2, Search, Package, AlertTriangle } from 'lucide-react';
 
@@ -168,7 +168,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
                                 <Package className="w-6 h-6" />
                             </div>
                             <div className={`px-2 py-1 rounded text-xs font-bold uppercase ${item.status === 'DISPONIVEL' ? 'bg-green-100 text-green-700' :
-                                    item.status === 'MANUTENCAO' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
+                                item.status === 'MANUTENCAO' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
                                 }`}>
                                 {item.status}
                             </div>
