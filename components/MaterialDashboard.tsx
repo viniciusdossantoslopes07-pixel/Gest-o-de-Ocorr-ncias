@@ -160,82 +160,87 @@ const MaterialDashboard: React.FC = () => {
                     <tbody className="divide-y divide-slate-100">
                         {loading ? (
                             <tr><td colSpan={5} className="p-8 text-center text-slate-400">Carregando...</td></tr>
-                        ) : filteredLoans.length === 0 ? (
+                        ) : sortedLoans.length === 0 ? (
                             <tr><td colSpan={5} className="p-8 text-center text-slate-400">Nenhuma solicitação encontrada.</td></tr>
                         ) : (
-                            filteredLoans.map(loan => (
-                                <tr key={loan.id} className="hover:bg-slate-50">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-xs text-slate-600">
-                                                {loan.requester?.name?.[0]}
+                            sortedLoans.map(loan => {
+                                const isOverdue = loan.expectedReturnDate && new Date(loan.expectedReturnDate) < new Date() && (loan.status === 'RETIRADO' || loan.status === 'APROVADA');
+                                return (
+                                    <tr key={loan.id} className={`hover:bg-slate-50 transition-colors ${isOverdue ? 'bg-red-50' : ''}`}>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-xs text-slate-600">
+                                                    {loan.requester?.name?.[0]}
+                                                </div>
+                                                <div>
+                                                    <div className="font-bold text-slate-900">{loan.requester?.rank} {loan.requester?.name}</div>
+                                                    <div className="text-xs text-slate-400">{loan.requester?.saram}</div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <div className="font-bold text-slate-900">{loan.requester?.rank} {loan.requester?.name}</div>
-                                                <div className="text-xs text-slate-400">{loan.requester?.saram}</div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="font-bold text-slate-800">{loan.item?.name}</div>
+                                            <div className="text-xs text-slate-500">Qtd: {loan.quantity}</div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col gap-1 text-xs">
+                                                <div className="flex items-center gap-1 text-slate-500">
+                                                    <Calendar className="w-3 h-3" /> Solicitado: {new Date(loan.requestDate).toLocaleDateString()}
+                                                </div>
+                                                <div className={`flex items-center gap-1 font-medium ${isOverdue ? 'text-red-700 font-bold' : 'text-blue-600'}`}>
+                                                    <Clock className="w-3 h-3" />
+                                                    {isOverdue ? 'ATRASADO ' : 'Prev. Dev: '}
+                                                    {new Date(loan.expectedReturnDate).toLocaleDateString()}
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="font-bold text-slate-800">{loan.item?.name}</div>
-                                        <div className="text-xs text-slate-500">Qtd: {loan.quantity}</div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-col gap-1 text-xs">
-                                            <div className="flex items-center gap-1 text-slate-500">
-                                                <Calendar className="w-3 h-3" /> Solicitado: {new Date(loan.requestDate).toLocaleDateString()}
-                                            </div>
-                                            <div className="flex items-center gap-1 text-blue-600 font-medium">
-                                                <Clock className="w-3 h-3" /> Prev. Dev: {new Date(loan.expectedReturnDate).toLocaleDateString()}
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${LOAN_STATUS_COLORS[loan.status] || 'bg-slate-100 text-slate-600'}`}>
-                                            {getStatusIcon(loan.status)}
-                                            {loan.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            {loan.status === 'PENDENTE' && (
-                                                <>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${LOAN_STATUS_COLORS[loan.status] || 'bg-slate-100 text-slate-600'}`}>
+                                                {getStatusIcon(loan.status)}
+                                                {loan.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                {loan.status === 'PENDENTE' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleUpdateStatus(loan, 'APROVADA')}
+                                                            className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg"
+                                                            title="Aprovar"
+                                                        >
+                                                            <CheckCircle className="w-4 h-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleUpdateStatus(loan, 'REJEITADA')}
+                                                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
+                                                            title="Rejeitar"
+                                                        >
+                                                            <XCircle className="w-4 h-4" />
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {loan.status === 'APROVADA' && (
                                                     <button
-                                                        onClick={() => handleUpdateStatus(loan.id, 'APROVADA')}
-                                                        className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg"
-                                                        title="Aprovar"
+                                                        onClick={() => handleUpdateStatus(loan, 'RETIRADO')}
+                                                        className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700"
                                                     >
-                                                        <CheckCircle className="w-4 h-4" />
+                                                        Registrar Retirada
                                                     </button>
+                                                )}
+                                                {loan.status === 'RETIRADO' && (
                                                     <button
-                                                        onClick={() => handleUpdateStatus(loan.id, 'REJEITADA')}
-                                                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
-                                                        title="Rejeitar"
+                                                        onClick={() => handleUpdateStatus(loan, 'DEVOLVIDO')}
+                                                        className="px-3 py-1 bg-green-600 text-white text-xs font-bold rounded-lg hover:bg-green-700"
                                                     >
-                                                        <XCircle className="w-4 h-4" />
+                                                        Registrar Devolução
                                                     </button>
-                                                </>
-                                            )}
-                                            {loan.status === 'APROVADA' && (
-                                                <button
-                                                    onClick={() => handleUpdateStatus(loan.id, 'RETIRADO')}
-                                                    className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700"
-                                                >
-                                                    Registrar Retirada
-                                                </button>
-                                            )}
-                                            {loan.status === 'RETIRADO' && (
-                                                <button
-                                                    onClick={() => handleUpdateStatus(loan.id, 'DEVOLVIDO')}
-                                                    className="px-3 py-1 bg-green-600 text-white text-xs font-bold rounded-lg hover:bg-green-700"
-                                                >
-                                                    Registrar Devolução
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         )}
                     </tbody>
                 </table>
