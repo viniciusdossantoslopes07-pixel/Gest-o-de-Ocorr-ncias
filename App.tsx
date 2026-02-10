@@ -590,7 +590,7 @@ const App: FC = () => {
       permanent_orders: orderData.permanentOrders,
       special_orders: orderData.specialOrders,
       updated_at: new Date().toISOString(),
-      special_orders: orderData.specialOrders,
+      status: orderData.status,
       timeline: orderData.timeline,
       mission_commander_id: orderData.missionCommanderId
     };
