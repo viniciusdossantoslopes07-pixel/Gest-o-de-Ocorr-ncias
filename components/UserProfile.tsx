@@ -9,9 +9,10 @@ interface UserProfileProps {
     missionRequests: Mission[];
     missionOrders: MissionOrder[];
     onDownloadOrder?: (order: MissionOrder) => void;
+    onUpdateOrderStatus?: (orderId: string, newStatus: 'EM_ANDAMENTO' | 'CONCLUIDA') => void;
 }
 
-const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests, missionOrders, onDownloadOrder }) => {
+const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests, missionOrders, onDownloadOrder, onUpdateOrderStatus }) => {
     // Filter items for this user
     // For occurrences, we match by creator name as per App.tsx logic (mock)
     const myOccurrences = occurrences.filter(o => o.creator === user.name);
@@ -21,10 +22,12 @@ const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests,
 
     // For mission orders, we match by requester string or mission_commander_id
     const myMissionOrders = missionOrders.filter(mo =>
-        mo.missionCommanderId === user.id ||
         mo.requester.toLowerCase().includes(user.name.toLowerCase()) ||
         mo.requester.toLowerCase().includes(user.warName?.toLowerCase() || '')
     );
+
+    // Filter orders where I am the COMMANDER
+    const myCommandOrders = missionOrders.filter(mo => mo.missionCommanderId === user.id);
 
     return (
         <div className="space-y-8 animate-fade-in">
@@ -157,6 +160,56 @@ const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests,
                 </div>
 
             </div>
+
+            {/* My Command Orders */}
+            {myCommandOrders.length > 0 && (
+                <div className="mt-8 space-y-4">
+                    <h3 className="text-lg font-bold text-slate-700 flex items-center gap-2">
+                        <Shield className="w-5 h-5 text-indigo-600" /> Ordens de Missão sob meu Comando
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {myCommandOrders.map(order => (
+                            <div key={order.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-indigo-500">
+                                <div className="flex justify-between items-start mb-2">
+                                    <h4 className="font-bold text-slate-900">OM #{order.omisNumber}</h4>
+                                    <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold text-white ${order.status === 'CONCLUIDA' ? 'bg-emerald-500' :
+                                            order.status === 'EM_ANDAMENTO' ? 'bg-blue-500' :
+                                                order.status === 'CANCELADA' ? 'bg-red-500' : 'bg-slate-500'
+                                        }`}>
+                                        {order.status || 'GERADA'}
+                                    </span>
+                                </div>
+                                <div className="text-sm text-slate-600 mb-1 font-medium">{order.mission}</div>
+                                <div className="text-xs text-slate-500 mb-3">{order.location} - {new Date(order.date).toLocaleDateString()}</div>
+
+                                <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+                                    {onDownloadOrder && (
+                                        <button onClick={() => onDownloadOrder(order)} className="flex-1 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 rounded font-bold transition-colors">
+                                            Baixar OM
+                                        </button>
+                                    )}
+
+                                    {onUpdateOrderStatus && order.status !== 'CONCLUIDA' && order.status !== 'CANCELADA' && (
+                                        <>
+                                            {(!order.status || order.status === 'GERADA') && (
+                                                <button onClick={() => onUpdateOrderStatus(order.id, 'EM_ANDAMENTO')} className="flex-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 py-1.5 rounded font-bold transition-colors">
+                                                    Iniciar
+                                                </button>
+                                            )}
+                                            {order.status === 'EM_ANDAMENTO' && (
+                                                <button onClick={() => onUpdateOrderStatus(order.id, 'CONCLUIDA')} className="flex-1 text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-700 py-1.5 rounded font-bold transition-colors">
+                                                    Concluir
+                                                </button>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };

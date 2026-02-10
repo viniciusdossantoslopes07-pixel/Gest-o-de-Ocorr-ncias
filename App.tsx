@@ -858,6 +858,12 @@ const App: FC = () => {
                 setSelectedMissionOrder(order);
                 setShowMissionOrderPrintView(true);
               }}
+              onUpdateOrderStatus={async (orderId, newStatus) => {
+                const orderToUpdate = missionOrders.find(o => o.id === orderId);
+                if (orderToUpdate) {
+                  await handleUpdateMissionOrder({ ...orderToUpdate, status: newStatus });
+                }
+              }}
             />
           )}
 
