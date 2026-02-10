@@ -23,6 +23,11 @@ export default function MissionManager({ user }: MissionManagerProps) {
     const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
     const [selectedOrder, setSelectedOrder] = useState<MissionOrder | null>(null);
 
+    // Signature Modal State
+    const [showSignatureModal, setShowSignatureModal] = useState(false);
+    const [signaturePassword, setSignaturePassword] = useState('');
+    const [orderToSign, setOrderToSign] = useState<MissionOrder | null>(null);
+
     // Permission checks
     const isSop = user.accessLevel === 'N3' || user.sector?.includes('SOP') || user.role === UserRole.ADMIN;
     const isChSop = user.sector === 'CH-SOP' || user.role === UserRole.ADMIN;
@@ -190,9 +195,20 @@ export default function MissionManager({ user }: MissionManagerProps) {
         }
     };
 
-    // 3. Sign Order (CH-SOP) -> Moves to PRONTA_PARA_EXECUCAO
-    const handleChSopSign = async (order: MissionOrder) => {
-        if (!confirm(`Confirma assinatura digital da OMIS ${order.omisNumber}?`)) return;
+    // 3. Sign Order (CH-SOP) - Open Modal
+    const handleChSopSign = (order: MissionOrder) => {
+        setOrderToSign(order);
+        setSignaturePassword('');
+        setShowSignatureModal(true);
+    };
+
+    const confirmSignature = async () => {
+        if (!orderToSign) return;
+
+        if (signaturePassword !== user.password) {
+            alert('Senha incorreta. Assinatura não realizada.');
+            return;
+        }
 
         try {
             const signature = `ASSINADO DIGITALMENTE POR ${user.name} EM ${new Date().toLocaleString()}`;
@@ -203,10 +219,12 @@ export default function MissionManager({ user }: MissionManagerProps) {
                     ch_sop_signature: signature,
                     updated_at: new Date().toISOString()
                 })
-                .eq('id', order.id);
+                .eq('id', orderToSign.id);
 
             if (error) throw error;
             alert('OMIS assinada e liberada para execução.');
+            setShowSignatureModal(false);
+            setOrderToSign(null);
             fetchOrders();
         } catch (e: any) {
             alert('Erro na assinatura: ' + e.message);
@@ -499,6 +517,58 @@ export default function MissionManager({ user }: MissionManagerProps) {
                         setSelectedOrder(null);
                     }}
                 />
+            )}
+
+            {/* Signature Modal */}
+            {showSignatureModal && orderToSign && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md m-4">
+                        <div className="flex items-center gap-3 mb-6 text-orange-600">
+                            <div className="p-3 bg-orange-100 rounded-xl">
+                                <FileSignature className="w-8 h-8" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-slate-900">Assinatura Digital</h3>
+                                <p className="text-sm text-slate-500">Confirme sua identidade para assinar</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-sm">
+                                <span className="font-bold text-slate-700">Documento:</span> OM #{orderToSign.omisNumber}<br />
+                                <span className="font-bold text-slate-700">Assinante:</span> {user.name}<br />
+                                <span className="font-bold text-slate-700">Função:</span> {user.rank} - {user.sector}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Senha de Confirmação</label>
+                                <input
+                                    type="password"
+                                    value={signaturePassword}
+                                    onChange={(e) => setSignaturePassword(e.target.value)}
+                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                                    placeholder="Digite sua senha de login..."
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-3 mt-6">
+                                <button
+                                    onClick={() => { setShowSignatureModal(false); setOrderToSign(null); }}
+                                    className="px-4 py-2 text-slate-500 font-bold hover:bg-slate-100 rounded-lg"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={confirmSignature}
+                                    className="px-4 py-2 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 shadow-md"
+                                >
+                                    Assinar Documento
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
