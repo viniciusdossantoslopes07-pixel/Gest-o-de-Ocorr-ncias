@@ -6,12 +6,13 @@ import MissionStatistics from './MissionStatistics';
 import MissionOrderForm from './MissionOrderForm';
 import { MISSION_STATUS_COLORS, MISSION_STATUS_LABELS } from '../constants';
 import MissionRequestForm from './MissionRequestForm';
+import MissionRequestCard from './MissionRequestCard';
+
+import MissionOrderPrintView from './MissionOrderPrintView';
 
 interface MissionManagerProps {
     user: User;
 }
-
-import MissionOrderPrintView from './MissionOrderPrintView';
 
 export default function MissionManager({ user }: MissionManagerProps) {
     const [missions, setMissions] = useState<Mission[]>([]);
@@ -23,6 +24,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
     const [showPrintView, setShowPrintView] = useState(false);
     const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
     const [selectedOrder, setSelectedOrder] = useState<MissionOrder | null>(null);
+    const [showMissionCard, setShowMissionCard] = useState(false);
 
     // Signature Modal State
     const [showSignatureModal, setShowSignatureModal] = useState(false);
@@ -300,7 +302,14 @@ export default function MissionManager({ user }: MissionManagerProps) {
             <div className="space-y-4">
                 <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">1. Solicitações Pendentes (SOP-01)</h3>
                 {pending.map(m => (
-                    <div key={m.id} className="bg-white p-4 rounded-xl border border-l-4 border-l-yellow-400 border-slate-200 shadow-sm flex justify-between items-center">
+                    <div
+                        key={m.id}
+                        onClick={() => {
+                            setSelectedMission(m);
+                            setShowMissionCard(true);
+                        }}
+                        className="bg-white p-4 rounded-xl border border-l-4 border-l-yellow-400 border-slate-200 shadow-sm flex justify-between items-center cursor-pointer hover:shadow-md transition-shadow"
+                    >
                         <div>
                             <div className="font-bold text-slate-900">{m.dados_missao.tipo_missao}</div>
                             <div className="text-sm text-slate-500">
@@ -308,7 +317,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
                             </div>
                             <div className="text-xs text-slate-400 mt-1">Solicitante: {m.dados_missao.posto} {m.dados_missao.nome_guerra}</div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                             <button onClick={() => handleAnalyzeRequest(m)} className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-colors">
                                 Analisar
                             </button>
@@ -644,6 +653,23 @@ export default function MissionManager({ user }: MissionManagerProps) {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Mission Request Card Modal */}
+            {showMissionCard && selectedMission && (
+                <MissionRequestCard
+                    mission={selectedMission}
+                    onClose={() => {
+                        setShowMissionCard(false);
+                        setSelectedMission(null);
+                    }}
+                    onUpdate={(updatedMission) => {
+                        setMissions(missions.map(m => m.id === updatedMission.id ? updatedMission : m));
+                        setSelectedMission(updatedMission);
+                    }}
+                    currentUser={user}
+                    canEdit={isSop || selectedMission.solicitante_id === user.id}
+                />
             )}
         </div>
     );

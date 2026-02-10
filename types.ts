@@ -163,6 +163,19 @@ export interface Mission {
   status: 'PENDENTE' | 'APROVADA' | 'REJEITADA' | 'ESCALONADA' | 'AGUARDANDO_ORDEM' | 'ATRIBUIDA' | 'FINALIZADA';
   parecer_sop?: string;
   data_criacao: string;
+  historico?: HistoricoItem[];
+}
+
+export interface HistoricoItem {
+  id: string;
+  tipo: 'edicao' | 'comentario' | 'status';
+  usuario: string;
+  usuario_id: string;
+  data: string;
+  campo?: string;
+  valor_anterior?: any;
+  valor_novo?: any;
+  comentario?: string;
 }
 
 export interface InventoryItem {
