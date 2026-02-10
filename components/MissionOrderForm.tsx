@@ -314,27 +314,27 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                 type="text"
                                                 value={p.saram}
                                                 onChange={e => {
-                                                    const enteredSaram = e.target.value;
-                                                    updatePersonnel(p.id, 'saram', enteredSaram);
-
-                                                    // Auto-fill immediately when exact match is found
-                                                    if (enteredSaram.trim()) {
-                                                        const foundUser = users.find(u => u.saram === enteredSaram.trim());
-                                                        if (foundUser) {
-                                                            updatePersonnel(p.id, 'warName', foundUser.warName || foundUser.name);
-                                                            updatePersonnel(p.id, 'rank', foundUser.rank);
-                                                        }
-                                                    }
+                                                    // Just update the SARAM value, don't search yet
+                                                    updatePersonnel(p.id, 'saram', e.target.value);
                                                 }}
                                                 onBlur={e => {
                                                     const enteredSaram = e.target.value.trim();
                                                     if (!enteredSaram) return;
 
+                                                    console.log('Buscando SARAM:', enteredSaram);
+                                                    console.log('Usuários disponíveis:', users.map(u => u.saram));
+
                                                     // Auto-fill war name and rank from database when user finishes typing
                                                     const foundUser = users.find(u => u.saram === enteredSaram);
+                                                    console.log('Usuário encontrado:', foundUser);
+
                                                     if (foundUser) {
                                                         updatePersonnel(p.id, 'warName', foundUser.warName || foundUser.name);
                                                         updatePersonnel(p.id, 'rank', foundUser.rank);
+                                                    } else {
+                                                        // Clear fields if no user found
+                                                        updatePersonnel(p.id, 'warName', '');
+                                                        updatePersonnel(p.id, 'rank', '');
                                                     }
                                                 }}
                                                 className="w-full px-2 py-1 border border-slate-200 rounded text-xs"
