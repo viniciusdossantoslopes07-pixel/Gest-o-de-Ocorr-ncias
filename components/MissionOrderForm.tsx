@@ -301,16 +301,25 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                             </select>
                                         </td>
                                         <td className="px-2 py-2">
-                                            <select
+                                            <input
+                                                type="text"
                                                 value={p.warName}
+                                                readOnly
+                                                className="w-full px-2 py-1 border border-slate-200 rounded text-xs bg-slate-50"
+                                                placeholder="Auto"
+                                            />
+                                        </td>
+                                        <td className="px-2 py-2">
+                                            <select
+                                                value={p.saram}
                                                 onChange={e => {
-                                                    const selectedWarName = e.target.value;
-                                                    updatePersonnel(p.id, 'warName', selectedWarName);
+                                                    const selectedSaram = e.target.value;
+                                                    updatePersonnel(p.id, 'saram', selectedSaram);
 
-                                                    // Auto-fill SARAM and rank from database
-                                                    const foundUser = users.find(u => u.warName === selectedWarName);
+                                                    // Auto-fill war name and rank from database
+                                                    const foundUser = users.find(u => u.saram === selectedSaram);
                                                     if (foundUser) {
-                                                        updatePersonnel(p.id, 'saram', foundUser.saram);
+                                                        updatePersonnel(p.id, 'warName', foundUser.warName || foundUser.name);
                                                         updatePersonnel(p.id, 'rank', foundUser.rank);
                                                     }
                                                 }}
@@ -318,20 +327,11 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                             >
                                                 <option value="">Selecione</option>
                                                 {users.map(user => (
-                                                    <option key={user.id} value={user.warName || user.name}>
-                                                        {user.warName || user.name}
+                                                    <option key={user.id} value={user.saram}>
+                                                        {user.saram} - {user.warName || user.name}
                                                     </option>
                                                 ))}
                                             </select>
-                                        </td>
-                                        <td className="px-2 py-2">
-                                            <input
-                                                type="text"
-                                                value={p.saram}
-                                                readOnly
-                                                className="w-full px-2 py-1 border border-slate-200 rounded text-xs bg-slate-50"
-                                                placeholder="Auto"
-                                            />
                                         </td>
                                         <td className="px-2 py-2">
                                             <input
