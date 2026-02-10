@@ -167,10 +167,15 @@ export default function MissionManager({ user }: MissionManagerProps) {
 
             // Link/Close request
             if (selectedMission) {
-                await supabase
+                const { error: updateError } = await supabase
                     .from('missoes_gsd')
                     .update({ status: 'ATRIBUIDA' }) // Request is handled
                     .eq('id', selectedMission.id);
+
+                if (updateError) {
+                    console.error('Erro ao atualizar status da solicitação:', updateError);
+                    alert('Aviso: Ordem gerada, mas houve erro ao atualizar status da solicitação: ' + updateError.message);
+                }
             }
 
             alert(`Ordem de Missão ${omisNumber} gerada e enviada para assinatura do Ch SOP.`);
