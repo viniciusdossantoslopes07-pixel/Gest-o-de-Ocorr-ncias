@@ -217,7 +217,8 @@ const App: FC = () => {
         saram: data.saram,
         sector: data.sector,
         accessLevel: data.access_level, // Map from snake_case
-        approved: data.approved // Ensure this is mapped if it exists in DB, or handle default
+        approved: data.approved, // Ensure this is mapped if it exists in DB, or handle default
+        password: data.password // Store password for signature verification
       };
 
       // Check approval status (legacy users without field are considered approved)
