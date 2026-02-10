@@ -144,11 +144,9 @@ const MissionDashboard: FC<MissionDashboardProps> = ({ orders, requests }) => {
                             </div>
                         </div>
                     </div>
-                </div>
-        </>
-    )
-}
-        </div >
+                </>
+            )}
+        </div>
     );
 };
 
