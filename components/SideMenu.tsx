@@ -11,7 +11,7 @@ interface SideMenuProps {
     isOpen: boolean;
     onClose: () => void;
     activeTab: string;
-    setActiveTab: (tab: string) => void;
+    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'new' | 'list' | 'kanban' | 'dashboard' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings'>>;
     currentUser: User;
     onLogout: () => void;
     onToggleTheme: () => void;
