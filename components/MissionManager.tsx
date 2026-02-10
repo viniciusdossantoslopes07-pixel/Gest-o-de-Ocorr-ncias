@@ -5,6 +5,7 @@ import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, Fil
 import MissionStatistics from './MissionStatistics';
 import MissionOrderForm from './MissionOrderForm';
 import { MISSION_STATUS_COLORS, MISSION_STATUS_LABELS } from '../constants';
+import MissionRequestForm from './MissionRequestForm';
 
 interface MissionManagerProps {
     user: User;
@@ -384,6 +385,12 @@ export default function MissionManager({ user }: MissionManagerProps) {
             {/* Unified Tabs */}
             <div className="flex p-1 bg-slate-100 rounded-xl w-fit">
                 <button
+                    onClick={() => setActiveTab('solicitar_missao')}
+                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'solicitar_missao' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    <PlusCircle className="w-4 h-4" /> Solicitar Missão
+                </button>
+                <button
                     onClick={() => setActiveTab('minhas_solicitacoes')}
                     className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'minhas_solicitacoes' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
@@ -402,6 +409,12 @@ export default function MissionManager({ user }: MissionManagerProps) {
                     className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'missoes_ativas' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                     <Play className="w-4 h-4" /> Missões Ativas
+                </button>
+                <button
+                    onClick={() => setActiveTab('missoes_finalizadas')}
+                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'missoes_finalizadas' ? 'bg-white text-slate-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    <CheckCircle className="w-4 h-4" /> Missões Finalizadas
                 </button>
                 {(isSop || isChSop) && (
                     <button
@@ -504,6 +517,66 @@ export default function MissionManager({ user }: MissionManagerProps) {
                 {/* 4. Estatísticas */}
                 {activeTab === 'estatisticas' && (
                     <MissionStatistics orders={orders} />
+                )}
+
+                {/* 5. Solicitar Missão */}
+                {activeTab === 'solicitar_missao' && (
+                    <div>
+                        <MissionRequestForm
+                            user={user}
+                            onCancel={() => setActiveTab('minhas_solicitacoes')}
+                            onSubmit={async (data) => {
+                                const { error } = await supabase
+                                    .from('missoes_gsd')
+                                    .insert([{
+                                        solicitante_id: user.id,
+                                        dados_missao: data,
+                                        status: 'PENDENTE',
+                                        data_criacao: new Date().toISOString()
+                                    }]);
+
+                                if (!error) {
+                                    await fetchMissions();
+                                    setActiveTab('minhas_solicitacoes');
+                                }
+                            }}
+                        />
+                    </div>
+                )}
+
+                {/* 6. Missões Finalizadas */}
+                {activeTab === 'missoes_finalizadas' && (
+                    <div className="space-y-4">
+                        {orders.filter(o => o.status === 'CONCLUIDA' || o.status === 'CANCELADA').length === 0 ? (
+                            <div className="text-center py-12 text-slate-400">Nenhuma missão finalizada.</div>
+                        ) : (
+                            orders.filter(o => o.status === 'CONCLUIDA' || o.status === 'CANCELADA').map(order => (
+                                <div key={order.id} className={`p-5 rounded-xl border border-l-4 ${order.status === 'CONCLUIDA' ? 'border-l-green-500' : 'border-l-red-500'} border-slate-200 bg-slate-50`}>
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <h3 className="text-lg font-bold text-slate-900">{order.mission}</h3>
+                                                <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${order.status === 'CONCLUIDA' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {order.status === 'CONCLUIDA' ? 'Concluída' : 'Cancelada'}
+                                                </span>
+                                            </div>
+                                            <p className="text-slate-600 text-sm mb-4 max-w-2xl">{order.description}</p>
+                                            <div className="flex items-center gap-6 text-sm text-slate-500">
+                                                <span className="flex items-center gap-2"><Clock className="w-4 h-4" /> {new Date(order.date).toLocaleDateString()}</span>
+                                                <span className="flex items-center gap-2 rounded bg-slate-100 px-2 py-1"><Shield className="w-3 h-3" /> OM #{order.omisNumber}</span>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => handlePrintOrder(order)}
+                                            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-bold hover:bg-slate-200 transition-colors flex items-center gap-2"
+                                        >
+                                            <FileText className="w-4 h-4" /> Ver Detalhes
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
                 )}
 
             </div>

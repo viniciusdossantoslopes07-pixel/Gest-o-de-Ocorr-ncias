@@ -104,16 +104,7 @@ export default function SideMenu({
                             {/* SECTION 2: MEU PLANO (Personal Items) */}
                             <div>
                                 {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2">Meu Plano</h3>}
-
-                                {canRequestMission && (
-                                    <MenuItem id="mission-request" label="Solicitar Missão" icon={PlusCircle} />
-                                )}
-
-                                {canRequestMission && (
-                                    <MenuItem id="my-mission-requests" label="Minhas Solicitações" icon={ShieldCheck} />
-                                )}
-
-                                <MenuItem id="my-material-loans" label="Minhas Cautelas" icon={Package} />
+                                <MenuItem id="meu-plano" label="Meu Plano" icon={UserIcon} />
                             </div>
 
                             {/* Admin Links */}
