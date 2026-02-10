@@ -173,6 +173,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
 
             // Map to snake_case for DB
             const dbOrder = {
+                id: crypto.randomUUID(), // Generate UUID for the order
                 omis_number: omisNumber,
                 date: orderData.date,
                 is_internal: orderData.isInternal,
