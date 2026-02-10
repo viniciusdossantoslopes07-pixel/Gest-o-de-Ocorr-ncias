@@ -884,7 +884,7 @@ const App: FC = () => {
                 />
               ) : (
                 <MissionOrderList
-                  orders={missionOrders}
+                  orders={missionOrders.filter(o => o.status !== 'CONCLUIDA' && o.status !== 'CANCELADA')}
                   onCreate={() => {
                     setSelectedMissionOrder(null);
                     setShowMissionOrderForm(true);
