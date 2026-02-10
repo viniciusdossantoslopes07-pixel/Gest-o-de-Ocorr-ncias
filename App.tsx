@@ -700,6 +700,22 @@ const App: FC = () => {
                   </button>
                 )}
 
+                <button onClick={() => setActiveTab('material-caution')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'material-caution' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                  <Package className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Cautela de Material</span>
+                </button>
+
+                {isAdmin && (
+                  <button onClick={() => setActiveTab('kanban')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'kanban' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                    <Kanban className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Fila de Serviço</span>
+                  </button>
+                )}
+
+                {canManageUsers && (
+                  <button onClick={() => setActiveTab('users')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'users' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                    <UsersIcon className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão Militar</span>
+                  </button>
+                )}
+
                 <button onClick={() => setActiveTab('dashboard')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'dashboard' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
                   <LayoutDashboard className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Estatísticas BI</span>
                 </button>
