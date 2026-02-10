@@ -15,7 +15,8 @@ import {
   ChevronRight,
   ShieldAlert,
   Send,
-  Loader
+  Loader,
+  Package // Import Package icon
 } from 'lucide-react';
 import MissionRequestForm from './components/MissionRequestForm';
 import MissionRequestList from './components/MissionRequestList';
@@ -71,7 +72,7 @@ const PUBLIC_USER: User = {
 const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution'>('home');
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [selectedOccurrence, setSelectedOccurrence] = useState<Occurrence | null>(null);
   const [missionOrders, setMissionOrders] = useState<MissionOrder[]>([]);
@@ -715,318 +716,318 @@ const App: FC = () => {
                   </button>
                 )}
 
-                <LayoutDashboard className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Estatísticas BI</span>
-              </button>
-          </>
+                <button onClick={() => setActiveTab('dashboard')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'dashboard' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                  <LayoutDashboard className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Estatísticas BI</span>
+                </button>
+              </>
             )}
 
-          {!isPublic && (
-            <button onClick={() => setActiveTab('material-caution')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'material-caution' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-              <Package className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Cautela de Material</span>
-            </button>
-          )}
-
-          {!isPublic && (
-            <>
-              <button onClick={() => setActiveTab('list')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'list' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                <FileText className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Arquivo Geral</span>
+            {!isPublic && (
+              <button onClick={() => setActiveTab('material-caution')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'material-caution' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                <Package className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Cautela de Material</span>
               </button>
+            )}
 
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'profile' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}
-              >
-                <UsersIcon className="w-5 h-5 shrink-0" />
-                <span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Meu Perfil</span>
+            {!isPublic && (
+              <>
+                <button onClick={() => setActiveTab('list')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'list' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                  <FileText className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Arquivo Geral</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('profile')}
+                  className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'profile' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}
+                >
+                  <UsersIcon className="w-5 h-5 shrink-0" />
+                  <span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Meu Perfil</span>
+                </button>
+              </>
+            )}
+
+            <div className="py-4 border-t border-slate-800/50 my-4">
+              <button onClick={handleLogout} className={`w-full flex items-center rounded-xl transition-all text-slate-400 hover:text-red-400 hover:bg-red-500/10 ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                <LogOut className="w-5 h-5 shrink-0" />
+                {!isSidebarCollapsed && <span className="text-sm font-bold">Encerrar Sessão</span>}
               </button>
-            </>
-          )}
+            </div>
+          </nav>
 
-          <div className="py-4 border-t border-slate-800/50 my-4">
-            <button onClick={handleLogout} className={`w-full flex items-center rounded-xl transition-all text-slate-400 hover:text-red-400 hover:bg-red-500/10 ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-              <LogOut className="w-5 h-5 shrink-0" />
-              {!isSidebarCollapsed && <span className="text-sm font-bold">Encerrar Sessão</span>}
-            </button>
-          </div>
-        </nav>
-
-        <div className={`pt-6 border-t border-slate-800 ${isSidebarCollapsed ? 'flex flex-col items-center' : ''}`}>
-          <div className={`px-4 py-4 mb-4 bg-slate-800/50 rounded-2xl flex flex-col gap-2 overflow-hidden ${isSidebarCollapsed ? 'items-center px-2' : ''}`}>
-            <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-              <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-sm shrink-0 shadow-lg uppercase">{currentUser.name[0]}</div>
+          <div className={`pt-6 border-t border-slate-800 ${isSidebarCollapsed ? 'flex flex-col items-center' : ''}`}>
+            <div className={`px-4 py-4 mb-4 bg-slate-800/50 rounded-2xl flex flex-col gap-2 overflow-hidden ${isSidebarCollapsed ? 'items-center px-2' : ''}`}>
+              <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-sm shrink-0 shadow-lg uppercase">{currentUser.name[0]}</div>
+                {!isSidebarCollapsed && (
+                  <div className="overflow-hidden">
+                    <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{currentUser.rank}</p>
+                    <p className="text-sm font-black truncate">{currentUser.name}</p>
+                  </div>
+                )}
+              </div>
               {!isSidebarCollapsed && (
-                <div className="overflow-hidden">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{currentUser.rank}</p>
-                  <p className="text-sm font-black truncate">{currentUser.name}</p>
+                <div className="pt-2 border-t border-slate-700/50 space-y-1">
+                  <span className="inline-block px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded-md text-[8px] font-black uppercase tracking-widest border border-blue-500/20">{currentUser.role}</span>
+                  {currentUser.accessLevel && (
+                    <span className={`block text-[8px] font-bold uppercase tracking-widest ${currentUser.accessLevel === 'OM' ? 'text-amber-500' : 'text-slate-500'}`}>Nível {currentUser.accessLevel}</span>
+                  )}
                 </div>
               )}
             </div>
-            {!isSidebarCollapsed && (
-              <div className="pt-2 border-t border-slate-700/50 space-y-1">
-                <span className="inline-block px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded-md text-[8px] font-black uppercase tracking-widest border border-blue-500/20">{currentUser.role}</span>
-                {currentUser.accessLevel && (
-                  <span className={`block text-[8px] font-bold uppercase tracking-widest ${currentUser.accessLevel === 'OM' ? 'text-amber-500' : 'text-slate-500'}`}>Nível {currentUser.accessLevel}</span>
-                )}
-              </div>
-            )}
           </div>
         </div>
-    </div>
       </aside >
 
-  <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-    <header className="bg-white border-b border-slate-200 px-8 py-5 flex items-center justify-between z-40">
-      <div className="flex items-center gap-4">
-        <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-slate-500"><Menu className="w-6 h-6" /></button>
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-          {isPublic ? 'Registro de Ocorrência Pública' :
-            activeTab === 'new' ? 'Novo Registro Militar' :
-              activeTab === 'home' ? 'Central de Comando' :
-                activeTab === 'users' ? 'Gestão de Acessos' :
-                  activeTab === 'dashboard' ? 'Painel de Inteligência' :
-                    activeTab === 'kanban' ? 'Fluxo de Gestão' :
-                      activeTab === 'mission-request' ? 'Nova Missão' :
-                        activeTab === 'mission-management' ? 'Gestão de Missões' :
-                          activeTab === 'mission-orders' ? 'Ordens de Missão' :
-                            activeTab === 'material-caution' ? 'Cautela de Material' : 'Arquivo Digital'}
-        </h2>
-      </div>
-      {!isPublic && (
-        <div className="flex items-center gap-4">
-          <div className="relative hidden md:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input type="text" placeholder="Filtrar registros..." className="pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-2xl text-sm w-72 focus:ring-2 focus:ring-blue-500" value={filter} onChange={e => setFilter(e.target.value)} />
+      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        <header className="bg-white border-b border-slate-200 px-8 py-5 flex items-center justify-between z-40">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-slate-500"><Menu className="w-6 h-6" /></button>
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+              {isPublic ? 'Registro de Ocorrência Pública' :
+                activeTab === 'new' ? 'Novo Registro Militar' :
+                  activeTab === 'home' ? 'Central de Comando' :
+                    activeTab === 'users' ? 'Gestão de Acessos' :
+                      activeTab === 'dashboard' ? 'Painel de Inteligência' :
+                        activeTab === 'kanban' ? 'Fluxo de Gestão' :
+                          activeTab === 'mission-request' ? 'Nova Missão' :
+                            activeTab === 'mission-management' ? 'Gestão de Missões' :
+                              activeTab === 'mission-orders' ? 'Ordens de Missão' :
+                                activeTab === 'material-caution' ? 'Cautela de Material' : 'Arquivo Digital'}
+            </h2>
           </div>
-        </div>
-      )}
-    </header>
-
-    <div className="p-8 flex-1 overflow-y-auto bg-slate-50">
-      {activeTab === 'home' && !isPublic && (
-        <HomeView
-          user={currentUser}
-          onNewOccurrence={(cat) => { setInitialCategory(cat); setActiveTab('new'); }}
-          onViewAll={() => setActiveTab('list')}
-          recentOccurrences={occurrences}
-          onSelectOccurrence={setSelectedOccurrence}
-          onRefresh={fetchOccurrences}
-          onRequestMission={canRequestMission ? () => setActiveTab('mission-request') : undefined}
-        />
-      )}
-
-      {(activeTab === 'new' || isPublic) && (
-        <div className="max-w-4xl mx-auto">
-          {isPublic && (
-            <div className="mb-6 p-6 bg-blue-600 text-white rounded-[2rem] shadow-xl flex items-center gap-5">
-              <ShieldAlert className="w-12 h-12 shrink-0" />
-              <div>
-                <h3 className="text-lg font-bold">Relato ao Oficial de Segurança</h3>
-                <p className="text-blue-100 text-sm">Seu relato será enviado diretamente para análise militar (N1).</p>
+          {!isPublic && (
+            <div className="flex items-center gap-4">
+              <div className="relative hidden md:block">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input type="text" placeholder="Filtrar registros..." className="pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-2xl text-sm w-72 focus:ring-2 focus:ring-blue-500" value={filter} onChange={e => setFilter(e.target.value)} />
               </div>
             </div>
           )}
-          <OccurrenceForm
-            user={currentUser}
-            onCancel={() => isPublic ? handleLogout() : setActiveTab('home')}
-            initialCategory={initialCategory}
-            onSubmit={async (data) => {
-              const newOccStub = {
-                ...data,
-                timeline: data.timeline || [],
-                status: Status.TRIAGE
-              };
+        </header>
 
-              const { data: insertedData, error } = await supabase
-                .from('occurrences')
-                .insert([newOccStub])
-                .select()
-                .single();
-
-              if (error) {
-                console.error('Error creating occurrence:', error);
-                alert('Erro ao criar ocorrência');
-              } else {
-                setOccurrences([insertedData as Occurrence, ...occurrences]);
-                isPublic ? handleLogout() : setActiveTab('home');
-              }
-            }}
-          />
-        </div>
-      )}
-
-      {activeTab === 'kanban' && isAdmin && <KanbanBoard occurrences={occurrences} onSelect={setSelectedOccurrence} />}
-      {activeTab === 'dashboard' && isAdmin && <Dashboard occurrences={occurrences} />}
-
-      {activeTab === 'mission-request' && canRequestMission && (
-        <div className="max-w-4xl mx-auto">
-          <MissionRequestForm
-            user={currentUser}
-            onCancel={() => setActiveTab('home')}
-            onSubmit={handleCreateMissionRequest}
-          />
-        </div>
-      )}
-
-
-
-      {/* Somente Perfil Comandante OM ou SOP-01/CH-SOP podem ver o UserManagement */}
-      {activeTab === 'users' && canManageUsers && (
-        <UserManagement
-          users={users}
-          onCreateUser={handleCreateUser}
-          onUpdateUser={handleUpdateUser}
-          onDeleteUser={handleDeleteUser}
-          onRefreshUsers={fetchUsers}
-        />
-      )}
-
-      {activeTab === 'profile' && currentUser && (
-        <UserProfile
-          user={currentUser}
-          occurrences={occurrences}
-          missionRequests={missionRequests}
-          missionOrders={missionOrders}
-          onDownloadOrder={(order) => {
-            setSelectedMissionOrder(order);
-            setShowMissionOrderPrintView(true);
-          }}
-          onUpdateOrderStatus={async (orderId, newStatus) => {
-            const orderToUpdate = missionOrders.find(o => o.id === orderId);
-            if (orderToUpdate) {
-              await handleUpdateMissionOrder({ ...orderToUpdate, status: newStatus });
-            }
-          }}
-        />
-      )}
-
-      {/* SOMENTE Comandante OM ou SOP pode ver Ordens de Missão (SOP precisa gerar) */}
-      {activeTab === 'mission-orders' && (isOM || canManageMissions) && (
-        <>
-          {showMissionOrderForm ? (
-            <MissionOrderForm
-              order={selectedMissionOrder || undefined}
-              onSubmit={(selectedMissionOrder && selectedMissionOrder.id) ? handleUpdateMissionOrder : handleCreateMissionOrder}
-              onCancel={() => {
-                setShowMissionOrderForm(false);
-                setSelectedMissionOrder(null);
-              }}
-              currentUser={currentUser.name}
-              users={users}
+        <div className="p-8 flex-1 overflow-y-auto bg-slate-50">
+          {activeTab === 'home' && !isPublic && (
+            <HomeView
+              user={currentUser}
+              onNewOccurrence={(cat) => { setInitialCategory(cat); setActiveTab('new'); }}
+              onViewAll={() => setActiveTab('list')}
+              recentOccurrences={occurrences}
+              onSelectOccurrence={setSelectedOccurrence}
+              onRefresh={fetchOccurrences}
+              onRequestMission={canRequestMission ? () => setActiveTab('mission-request') : undefined}
             />
-          ) : (
-            <MissionOrderList
-              orders={missionOrders.filter(o => o.status !== 'CONCLUIDA' && o.status !== 'CANCELADA')}
-              onCreate={() => {
-                setSelectedMissionOrder(null);
-                setShowMissionOrderForm(true);
-              }}
-              onEdit={(order) => {
-                setSelectedMissionOrder(order);
-                setShowMissionOrderForm(true);
-              }}
-              onView={(order) => {
+          )}
+
+          {(activeTab === 'new' || isPublic) && (
+            <div className="max-w-4xl mx-auto">
+              {isPublic && (
+                <div className="mb-6 p-6 bg-blue-600 text-white rounded-[2rem] shadow-xl flex items-center gap-5">
+                  <ShieldAlert className="w-12 h-12 shrink-0" />
+                  <div>
+                    <h3 className="text-lg font-bold">Relato ao Oficial de Segurança</h3>
+                    <p className="text-blue-100 text-sm">Seu relato será enviado diretamente para análise militar (N1).</p>
+                  </div>
+                </div>
+              )}
+              <OccurrenceForm
+                user={currentUser}
+                onCancel={() => isPublic ? handleLogout() : setActiveTab('home')}
+                initialCategory={initialCategory}
+                onSubmit={async (data) => {
+                  const newOccStub = {
+                    ...data,
+                    timeline: data.timeline || [],
+                    status: Status.TRIAGE
+                  };
+
+                  const { data: insertedData, error } = await supabase
+                    .from('occurrences')
+                    .insert([newOccStub])
+                    .select()
+                    .single();
+
+                  if (error) {
+                    console.error('Error creating occurrence:', error);
+                    alert('Erro ao criar ocorrência');
+                  } else {
+                    setOccurrences([insertedData as Occurrence, ...occurrences]);
+                    isPublic ? handleLogout() : setActiveTab('home');
+                  }
+                }}
+              />
+            </div>
+          )}
+
+          {activeTab === 'kanban' && isAdmin && <KanbanBoard occurrences={occurrences} onSelect={setSelectedOccurrence} />}
+          {activeTab === 'dashboard' && isAdmin && <Dashboard occurrences={occurrences} />}
+
+          {activeTab === 'mission-request' && canRequestMission && (
+            <div className="max-w-4xl mx-auto">
+              <MissionRequestForm
+                user={currentUser}
+                onCancel={() => setActiveTab('home')}
+                onSubmit={handleCreateMissionRequest}
+              />
+            </div>
+          )}
+
+
+
+          {/* Somente Perfil Comandante OM ou SOP-01/CH-SOP podem ver o UserManagement */}
+          {activeTab === 'users' && canManageUsers && (
+            <UserManagement
+              users={users}
+              onCreateUser={handleCreateUser}
+              onUpdateUser={handleUpdateUser}
+              onDeleteUser={handleDeleteUser}
+              onRefreshUsers={fetchUsers}
+            />
+          )}
+
+          {activeTab === 'profile' && currentUser && (
+            <UserProfile
+              user={currentUser}
+              occurrences={occurrences}
+              missionRequests={missionRequests}
+              missionOrders={missionOrders}
+              onDownloadOrder={(order) => {
                 setSelectedMissionOrder(order);
                 setShowMissionOrderPrintView(true);
               }}
-              onDelete={handleDeleteMissionOrder}
+              onUpdateOrderStatus={async (orderId, newStatus) => {
+                const orderToUpdate = missionOrders.find(o => o.id === orderId);
+                if (orderToUpdate) {
+                  await handleUpdateMissionOrder({ ...orderToUpdate, status: newStatus });
+                }
+              }}
             />
           )}
-        </>
-      )}
+
+          {/* SOMENTE Comandante OM ou SOP pode ver Ordens de Missão (SOP precisa gerar) */}
+          {activeTab === 'mission-orders' && (isOM || canManageMissions) && (
+            <>
+              {showMissionOrderForm ? (
+                <MissionOrderForm
+                  order={selectedMissionOrder || undefined}
+                  onSubmit={(selectedMissionOrder && selectedMissionOrder.id) ? handleUpdateMissionOrder : handleCreateMissionOrder}
+                  onCancel={() => {
+                    setShowMissionOrderForm(false);
+                    setSelectedMissionOrder(null);
+                  }}
+                  currentUser={currentUser.name}
+                  users={users}
+                />
+              ) : (
+                <MissionOrderList
+                  orders={missionOrders.filter(o => o.status !== 'CONCLUIDA' && o.status !== 'CANCELADA')}
+                  onCreate={() => {
+                    setSelectedMissionOrder(null);
+                    setShowMissionOrderForm(true);
+                  }}
+                  onEdit={(order) => {
+                    setSelectedMissionOrder(order);
+                    setShowMissionOrderForm(true);
+                  }}
+                  onView={(order) => {
+                    setSelectedMissionOrder(order);
+                    setShowMissionOrderPrintView(true);
+                  }}
+                  onDelete={handleDeleteMissionOrder}
+                />
+              )}
+            </>
+          )}
 
 
-      {activeTab === 'mission-management' && canManageMissions && (
-        <div className="space-y-8">
-          <MissionDashboard orders={missionOrders} requests={missionRequests} />
+          {activeTab === 'mission-management' && canManageMissions && (
+            <div className="space-y-8">
+              <MissionDashboard orders={missionOrders} requests={missionRequests} />
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-              <h3 className="font-bold text-slate-700">Solicitações de Missão Recebidas</h3>
-            </div>
-            <MissionRequestList
-              missions={missionRequests.filter(r => r.status !== 'FINALIZADA')} // Filter out finalized
-              onProcess={handleProcessMissionRequest}
-              onGenerateOrder={handleGenerateOrderFromRequest}
-            />
-          </div>
-        </div>
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
+                  <h3 className="font-bold text-slate-700">Solicitações de Missão Recebidas</h3>
+                </div>
+                <MissionRequestList
+                  missions={missionRequests.filter(r => r.status !== 'FINALIZADA')} // Filter out finalized
+                  onProcess={handleProcessMissionRequest}
+                  onGenerateOrder={handleGenerateOrderFromRequest}
+                />
+              </div>
             </div>
           )}
 
-    {activeTab === 'material-caution' && (
-      isMaterialManager ? (
-        <InventoryManager user={currentUser} />
-      ) : (
-        // For regular users, we show "Minhas Cautelas" (TO BE IMPLEMENTED) or just Inventory Manager in "View Mode" if we want.
-        // For now, let's show InventoryManager but maybe functionality should be restricted inside it?
-        // The prompt says "Crie uma opção para os usuários conseguir verificar todo material cautelado".
-        // I will use InventoryManager for now, and handle permissions inside or wrapping it.
-        // Actually, I'll pass a flag/prop or just rendering it.
-        // InventoryManager currently has CRUD. I should probably wrap it or modify it to be Read-Only for non-managers?
-        // Or I can just show "Under Construction" for users until "Passo 16" is done.
-        // But let's show InventoryManager to Managers at least.
-        <div className="flex flex-col items-center justify-center h-full text-slate-400">
-          <Package className="w-16 h-16 mb-4 opacity-50" />
-          <h3 className="text-xl font-bold text-slate-600">Área de Cautela</h3>
-          <p>Funcionalidade de Solicitação em desenvolvimento.</p>
+          {activeTab === 'material-caution' && (
+            isMaterialManager ? (
+              <InventoryManager user={currentUser} />
+            ) : (
+              // For regular users, we show "Minhas Cautelas" (TO BE IMPLEMENTED) or just Inventory Manager in "View Mode" if we want.
+              // For now, let's show InventoryManager but maybe functionality should be restricted inside it?
+              // The prompt says "Crie uma opção para os usuários conseguir verificar todo material cautelado".
+              // I will use InventoryManager for now, and handle permissions inside or wrapping it.
+              // Actually, I'll pass a flag/prop or just rendering it.
+              // InventoryManager currently has CRUD. I should probably wrap it or modify it to be Read-Only for non-managers?
+              // Or I can just show "Under Construction" for users until "Passo 16" is done.
+              // But let's show InventoryManager to Managers at least.
+              <div className="flex flex-col items-center justify-center h-full text-slate-400">
+                <Package className="w-16 h-16 mb-4 opacity-50" />
+                <h3 className="text-xl font-bold text-slate-600">Área de Cautela</h3>
+                <p>Funcionalidade de Solicitação em desenvolvimento.</p>
+              </div>
+            )
+          )}
+
+
+          {activeTab === 'list' && !isPublic && (
+            <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Registro</th>
+                    <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Categoria</th>
+                    <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Cadeia de Comando</th>
+                    <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Risco</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {occurrences.filter(o => o.title.toLowerCase().includes(filter.toLowerCase())).map(occ => (
+                    <tr key={occ.id} className="hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => setSelectedOccurrence(occ)}>
+                      <td className="px-8 py-5">
+                        <div className="font-bold text-slate-900">{occ.title}</div>
+                        <div className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">ID: {occ.id}</div>
+                      </td>
+                      <td className="px-8 py-5 text-slate-500 font-medium">{occ.category}</td>
+                      <td className="px-8 py-5"><span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${STATUS_COLORS[occ.status]}`}>{occ.status}</span></td>
+                      <td className="px-8 py-5"><span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${URGENCY_COLORS[occ.urgency]}`}>{occ.urgency}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
-      )
-    )}
-
-
-    {activeTab === 'list' && !isPublic && (
-      <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Registro</th>
-              <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Categoria</th>
-              <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Cadeia de Comando</th>
-              <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Risco</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {occurrences.filter(o => o.title.toLowerCase().includes(filter.toLowerCase())).map(occ => (
-              <tr key={occ.id} className="hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => setSelectedOccurrence(occ)}>
-                <td className="px-8 py-5">
-                  <div className="font-bold text-slate-900">{occ.title}</div>
-                  <div className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">ID: {occ.id}</div>
-                </td>
-                <td className="px-8 py-5 text-slate-500 font-medium">{occ.category}</td>
-                <td className="px-8 py-5"><span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${STATUS_COLORS[occ.status]}`}>{occ.status}</span></td>
-                <td className="px-8 py-5"><span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${URGENCY_COLORS[occ.urgency]}`}>{occ.urgency}</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    )}
-  </div>
       </main >
 
-  { selectedOccurrence && (
-    <OccurrenceDetail
-      occurrence={selectedOccurrence}
-      user={currentUser}
-      onClose={() => setSelectedOccurrence(null)}
-      onUpdateStatus={handleUpdateStatus}
-      onUpdateOccurrence={handleUpdateOccurrence}
-      users={users}
-    />
-  )}
+      {selectedOccurrence && (
+        <OccurrenceDetail
+          occurrence={selectedOccurrence}
+          user={currentUser}
+          onClose={() => setSelectedOccurrence(null)}
+          onUpdateStatus={handleUpdateStatus}
+          onUpdateOccurrence={handleUpdateOccurrence}
+          users={users}
+        />
+      )}
 
-{/* Mission Order Print View */ }
-{
-  showMissionOrderPrintView && selectedMissionOrder && (
-    <MissionOrderPrintView
-      order={selectedMissionOrder}
-      onClose={() => {
-        setShowMissionOrderPrintView(false);
-        setSelectedMissionOrder(null);
-      }}
-    />
-  )
-}
+      {/* Mission Order Print View */}
+      {
+        showMissionOrderPrintView && selectedMissionOrder && (
+          <MissionOrderPrintView
+            order={selectedMissionOrder}
+            onClose={() => {
+              setShowMissionOrderPrintView(false);
+              setSelectedMissionOrder(null);
+            }}
+          />
+        )
+      }
     </div >
   );
 };
