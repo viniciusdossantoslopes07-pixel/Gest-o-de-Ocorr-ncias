@@ -109,10 +109,8 @@ const App: FC = () => {
   const canManageUsers = !!currentUser && (isOM || ["CH-SOP", "SOP-01"].includes(currentUser.sector));
 
   // ROLE Material Manager (SAP-03, CH-SOP, Comandante OM)
-  const canManageMaterial = !!currentUser && (isOM || ["CH-SOP", "SAP-03", "SOP-03"].includes(currentUser.sector)); // SOP-03 added just in case from user request logic variation "Perfis que serão cadastrados como SAP-03, CH-SAP" -> Wait, user said "SAP-03, CH-SAP". Let's stick to user request: "SAP-03, CH-SAP e Usuários com o nivel Comandante OM". 
-  // Correction based on Prompt: "SAP-03, CH-SAP e Usuários com o nivel Comandante OM"
-  // Assuming CH-SAP is a sector.
-  const isMaterialManager = !!currentUser && (isOM || ["SAP-03", "CH-SAP"].includes(currentUser.sector));
+  // Ensure we cover all "Command" level users, including Admin roll
+  const isMaterialManager = !!currentUser && (isOM || isAdmin || ["SAP-03", "CH-SAP"].includes(currentUser.sector));
 
 
   useEffect(() => {
@@ -699,6 +697,12 @@ const App: FC = () => {
                     <ShieldCheck className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão de Missões</span>
                   </button>
                 )}
+
+                <button onClick={() => setActiveTab('material-caution')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'material-caution' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                  <Package className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Cautela de Material</span>
+                </button>
+
+
               </>
             )}
 
