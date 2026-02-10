@@ -454,7 +454,8 @@ const App: FC = () => {
           date: mission.dados_missao.data,
           time: mission.dados_missao.inicio
         }
-      ]
+      ],
+      missionCommanderId: mission.solicitante_id
     };
 
     // Store origin request ID
@@ -574,7 +575,13 @@ const App: FC = () => {
   };
 
   const handleUpdateMissionOrder = async (orderData: Partial<MissionOrder>) => {
-    if (!selectedMissionOrder) return;
+    // If we have a selected order, use its ID. Otherwise, try to find ID in orderData.
+    const orderId = selectedMissionOrder?.id || orderData.id;
+
+    if (!orderId) {
+      console.error("No valid mission order ID found for update.");
+      return;
+    }
 
     const dbOrder = {
       date: orderData.date,
@@ -595,18 +602,27 @@ const App: FC = () => {
       mission_commander_id: orderData.missionCommanderId
     };
 
+    // Remove undefined keys to avoid overriding with null/undefined if we are doing a partial update? 
+    // Actually, for a full form update we want to send everything. 
+    // But for a status update from UserProfile, we are sending the WHOLE object (...) + new status, so it should be fine.
+    // However, if we just sent partial data, this dbOrder construction might wipe other fields if they are undefined in orderData.
+    // The current usage in UserProfile does: handleUpdateMissionOrder({ ...orderToUpdate, status: newStatus });
+    // So it sends the full object. That is safe.
+
     const { error } = await supabase
       .from('mission_orders')
       .update(dbOrder)
-      .eq('id', selectedMissionOrder.id);
+      .eq('id', orderId);
 
     if (error) {
       console.error('Error updating mission order:', error);
       alert('Erro ao atualizar ordem de missão: ' + error.message);
     } else {
       await fetchMissionOrders();
-      setShowMissionOrderForm(false);
-      setSelectedMissionOrder(null);
+      if (showMissionOrderForm) {
+        setShowMissionOrderForm(false);
+        setSelectedMissionOrder(null);
+      }
       alert('OMIS atualizada com sucesso!');
     }
   };
@@ -757,7 +773,8 @@ const App: FC = () => {
                       activeTab === 'dashboard' ? 'Painel de Inteligência' :
                         activeTab === 'kanban' ? 'Fluxo de Gestão' :
                           activeTab === 'mission-request' ? 'Nova Missão' :
-                            activeTab === 'mission-management' ? 'Gestão de Missões' : 'Arquivo Digital'}
+                            activeTab === 'mission-management' ? 'Gestão de Missões' :
+                              activeTab === 'mission-orders' ? 'Ordens de Missão' : 'Arquivo Digital'}
             </h2>
           </div>
           {!isPublic && (

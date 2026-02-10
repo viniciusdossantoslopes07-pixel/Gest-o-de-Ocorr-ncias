@@ -27,10 +27,14 @@ const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests,
     );
 
     // Filter orders where I am the COMMANDER
-    const myCommandOrders = missionOrders.filter(mo => mo.missionCommanderId === user.id);
+    // Filter orders where I am the COMMANDER (Active only)
+    const myCommandOrders = missionOrders.filter(mo => mo.missionCommanderId === user.id && mo.status !== 'CONCLUIDA' && mo.status !== 'CANCELADA');
 
     return (
-        <div className="space-y-8 animate-fade-in">
+    const [selectedRequest, setSelectedRequest] = React.useState<Mission | null>(null);
+
+    return (
+        <div className="space-y-8 animate-fade-in relative">
             {/* Header */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -98,10 +102,10 @@ const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests,
                     ) : (
                         <div className="space-y-3">
                             {myMissionRequests.map(req => (
-                                <div key={req.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                                <div key={req.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer group" onClick={() => setSelectedRequest(req)}>
                                     <div className="flex justify-between items-start mb-2">
                                         <div>
-                                            <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">{req.dados_missao.tipo_missao}</span>
+                                            <span className="text-xs font-bold text-blue-600 uppercase tracking-wider group-hover:underline">{req.dados_missao.tipo_missao}</span>
                                             <div className="text-sm text-slate-500">{req.dados_missao.local}</div>
                                         </div>
                                         <div className="text-right">
@@ -135,18 +139,22 @@ const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests,
                                             )}
                                         </div>
 
-                                        {/* Check if there is a linked order */}
-                                        {myMissionOrders.some(o => o.description.includes(req.id)) && req.status === 'FINALIZADA' && onDownloadOrder && (
-                                            <button
-                                                onClick={() => {
-                                                    const order = myMissionOrders.find(o => o.description.includes(req.id));
-                                                    if (order) onDownloadOrder(order);
-                                                }}
-                                                className="text-[10px] text-blue-600 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 font-bold flex items-center gap-1"
-                                            >
-                                                <FileText className="w-3 h-3" /> Baixar OMISS
-                                            </button>
-                                        )}
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">Ver detalhes</span>
+                                            {/* Check if there is a linked order */}
+                                            {myMissionOrders.some(o => o.description.includes(req.id)) && req.status === 'FINALIZADA' && onDownloadOrder && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        const order = myMissionOrders.find(o => o.description.includes(req.id));
+                                                        if (order) onDownloadOrder(order);
+                                                    }}
+                                                    className="text-[10px] text-blue-600 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 font-bold flex items-center gap-1"
+                                                >
+                                                    <FileText className="w-3 h-3" /> Baixar OMISS
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                     {req.parecer_sop && (
                                         <div className="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded italic">
@@ -173,8 +181,8 @@ const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests,
                                 <div className="flex justify-between items-start mb-2">
                                     <h4 className="font-bold text-slate-900">OM #{order.omisNumber}</h4>
                                     <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold text-white ${order.status === 'CONCLUIDA' ? 'bg-emerald-500' :
-                                            order.status === 'EM_ANDAMENTO' ? 'bg-blue-500' :
-                                                order.status === 'CANCELADA' ? 'bg-red-500' : 'bg-slate-500'
+                                        order.status === 'EM_ANDAMENTO' ? 'bg-blue-500' :
+                                            order.status === 'CANCELADA' ? 'bg-red-500' : 'bg-slate-500'
                                         }`}>
                                         {order.status || 'GERADA'}
                                     </span>
@@ -206,6 +214,75 @@ const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests,
                                 </div>
                             </div>
                         ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Detalhes da Solicitação */}
+            {selectedRequest && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setSelectedRequest(null)}>
+                    <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+                        <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                            <h3 className="font-bold text-lg text-slate-800">Detalhes da Solicitação</h3>
+                            <button onClick={() => setSelectedRequest(null)} className="p-1 hover:bg-slate-200 rounded-full transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tipo de Missão</label>
+                                    <p className="text-slate-900 font-medium">{selectedRequest.dados_missao.tipo_missao}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Local</label>
+                                    <p className="text-slate-900 font-medium">{selectedRequest.dados_missao.local}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Data/Hora Início</label>
+                                    <p className="text-slate-900 font-medium">{new Date(selectedRequest.dados_missao.data).toLocaleDateString()} às {selectedRequest.dados_missao.inicio}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Hora Término</label>
+                                    <p className="text-slate-900 font-medium">{selectedRequest.dados_missao.termino}</p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Efetivo Solicitado</label>
+                                <p className="text-slate-900 bg-slate-50 p-3 rounded-lg text-sm">{selectedRequest.dados_missao.efetivo}</p>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Viaturas</label>
+                                <p className="text-slate-900 bg-slate-50 p-3 rounded-lg text-sm">{selectedRequest.dados_missao.viaturas || 'Nenhuma'}</p>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Responsável no Local</label>
+                                <p className="text-slate-900 text-sm">
+                                    {selectedRequest.dados_missao.responsavel?.nome} ({selectedRequest.dados_missao.responsavel?.telefone}) - {selectedRequest.dados_missao.responsavel?.om}
+                                </p>
+                            </div>
+
+                            {selectedRequest.parecer_sop && (
+                                <div className="border-t border-slate-100 pt-4 mt-2">
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Parecer da SOP</label>
+                                    <p className="text-slate-600 italic bg-amber-50 border border-amber-100 p-3 rounded-lg text-sm">"{selectedRequest.parecer_sop}"</p>
+                                </div>
+                            )}
+
+                            <div className="flex items-center gap-2 pt-2">
+                                <span className={`px-2 py-1 rounded-full text-xs font-bold ${selectedRequest.status === 'APROVADA' ? 'bg-emerald-100 text-emerald-700' : selectedRequest.status === 'REJEITADA' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                                    Status: {selectedRequest.status}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 text-right">
+                            <button onClick={() => setSelectedRequest(null)} className="px-4 py-2 bg-slate-900 text-white rounded-lg font-bold hover:bg-slate-800 transition-colors">
+                                Fechar
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
