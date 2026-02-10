@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { MaterialLoan } from '../types';
-import { Package, Search, Filter, CheckCircle, XCircle, Clock, Calendar, User, Truck, alert-triangle } from 'lucide-react';
+import { Package, Search, Filter, CheckCircle, XCircle, Clock, Calendar, User, Truck, AlertTriangle, AlertCircle } from 'lucide-react';
 import { LOAN_STATUS_COLORS } from '../constants';
 
 const MaterialDashboard: React.FC = () => {
@@ -56,7 +56,10 @@ const MaterialDashboard: React.FC = () => {
                     saram: loan.requester.saram,
                     sector: loan.requester.sector,
                     role: loan.requester.role,
-                    email: loan.requester.email
+                    sector: loan.requester.sector,
+                    role: loan.requester.role,
+                    email: loan.requester.email,
+                    username: loan.requester.username || loan.requester.email // Ensure username is present
                 } : undefined
             }));
 
@@ -112,6 +115,14 @@ const MaterialDashboard: React.FC = () => {
             default: return <AlertCircle className="w-4 h-4" />;
         }
     };
+
+    const sortedLoans = filteredLoans.sort((a, b) => {
+        const isOverdueA = a.expectedReturnDate && new Date(a.expectedReturnDate) < new Date() && (a.status === 'RETIRADO' || a.status === 'APROVADA');
+        const isOverdueB = b.expectedReturnDate && new Date(b.expectedReturnDate) < new Date() && (b.status === 'RETIRADO' || b.status === 'APROVADA');
+        if (isOverdueA && !isOverdueB) return -1;
+        if (!isOverdueA && isOverdueB) return 1;
+        return new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime();
+    });
 
     return (
         <div className="space-y-6">
