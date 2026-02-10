@@ -310,28 +310,24 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                             />
                                         </td>
                                         <td className="px-2 py-2">
-                                            <select
+                                            <input
+                                                type="text"
                                                 value={p.saram}
-                                                onChange={e => {
-                                                    const selectedSaram = e.target.value;
-                                                    updatePersonnel(p.id, 'saram', selectedSaram);
+                                                onChange={e => updatePersonnel(p.id, 'saram', e.target.value)}
+                                                onBlur={e => {
+                                                    const enteredSaram = e.target.value.trim();
+                                                    if (!enteredSaram) return;
 
-                                                    // Auto-fill war name and rank from database
-                                                    const foundUser = users.find(u => u.saram === selectedSaram);
+                                                    // Auto-fill war name and rank from database when user finishes typing
+                                                    const foundUser = users.find(u => u.saram === enteredSaram);
                                                     if (foundUser) {
                                                         updatePersonnel(p.id, 'warName', foundUser.warName || foundUser.name);
                                                         updatePersonnel(p.id, 'rank', foundUser.rank);
                                                     }
                                                 }}
                                                 className="w-full px-2 py-1 border border-slate-200 rounded text-xs"
-                                            >
-                                                <option value="">Selecione</option>
-                                                {users.map(user => (
-                                                    <option key={user.id} value={user.saram}>
-                                                        {user.saram} - {user.warName || user.name}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                                placeholder="Digite o SARAM"
+                                            />
                                         </td>
                                         <td className="px-2 py-2">
                                             <input
