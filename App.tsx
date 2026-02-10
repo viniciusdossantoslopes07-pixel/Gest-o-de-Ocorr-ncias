@@ -959,18 +959,12 @@ const App: FC = () => {
             isMaterialManager ? (
               <InventoryManager user={currentUser} />
             ) : (
-              // For regular users, we show "Minhas Cautelas" (TO BE IMPLEMENTED) or just Inventory Manager in "View Mode" if we want.
-              // For now, let's show InventoryManager but maybe functionality should be restricted inside it?
-              // The prompt says "Crie uma opção para os usuários conseguir verificar todo material cautelado".
-              // I will use InventoryManager for now, and handle permissions inside or wrapping it.
-              // Actually, I'll pass a flag/prop or just rendering it.
-              // InventoryManager currently has CRUD. I should probably wrap it or modify it to be Read-Only for non-managers?
-              // Or I can just show "Under Construction" for users until "Passo 16" is done.
-              // But let's show InventoryManager to Managers at least.
-              <div className="flex flex-col items-center justify-center h-full text-slate-400">
-                <Package className="w-16 h-16 mb-4 opacity-50" />
-                <h3 className="text-xl font-bold text-slate-600">Área de Cautela</h3>
-                <p>Funcionalidade de Solicitação em desenvolvimento.</p>
+              <div className="max-w-4xl mx-auto">
+                <LoanRequestForm
+                  user={currentUser}
+                  onSuccess={() => setActiveTab('home')}
+                  onCancel={() => setActiveTab('home')}
+                />
               </div>
             )
           )}
