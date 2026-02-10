@@ -77,6 +77,12 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
             return;
         }
 
+        // Validate date
+        if (!formData.data) {
+            alert('Por favor, selecione uma data para a missão.');
+            return;
+        }
+
         // Prepare data package
         const submissionData = {
             solicitante_id: requesterId,
