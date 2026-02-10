@@ -537,18 +537,18 @@ export default function MissionManager({ user }: MissionManagerProps) {
                             user={user}
                             onCancel={() => setActiveTab('minhas_solicitacoes')}
                             onSubmit={async (data) => {
+                                // data already contains the full structure with dados_missao
                                 const { error } = await supabase
                                     .from('missoes_gsd')
-                                    .insert([{
-                                        solicitante_id: user.id,
-                                        dados_missao: data,
-                                        status: 'PENDENTE',
-                                        data_criacao: new Date().toISOString()
-                                    }]);
+                                    .insert([data]);
 
                                 if (!error) {
                                     await fetchMissions();
                                     setActiveTab('minhas_solicitacoes');
+                                    alert('Solicitação criada com sucesso!');
+                                } else {
+                                    console.error('Erro ao criar solicitação:', error);
+                                    alert('Erro ao criar solicitação.');
                                 }
                             }}
                         />
