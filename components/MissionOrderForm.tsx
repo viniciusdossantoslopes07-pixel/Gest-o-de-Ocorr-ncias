@@ -313,7 +313,19 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                             <input
                                                 type="text"
                                                 value={p.saram}
-                                                onChange={e => updatePersonnel(p.id, 'saram', e.target.value)}
+                                                onChange={e => {
+                                                    const enteredSaram = e.target.value;
+                                                    updatePersonnel(p.id, 'saram', enteredSaram);
+
+                                                    // Auto-fill immediately when exact match is found
+                                                    if (enteredSaram.trim()) {
+                                                        const foundUser = users.find(u => u.saram === enteredSaram.trim());
+                                                        if (foundUser) {
+                                                            updatePersonnel(p.id, 'warName', foundUser.warName || foundUser.name);
+                                                            updatePersonnel(p.id, 'rank', foundUser.rank);
+                                                        }
+                                                    }
+                                                }}
                                                 onBlur={e => {
                                                     const enteredSaram = e.target.value.trim();
                                                     if (!enteredSaram) return;
