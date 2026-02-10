@@ -191,9 +191,9 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
                     {/* Footer */}
                     <div className="text-xs text-slate-500 mt-4 pt-4 border-t border-slate-300">
                         <p>Criado por: {order.createdBy}</p>
-                        <p>Data de criação: {new Date(order.createdAt).toLocaleString('pt-BR')}</p>
+                        <p>Data de criação: {new Date(order.createdAt).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</p>
                         {order.updatedAt !== order.createdAt && (
-                            <p>Última atualização: {new Date(order.updatedAt).toLocaleString('pt-BR')}</p>
+                            <p>Última atualização: {new Date(order.updatedAt).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</p>
                         )}
                         {order.missionReport && (
                             <div className="mt-4 p-2 bg-slate-50 border border-slate-200 rounded">
