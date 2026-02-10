@@ -1,7 +1,7 @@
+import React, { FC, useState } from 'react';
 import { MissionOrder, Mission } from '../types';
 import { BarChart, Activity, CheckCircle, Clock, FileBarChart } from 'lucide-react';
 import MissionReportView from './MissionReportView';
-import { useState } from 'react';
 
 interface MissionDashboardProps {
     orders: MissionOrder[];
