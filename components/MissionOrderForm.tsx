@@ -9,7 +9,7 @@ interface MissionOrderFormProps {
     onSubmit: (order: Partial<MissionOrder>) => void;
     onCancel: () => void;
     currentUser: string;
-    users: { id: string; name: string; rank: string; warName?: string }[];
+    users: { id: string; name: string; rank: string; warName?: string; saram: string }[];
 }
 
 const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel, currentUser, users }) => {
@@ -156,24 +156,33 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                 </div>
             </div>
 
-            {/* Commander and Responsibles */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label className="block text-xs font-bold text-slate-600 mb-2">Comandante da Missão (Responsável)</label>
-                    <select
-                        value={formData.missionCommanderId}
-                        onChange={e => setFormData({ ...formData, missionCommanderId: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                    >
-                        <option value="">Selecione o Comandante...</option>
-                        {users.map(u => (
-                            <option key={u.id} value={u.id}>
-                                {u.rank} {u.warName || u.name}
-                            </option>
-                        ))}
-                    </select>
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            placeholder="Digite o SARAM"
+                            className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            onBlur={(e) => {
+                                const saram = e.target.value;
+                                const foundUser = users.find(u => u.saram === saram);
+                                if (foundUser) {
+                                    setFormData({ ...formData, missionCommanderId: foundUser.id });
+                                } else {
+                                    setFormData({ ...formData, missionCommanderId: '' });
+                                    if (saram) alert('Militar não encontrado com este SARAM.');
+                                }
+                            }}
+                        />
+                    </div>
+                    {formData.missionCommanderId && (
+                        <div className="mt-2 p-2 bg-blue-50 border border-blue-100 rounded-lg text-xs text-blue-700 font-bold">
+                            Selecionado: {users.find(u => u.id === formData.missionCommanderId)?.rank} {users.find(u => u.id === formData.missionCommanderId)?.warName || users.find(u => u.id === formData.missionCommanderId)?.name}
+                        </div>
+                    )}
                     <p className="text-[10px] text-slate-400 mt-1">
-                        O usuário selecionado poderá gerenciar o status da missão via "Meu Perfil".
+                        Digite o SARAM para selecionar o Comandante que gerenciará a missão.
                     </p>
                 </div>
             </div>
