@@ -1,5 +1,5 @@
 import { User } from '../types';
-import { GRADUACOES, SETORES } from '../constants';
+import { RANKS, SETORES } from '../constants';
 
 export interface AccessControlResult {
     podeSolicitar: boolean;
@@ -18,8 +18,8 @@ export function verificarAcesso(usuario: User | null): AccessControlResult {
     // The requirement says: "Usuário (>= 3S) preenche o formulário."
     // So indexes <= 13 are allowed. Indexes > 13 (CB, S1, S2) are NOT allowed.
 
-    const rankIndex = GRADUACOES.indexOf(usuario.rank);
-    const targetIndex = GRADUACOES.indexOf("3S");
+    const rankIndex = RANKS.indexOf(usuario.rank);
+    const targetIndex = RANKS.indexOf("3S");
 
     // If rank is not found (-1), deny access safe default
     const podeSolicitar = rankIndex !== -1 && rankIndex <= targetIndex;
