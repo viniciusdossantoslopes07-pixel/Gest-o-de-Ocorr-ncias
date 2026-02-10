@@ -450,7 +450,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
                                 <div key={m.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100 transition-colors flex justify-between items-center">
                                     <div>
                                         <div className="font-bold text-slate-900">{m.dados_missao.tipo_missao}</div>
-                                        <div className="text-sm text-slate-500">{new Date(m.dados_missao.data).toLocaleDateString()} - {m.dados_missao.local}</div>
+                                        <div className="text-sm text-slate-500">{m.dados_missao.data ? new Date(m.dados_missao.data).toLocaleDateString() : 'Data não informada'} - {m.dados_missao.local}</div>
                                     </div>
                                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${m.status === 'PENDENTE' ? 'bg-yellow-100 text-yellow-700' :
                                         m.status === 'APROVADA' || m.status === 'ATRIBUIDA' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>

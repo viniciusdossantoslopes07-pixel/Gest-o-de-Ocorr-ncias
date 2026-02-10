@@ -61,7 +61,7 @@ const MissionRequestList: FC<MissionRequestListProps> = ({ missions, onProcess, 
                             </div>
                             <h4 className="font-bold text-slate-900 mb-1">{mission.dados_missao.local}</h4>
                             <div className="flex items-center gap-4 text-xs text-slate-500">
-                                <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(mission.dados_missao.data).toLocaleDateString()}</span>
+                                <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {mission.dados_missao.data ? new Date(mission.dados_missao.data).toLocaleDateString() : 'Data não informada'}</span>
                                 <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {mission.dados_missao.inicio} - {mission.dados_missao.termino}</span>
                             </div>
                             <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-600">
@@ -84,7 +84,7 @@ const MissionRequestList: FC<MissionRequestListProps> = ({ missions, onProcess, 
                                         <MapPin className="w-3 h-3" /> {selectedMission.dados_missao.local}
                                     </span>
                                     <span className="px-2 py-1 bg-slate-100 rounded text-xs font-medium flex items-center gap-1">
-                                        <Calendar className="w-3 h-3" /> {new Date(selectedMission.dados_missao.data).toLocaleDateString()}
+                                        <Calendar className="w-3 h-3" /> {selectedMission.dados_missao.data ? new Date(selectedMission.dados_missao.data).toLocaleDateString() : 'Data não informada'}
                                     </span>
                                 </div>
                             </div>

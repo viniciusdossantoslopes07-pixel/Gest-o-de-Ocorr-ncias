@@ -100,7 +100,7 @@ const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests,
                                             <div className="text-sm text-slate-500">{req.dados_missao.local}</div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-xs font-bold text-slate-700">{new Date(req.dados_missao.data).toLocaleDateString()}</div>
+                                            <div className="text-xs font-bold text-slate-700">{req.dados_missao.data ? new Date(req.dados_missao.data).toLocaleDateString() : 'Data não informada'}</div>
                                             <div className="text-xs text-slate-400">{req.dados_missao.inicio} - {req.dados_missao.termino}</div>
                                         </div>
                                     </div>
