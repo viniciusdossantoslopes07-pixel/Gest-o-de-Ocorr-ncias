@@ -121,19 +121,47 @@ export default function MissionManager({ user }: MissionManagerProps) {
         }
     };
 
+    // Helper to generate OMIS Number
+    const generateOMISNumber = async (): Promise<string> => {
+        const year = new Date().getFullYear();
+        const { count } = await supabase
+            .from('mission_orders')
+            .select('*', { count: 'exact', head: true })
+            .gte('created_at', `${year}-01-01`);
+
+        return `${(count || 0) + 1}/GSD-SP`;
+    };
+
     // 2. Submit Order (SOP) -> Moves to AGUARDANDO_ASSINATURA
     const handleOrderSubmit = async (orderData: Partial<MissionOrder>) => {
         try {
-            const newOrder = {
-                ...orderData,
+            const omisNumber = await generateOMISNumber();
+
+            // Map to snake_case for DB
+            const dbOrder = {
+                omis_number: omisNumber,
+                date: orderData.date,
+                is_internal: orderData.isInternal,
+                mission: orderData.mission,
+                location: orderData.location,
+                description: orderData.description,
+                requester: orderData.requester,
+                transport: orderData.transport,
+                food: orderData.food,
+                personnel: orderData.personnel || [],
+                schedule: orderData.schedule || [],
+                permanent_orders: orderData.permanentOrders,
+                special_orders: orderData.specialOrders,
+                mission_commander_id: orderData.missionCommanderId,
                 status: 'AGUARDANDO_ASSINATURA', // Ready for CH-SOP
                 created_at: new Date().toISOString(),
-                created_by: user.name
+                created_by: user.name,
+                updated_at: new Date().toISOString()
             };
 
             const { error: orderError } = await supabase
                 .from('mission_orders')
-                .insert([newOrder]);
+                .insert([dbOrder]);
 
             if (orderError) throw orderError;
 
@@ -145,12 +173,13 @@ export default function MissionManager({ user }: MissionManagerProps) {
                     .eq('id', selectedMission.id);
             }
 
-            alert('Ordem de Missão gerada e enviada para assinatura do Ch SOP.');
+            alert(`Ordem de Missão ${omisNumber} gerada e enviada para assinatura do Ch SOP.`);
             setShowOrderForm(false);
             setSelectedMission(null);
             fetchData();
 
         } catch (error: any) {
+            console.error('Erro detalhado:', error);
             alert('Erro ao criar OM: ' + error.message);
         }
     };
