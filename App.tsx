@@ -35,6 +35,7 @@ import MissionOrderList from './components/MissionOrderList';
 import MissionOrderForm from './components/MissionOrderForm';
 import { InventoryManager } from './components/InventoryManager'; // Import
 import MissionOrderPrintView from './components/MissionOrderPrintView';
+import LoanRequestForm from './components/LoanRequestForm';
 import {
   STATUS_COLORS,
   OCCURRENCE_CATEGORIES,
