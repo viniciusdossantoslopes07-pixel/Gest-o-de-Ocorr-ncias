@@ -538,8 +538,6 @@ const App: FC = () => {
       created_by: currentUser?.name || 'Sistema',
       status: 'GERADA',
       timeline: [],
-      status: 'GERADA',
-      timeline: [],
       mission_commander_id: orderData.missionCommanderId || currentUser?.id
     };
 
@@ -592,9 +590,7 @@ const App: FC = () => {
       permanent_orders: orderData.permanentOrders,
       special_orders: orderData.specialOrders,
       updated_at: new Date().toISOString(),
-      status: orderData.status,
-      updated_at: new Date().toISOString(),
-      status: orderData.status,
+      special_orders: orderData.specialOrders,
       timeline: orderData.timeline,
       mission_commander_id: orderData.missionCommanderId
     };
@@ -884,6 +880,7 @@ const App: FC = () => {
                     setSelectedMissionOrder(null);
                   }}
                   currentUser={currentUser.name}
+                  users={users}
                 />
               ) : (
                 <MissionOrderList
