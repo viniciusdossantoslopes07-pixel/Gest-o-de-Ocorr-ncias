@@ -2,7 +2,7 @@
 import { useState, type FC, type FormEvent } from 'react';
 import { MissionOrder, MissionOrderPersonnel, MissionOrderSchedule } from '../types';
 import { Save, X, Plus, Trash2 } from 'lucide-react';
-import { RANKS, ARMAMENT_OPTIONS } from '../constants';
+import { RANKS, ARMAMENT_OPTIONS, MISSION_FUNCTIONS } from '../constants';
 
 interface MissionOrderFormProps {
     order?: MissionOrder;
@@ -277,13 +277,16 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                 {personnel.map(p => (
                                     <tr key={p.id} className="border-t border-slate-100">
                                         <td className="px-2 py-2">
-                                            <input
-                                                type="text"
+                                            <select
                                                 value={p.function}
                                                 onChange={e => updatePersonnel(p.id, 'function', e.target.value)}
                                                 className="w-full px-2 py-1 border border-slate-200 rounded text-xs"
-                                                placeholder="Ex: Efetivo S.I"
-                                            />
+                                            >
+                                                <option value="">Selecione</option>
+                                                {MISSION_FUNCTIONS.map(func => (
+                                                    <option key={func} value={func}>{func}</option>
+                                                ))}
+                                            </select>
                                         </td>
                                         <td className="px-2 py-2">
                                             <select
@@ -298,19 +301,36 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                             </select>
                                         </td>
                                         <td className="px-2 py-2">
-                                            <input
-                                                type="text"
+                                            <select
                                                 value={p.warName}
-                                                onChange={e => updatePersonnel(p.id, 'warName', e.target.value)}
+                                                onChange={e => {
+                                                    const selectedWarName = e.target.value;
+                                                    updatePersonnel(p.id, 'warName', selectedWarName);
+
+                                                    // Auto-fill SARAM and rank from database
+                                                    const foundUser = users.find(u => u.warName === selectedWarName);
+                                                    if (foundUser) {
+                                                        updatePersonnel(p.id, 'saram', foundUser.saram);
+                                                        updatePersonnel(p.id, 'rank', foundUser.rank);
+                                                    }
+                                                }}
                                                 className="w-full px-2 py-1 border border-slate-200 rounded text-xs"
-                                            />
+                                            >
+                                                <option value="">Selecione</option>
+                                                {users.map(user => (
+                                                    <option key={user.id} value={user.warName || user.name}>
+                                                        {user.warName || user.name}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </td>
                                         <td className="px-2 py-2">
                                             <input
                                                 type="text"
                                                 value={p.saram}
-                                                onChange={e => updatePersonnel(p.id, 'saram', e.target.value)}
-                                                className="w-full px-2 py-1 border border-slate-200 rounded text-xs"
+                                                readOnly
+                                                className="w-full px-2 py-1 border border-slate-200 rounded text-xs bg-slate-50"
+                                                placeholder="Auto"
                                             />
                                         </td>
                                         <td className="px-2 py-2">

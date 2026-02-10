@@ -93,3 +93,12 @@ export const MISSION_STATUS_COLORS: Record<string, string> = {
   'CANCELADA': 'bg-gray-100 text-gray-500'
 };
 
+export const MISSION_FUNCTIONS = [
+  'Comandante',
+  'Aux Comandante',
+  'Efetivo S.I',
+  'Efetivo PA',
+  'Motorista (D)',
+  'Motorista (B)'
+];
+
