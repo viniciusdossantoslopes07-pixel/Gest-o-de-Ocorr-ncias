@@ -60,3 +60,11 @@ export const SETORES = [
 ];
 
 export const ARMAMENT_OPTIONS = ['Pistola', 'Fuzil', 'Nenhum'];
+
+export const LOAN_STATUS_COLORS: Record<string, string> = {
+  'PENDENTE': 'bg-yellow-100 text-yellow-700',
+  'APROVADA': 'bg-blue-100 text-blue-700',
+  'RETIRADO': 'bg-purple-100 text-purple-700',
+  'DEVOLVIDO': 'bg-green-100 text-green-700',
+  'REJEITADA': 'bg-red-100 text-red-700',
+};

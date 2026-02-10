@@ -158,3 +158,31 @@ export interface Mission {
   parecer_sop?: string;
   data_criacao: string;
 }
+
+export interface InventoryItem {
+  id: string;
+  name: string;
+  description: string;
+  totalQuantity: number;
+  availableQuantity: number;
+  details: any;
+  status: 'DISPONIVEL' | 'MANUTENCAO' | 'BAIXADO';
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface MaterialLoan {
+  id: string;
+  userId: string;
+  itemId: string;
+  quantity: number;
+  requestDate: string;
+  authorizedBy?: string;
+  pickupDate?: string;
+  expectedReturnDate: string;
+  returnDate?: string;
+  status: 'PENDENTE' | 'APROVADA' | 'RETIRADO' | 'DEVOLVIDO' | 'REJEITADA';
+  observation?: string;
+  item?: InventoryItem;
+  requester?: User;
+}
