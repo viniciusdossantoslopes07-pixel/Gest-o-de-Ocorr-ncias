@@ -36,6 +36,7 @@ import MissionOrderForm from './components/MissionOrderForm';
 import { InventoryManager } from './components/InventoryManager'; // Import
 import MissionOrderPrintView from './components/MissionOrderPrintView';
 import LoanRequestForm from './components/LoanRequestForm';
+import MaterialDashboard from './components/MaterialDashboard';
 import {
   STATUS_COLORS,
   OCCURRENCE_CATEGORIES,
@@ -85,7 +86,9 @@ const App: FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [filter, setFilter] = useState('');
   const [initialCategory, setInitialCategory] = useState<string | undefined>(undefined);
+
   const [missionRequests, setMissionRequests] = useState<Mission[]>([]);
+  const [materialTab, setMaterialTab] = useState<'dashboard' | 'inventory'>('dashboard'); // New state for material sub-tabs
 
   // Access Control
   // Access Control - Defined early for use in Effects and Render
@@ -957,7 +960,30 @@ const App: FC = () => {
 
           {activeTab === 'material-caution' && (
             isMaterialManager ? (
-              <InventoryManager user={currentUser} />
+              <div className="space-y-6">
+                <div className="flex justify-center">
+                  <div className="bg-slate-200 p-1 rounded-xl inline-flex">
+                    <button
+                      onClick={() => setMaterialTab('dashboard')}
+                      className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${materialTab === 'dashboard' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      Solicitações e Cautelas
+                    </button>
+                    <button
+                      onClick={() => setMaterialTab('inventory')}
+                      className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${materialTab === 'inventory' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                      Gestão de Estoque
+                    </button>
+                  </div>
+                </div>
+
+                {materialTab === 'dashboard' ? (
+                  <MaterialDashboard />
+                ) : (
+                  <InventoryManager user={currentUser} />
+                )}
+              </div>
             ) : (
               <div className="max-w-4xl mx-auto">
                 <LoanRequestForm
