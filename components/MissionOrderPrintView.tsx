@@ -174,12 +174,31 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
                         </div>
                     </div>
 
+                    {/* Signature Block - Only if signed */}
+                    {order.chSopSignature && (
+                        <div className="mb-6 border-t-2 border-dashed border-slate-400 pt-4 mt-8 flex flex-col items-center">
+                            <p className="text-xs font-bold uppercase mb-1">Assinatura Digital - CH SOP</p>
+                            <p className="font-mono text-[10px] text-slate-600 bg-slate-50 px-2 py-1 rounded border border-slate-200">
+                                {order.chSopSignature}
+                            </p>
+                            <p className="text-[9px] text-slate-400 mt-1 italic">
+                                Documento assinado digitalmente. Verifique a autenticidade junto ao GSD-SP.
+                            </p>
+                        </div>
+                    )}
+
+
                     {/* Footer */}
-                    <div className="text-xs text-slate-500 mt-8 pt-4 border-t border-slate-300">
+                    <div className="text-xs text-slate-500 mt-4 pt-4 border-t border-slate-300">
                         <p>Criado por: {order.createdBy}</p>
                         <p>Data de criação: {new Date(order.createdAt).toLocaleString('pt-BR')}</p>
                         {order.updatedAt !== order.createdAt && (
                             <p>Última atualização: {new Date(order.updatedAt).toLocaleString('pt-BR')}</p>
+                        )}
+                        {order.missionReport && (
+                            <div className="mt-4 p-2 bg-slate-50 border border-slate-200 rounded">
+                                <span className="font-bold">Relato Operacional:</span> {order.missionReport}
+                            </div>
                         )}
                     </div>
                 </div>

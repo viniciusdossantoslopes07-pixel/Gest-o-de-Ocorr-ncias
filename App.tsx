@@ -943,7 +943,7 @@ const App: FC = () => {
 
           {activeTab === 'mission-management' && canManageMissions && (
             <div className="space-y-8">
-              <MissionDashboard orders={missionOrders} requests={missionRequests} />
+              <MissionDashboard orders={missionOrders} requests={missionRequests} user={currentUser!} />
 
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">

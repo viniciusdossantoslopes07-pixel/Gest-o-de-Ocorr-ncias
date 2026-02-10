@@ -2,6 +2,7 @@
 import { useState, type FC } from 'react';
 import { MissionOrder } from '../types';
 import { FileText, Plus, Edit, Trash2, Eye, Calendar, MapPin } from 'lucide-react';
+import { MISSION_STATUS_LABELS, MISSION_STATUS_COLORS } from '../constants';
 
 interface MissionOrderListProps {
     orders: MissionOrder[];
@@ -82,10 +83,13 @@ const MissionOrderList: FC<MissionOrderListProps> = ({ orders, onCreate, onEdit,
                                     <div className="flex items-center gap-3 mb-3">
                                         <span className="text-2xl font-black text-slate-900">{order.omisNumber}</span>
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${order.isInternal
-                                                ? 'bg-blue-100 text-blue-700'
-                                                : 'bg-orange-100 text-orange-700'
+                                            ? 'bg-blue-100 text-blue-700'
+                                            : 'bg-orange-100 text-orange-700'
                                             }`}>
                                             {order.isInternal ? 'Interna' : 'Externa'}
+                                        </span>
+                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${MISSION_STATUS_COLORS[order.status || ''] || 'bg-slate-100 text-slate-700'}`}>
+                                            {MISSION_STATUS_LABELS[order.status || ''] || order.status || 'Rascunho'}
                                         </span>
                                     </div>
 

@@ -115,7 +115,7 @@ export interface MissionOrder {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
-  status?: 'GERADA' | 'EM_ANDAMENTO' | 'CONCLUIDA' | 'CANCELADA';
+  status?: 'GERADA' | 'AGUARDANDO_ANALISE_SOP' | 'AGUARDANDO_ASSINATURA' | 'PRONTA_PARA_EXECUCAO' | 'EM_MISSAO' | 'CONCLUIDA' | 'REJEITADA' | 'CANCELADA';
   timeline?: {
     id: string;
     timestamp: string;
@@ -125,6 +125,11 @@ export interface MissionOrder {
     type: 'STATUS_CHANGE' | 'REPORT';
   }[];
   missionCommanderId?: string;
+  observation?: string;
+  chSopSignature?: string;
+  startTime?: string;
+  endTime?: string;
+  missionReport?: string;
 }
 
 export interface Mission {

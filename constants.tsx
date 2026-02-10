@@ -68,3 +68,26 @@ export const LOAN_STATUS_COLORS: Record<string, string> = {
   'DEVOLVIDO': 'bg-green-100 text-green-700',
   'REJEITADA': 'bg-red-100 text-red-700',
 };
+
+export const MISSION_STATUS_LABELS: Record<string, string> = {
+  'GERADA': 'Rascunho',
+  'AGUARDANDO_ANALISE_SOP': 'Aguardando Análise SOP-01',
+  'AGUARDANDO_ASSINATURA': 'Aguardando Assinatura CH-SOP',
+  'PRONTA_PARA_EXECUCAO': 'Pronta para Execução',
+  'EM_MISSAO': 'Em Missão',
+  'CONCLUIDA': 'Concluída',
+  'REJEITADA': 'Rejeitada',
+  'CANCELADA': 'Cancelada'
+};
+
+export const MISSION_STATUS_COLORS: Record<string, string> = {
+  'GERADA': 'bg-slate-100 text-slate-700',
+  'AGUARDANDO_ANALISE_SOP': 'bg-yellow-100 text-yellow-700',
+  'AGUARDANDO_ASSINATURA': 'bg-orange-100 text-orange-700',
+  'PRONTA_PARA_EXECUCAO': 'bg-blue-100 text-blue-700',
+  'EM_MISSAO': 'bg-purple-100 text-purple-700 pulse',
+  'CONCLUIDA': 'bg-green-100 text-green-700',
+  'REJEITADA': 'bg-red-100 text-red-700',
+  'CANCELADA': 'bg-gray-100 text-gray-500'
+};
+
