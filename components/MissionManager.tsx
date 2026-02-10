@@ -10,6 +10,7 @@ interface MissionManagerProps {
 
 export default function MissionManager({ user }: MissionManagerProps) {
     const [missions, setMissions] = useState<Mission[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'pendentes' | 'aguardando' | 'concluidas'>('pendentes');
     const [showOrderForm, setShowOrderForm] = useState(false);
@@ -17,7 +18,13 @@ export default function MissionManager({ user }: MissionManagerProps) {
 
     useEffect(() => {
         fetchMissions();
+        fetchUsers();
     }, []);
+
+    const fetchUsers = async () => {
+        const { data } = await supabase.from('users').select('*');
+        if (data) setUsers(data);
+    };
 
     const fetchMissions = async () => {
         try {
@@ -139,6 +146,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
                     onCancel={() => { setShowOrderForm(false); setSelectedMission(null); }}
                     onSubmit={handleOrderSubmit}
                     order={initialOrderData as any} // Cast as any because we are passing partial for new order
+                    users={users}
                 />
             </div>
         );
