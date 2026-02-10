@@ -56,8 +56,7 @@ const MaterialDashboard: React.FC = () => {
                     saram: loan.requester.saram,
                     sector: loan.requester.sector,
                     role: loan.requester.role,
-                    sector: loan.requester.sector,
-                    role: loan.requester.role,
+
                     email: loan.requester.email,
                     username: loan.requester.username || loan.requester.email // Ensure username is present
                 } : undefined
@@ -216,14 +215,14 @@ const MaterialDashboard: React.FC = () => {
                                                 {loan.status === 'PENDENTE' && (
                                                     <>
                                                         <button
-                                                            onClick={() => handleUpdateStatus(loan, 'APROVADA')}
+                                                            onClick={() => handleUpdateStatus(loan.id, 'APROVADA')}
                                                             className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg"
                                                             title="Aprovar"
                                                         >
                                                             <CheckCircle className="w-4 h-4" />
                                                         </button>
                                                         <button
-                                                            onClick={() => handleUpdateStatus(loan, 'REJEITADA')}
+                                                            onClick={() => handleUpdateStatus(loan.id, 'REJEITADA')}
                                                             className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
                                                             title="Rejeitar"
                                                         >
@@ -233,7 +232,7 @@ const MaterialDashboard: React.FC = () => {
                                                 )}
                                                 {loan.status === 'APROVADA' && (
                                                     <button
-                                                        onClick={() => handleUpdateStatus(loan, 'RETIRADO')}
+                                                        onClick={() => handleUpdateStatus(loan.id, 'RETIRADO')}
                                                         className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700"
                                                     >
                                                         Registrar Retirada
@@ -241,7 +240,7 @@ const MaterialDashboard: React.FC = () => {
                                                 )}
                                                 {loan.status === 'RETIRADO' && (
                                                     <button
-                                                        onClick={() => handleUpdateStatus(loan, 'DEVOLVIDO')}
+                                                        onClick={() => handleUpdateStatus(loan.id, 'DEVOLVIDO')}
                                                         className="px-3 py-1 bg-green-600 text-white text-xs font-bold rounded-lg hover:bg-green-700"
                                                     >
                                                         Registrar Devolução
