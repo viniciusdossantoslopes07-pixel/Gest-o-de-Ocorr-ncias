@@ -98,12 +98,22 @@ export default function SideMenu({
                                     <MenuItem id="mission-center" label="Central de Missões" icon={ShieldAlert} />
                                 )}
 
-                                {/* Shortcut to My Missions */}
+                                <MenuItem id="material-caution" label="Cautela de Material" icon={Package} />
+                            </div>
+
+                            {/* SECTION 2: MEU PLANO (Personal Items) */}
+                            <div>
+                                {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2">Meu Plano</h3>}
+
                                 {canRequestMission && (
-                                    <MenuItem id="mission-my-requests" label="Minhas Solicitações" icon={ShieldCheck} onClick={() => setActiveTab('mission-center')} />
+                                    <MenuItem id="mission-request" label="Solicitar Missão" icon={PlusCircle} />
                                 )}
 
-                                <MenuItem id="material-caution" label="Cautela de Material" icon={Package} />
+                                {canRequestMission && (
+                                    <MenuItem id="my-mission-requests" label="Minhas Solicitações" icon={ShieldCheck} />
+                                )}
+
+                                <MenuItem id="my-material-loans" label="Minhas Cautelas" icon={Package} />
                             </div>
 
                             {/* Admin Links */}
