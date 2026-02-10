@@ -538,7 +538,9 @@ const App: FC = () => {
       created_by: currentUser?.name || 'Sistema',
       status: 'GERADA',
       timeline: [],
-      mission_commander_id: currentUser?.id // Or try to resolve from requester if possible, but safely default to creator for now if not specified
+      status: 'GERADA',
+      timeline: [],
+      mission_commander_id: orderData.missionCommanderId || currentUser?.id
     };
 
     const { data, error } = await supabase
@@ -591,7 +593,10 @@ const App: FC = () => {
       special_orders: orderData.specialOrders,
       updated_at: new Date().toISOString(),
       status: orderData.status,
-      timeline: orderData.timeline
+      updated_at: new Date().toISOString(),
+      status: orderData.status,
+      timeline: orderData.timeline,
+      mission_commander_id: orderData.missionCommanderId
     };
 
     const { error } = await supabase
