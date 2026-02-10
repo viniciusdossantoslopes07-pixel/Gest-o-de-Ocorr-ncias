@@ -34,9 +34,10 @@ import UserProfile from './components/UserProfile';
 import MissionOrderList from './components/MissionOrderList';
 import MissionOrderForm from './components/MissionOrderForm';
 import { InventoryManager } from './components/InventoryManager'; // Import
-import MissionOrderPrintView from './components/MissionOrderPrintView';
+
 import LoanRequestForm from './components/LoanRequestForm';
 import MaterialDashboard from './components/MaterialDashboard';
+import MissionManager from './components/MissionManager';
 import {
   STATUS_COLORS,
   OCCURRENCE_CATEGORIES,
@@ -74,13 +75,13 @@ const PUBLIC_USER: User = {
 const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution'>('home');
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [selectedOccurrence, setSelectedOccurrence] = useState<Occurrence | null>(null);
   const [missionOrders, setMissionOrders] = useState<MissionOrder[]>([]);
   const [selectedMissionOrder, setSelectedMissionOrder] = useState<MissionOrder | null>(null);
   const [showMissionOrderForm, setShowMissionOrderForm] = useState(false);
-  const [showMissionOrderPrintView, setShowMissionOrderPrintView] = useState(false);
+
   const [activeMissionRequestId, setActiveMissionRequestId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -692,35 +693,9 @@ const App: FC = () => {
                   </button>
                 )}
 
-                {canManageMissions && (
-                  <button onClick={() => setActiveTab('mission-management')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-management' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                    <ShieldCheck className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão de Missões</span>
-                  </button>
-                )}
-
-              </>
-            )}
-
-            {/* CAUTELA DE MATERIAL - Visible to all authenticated users */}
-            <button onClick={() => setActiveTab('material-caution')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'material-caution' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-              <Package className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Cautela de Material</span>
-            </button>
-
-            {isAdmin && (
-              <>
-                <button onClick={() => setActiveTab('kanban')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'kanban' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                  <Kanban className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Fila de Serviço</span>
-                </button>
-
-                {canManageUsers && (
-                  <button onClick={() => setActiveTab('users')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'users' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                    <UsersIcon className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão Militar</span>
-                  </button>
-                )}
-
-                {canManageMissions && (
-                  <button onClick={() => { setActiveTab('mission-orders'); fetchMissionOrders(); }} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-orders' ? 'bg-amber-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                    <ShieldAlert className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Ordens de Missão</span>
+                {(canManageMissions || canRequestMission) && (
+                  <button onClick={() => setActiveTab('mission-center')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-center' ? 'bg-indigo-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
+                    <ShieldAlert className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Central de Missões</span>
                   </button>
                 )}
 
@@ -886,6 +861,12 @@ const App: FC = () => {
             />
           )}
 
+          {activeTab === 'mission-center' && (
+            <div className="flex-1 overflow-auto bg-slate-50 p-8">
+              <MissionManager user={currentUser} />
+            </div>
+          )}
+
           {activeTab === 'profile' && currentUser && (
             <UserProfile
               user={currentUser}
@@ -893,8 +874,7 @@ const App: FC = () => {
               missionRequests={missionRequests}
               missionOrders={missionOrders}
               onDownloadOrder={(order) => {
-                setSelectedMissionOrder(order);
-                setShowMissionOrderPrintView(true);
+                alert("Para imprimir, acesse a Central de Missões.");
               }}
               onUpdateOrderStatus={async (orderId, newStatus) => {
                 const orderToUpdate = missionOrders.find(o => o.id === orderId);
@@ -931,8 +911,7 @@ const App: FC = () => {
                     setShowMissionOrderForm(true);
                   }}
                   onView={(order) => {
-                    setSelectedMissionOrder(order);
-                    setShowMissionOrderPrintView(true);
+                    alert("Para visualizar/imprimir, acesse a Central de Missões.");
                   }}
                   onDelete={handleDeleteMissionOrder}
                 />
@@ -1038,17 +1017,7 @@ const App: FC = () => {
       )}
 
       {/* Mission Order Print View */}
-      {
-        showMissionOrderPrintView && selectedMissionOrder && (
-          <MissionOrderPrintView
-            order={selectedMissionOrder}
-            onClose={() => {
-              setShowMissionOrderPrintView(false);
-              setSelectedMissionOrder(null);
-            }}
-          />
-        )
-      }
+
     </div >
   );
 };

@@ -115,7 +115,7 @@ export interface MissionOrder {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
-  status?: 'GERADA' | 'AGUARDANDO_ANALISE_SOP' | 'AGUARDANDO_ASSINATURA' | 'PRONTA_PARA_EXECUCAO' | 'EM_MISSAO' | 'CONCLUIDA' | 'REJEITADA' | 'CANCELADA';
+  status?: 'GERADA' | 'PENDENTE_SOP' | 'EM_ELABORACAO' | 'AGUARDANDO_ASSINATURA' | 'PRONTA_PARA_EXECUCAO' | 'EM_MISSAO' | 'CONCLUIDA' | 'REJEITADA' | 'CANCELADA';
   timeline?: {
     id: string;
     timestamp: string;

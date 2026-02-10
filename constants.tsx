@@ -71,9 +71,10 @@ export const LOAN_STATUS_COLORS: Record<string, string> = {
 
 export const MISSION_STATUS_LABELS: Record<string, string> = {
   'GERADA': 'Rascunho',
-  'AGUARDANDO_ANALISE_SOP': 'Aguardando Análise SOP-01',
+  'PENDENTE_SOP': 'Pendente SOP-01',
+  'EM_ELABORACAO': 'Em Elaboração (SOP)',
   'AGUARDANDO_ASSINATURA': 'Aguardando Assinatura CH-SOP',
-  'PRONTA_PARA_EXECUCAO': 'Pronta para Execução',
+  'PRONTA_PARA_EXECUCAO': 'Pronta para Iniciar',
   'EM_MISSAO': 'Em Missão',
   'CONCLUIDA': 'Concluída',
   'REJEITADA': 'Rejeitada',
@@ -82,12 +83,13 @@ export const MISSION_STATUS_LABELS: Record<string, string> = {
 
 export const MISSION_STATUS_COLORS: Record<string, string> = {
   'GERADA': 'bg-slate-100 text-slate-700',
-  'AGUARDANDO_ANALISE_SOP': 'bg-yellow-100 text-yellow-700',
+  'PENDENTE_SOP': 'bg-yellow-100 text-yellow-700',
+  'EM_ELABORACAO': 'bg-blue-100 text-blue-700',
   'AGUARDANDO_ASSINATURA': 'bg-orange-100 text-orange-700',
-  'PRONTA_PARA_EXECUCAO': 'bg-blue-100 text-blue-700',
-  'EM_MISSAO': 'bg-purple-100 text-purple-700 pulse',
-  'CONCLUIDA': 'bg-green-100 text-green-700',
-  'REJEITADA': 'bg-red-100 text-red-700',
+  'PRONTA_PARA_EXECUCAO': 'bg-emerald-100 text-emerald-700',
+  'EM_MISSAO': 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500',
+  'CONCLUIDA': 'bg-slate-800 text-white',
+  'REJEITADA': 'bg-red-100 text-red-700 line-through',
   'CANCELADA': 'bg-gray-100 text-gray-500'
 };
 

@@ -481,16 +481,17 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
 
                         <div className="flex items-center gap-4 mb-6">
                             <div className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest ${order.status === 'CONCLUIDA' ? 'bg-green-100 text-green-700' :
-                                order.status === 'EM_ANDAMENTO' ? 'bg-blue-100 text-blue-700' :
+                                order.status === 'EM_MISSAO' ? 'bg-blue-100 text-blue-700' :
                                     'bg-slate-100 text-slate-600'
                                 }`}>
                                 Status: {order.status || 'GERADA'}
                             </div>
 
-                            {order.status === 'GERADA' && (
+                            {/* Só permite iniciar se estiver PRONTA (Assinada) ou se for um fluxo simplificado */}
+                            {(order.status === 'PRONTA_PARA_EXECUCAO' || order.status === 'GERADA') && (
                                 <button
                                     type="button"
-                                    onClick={() => onSubmit({ ...order, status: 'EM_ANDAMENTO' })}
+                                    onClick={() => onSubmit({ ...order, status: 'EM_MISSAO' })}
                                     className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-all flex items-center gap-2"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
@@ -498,7 +499,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                 </button>
                             )}
 
-                            {order.status === 'EM_ANDAMENTO' && (
+                            {order.status === 'EM_MISSAO' && (
                                 <>
                                     <button
                                         type="button"
@@ -515,7 +516,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                         text: report,
                                                         type: 'REPORT'
                                                     }
-                                                ];
+                                                ]; // Cast to avoid TS issues if type is strict
                                                 onSubmit({ ...order, timeline: newTimeline as any });
                                             }
                                         }}
