@@ -726,11 +726,7 @@ const App: FC = () => {
               </>
             )}
 
-            {!isPublic && (
-              <button onClick={() => setActiveTab('material-caution')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'material-caution' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                <Package className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Cautela de Material</span>
-              </button>
-            )}
+
 
             {!isPublic && (
               <>
