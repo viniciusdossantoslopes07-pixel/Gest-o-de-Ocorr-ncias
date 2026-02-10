@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { Mission, User, MissionOrder, UserRole } from '../types';
-import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard } from 'lucide-react';
+import MissionStatistics from './MissionStatistics';
 import MissionOrderForm from './MissionOrderForm';
 import { MISSION_STATUS_COLORS, MISSION_STATUS_LABELS } from '../constants';
 
@@ -16,7 +17,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
     const [orders, setOrders] = useState<MissionOrder[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'minhas_solicitacoes' | 'painel_gestao' | 'missoes_ativas'>('minhas_solicitacoes');
+    const [activeTab, setActiveTab] = useState<'minhas_solicitacoes' | 'painel_gestao' | 'missoes_ativas' | 'estatisticas'>('minhas_solicitacoes');
     const [showOrderForm, setShowOrderForm] = useState(false);
     const [showPrintView, setShowPrintView] = useState(false);
     const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
@@ -384,6 +385,14 @@ export default function MissionManager({ user }: MissionManagerProps) {
                 >
                     <Play className="w-4 h-4" /> Missões Ativas
                 </button>
+                {(isSop || isChSop) && (
+                    <button
+                        onClick={() => setActiveTab('estatisticas')}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'estatisticas' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        <LayoutDashboard className="w-4 h-4" /> Estatísticas
+                    </button>
+                )}
             </div>
 
             {/* Content Area */}
@@ -472,6 +481,11 @@ export default function MissionManager({ user }: MissionManagerProps) {
                             ))
                         )}
                     </div>
+                )}
+
+                {/* 4. Estatísticas */}
+                {activeTab === 'estatisticas' && (
+                    <MissionStatistics orders={orders} />
                 )}
 
             </div>
