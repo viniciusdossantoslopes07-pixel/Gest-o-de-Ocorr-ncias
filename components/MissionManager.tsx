@@ -303,7 +303,9 @@ export default function MissionManager({ user }: MissionManagerProps) {
                     <div key={m.id} className="bg-white p-4 rounded-xl border border-l-4 border-l-yellow-400 border-slate-200 shadow-sm flex justify-between items-center">
                         <div>
                             <div className="font-bold text-slate-900">{m.dados_missao.tipo_missao}</div>
-                            <div className="text-sm text-slate-500">{m.dados_missao.local} - {new Date(m.dados_missao.data).toLocaleDateString()}</div>
+                            <div className="text-sm text-slate-500">
+                                {m.dados_missao.local} - {m.dados_missao.data ? new Date(m.dados_missao.data).toLocaleDateString() : 'Data não informada'}
+                            </div>
                             <div className="text-xs text-slate-400 mt-1">Solicitante: {m.dados_missao.posto} {m.dados_missao.nome_guerra}</div>
                         </div>
                         <div className="flex gap-2">
