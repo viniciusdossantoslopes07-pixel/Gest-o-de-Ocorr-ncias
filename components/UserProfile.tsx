@@ -30,7 +30,6 @@ const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests,
     // Filter orders where I am the COMMANDER (Active only)
     const myCommandOrders = missionOrders.filter(mo => mo.missionCommanderId === user.id && mo.status !== 'CONCLUIDA' && mo.status !== 'CANCELADA');
 
-    return (
     const [selectedRequest, setSelectedRequest] = React.useState<Mission | null>(null);
 
     return (
