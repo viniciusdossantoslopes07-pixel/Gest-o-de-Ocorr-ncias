@@ -113,20 +113,45 @@ export default function MissionManager({ user }: MissionManagerProps) {
     };
 
     const handleRejectRequest = async (mission: Mission) => {
-        const obs = prompt('Motivo da rejeição:');
-        if (!obs) return;
+        const motivo = prompt('Informe o motivo da rejeição:');
+        if (!motivo) return;
 
-        try {
-            const { error } = await supabase
-                .from('missoes_gsd')
-                .update({ status: 'REJEITADA', parecer_sop: obs })
-                .eq('id', mission.id);
+        const { error } = await supabase
+            .from('missoes_gsd')
+            .update({ status: 'REJEITADA', parecer_sop: motivo })
+            .eq('id', mission.id);
 
-            if (error) throw error;
+        if (!error) {
+            await fetchMissions();
             alert('Solicitação rejeitada.');
-            fetchMissions();
-        } catch (e: any) {
-            alert('Erro: ' + e.message);
+        } else {
+            console.error('Erro ao rejeitar:', error);
+            alert('Erro ao rejeitar solicitação.');
+        }
+    };
+
+    const handleDeleteRequest = async (mission: Mission) => {
+        const confirmDelete = confirm(
+            `Tem certeza que deseja EXCLUIR permanentemente esta solicitação?\n\n` +
+            `Tipo: ${mission.dados_missao.tipo_missao}\n` +
+            `Local: ${mission.dados_missao.local}\n` +
+            `Solicitante: ${mission.dados_missao.posto} ${mission.dados_missao.nome_guerra}\n\n` +
+            `Esta ação NÃO pode ser desfeita!`
+        );
+
+        if (!confirmDelete) return;
+
+        const { error } = await supabase
+            .from('missoes_gsd')
+            .delete()
+            .eq('id', mission.id);
+
+        if (!error) {
+            await fetchMissions();
+            alert('Solicitação excluída com sucesso.');
+        } else {
+            console.error('Erro ao excluir:', error);
+            alert('Erro ao excluir solicitação.');
         }
     };
 
@@ -323,6 +348,9 @@ export default function MissionManager({ user }: MissionManagerProps) {
                             </button>
                             <button onClick={() => handleRejectRequest(m)} className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-bold hover:bg-red-200 transition-colors">
                                 Rejeitar
+                            </button>
+                            <button onClick={() => handleDeleteRequest(m)} className="px-3 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-bold hover:bg-slate-900 transition-colors">
+                                Excluir
                             </button>
                         </div>
                     </div>
