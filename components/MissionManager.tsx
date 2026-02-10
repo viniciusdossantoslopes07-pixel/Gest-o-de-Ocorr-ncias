@@ -169,7 +169,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
             if (selectedMission) {
                 const { error: updateError } = await supabase
                     .from('missoes_gsd')
-                    .update({ status: 'ATRIBUIDA' }) // Request is handled
+                    .update({ status: 'APROVADA' }) // Changed from ATRIBUIDA to APROVADA to match DB constraint
                     .eq('id', selectedMission.id);
 
                 if (updateError) {
