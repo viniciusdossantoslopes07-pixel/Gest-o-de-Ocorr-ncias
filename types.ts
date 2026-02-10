@@ -39,6 +39,7 @@ export interface User {
   approved?: boolean;
   cpf?: string;
   warName?: string;
+  themePreference?: 'light' | 'dark';
 }
 
 export interface Attachment {

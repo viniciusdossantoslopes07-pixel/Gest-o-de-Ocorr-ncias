@@ -1,26 +1,11 @@
 import { useState, useEffect, FC } from 'react';
 import { supabase } from './services/supabase';
 import {
-  LayoutDashboard,
-  PlusCircle,
-  FileText,
-  LogOut,
-  Search,
   Menu,
-  ShieldCheck,
-  Home,
-  Kanban,
-  Users as UsersIcon,
-  ChevronLeft,
-  ChevronRight,
   ShieldAlert,
-  Send,
-  Loader,
-  Package // Import Package icon
 } from 'lucide-react';
 import MissionRequestForm from './components/MissionRequestForm';
 import MissionRequestList from './components/MissionRequestList';
-import { verificarAcesso } from './utils/accessControl';
 import { Occurrence, User, UserRole, Status, Urgency, MissionOrder, Mission } from './types';
 import Dashboard from './components/Dashboard';
 import OccurrenceForm from './components/OccurrenceForm';
@@ -34,6 +19,9 @@ import UserProfile from './components/UserProfile';
 import MissionOrderList from './components/MissionOrderList';
 import MissionOrderForm from './components/MissionOrderForm';
 import { InventoryManager } from './components/InventoryManager'; // Import
+import SideMenu from './components/SideMenu'; // Import SideMenu
+import SettingsView from './components/SettingsView'; // Import SettingsView
+import FAQModal from './components/FAQModal'; // Import FAQModal
 
 import LoanRequestForm from './components/LoanRequestForm';
 import MaterialDashboard from './components/MaterialDashboard';
@@ -44,7 +32,6 @@ import {
   TYPES_BY_CATEGORY,
   URGENCY_COLORS,
   RANKS,
-  SETORES
 } from './constants';
 
 const DEFAULT_ADMIN: User = {
@@ -57,7 +44,7 @@ const DEFAULT_ADMIN: User = {
   rank: 'CEL',
   saram: '0000001',
   sector: 'COMANDO GERAL',
-  accessLevel: 'OM', // Agora o admin padrão é o nível superior
+  accessLevel: 'OM',
   approved: true
 };
 
@@ -75,7 +62,8 @@ const PUBLIC_USER: User = {
 const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution'>('home');
+  // Added 'settings' to activeTab type
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings'>('home');
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [selectedOccurrence, setSelectedOccurrence] = useState<Occurrence | null>(null);
   const [missionOrders, setMissionOrders] = useState<MissionOrder[]>([]);
@@ -84,15 +72,19 @@ const App: FC = () => {
 
   const [activeMissionRequestId, setActiveMissionRequestId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [filter, setFilter] = useState('');
   const [initialCategory, setInitialCategory] = useState<string | undefined>(undefined);
 
   const [missionRequests, setMissionRequests] = useState<Mission[]>([]);
-  const [materialTab, setMaterialTab] = useState<'dashboard' | 'inventory'>('dashboard'); // New state for material sub-tabs
+  const [materialTab, setMaterialTab] = useState<'dashboard' | 'inventory'>('dashboard');
+
+  // FAQ Modal State
+  const [showFAQ, setShowFAQ] = useState(false);
+
+  // Theme State
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Access Control
-  // Access Control - Defined early for use in Effects and Render
   const isAdmin = currentUser?.role === UserRole.ADMIN;
   const isOM = currentUser?.accessLevel === 'OM';
   const isPublic = currentUser?.role === UserRole.PUBLIC;
@@ -110,7 +102,6 @@ const App: FC = () => {
   const canManageUsers = !!currentUser && (isOM || ["CH-SOP", "SOP-01"].includes(currentUser.sector));
 
   // ROLE Material Manager (SAP-03, CH-SOP, Comandante OM)
-  // Ensure we cover all "Command" level users, including Admin roll
   const isMaterialManager = !!currentUser && (isOM || isAdmin || ["SAP-03", "CH-SAP"].includes(currentUser.sector));
 
 
@@ -123,6 +114,30 @@ const App: FC = () => {
   useEffect(() => {
     fetchOccurrences();
   }, []);
+
+  // Theme Persistence
+  useEffect(() => {
+    // Check local storage or user preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setIsDarkMode(true);
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    if (newMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+
+    // Optional: Save to User Profile in DB if needed (already in types.ts, implementation depends on requirement)
+  };
 
   const fetchOccurrences = async () => {
     const { data, error } = await supabase
@@ -139,8 +154,6 @@ const App: FC = () => {
 
   // Fetch Mission Requests (for Requester or SOP)
   useEffect(() => {
-    // Only fetch if user is logged in and has permission
-    // We check this inside the effect to avoid unnecessary calls or errors
     if (currentUser && (canRequestMission || canManageMissions)) {
       fetchMissionRequests();
     }
@@ -189,7 +202,6 @@ const App: FC = () => {
     } else {
       alert(`Missão ${decision} com sucesso!`);
       fetchMissionRequests();
-      // Simulate notification
       console.log(`Notificação para solicitante: Sua missão foi ${decision}. Parecer: ${parecer}`);
     }
   };
@@ -200,7 +212,7 @@ const App: FC = () => {
         .from('users')
         .select('*')
         .eq('username', username)
-        .eq('password', password) // ⚠️ Plaintext password check as requested
+        .eq('password', password)
         .single();
 
       if (error || !data) {
@@ -216,12 +228,14 @@ const App: FC = () => {
         rank: data.rank,
         saram: data.saram,
         sector: data.sector,
-        accessLevel: data.access_level, // Map from snake_case
-        approved: data.approved, // Ensure this is mapped if it exists in DB, or handle default
-        password: data.password // Store password for signature verification
+        accessLevel: data.access_level,
+        approved: data.approved,
+        password: data.password,
+        warName: data.war_name,
+        phoneNumber: data.phone_number,
+        cpf: data.cpf,
       };
 
-      // Check approval status (legacy users without field are considered approved)
       if (user.approved === false) {
         alert('Seu cadastro está pendente de aprovação pelo Comandante.');
         return false;
@@ -230,7 +244,6 @@ const App: FC = () => {
       setCurrentUser(user);
       setActiveTab('home');
 
-      // Fetch users list if has permission
       if (user.role === UserRole.ADMIN || ["CH-SOP", "SOP-01"].includes(user.sector)) {
         fetchUsers();
       }
@@ -245,7 +258,6 @@ const App: FC = () => {
   const fetchUsers = async () => {
     const { data } = await supabase.from('users').select('*');
     if (data) {
-      console.log('🔍 DEBUG fetchUsers - Raw data from DB:', data);
       const mappedUsers = data.map((u: any) => ({
         id: u.id,
         username: u.username,
@@ -254,16 +266,14 @@ const App: FC = () => {
         email: u.email,
         rank: u.rank,
         saram: u.saram,
-        cpf: u.cpf, // Mapper CPF
-        warName: u.war_name, // Map War Name
+        cpf: u.cpf,
+        warName: u.war_name,
         sector: u.sector,
         accessLevel: u.access_level,
         phoneNumber: u.phone_number,
         approved: u.approved,
-        password: u.password // Store password in state for editing (normally unsafe, but required for this flow)
+        password: u.password
       }));
-      console.log('🔍 DEBUG fetchUsers - Mapped users:', mappedUsers);
-      console.log('🔍 DEBUG fetchUsers - Pending users:', mappedUsers.filter(u => u.approved === false));
       setUsers(mappedUsers);
     }
   };
@@ -291,7 +301,9 @@ const App: FC = () => {
       sector: newUser.sector,
       access_level: newUser.accessLevel,
       phone_number: newUser.phoneNumber,
-      approved: true // Created by admin, so approved by default
+      approved: true,
+      war_name: newUser.warName,
+      cpf: newUser.cpf
     };
 
     const { data, error } = await supabase
@@ -313,7 +325,9 @@ const App: FC = () => {
         accessLevel: data.access_level,
         phoneNumber: data.phone_number,
         approved: data.approved,
-        password: data.password
+        password: data.password,
+        warName: data.war_name,
+        cpf: data.cpf
       };
       setUsers([...users, createdUser]);
       return true;
@@ -332,15 +346,13 @@ const App: FC = () => {
       email: newUser.email,
       rank: newUser.rank,
       saram: newUser.saram,
-      cpf: newUser.cpf,           // Novo
-      war_name: newUser.warName,  // Novo
+      cpf: newUser.cpf,
+      war_name: newUser.warName,
       sector: newUser.sector,
       access_level: 'N1',
       approved: false,
       phone_number: newUser.phoneNumber
     };
-
-    console.log('🔍 DEBUG handleRegister - Inserting user:', dbUser);
 
     const { error } = await supabase
       .from('users')
@@ -350,23 +362,25 @@ const App: FC = () => {
       console.error('Registration error:', error);
       return false;
     }
-    console.log('✅ DEBUG handleRegister - User registered successfully with approved=false');
     return true;
   };
 
   const handleUpdateUser = async (updatedUser: User) => {
+    // If updating strictly password (from SettingsView), we only send password
+    // But this function generally updates user profile data.
+    // Let's ensure we map everything back to snake_case for DB
     const { error } = await supabase
       .from('users')
       .update({
         username: updatedUser.username,
-        password: updatedUser.password,
+        password: updatedUser.password, // Be careful here, usually separate endpoint
         name: updatedUser.name,
         role: updatedUser.role,
         email: updatedUser.email,
         rank: updatedUser.rank,
         saram: updatedUser.saram,
-        cpf: updatedUser.cpf,             // Novo
-        war_name: updatedUser.warName,    // Novo
+        cpf: updatedUser.cpf,
+        war_name: updatedUser.warName,
         sector: updatedUser.sector,
         access_level: updatedUser.accessLevel,
         phone_number: updatedUser.phoneNumber,
@@ -377,8 +391,10 @@ const App: FC = () => {
     if (!error) {
       setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u));
       if (currentUser?.id === updatedUser.id) setCurrentUser(updatedUser);
+      // If called from SettingsView (partial update), we might need to rely on currentUser update
     } else {
       alert('Erro ao atualizar usuário: ' + error.message);
+      throw error; // Propagate error for UI handling
     }
   };
 
@@ -442,16 +458,14 @@ const App: FC = () => {
   };
 
   const handleGenerateOrderFromRequest = async (mission: Mission) => {
-    // Switch to OM tab (if allowed, checking permission manually just in case)
     if (!canManageMissions) {
       alert('Permissão negada para gerar Ordem de Missão.');
       return;
     }
 
-    // Prepare initial data for MissionOrder
     const initialOrderData: Partial<MissionOrder> = {
       date: mission.dados_missao.data,
-      isInternal: true, // Assuming internal by default, can be changed
+      isInternal: true,
       mission: mission.dados_missao.tipo_missao,
       location: mission.dados_missao.local,
       requester: `${mission.dados_missao.posto} ${mission.dados_missao.nome_guerra}`,
@@ -471,19 +485,9 @@ const App: FC = () => {
       missionCommanderId: mission.solicitante_id
     };
 
-    // Store origin request ID
     setActiveMissionRequestId(mission.id);
-
-    // Set state to open form
-    setSelectedMissionOrder(initialOrderData as MissionOrder); // Cast as it's partial but form handles it
+    setSelectedMissionOrder(initialOrderData as MissionOrder);
     setShowMissionOrderForm(true);
-
-    // Switch tab - We need to be careful if 'mission-orders' is restricted to OM only
-    // If user is SOP, they might not have access to 'mission-orders' tab in the sidebar logic
-    // We update the sidebar logic to allow SOP to see 'mission-orders' OR handle it differently.
-    // For now, let's assume we want to show the form.
-    // Wait, Lines 598-600 restrict 'mission-orders' tab to isOM.
-    // We need to allow SOP to access Mission Orders too to create them.
     setActiveTab('mission-orders');
   };
 
@@ -565,7 +569,6 @@ const App: FC = () => {
       console.error('Error creating mission order:', error);
       alert('Erro ao criar ordem de missão: ' + error.message);
     } else {
-      // If there was an active request ID, update its status
       if (activeMissionRequestId) {
         const { error: reqError } = await supabase
           .from('missoes_gsd')
@@ -588,7 +591,6 @@ const App: FC = () => {
   };
 
   const handleUpdateMissionOrder = async (orderData: Partial<MissionOrder>) => {
-    // If we have a selected order, use its ID. Otherwise, try to find ID in orderData.
     const orderId = selectedMissionOrder?.id || orderData.id;
 
     if (!orderId) {
@@ -605,22 +607,15 @@ const App: FC = () => {
       requester: orderData.requester,
       transport: orderData.transport,
       food: orderData.food,
-      personnel: orderData.personnel || [],
-      schedule: orderData.schedule || [],
+      personnel: orderData.personnel,
+      schedule: orderData.schedule,
       permanent_orders: orderData.permanentOrders,
       special_orders: orderData.specialOrders,
-      updated_at: new Date().toISOString(),
       status: orderData.status,
       timeline: orderData.timeline,
-      mission_commander_id: orderData.missionCommanderId
+      ch_sop_signature: orderData.chSopSignature,
+      updated_at: new Date().toISOString()
     };
-
-    // Remove undefined keys to avoid overriding with null/undefined if we are doing a partial update? 
-    // Actually, for a full form update we want to send everything. 
-    // But for a status update from UserProfile, we are sending the WHOLE object (...) + new status, so it should be fine.
-    // However, if we just sent partial data, this dbOrder construction might wipe other fields if they are undefined in orderData.
-    // The current usage in UserProfile does: handleUpdateMissionOrder({ ...orderToUpdate, status: newStatus });
-    // So it sends the full object. That is safe.
 
     const { error } = await supabase
       .from('mission_orders')
@@ -632,15 +627,15 @@ const App: FC = () => {
       alert('Erro ao atualizar ordem de missão: ' + error.message);
     } else {
       await fetchMissionOrders();
-      if (showMissionOrderForm) {
-        setShowMissionOrderForm(false);
-        setSelectedMissionOrder(null);
-      }
+      setShowMissionOrderForm(false);
+      setSelectedMissionOrder(null);
       alert('OMIS atualizada com sucesso!');
     }
   };
 
   const handleDeleteMissionOrder = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta OMIS?')) return;
+
     const { error } = await supabase
       .from('mission_orders')
       .delete()
@@ -655,130 +650,72 @@ const App: FC = () => {
     }
   };
 
+  // Helper for password update (passed to SettingsView)
+  const handlePasswordChange = async (current: string, newPass: string): Promise<boolean> => {
+    if (!currentUser) return false;
+
+    // Verify current (simple check against local state first, but ideally verify against DB again)
+    if (currentUser.password !== current) {
+      alert('Senha atual incorreta.');
+      return false;
+    }
+
+    // Update in DB
+    const { error } = await supabase
+      .from('users')
+      .update({ password: newPass })
+      .eq('id', currentUser.id);
+
+    if (error) {
+      alert('Erro ao alterar senha: ' + error.message);
+      return false;
+    }
+
+    // Update local state
+    setCurrentUser({ ...currentUser, password: newPass });
+    return true;
+  }
+
+  // Helper for User Update from Profile
+  const handleUserProfileUpdate = async (userData: Partial<User>) => {
+    if (!currentUser) return;
+    const updated = { ...currentUser, ...userData };
+    try {
+      await handleUpdateUser(updated);
+      // handleUpdateUser updates state on success
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   if (!currentUser) {
     return <LoginView onLogin={handleLogin} onRegister={handleRegister} onPublicAccess={handlePublicAccess} />;
   }
 
-
-
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
+    <div className={`min-h-screen flex ${isDarkMode ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
 
-      <aside className={`fixed inset-y-0 left-0 z-50 bg-slate-900 text-white transform transition-all duration-300 lg:relative lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${isSidebarCollapsed ? 'w-20' : 'w-72'}`}>
-        <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="hidden lg:flex absolute -right-3 top-20 bg-blue-600 w-6 h-6 rounded-full items-center justify-center border-2 border-slate-900 hover:bg-blue-500 z-[60]">
-          {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-        </button>
-
-        <div className={`p-6 h-full flex flex-col ${isSidebarCollapsed ? 'items-center px-4' : ''}`}>
-          <div className={`flex items-center gap-3 mb-10 overflow-hidden ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-            <div className="shrink-0 relative w-12 h-12 rounded-full overflow-hidden shadow-md ring-2 ring-white/10">
-              <img src="/logo_gsd.jpg" alt="Logo" className="w-full h-full object-cover scale-125" />
-            </div>
-            {!isSidebarCollapsed && <h1 className="text-xl font-black tracking-tighter whitespace-nowrap">Guardião GSD-SP</h1>}
-          </div>
-
-          <nav className="flex-1 space-y-1.5 overflow-y-auto pr-1">
-            {!isPublic && (
-              <>
-                <button onClick={() => setActiveTab('home')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'home' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                  <Home className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Painel Geral</span>
-                </button>
-                <button onClick={() => setActiveTab('new')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'new' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                  <PlusCircle className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Novo Registro</span>
-                </button>
-
-                {canRequestMission && (
-                  <button onClick={() => setActiveTab('mission-request')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-request' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                    <ShieldCheck className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Solicitar Missão</span>
-                  </button>
-                )}
-
-                {(canManageMissions || canRequestMission) && (
-                  <button onClick={() => setActiveTab('mission-center')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'mission-center' ? 'bg-indigo-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                    <ShieldAlert className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Central de Missões</span>
-                  </button>
-                )}
-
-                <button onClick={() => setActiveTab('material-caution')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'material-caution' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                  <Package className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Cautela de Material</span>
-                </button>
-
-                {isAdmin && (
-                  <button onClick={() => setActiveTab('kanban')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'kanban' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                    <Kanban className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Fila de Serviço</span>
-                  </button>
-                )}
-
-                {canManageUsers && (
-                  <button onClick={() => setActiveTab('users')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'users' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                    <UsersIcon className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Gestão Militar</span>
-                  </button>
-                )}
-
-                <button onClick={() => setActiveTab('dashboard')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'dashboard' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                  <LayoutDashboard className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Estatísticas BI</span>
-                </button>
-              </>
-            )}
-
-
-
-            {!isPublic && (
-              <>
-                <button onClick={() => setActiveTab('list')} className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'list' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                  <FileText className="w-5 h-5 shrink-0" /><span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Arquivo Geral</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('profile')}
-                  className={`w-full flex items-center rounded-xl transition-all ${activeTab === 'profile' ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}
-                >
-                  <UsersIcon className="w-5 h-5 shrink-0" />
-                  <span className={isSidebarCollapsed ? 'hidden' : 'block text-sm font-bold'}>Meu Perfil</span>
-                </button>
-              </>
-            )}
-
-            <div className="py-4 border-t border-slate-800/50 my-4">
-              <button onClick={handleLogout} className={`w-full flex items-center rounded-xl transition-all text-slate-400 hover:text-red-400 hover:bg-red-500/10 ${isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}>
-                <LogOut className="w-5 h-5 shrink-0" />
-                {!isSidebarCollapsed && <span className="text-sm font-bold">Encerrar Sessão</span>}
-              </button>
-            </div>
-          </nav>
-
-          <div className={`pt-6 border-t border-slate-800 ${isSidebarCollapsed ? 'flex flex-col items-center' : ''}`}>
-            <div className={`px-4 py-4 mb-4 bg-slate-800/50 rounded-2xl flex flex-col gap-2 overflow-hidden ${isSidebarCollapsed ? 'items-center px-2' : ''}`}>
-              <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-sm shrink-0 shadow-lg uppercase">{currentUser.name[0]}</div>
-                {!isSidebarCollapsed && (
-                  <div className="overflow-hidden">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase truncate">{currentUser.rank}</p>
-                    <p className="text-sm font-black truncate">{currentUser.name}</p>
-                  </div>
-                )}
-              </div>
-              {!isSidebarCollapsed && (
-                <div className="pt-2 border-t border-slate-700/50 space-y-1">
-                  <span className="inline-block px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded-md text-[8px] font-black uppercase tracking-widest border border-blue-500/20">{currentUser.role}</span>
-                  {currentUser.accessLevel && (
-                    <span className={`block text-[8px] font-bold uppercase tracking-widest ${currentUser.accessLevel === 'OM' ? 'text-amber-500' : 'text-slate-500'}`}>Nível {currentUser.accessLevel}</span>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </aside >
+      {/* NEW SIDEBAR COMPONENT */}
+      <SideMenu
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab} // SideMenu handles permission logic for visibility
+        currentUser={currentUser}
+        onLogout={handleLogout}
+        onToggleTheme={toggleTheme}
+        isDarkMode={isDarkMode}
+        onOpenFAQ={() => setShowFAQ(true)}
+      />
 
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        <header className="bg-white border-b border-slate-200 px-8 py-5 flex items-center justify-between z-40">
-          <div className="flex items-center gap-4">
-            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-slate-500"><Menu className="w-6 h-6" /></button>
-            <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-              {isPublic ? 'Registro de Ocorrência Pública' :
-                activeTab === 'new' ? 'Novo Registro Militar' :
+        {/* HEADER (Simplified) */}
+        {!isPublic && (
+          <header className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} border-b px-8 py-5 flex items-center justify-between z-40`}>
+            <div className="flex items-center gap-4">
+              <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-slate-500"><Menu className="w-6 h-6" /></button>
+              <h2 className={`text-xl font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                {activeTab === 'new' ? 'Novo Registro Militar' :
                   activeTab === 'home' ? 'Central de Comando' :
                     activeTab === 'users' ? 'Gestão de Acessos' :
                       activeTab === 'dashboard' ? 'Painel de Inteligência' :
@@ -786,20 +723,17 @@ const App: FC = () => {
                           activeTab === 'mission-request' ? 'Nova Missão' :
                             activeTab === 'mission-management' ? 'Gestão de Missões' :
                               activeTab === 'mission-orders' ? 'Ordens de Missão' :
-                                activeTab === 'material-caution' ? 'Cautela de Material' : 'Arquivo Digital'}
-            </h2>
-          </div>
-          {!isPublic && (
-            <div className="flex items-center gap-4">
-              <div className="relative hidden md:block">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input type="text" placeholder="Filtrar registros..." className="pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-2xl text-sm w-72 focus:ring-2 focus:ring-blue-500" value={filter} onChange={e => setFilter(e.target.value)} />
-              </div>
+                                activeTab === 'mission-center' ? 'Central de Missões' : // Added
+                                  activeTab === 'material-caution' ? 'Cautela de Material' :
+                                    activeTab === 'settings' ? 'Minhas Configurações' : 'Arquivo Digital'}
+              </h2>
             </div>
-          )}
-        </header>
+          </header>
+        )}
 
-        <div className="p-8 flex-1 overflow-y-auto bg-slate-50">
+        <div className={`p-8 flex-1 overflow-y-auto ${isDarkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
+          {/* --- CONTENT AREA START --- */}
+
           {activeTab === 'home' && !isPublic && (
             <HomeView
               user={currentUser}
@@ -814,15 +748,6 @@ const App: FC = () => {
 
           {(activeTab === 'new' || isPublic) && (
             <div className="max-w-4xl mx-auto">
-              {isPublic && (
-                <div className="mb-6 p-6 bg-blue-600 text-white rounded-[2rem] shadow-xl flex items-center gap-5">
-                  <ShieldAlert className="w-12 h-12 shrink-0" />
-                  <div>
-                    <h3 className="text-lg font-bold">Relato ao Oficial de Segurança</h3>
-                    <p className="text-blue-100 text-sm">Seu relato será enviado diretamente para análise militar (N1).</p>
-                  </div>
-                </div>
-              )}
               <OccurrenceForm
                 user={currentUser}
                 onCancel={() => isPublic ? handleLogout() : setActiveTab('home')}
@@ -865,9 +790,7 @@ const App: FC = () => {
             </div>
           )}
 
-
-
-          {/* Somente Perfil Comandante OM ou SOP-01/CH-SOP podem ver o UserManagement */}
+          {/* User Management */}
           {activeTab === 'users' && canManageUsers && (
             <UserManagement
               users={users}
@@ -878,13 +801,31 @@ const App: FC = () => {
             />
           )}
 
+          {/* MISSION CENTER (Unified) */}
           {activeTab === 'mission-center' && (
-            <div className="flex-1 overflow-auto bg-slate-50 p-8">
+            <div className="flex-1 overflow-auto p-4">
               <MissionManager user={currentUser} />
             </div>
           )}
 
-          {activeTab === 'profile' && currentUser && (
+          {/* Settings / Profile View */}
+          {activeTab === 'settings' && (
+            <SettingsView
+              user={currentUser}
+              onUpdateUser={handleUserProfileUpdate}
+              onUpdatePassword={handlePasswordChange}
+              isDarkMode={isDarkMode}
+              onToggleTheme={toggleTheme}
+            />
+          )}
+
+          {/* Legacy Profile tab mapped to Settings for now, or kept separate if needed. 
+              The SideMenu links 'Meu Perfil' to 'settings'. 
+              If 'profile' tab is still used internally, we can redirect or keep as read-only.
+              Let's keep it as is for backward compatibility or remove if fully replaced.
+              User requested "Configuracoes.vue" or "Perfil", integrated in SettingsView.
+          */}
+          {activeTab === 'profile' && (
             <UserProfile
               user={currentUser}
               occurrences={occurrences}
@@ -902,7 +843,23 @@ const App: FC = () => {
             />
           )}
 
-          {/* SOMENTE Comandante OM ou SOP pode ver Ordens de Missão (SOP precisa gerar) */}
+
+          {/* Mission Management (Legacy / Optional if everything is in MissionManager) */}
+          {activeTab === 'mission-management' && canManageMissions && (
+            <div className="space-y-8">
+              <MissionDashboard orders={missionOrders} requests={missionRequests} user={currentUser!} />
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                {/* ... */}
+                <MissionRequestList
+                  missions={missionRequests.filter(r => r.status !== 'FINALIZADA')}
+                  onProcess={handleProcessMissionRequest}
+                  onGenerateOrder={handleGenerateOrderFromRequest}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Mission Orders (Form View mainly) */}
           {activeTab === 'mission-orders' && (isOM || canManageMissions) && (
             <>
               {showMissionOrderForm ? (
@@ -912,6 +869,8 @@ const App: FC = () => {
                   onCancel={() => {
                     setShowMissionOrderForm(false);
                     setSelectedMissionOrder(null);
+                    // Return to where?
+                    setActiveTab('mission-center');
                   }}
                   currentUser={currentUser.name}
                   users={users}
@@ -934,24 +893,6 @@ const App: FC = () => {
                 />
               )}
             </>
-          )}
-
-
-          {activeTab === 'mission-management' && canManageMissions && (
-            <div className="space-y-8">
-              <MissionDashboard orders={missionOrders} requests={missionRequests} user={currentUser!} />
-
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-                  <h3 className="font-bold text-slate-700">Solicitações de Missão Recebidas</h3>
-                </div>
-                <MissionRequestList
-                  missions={missionRequests.filter(r => r.status !== 'FINALIZADA')} // Filter out finalized
-                  onProcess={handleProcessMissionRequest}
-                  onGenerateOrder={handleGenerateOrderFromRequest}
-                />
-              </div>
-            </div>
           )}
 
           {activeTab === 'material-caution' && (
@@ -993,9 +934,9 @@ const App: FC = () => {
 
 
           {activeTab === 'list' && !isPublic && (
-            <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
+            <div className={`rounded-[2rem] border overflow-hidden shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
               <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 border-b border-slate-200">
+                <thead className={`${isDarkMode ? 'bg-slate-900/50' : 'bg-slate-50'} border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-200'}`}>
                   <tr>
                     <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Registro</th>
                     <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Categoria</th>
@@ -1003,11 +944,11 @@ const App: FC = () => {
                     <th className="px-8 py-5 font-black text-slate-400 uppercase tracking-widest text-[10px]">Risco</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className={`divide-y ${isDarkMode ? 'divide-slate-700 text-slate-300' : 'divide-slate-100'}`}>
                   {occurrences.filter(o => o.title.toLowerCase().includes(filter.toLowerCase())).map(occ => (
-                    <tr key={occ.id} className="hover:bg-slate-50 cursor-pointer transition-colors" onClick={() => setSelectedOccurrence(occ)}>
+                    <tr key={occ.id} className={`${isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-50'} cursor-pointer transition-colors`} onClick={() => setSelectedOccurrence(occ)}>
                       <td className="px-8 py-5">
-                        <div className="font-bold text-slate-900">{occ.title}</div>
+                        <div className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{occ.title}</div>
                         <div className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">ID: {occ.id}</div>
                       </td>
                       <td className="px-8 py-5 text-slate-500 font-medium">{occ.category}</td>
@@ -1019,6 +960,8 @@ const App: FC = () => {
               </table>
             </div>
           )}
+
+          {/* --- CONTENT AREA END --- */}
         </div>
       </main >
 
@@ -1033,9 +976,10 @@ const App: FC = () => {
         />
       )}
 
-      {/* Mission Order Print View */}
+      {/* FAQ Modal */}
+      {showFAQ && <FAQModal onClose={() => setShowFAQ(false)} />}
 
-    </div >
+    </div>
   );
 };
 
