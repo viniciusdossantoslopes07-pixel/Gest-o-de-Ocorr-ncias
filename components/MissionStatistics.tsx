@@ -6,9 +6,10 @@ import { Target, Users, CheckCircle, Clock, Play } from 'lucide-react';
 
 interface MissionStatisticsProps {
     orders: MissionOrder[];
+    missions?: any[]; // Mission requests
 }
 
-export default function MissionStatistics({ orders }: MissionStatisticsProps) {
+export default function MissionStatistics({ orders, missions = [] }: MissionStatisticsProps) {
     // 1. Calculate Totals
     const totalMissions = orders.length;
     const activeMissions = orders.filter(o => o.status === 'EM_MISSAO' || o.status === 'PRONTA_PARA_EXECUCAO').length;
@@ -76,6 +77,114 @@ export default function MissionStatistics({ orders }: MissionStatisticsProps) {
                     <div>
                         <p className="text-sm text-slate-500 font-medium">Pendentes (Assinatura)</p>
                         <h3 className="text-2xl font-black text-slate-900">{pendingMissions}</h3>
+                    </div>
+                </div>
+            </div>
+
+            {/* Top Military Personnel Statistics */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Top Mission Requesters */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                            <Users className="w-5 h-5" />
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-800">Militares que Mais Solicitam Missões</h3>
+                    </div>
+                    <div className="space-y-3">
+                        {(() => {
+                            const requesterCounts = missions.reduce((acc, mission) => {
+                                const name = mission.dados_missao?.nome_guerra || 'Desconhecido';
+                                const rank = mission.dados_missao?.posto || '';
+                                const key = `${rank} ${name}`;
+                                acc[key] = (acc[key] || 0) + 1;
+                                return acc;
+                            }, {} as Record<string, number>);
+
+                            const topRequesters = Object.entries(requesterCounts)
+                                .sort(([, a], [, b]) => (b as number) - (a as number))
+                                .slice(0, 5);
+
+                            if (topRequesters.length === 0) {
+                                return <p className="text-sm text-slate-400 text-center py-4">Nenhum dado disponível</p>;
+                            }
+
+                            const maxCount = topRequesters[0][1];
+
+                            return topRequesters.map(([name, count], index) => (
+                                <div key={name} className="flex items-center gap-3">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
+                                        index === 1 ? 'bg-slate-200 text-slate-700' :
+                                            index === 2 ? 'bg-orange-100 text-orange-700' :
+                                                'bg-slate-100 text-slate-600'
+                                        }`}>
+                                        {index + 1}º
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-sm font-bold text-slate-900">{name}</p>
+                                        <div className="w-full bg-slate-100 rounded-full h-2 mt-1">
+                                            <div
+                                                className="bg-blue-500 h-2 rounded-full transition-all"
+                                                style={{ width: `${((count as number) / (maxCount as number)) * 100}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <span className="text-sm font-bold text-slate-600">{count as number}</span>
+                                </div>
+                            ));
+                        })()}
+                    </div>
+                </div>
+
+                {/* Top Mission Commanders */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                            <Target className="w-5 h-5" />
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-800">Militares Mais Responsáveis por Missões</h3>
+                    </div>
+                    <div className="space-y-3">
+                        {(() => {
+                            const commanderCounts = orders.reduce((acc, order) => {
+                                const commander = order.missionCommanderId || 'Não Atribuído';
+                                acc[commander] = (acc[commander] || 0) + 1;
+                                return acc;
+                            }, {} as Record<string, number>);
+
+                            const topCommanders = Object.entries(commanderCounts)
+                                .filter(([name]) => name !== 'Não Atribuído')
+                                .sort(([, a], [, b]) => (b as number) - (a as number))
+                                .slice(0, 5);
+
+                            if (topCommanders.length === 0) {
+                                return <p className="text-sm text-slate-400 text-center py-4">Nenhum dado disponível</p>;
+                            }
+
+                            const maxCount = topCommanders[0][1];
+
+                            return topCommanders.map(([name, count], index) => (
+                                <div key={name} className="flex items-center gap-3">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
+                                        index === 1 ? 'bg-slate-200 text-slate-700' :
+                                            index === 2 ? 'bg-orange-100 text-orange-700' :
+                                                'bg-slate-100 text-slate-600'
+                                        }`}>
+                                        {index + 1}º
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-sm font-bold text-slate-900">{name}</p>
+                                        <div className="w-full bg-slate-100 rounded-full h-2 mt-1">
+                                            <div
+                                                className="bg-emerald-500 h-2 rounded-full transition-all"
+                                                style={{ width: `${((count as number) / (maxCount as number)) * 100}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <span className="text-sm font-bold text-slate-600">{count as number}</span>
+                                </div>
+                            ));
+                        })()}
                     </div>
                 </div>
             </div>
