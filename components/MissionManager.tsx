@@ -518,7 +518,12 @@ export default function MissionManager({ user }: MissionManagerProps) {
     }
 
     // Data filtered for current user (case insensitive to prevent mismatches)
-    const myMissions = missions.filter(m => m.solicitante_id === user.id || m.solicitante_id?.toLowerCase() === user.id?.toLowerCase());
+    // Also include missions where the user is the 'responsavel' in data
+    const myMissions = missions.filter(m =>
+        m.solicitante_id === user.id ||
+        m.solicitante_id?.toLowerCase() === user.id?.toLowerCase() ||
+        (m.dados_missao.responsavel?.nome && m.dados_missao.responsavel.nome.toLowerCase().includes(user.name.toLowerCase()))
+    );
 
     return (
         <div className="max-w-7xl mx-auto space-y-6">
@@ -587,7 +592,8 @@ export default function MissionManager({ user }: MissionManagerProps) {
                                     <div>
                                         <div className="font-bold text-slate-900 flex items-center gap-2">
                                             {m.dados_missao.tipo_missao}
-                                            {m.status === 'RASCUNHO' && <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full uppercase">Rascunho</span>}
+                                            <span className="text-[10px] text-slate-400 font-normal ml-2">#{m.id.slice(0, 8)}</span>
+                                            {m.status === 'RASCUNHO' && <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full uppercase ml-2">Rascunho</span>}
                                         </div>
                                         <div className="text-sm text-slate-500">{m.dados_missao.data ? new Date(m.dados_missao.data).toLocaleDateString() : 'Data não informada'} - {m.dados_missao.local}</div>
                                     </div>

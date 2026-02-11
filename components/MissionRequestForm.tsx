@@ -108,7 +108,8 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                 ...formData
             },
             status: isDraft ? 'RASCUNHO' : 'PENDENTE',
-            data_criacao: initialData?.data_criacao || new Date().toISOString()
+            data_criacao: initialData?.data_criacao || new Date().toISOString(),
+            id: initialData?.id || crypto.randomUUID() // Ensure unique ID
         };
 
         onSubmit(submissionData, isDraft);
