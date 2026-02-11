@@ -304,9 +304,9 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                             <input
                                                 type="text"
                                                 value={p.warName}
-                                                readOnly
-                                                className="w-full px-2 py-1 border border-slate-200 rounded text-xs bg-slate-50"
-                                                placeholder="Auto"
+                                                onChange={e => updatePersonnel(p.id, 'warName', e.target.value)}
+                                                className="w-full px-2 py-1 border border-slate-200 rounded text-xs"
+                                                placeholder="Nome de Guerra"
                                             />
                                         </td>
                                         <td className="px-2 py-2">
@@ -314,7 +314,6 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                 type="text"
                                                 value={p.saram}
                                                 onChange={e => {
-                                                    // Just update the SARAM value, don't search yet
                                                     updatePersonnel(p.id, 'saram', e.target.value);
                                                 }}
                                                 onBlur={e => {
@@ -328,13 +327,11 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                         // Try both camelCase and snake_case
                                                         const warName = foundUser.warName || (foundUser as any).war_name || foundUser.name;
 
+                                                        // Only auto-fill if the fields are empty or if user found
                                                         updatePersonnel(p.id, 'warName', warName);
                                                         updatePersonnel(p.id, 'rank', foundUser.rank);
-                                                    } else {
-                                                        // Clear fields if no user found
-                                                        updatePersonnel(p.id, 'warName', '');
-                                                        updatePersonnel(p.id, 'rank', '');
                                                     }
+                                                    // Removed the 'else' block that clears fields to allow manual entry if SARAM not found
                                                 }}
                                                 className="w-full px-2 py-1 border border-slate-200 rounded text-xs"
                                                 placeholder="Digite o SARAM"

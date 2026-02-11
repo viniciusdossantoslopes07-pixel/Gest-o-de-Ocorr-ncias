@@ -172,6 +172,13 @@ export default function MissionManager({ user }: MissionManagerProps) {
             const omisNumber = await generateOMISNumber();
 
             // Map to snake_case for DB
+            // Ensure mission_commander_id is a valid UUID or null. 
+            // Empty strings or invalid formats cause "invalid input syntax for type uuid" error in Postgres.
+            let missionCommanderId = orderData.missionCommanderId;
+            if (!missionCommanderId || missionCommanderId.trim() === '' || missionCommanderId.length < 10) {
+                missionCommanderId = null;
+            }
+
             const dbOrder = {
                 id: crypto.randomUUID(), // Generate UUID for the order
                 omis_number: omisNumber,
@@ -187,12 +194,14 @@ export default function MissionManager({ user }: MissionManagerProps) {
                 schedule: orderData.schedule || [],
                 permanent_orders: orderData.permanentOrders,
                 special_orders: orderData.specialOrders,
-                mission_commander_id: orderData.missionCommanderId || null,
+                mission_commander_id: missionCommanderId,
                 status: 'AGUARDANDO_ASSINATURA', // Ready for CH-SOP
                 created_at: new Date().toISOString(),
                 created_by: user.name,
                 updated_at: new Date().toISOString()
             };
+
+            console.log('Enviando ordem para o banco:', dbOrder);
 
             const { error: orderError } = await supabase
                 .from('mission_orders')
