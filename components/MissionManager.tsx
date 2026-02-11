@@ -23,6 +23,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
     const [showOrderForm, setShowOrderForm] = useState(false);
     const [showPrintView, setShowPrintView] = useState(false);
     const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
+    const [editingDraft, setEditingDraft] = useState<Mission | null>(null); // State for editing draft
     const [selectedOrder, setSelectedOrder] = useState<MissionOrder | null>(null);
     const [showMissionCard, setShowMissionCard] = useState(false);
 
@@ -581,13 +582,30 @@ export default function MissionManager({ user }: MissionManagerProps) {
                             missions.filter(m => m.solicitante_id === user.id).map(m => (
                                 <div key={m.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100 transition-colors flex justify-between items-center">
                                     <div>
-                                        <div className="font-bold text-slate-900">{m.dados_missao.tipo_missao}</div>
+                                        <div className="font-bold text-slate-900 flex items-center gap-2">
+                                            {m.dados_missao.tipo_missao}
+                                            {m.status === 'RASCUNHO' && <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full uppercase">Rascunho</span>}
+                                        </div>
                                         <div className="text-sm text-slate-500">{m.dados_missao.data ? new Date(m.dados_missao.data).toLocaleDateString() : 'Data não informada'} - {m.dados_missao.local}</div>
                                     </div>
-                                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${m.status === 'PENDENTE' ? 'bg-yellow-100 text-yellow-700' :
-                                        m.status === 'APROVADA' || m.status === 'ATRIBUIDA' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
-                                        {m.status}
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${m.status === 'PENDENTE' ? 'bg-yellow-100 text-yellow-700' :
+                                            m.status === 'APROVADA' || m.status === 'ATRIBUIDA' ? 'bg-emerald-100 text-emerald-700' :
+                                                m.status === 'RASCUNHO' ? 'bg-slate-300 text-slate-700' : 'bg-slate-200 text-slate-600'}`}>
+                                            {m.status}
+                                        </span>
+                                        {m.status === 'RASCUNHO' && (
+                                            <button
+                                                onClick={() => {
+                                                    setEditingDraft(m);
+                                                    setActiveTab('solicitar_missao');
+                                                }}
+                                                className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-200 transition-colors flex items-center gap-1"
+                                            >
+                                                <div className="w-3 h-3"><FileSignature className="w-3 h-3" /></div> Editar
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             ))
                         )}
@@ -670,20 +688,42 @@ export default function MissionManager({ user }: MissionManagerProps) {
                     <div>
                         <MissionRequestForm
                             user={user}
-                            onCancel={() => setActiveTab('minhas_solicitacoes')}
-                            onSubmit={async (data) => {
-                                // data already contains the full structure with dados_missao
-                                const { error } = await supabase
-                                    .from('missoes_gsd')
-                                    .insert([data]);
+                            initialData={editingDraft || undefined}
+                            onCancel={() => {
+                                setActiveTab('minhas_solicitacoes');
+                                setEditingDraft(null);
+                            }}
+                            onSubmit={async (data, isDraft) => {
+                                // check if updating existing draft
+                                if (editingDraft) {
+                                    const { error } = await supabase
+                                        .from('missoes_gsd')
+                                        .update(data)
+                                        .eq('id', editingDraft.id);
 
-                                if (!error) {
-                                    await fetchMissions();
-                                    setActiveTab('minhas_solicitacoes');
-                                    alert('Solicitação criada com sucesso!');
+                                    if (!error) {
+                                        await fetchMissions();
+                                        setActiveTab('minhas_solicitacoes');
+                                        setEditingDraft(null);
+                                        alert(isDraft ? 'Rascunho atualizado!' : 'Solicitação enviada!');
+                                    } else {
+                                        console.error('Erro ao atualizar:', error);
+                                        alert('Erro ao atualizar solicitação.');
+                                    }
                                 } else {
-                                    console.error('Erro ao criar solicitação:', error);
-                                    alert('Erro ao criar solicitação.');
+                                    // Create new
+                                    const { error } = await supabase
+                                        .from('missoes_gsd')
+                                        .insert([data]);
+
+                                    if (!error) {
+                                        await fetchMissions();
+                                        setActiveTab('minhas_solicitacoes');
+                                        alert(isDraft ? 'Rascunho salvo com sucesso!' : 'Solicitação criada com sucesso!');
+                                    } else {
+                                        console.error('Erro ao criar solicitação:', error);
+                                        alert('Erro ao criar solicitação.');
+                                    }
                                 }
                             }}
                         />

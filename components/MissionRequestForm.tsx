@@ -4,33 +4,36 @@ import { RANKS, SETORES, TIPOS_MISSAO } from '../constants';
 import { Save, X, Calendar, Clock, MapPin, Users, Truck, Coffee, Search } from 'lucide-react';
 import { supabase } from '../services/supabase';
 
+import { Mission } from '../types';
+
 interface MissionRequestFormProps {
     user: User;
-    onSubmit: (data: any) => void;
+    onSubmit: (data: any, isDraft?: boolean) => void;
     onCancel: () => void;
+    initialData?: Mission;
 }
 
-const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCancel }) => {
-    const [requesterId, setRequesterId] = useState(user.id);
+const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCancel, initialData }) => {
+    const [requesterId, setRequesterId] = useState(initialData?.solicitante_id || user.id);
 
     const [formData, setFormData] = useState({
-        saram: user.saram || '',
-        posto: user.rank || '',
-        nome_guerra: user.name.split(' ').pop() || '', // Sugestão inicial
-        setor: user.sector || '',
-        tipo_missao: TIPOS_MISSAO[0],
-        data: new Date().toISOString().split('T')[0],
-        inicio: '08:00',
-        termino: '17:00',
-        local: '',
-        responsavel: {
+        saram: initialData ? '' : (user.saram || ''), // Don't overwrite if editing, but we might need to lookup user again if not provided
+        posto: initialData?.dados_missao.posto || user.rank || '',
+        nome_guerra: initialData?.dados_missao.nome_guerra || user.name.split(' ').pop() || '',
+        setor: initialData?.dados_missao.setor || user.sector || '',
+        tipo_missao: initialData?.dados_missao.tipo_missao || TIPOS_MISSAO[0],
+        data: initialData?.dados_missao.data || new Date().toISOString().split('T')[0],
+        inicio: initialData?.dados_missao.inicio || '08:00',
+        termino: initialData?.dados_missao.termino || '17:00',
+        local: initialData?.dados_missao.local || '',
+        responsavel: initialData?.dados_missao.responsavel || {
             nome: '',
             om: '',
             telefone: ''
         },
-        efetivo: '',
-        viaturas: '',
-        alimentacao: {
+        efetivo: initialData?.dados_missao.efetivo || '',
+        viaturas: initialData?.dados_missao.viaturas || '',
+        alimentacao: initialData?.dados_missao.alimentacao || {
             cafe: false,
             almoco: false,
             janta: false,
@@ -38,6 +41,12 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
             lanche: false
         }
     });
+
+    // Populate SARAM if not present and we have requesterId (for edit mode context, though we primarily use ID)
+    // Actually, saram is used to lookup. If editing, we assume data is there. 
+    // Let's just keep saram field for lookup if user wants to change requester.
+
+    // Convert string to Date for input if needed, but we store as string YYYY-MM-DD
 
     const handleSaramBlur = async () => {
         if (!formData.saram) return;
@@ -66,21 +75,30 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
         }
     };
 
-    const [isExternalCmd, setIsExternalCmd] = useState(false);
+    const [isExternalCmd, setIsExternalCmd] = useState(!!initialData?.dados_missao.responsavel?.nome);
 
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = (e: FormEvent, isDraft: boolean = false) => {
         e.preventDefault();
 
-        // Basic validation
-        if (!formData.nome_guerra || !formData.local || !formData.efetivo) {
-            alert('Preencha os campos obrigatórios.');
-            return;
-        }
+        // Basic validation (Loose for Drafts?)
+        // Let's keep validation for now to avoid saving empty junk, 
+        // or maybe relax it for drafts if requested. User said "Salvar Solicitação", implies saving state.
 
-        // Validate date
-        if (!formData.data) {
-            alert('Por favor, selecione uma data para a missão.');
-            return;
+        if (!isDraft) {
+            if (!formData.nome_guerra || !formData.local || !formData.efetivo) {
+                alert('Preencha os campos obrigatórios.');
+                return;
+            }
+
+            if (!formData.data) {
+                alert('Por favor, selecione uma data para a missão.');
+                return;
+            }
+        } else {
+            if (!formData.tipo_missao) {
+                alert('Pelo menos o tipo de missão deve ser selecionado para rascunho.');
+                return;
+            }
         }
 
         // Prepare data package
@@ -89,18 +107,18 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
             dados_missao: {
                 ...formData
             },
-            status: 'PENDENTE',
-            data_criacao: new Date().toISOString()
+            status: isDraft ? 'RASCUNHO' : 'PENDENTE',
+            data_criacao: initialData?.data_criacao || new Date().toISOString()
         };
 
-        onSubmit(submissionData);
+        onSubmit(submissionData, isDraft);
     };
 
     return (
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col">
+        <form onSubmit={(e) => handleSubmit(e, false)} className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col">
             <div className="bg-slate-900 p-6 text-white flex justify-between items-center shrink-0">
                 <div>
-                    <h2 className="text-xl font-bold">Solicitação de Missão</h2>
+                    <h2 className="text-xl font-bold">{initialData ? 'Editar Solicitação' : 'Solicitação de Missão'}</h2>
                     <p className="text-slate-400 text-xs mt-1">GSD-SP - Gestão de Operações</p>
                 </div>
                 <button type="button" onClick={onCancel} className="hover:bg-slate-800 p-2 rounded-full transition-colors">
@@ -401,6 +419,14 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                 >
                     <Save className="w-4 h-4" />
                     Enviar Solicitação
+                </button>
+                <button
+                    type="button"
+                    onClick={(e) => handleSubmit(e as any, true)}
+                    className="bg-amber-100 px-6 py-3 rounded-xl font-bold text-amber-700 hover:bg-amber-200 transition-colors flex items-center gap-2"
+                >
+                    <Save className="w-4 h-4" />
+                    Salvar Rascunho
                 </button>
             </div>
         </form>
