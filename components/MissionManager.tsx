@@ -187,7 +187,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
                 schedule: orderData.schedule || [],
                 permanent_orders: orderData.permanentOrders,
                 special_orders: orderData.specialOrders,
-                mission_commander_id: orderData.missionCommanderId,
+                mission_commander_id: orderData.missionCommanderId || null,
                 status: 'AGUARDANDO_ASSINATURA', // Ready for CH-SOP
                 created_at: new Date().toISOString(),
                 created_by: user.name,

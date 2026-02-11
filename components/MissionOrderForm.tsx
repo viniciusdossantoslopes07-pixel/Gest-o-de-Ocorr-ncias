@@ -170,7 +170,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                 if (foundUser) {
                                     setFormData({ ...formData, missionCommanderId: foundUser.id });
                                 } else {
-                                    setFormData({ ...formData, missionCommanderId: '' });
+                                    setFormData({ ...formData, missionCommanderId: undefined });
                                     if (saram) alert('Militar não encontrado com este SARAM.');
                                 }
                             }}
