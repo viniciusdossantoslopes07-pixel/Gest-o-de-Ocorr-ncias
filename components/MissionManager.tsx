@@ -642,12 +642,6 @@ export default function MissionManager({ user }: MissionManagerProps) {
                                         {m.status === 'RASCUNHO' && (
                                             <>
                                                 <button
-                                                    onClick={() => handleSendDraft(m)}
-                                                    className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-bold hover:bg-green-200 transition-colors flex items-center gap-1"
-                                                >
-                                                    <div className="w-3 h-3"><FileText className="w-3 h-3" /></div> Enviar
-                                                </button>
-                                                <button
                                                     onClick={() => {
                                                         setEditingDraft(m);
                                                         setActiveTab('solicitar_missao');
@@ -655,6 +649,12 @@ export default function MissionManager({ user }: MissionManagerProps) {
                                                     className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-200 transition-colors flex items-center gap-1"
                                                 >
                                                     <div className="w-3 h-3"><FileSignature className="w-3 h-3" /></div> Editar
+                                                </button>
+                                                <button
+                                                    onClick={() => handleSendDraft(m)}
+                                                    className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-bold hover:bg-green-200 transition-colors flex items-center gap-1"
+                                                >
+                                                    <div className="w-3 h-3"><FileText className="w-3 h-3" /></div> Enviar
                                                 </button>
                                             </>
                                         )}
