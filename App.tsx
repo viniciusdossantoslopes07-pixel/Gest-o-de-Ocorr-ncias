@@ -184,8 +184,9 @@ const App: FC = () => {
       console.error('Error creating mission request:', error);
       alert(`Erro ao enviar solicitação de missão: ${error.message || JSON.stringify(error)}`);
     } else {
-      alert('Solicitação enviada com sucesso! Aguarde análise da SOP.');
-      setActiveTab('home');
+      const isDraft = missionData.status === 'RASCUNHO';
+      alert(isDraft ? 'Rascunho salvo com sucesso!' : 'Solicitação enviada com sucesso! Aguarde análise da SOP.');
+      setActiveTab('mission-center');
       fetchMissionRequests();
     }
   };

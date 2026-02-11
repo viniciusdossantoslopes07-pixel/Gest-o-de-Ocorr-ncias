@@ -517,11 +517,8 @@ export default function MissionManager({ user }: MissionManagerProps) {
         );
     }
 
-    // Debug logging
+    // Data filtered for current user (case insensitive to prevent mismatches)
     const myMissions = missions.filter(m => m.solicitante_id === user.id || m.solicitante_id?.toLowerCase() === user.id?.toLowerCase());
-    console.log('Debug - User ID:', user.id);
-    console.log('Debug - Missions (Total):', missions);
-    console.log('Debug - Missions (Filtered):', myMissions);
 
     return (
         <div className="max-w-7xl mx-auto space-y-6">
