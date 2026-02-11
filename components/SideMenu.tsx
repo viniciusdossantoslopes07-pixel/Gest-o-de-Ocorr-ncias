@@ -122,6 +122,23 @@ export default function SideMenu({
                     )}
                 </nav>
 
+                {/* Footer / Logout */}
+                <div className="p-4 border-t border-slate-800">
+                    <button
+                        onClick={onLogout}
+                        className={`w-full flex items-center rounded-xl transition-all text-red-400 hover:text-white hover:bg-red-500/20 ${isCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}
+                        title={isCollapsed ? "Sair" : ''}
+                    >
+                        <LogOut className="w-5 h-5 shrink-0" />
+                        {!isCollapsed && <span className="text-sm font-bold">Sair</span>}
+                    </button>
+                    {!isCollapsed && (
+                        <div className="mt-4 px-2 text-[10px] text-slate-600 font-medium text-center">
+                            v1.0.0 © 2024
+                        </div>
+                    )}
+                </div>
+
             </aside>
         </>
     );
