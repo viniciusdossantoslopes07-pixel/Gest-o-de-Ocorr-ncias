@@ -103,19 +103,19 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
                                 </tr>
                             </thead>
                             <tbody>
-                                {['Comandante', 'Aux Comandante', 'Efetivo S.I', 'Efetivo PA', 'Motorista (D)', 'Motorista (B)'].map((func, idx) => {
-                                    // Find personnel with this function
-                                    const person = order.personnel.find(p => p.function === func);
+                                {order.personnel.map((person, idx) => {
+                                    // Handle both camelCase and snake_case for war name
+                                    const warName = person.warName || (person as any).war_name || '';
 
                                     return (
-                                        <tr key={idx}>
-                                            <td className="border border-slate-900 px-2 py-1 font-semibold">{func}</td>
-                                            <td className="border border-slate-900 px-2 py-1 text-center">{person?.rank || ''}</td>
-                                            <td className="border border-slate-900 px-2 py-1">{person?.warName || ''}</td>
-                                            <td className="border border-slate-900 px-2 py-1 text-center">{person?.saram || ''}</td>
-                                            <td className="border border-slate-900 px-2 py-1 text-center">{person?.uniform || ''}</td>
-                                            <td className="border border-slate-900 px-2 py-1 text-center">{person?.armament || ''}</td>
-                                            <td className="border border-slate-900 px-2 py-1 text-center">{person?.ammunition || ''}</td>
+                                        <tr key={person.id || idx}>
+                                            <td className="border border-slate-900 px-2 py-1 font-semibold">{person.function}</td>
+                                            <td className="border border-slate-900 px-2 py-1 text-center">{person.rank || ''}</td>
+                                            <td className="border border-slate-900 px-2 py-1">{warName}</td>
+                                            <td className="border border-slate-900 px-2 py-1 text-center">{person.saram || ''}</td>
+                                            <td className="border border-slate-900 px-2 py-1 text-center">{person.uniform || ''}</td>
+                                            <td className="border border-slate-900 px-2 py-1 text-center">{person.armament || ''}</td>
+                                            <td className="border border-slate-900 px-2 py-1 text-center">{person.ammunition || ''}</td>
                                         </tr>
                                     );
                                 })}
