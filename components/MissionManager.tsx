@@ -459,20 +459,23 @@ export default function MissionManager({ user }: MissionManagerProps) {
         const waiting = orders.filter(o => o.status === 'AGUARDANDO_ASSINATURA');
         if (waiting.length === 0) return null;
 
+        // Permissions: Only CH-SOP, CMT-GSD-SP or ADMIN can sign
+        const canSign = user.role === UserRole.ADMIN || user.sector === 'CH-SOP' || user.sector === 'CMT-GSD-SP';
+
         return (
             <div className="space-y-4 mt-8">
-                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">2. Aguardando Assinatura (CH SOP)</h3>
+                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">2. Aguardando Assinatura (Chefia)</h3>
                 {waiting.map(o => (
                     <div key={o.id} className="bg-white p-4 rounded-xl border border-l-4 border-l-orange-500 border-slate-200 shadow-sm flex justify-between items-center">
                         <div>
                             <div className="font-bold text-slate-900 flex items-center gap-2">
                                 OM #{o.omisNumber}
-                                <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-[10px] rounded-full uppercase">Assinatura Pendente</span>
+                                <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-[10px] rounded-full uppercase">Aguardando assinatura</span>
                             </div>
                             <div className="text-sm text-slate-500">{o.mission}</div>
                             <div className="text-xs text-slate-400 mt-1">Gerada por: {o.createdBy}</div>
                         </div>
-                        {isChSop && (
+                        {canSign && (
                             <button onClick={() => handleChSopSign(o)} className="px-3 py-1.5 bg-orange-600 text-white rounded-lg text-xs font-bold hover:bg-orange-700 transition-colors flex items-center gap-2">
                                 <FileSignature className="w-4 h-4" /> Assinar Digitalmente
                             </button>
