@@ -319,8 +319,6 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                 onKeyDown={e => {
                                                     if (e.key === 'Enter') {
                                                         e.preventDefault();
-                                                        const enteredSaram = (e.target as HTMLInputElement).value.trim();
-                                                        console.log('DEBUG: Enter pressionado para SARAM:', enteredSaram);
                                                         // Trigger same logic as onBlur
                                                         (e.target as HTMLInputElement).blur();
                                                     }
@@ -329,17 +327,12 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                     const enteredSaram = e.target.value.trim();
                                                     if (!enteredSaram) return;
 
-                                                    console.log('DEBUG: Buscando SARAM:', enteredSaram);
-                                                    console.log('DEBUG: Total usuários carregados:', users.length);
-
                                                     // Auto-fill war name and rank from database when user finishes typing
                                                     const foundUser = users.find(u => u.saram === enteredSaram);
-                                                    console.log('DEBUG: Usuário encontrado:', foundUser);
 
                                                     if (foundUser) {
                                                         // Try both camelCase and snake_case
                                                         const warName = foundUser.warName || (foundUser as any).war_name || foundUser.name;
-                                                        console.log('DEBUG: Nome de Guerra detectado:', warName);
 
                                                         // Only auto-fill if the fields are empty or if user found
                                                         updatePersonnel(p.id, 'warName', warName);
