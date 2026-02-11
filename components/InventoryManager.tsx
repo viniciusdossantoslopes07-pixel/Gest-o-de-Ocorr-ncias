@@ -1,27 +1,37 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
-import { InventoryItem } from '../types';
-import { Plus, Edit2, Trash2, Search, Package, AlertTriangle } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, LayoutList, Package } from 'lucide-react';
+
+interface StockItem {
+    id: string;
+    material: string;
+    tipo_de_material: string;
+    setor: string;
+    endereco: string;
+    entrada: number;
+    saida: number;
+    qtdisponivel: number;
+}
 
 interface InventoryManagerProps {
-    user: any; // Using any for simplicity here, but should be User type
+    user: any;
 }
 
 export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
-    const [items, setItems] = useState<InventoryItem[]>([]);
+    const [items, setItems] = useState<StockItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+    const [editingItem, setEditingItem] = useState<StockItem | null>(null);
 
     // Form State
     const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        totalQuantity: 0,
-        details: '', // JSON stringified for now or simple text
-        status: 'DISPONIVEL' as 'DISPONIVEL' | 'MANUTENCAO' | 'BAIXADO'
+        material: '',
+        tipo_de_material: '',
+        setor: '',
+        endereco: '',
+        entrada: 0,
+        saida: 0
     });
 
     useEffect(() => {
@@ -31,9 +41,9 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
     const fetchItems = async () => {
         setLoading(true);
         const { data, error } = await supabase
-            .from('inventory_items')
+            .from('gestao_estoque')
             .select('*')
-            .order('name');
+            .order('material');
 
         if (error) {
             console.error('Error fetching inventory:', error);
@@ -44,24 +54,26 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
         setLoading(false);
     };
 
-    const handleOpenModal = (item?: InventoryItem) => {
+    const handleOpenModal = (item?: StockItem) => {
         if (item) {
             setEditingItem(item);
             setFormData({
-                name: item.name,
-                description: item.description || '',
-                totalQuantity: item.totalQuantity,
-                details: JSON.stringify(item.details || {}, null, 2),
-                status: item.status
+                material: item.material,
+                tipo_de_material: item.tipo_de_material || '',
+                setor: item.setor || '',
+                endereco: item.endereco || '',
+                entrada: item.entrada,
+                saida: item.saida
             });
         } else {
             setEditingItem(null);
             setFormData({
-                name: '',
-                description: '',
-                totalQuantity: 0,
-                details: '{}',
-                status: 'DISPONIVEL'
+                material: '',
+                tipo_de_material: '',
+                setor: '',
+                endereco: '',
+                entrada: 0,
+                saida: 0
             });
         }
         setIsModalOpen(true);
@@ -70,25 +82,18 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        let parsedDetails = {};
-        try {
-            parsedDetails = JSON.parse(formData.details);
-        } catch (err) {
-            alert('Erro no formato JSON dos detalhes. Usando objeto vazio.');
-        }
-
         const itemData = {
-            name: formData.name,
-            description: formData.description,
-            total_quantity: formData.totalQuantity,
-            available_quantity: editingItem ? (formData.totalQuantity - (editingItem.totalQuantity - editingItem.availableQuantity)) : formData.totalQuantity, // Simple logic: adjust available based on diff
-            details: parsedDetails,
-            status: formData.status
+            material: formData.material,
+            tipo_de_material: formData.tipo_de_material,
+            setor: formData.setor,
+            endereco: formData.endereco,
+            entrada: formData.entrada,
+            saida: formData.saida
         };
 
         if (editingItem) {
             const { error } = await supabase
-                .from('inventory_items')
+                .from('gestao_estoque')
                 .update(itemData)
                 .eq('id', editingItem.id);
 
@@ -100,7 +105,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
             }
         } else {
             const { error } = await supabase
-                .from('inventory_items')
+                .from('gestao_estoque')
                 .insert([itemData]);
 
             if (error) alert('Erro ao criar item: ' + error.message);
@@ -116,7 +121,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
         if (!confirm('Tem certeza que deseja excluir este item?')) return;
 
         const { error } = await supabase
-            .from('inventory_items')
+            .from('gestao_estoque')
             .delete()
             .eq('id', id);
 
@@ -125,8 +130,9 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
     };
 
     const filteredItems = items.filter(i =>
-        i.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        i.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        i.material.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        i.tipo_de_material?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        i.setor?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -134,10 +140,10 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                        <Package className="w-8 h-8 text-blue-600" />
-                        Gestão de Estoque (Cautela)
+                        <LayoutList className="w-8 h-8 text-blue-600" />
+                        Gestão de Estoque (SAP-03)
                     </h2>
-                    <p className="text-slate-500">Gerencie os materiais disponíveis para cautela.</p>
+                    <p className="text-slate-500">Gerencie o inventário e controle de materiais.</p>
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
@@ -152,74 +158,78 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                 <input
                     type="text"
-                    placeholder="Buscar material..."
+                    placeholder="Buscar material, tipo ou setor..."
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
                 />
             </div>
 
-            {/* Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredItems.map(item => (
-                    <div key={item.id} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="p-3 bg-slate-100 rounded-lg text-slate-600">
-                                <Package className="w-6 h-6" />
-                            </div>
-                            <div className={`px-2 py-1 rounded text-xs font-bold uppercase ${item.status === 'DISPONIVEL' ? 'bg-green-100 text-green-700' :
-                                item.status === 'MANUTENCAO' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
-                                }`}>
-                                {item.status}
-                            </div>
-                        </div>
-                        <h3 className="font-bold text-lg text-slate-900 mb-1">{item.name}</h3>
-                        <p className="text-sm text-slate-500 mb-4 line-clamp-2">{item.description}</p>
-
-                        <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
-                            <div className="bg-slate-50 p-2 rounded">
-                                <span className="block text-xs font-bold text-slate-400 uppercase">Total</span>
-                                <span className="font-mono font-bold text-slate-700">{item.totalQuantity}</span>
-                            </div>
-                            <div className="bg-slate-50 p-2 rounded">
-                                <span className="block text-xs font-bold text-slate-400 uppercase">Disponível</span>
-                                <span className={`font-mono font-bold ${item.availableQuantity > 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                                    {item.availableQuantity}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-2 pt-4 border-t border-slate-100">
-                            <button
-                                onClick={() => handleOpenModal(item)}
-                                className="flex-1 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
-                            >
-                                <Edit2 className="w-4 h-4" /> Editar
-                            </button>
-                            <button
-                                onClick={() => handleDelete(item.id)}
-                                className="px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </button>
-                        </div>
+            {/* Table View */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-slate-50 text-slate-600 font-bold uppercase text-xs">
+                            <tr>
+                                <th className="px-4 py-3">Material</th>
+                                <th className="px-4 py-3">Tipo de Material</th>
+                                <th className="px-4 py-3">Setor</th>
+                                <th className="px-4 py-3">Endereço</th>
+                                <th className="px-4 py-3 text-center">Entrada</th>
+                                <th className="px-4 py-3 text-center">Saída</th>
+                                <th className="px-4 py-3 text-center bg-blue-50 text-blue-700">Qtd Disponível</th>
+                                <th className="px-4 py-3 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {filteredItems.map(item => {
+                                const available = item.entrada - item.saida; // Client-side calc for display
+                                return (
+                                    <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                                        <td className="px-4 py-3 font-semibold text-slate-900">{item.material}</td>
+                                        <td className="px-4 py-3 text-slate-600">{item.tipo_de_material}</td>
+                                        <td className="px-4 py-3 text-slate-600">{item.setor}</td>
+                                        <td className="px-4 py-3 text-slate-600">{item.endereco}</td>
+                                        <td className="px-4 py-3 text-center font-mono text-slate-700">{item.entrada}</td>
+                                        <td className="px-4 py-3 text-center font-mono text-red-600">{item.saida}</td>
+                                        <td className="px-4 py-3 text-center font-mono font-bold bg-blue-50 text-blue-700">
+                                            {available}
+                                        </td>
+                                        <td className="px-4 py-3 text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <button
+                                                    onClick={() => handleOpenModal(item)}
+                                                    className="p-1.5 text-slate-500 hover:bg-slate-200 rounded-lg transition-colors"
+                                                    title="Editar"
+                                                >
+                                                    <Edit2 className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(item.id)}
+                                                    className="p-1.5 text-red-500 hover:bg-red-100 rounded-lg transition-colors"
+                                                    title="Excluir"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+                {filteredItems.length === 0 && !loading && (
+                    <div className="p-8 text-center text-slate-400">
+                        Nenhum item encontrado.
                     </div>
-                ))}
+                )}
+                {loading && (
+                    <div className="p-8 text-center text-slate-400">
+                        Carregando estoque...
+                    </div>
+                )}
             </div>
-
-            {loading && (
-                <div className="text-center py-12 text-slate-500">
-                    <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-                    Carregando estoque...
-                </div>
-            )}
-
-            {!loading && filteredItems.length === 0 && (
-                <div className="text-center py-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-slate-400">
-                    <Package className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>Nenhum item encontrado.</p>
-                </div>
-            )}
 
             {/* Modal */}
             {isModalOpen && (
@@ -231,67 +241,74 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
                                     {editingItem ? 'Editar Material' : 'Novo Material'}
                                 </h3>
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
-                                    <Trash2 className="w-6 h-6 rotate-45" /> {/* Using Trash as X icon roughly or use dedicated X icon if available */}
+                                    <Trash2 className="w-6 h-6 rotate-45" />
                                 </button>
                             </div>
 
                             <div className="p-6 space-y-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-600 mb-1">Nome do Material *</label>
+                                    <label className="block text-xs font-bold text-slate-600 mb-1">Material *</label>
                                     <input
                                         type="text"
-                                        value={formData.name}
-                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        value={formData.material}
+                                        onChange={e => setFormData({ ...formData, material: e.target.value })}
                                         className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
                                         required
                                     />
                                 </div>
 
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-600 mb-1">Tipo de Material</label>
+                                        <input
+                                            type="text"
+                                            value={formData.tipo_de_material}
+                                            onChange={e => setFormData({ ...formData, tipo_de_material: e.target.value })}
+                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-600 mb-1">Setor</label>
+                                        <input
+                                            type="text"
+                                            value={formData.setor}
+                                            onChange={e => setFormData({ ...formData, setor: e.target.value })}
+                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
+                                        />
+                                    </div>
+                                </div>
+
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-600 mb-1">Descrição</label>
-                                    <textarea
-                                        value={formData.description}
-                                        onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors resize-none"
-                                        rows={3}
+                                    <label className="block text-xs font-bold text-slate-600 mb-1">Endereço</label>
+                                    <input
+                                        type="text"
+                                        value={formData.endereco}
+                                        onChange={e => setFormData({ ...formData, endereco: e.target.value })}
+                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
                                     />
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-600 mb-1">Quantidade Total *</label>
+                                        <label className="block text-xs font-bold text-slate-600 mb-1">Entrada (Total Recebido)</label>
                                         <input
                                             type="number"
                                             min="0"
-                                            value={formData.totalQuantity}
-                                            onChange={e => setFormData({ ...formData, totalQuantity: parseInt(e.target.value) || 0 })}
+                                            value={formData.entrada}
+                                            onChange={e => setFormData({ ...formData, entrada: parseInt(e.target.value) || 0 })}
                                             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
-                                            required
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-600 mb-1">Status</label>
-                                        <select
-                                            value={formData.status}
-                                            onChange={e => setFormData({ ...formData, status: e.target.value as any })}
+                                        <label className="block text-xs font-bold text-slate-600 mb-1">Saída (Perdas/Baixas)</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={formData.saida}
+                                            onChange={e => setFormData({ ...formData, saida: parseInt(e.target.value) || 0 })}
                                             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
-                                        >
-                                            <option value="DISPONIVEL">Disponível</option>
-                                            <option value="MANUTENCAO">Manutenção</option>
-                                            <option value="BAIXADO">Baixado</option>
-                                        </select>
+                                        />
                                     </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-600 mb-1">Detalhes (JSON - Opcional)</label>
-                                    <textarea
-                                        value={formData.details}
-                                        onChange={e => setFormData({ ...formData, details: e.target.value })}
-                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors font-mono text-xs"
-                                        rows={3}
-                                        placeholder='{"marca": "Exemplo", "modelo": "X1"}'
-                                    />
                                 </div>
                             </div>
 

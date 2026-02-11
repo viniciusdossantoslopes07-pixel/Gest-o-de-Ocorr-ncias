@@ -24,10 +24,11 @@ import SettingsView from './components/SettingsView'; // Import SettingsView
 import FAQModal from './components/FAQModal'; // Import FAQModal
 import UserMenu from './components/UserMenu'; // Import UserMenu
 
+import { LoanApprovals } from './components/LoanApprovals';
 import LoanRequestForm from './components/LoanRequestForm';
 import MaterialDashboard from './components/MaterialDashboard';
 import MissionManager from './components/MissionManager';
-import MyMaterialLoans from './components/MyMaterialLoans';
+import { MyMaterialLoans } from './components/MyMaterialLoans';
 import MeuPlanoView from './components/MeuPlanoView';
 import {
   STATUS_COLORS,
@@ -66,7 +67,7 @@ const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   // Added 'settings' to activeTab type
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management'>('home');
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [selectedOccurrence, setSelectedOccurrence] = useState<Occurrence | null>(null);
   const [missionOrders, setMissionOrders] = useState<MissionOrder[]>([]);
@@ -914,41 +915,26 @@ const App: FC = () => {
             </>
           )}
 
-          {activeTab === 'material-caution' && (
-            isMaterialManager ? (
-              <div className="space-y-6">
-                <div className="flex justify-center">
-                  <div className="bg-slate-200 p-1 rounded-xl inline-flex">
-                    <button
-                      onClick={() => setMaterialTab('dashboard')}
-                      className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${materialTab === 'dashboard' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                      Solicitações e Cautelas
-                    </button>
-                    <button
-                      onClick={() => setMaterialTab('inventory')}
-                      className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${materialTab === 'inventory' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                      Gestão de Estoque
-                    </button>
-                  </div>
-                </div>
+          {activeTab === 'inventory-management' && (
+            <InventoryManager user={currentUser} />
+          )}
 
-                {materialTab === 'dashboard' ? (
-                  <MaterialDashboard />
-                ) : (
-                  <InventoryManager user={currentUser} />
-                )}
-              </div>
-            ) : (
-              <div className="max-w-4xl mx-auto">
-                <LoanRequestForm
-                  user={currentUser}
-                  onSuccess={() => setActiveTab('home')}
-                  onCancel={() => setActiveTab('home')}
-                />
-              </div>
-            )
+          {activeTab === 'my-material-loans' && (
+            <MyMaterialLoans user={currentUser} />
+          )}
+
+          {activeTab === 'material-approvals' && (
+            <LoanApprovals user={currentUser} />
+          )}
+
+          {activeTab === 'request-material' && (
+            <div className="max-w-4xl mx-auto pt-8">
+              <LoanRequestForm
+                user={currentUser}
+                onSuccess={() => setActiveTab('my-material-loans')}
+                onCancel={() => setActiveTab('home')}
+              />
+            </div>
           )}
 
 

@@ -1,120 +1,158 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
-import { MaterialLoan } from '../types';
-import { Package, Calendar, Clock, CheckCircle, XCircle, Truck, AlertCircle } from 'lucide-react';
-import { LOAN_STATUS_COLORS } from '../constants';
+import { Package, Clock, Truck, CornerDownLeft } from 'lucide-react';
 
-interface MyMaterialLoansProps {
-    userId: string;
+interface MaterialLoan {
+    id: string;
+    status: string;
+    created_at: string;
+    material: {
+        material: string;
+        tipo_de_material: string;
+    } | any;
 }
 
-const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ userId }) => {
+interface MyMaterialLoansProps {
+    user: any;
+}
+
+export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
     const [loans, setLoans] = useState<MaterialLoan[]>([]);
     const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState<string | null>(null);
 
     useEffect(() => {
-        if (userId) {
-            fetchMyLoans();
-        }
-    }, [userId]);
+        if (user) fetchLoans();
+    }, [user]);
 
-    const fetchMyLoans = async () => {
+    const fetchLoans = async () => {
         try {
             setLoading(true);
             const { data, error } = await supabase
-                .from('material_loans')
+                .from('movimentacao_cautela')
                 .select(`
-          *,
-          item:inventory_items(*)
-        `)
-                .eq('user_id', userId)
+                    *,
+                    material:gestao_estoque(*)
+                `)
+                .eq('id_usuario', user.id)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-
-            const mappedLoans: MaterialLoan[] = (data || []).map((loan: any) => ({
-                id: loan.id,
-                userId: loan.user_id,
-                itemId: loan.item_id,
-                quantity: loan.quantity,
-                requestDate: loan.created_at,
-                expectedReturnDate: loan.expected_return_date,
-                returnDate: loan.return_date,
-                status: loan.status,
-                observation: loan.observation,
-                item: loan.item ? {
-                    id: loan.item.id,
-                    name: loan.item.name,
-                    description: loan.item.description,
-                    totalQuantity: loan.item.total_quantity,
-                    availableQuantity: loan.item.available_quantity,
-                    details: loan.item.details,
-                    status: loan.item.status
-                } : undefined
-            }));
-
-            setLoans(mappedLoans);
+            setLoans(data || []);
         } catch (err) {
-            console.error('Error fetching my loans:', err);
+            console.error('Error fetching loans:', err);
         } finally {
             setLoading(false);
         }
     };
 
-    const getStatusIcon = (status: string) => {
-        switch (status) {
-            case 'PENDENTE': return <Clock className="w-4 h-4" />;
-            case 'APROVADA': return <CheckCircle className="w-4 h-4" />;
-            case 'RETIRADO': return <Truck className="w-4 h-4" />;
-            case 'DEVOLVIDO': return <CheckCircle className="w-4 h-4" />;
-            case 'REJEITADA': return <XCircle className="w-4 h-4" />;
-            default: return <AlertCircle className="w-4 h-4" />;
+    const handleAction = async (id: string, newStatus: string) => {
+        try {
+            setActionLoading(id);
+            const { error } = await supabase
+                .from('movimentacao_cautela')
+                .update({ status: newStatus })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            await fetchLoans();
+        } catch (err: any) {
+            console.error('Error updating loan:', err);
+            alert('Erro ao atualizar: ' + err.message);
+        } finally {
+            setActionLoading(null);
         }
     };
 
-    if (loading) return <div className="text-center p-4 text-slate-400">Carregando cautelas...</div>;
+    if (loading) return <div className="text-center py-8 text-slate-400">Carregando suas cautelas...</div>;
 
     return (
-        <div className="space-y-4">
-            <h3 className="text-lg font-bold text-slate-700 flex items-center gap-2">
-                <Package className="w-5 h-5 text-indigo-600" /> Minhas Cautelas de Material
-            </h3>
+        <div className="space-y-6 animate-fade-in">
+            <div>
+                <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <Package className="w-8 h-8 text-blue-600" />
+                    Minhas Cautelas
+                </h2>
+                <p className="text-slate-500">Acompanhe seus pedidos e materiais em uso.</p>
+            </div>
 
-            {loans.length === 0 ? (
-                <div className="bg-slate-50 p-8 rounded-xl border border-dashed border-slate-300 text-center text-slate-400">
-                    Nenhuma cautela regsitrada.
-                </div>
-            ) : (
-                <div className="space-y-3">
-                    {loans.map(loan => (
-                        <div key={loan.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                            <div className="flex justify-between items-start mb-2">
-                                <div className="font-bold text-slate-900">{loan.item?.name}</div>
-                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold ${LOAN_STATUS_COLORS[loan.status] || 'bg-slate-100 text-slate-600'}`}>
-                                    {getStatusIcon(loan.status)}
-                                    {loan.status}
-                                </span>
-                            </div>
-                            <div className="text-sm text-slate-500 mb-2">
-                                Quantidade: <span className="font-bold text-slate-700">{loan.quantity}</span>
-                            </div>
-                            <div className="flex items-center gap-4 text-xs text-slate-400 border-t border-slate-100 pt-2">
-                                <div className="flex items-center gap-1">
-                                    <Calendar className="w-3 h-3" /> Solicitado: {new Date(loan.requestDate).toLocaleDateString()}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {loans.length === 0 ? (
+                    <div className="col-span-full text-center py-12 bg-slate-50 rounded-xl border-dashed border-2 border-slate-200 text-slate-400">
+                        Você não possui cautelas ativas.
+                    </div>
+                ) : (
+                    loans.map(loan => (
+                        <div key={loan.id} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all relative overflow-hidden">
+                            {/* Status Bar */}
+                            <div className={`absolute top-0 left-0 right-0 h-1 ${loan.status === 'Pendente' ? 'bg-yellow-400' :
+                                    loan.status === 'Aprovado' ? 'bg-blue-400' :
+                                        loan.status === 'Em Uso' ? 'bg-green-500' :
+                                            loan.status === 'Rejeitado' ? 'bg-red-400' :
+                                                'bg-purple-400'
+                                }`} />
+
+                            <div className="flex justify-between items-start mb-3 mt-2">
+                                <div>
+                                    <h3 className="font-bold text-lg text-slate-900 line-clamp-1">{loan.material?.material || 'Material'}</h3>
+                                    <p className="text-xs font-bold text-slate-500 uppercase">{loan.material?.tipo_de_material}</p>
                                 </div>
-                                {loan.expectedReturnDate && (
-                                    <div className="flex items-center gap-1 text-blue-600 font-medium">
-                                        <Clock className="w-3 h-3" /> Devolução: {new Date(loan.expectedReturnDate).toLocaleDateString()}
+                                <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${loan.status === 'Pendente' ? 'bg-yellow-50 text-yellow-700' :
+                                        loan.status === 'Aprovado' ? 'bg-blue-50 text-blue-700' :
+                                            loan.status === 'Em Uso' ? 'bg-green-50 text-green-700' :
+                                                loan.status === 'Rejeitado' ? 'bg-red-50 text-red-700' :
+                                                    'bg-purple-50 text-purple-700'
+                                    }`}>
+                                    {loan.status}
+                                </div>
+                            </div>
+
+                            <p className="text-xs text-slate-400 flex items-center gap-1 mb-4">
+                                <Clock className="w-3 h-3" />
+                                {new Date(loan.created_at).toLocaleDateString()}
+                            </p>
+
+                            {/* Actions */}
+                            <div className="mt-auto">
+                                {loan.status === 'Aprovado' && (
+                                    <button
+                                        onClick={() => handleAction(loan.id, 'Aguardando Confirmação')}
+                                        disabled={!!actionLoading}
+                                        className="w-full py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        {actionLoading === loan.id ? 'Processando...' : (
+                                            <>
+                                                <Truck className="w-4 h-4" /> Retirar Material
+                                            </>
+                                        )}
+                                    </button>
+                                )}
+
+                                {loan.status === 'Em Uso' && (
+                                    <button
+                                        onClick={() => handleAction(loan.id, 'Pendente Devolução')}
+                                        disabled={!!actionLoading}
+                                        className="w-full py-2 bg-purple-600 text-white rounded-lg font-bold text-sm hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        {actionLoading === loan.id ? 'Processando...' : (
+                                            <>
+                                                <CornerDownLeft className="w-4 h-4" /> Devolver Material
+                                            </>
+                                        )}
+                                    </button>
+                                )}
+
+                                {loan.status === 'Aguardando Confirmação' && (
+                                    <div className="w-full py-2 bg-slate-100 text-slate-500 rounded-lg font-bold text-xs text-center flex items-center justify-center gap-2">
+                                        <Clock className="w-3 h-3" /> Aguardando Entrega
                                     </div>
                                 )}
                             </div>
                         </div>
-                    ))}
-                </div>
-            )}
+                    ))
+                )}
+            </div>
         </div>
     );
 };
-
-export default MyMaterialLoans;
