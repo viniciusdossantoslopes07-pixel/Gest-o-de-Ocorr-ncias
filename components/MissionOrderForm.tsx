@@ -316,11 +316,21 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                 onChange={e => {
                                                     updatePersonnel(p.id, 'saram', e.target.value);
                                                 }}
+                                                onKeyDown={e => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        const enteredSaram = (e.target as HTMLInputElement).value.trim();
+                                                        console.log('DEBUG: Enter pressionado para SARAM:', enteredSaram);
+                                                        // Trigger same logic as onBlur
+                                                        (e.target as HTMLInputElement).blur();
+                                                    }
+                                                }}
                                                 onBlur={e => {
                                                     const enteredSaram = e.target.value.trim();
                                                     if (!enteredSaram) return;
 
                                                     console.log('DEBUG: Buscando SARAM:', enteredSaram);
+                                                    console.log('DEBUG: Total usuários carregados:', users.length);
 
                                                     // Auto-fill war name and rank from database when user finishes typing
                                                     const foundUser = users.find(u => u.saram === enteredSaram);

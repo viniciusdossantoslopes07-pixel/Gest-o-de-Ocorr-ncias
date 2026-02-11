@@ -55,8 +55,24 @@ export default function MissionManager({ user }: MissionManagerProps) {
     };
 
     const fetchUsers = async () => {
-        const { data } = await supabase.from('users').select('*');
-        if (data) setUsers(data);
+        try {
+            console.log('DEBUG: Buscando usuários...');
+            const { data, error } = await supabase.from('users').select('*');
+            if (error) {
+                console.error('DEBUG: Erro ao buscar usuários:', error);
+                return;
+            }
+            if (data) {
+                console.log(`DEBUG: ${data.length} usuários carregados.`);
+                if (data.length > 0) {
+                    console.log('DEBUG: Exemplo de usuário:', data[0]);
+                    console.log('DEBUG: Campos de exemplo:', Object.keys(data[0]));
+                }
+                setUsers(data);
+            }
+        } catch (err) {
+            console.error('DEBUG: Exceção ao buscar usuários:', err);
+        }
     };
 
     const fetchMissions = async () => {
