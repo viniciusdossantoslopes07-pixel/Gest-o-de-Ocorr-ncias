@@ -320,8 +320,8 @@ export default function MissionManager({ user }: MissionManagerProps) {
 
     // Helper to check if user can manage (start/end) a mission
     const canManageMission = (order: MissionOrder) => {
-        // 1. SOP/CH-SOP or ADMIN
-        if (isSop || isChSop || user.role === UserRole.ADMIN) return true;
+        // 1. SOP/CH-SOP or ADMIN (Chefia e Setores Técnicos)
+        if (isSop || isChSop || user.role === UserRole.ADMIN || user.role === UserRole.COMMANDER) return true;
 
         // 2. Mission Commander (Responsável)
         if (order.missionCommanderId === user.id) return true;
@@ -460,7 +460,12 @@ export default function MissionManager({ user }: MissionManagerProps) {
         if (waiting.length === 0) return null;
 
         // Permissions: Only CH-SOP, CMT-GSD-SP or ADMIN can sign
+        // Strict blocked for other sectors (including SOP-01/02/03)
         const canSign = user.role === UserRole.ADMIN || user.sector === 'CH-SOP' || user.sector === 'CMT-GSD-SP';
+
+        // If user cannot sign and is not in the management flow, they shouldn't even see this block?
+        // User requested: "Bloqueio total para qualquer outro setor... o botão desaparecerá"
+        // If canSign is false, the button writes nothing.
 
         return (
             <div className="space-y-4 mt-8">

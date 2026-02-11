@@ -21,7 +21,8 @@ export enum Status {
 export enum UserRole {
   PUBLIC = 'Público/Anônimo',
   OPERATIONAL = 'Lançador Operacional',
-  ADMIN = 'Gestor Master / OSD'
+  ADMIN = 'Gestor Master / OSD',
+  COMMANDER = 'Comandante OM'
 }
 
 export interface User {
