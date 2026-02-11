@@ -321,21 +321,35 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                     const enteredSaram = e.target.value.trim();
                                                     if (!enteredSaram) return;
 
+                                                    console.log('=== DEBUG SARAM AUTO-FILL ===');
                                                     console.log('Buscando SARAM:', enteredSaram);
-                                                    console.log('Usuários disponíveis:', users.map(u => u.saram));
+                                                    console.log('Total de usuários:', users.length);
+                                                    console.log('Usuários disponíveis (SARAMs):', users.map(u => u.saram));
 
                                                     // Auto-fill war name and rank from database when user finishes typing
                                                     const foundUser = users.find(u => u.saram === enteredSaram);
                                                     console.log('Usuário encontrado:', foundUser);
 
                                                     if (foundUser) {
-                                                        updatePersonnel(p.id, 'warName', foundUser.warName || foundUser.name);
+                                                        console.log('Campos do usuário:');
+                                                        console.log('  - warName (camelCase):', foundUser.warName);
+                                                        console.log('  - war_name (snake_case):', (foundUser as any).war_name);
+                                                        console.log('  - name:', foundUser.name);
+                                                        console.log('  - rank:', foundUser.rank);
+
+                                                        // Try both camelCase and snake_case
+                                                        const warName = foundUser.warName || (foundUser as any).war_name || foundUser.name;
+                                                        console.log('Nome de Guerra final:', warName);
+
+                                                        updatePersonnel(p.id, 'warName', warName);
                                                         updatePersonnel(p.id, 'rank', foundUser.rank);
                                                     } else {
+                                                        console.log('SARAM não encontrado - limpando campos');
                                                         // Clear fields if no user found
                                                         updatePersonnel(p.id, 'warName', '');
                                                         updatePersonnel(p.id, 'rank', '');
                                                     }
+                                                    console.log('=== FIM DEBUG ===');
                                                 }}
                                                 className="w-full px-2 py-1 border border-slate-200 rounded text-xs"
                                                 placeholder="Digite o SARAM"
