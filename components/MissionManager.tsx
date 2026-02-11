@@ -336,7 +336,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
     const renderMyOrders = () => {
         // Filter orders where user is requester OR mission commander OR in personnel
         const myOrders = orders.filter(o =>
-            (o.requester && o.requester.toLowerCase().includes(user.warName.toLowerCase())) ||
+            (o.requester && user.warName && o.requester.toLowerCase().includes(user.warName.toLowerCase())) ||
             o.missionCommanderId === user.id ||
             o.personnel.some(p => p.saram === user.saram)
         );

@@ -19,7 +19,7 @@ const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests,
     const myMissionRequests = missionRequests.filter(m => m.solicitante_id === user.id);
     const myMissionOrders = missionOrders.filter(mo =>
         mo.requester.toLowerCase().includes(user.name.toLowerCase()) ||
-        mo.requester.toLowerCase().includes(user.warName?.toLowerCase() || '')
+        (user.warName && mo.requester.toLowerCase().includes(user.warName.toLowerCase()))
     );
 
     // Filter orders where I am the COMMANDER (Active only)
