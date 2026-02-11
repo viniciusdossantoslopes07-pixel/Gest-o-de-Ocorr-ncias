@@ -414,19 +414,19 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                     Cancelar
                 </button>
                 <button
-                    type="submit"
-                    className="bg-blue-600 px-8 py-3 rounded-xl font-bold text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex items-center gap-2 transition-all active:scale-95"
-                >
-                    <Save className="w-4 h-4" />
-                    Enviar Solicitação
-                </button>
-                <button
                     type="button"
                     onClick={(e) => handleSubmit(e as any, true)}
                     className="bg-amber-100 px-6 py-3 rounded-xl font-bold text-amber-700 hover:bg-amber-200 transition-colors flex items-center gap-2"
                 >
                     <Save className="w-4 h-4" />
                     Salvar Rascunho
+                </button>
+                <button
+                    type="submit"
+                    className="bg-blue-600 px-8 py-3 rounded-xl font-bold text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex items-center gap-2 transition-all active:scale-95"
+                >
+                    <Save className="w-4 h-4" />
+                    Enviar Solicitação
                 </button>
             </div>
         </form>

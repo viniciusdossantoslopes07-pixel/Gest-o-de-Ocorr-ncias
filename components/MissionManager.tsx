@@ -708,7 +708,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
                                         alert(isDraft ? 'Rascunho atualizado!' : 'Solicitação enviada!');
                                     } else {
                                         console.error('Erro ao atualizar:', error);
-                                        alert('Erro ao atualizar solicitação.');
+                                        alert('Erro ao atualizar solicitação: ' + (error.message || JSON.stringify(error)));
                                     }
                                 } else {
                                     // Create new
@@ -722,7 +722,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
                                         alert(isDraft ? 'Rascunho salvo com sucesso!' : 'Solicitação criada com sucesso!');
                                     } else {
                                         console.error('Erro ao criar solicitação:', error);
-                                        alert('Erro ao criar solicitação.');
+                                        alert('Erro ao criar solicitação: ' + (error.message || JSON.stringify(error)));
                                     }
                                 }
                             }}
