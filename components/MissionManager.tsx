@@ -517,6 +517,12 @@ export default function MissionManager({ user }: MissionManagerProps) {
         );
     }
 
+    // Debug logging
+    const myMissions = missions.filter(m => m.solicitante_id === user.id || m.solicitante_id?.toLowerCase() === user.id?.toLowerCase());
+    console.log('Debug - User ID:', user.id);
+    console.log('Debug - Missions (Total):', missions);
+    console.log('Debug - Missions (Filtered):', myMissions);
+
     return (
         <div className="max-w-7xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
@@ -576,10 +582,10 @@ export default function MissionManager({ user }: MissionManagerProps) {
                 {/* 1. Minhas Solicitações Tab */}
                 {activeTab === 'minhas_solicitacoes' && (
                     <div className="space-y-4">
-                        {missions.filter(m => m.solicitante_id === user.id).length === 0 ? (
+                        {myMissions.length === 0 ? (
                             <div className="text-center py-12 text-slate-400">Você não possui solicitações de missão recentes.</div>
                         ) : (
-                            missions.filter(m => m.solicitante_id === user.id).map(m => (
+                            myMissions.map(m => (
                                 <div key={m.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100 transition-colors flex justify-between items-center">
                                     <div>
                                         <div className="font-bold text-slate-900 flex items-center gap-2">
