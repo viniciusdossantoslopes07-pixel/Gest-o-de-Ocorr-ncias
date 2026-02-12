@@ -139,7 +139,9 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             doc.setTextColor(0);
         });
 
-        doc.save(`Relatorio_${user.warName}_${new Date().toISOString().split('T')[0]}.pdf`);
+        // Update: Instead of saving automatically, open in new tab with print dialog
+        doc.autoPrint();
+        window.open(doc.output('bloburl'), '_blank');
     };
 
     return (

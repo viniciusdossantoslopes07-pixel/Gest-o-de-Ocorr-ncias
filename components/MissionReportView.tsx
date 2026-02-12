@@ -46,7 +46,9 @@ const MissionReportView: FC<MissionReportViewProps> = ({ orders, onBack }) => {
             y += 15;
         });
 
-        doc.save("relatorio_missoes.pdf");
+        // Update: Instead of saving automatically, open in new tab with print dialog
+        doc.autoPrint();
+        window.open(doc.output('bloburl'), '_blank');
     };
 
     return (
