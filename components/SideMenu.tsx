@@ -4,7 +4,7 @@ import { User, UserRole } from '../types';
 import {
     Home, PlusCircle, ShieldCheck, ShieldAlert, Package,
     LayoutDashboard, FileText, LogOut, ChevronLeft, ChevronRight,
-    User as UserIcon, Settings, HelpCircle, Moon, Sun, Lock
+    User as UserIcon, Settings, HelpCircle, Moon, Sun, Lock, Siren, BarChart3
 } from 'lucide-react';
 
 interface SideMenuProps {
@@ -25,6 +25,7 @@ export default function SideMenu({
 }: SideMenuProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMaterialMenuOpen, setIsMaterialMenuOpen] = useState(true);
+    const [isOccurrencesOpen, setIsOccurrencesOpen] = useState(true);
 
     // Permission Checks
     const isPublic = currentUser.role === UserRole.PUBLIC;
@@ -141,15 +142,33 @@ export default function SideMenu({
                                 <MenuItem id="meu-plano" label="Meu Plano" icon={UserIcon} />
                             </div>
 
-                            {/* SECTION 5: ADMINISTRAÇÃO */}
+                            {/* SECTION 5: CENTRAL DE OCORRÊNCIAS (Antiga Administração) */}
                             {(isAdmin || canManageUsers) && (
                                 <div>
                                     {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2">Administração</h3>}
 
-                                    {isAdmin && <MenuItem id="kanban" label="Fila de Serviço" icon={LayoutDashboard} />}
-                                    {canManageUsers && <MenuItem id="users" label="Gestão Militar" icon={UserIcon} />}
-                                    <MenuItem id="dashboard" label="Estatísticas BI" icon={LayoutDashboard} />
-                                    <MenuItem id="list" label="Arquivo Geral" icon={FileText} />
+                                    <button
+                                        onClick={() => !isCollapsed && setIsOccurrencesOpen(!isOccurrencesOpen)}
+                                        className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                        title={isCollapsed ? "Central de Ocorrências" : ''}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <Siren className="w-5 h-5 shrink-0" />
+                                            {!isCollapsed && <span className="text-sm font-bold">Central de Ocorrências</span>}
+                                        </div>
+                                        {!isCollapsed && (
+                                            <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isOccurrencesOpen ? 'rotate-90' : ''}`} />
+                                        )}
+                                    </button>
+
+                                    {(!isCollapsed && isOccurrencesOpen) && (
+                                        <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
+                                            {isAdmin && <MenuItem id="kanban" label="Fila de Serviço" icon={LayoutDashboard} />}
+                                            {canManageUsers && <MenuItem id="users" label="Gestão Militar" icon={UserIcon} />}
+                                            <MenuItem id="dashboard" label="Estatísticas BI" icon={BarChart3} />
+                                            <MenuItem id="list" label="Arquivo Geral" icon={FileText} />
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </>
