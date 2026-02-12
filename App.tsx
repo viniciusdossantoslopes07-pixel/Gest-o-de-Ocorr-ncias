@@ -135,6 +135,22 @@ const App: FC = () => {
     }
   }, []);
 
+  // Persistence for Personnel Center
+  useEffect(() => {
+    const savedHistory = localStorage.getItem('attendanceHistory');
+    if (savedHistory) {
+      try {
+        setAttendanceHistory(JSON.parse(savedHistory));
+      } catch (e) {
+        console.error('Error loading attendance history:', e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('attendanceHistory', JSON.stringify(attendanceHistory));
+  }, [attendanceHistory]);
+
   const toggleTheme = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);

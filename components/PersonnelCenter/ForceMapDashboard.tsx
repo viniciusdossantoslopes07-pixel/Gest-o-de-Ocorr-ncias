@@ -54,6 +54,11 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                     <h2 className="text-2xl font-black text-slate-900 tracking-tight">Mapa de Força Consolidado</h2>
                     <p className="text-slate-500 text-sm font-medium">Estatísticas detalhadas baseadas nas constantes regulamentares</p>
                 </div>
+                {allRecords.length > 0 && (
+                    <div className="ml-auto flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 italic">
+                        <Clock className="w-3 h-3" /> Atualizado em: {new Date(allRecords[0].timestamp).toLocaleTimeString()}
+                    </div>
+                )}
             </div>
 
             {/* Stats Grid */}
