@@ -24,8 +24,8 @@ export default function SideMenu({
     onToggleTheme, isDarkMode, onOpenFAQ
 }: SideMenuProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const [isMaterialMenuOpen, setIsMaterialMenuOpen] = useState(true);
-    const [isOccurrencesOpen, setIsOccurrencesOpen] = useState(true);
+    const [isMaterialMenuOpen, setIsMaterialMenuOpen] = useState(false);
+    const [isOccurrencesOpen, setIsOccurrencesOpen] = useState(false);
 
     // Permission Checks
     const isPublic = currentUser.role === UserRole.PUBLIC;
