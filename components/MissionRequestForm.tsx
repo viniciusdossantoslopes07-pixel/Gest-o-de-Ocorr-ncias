@@ -32,7 +32,9 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
             telefone: ''
         },
         efetivo: initialData?.dados_missao.efetivo || '',
-        viaturas: initialData?.dados_missao.viaturas || '',
+        viaturas: typeof initialData?.dados_missao.viaturas === 'object'
+            ? initialData.dados_missao.viaturas
+            : { operacional: 0, descaracterizada: 0, caminhao_tropa: 0 },
         alimentacao: initialData?.dados_missao.alimentacao || {
             cafe: false,
             almoco: false,
@@ -339,15 +341,48 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                 required
                             />
                         </div>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-600 mb-2">Viaturas</label>
-                            <input
-                                type="text"
-                                value={formData.viaturas}
-                                onChange={e => setFormData({ ...formData, viaturas: e.target.value })}
-                                placeholder="Ex: 1 Vtr Leve, 1 Motocicleta"
-                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
+                        <div className="space-y-3">
+                            {[
+                                { id: 'operacional', label: 'VTR OPERACIONAL' },
+                                { id: 'descaracterizada', label: 'VTR DESCARACTERIZADA' },
+                                { id: 'caminhao_tropa', label: 'CAMINHÃO TROPA' }
+                            ].map(vtr => (
+                                <div key={vtr.id} className="flex items-center gap-3 p-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
+                                    <label className="flex flex-1 items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={(formData.viaturas as any)[vtr.id] > 0}
+                                            onChange={e => {
+                                                const newVal = e.target.checked ? 1 : 0;
+                                                setFormData({
+                                                    ...formData,
+                                                    viaturas: { ...formData.viaturas as any, [vtr.id]: newVal }
+                                                });
+                                            }}
+                                            className="w-4 h-4 rounded text-blue-600"
+                                        />
+                                        <span className="text-sm font-medium text-slate-700">{vtr.label}</span>
+                                    </label>
+                                    {(formData.viaturas as any)[vtr.id] > 0 && (
+                                        <div className="flex items-center gap-2 animate-fade-in">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase">Qtd</span>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                value={(formData.viaturas as any)[vtr.id]}
+                                                onChange={e => {
+                                                    const val = Math.max(1, parseInt(e.target.value) || 1);
+                                                    setFormData({
+                                                        ...formData,
+                                                        viaturas: { ...formData.viaturas as any, [vtr.id]: val }
+                                                    });
+                                                }}
+                                                className="w-16 px-2 py-1 border border-slate-300 rounded text-center text-sm font-bold text-slate-700"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
                         </div>
                     </section>
 

@@ -152,7 +152,7 @@ export interface Mission {
       telefone: string;
     };
     efetivo: string;
-    viaturas: string;
+    viaturas: string | { operacional: number; descaracterizada: number; caminhao_tropa: number };
     alimentacao: {
       cafe: boolean;
       almoco: boolean;

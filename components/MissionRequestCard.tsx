@@ -3,6 +3,7 @@ import { Mission, User, HistoricoItem } from '../types';
 import { RANKS, SETORES, TIPOS_MISSAO } from '../constants';
 import { X, Save, Calendar, Clock, MapPin, Users as UsersIcon, Truck, Coffee, MessageSquare, Edit2, History } from 'lucide-react';
 import { supabase } from '../services/supabase';
+import { formatViaturas } from '../utils/formatters';
 
 interface MissionRequestCardProps {
     mission: Mission;
@@ -15,7 +16,12 @@ interface MissionRequestCardProps {
 const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onUpdate, currentUser, canEdit }) => {
     const [activeTab, setActiveTab] = useState<'dados' | 'historico'>('dados');
     const [isEditing, setIsEditing] = useState(false);
-    const [formData, setFormData] = useState(mission.dados_missao);
+    const [formData, setFormData] = useState({
+        ...mission.dados_missao,
+        viaturas: typeof mission.dados_missao.viaturas === 'object'
+            ? mission.dados_missao.viaturas
+            : { operacional: 0, descaracterizada: 0, caminhao_tropa: 0 }
+    });
     const [newComment, setNewComment] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
@@ -159,8 +165,8 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                     <button
                         onClick={() => setActiveTab('dados')}
                         className={`px-4 py-3 font-bold text-sm transition-colors border-b-2 ${activeTab === 'dados'
-                                ? 'border-blue-600 text-blue-600'
-                                : 'border-transparent text-slate-500 hover:text-slate-700'
+                            ? 'border-blue-600 text-blue-600'
+                            : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
                     >
                         <div className="flex items-center gap-2">
@@ -171,8 +177,8 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                     <button
                         onClick={() => setActiveTab('historico')}
                         className={`px-4 py-3 font-bold text-sm transition-colors border-b-2 ${activeTab === 'historico'
-                                ? 'border-blue-600 text-blue-600'
-                                : 'border-transparent text-slate-500 hover:text-slate-700'
+                            ? 'border-blue-600 text-blue-600'
+                            : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
                     >
                         <div className="flex items-center gap-2">
@@ -192,8 +198,8 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                     <button
                                         onClick={() => setIsEditing(!isEditing)}
                                         className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors ${isEditing
-                                                ? 'bg-slate-200 text-slate-700'
-                                                : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                            ? 'bg-slate-200 text-slate-700'
+                                            : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                                             }`}
                                     >
                                         {isEditing ? 'Cancelar Edição' : 'Editar'}
@@ -358,14 +364,48 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                     <div>
                                         <label className="block text-xs font-bold text-slate-600 mb-2">Viaturas</label>
                                         {isEditing ? (
-                                            <input
-                                                type="text"
-                                                value={formData.viaturas}
-                                                onChange={e => setFormData({ ...formData, viaturas: e.target.value })}
-                                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
-                                            />
+                                            <div className="space-y-2">
+                                                {[
+                                                    { id: 'operacional', label: 'VTR OPERACIONAL' },
+                                                    { id: 'descaracterizada', label: 'VTR DESCARACTERIZADA' },
+                                                    { id: 'caminhao_tropa', label: 'CAMINHÃO TROPA' }
+                                                ].map(vtr => (
+                                                    <div key={vtr.id} className="flex items-center gap-2 p-2 border border-slate-100 rounded-lg">
+                                                        <label className="flex flex-1 items-center gap-2 cursor-pointer">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={(formData.viaturas as any)[vtr.id] > 0}
+                                                                onChange={e => {
+                                                                    const newVal = e.target.checked ? 1 : 0;
+                                                                    setFormData({
+                                                                        ...formData,
+                                                                        viaturas: { ...formData.viaturas as any, [vtr.id]: newVal }
+                                                                    });
+                                                                }}
+                                                                className="w-4 h-4 rounded text-blue-600"
+                                                            />
+                                                            <span className="text-xs font-medium text-slate-700">{vtr.label}</span>
+                                                        </label>
+                                                        {(formData.viaturas as any)[vtr.id] > 0 && (
+                                                            <input
+                                                                type="number"
+                                                                min="1"
+                                                                value={(formData.viaturas as any)[vtr.id]}
+                                                                onChange={e => {
+                                                                    const val = Math.max(1, parseInt(e.target.value) || 1);
+                                                                    setFormData({
+                                                                        ...formData,
+                                                                        viaturas: { ...formData.viaturas as any, [vtr.id]: val }
+                                                                    });
+                                                                }}
+                                                                className="w-12 px-1 py-0.5 border border-slate-300 rounded text-center text-xs font-bold text-slate-700"
+                                                            />
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
                                         ) : (
-                                            <p className="text-sm text-slate-900">{formData.viaturas || 'Não informado'}</p>
+                                            <p className="text-sm text-slate-900">{formatViaturas(formData.viaturas)}</p>
                                         )}
                                     </div>
                                 </div>
@@ -384,8 +424,8 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                         <div key={item.id} className="flex gap-4">
                                             <div className="flex flex-col items-center">
                                                 <div className={`w-3 h-3 rounded-full ${item.tipo === 'edicao' ? 'bg-blue-500' :
-                                                        item.tipo === 'comentario' ? 'bg-green-500' :
-                                                            'bg-orange-500'
+                                                    item.tipo === 'comentario' ? 'bg-green-500' :
+                                                        'bg-orange-500'
                                                     }`} />
                                                 {index < (mission.historico || []).length - 1 && (
                                                     <div className="w-0.5 h-full bg-slate-200 mt-2" />

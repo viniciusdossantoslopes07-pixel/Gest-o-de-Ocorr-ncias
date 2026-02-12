@@ -1,6 +1,7 @@
 import { useState, FC } from 'react';
 import { Mission } from '../types';
 import { CheckCircle, XCircle, ArrowUpCircle, Clock, Calendar, MapPin, User as UserIcon, FileText } from 'lucide-react';
+import { formatViaturas } from '../utils/formatters';
 
 interface MissionRequestListProps {
     missions: Mission[];
@@ -105,7 +106,7 @@ const MissionRequestList: FC<MissionRequestListProps> = ({ missions, onProcess, 
                                 </div>
                                 <div className="col-span-2">
                                     <label className="block text-xs font-bold text-slate-400">Viaturas</label>
-                                    <p>{selectedMission.dados_missao.viaturas || 'Não especificado'}</p>
+                                    <p>{formatViaturas(selectedMission.dados_missao.viaturas)}</p>
                                 </div>
                                 <div className="col-span-2">
                                     <label className="block text-xs font-bold text-slate-400">Alimentação</label>

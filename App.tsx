@@ -28,6 +28,7 @@ import { LoanApprovals } from './components/LoanApprovals';
 import LoanRequestForm from './components/LoanRequestForm';
 import { MaterialStatistics } from './components/MaterialStatistics';
 import MaterialDashboard from './components/MaterialDashboard';
+import { formatViaturas } from './utils/formatters';
 import MissionManager from './components/MissionManager';
 import { MyMaterialLoans } from './components/MyMaterialLoans';
 import MeuPlanoView from './components/MeuPlanoView';
@@ -475,9 +476,11 @@ const App: FC = () => {
       mission: mission.dados_missao.tipo_missao,
       location: mission.dados_missao.local,
       requester: `${mission.dados_missao.posto} ${mission.dados_missao.nome_guerra}`,
-      description: `SOLICITAÇÃO DE MISSÃO ID: ${mission.id}\nResponsável: ${mission.dados_missao.responsavel?.nome || 'O próprio'}\nEfetivo Solicitado: ${mission.dados_missao.efetivo}\nViaturas: ${mission.dados_missao.viaturas}`,
+      description: `SOLICITAÇÃO DE MISSÃO ID: ${mission.id}\nResponsável: ${mission.dados_missao.responsavel?.nome || 'O próprio'}\nEfetivo Solicitado: ${mission.dados_missao.efetivo}\nViaturas: ${formatViaturas(mission.dados_missao.viaturas)}`,
       food: Object.values(mission.dados_missao.alimentacao).some(Boolean),
-      transport: !!mission.dados_missao.viaturas,
+      transport: typeof mission.dados_missao.viaturas === 'object'
+        ? Object.values(mission.dados_missao.viaturas).some(v => v > 0)
+        : !!mission.dados_missao.viaturas,
       personnel: [],
       schedule: [
         {
