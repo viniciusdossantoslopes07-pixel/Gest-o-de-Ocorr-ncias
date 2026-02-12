@@ -218,8 +218,11 @@ export interface DailyAttendance {
   id: string;
   date: string;
   sector: string;
+  callType: string; // From CALL_TYPES
   records: AttendanceRecord[];
   respChamada1?: string;
   respChamada2?: string;
+  signedAt?: string;
+  signedBy?: string;
   createdAt: string;
 }

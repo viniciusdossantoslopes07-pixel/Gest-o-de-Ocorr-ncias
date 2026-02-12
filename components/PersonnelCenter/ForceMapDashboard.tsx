@@ -1,7 +1,7 @@
 
 import { FC } from 'react';
 import { DailyAttendance, User } from '../../types';
-import { BarChart3, Users, CheckCircle, AlertTriangle, ExternalLink, ShieldAlert } from 'lucide-react';
+import { BarChart3, Users, CheckCircle, AlertTriangle, ExternalLink, ShieldAlert, Clock } from 'lucide-react';
 
 interface ForceMapProps {
     users: User[];
@@ -9,44 +9,36 @@ interface ForceMapProps {
 }
 
 const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
-    // Current day's attendance (last one for the date)
     const today = new Date().toISOString().split('T')[0];
-    const latestAttendanceBySector: Record<string, DailyAttendance> = {};
 
-    attendanceHistory
-        .filter(a => a.date === today)
-        .forEach(a => {
-            latestAttendanceBySector[a.sector] = a;
-        });
+    // Most recent attendance per sector and per call type for today
+    const currentAttendances = attendanceHistory.filter(a => a.date === today);
 
-    const allRecords = Object.values(latestAttendanceBySector).flatMap(a => a.records);
+    // Grouped statistics by all records in latest attendances
+    const allRecords = currentAttendances.flatMap(a => a.records);
     const totalEfetivo = users.length;
 
-    // Indicadores conforme solicitado:
-    // Prontos: Status P ou INST
-    const prontosCount = allRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
+    const getCount = (codes: string[]) => allRecords.filter(r => codes.includes(r.status)).length;
 
-    // Baixas: DPM, JS, INSP, LI
-    const baixasCount = allRecords.filter(r => ['DPM', 'JS', 'INSP', 'LI'].includes(r.status)).length;
+    const stats = [
+        { title: 'Prontos (INST/P)', value: getCount(['P', 'INST']), icon: CheckCircle, color: 'bg-emerald-100 text-emerald-600' },
+        { title: 'Baixas (DPM/JS/INSP/LI)', value: getCount(['DPM', 'JS', 'INSP', 'LI']), icon: AlertTriangle, color: 'bg-red-100 text-red-600' },
+        { title: 'Serviço (ESV/DSV)', value: getCount(['ESV', 'DSV']), icon: Clock, color: 'bg-amber-100 text-amber-600' },
+        { title: 'Indisponíveis (A/F)', value: getCount(['A', 'F']), icon: ShieldAlert, color: 'bg-slate-900 text-white' },
+        { title: 'Outros (TRA/MIS/FE/C-E/AGD/DESL)', value: getCount(['TRA', 'MIS', 'FE', 'C-E', 'AGD', 'DESL']), icon: ExternalLink, color: 'bg-blue-100 text-blue-600' },
+    ];
 
-    // Externos: MIS, C-E, FE, TRA
-    const externosCount = allRecords.filter(r => ['MIS', 'C-E', 'FE', 'TRA'].includes(r.status)).length;
-
-    // Indisponíveis: ESV (em escala), A/F (Ausente/Falta)
-    const indisponiveisCount = allRecords.filter(r => ['ESV', 'A', 'F'].includes(r.status)).length;
-
-    const StatCard = ({ title, value, icon: Icon, color, description }: any) => (
+    const StatCard = ({ title, value, icon: Icon, color }: any) => (
         <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col gap-4">
             <div className={`p-3 rounded-2xl w-fit ${color}`}>
                 <Icon className="w-6 h-6" />
             </div>
             <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{title}</p>
-                <div className="flex items-baseline gap-2">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">{title}</p>
+                <div className="flex items-baseline gap-2 mt-1">
                     <h3 className="text-3xl font-black text-slate-900">{value}</h3>
                     <span className="text-xs font-bold text-slate-400">Militares</span>
                 </div>
-                <p className="text-[10px] text-slate-500 font-medium mt-1 italic">{description}</p>
             </div>
         </div>
     );
@@ -59,105 +51,88 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                     <BarChart3 className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Mapa de Força</h2>
-                    <p className="text-slate-500 text-sm font-medium">Situação quantitativa do efetivo em tempo real</p>
+                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Mapa de Força Consolidado</h2>
+                    <p className="text-slate-500 text-sm font-medium">Estatísticas detalhadas baseadas nas constantes regulamentares</p>
                 </div>
             </div>
 
-            {/* Quick Stats Grid */}
+            {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                <StatCard
-                    title="Efetivo Total"
-                    value={totalEfetivo}
-                    icon={Users}
-                    color="bg-slate-100 text-slate-600"
-                    description="Total de militares cadastrados"
-                />
-                <StatCard
-                    title="Prontos"
-                    value={prontosCount}
-                    icon={CheckCircle}
-                    color="bg-emerald-100 text-emerald-600"
-                    description="Status P ou INSTRUÇÃO"
-                />
-                <StatCard
-                    title="Baixas"
-                    value={baixasCount}
-                    icon={AlertTriangle}
-                    color="bg-red-100 text-red-600"
-                    description="DPM, JS, INSP ou LICENÇA"
-                />
-                <StatCard
-                    title="Externos"
-                    value={externosCount}
-                    icon={ExternalLink}
-                    color="bg-blue-100 text-blue-600"
-                    description="MIS, C-E, FÉRIAS ou TRA"
-                />
-                <StatCard
-                    title="Indisponíveis"
-                    value={indisponiveisCount}
-                    icon={ShieldAlert}
-                    color="bg-orange-100 text-orange-600"
-                    description="ESCAPA, AUSENTE ou FALTA"
-                />
+                {stats.map(s => <StatCard key={s.title} {...s} />)}
             </div>
 
-            {/* Detailed Breakdown */}
+            {/* Detailed Sector Status */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
-                    <div className="p-6 border-b border-slate-100 bg-slate-50/50">
-                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Situação por Setor</h3>
+                    <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Situação por Setor (Últimas Chamadas)</h3>
+                        <div className="flex gap-2">
+                            <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500" /> Pronto
+                            </span>
+                            <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                                <div className="w-2 h-2 rounded-full bg-red-400" /> Outros
+                            </span>
+                        </div>
                     </div>
-                    <div className="p-6">
-                        <div className="space-y-4">
-                            {Object.entries(latestAttendanceBySector).map(([sector, data]) => {
-                                const sectorReady = data.records.filter(r => ['P', 'INST'].includes(r.status)).length;
-                                const pct = (sectorReady / data.records.length) * 100;
+                    <div className="p-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                            {Array.from(new Set(currentAttendances.map(a => a.sector))).map(sector => {
+                                const sectorRecords = currentAttendances.filter(a => a.sector === sector).flatMap(a => a.records);
+                                const sectorReady = sectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
+                                const pct = sectorRecords.length > 0 ? (sectorReady / sectorRecords.length) * 100 : 0;
 
                                 return (
-                                    <div key={sector} className="space-y-2">
-                                        <div className="flex justify-between items-end">
-                                            <span className="text-xs font-black text-slate-700">{sector}</span>
-                                            <span className="text-[10px] font-bold text-slate-400">
-                                                {sectorReady} / {data.records.length} Prontos ({pct.toFixed(0)}%)
+                                    <div key={sector} className="space-y-3">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-xs font-black text-slate-900 uppercase tracking-tight">{sector}</span>
+                                            <span className="text-[10px] font-black text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                                                {sectorReady} / {sectorRecords.length}
                                             </span>
                                         </div>
-                                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                        <div className="h-4 bg-slate-100 rounded-full overflow-hidden border border-slate-200 p-1">
                                             <div
-                                                className={`h-full transition-all duration-500 ${pct > 80 ? 'bg-emerald-500' : pct > 50 ? 'bg-amber-500' : 'bg-red-500'}`}
+                                                className={`h-full rounded-full transition-all duration-700 shadow-sm ${pct > 80 ? 'bg-emerald-500' : pct > 50 ? 'bg-amber-400' : 'bg-red-500'}`}
                                                 style={{ width: `${pct}%` }}
                                             />
                                         </div>
                                     </div>
                                 );
                             })}
-                            {Object.keys(latestAttendanceBySector).length === 0 && (
-                                <p className="text-center py-8 text-sm text-slate-400 font-bold">Nenhuma chamada realizada hoje</p>
+                            {currentAttendances.length === 0 && (
+                                <div className="col-span-2 text-center py-12">
+                                    <p className="text-sm font-bold text-slate-300">Sem dados para exibição hojde</p>
+                                </div>
                             )}
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-slate-900 rounded-[2rem] p-8 text-white shadow-2xl">
-                    <h3 className="text-lg font-black tracking-tight mb-6 flex items-center gap-2">
-                        <ShieldAlert className="w-5 h-5 text-amber-400" />
-                        Alertas de Prontidão
-                    </h3>
-                    <div className="space-y-6">
-                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-                            <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1">Capacidade Crítica</p>
-                            <p className="text-xs text-slate-300">Setores com menos de 50% de efetivo pronto para emprego imediato.</p>
+                <div className="space-y-4">
+                    <div className="bg-slate-900 rounded-[2rem] p-8 text-white shadow-2xl relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform">
+                            <ShieldAlert className="w-32 h-32" />
                         </div>
-                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-                            <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Status Verde</p>
-                            <p className="text-xs text-slate-300">Efetivo atual permite manutenção de todos os postos orgânicos.</p>
+                        <h3 className="text-lg font-black tracking-tight mb-6">Controle de Assinaturas</h3>
+                        <div className="space-y-4 relative z-10">
+                            {currentAttendances.map(a => (
+                                <div key={a.id} className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl p-3">
+                                    <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
+                                    <div>
+                                        <p className="text-[10px] font-black text-white uppercase tracking-widest">{a.sector}</p>
+                                        <p className="text-[9px] text-slate-400 font-bold uppercase">{a.callType === 'INICIO' ? '1ª CHAMADA' : '2ª CHAMADA'}</p>
+                                    </div>
+                                </div>
+                            ))}
+                            {currentAttendances.length === 0 && <p className="text-xs text-slate-500 font-bold">Nenhuma chamada assinada hoje.</p>}
                         </div>
                     </div>
-                    <div className="mt-12 pt-8 border-t border-white/10">
-                        <p className="text-[10px] text-slate-500 font-bold uppercase mb-4 text-center tracking-widest">Relatório Consolidado</p>
-                        <button className="w-full py-3 bg-white text-slate-900 rounded-xl font-bold hover:bg-slate-100 transition-all flex items-center justify-center gap-2">
-                            <ExternalLink className="w-4 h-4" /> Exportar para PDF
+
+                    <div className="bg-white rounded-[2rem] border border-slate-200 p-8 shadow-sm">
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Exportação Consolidada</h4>
+                        <button className="w-full py-4 bg-slate-50 border border-slate-200 text-slate-900 rounded-2xl font-bold hover:bg-slate-100 transition-all flex items-center justify-center gap-2">
+                            <ExternalLink className="w-5 h-5 text-slate-400" />
+                            Gerar PDF Diário
                         </button>
                     </div>
                 </div>

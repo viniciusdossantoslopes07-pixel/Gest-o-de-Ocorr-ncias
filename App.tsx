@@ -849,7 +849,7 @@ const App: FC = () => {
           )}
 
           {activeTab === 'daily-attendance' && (
-            <DailyAttendanceView users={users} onSaveAttendance={(a) => setAttendanceHistory([...attendanceHistory, a])} />
+            <DailyAttendanceView users={users} currentUser={currentUser!} onSaveAttendance={(a) => setAttendanceHistory([...attendanceHistory, a])} />
           )}
 
           {activeTab === 'personnel-management' && (

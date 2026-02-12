@@ -63,7 +63,6 @@ export const PRESENCE_STATUS = {
   'C-E': 'CURSO-ESTÁGIO',
   'DPM': 'DISPENSA MÉDICA',
   'ESV': 'SERVIÇO',
-  'SSV': 'SAINDO DE SERVIÇO',
   'DSV': 'DISP DE SERVIÇO',
   'JS': 'JUNTA DE SAÚDE',
   'INSP': 'INSPEÇÃO DE SAÚDE',
@@ -80,7 +79,13 @@ export const PRESENCE_STATUS = {
   'DCH': 'DISPENSA PELA CHEFIA'
 } as const;
 
+export const CALL_TYPES = {
+  'INICIO': '1ª Chamada (Início de Expediente)',
+  'TERMINO': '2ª Chamada (Término de Expediente)'
+} as const;
+
 export type PresenceStatusCode = keyof typeof PRESENCE_STATUS;
+export type CallTypeCode = keyof typeof CALL_TYPES;
 
 export const ARMAMENT_OPTIONS = ['Pistola', 'Fuzil', 'Nenhum'];
 
