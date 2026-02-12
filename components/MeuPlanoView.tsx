@@ -39,10 +39,11 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
     const fetchPersonalStats = async () => {
         setLoading(true);
         try {
-            // 1. Fetch Mission Orders where user is in personnel
+            // 1. Fetch Mission Orders where user is in personnel AND status is CONCLUIDA
             const { data: missions, error: mError } = await supabase
                 .from('mission_orders')
                 .select('*')
+                .eq('status', 'CONCLUIDA') // Only finalized missions
                 .contains('personnel', `[{"id": "${user.id}"}]`) // Query JSONB array for user
                 .order('date', { ascending: false });
 
