@@ -52,6 +52,10 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
         setPersonnel(personnel.map(p => p.id === id ? { ...p, [field]: value } : p));
     };
 
+    const updatePersonnelFields = (id: string, fields: Partial<MissionOrderPersonnel>) => {
+        setPersonnel(prev => prev.map(p => p.id === id ? { ...p, ...fields } : p));
+    };
+
     const addSchedule = () => {
         setSchedule([...schedule, {
             id: Math.random().toString(),
@@ -307,12 +311,14 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                     const selectedName = e.target.value;
                                                     const foundUser = users.find(u => (u.warName || u.name) === selectedName);
 
-                                                    updatePersonnel(p.id, 'warName', selectedName);
+                                                    const updates: Partial<MissionOrderPersonnel> = { warName: selectedName };
 
                                                     if (foundUser) {
-                                                        updatePersonnel(p.id, 'rank', foundUser.rank);
-                                                        updatePersonnel(p.id, 'saram', foundUser.saram);
+                                                        updates.rank = foundUser.rank;
+                                                        updates.saram = foundUser.saram;
                                                     }
+
+                                                    updatePersonnelFields(p.id, updates);
                                                 }}
                                                 className="w-full px-2 py-1 border border-slate-200 rounded text-xs"
                                             >
