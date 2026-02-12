@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
-import { Plus, Edit2, Trash2, Search, LayoutList, Package } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, Package } from 'lucide-react';
+import { MATERIAL_TYPES, GESTAO_MATERIAL_SETORES } from '../constants';
 
 interface StockItem {
     id: string;
@@ -140,7 +141,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                        <LayoutList className="w-8 h-8 text-blue-600" />
+                        <Package className="w-8 h-8 text-blue-600" />
                         Gestão de Estoque (SAP-03)
                     </h2>
                     <p className="text-slate-500">Gerencie o inventário e controle de materiais.</p>
@@ -260,21 +261,29 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-xs font-bold text-slate-600 mb-1">Tipo de Material</label>
-                                        <input
-                                            type="text"
+                                        <select
                                             value={formData.tipo_de_material}
                                             onChange={e => setFormData({ ...formData, tipo_de_material: e.target.value })}
-                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
-                                        />
+                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors bg-white"
+                                        >
+                                            <option value="">Selecione...</option>
+                                            {MATERIAL_TYPES.map(type => (
+                                                <option key={type} value={type}>{type}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-slate-600 mb-1">Setor</label>
-                                        <input
-                                            type="text"
+                                        <select
                                             value={formData.setor}
                                             onChange={e => setFormData({ ...formData, setor: e.target.value })}
-                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
-                                        />
+                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors bg-white"
+                                        >
+                                            <option value="">Selecione...</option>
+                                            {GESTAO_MATERIAL_SETORES.map(sector => (
+                                                <option key={sector} value={sector}>{sector}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </div>
 

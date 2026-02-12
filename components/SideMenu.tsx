@@ -11,7 +11,7 @@ interface SideMenuProps {
     isOpen: boolean;
     onClose: () => void;
     activeTab: string;
-    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'new' | 'list' | 'kanban' | 'dashboard' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings'>>;
+    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'material-statistics'>>;
     currentUser: User;
     onLogout: () => void;
     onToggleTheme: () => void;
@@ -24,6 +24,7 @@ export default function SideMenu({
     onToggleTheme, isDarkMode, onOpenFAQ
 }: SideMenuProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isMaterialMenuOpen, setIsMaterialMenuOpen] = useState(true);
 
     // Permission Checks
     const isPublic = currentUser.role === UserRole.PUBLIC;
@@ -102,18 +103,37 @@ export default function SideMenu({
                             {/* SECTION 2: CENTRAL DE MATERIAL */}
                             <div>
                                 {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2">Central de Material</h3>}
-                                <MenuItem id="my-material-loans" label="Minhas Cautelas" icon={Package} />
-                                <MenuItem id="request-material" label="Solicitar Material" icon={PlusCircle} />
-                            </div>
 
-                            {/* SECTION 3: GESTÃO SAP-03 */}
-                            {isMaterialManager && (
-                                <div>
-                                    {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2">Gestão SAP-03</h3>}
-                                    <MenuItem id="material-approvals" label="Aprovações" icon={ShieldCheck} />
-                                    <MenuItem id="inventory-management" label="Gestão de Estoque" icon={LayoutDashboard} />
-                                </div>
-                            )}
+                                <button
+                                    onClick={() => !isCollapsed && setIsMaterialMenuOpen(!isMaterialMenuOpen)}
+                                    className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                    title={isCollapsed ? "Central de Material" : ''}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Package className="w-5 h-5 shrink-0" />
+                                        {!isCollapsed && <span className="text-sm font-bold">Material e Cautela</span>}
+                                    </div>
+                                    {!isCollapsed && (
+                                        <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isMaterialMenuOpen ? 'rotate-90' : ''}`} />
+                                    )}
+                                </button>
+
+                                {(!isCollapsed && isMaterialMenuOpen) && (
+                                    <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
+                                        <MenuItem id="my-material-loans" label="Minhas Cautelas" icon={Package} />
+                                        <MenuItem id="request-material" label="Solicitar Material" icon={PlusCircle} />
+
+                                        {isMaterialManager && (
+                                            <>
+                                                <div className="my-2 border-t border-slate-800" />
+                                                <MenuItem id="material-approvals" label="Aprovações" icon={ShieldCheck} />
+                                                <MenuItem id="inventory-management" label="Gestão de Estoque" icon={LayoutDashboard} />
+                                                <MenuItem id="material-statistics" label="Estatísticas" icon={LayoutDashboard} />
+                                            </>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
 
                             {/* SECTION 4: MEU PLANO */}
                             <div>

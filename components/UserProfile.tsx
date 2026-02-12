@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { User, Occurrence, Mission, MissionOrder } from '../types';
 import { Clock, CheckCircle, AlertTriangle, FileText, Shield, Play, Square } from 'lucide-react';
 import { STATUS_COLORS, URGENCY_COLORS, MISSION_STATUS_COLORS, MISSION_STATUS_LABELS } from '../constants';
-import MyMaterialLoans from './MyMaterialLoans';
+import { MyMaterialLoans } from './MyMaterialLoans';
 
 interface UserProfileProps {
     user: User;
@@ -140,7 +140,7 @@ const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests,
                 </div>
 
                 {/* My Material Loans */}
-                <MyMaterialLoans userId={user.id} />
+                <MyMaterialLoans user={user} />
             </div>
 
             {/* My Command Orders */}

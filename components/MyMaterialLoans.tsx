@@ -5,6 +5,7 @@ import { Package, Clock, Truck, CornerDownLeft } from 'lucide-react';
 interface MaterialLoan {
     id: string;
     status: string;
+    quantidade?: number;
     created_at: string;
     material: {
         material: string;
@@ -87,22 +88,25 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                         <div key={loan.id} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all relative overflow-hidden">
                             {/* Status Bar */}
                             <div className={`absolute top-0 left-0 right-0 h-1 ${loan.status === 'Pendente' ? 'bg-yellow-400' :
-                                    loan.status === 'Aprovado' ? 'bg-blue-400' :
-                                        loan.status === 'Em Uso' ? 'bg-green-500' :
-                                            loan.status === 'Rejeitado' ? 'bg-red-400' :
-                                                'bg-purple-400'
+                                loan.status === 'Aprovado' ? 'bg-blue-400' :
+                                    loan.status === 'Em Uso' ? 'bg-green-500' :
+                                        loan.status === 'Rejeitado' ? 'bg-red-400' :
+                                            'bg-purple-400'
                                 }`} />
 
                             <div className="flex justify-between items-start mb-3 mt-2">
                                 <div>
-                                    <h3 className="font-bold text-lg text-slate-900 line-clamp-1">{loan.material?.material || 'Material'}</h3>
+                                    <h3 className="font-bold text-lg text-slate-900 line-clamp-1">
+                                        {loan.quantidade && loan.quantidade > 1 && <span className="text-blue-600 mr-2">{loan.quantidade}x</span>}
+                                        {loan.material?.material || 'Material'}
+                                    </h3>
                                     <p className="text-xs font-bold text-slate-500 uppercase">{loan.material?.tipo_de_material}</p>
                                 </div>
                                 <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${loan.status === 'Pendente' ? 'bg-yellow-50 text-yellow-700' :
-                                        loan.status === 'Aprovado' ? 'bg-blue-50 text-blue-700' :
-                                            loan.status === 'Em Uso' ? 'bg-green-50 text-green-700' :
-                                                loan.status === 'Rejeitado' ? 'bg-red-50 text-red-700' :
-                                                    'bg-purple-50 text-purple-700'
+                                    loan.status === 'Aprovado' ? 'bg-blue-50 text-blue-700' :
+                                        loan.status === 'Em Uso' ? 'bg-green-50 text-green-700' :
+                                            loan.status === 'Rejeitado' ? 'bg-red-50 text-red-700' :
+                                                'bg-purple-50 text-purple-700'
                                     }`}>
                                     {loan.status}
                                 </div>
@@ -117,7 +121,7 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                             <div className="mt-auto">
                                 {loan.status === 'Aprovado' && (
                                     <button
-                                        onClick={() => handleAction(loan.id, 'Aguardando Confirmação')}
+                                        onClick={() => handleAction(loan.id, 'Em Uso')}
                                         disabled={!!actionLoading}
                                         className="w-full py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                                     >

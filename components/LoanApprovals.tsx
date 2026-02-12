@@ -8,6 +8,7 @@ interface LoanRequest {
     id_usuario: string;
     status: string;
     observacao: string;
+    quantidade?: number;
     created_at: string;
     material: {
         material: string;
@@ -54,7 +55,7 @@ export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
         setLoading(false);
     };
 
-    const updateStatus = async (id: string, newStatus: string, observation?: string, incrementExit?: boolean, materialId?: string) => {
+    const updateStatus = async (id: string, newStatus: string, observation?: string, incrementExit?: boolean, materialId?: string, quantity: number = 1) => {
         setActionLoading(id);
         try {
             const updates: any = { status: newStatus };
@@ -78,7 +79,7 @@ export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
 
                 if (matError) throw matError;
 
-                const newSaida = (matData.saida || 0) + 1;
+                const newSaida = (matData.saida || 0) + quantity;
 
                 const { error: updateError } = await supabase
                     .from('gestao_estoque')
@@ -104,7 +105,7 @@ export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
         // Ask if it's a loss
         const isLoss = confirm('Isso configura perda/baixa de material? (Clique em OK para sim, Cancelar para rejeição simples sem baixa)');
 
-        await updateStatus(request.id, 'Rejeitado', obs, isLoss, request.id_material);
+        await updateStatus(request.id, 'Rejeitado', obs, isLoss, request.id_material, request.quantidade);
     };
 
     if (loading) return <div className="text-center p-8 text-slate-500">Carregando aprovações...</div>;
@@ -132,10 +133,10 @@ export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
 
                             {/* Icon based on status */}
                             <div className={`p-4 rounded-full shrink-0 ${req.status === 'Pendente' ? 'bg-yellow-100 text-yellow-600' :
-                                    req.status === 'Aprovado' ? 'bg-blue-100 text-blue-600' :
-                                        req.status === 'Pendente Devolução' ? 'bg-purple-100 text-purple-600' :
-                                            req.status === 'Concluído' ? 'bg-green-100 text-green-600' :
-                                                'bg-slate-100 text-slate-600'
+                                req.status === 'Aprovado' ? 'bg-blue-100 text-blue-600' :
+                                    req.status === 'Pendente Devolução' ? 'bg-purple-100 text-purple-600' :
+                                        req.status === 'Concluído' ? 'bg-green-100 text-green-600' :
+                                            'bg-slate-100 text-slate-600'
                                 }`}>
                                 {req.status === 'Pendente' && <Clock className="w-6 h-6" />}
                                 {req.status === 'Aprovado' && <CheckCircle className="w-6 h-6" />}
@@ -147,7 +148,10 @@ export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
 
                             <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="font-bold text-lg text-slate-900">{req.material?.material || 'Material Desconhecido'}</h3>
+                                    <h3 className="font-bold text-lg text-slate-900">
+                                        {req.quantidade && req.quantidade > 1 && <span className="text-blue-600 mr-2">{req.quantidade}x</span>}
+                                        {req.material?.material || 'Material Desconhecido'}
+                                    </h3>
                                     <span className="text-xs px-2 py-1 bg-slate-100 rounded text-slate-500 font-bold uppercase">{req.status}</span>
                                 </div>
                                 <p className="text-sm text-slate-500 mb-1">

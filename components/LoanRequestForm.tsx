@@ -48,7 +48,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
         }
     };
 
-    const handleRequest = async (item: StockItem) => {
+    const handleRequest = async (item: StockItem, qtd: number = 1) => {
         if (!user) return;
 
         // Basic availability check (optional, since approval is required)
@@ -66,7 +66,8 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
                     id_material: item.id,
                     id_usuario: user.id,
                     status: 'Pendente',
-                    observacao: ''
+                    observacao: '',
+                    quantidade: qtd
                 }]);
 
             if (error) throw error;
@@ -137,13 +138,32 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
                                                 </span>
                                             </div>
 
-                                            <button
-                                                onClick={() => handleRequest(item)}
-                                                disabled={submitting}
-                                                className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                                            >
-                                                Solicitar
-                                            </button>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    max={available}
+                                                    defaultValue="1"
+                                                    id={`qtd-${item.id}`}
+                                                    className="w-16 px-2 py-1 border border-slate-300 rounded text-center text-sm font-bold text-slate-700"
+                                                    onChange={(e) => {
+                                                        const val = parseInt(e.target.value);
+                                                        if (val > available) e.target.value = String(available);
+                                                        if (val < 1) e.target.value = "1";
+                                                    }}
+                                                />
+                                                <button
+                                                    onClick={() => {
+                                                        const qtdInput = document.getElementById(`qtd-${item.id}`) as HTMLInputElement;
+                                                        const qtd = qtdInput ? parseInt(qtdInput.value) : 1;
+                                                        handleRequest(item, qtd);
+                                                    }}
+                                                    disabled={submitting || !hasStock}
+                                                    className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    Solicitar
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 );

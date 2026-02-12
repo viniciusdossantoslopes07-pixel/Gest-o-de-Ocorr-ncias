@@ -1,0 +1,1 @@
+ALTER TABLE movimentacao_cautela ADD COLUMN IF NOT EXISTS quantidade INTEGER DEFAULT 1;
