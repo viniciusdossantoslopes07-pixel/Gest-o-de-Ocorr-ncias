@@ -32,6 +32,11 @@ export default function MissionManager({ user }: MissionManagerProps) {
     const [signaturePassword, setSignaturePassword] = useState('');
     const [orderToSign, setOrderToSign] = useState<MissionOrder | null>(null);
 
+    // End Mission Modal State
+    const [showEndMissionModal, setShowEndMissionModal] = useState(false);
+    const [missionEnding, setMissionEnding] = useState<MissionOrder | null>(null);
+    const [endReport, setEndReport] = useState('');
+
     // Permission checks
     const isSop = user.accessLevel === 'N3' || user.sector?.includes('SOP') || user.role === UserRole.ADMIN;
     const isChSop = user.sector === 'CH-SOP' || user.role === UserRole.ADMIN;
@@ -327,10 +332,18 @@ export default function MissionManager({ user }: MissionManagerProps) {
     };
 
     // 5. End Mission (Commander) -> Moves to CONCLUIDA
-    // 5. End Mission (Commander) -> Moves to CONCLUIDA
-    const handleMissionEnd = async (order: MissionOrder) => {
-        const report = prompt('Relato Operacional (Obrigatório):');
-        if (!report) return;
+    const handleMissionEnd = (order: MissionOrder) => {
+        setMissionEnding(order);
+        setEndReport('');
+        setShowEndMissionModal(true);
+    };
+
+    const confirmMissionEnd = async () => {
+        if (!missionEnding) return;
+        if (!endReport.trim()) {
+            alert('O Relato Operacional é obrigatório.');
+            return;
+        }
 
         try {
             const { error } = await supabase
@@ -338,12 +351,15 @@ export default function MissionManager({ user }: MissionManagerProps) {
                 .update({
                     status: 'CONCLUIDA',
                     end_time: new Date().toISOString(),
-                    mission_report: report,
+                    mission_report: endReport,
                     updated_at: new Date().toISOString()
                 })
-                .eq('id', order.id);
+                .eq('id', missionEnding.id);
             if (error) throw error;
+
             alert('Missão finalizada com sucesso.');
+            setShowEndMissionModal(false);
+            setMissionEnding(null);
             fetchOrders();
         } catch (e: any) { alert(e.message); }
     };
@@ -898,6 +914,64 @@ export default function MissionManager({ user }: MissionManagerProps) {
                     currentUser={user}
                     canEdit={isSop || selectedMission.solicitante_id === user.id}
                 />
+            )}
+            {/* End Mission Modal (Cupom Style) */}
+            {showEndMissionModal && missionEnding && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white w-full max-w-md shadow-2xl overflow-hidden relative"
+                        style={{
+                            // Optional: "Receipt" style jagged edge at bottom? 
+                            // Keeping it simple for now as per "Cupom" request which usually implies receipt style or just a focused modal
+                            borderRadius: '0px',
+                            borderTop: '8px solid #cc0000'
+                        }}>
+
+                        <div className="p-8 space-y-6">
+                            <div className="text-center space-y-2">
+                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Square className="w-8 h-8 text-red-600" />
+                                </div>
+                                <h3 className="text-xl font-black text-slate-900 uppercase tracking-wider">Finalizar Missão</h3>
+                                <p className="text-sm font-mono text-slate-500">OM #{missionEnding.omisNumber}</p>
+                            </div>
+
+                            <div className="border-y-2 border-dashed border-slate-200 py-6 space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Relato Operacional</label>
+                                    <textarea
+                                        value={endReport}
+                                        onChange={e => setEndReport(e.target.value)}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm text-sm font-mono focus:ring-2 focus:ring-red-500 outline-none resize-none"
+                                        rows={6}
+                                        placeholder="Descreva as ocorrências e resultados da missão..."
+                                        autoFocus
+                                    />
+                                    <p className="text-[10px] text-slate-400 mt-2 text-right">* Campo Obrigatório</p>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={confirmMissionEnd}
+                                    className="w-full py-4 bg-red-600 text-white font-black uppercase tracking-widest hover:bg-red-700 transition-all active:scale-[0.98]"
+                                >
+                                    Confirmar Finalização
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setShowEndMissionModal(false);
+                                        setMissionEnding(null);
+                                    }}
+                                    className="w-full py-3 text-slate-400 font-bold hover:text-slate-600 uppercase text-xs tracking-wider"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Decor: Receipt Sawtooth at bottom - simulated with css gradients or just simple */}
+                    </div>
+                </div>
             )}
         </div>
     );
