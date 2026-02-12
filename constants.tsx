@@ -56,8 +56,31 @@ export const SETORES = [
   'CMT-GSD-SP', 'SECCMD', 'SGOP', 'CH-SOP',
   'SOP-01', 'SOP-02', 'SOP-03',
   'CH-SAP', 'SAP-01', 'SAP-02', 'SAP-03', 'SAP-04',
-  'EPA', 'ESI', 'EFSD'
+  'EPA', 'ESI', 'EFSD', 'CANIL'
 ];
+
+export const PRESENCE_STATUS = {
+  'C-E': 'CURSO-ESTÁGIO',
+  'DPM': 'DISPENSA MÉDICA',
+  'ESV': 'SERVIÇO',
+  'SSV': 'SAINDO DE SERVIÇO',
+  'DSV': 'DISP DE SERVIÇO',
+  'JS': 'JUNTA DE SAÚDE',
+  'INSP': 'INSPEÇÃO DE SAÚDE',
+  'TRA': 'TRANSFERIDO',
+  'LI': 'LICENÇA',
+  'MIS': 'MISSÃO',
+  'FE': 'FÉRIAS',
+  'AGD': 'AGUARDANDO DESLIGAMENTO',
+  'DESL': 'DESLIGADO',
+  'INST': 'INSTRUÇÃO',
+  'A': 'AUSENTE',
+  'F': 'FALTA',
+  'P': 'PRESENTE (Padrão)',
+  'DCH': 'DISPENSA PELA CHEFIA'
+} as const;
+
+export type PresenceStatusCode = keyof typeof PRESENCE_STATUS;
 
 export const ARMAMENT_OPTIONS = ['Pistola', 'Fuzil', 'Nenhum'];
 

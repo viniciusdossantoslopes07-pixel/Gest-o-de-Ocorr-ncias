@@ -11,7 +11,7 @@ interface SideMenuProps {
     isOpen: boolean;
     onClose: () => void;
     activeTab: string;
-    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'material-statistics'>>;
+    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'material-statistics' | 'personnel-center' | 'daily-attendance' | 'personnel-management' | 'force-map'>>;
     currentUser: User;
     onLogout: () => void;
     onToggleTheme: () => void;
@@ -26,6 +26,7 @@ export default function SideMenu({
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMaterialMenuOpen, setIsMaterialMenuOpen] = useState(false);
     const [isOccurrencesOpen, setIsOccurrencesOpen] = useState(false);
+    const [isPersonnelOpen, setIsPersonnelOpen] = useState(false);
 
     // Permission Checks
     const isPublic = currentUser.role === UserRole.PUBLIC;
@@ -38,6 +39,7 @@ export default function SideMenu({
     const canManageMissions = !!currentUser && (isOM || isSOP);
     const isMaterialManager = !!currentUser && (isOM || isAdmin || ["SAP-03", "CH-SAP"].includes(currentUser.sector));
     const canManageUsers = !!currentUser && (isOM || ["CH-SOP", "SOP-01"].includes(currentUser.sector));
+    const canManagePersonnel = !!currentUser && (isOM || ["CH-SAP", "SAP-01", "SOP-01"].includes(currentUser.sector));
 
     const MenuItem = ({ id, label, icon: Icon, onClick }: any) => (
         <button
@@ -138,6 +140,34 @@ export default function SideMenu({
                             </div>
 
 
+
+                            {/* SECTION 3: CENTRAL DE PESSOAL */}
+                            {canManagePersonnel && (
+                                <div>
+                                    {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2">Gestão de Pessoal</h3>}
+                                    <button
+                                        onClick={() => !isCollapsed && setIsPersonnelOpen(!isPersonnelOpen)}
+                                        className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                        title={isCollapsed ? "Central de Pessoal" : ''}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <UserIcon className="w-5 h-5 shrink-0" />
+                                            {!isCollapsed && <span className="text-sm font-bold">Central de Pessoal</span>}
+                                        </div>
+                                        {!isCollapsed && (
+                                            <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isPersonnelOpen ? 'rotate-90' : ''}`} />
+                                        )}
+                                    </button>
+
+                                    {(!isCollapsed && isPersonnelOpen) && (
+                                        <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
+                                            <MenuItem id="daily-attendance" label="Chamada Diária" icon={ShieldCheck} />
+                                            <MenuItem id="personnel-management" label="Gestão de Efetivo" icon={UserIcon} />
+                                            <MenuItem id="force-map" label="Mapa de Força" icon={BarChart3} />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             {/* SECTION 5: CENTRAL DE OCORRÊNCIAS (Antiga Administração) */}
                             {(isAdmin || canManageUsers) && (

@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import MissionRequestForm from './components/MissionRequestForm';
 import MissionRequestList from './components/MissionRequestList';
-import { Occurrence, User, UserRole, Status, Urgency, MissionOrder, Mission } from './types';
+import { Occurrence, User, UserRole, Status, Urgency, MissionOrder, Mission, DailyAttendance } from './types';
 import Dashboard from './components/Dashboard';
 import OccurrenceForm from './components/OccurrenceForm';
 import OccurrenceDetail from './components/OccurrenceDetail';
@@ -32,6 +32,9 @@ import { formatViaturas } from './utils/formatters';
 import MissionManager from './components/MissionManager';
 import { MyMaterialLoans } from './components/MyMaterialLoans';
 import MeuPlanoView from './components/MeuPlanoView';
+import DailyAttendanceView from './components/PersonnelCenter/DailyAttendance';
+import PersonnelManagementView from './components/PersonnelCenter/PersonnelManagement';
+import ForceMapDashboard from './components/PersonnelCenter/ForceMapDashboard';
 import {
   STATUS_COLORS,
   OCCURRENCE_CATEGORIES,
@@ -69,8 +72,9 @@ const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   // Added 'settings' to activeTab type
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'material-statistics'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'material-statistics' | 'daily-attendance' | 'personnel-management' | 'force-map'>('home');
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
+  const [attendanceHistory, setAttendanceHistory] = useState<DailyAttendance[]>([]);
   const [selectedOccurrence, setSelectedOccurrence] = useState<Occurrence | null>(null);
   const [missionOrders, setMissionOrders] = useState<MissionOrder[]>([]);
   const [selectedMissionOrder, setSelectedMissionOrder] = useState<MissionOrder | null>(null);
@@ -842,6 +846,23 @@ const App: FC = () => {
           {/* Meu Plano - Unified Personal View */}
           {activeTab === 'meu-plano' && (
             <MeuPlanoView user={currentUser} isDarkMode={isDarkMode} />
+          )}
+
+          {activeTab === 'daily-attendance' && (
+            <DailyAttendanceView users={users} onSaveAttendance={(a) => setAttendanceHistory([...attendanceHistory, a])} />
+          )}
+
+          {activeTab === 'personnel-management' && (
+            <PersonnelManagementView
+              users={users}
+              onAddPersonnel={(p) => setUsers([...users, { ...p, id: Math.random().toString(36).substr(2, 9), approved: true } as User])}
+              onUpdatePersonnel={(u) => setUsers(users.map(old => old.id === u.id ? u : old))}
+              onDeletePersonnel={(id) => setUsers(users.filter(u => u.id !== id))}
+            />
+          )}
+
+          {activeTab === 'force-map' && (
+            <ForceMapDashboard users={users} attendanceHistory={attendanceHistory} />
           )}
 
           {/* Legacy Profile tab mapped to Settings for now, or kept separate if needed. 

@@ -206,3 +206,20 @@ export interface MaterialLoan {
   item?: InventoryItem;
   requester?: User;
 }
+export interface AttendanceRecord {
+  militarId: string;
+  militarName: string;
+  militarRank: string;
+  status: string; // From PRESENCE_STATUS
+  timestamp: string;
+}
+
+export interface DailyAttendance {
+  id: string;
+  date: string;
+  sector: string;
+  records: AttendanceRecord[];
+  respChamada1?: string;
+  respChamada2?: string;
+  createdAt: string;
+}
