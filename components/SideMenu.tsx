@@ -99,6 +99,7 @@ export default function SideMenu({
                                 {(canManageMissions || canRequestMission) && (
                                     <MenuItem id="mission-center" label="Central de Missões" icon={ShieldAlert} />
                                 )}
+                                <MenuItem id="meu-plano" label="Meu Plano" icon={UserIcon} />
                             </div>
 
                             {/* SECTION 2: CENTRAL DE MATERIAL */}
@@ -136,11 +137,7 @@ export default function SideMenu({
                                 )}
                             </div>
 
-                            {/* SECTION 4: MEU PLANO */}
-                            <div>
-                                {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2">Meu Plano</h3>}
-                                <MenuItem id="meu-plano" label="Meu Plano" icon={UserIcon} />
-                            </div>
+
 
                             {/* SECTION 5: CENTRAL DE OCORRÊNCIAS (Antiga Administração) */}
                             {(isAdmin || canManageUsers) && (
