@@ -75,6 +75,7 @@ const App: FC = () => {
   const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'material-statistics' | 'daily-attendance' | 'personnel-management' | 'force-map'>('home');
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [attendanceHistory, setAttendanceHistory] = useState<DailyAttendance[]>([]);
+  const [adHocUsers, setAdHocUsers] = useState<User[]>([]);
   const [selectedOccurrence, setSelectedOccurrence] = useState<Occurrence | null>(null);
   const [missionOrders, setMissionOrders] = useState<MissionOrder[]>([]);
   const [selectedMissionOrder, setSelectedMissionOrder] = useState<MissionOrder | null>(null);
@@ -135,21 +136,25 @@ const App: FC = () => {
     }
   }, []);
 
-  // Persistence for Personnel Center
   useEffect(() => {
     const savedHistory = localStorage.getItem('attendanceHistory');
+    const savedAdHoc = localStorage.getItem('adHocUsers');
+
     if (savedHistory) {
-      try {
-        setAttendanceHistory(JSON.parse(savedHistory));
-      } catch (e) {
-        console.error('Error loading attendance history:', e);
-      }
+      try { setAttendanceHistory(JSON.parse(savedHistory)); } catch (e) { }
+    }
+    if (savedAdHoc) {
+      try { setAdHocUsers(JSON.parse(savedAdHoc)); } catch (e) { }
     }
   }, []);
 
   useEffect(() => {
     localStorage.setItem('attendanceHistory', JSON.stringify(attendanceHistory));
   }, [attendanceHistory]);
+
+  useEffect(() => {
+    localStorage.setItem('adHocUsers', JSON.stringify(adHocUsers));
+  }, [adHocUsers]);
 
   const toggleTheme = () => {
     const newMode = !isDarkMode;
@@ -865,7 +870,12 @@ const App: FC = () => {
           )}
 
           {activeTab === 'daily-attendance' && (
-            <DailyAttendanceView users={users} currentUser={currentUser!} onSaveAttendance={(a) => setAttendanceHistory([...attendanceHistory, a])} />
+            <DailyAttendanceView
+              users={[...users, ...adHocUsers]}
+              currentUser={currentUser!}
+              onSaveAttendance={(a) => setAttendanceHistory([...attendanceHistory, a])}
+              onAddAdHoc={(u) => setAdHocUsers([...adHocUsers, u])}
+            />
           )}
 
           {activeTab === 'personnel-management' && (

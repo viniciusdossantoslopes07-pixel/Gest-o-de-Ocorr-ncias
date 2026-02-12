@@ -8,9 +8,10 @@ interface DailyAttendanceProps {
     users: User[];
     currentUser: User;
     onSaveAttendance: (attendance: DailyAttendance) => void;
+    onAddAdHoc: (user: User) => void;
 }
 
-const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, onSaveAttendance }) => {
+const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, onSaveAttendance, onAddAdHoc }) => {
     const [selectedSector, setSelectedSector] = useState(SETORES[0]);
     const [callType, setCallType] = useState<CallTypeCode>('INICIO');
     const [searchTerm, setSearchTerm] = useState('');
@@ -19,13 +20,11 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, onS
     const [resp2, setResp2] = useState('');
     const [isSigned, setIsSigned] = useState(false);
 
-    // Ad-hoc military management (local for this call)
-    const [adHocUsers, setAdHocUsers] = useState<User[]>([]);
+    // Ad-hoc military management (now passed via props)
     const [showAdHocModal, setShowAdHocModal] = useState(false);
     const [newAdHoc, setNewAdHoc] = useState({ rank: '', warName: '' });
 
-    const allAvailableUsers = [...users, ...adHocUsers];
-    const filteredUsers = allAvailableUsers.filter(u =>
+    const filteredUsers = users.filter(u =>
         u.sector === selectedSector &&
         (u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             u.warName?.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -51,7 +50,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, onS
             email: '',
             username: `adhoc-${Date.now()}`
         };
-        setAdHocUsers(prev => [...prev, newUser]);
+        onAddAdHoc(newUser);
         setNewAdHoc({ rank: '', warName: '' });
         setShowAdHocModal(false);
     };
@@ -193,8 +192,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, onS
                                             value={attendanceRecords[user.id] || 'P'}
                                             onChange={(e) => handleStatusChange(user.id, e.target.value)}
                                             className={`w-full max-w-[200px] border rounded-lg p-2 text-xs font-bold transition-all outline-none ${(attendanceRecords[user.id] || 'P') === 'P' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                                                    ['DPM', 'JS', 'INSP', 'LI', 'A', 'F'].includes(attendanceRecords[user.id]) ? 'bg-red-50 text-red-700 border-red-100' :
-                                                        'bg-blue-50 text-blue-700 border-blue-100'
+                                                ['DPM', 'JS', 'INSP', 'LI', 'A', 'F'].includes(attendanceRecords[user.id]) ? 'bg-red-50 text-red-700 border-red-100' :
+                                                    'bg-blue-50 text-blue-700 border-blue-100'
                                                 }`}
                                         >
                                             {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
@@ -241,8 +240,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, onS
                                 }
                             }}
                             className={`flex-1 py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 ${isSigned
-                                    ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-200 cursor-default'
-                                    : 'bg-slate-900 text-white hover:bg-slate-800 shadow-xl'
+                                ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-200 cursor-default'
+                                : 'bg-slate-900 text-white hover:bg-slate-800 shadow-xl'
                                 }`}
                         >
                             <FileSignature className="w-5 h-5" />
