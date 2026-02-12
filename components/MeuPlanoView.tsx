@@ -44,7 +44,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                 .from('mission_orders')
                 .select('*')
                 .eq('status', 'CONCLUIDA') // Only finalized missions
-                .contains('personnel', `[{"id": "${user.id}"}]`) // Query JSONB array for user
+                .contains('personnel', `[{"saram": "${user.saram}"}]`) // Query JSONB array for user by SARAM
                 .order('date', { ascending: false });
 
             if (mError) throw mError;
