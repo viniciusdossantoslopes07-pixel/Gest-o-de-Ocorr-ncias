@@ -30,11 +30,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [selectedSector, setSelectedSector] = useState(SETORES[0]);
     const [callType, setCallType] = useState<CallTypeCode>('INICIO');
     const [activeSubTab, setActiveSubTab] = useState<'retirar-faltas' | 'faltas-retiradas'>('retirar-faltas');
-    const [selectedAttendanceForAbsence, setSelectedAttendanceForAbsence] = useState<DailyAttendance | null>(null);
-    const [soldierToJustify, setSoldierToJustify] = useState<AttendanceRecord | null>(null);
-    const [justificationText, setJustificationText] = useState('');
-    const [newJustifiedStatus, setNewJustifiedStatus] = useState('JUSTIFICADO');
     const [searchTerm, setSearchTerm] = useState('');
+    const [signedDates, setSignedDates] = useState<Record<string, { signedBy: string, signedAt: string }>>({});
     const [currentWeek, setCurrentWeek] = useState(() => {
         const d = new Date();
         const day = d.getDay();
@@ -141,6 +138,33 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         (u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             u.warName?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
+
+    const isFutureDate = (date: string) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const cellDate = new Date(date);
+        cellDate.setHours(0, 0, 0, 0);
+        return cellDate > today;
+    };
+
+    const handleSignDate = (date: string) => {
+        if (signedDates[date]) return;
+
+        // This would typically open a password modal
+        const password = prompt('Confirme sua senha para assinar a chamada de ' + new Date(date).toLocaleDateString() + ':');
+        if (password === currentUser.password) {
+            setSignedDates(prev => ({
+                ...prev,
+                [date]: {
+                    signedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
+                    signedAt: new Date().toISOString()
+                }
+            }));
+            alert('Chamada de ' + new Date(date).toLocaleDateString() + ' assinada com sucesso!');
+        } else {
+            alert('Senha incorreta.');
+        }
+    };
 
     const handleStatusChange = (userId: string, status: string) => {
         setAttendanceRecords(prev => ({
@@ -253,6 +277,12 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     </button>
                                 </div>
                                 <button
+                                    onClick={() => setShowAdHocModal(true)}
+                                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg"
+                                >
+                                    <UserPlus className="w-4 h-4" /> Adicionar Militar
+                                </button>
+                                <button
                                     onClick={() => window.print()}
                                     className="flex items-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg"
                                 >
@@ -327,12 +357,15 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                 <>
                                                     <td key={`${user.id}-${date}-INICIO`} className="p-1 border-l border-slate-50">
                                                         <select
-                                                            value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P'}
+                                                            disabled={isFutureDate(date)}
+                                                            value={weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : 'P')}
                                                             onChange={(e) => handleWeeklyChange(user.id, date, 'INICIO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'P' ? 'text-emerald-600' :
-                                                                ['F', 'A'].includes(weeklyGrid[user.id]?.[date]?.['INICIO']) ? 'text-red-600 bg-red-50' : 'text-blue-600 bg-blue-50'
+                                                            className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : 'P')) === 'P' ? 'text-emerald-600' :
+                                                                ['F', 'A'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-600 bg-red-50' :
+                                                                    !isFutureDate(date) ? 'text-blue-600 bg-blue-50' : 'text-slate-200'
                                                                 }`}
                                                         >
+                                                            {isFutureDate(date) && <option value="">-</option>}
                                                             {Object.keys(PRESENCE_STATUS).map(s => (
                                                                 <option key={s} value={s}>{s}</option>
                                                             ))}
@@ -340,12 +373,15 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                     </td>
                                                     <td key={`${user.id}-${date}-TERMINO`} className="p-1">
                                                         <select
-                                                            value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P'}
+                                                            disabled={isFutureDate(date)}
+                                                            value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : 'P')}
                                                             onChange={(e) => handleWeeklyChange(user.id, date, 'TERMINO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'P' ? 'text-emerald-600' :
-                                                                ['F', 'A'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO']) ? 'text-red-600 bg-red-50' : 'text-blue-600 bg-blue-50'
+                                                            className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : 'P')) === 'P' ? 'text-emerald-600' :
+                                                                ['F', 'A'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-600 bg-red-50' :
+                                                                    !isFutureDate(date) ? 'text-blue-600 bg-blue-50' : 'text-slate-200'
                                                                 }`}
                                                         >
+                                                            {isFutureDate(date) && <option value="">-</option>}
                                                             {Object.keys(PRESENCE_STATUS).map(s => (
                                                                 <option key={s} value={s}>{s}</option>
                                                             ))}
@@ -361,81 +397,41 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
 
                     <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm mt-8">
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="bg-amber-100 p-3 rounded-2xl">
-                                <Users className="w-6 h-6 text-amber-600" />
+                        <div className="flex items-center gap-4">
+                            <div className="bg-indigo-100 p-3 rounded-2xl">
+                                <Plus className="w-6 h-6 text-indigo-600" />
                             </div>
                             <div>
-                                <h3 className="text-xl font-black text-slate-900 tracking-tight">Retirar Faltas Individuais</h3>
-                                <p className="text-slate-500 text-sm">Selecione uma chamada para gerenciar ausências</p>
+                                <h3 className="text-xl font-black text-slate-900 tracking-tight">Status das Assinaturas</h3>
+                                <p className="text-slate-500 text-sm italic">Cada dia deve ser assinado individualmente pelo responsável</p>
                             </div>
-                            <button
-                                onClick={() => setShowAdHocModal(true)}
-                                className="ml-auto flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all"
-                            >
-                                <UserPlus className="w-4 h-4" /> Atribuir Avulso
-                            </button>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {(() => {
-                                const today = new Date().toISOString().split('T')[0];
-                                const todayCallsWithAbsences = attendanceHistory.filter(a =>
-                                    a.date === today && a.records.some(r => r.status === 'F')
-                                );
-
-                                if (todayCallsWithAbsences.length === 0) {
-                                    return (
-                                        <div className="col-span-full py-12 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
-                                            <CheckCircle className="w-12 h-12 text-slate-200 mx-auto mb-4" />
-                                            <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Nenhuma falta registrada hoje</p>
-                                        </div>
-                                    );
-                                }
-
-                                return todayCallsWithAbsences.map(attendance => (
-                                    <div
-                                        key={attendance.id}
-                                        onClick={() => setSelectedAttendanceForAbsence(attendance)}
-                                        className="bg-white border border-slate-200 rounded-3xl p-6 hover:shadow-xl hover:shadow-slate-100 transition-all cursor-pointer group relative overflow-hidden"
-                                    >
-                                        <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-bl-[4rem] -mr-8 -mt-8 transition-transform group-hover:scale-110" />
-
-                                        <div className="relative">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <span className="px-3 py-1 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-full">
-                                                    {CALL_TYPES[attendance.callType as keyof typeof CALL_TYPES]}
-                                                </span>
-                                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                                                    {attendance.sector}
-                                                </span>
-                                            </div>
-
-                                            <h4 className="text-lg font-black text-slate-900 mb-4 uppercase">
-                                                Chamada do Dia
-                                            </h4>
-
-                                            <div className="flex items-center gap-3 py-3 border-t border-slate-100">
-                                                <div className="flex -space-x-2">
-                                                    {attendance.records.filter(r => r.status === 'F').slice(0, 3).map((r, i) => (
-                                                        <div key={i} className="w-8 h-8 rounded-full bg-red-100 border-2 border-white flex items-center justify-center text-[10px] font-black text-red-600">
-                                                            {r.militarRank}
-                                                        </div>
-                                                    ))}
-                                                    {attendance.records.filter(r => r.status === 'F').length > 3 && (
-                                                        <div className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-[10px] font-black text-slate-400">
-                                                            +{attendance.records.filter(r => r.status === 'F').length - 3}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <span className="text-xs font-bold text-red-600">
-                                                    {attendance.records.filter(r => r.status === 'F').length} Militar(es) com Falta
-                                                </span>
-                                            </div>
-                                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 mt-8">
+                            {currentWeek.map(date => (
+                                <div key={date} className={`p-4 rounded-3xl border-2 transition-all ${signedDates[date] ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
+                                    <div className="text-[10px] font-black text-slate-400 uppercase mb-2">
+                                        {new Date(date).toLocaleDateString('pt-BR', { weekday: 'long' })}
                                     </div>
-                                ));
-                            })()}
+                                    {signedDates[date] ? (
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-2 text-emerald-600">
+                                                <CheckCircle className="w-4 h-4" />
+                                                <span className="text-[10px] font-black uppercase">Assinado</span>
+                                            </div>
+                                            <div className="text-[8px] font-bold text-slate-400 line-clamp-1">{signedDates[date].signedBy}</div>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleSignDate(date)}
+                                            disabled={isFutureDate(date)}
+                                            className="w-full py-2 bg-white text-slate-400 border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                                        >
+                                            Assinar
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </>
@@ -553,135 +549,61 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 )
             }
 
-            {/* Attendance Select Modal (Soldiers with F) */}
-            {
-                selectedAttendanceForAbsence && (
-                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[110] flex items-center justify-center p-4">
-                        <div className="bg-white rounded-[2.5rem] w-full max-w-2xl p-8 shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-                            <button onClick={() => setSelectedAttendanceForAbsence(null)} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-all">
-                                <X className="w-6 h-6 text-slate-400" />
-                            </button>
+            {/* Adicionar Militar Modal */}
+            {showAdHocModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[120] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl relative animate-in zoom-in-95 duration-200">
+                        <button onClick={() => setShowAdHocModal(false)} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-all text-slate-400">
+                            <X className="w-6 h-6" />
+                        </button>
 
-                            <div className="flex items-center gap-4 mb-8">
-                                <div className="bg-red-50 p-4 rounded-3xl">
-                                    <Users className="w-8 h-8 text-red-600" />
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Retirar Faltas</h3>
-                                    <p className="text-slate-500 text-sm font-medium">Realizar o controle de presença do efetivo</p>
-                                </div>
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="bg-blue-600 p-4 rounded-3xl shadow-lg shadow-blue-200">
+                                <UserPlus className="w-8 h-8 text-white" />
                             </div>
-
-                            <div className="flex-1 overflow-y-auto pr-2 space-y-4">
-                                {selectedAttendanceForAbsence.records.filter(r => r.status === 'F').map((record, idx) => (
-                                    <div
-                                        key={idx}
-                                        onClick={() => setSoldierToJustify(record)}
-                                        className="flex items-center justify-between p-5 bg-slate-50 border border-slate-100 rounded-2xl hover:border-blue-300 hover:bg-blue-50/50 transition-all cursor-pointer group"
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-sm font-black text-slate-400">
-                                                {record.militarRank}
-                                            </div>
-                                            <div>
-                                                <div className="text-sm font-black text-slate-900 uppercase">{record.militarName}</div>
-                                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Falta Registrada</div>
-                                            </div>
-                                        </div>
-                                        <button className="px-4 py-2 bg-white text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-xl border border-blue-100 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all shadow-sm">
-                                            Retirar Falta
-                                        </button>
-                                    </div>
-                                ))}
+                            <div>
+                                <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Adicionar Militar</h3>
+                                <p className="text-slate-500 text-sm">Inserir novo militar na grade semanal</p>
                             </div>
                         </div>
-                    </div>
-                )
-            }
 
-            {/* Justification Form Modal */}
-            {
-                soldierToJustify && (
-                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[120] flex items-center justify-center p-4">
-                        <div className="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl relative animate-in zoom-in-95 duration-200">
-                            <div className="flex items-center gap-4 mb-8">
-                                <div className="bg-blue-600 p-4 rounded-3xl shadow-lg shadow-blue-200">
-                                    <FileSignature className="w-8 h-8 text-white" />
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Justificativa</h3>
-                                    <p className="text-slate-500 text-sm">Retirar falta de <span className="font-bold text-slate-900">{soldierToJustify.militarRank} {soldierToJustify.militarName}</span></p>
-                                </div>
-                            </div>
-
-                            <div className="space-y-6">
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Novo Status</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Posto/Grad</label>
                                     <select
                                         className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
-                                        value={newJustifiedStatus}
-                                        onChange={e => setNewJustifiedStatus(e.target.value)}
+                                        value={newAdHoc.rank}
+                                        onChange={e => setNewAdHoc(prev => ({ ...prev, rank: e.target.value }))}
                                     >
-                                        <option value="JUSTIFICADO">JUSTIFICADO (Falta Justificada)</option>
-                                        <option value="SERVIÇO">SERVIÇO (Em Serviço)</option>
-                                        <option value="DISPENSA">DISPENSA (Lincença/Dispensa)</option>
+                                        <option value="">Selecione...</option>
+                                        {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
                                     </select>
                                 </div>
-
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Motivo / Justificativa</label>
-                                    <textarea
-                                        className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all min-h-[120px]"
-                                        placeholder="Ex: Teve que levar o filho no médico, apresentou atestado..."
-                                        value={justificationText}
-                                        onChange={e => setJustificationText(e.target.value)}
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Guerra</label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
+                                        placeholder="EX: SILVA"
+                                        value={newAdHoc.warName}
+                                        onChange={e => setNewAdHoc(prev => ({ ...prev, warName: e.target.value.toUpperCase() }))}
                                     />
                                 </div>
-
-                                <div className="flex gap-4">
-                                    <button
-                                        onClick={() => setSoldierToJustify(null)}
-                                        className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all uppercase text-xs tracking-widest"
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        disabled={!justificationText.trim()}
-                                        onClick={() => {
-                                            const justification: AbsenceJustification = {
-                                                id: Math.random().toString(36).substr(2, 9),
-                                                attendanceId: selectedAttendanceForAbsence!.id,
-                                                militarId: soldierToJustify.militarId,
-                                                militarName: soldierToJustify.militarName,
-                                                militarRank: soldierToJustify.militarRank,
-                                                originalStatus: soldierToJustify.status,
-                                                newStatus: newJustifiedStatus,
-                                                justification: justificationText,
-                                                performedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
-                                                timestamp: new Date().toISOString(),
-                                                sector: selectedAttendanceForAbsence!.sector,
-                                                date: selectedAttendanceForAbsence!.date
-                                            };
-                                            onSaveJustification(justification);
-
-                                            alert('Falta retirada com sucesso!');
-                                            setSoldierToJustify(null);
-                                            setJustificationText('');
-                                            const remaining = selectedAttendanceForAbsence!.records.filter(r => r.status === 'F' && r.militarId !== soldierToJustify.militarId);
-                                            if (remaining.length === 0) {
-                                                setSelectedAttendanceForAbsence(null);
-                                            }
-                                        }}
-                                        className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 uppercase text-xs tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        Salvar Alteração
-                                    </button>
-                                </div>
                             </div>
+
+                            <button
+                                onClick={handleAddAdHoc}
+                                disabled={!newAdHoc.rank || !newAdHoc.warName}
+                                className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 uppercase text-xs tracking-widest disabled:opacity-50"
+                            >
+                                Adicionar à Grade
+                            </button>
                         </div>
                     </div>
-                )
-            }
+                </div>
+            )}
+
             {/* Printable Area (Hidden in UI) */}
             <div className="hidden print:block fixed inset-0 bg-white z-[9999] p-12 text-black font-serif overflow-y-auto">
                 <style>{`
@@ -733,8 +655,12 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     <td className="border-2 border-black px-2 py-1 font-bold uppercase">{user.rank} {user.warName}</td>
                                     {currentWeek.map(date => (
                                         <>
-                                            <td key={`${user.id}-${date}-1`} className="border-2 border-black text-center font-black">{weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P'}</td>
-                                            <td key={`${user.id}-${date}-2`} className="border-2 border-black text-center font-black">{weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P'}</td>
+                                            <td key={`${user.id}-${date}-1`} className="border-2 border-black text-center font-black">
+                                                {isFutureDate(date) ? '' : (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P')}
+                                            </td>
+                                            <td key={`${user.id}-${date}-2`} className="border-2 border-black text-center font-black">
+                                                {isFutureDate(date) ? '' : (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P')}
+                                            </td>
                                         </>
                                     ))}
                                 </tr>
