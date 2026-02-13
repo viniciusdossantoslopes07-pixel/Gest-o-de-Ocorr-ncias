@@ -12,10 +12,19 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
     const today = new Date().toISOString().split('T')[0];
 
     // Most recent attendance per sector and per call type for today
-    const currentAttendances = attendanceHistory.filter(a => a.date === today);
+    const currentAttendances = attendanceHistory?.filter(a => a.date === today) || [];
 
-    // Grouped statistics by all records in latest attendances
-    const allRecords = currentAttendances.flatMap(a => a.records);
+    // Correctly get the LATEST status for each military member across any call type today
+    const latestRecordsMap = new Map<string, any>();
+    currentAttendances
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        .forEach(a => {
+            a.records.forEach(r => {
+                latestRecordsMap.set(r.militarId, { ...r, callType: a.callType });
+            });
+        });
+
+    const allRecords = Array.from(latestRecordsMap.values());
     const totalEfetivo = users.length;
 
     const getCount = (codes: string[]) => allRecords.filter(r => codes.includes(r.status)).length;
@@ -56,7 +65,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                 </div>
                 {allRecords.length > 0 && (
                     <div className="ml-auto flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 italic">
-                        <Clock className="w-3 h-3" /> Atualizado em: {new Date(allRecords[0].timestamp).toLocaleTimeString()}
+                        <Clock className="w-3 h-3" /> Atualizado: {new Date(allRecords[allRecords.length - 1].timestamp).toLocaleTimeString()}
                     </div>
                 )}
             </div>
@@ -120,16 +129,29 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                         </div>
                         <h3 className="text-lg font-black tracking-tight mb-6">Controle de Assinaturas</h3>
                         <div className="space-y-4 relative z-10">
-                            {currentAttendances.map(a => (
-                                <div key={a.id} className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl p-3">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
-                                    <div>
-                                        <p className="text-[10px] font-black text-white uppercase tracking-widest">{a.sector}</p>
-                                        <p className="text-[9px] text-slate-400 font-bold uppercase">{a.callType === 'INICIO' ? '1ª CHAMADA' : '2ª CHAMADA'}</p>
+                            {SETORES.map(sector => {
+                                const sectorCalls = currentAttendances.filter(a => a.sector === sector);
+                                const hasInicio = sectorCalls.some(c => c.callType === 'INICIO');
+                                const hasTermino = sectorCalls.some(c => c.callType === 'TERMINO');
+
+                                if (sectorCalls.length === 0) return null;
+
+                                return (
+                                    <div key={sector} className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl p-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-2 h-2 rounded-full ${hasTermino ? 'bg-emerald-400' : 'bg-amber-400'} shadow-[0_0_8px_rgba(52,211,153,0.5)]`} />
+                                            <div>
+                                                <p className="text-[10px] font-black text-white uppercase tracking-widest">{sector}</p>
+                                                <p className="text-[9px] text-slate-400 font-bold uppercase">
+                                                    {hasTermino ? 'Expediente Encerrado' : 'Em Aberto (Cupom)'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {!hasTermino && <Clock className="w-3 h-3 text-amber-400/50" />}
                                     </div>
-                                </div>
-                            ))}
-                            {currentAttendances.length === 0 && <p className="text-xs text-slate-500 font-bold">Nenhuma chamada assinada hoje.</p>}
+                                );
+                            })}
+                            {currentAttendances.length === 0 && <p className="text-xs text-slate-500 font-bold">Nenhuma chamada iniciada hoje.</p>}
                         </div>
                     </div>
 

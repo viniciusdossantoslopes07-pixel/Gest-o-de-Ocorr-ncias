@@ -139,8 +139,20 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             <CheckCircle className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Chamada Diária</h2>
-                            <p className="text-slate-500 text-sm font-medium">Controle de presença e prontidão</p>
+                            <div className="flex items-center gap-3">
+                                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Chamada Diária</h2>
+                                {(() => {
+                                    const today = new Date().toISOString().split('T')[0];
+                                    const sectorCalls = attendanceHistory?.filter(a => a.date === today && a.sector === selectedSector) || [];
+                                    const hasTermino = sectorCalls.some(c => c.callType === 'TERMINO');
+                                    const hasInicio = sectorCalls.some(c => c.callType === 'INICIO');
+
+                                    if (hasTermino) return <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase rounded-full border border-emerald-200">Cupom Fechado</span>;
+                                    if (hasInicio) return <span className="px-3 py-1 bg-amber-100 text-amber-700 text-[10px] font-black uppercase rounded-full border border-amber-200">Cupom em Aberto</span>;
+                                    return <span className="px-3 py-1 bg-slate-100 text-slate-400 text-[10px] font-black uppercase rounded-full border border-slate-200">Aguardando Início</span>;
+                                })()}
+                            </div>
+                            <p className="text-slate-500 text-sm font-medium">Controle de presença e prontidão do setor</p>
                         </div>
                     </div>
 
