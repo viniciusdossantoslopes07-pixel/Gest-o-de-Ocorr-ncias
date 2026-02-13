@@ -828,27 +828,11 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     ))}
                                 </tr>
                             ))}
-                            {/* Empty lines to push footer or fill space if needed */}
                         </tbody>
-                        <tfoot>
-                            <tr className="h-8">
-                                <td className="border border-black px-2 font-black uppercase">Responsável pela chamada</td>
-                                {currentWeek.map(date => (
-                                    <Fragment key={date}>
-                                        <td className="border border-black px-0.5 text-[6px] align-bottom">
-                                            1ª: ________
-                                        </td>
-                                        <td className="border border-black px-0.5 text-[6px] align-bottom">
-                                            2ª: ________
-                                        </td>
-                                    </Fragment>
-                                ))}
-                            </tr>
-                        </tfoot>
                     </table>
 
                     {/* Official Legend Footer */}
-                    <div className="mt-4 grid grid-cols-6 gap-x-2 gap-y-1 text-[6px] font-bold border-t border-black pt-2 uppercase">
+                    <div className="mt-4 grid grid-cols-6 gap-x-2 gap-y-1 text-[6px] font-bold border border-black p-2 uppercase bg-slate-50/50">
                         {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
                             <div key={code} className="flex gap-1 items-baseline">
                                 <span className="text-black">{code}</span>
@@ -857,8 +841,31 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         ))}
                     </div>
 
-                    <div className="mt-8 text-center">
-                        <p className="text-[9px] font-black uppercase underline decoration-1 underline-offset-2">OBRIGATÓRIO A ASSINATURA DO RESPONSÁVEL PELA CHAMADA.</p>
+                    {/* Digital Signatures Footer (Style OMISS) */}
+                    <div className="mt-8 space-y-6">
+                        {(['INICIO', 'TERMINO'] as CallTypeCode[]).map(type => {
+                            const today = formatDateToISO(new Date());
+                            const sigKey = `${today}-${type}-${selectedSector}`;
+                            const sig = signedDates[sigKey];
+
+                            if (!sig) return null;
+
+                            return (
+                                <div key={type} className="border-t border-dashed border-slate-300 pt-6">
+                                    <div className="text-center">
+                                        <h5 className="text-[10px] font-black uppercase tracking-widest mb-3">
+                                            ASSINATURA DIGITAL - {type === 'INICIO' ? '1ª CHAMADA' : '2ª CHAMADA'} ({selectedSector})
+                                        </h5>
+                                        <div className="inline-block bg-slate-50 border border-slate-200 rounded-lg px-6 py-2 text-[10px] font-bold text-slate-600">
+                                            ASSINADO DIGITALMENTE POR {sig.signedBy.toUpperCase()} EM {new Date(sig.signedAt).toLocaleString('pt-BR')}
+                                        </div>
+                                        <p className="mt-2 text-[8px] italic text-slate-400 uppercase tracking-tighter">
+                                            Documento assinado digitalmente. Verifique a autenticidade junto ao GSD-SP.
+                                        </p>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
