@@ -184,13 +184,52 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
         if (passwordInput === currentUser.password) {
             const key = `${dateToSign}-${callToSign}`;
+            const signatureInfo = {
+                signedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
+                signedAt: new Date().toISOString()
+            };
+
             setSignedDates(prev => ({
                 ...prev,
-                [key]: {
-                    signedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
-                    signedAt: new Date().toISOString()
-                }
+                [key]: signatureInfo
             }));
+
+            // PERSISTÊNCIA: Encontrar o registro existente e atualizar ou criar um novo
+            const existing = attendanceHistory.find(a => a.date === dateToSign && a.callType === callToSign && a.sector === selectedSector);
+
+            let attendanceToSave: DailyAttendance;
+            if (existing) {
+                attendanceToSave = {
+                    ...existing,
+                    signedBy: signatureInfo.signedBy,
+                    signedAt: signatureInfo.signedAt,
+                    responsible: signatureInfo.signedBy // Também atualiza o responsável
+                };
+            } else {
+                // Se não existe (chamada em branco mas assinada), pegamos o que está no weeklyGrid
+                const records: AttendanceRecord[] = filteredUsers.map(u => ({
+                    militarId: u.id,
+                    militarName: u.warName || u.name,
+                    militarRank: u.rank,
+                    status: weeklyGrid[u.id]?.[dateToSign]?.[callToSign] || 'N',
+                    timestamp: new Date().toISOString()
+                }));
+
+                attendanceToSave = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    date: dateToSign,
+                    callType: callToSign,
+                    sector: selectedSector,
+                    records,
+                    signedBy: signatureInfo.signedBy,
+                    signedAt: signatureInfo.signedAt,
+                    responsible: signatureInfo.signedBy,
+                    createdAt: new Date().toISOString()
+                };
+            }
+
+            onSaveAttendance(attendanceToSave);
+
             setShowPasswordModal(false);
             setDateToSign(null);
             setCallToSign(null);

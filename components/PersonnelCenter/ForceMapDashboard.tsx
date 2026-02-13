@@ -16,11 +16,12 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
     });
     const [selectedSector, setSelectedSector] = useState<string>('TODOS');
 
-    // Filter attendances based on date and sector
+    // Filter attendances based on date and sector, AND only signed ones
     const currentAttendances = attendanceHistory?.filter(a => {
         const matchesDate = a.date === selectedDate;
         const matchesSector = selectedSector === 'TODOS' || a.sector === selectedSector;
-        return matchesDate && matchesSector;
+        const isSigned = !!a.signedBy; // Apenas chamadas assinadas geram indicadores
+        return matchesDate && matchesSector && isSigned;
     }) || [];
 
     // Correctly get the LATEST status for each military member for the filtered criteria
@@ -47,7 +48,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
     const absenceCount = totalEfetivo - presentCount;
 
     const stats = [
-        { title: 'Prontos (P)', value: getCount(['P', 'INST']), icon: CheckCircle, color: 'bg-emerald-100 text-emerald-600' },
+        { title: 'Presente (P)', value: getCount(['P', 'INST']), icon: CheckCircle, color: 'bg-emerald-100 text-emerald-600' },
         { title: 'Faltas (F)', value: getCount(['F', 'A']), icon: ShieldAlert, color: 'bg-red-100 text-red-600' },
         { title: 'Missão (MIS)', value: getCount(['MIS']), icon: ExternalLink, color: 'bg-indigo-100 text-indigo-600' },
         { title: 'Serviço (ESV)', value: getCount(['ESV', 'DSV']), icon: Clock, color: 'bg-blue-100 text-blue-600' },
@@ -146,9 +147,10 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                                 <tr className="bg-slate-50/30 text-[9px] font-black text-slate-400 uppercase tracking-widest">
                                     <th className="px-8 py-4">Setor</th>
                                     <th className="px-4 py-4 text-center">Efetivo</th>
-                                    <th className="px-4 py-4 text-center">Prontos</th>
+                                    <th className="px-4 py-4 text-center">Presente</th>
                                     <th className="px-4 py-4 text-center">Ausentes</th>
                                     <th className="px-8 py-4">Disponibilidade Status</th>
+                                    <th className="px-4 py-4 text-center">Ações</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -188,6 +190,18 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                                                         {Math.round(pct)}%
                                                     </span>
                                                 </div>
+                                            </td>
+                                            <td className="px-4 py-4 text-center">
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedSector(sector);
+                                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                    }}
+                                                    title="Ver Detalhes deste Setor"
+                                                    className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-900 transition-all border border-transparent hover:border-slate-200"
+                                                >
+                                                    <BarChart3 className="w-4 h-4" />
+                                                </button>
                                             </td>
                                         </tr>
                                     );
