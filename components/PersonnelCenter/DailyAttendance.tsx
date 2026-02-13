@@ -627,111 +627,81 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                             <div className="flex items-center gap-4">
-                                <div className="bg-emerald-600 p-3 rounded-2xl shadow-lg shadow-emerald-200">
+                                <div className="bg-indigo-600 p-3 rounded-2xl shadow-lg shadow-indigo-200">
                                     <FileSignature className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <h2 className="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-1">Ministério da Defesa / Comando da Aeronáutica / BASP</h2>
-                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Cupom de Faltas Retiradas</h2>
-                                    <p className="text-slate-500 text-sm font-medium">Data: {parseISOToDate(formatDateToISO(new Date())).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', weekday: 'long' })}</p>
+                                    <h2 className="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-1">Ministério da Defesa / Comando da Aeronáutica</h2>
+                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Base Aérea de São Paulo</h2>
+                                    <p className="text-slate-500 text-sm font-medium">Retirada de Faltas Diária - {selectedSector}</p>
                                 </div>
                             </div>
                             <button
                                 onClick={() => window.print()}
                                 className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg"
                             >
-                                <Plus className="w-4 h-4" /> Gerar Cupom (PDF)
+                                <Plus className="w-4 h-4" /> Gerar Relatório (PDF)
                             </button>
-                        </div>
-
-                        {/* Estatísticas do Cupom */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
-                            <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Efetivo Previsto</p>
-                                <p className="text-2xl font-black text-slate-900">{users.filter(u => u.sector === selectedSector).length}</p>
-                            </div>
-                            <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Faltas/Afastados</p>
-                                <p className="text-2xl font-black text-red-600">
-                                    {users.filter(u => u.sector === selectedSector).length -
-                                        users.filter(u => u.sector === selectedSector).filter(user => {
-                                            const today = formatDateToISO(new Date());
-                                            return weeklyGrid[user.id]?.[today]?.['INICIO'] === 'P' &&
-                                                weeklyGrid[user.id]?.[today]?.['TERMINO'] === 'P';
-                                        }).length
-                                    }
-                                </p>
-                            </div>
-                            <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Presentes (Retirada)</p>
-                                <p className="text-2xl font-black text-emerald-600">
-                                    {users.filter(u => u.sector === selectedSector).filter(user => {
-                                        const today = formatDateToISO(new Date());
-                                        return weeklyGrid[user.id]?.[today]?.['INICIO'] === 'P' &&
-                                            weeklyGrid[user.id]?.[today]?.['TERMINO'] === 'P';
-                                    }).length}
-                                </p>
-                            </div>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
+                    <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm overflow-hidden">
                         <div className="flex items-center justify-between mb-8">
-                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest border-l-4 border-emerald-500 pl-4">Relação Nominal - Militares Presentes</h3>
-                            {signedDates[`${formatDateToISO(new Date())}-TERMINO-${selectedSector}`] && (
-                                <div className="flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100">
-                                    <CheckCircle className="w-4 h-4 text-emerald-600" />
-                                    <span className="text-[10px] font-black text-emerald-700 uppercase">Validado Digitalmente</span>
-                                </div>
-                            )}
+                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest border-l-4 border-indigo-500 pl-4">Grade Semanal de Controle (ESI)</h3>
+                            <div className="text-[10px] font-black text-slate-400 uppercase">
+                                Semana: {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR')} a {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR')}
+                            </div>
                         </div>
 
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left">
+                            <table className="w-full border-collapse border border-slate-200 text-[10px]">
                                 <thead>
-                                    <tr className="border-b border-slate-100">
-                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nº</th>
-                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Posto/Grad</th>
-                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nome de Guerra</th>
-                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status (1ª/2ª)</th>
-                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Autenticação</th>
+                                    <tr className="bg-slate-50">
+                                        <th rowSpan={2} className="border border-slate-200 px-4 py-3 text-left uppercase font-black text-slate-900">Militar (Posto/Grad - Nome)</th>
+                                        {currentWeek.map(date => (
+                                            <th key={date} colSpan={2} className="border border-slate-200 p-2 text-center uppercase font-black text-slate-900">
+                                                {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}
+                                                <div className="text-[8px] text-slate-400">{parseISOToDate(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</div>
+                                            </th>
+                                        ))}
+                                    </tr>
+                                    <tr className="bg-slate-50/50">
+                                        {currentWeek.map(date => (
+                                            <Fragment key={date}>
+                                                <th className="border border-slate-200 p-1 text-center font-black text-slate-400 w-10 text-[8px]">1ª</th>
+                                                <th className="border border-slate-200 p-1 text-center font-black text-slate-400 w-10 text-[8px]">2ª</th>
+                                            </Fragment>
+                                        ))}
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-50">
-                                    {users.filter(u => u.sector === selectedSector).filter(user => {
-                                        const today = formatDateToISO(new Date());
-                                        return weeklyGrid[user.id]?.[today]?.['INICIO'] === 'P' &&
-                                            weeklyGrid[user.id]?.[today]?.['TERMINO'] === 'P';
-                                    }).map((user, idx) => (
-                                        <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
-                                            <td className="px-6 py-4 text-[10px] font-black text-slate-300">{idx + 1}</td>
-                                            <td className="px-6 py-4 text-xs font-bold text-slate-900 uppercase">{user.rank}</td>
-                                            <td className="px-6 py-4 text-xs font-black text-slate-900 uppercase">{user.warName || user.name}</td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center justify-center gap-1">
-                                                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[8px] font-black rounded uppercase">P</span>
-                                                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[8px] font-black rounded uppercase">P</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <span className="text-[8px] font-bold text-slate-300 font-mono tracking-tighter uppercase">Authentic-BASP-{Math.random().toString(36).substr(2, 6).toUpperCase()}</span>
-                                            </td>
+                                <tbody>
+                                    {filteredUsers.map(user => (
+                                        <tr key={user.id} className="hover:bg-slate-50 transition-colors">
+                                            <td className="border border-slate-200 px-4 py-2 font-bold uppercase text-slate-700">{user.rank} {user.warName}</td>
+                                            {currentWeek.map(date => (
+                                                <Fragment key={date}>
+                                                    <td className="border border-slate-200 text-center font-black text-slate-900">
+                                                        {weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : '-')}
+                                                    </td>
+                                                    <td className="border border-slate-200 text-center font-black text-slate-900">
+                                                        {weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : '-')}
+                                                    </td>
+                                                </Fragment>
+                                            ))}
                                         </tr>
                                     ))}
-                                    {users.filter(u => u.sector === selectedSector).filter(user => {
-                                        const today = formatDateToISO(new Date());
-                                        return weeklyGrid[user.id]?.[today]?.['INICIO'] === 'P' &&
-                                            weeklyGrid[user.id]?.[today]?.['TERMINO'] === 'P';
-                                    }).length === 0 && (
-                                            <tr>
-                                                <td colSpan={5} className="py-20 text-center">
-                                                    <AlertTriangle className="w-8 h-8 text-slate-200 mx-auto mb-3" />
-                                                    <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Nenhum militar presente nas duas chamadas ainda</p>
-                                                </td>
-                                            </tr>
-                                        )}
                                 </tbody>
                             </table>
+                        </div>
+
+                        {/* Legenda Resumida na UI */}
+                        <div className="mt-8 pt-8 border-t border-slate-100 flex flex-wrap gap-4 justify-center">
+                            {Object.entries(PRESENCE_STATUS).slice(0, 8).map(([code, label]) => (
+                                <div key={code} className="flex items-center gap-1 text-[9px] font-black uppercase text-slate-400">
+                                    <span className="text-indigo-600">{code}</span>: <span>{label}</span>
+                                </div>
+                            ))}
+                            <div className="text-[9px] font-black uppercase text-slate-300 italic">... ver PDF para legenda completa</div>
                         </div>
                     </div>
                 </div>
@@ -793,91 +763,102 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             )}
 
             {/* Printable Area (Hidden in UI) */}
-            <div className="hidden print:block fixed inset-0 bg-white z-[9999] p-12 text-black font-serif overflow-y-auto">
+            <div className="hidden print:block fixed inset-0 bg-white z-[9999] p-4 text-black font-sans">
                 <style>{`
                     @media print {
+                        @page { size: portrait; margin: 10mm; }
                         body * { visibility: hidden; }
                         .print-weekly, .print-weekly * { visibility: visible; }
-                        .print-weekly { position: absolute; left: 0; top: 0; width: 100%; }
+                        .print-weekly { position: absolute; left: 0; top: 0; width: 100%; height: auto; }
                     }
                 `}</style>
-                <div className="print-weekly max-w-[297mm] mx-auto border-2 border-black p-8">
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <img src="/logo_republica.png" alt="Brasão da República" className="w-24 h-24 mx-auto mb-4" />
-                        <h1 className="text-lg font-bold leading-tight uppercase tracking-widest">Ministério da Defesa</h1>
-                        <h2 className="text-base font-bold leading-tight uppercase tracking-wider">Comando da Aeronáutica</h2>
-                        <h3 className="text-base font-bold leading-tight uppercase tracking-wide">Base Aérea de São Paulo</h3>
-                        <h4 className="text-xl font-black mt-4 uppercase border-b-2 border-black inline-block px-8">{selectedSector}</h4>
+                <div className="print-weekly w-full mx-auto">
+                    {/* Institutional Header */}
+                    <div className="text-center mb-6 space-y-0.5">
+                        <div className="flex flex-col items-center">
+                            <h1 className="text-xs font-bold uppercase tracking-[0.1em]">Ministério da Defesa</h1>
+                            <h2 className="text-xs font-bold uppercase tracking-[0.1em]">Comando da Aeronáutica</h2>
+                            <h3 className="text-xs font-bold uppercase tracking-[0.1em]">Base Aérea de São Paulo</h3>
+                            <div className="w-16 h-px bg-black my-2" />
+                            <h4 className="text-sm font-black uppercase underline decoration-2 underline-offset-4">{selectedSector}</h4>
+                        </div>
                     </div>
 
-                    <div className="flex justify-between items-center mb-4 font-black uppercase text-sm">
-                        <span>SEMANA: {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR')} A {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR')}</span>
-                        <span>ESCALA DE SERVIÇO INTERNO (ESI)</span>
+                    <div className="flex justify-between items-end mb-2 font-bold uppercase text-[9px] border-b border-black pb-1">
+                        <div className="flex flex-col">
+                            <span>SEMANA: {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR')} A {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        <span className="text-xs font-black">RETIRADA DE FALTAS DIÁRIA</span>
                     </div>
 
                     {/* Weekly Table */}
-                    <table className="w-full border-collapse border-2 border-black text-[9px]">
+                    <table className="w-full border-collapse border border-black text-[8px]">
                         <thead>
                             <tr className="bg-slate-100">
-                                <th rowSpan={2} className="border-2 border-black px-2 py-2 text-left uppercase w-[180px]">POSTO/GRAD - NOME DE GUERRA</th>
+                                <th rowSpan={2} className="border border-black px-2 py-2 text-left uppercase w-[200px]">SETOR / GRAD / NOME</th>
                                 {currentWeek.map(date => (
-                                    <th key={date} colSpan={2} className="border-2 border-black p-1 text-center uppercase text-[10px]">
-                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}
-                                        <div className="text-[8px]">{parseISOToDate(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</div>
+                                    <th key={date} colSpan={2} className="border border-black p-1 text-center uppercase text-[9px]">
+                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long' })}
+                                        <div className="text-[7px] font-normal">{parseISOToDate(date).toLocaleDateString('pt-BR')}</div>
                                     </th>
                                 ))}
                             </tr>
                             <tr className="bg-slate-100/50">
                                 {currentWeek.map(date => (
-                                    <>
-                                        <th key={`${date}-1`} className="border-2 border-black p-1 text-center w-8">1ª</th>
-                                        <th key={`${date}-2`} className="border-2 border-black p-1 text-center w-8">2ª</th>
-                                    </>
+                                    <Fragment key={date}>
+                                        <th className="border border-black p-0.5 text-center w-6">1ª</th>
+                                        <th className="border border-black p-0.5 text-center w-6">2ª</th>
+                                    </Fragment>
                                 ))}
                             </tr>
                         </thead>
                         <tbody>
                             {filteredUsers.map(user => (
-                                <tr key={user.id} className="h-8">
-                                    <td className="border-2 border-black px-2 py-1 font-bold uppercase">{user.rank} {user.warName}</td>
+                                <tr key={user.id} className="h-6">
+                                    <td className="border border-black px-2 py-0.5 font-bold uppercase truncate">{user.rank} {user.warName}</td>
                                     {currentWeek.map(date => (
-                                        <>
-                                            <td key={`${user.id}-${date}-1`} className="border-2 border-black text-center font-black">
-                                                {isFutureDate(date) ? '' : (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P')}
+                                        <Fragment key={date}>
+                                            <td className="border border-black text-center font-black">
+                                                {weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : '-')}
                                             </td>
-                                            <td key={`${user.id}-${date}-2`} className="border-2 border-black text-center font-black">
-                                                {isFutureDate(date) ? '' : (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P')}
+                                            <td className="border border-black text-center font-black">
+                                                {weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : '-')}
                                             </td>
-                                        </>
+                                        </Fragment>
                                     ))}
                                 </tr>
                             ))}
+                            {/* Empty lines to push footer or fill space if needed */}
                         </tbody>
+                        <tfoot>
+                            <tr className="h-8">
+                                <td className="border border-black px-2 font-black uppercase">Responsável pela chamada</td>
+                                {currentWeek.map(date => (
+                                    <Fragment key={date}>
+                                        <td className="border border-black px-0.5 text-[6px] align-bottom">
+                                            1ª: ________
+                                        </td>
+                                        <td className="border border-black px-0.5 text-[6px] align-bottom">
+                                            2ª: ________
+                                        </td>
+                                    </Fragment>
+                                ))}
+                            </tr>
+                        </tfoot>
                     </table>
 
-                    {/* Legend */}
-                    <div className="mt-8 grid grid-cols-5 gap-2 text-[7px] font-black border-2 border-black p-4 uppercase">
+                    {/* Official Legend Footer */}
+                    <div className="mt-4 grid grid-cols-6 gap-x-2 gap-y-1 text-[6px] font-bold border-t border-black pt-2 uppercase">
                         {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
-                            <div key={code} className="flex gap-1">
-                                <span>{code}:</span>
-                                <span className="text-slate-500 font-bold">{label}</span>
+                            <div key={code} className="flex gap-1 items-baseline">
+                                <span className="text-black">{code}</span>
+                                <span className="text-slate-600 font-normal truncate">{label}</span>
                             </div>
                         ))}
                     </div>
 
-                    {/* Signatures */}
-                    <div className="mt-16 grid grid-cols-2 gap-20 text-center">
-                        <div className="space-y-1">
-                            <div className="border-b border-black w-full pt-8"></div>
-                            <p className="text-[10px] font-black uppercase">RESPONSÁVEL PELO SETOR</p>
-                            <p className="text-[8px] text-slate-500 uppercase">ASSINATURA DIGITAL / CARIMBO</p>
-                        </div>
-                        <div className="space-y-1">
-                            <div className="border-b border-black w-full pt-8"></div>
-                            <p className="text-[10px] font-black uppercase">CH / CMT DO SETOR</p>
-                            <p className="text-[8px] text-slate-500 uppercase">HOMOLOGAÇÃO E VALIDAÇÃO</p>
-                        </div>
+                    <div className="mt-8 text-center">
+                        <p className="text-[9px] font-black uppercase underline decoration-1 underline-offset-2">OBRIGATÓRIO A ASSINATURA DO RESPONSÁVEL PELA CHAMADA.</p>
                     </div>
                 </div>
             </div>
