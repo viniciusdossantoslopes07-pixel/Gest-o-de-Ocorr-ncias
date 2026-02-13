@@ -29,7 +29,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 }) => {
     const [selectedSector, setSelectedSector] = useState(SETORES[0]);
     const [callType, setCallType] = useState<CallTypeCode>('INICIO');
-    const [activeSubTab, setActiveSubTab] = useState<'chamada' | 'retirar-faltas' | 'justificativas'>('chamada');
+    const [activeSubTab, setActiveSubTab] = useState<'retirar-faltas' | 'faltas-retiradas'>('retirar-faltas');
     const [selectedAttendanceForAbsence, setSelectedAttendanceForAbsence] = useState<DailyAttendance | null>(null);
     const [soldierToJustify, setSoldierToJustify] = useState<AttendanceRecord | null>(null);
     const [justificationText, setJustificationText] = useState('');
@@ -38,6 +38,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [attendanceRecords, setAttendanceRecords] = useState<Record<string, string>>({});
     const [responsible, setResponsible] = useState(`${currentUser.rank} ${currentUser.warName || currentUser.name}`);
     const [isSigned, setIsSigned] = useState(false);
+    const [recordToPrint, setRecordToPrint] = useState<DailyAttendance | null>(null);
 
     // Security states
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -137,15 +138,20 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         onSaveAttendance(daily);
         alert('Chamada salva e assinada com sucesso!');
     };
+    const handlePrint = (attendance: DailyAttendance) => {
+        setRecordToPrint(attendance);
+        setTimeout(() => {
+            window.print();
+        }, 300);
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 pb-20">
             {/* Sub-Tabs Navigation */}
             <div className="flex bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm w-fit">
                 {[
-                    { id: 'chamada', label: 'Lançar Chamada', icon: FileSignature },
-                    { id: 'retirar-faltas', label: 'Retirar Faltas', icon: Users },
-                    { id: 'justificativas', label: 'Justificativas Realizadas', icon: Calendar }
+                    { id: 'retirar-faltas', label: 'Retirar Faltas', icon: FileSignature },
+                    { id: 'faltas-retiradas', label: 'Faltas Retiradas', icon: Calendar }
                 ].map(tab => (
                     <button
                         key={tab.id}
@@ -161,7 +167,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 ))}
             </div>
 
-            {activeSubTab === 'chamada' && (
+            {activeSubTab === 'retirar-faltas' && (
                 <>
                     {/* Header */}
                     <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
@@ -172,7 +178,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-3">
-                                        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Chamada Diária</h2>
+                                        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Retirar Faltas</h2>
                                         {(() => {
                                             const today = new Date().toISOString().split('T')[0];
                                             const sectorCalls = attendanceHistory?.filter(a => a.date === today && a.sector === selectedSector) || [];
@@ -184,7 +190,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                             return <span className="px-3 py-1 bg-slate-100 text-slate-400 text-[10px] font-black uppercase rounded-full border border-slate-200">Aguardando Início</span>;
                                         })()}
                                     </div>
-                                    <p className="text-slate-500 text-sm font-medium">Controle de presença e prontidão do setor</p>
+                                    <p className="text-slate-500 text-sm font-medium">Controle de presença e retirada de faltas do setor</p>
                                 </div>
                             </div>
 
@@ -244,7 +250,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Users className="w-5 h-5 text-slate-400" />
-                                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Efetivo do Setor ({filteredUsers.length})</h3>
+                                <h3 className="text-lg font-black text-slate-900 uppercase">Lista de Retirada ({filteredUsers.length})</h3>
                             </div>
                             <button
                                 onClick={() => setShowAdHocModal(true)}
@@ -614,7 +620,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 </div>
             )}
 
-            {activeSubTab === 'justificativas' && (
+            {activeSubTab === 'faltas-retiradas' && (
                 <div className="space-y-6">
                     <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
                         <div className="flex items-center justify-between mb-8">
@@ -623,62 +629,107 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     <Calendar className="w-6 h-6 text-indigo-600" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-black text-slate-900 tracking-tight">Histórico de Justificativas</h3>
-                                    <p className="text-slate-500 text-sm">Faltas retiradas e justificadas pelo sistema</p>
+                                    <h3 className="text-xl font-black text-slate-900 tracking-tight">Faltas Retiradas (Cupons)</h3>
+                                    <p className="text-slate-500 text-sm">Histórico de chamadas finalizadas e cupons diários</p>
                                 </div>
                             </div>
                         </div>
 
-                        {absenceJustifications.length === 0 ? (
+                        {attendanceHistory.length === 0 ? (
                             <div className="py-20 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
                                 <Calendar className="w-12 h-12 text-slate-200 mx-auto mb-4" />
                                 <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Nenhum registro encontrado</p>
                             </div>
                         ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {[...attendanceHistory].reverse().map((attendance) => (
+                                    <div key={attendance.id} className="bg-white border border-slate-200 rounded-3xl p-6 hover:shadow-xl hover:shadow-slate-100 transition-all group relative overflow-hidden">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <span className="px-3 py-1 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-full">
+                                                {CALL_TYPES[attendance.callType as keyof typeof CALL_TYPES]}
+                                            </span>
+                                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                                {new Date(attendance.date).toLocaleDateString('pt-BR')}
+                                            </span>
+                                        </div>
+
+                                        <h4 className="text-lg font-black text-slate-900 mb-2 uppercase">
+                                            {attendance.sector}
+                                        </h4>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase mb-4">Assinado por: {attendance.signedBy || attendance.responsible}</p>
+
+                                        <div className="flex items-center gap-2 mb-6">
+                                            <div className="flex -space-x-1.5">
+                                                {attendance.records.slice(0, 4).map((r, i) => (
+                                                    <div key={i} className={`w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-[8px] font-black ${r.status === 'P' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
+                                                        {r.status}
+                                                    </div>
+                                                ))}
+                                                {attendance.records.length > 4 && (
+                                                    <div className="w-7 h-7 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-[8px] font-black text-slate-400">
+                                                        +{attendance.records.length - 4}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <span className="text-[10px] font-bold text-slate-500 uppercase">
+                                                {attendance.records.length} Militares
+                                            </span>
+                                        </div>
+
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => setSelectedAttendanceForAbsence(attendance)}
+                                                className="flex-1 py-2 bg-amber-50 text-amber-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-600 hover:text-white transition-all border border-amber-100"
+                                            >
+                                                Ver / Justificar
+                                            </button>
+                                            <button
+                                                onClick={() => handlePrint(attendance)}
+                                                className="p-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-md shadow-slate-100"
+                                            >
+                                                <Search className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Justification Audit Hidden in Main Tab but we could keep the table below if needed */}
+                    {absenceJustifications.length > 0 && (
+                        <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
+                            <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">Auditoria de Justificativas</h3>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
                                     <thead>
                                         <tr className="border-b border-slate-100">
                                             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Militar</th>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Setor / Chamada</th>
                                             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Justificativa</th>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Retirada por</th>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Ação</th>
+                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Responsável</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-50">
                                         {absenceJustifications.map((j) => (
-                                            <tr key={j.id} className="hover:bg-slate-50/50 transition-colors group">
+                                            <tr key={j.id} className="hover:bg-slate-50/50 transition-colors">
                                                 <td className="px-6 py-5">
                                                     <div className="font-black text-slate-900 uppercase text-xs">{j.militarRank} {j.militarName}</div>
-                                                    <div className="text-[10px] text-slate-400 font-bold uppercase mt-1">{new Date(j.date).toLocaleDateString('pt-BR')}</div>
-                                                </td>
-                                                <td className="px-6 py-5">
-                                                    <div className="text-xs font-bold text-slate-600">{j.sector}</div>
-                                                    <span className="inline-block mt-1 px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-black uppercase rounded">Cupom de Falta</span>
+                                                    <div className="text-[10px] text-slate-400 font-bold uppercase mt-1">{new Date(j.timestamp).toLocaleDateString('pt-BR')}</div>
                                                 </td>
                                                 <td className="px-6 py-5 max-w-xs">
-                                                    <p className="text-xs text-slate-600 line-clamp-2 italic">"{j.justification}"</p>
+                                                    <p className="text-xs text-slate-600 italic line-clamp-2">"{j.justification}"</p>
+                                                    <span className="inline-block mt-1 px-2 py-0.5 bg-blue-50 text-blue-600 text-[8px] font-black uppercase rounded">{j.newStatus}</span>
                                                 </td>
                                                 <td className="px-6 py-5">
                                                     <div className="text-xs font-bold text-slate-900 uppercase">{j.performedBy}</div>
-                                                    <div className="text-[10px] text-slate-400 mt-1">{new Date(j.timestamp).toLocaleTimeString('pt-BR')}</div>
-                                                </td>
-                                                <td className="px-6 py-5 text-right">
-                                                    <button
-                                                        onClick={() => alert('Visualizar cupom de retirada de falta para impressão.')}
-                                                        className="p-2 bg-slate-100 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all shadow-sm"
-                                                    >
-                                                        <Search className="w-4 h-4" />
-                                                    </button>
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -695,8 +746,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 <Users className="w-8 h-8 text-red-600" />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Militar(es) Ausente(s)</h3>
-                                <p className="text-slate-500 text-sm font-medium">Chamada de <span className="text-slate-900 font-bold">{selectedAttendanceForAbsence.sector}</span> - {CALL_TYPES[selectedAttendanceForAbsence.callType as keyof typeof CALL_TYPES]}</p>
+                                <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Retirar Faltas</h3>
+                                <p className="text-slate-500 text-sm font-medium">Realizar o controle de presença do efetivo</p>
                             </div>
                         </div>
 
@@ -802,6 +853,95 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 >
                                     Salvar Alteração
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Printable Area (Hidden in UI) */}
+            {recordToPrint && (
+                <div className="hidden print:block fixed inset-0 bg-white z-[9999] p-12 text-black font-serif overflow-y-auto">
+                    <style>{`
+                        @media print {
+                            body * { visibility: hidden; }
+                            .print-container, .print-container * { visibility: visible; }
+                            .print-container { position: absolute; left: 0; top: 0; width: 100%; }
+                        }
+                    `}</style>
+                    <div className="print-container max-w-4xl mx-auto border-2 border-black p-8">
+                        {/* Header */}
+                        <div className="text-center mb-8">
+                            <img src="/logo-fab.png" alt="FAB Logo" className="w-20 h-20 mx-auto mb-4 opacity-70 grayscale" />
+                            <h1 className="text-lg font-bold leading-tight uppercase tracking-widest">Ministério da Defesa</h1>
+                            <h2 className="text-base font-bold leading-tight uppercase tracking-wider">Comando da Aeronáutica</h2>
+                            <h3 className="text-base font-bold leading-tight uppercase tracking-wide">Base Aérea de São Paulo</h3>
+                        </div>
+
+                        <div className="flex justify-between items-end mb-4 border-b-2 border-black pb-2">
+                            <div>
+                                <h4 className="text-2xl font-black uppercase">{recordToPrint.sector}</h4>
+                                <p className="text-sm font-bold">{new Date(recordToPrint.date).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }).toUpperCase()}</p>
+                            </div>
+                            <div className="text-right">
+                                <span className="inline-block px-4 py-1 border-2 border-black font-black uppercase text-sm">
+                                    {recordToPrint.callType === 'INICIO' ? '1ª Chamada' : '2ª Chamada'}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Table */}
+                        <table className="w-full border-collapse border-2 border-black text-xs">
+                            <thead>
+                                <tr className="bg-slate-100">
+                                    <th className="border-2 border-black px-4 py-2 text-left uppercase">Posto/Grad</th>
+                                    <th className="border-2 border-black px-4 py-2 text-left uppercase">Nome de Guerra</th>
+                                    <th className="border-2 border-black px-4 py-2 text-center uppercase w-20">Status</th>
+                                    <th className="border-2 border-black px-4 py-2 text-left uppercase">Observação / Justificativa</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {recordToPrint.records.map((r, i) => {
+                                    const justification = absenceJustifications.find(j => j.attendanceId === recordToPrint!.id && j.militarId === r.militarId);
+                                    return (
+                                        <tr key={i} className="h-10">
+                                            <td className="border-2 border-black px-4 py-1 font-bold">{r.militarRank}</td>
+                                            <td className="border-2 border-black px-4 py-1 uppercase">{r.militarName}</td>
+                                            <td className="border-2 border-black px-4 py-1 text-center font-black text-sm">{r.status}</td>
+                                            <td className="border-2 border-black px-4 py-1 italic text-[10px]">
+                                                {justification ? justification.justification : (r.status === 'F' ? 'FALTA NÃO JUSTIFICADA' : '')}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+
+                        {/* Signatures */}
+                        <div className="mt-12 grid grid-cols-2 gap-12 text-center">
+                            <div className="space-y-1">
+                                <div className="border-b border-black w-full pt-8"></div>
+                                <p className="text-[10px] font-bold uppercase">Assinado Digitalmente por:</p>
+                                <p className="text-xs font-black uppercase">{recordToPrint.signedBy || recordToPrint.responsible}</p>
+                                <p className="text-[8px] text-slate-500 uppercase">Responsável pela {recordToPrint.callType === 'INICIO' ? '1ª' : '2ª'} Chamada</p>
+                            </div>
+                            <div className="space-y-1">
+                                <div className="border-b border-black w-full pt-8"></div>
+                                <p className="text-[10px] font-bold uppercase">Homologado por:</p>
+                                <p className="text-xs font-black uppercase">CH / CMT DO SETOR</p>
+                                <p className="text-[8px] text-slate-500 uppercase">Validação de Retirada de Faltas</p>
+                            </div>
+                        </div>
+
+                        {/* Legend */}
+                        <div className="mt-12 pt-4 border-t border-black">
+                            <p className="text-[8px] font-bold uppercase mb-2">Legendas de Status:</p>
+                            <div className="grid grid-cols-4 gap-2 text-[7px] font-bold">
+                                {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
+                                    <div key={code} className="flex gap-1">
+                                        <span className="min-w-[20px]">{code}:</span>
+                                        <span className="text-slate-500">{label}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
