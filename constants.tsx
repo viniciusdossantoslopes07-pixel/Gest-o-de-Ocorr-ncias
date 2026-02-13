@@ -53,10 +53,7 @@ export const RANKS = [
 ];
 
 export const SETORES = [
-  'CMT-GSD-SP', 'SECCMD', 'SGOP', 'CH-SOP',
-  'SOP-01', 'SOP-02', 'SOP-03',
-  'CH-SAP', 'SAP-01', 'SAP-02', 'SAP-03', 'SAP-04',
-  'EPA', 'ESI', 'EFSD', 'CANIL'
+  'BASP', 'SOP', 'SAP', 'EPA-SEÇÃO', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'
 ];
 
 export const PRESENCE_STATUS = {

@@ -16,8 +16,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, onS
     const [callType, setCallType] = useState<CallTypeCode>('INICIO');
     const [searchTerm, setSearchTerm] = useState('');
     const [attendanceRecords, setAttendanceRecords] = useState<Record<string, string>>({});
-    const [resp1, setResp1] = useState('');
-    const [resp2, setResp2] = useState('');
+    const [responsible, setResponsible] = useState('');
     const [isSigned, setIsSigned] = useState(false);
 
     // Ad-hoc military management (now passed via props)
@@ -75,8 +74,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, onS
             sector: selectedSector,
             callType,
             records,
-            respChamada1: resp1,
-            respChamada2: resp2,
+            responsible,
             signedAt: new Date().toISOString(),
             signedBy: currentUser.name,
             createdAt: new Date().toISOString()
@@ -163,7 +161,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, onS
                         onClick={() => setShowAdHocModal(true)}
                         className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition-all"
                     >
-                        <UserPlus className="w-4 h-4" /> Adicionar Militar Avulso
+                        <UserPlus className="w-4 h-4" /> Adicionar militar à chamada
                     </button>
                 </div>
 
@@ -209,24 +207,14 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, onS
 
                 {/* Footer Controls */}
                 <div className="p-8 bg-slate-50 border-t border-slate-100">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div className="mb-8">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">1º Responsável pela Chamada</label>
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Responsável pela Chamada</label>
                             <input
                                 type="text"
                                 placeholder="Nome / Posto / Grad"
-                                value={resp1}
-                                onChange={(e) => setResp1(e.target.value)}
-                                className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">2º Responsável pela Chamada</label>
-                            <input
-                                type="text"
-                                placeholder="Nome / Posto / Grad"
-                                value={resp2}
-                                onChange={(e) => setResp2(e.target.value)}
+                                value={responsible}
+                                onChange={(e) => setResponsible(e.target.value)}
                                 className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                             />
                         </div>
