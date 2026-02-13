@@ -768,12 +768,12 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             )}
 
             {/* Printable Area (Hidden in UI) */}
-            <div className="hidden print:block fixed inset-0 bg-white z-[9999] p-4 text-black font-sans">
+            <div className="hidden print:block bg-white text-black font-sans min-h-screen">
                 <style>{`
                     @media print {
                         @page { 
                             size: portrait; 
-                            margin: 20mm 15mm 20mm 15mm; 
+                            margin: 25mm 20mm 25mm 20mm; 
                         }
                         
                         body * { visibility: hidden; }
@@ -784,6 +784,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             width: 100%; 
                             height: auto; 
                             box-sizing: border-box;
+                            background: white;
                         }
 
                         table { 
@@ -888,10 +889,10 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
 
                     {/* Weekly Digital Signatures Footer (Style OMISS) */}
-                    <div className="mt-6 border-t-2 border-black pt-4 print-footer">
-                        <h5 className="text-[10px] font-black uppercase tracking-widest mb-4 text-center">Registro de Assinaturas Digitais da Semana</h5>
-                        <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                            {currentWeek.map(date => {
+                    <div className="mt-10 border-t-2 border-black pt-6 print-footer">
+                        <h5 className="text-[12px] font-black uppercase tracking-widest mb-6 text-center">Registro de Assinaturas Digitais da Semana</h5>
+                        <div className="grid grid-cols-2 gap-x-10 gap-y-6">
+                            {currentWeek.flatMap(date => {
                                 const calls: CallTypeCode[] = ['INICIO', 'TERMINO'];
                                 return calls.map(type => {
                                     const sigKey = `${date}-${type}-${selectedSector}`;
@@ -900,26 +901,31 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     if (!sig) return null;
 
                                     return (
-                                        <div key={sigKey} className="border border-slate-200 rounded p-2 bg-slate-50/30">
-                                            <div className="flex flex-col text-[7px] uppercase leading-tight">
-                                                <span className="font-black text-slate-800">
-                                                    {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' })} - {type === 'INICIO' ? '1ª CHAMADA' : '2ª CHAMADA'}
+                                        <div key={sigKey} className="border border-black p-3 bg-white flex flex-col justify-center min-h-[50px]">
+                                            <div className="flex flex-col text-[8px] uppercase leading-tight">
+                                                <div className="flex justify-between items-center mb-1 border-b border-black/10 pb-1">
+                                                    <span className="font-black text-black">
+                                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })}
+                                                    </span>
+                                                    <span className="font-black text-indigo-600">
+                                                        {type === 'INICIO' ? '1ª CHAMADA' : '2ª CHAMADA'}
+                                                    </span>
+                                                </div>
+                                                <span className="font-bold text-black mt-1">
+                                                    ASSINADO DIGITALMENTE POR: {sig.signedBy}
                                                 </span>
-                                                <span className="font-bold text-slate-600 mt-1">
-                                                    ASSINADO DIGITALMENTE POR {sig.signedBy}
-                                                </span>
-                                                <span className="text-slate-400 font-mono mt-0.5">
-                                                    EM {new Date(sig.signedAt).toLocaleString('pt-BR')}
+                                                <span className="text-black/60 font-mono mt-0.5">
+                                                    AUTENTICAÇÃO: {new Date(sig.signedAt).toLocaleString('pt-BR')}
                                                 </span>
                                             </div>
                                         </div>
                                     );
                                 });
-                            })}
+                            }).filter(Boolean)}
                         </div>
-                        <div className="mt-4 text-center">
-                            <p className="text-[7px] italic text-slate-400 uppercase tracking-tighter">
-                                Documento assinado digitalmente. Verifique a autenticidade junto ao GSD-SP via QR Code ou Chave Criptográfica.
+                        <div className="mt-8 text-center border-t border-black/5 pt-4">
+                            <p className="text-[8px] italic text-slate-400 uppercase tracking-tighter">
+                                Documento assinado digitalmente nos termos da MP 2.200-2/2001. A autenticidade pode ser confirmada via GSD-SP.
                             </p>
                         </div>
                     </div>
