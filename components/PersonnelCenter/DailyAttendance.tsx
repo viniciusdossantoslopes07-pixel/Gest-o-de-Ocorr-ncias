@@ -2,7 +2,7 @@
 import { useState, useEffect, FC } from 'react';
 import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '../../types';
 import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, SETORES, RANKS } from '../../constants';
-import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus } from 'lucide-react';
+import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2 } from 'lucide-react';
 
 interface DailyAttendanceProps {
     users: User[];
@@ -35,8 +35,11 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [currentWeek, setCurrentWeek] = useState(() => {
         const d = new Date();
         const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-        const monday = new Date(d.setDate(diff));
+        // Ajuste: 0 (Dom) vira -6 para pegar a segunda anterior, 1 (Seg) vira 0, etc.
+        const diff = d.getDate() - (day === 0 ? 6 : day - 1);
+        const monday = new Date(new Date().setDate(diff));
+        monday.setHours(0, 0, 0, 0);
+
         const days = [];
         for (let i = 0; i < 5; i++) {
             const temp = new Date(monday);
@@ -360,8 +363,23 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     {filteredUsers.map(user => (
                                         <tr key={user.id} className="hover:bg-slate-50/30 transition-colors">
                                             <td className="px-6 py-3">
-                                                <div className="font-bold text-slate-900 text-xs uppercase">{user.warName || user.name}</div>
-                                                <div className="text-[9px] text-slate-400 font-bold uppercase">{user.rank}</div>
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <div className="font-bold text-slate-900 text-xs uppercase">{user.warName || user.name}</div>
+                                                        <div className="text-[9px] text-slate-400 font-bold uppercase">{user.rank}</div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => {
+                                                            if (confirm(`Deseja remover ${user.rank} ${user.warName || user.name} desta lista?`)) {
+                                                                onExcludeUser(user.id);
+                                                            }
+                                                        }}
+                                                        className="p-1.5 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-all"
+                                                        title="Excluir militar desta chamada"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
                                             </td>
                                             {currentWeek.map(date => (
                                                 <>
