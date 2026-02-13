@@ -225,3 +225,18 @@ export interface DailyAttendance {
   signedBy?: string;
   createdAt: string;
 }
+
+export interface AbsenceJustification {
+  id: string;
+  attendanceId: string;
+  militarId: string;
+  militarName: string;
+  militarRank: string;
+  originalStatus: string;
+  newStatus: string;
+  justification: string;
+  performedBy: string;
+  timestamp: string;
+  sector: string;
+  date: string;
+}

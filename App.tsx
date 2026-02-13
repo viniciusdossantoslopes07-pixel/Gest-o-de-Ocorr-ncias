@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import MissionRequestForm from './components/MissionRequestForm';
 import MissionRequestList from './components/MissionRequestList';
-import { Occurrence, User, UserRole, Status, Urgency, MissionOrder, Mission, DailyAttendance } from './types';
+import { Occurrence, User, UserRole, Status, Urgency, MissionOrder, Mission, DailyAttendance, AbsenceJustification } from './types';
 import Dashboard from './components/Dashboard';
 import OccurrenceForm from './components/OccurrenceForm';
 import OccurrenceDetail from './components/OccurrenceDetail';
@@ -75,6 +75,7 @@ const App: FC = () => {
   const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'material-statistics' | 'daily-attendance' | 'personnel-management' | 'force-map'>('home');
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [attendanceHistory, setAttendanceHistory] = useState<DailyAttendance[]>([]);
+  const [absenceJustifications, setAbsenceJustifications] = useState<AbsenceJustification[]>([]);
   const [adHocUsers, setAdHocUsers] = useState<User[]>([]);
   const [selectedOccurrence, setSelectedOccurrence] = useState<Occurrence | null>(null);
   const [missionOrders, setMissionOrders] = useState<MissionOrder[]>([]);
@@ -139,12 +140,16 @@ const App: FC = () => {
   useEffect(() => {
     const savedHistory = localStorage.getItem('attendanceHistory');
     const savedAdHoc = localStorage.getItem('adHocUsers');
+    const savedJustifications = localStorage.getItem('absenceJustifications');
 
     if (savedHistory) {
       try { setAttendanceHistory(JSON.parse(savedHistory)); } catch (e) { }
     }
     if (savedAdHoc) {
       try { setAdHocUsers(JSON.parse(savedAdHoc)); } catch (e) { }
+    }
+    if (savedJustifications) {
+      try { setAbsenceJustifications(JSON.parse(savedJustifications)); } catch (e) { }
     }
   }, []);
 
@@ -874,7 +879,36 @@ const App: FC = () => {
               users={[...users, ...adHocUsers]}
               currentUser={currentUser!}
               attendanceHistory={attendanceHistory}
-              onSaveAttendance={(a) => setAttendanceHistory([...attendanceHistory, a])}
+              absenceJustifications={absenceJustifications}
+              onSaveAttendance={(a) => setAttendanceHistory(prev => {
+                const next = [...prev, a];
+                localStorage.setItem('attendanceHistory', JSON.stringify(next));
+                return next;
+              })}
+              onSaveJustification={(j) => {
+                setAbsenceJustifications(prev => {
+                  const next = [...prev, j];
+                  localStorage.setItem('absenceJustifications', JSON.stringify(next));
+                  return next;
+                });
+
+                // Also update the status in attendanceHistory
+                setAttendanceHistory(prev => {
+                  const next = prev.map(a => {
+                    if (a.id === j.attendanceId) {
+                      return {
+                        ...a,
+                        records: a.records.map(r =>
+                          r.militarId === j.militarId ? { ...r, status: j.newStatus as any } : r
+                        )
+                      };
+                    }
+                    return a;
+                  });
+                  localStorage.setItem('attendanceHistory', JSON.stringify(next));
+                  return next;
+                });
+              }}
               onAddAdHoc={(u) => setAdHocUsers([...adHocUsers, u])}
               onMoveUser={(userId, newSector) => {
                 if (userId.startsWith('adhoc-')) {
