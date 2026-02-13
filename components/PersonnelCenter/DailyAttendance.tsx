@@ -216,7 +216,10 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
                     <button
                         onClick={() => setShowAdHocModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition-all"
+                        disabled={isSigned}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${isSigned
+                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                            : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}
                     >
                         <UserPlus className="w-4 h-4" /> Adicionar militar à chamada
                     </button>
@@ -247,9 +250,11 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                         <select
                                             value={attendanceRecords[user.id] || 'P'}
                                             onChange={(e) => handleStatusChange(user.id, e.target.value)}
-                                            className={`w-full max-w-[150px] border rounded-lg p-2 text-xs font-bold transition-all outline-none ${(attendanceRecords[user.id] || 'P') === 'P' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                                                ['DPM', 'JS', 'INSP', 'LI', 'A', 'F'].includes(attendanceRecords[user.id]) ? 'bg-red-50 text-red-700 border-red-100' :
-                                                    'bg-blue-50 text-blue-700 border-blue-100'
+                                            disabled={isSigned}
+                                            className={`w-full max-w-[150px] border rounded-lg p-2 text-xs font-bold transition-all outline-none ${isSigned ? 'bg-slate-50 text-slate-500 border-slate-100' :
+                                                (attendanceRecords[user.id] || 'P') === 'P' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                                                    ['DPM', 'JS', 'INSP', 'LI', 'A', 'F'].includes(attendanceRecords[user.id]) ? 'bg-red-50 text-red-700 border-red-100' :
+                                                        'bg-blue-50 text-blue-700 border-blue-100'
                                                 }`}
                                         >
                                             {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
@@ -262,14 +267,16 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                             <button
                                                 title="Mover para outro setor"
                                                 onClick={() => { setSoldierToMove(user); setShowMoveModal(true); }}
-                                                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                                disabled={isSigned}
+                                                className={`p-2 rounded-lg transition-all ${isSigned ? 'text-slate-200 cursor-not-allowed' : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'}`}
                                             >
                                                 <Plus className="w-4 h-4 rotate-45" />
                                             </button>
                                             <button
                                                 title="Excluir da chamada"
                                                 onClick={() => { if (confirm(`Remover ${user.warName || user.name} desta chamada?`)) onExcludeUser(user.id); }}
-                                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                disabled={isSigned}
+                                                className={`p-2 rounded-lg transition-all ${isSigned ? 'text-slate-200 cursor-not-allowed' : 'text-slate-400 hover:text-red-600 hover:bg-red-50'}`}
                                             >
                                                 <X className="w-4 h-4" />
                                             </button>
@@ -291,7 +298,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 placeholder="Nome / Posto / Grad"
                                 value={responsible}
                                 onChange={(e) => setResponsible(e.target.value)}
-                                className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                disabled={isSigned}
+                                className={`w-full border rounded-xl p-3 text-sm outline-none transition-all ${isSigned ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed' : 'bg-white border-slate-200 focus:ring-2 focus:ring-blue-500'}`}
                             />
                         </div>
                     </div>
@@ -299,12 +307,14 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     <div className="flex flex-col md:flex-row gap-4">
                         <button
                             onClick={() => {
+                                if (isSigned) return;
                                 if (!responsible) {
                                     alert('Informe o responsável pela chamada antes de assinar.');
                                     return;
                                 }
                                 setShowPasswordModal(true);
                             }}
+                            disabled={isSigned}
                             className={`w-full py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 ${isSigned
                                 ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-200 cursor-default'
                                 : 'bg-slate-900 text-white hover:bg-slate-800 shadow-xl'
