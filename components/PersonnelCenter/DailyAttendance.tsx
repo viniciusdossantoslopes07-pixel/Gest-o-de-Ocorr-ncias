@@ -444,6 +444,21 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             ))}
                         </div>
                     </div>
+
+                    <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 mt-8">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
+                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Legenda de Situações</h3>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-y-4 gap-x-6">
+                            {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
+                                <div key={code} className="flex items-baseline gap-2">
+                                    <span className="text-[10px] font-black text-blue-600 min-w-[30px]">{code}</span>
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{label}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </>
             )}
 
