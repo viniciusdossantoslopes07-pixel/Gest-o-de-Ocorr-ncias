@@ -876,6 +876,26 @@ const App: FC = () => {
               attendanceHistory={attendanceHistory}
               onSaveAttendance={(a) => setAttendanceHistory([...attendanceHistory, a])}
               onAddAdHoc={(u) => setAdHocUsers([...adHocUsers, u])}
+              onMoveUser={(userId, newSector) => {
+                if (userId.startsWith('adhoc-')) {
+                  setAdHocUsers(prev => prev.map(u => u.id === userId ? { ...u, sector: newSector } : u));
+                } else {
+                  // If it's a "permanent" user from Supabase, we still update it locally for the current session
+                  // but alert that it's a persistent change we're simulating.
+                  setUsers(prev => prev.map(u => u.id === userId ? { ...u, sector: newSector } : u));
+                }
+              }}
+              onExcludeUser={(userId) => {
+                if (userId.startsWith('adhoc-')) {
+                  setAdHocUsers(prev => prev.filter(u => u.id !== userId));
+                } else {
+                  // For permanent users, "excluding" from the call might mean just removing them from the current view
+                  // but for simplicity in this "ad-hoc" focused design, we'll filter them out from the session's user list.
+                  // However, usually "exclude" just means they aren't listed in THIS call.
+                  // For now, let's treat it as a local removal.
+                  setUsers(prev => prev.filter(u => u.id !== userId));
+                }
+              }}
             />
           )}
 

@@ -7,18 +7,38 @@ import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSigna
 interface DailyAttendanceProps {
     users: User[];
     currentUser: User;
-    attendanceHistory: DailyAttendance[]; // Added to check for existing calls
+    attendanceHistory: DailyAttendance[];
     onSaveAttendance: (attendance: DailyAttendance) => void;
     onAddAdHoc: (user: User) => void;
+    onMoveUser: (userId: string, newSector: string) => void;
+    onExcludeUser: (userId: string) => void;
 }
 
-const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, attendanceHistory, onSaveAttendance, onAddAdHoc }) => {
+const DailyAttendanceView: FC<DailyAttendanceProps> = ({
+    users,
+    currentUser,
+    attendanceHistory,
+    onSaveAttendance,
+    onAddAdHoc,
+    onMoveUser,
+    onExcludeUser
+}) => {
     const [selectedSector, setSelectedSector] = useState(SETORES[0]);
     const [callType, setCallType] = useState<CallTypeCode>('INICIO');
     const [searchTerm, setSearchTerm] = useState('');
     const [attendanceRecords, setAttendanceRecords] = useState<Record<string, string>>({});
-    const [responsible, setResponsible] = useState('');
+    const [responsible, setResponsible] = useState(`${currentUser.rank} ${currentUser.warName || currentUser.name}`);
     const [isSigned, setIsSigned] = useState(false);
+
+    // Security states
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [passwordInput, setPasswordInput] = useState('');
+    const [passwordError, setPasswordError] = useState(false);
+
+    // Move states
+    const [showMoveModal, setShowMoveModal] = useState(false);
+    const [soldierToMove, setSoldierToMove] = useState<User | null>(null);
+    const [targetSector, setTargetSector] = useState(SETORES[0]);
 
     // Pre-fill logic when sector or callType changes
     useEffect(() => {
@@ -197,6 +217,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, att
                                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Grad / Nome de Guerra</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Identificação</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status de Presença</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Ações</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -214,7 +235,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, att
                                         <select
                                             value={attendanceRecords[user.id] || 'P'}
                                             onChange={(e) => handleStatusChange(user.id, e.target.value)}
-                                            className={`w-full max-w-[200px] border rounded-lg p-2 text-xs font-bold transition-all outline-none ${(attendanceRecords[user.id] || 'P') === 'P' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                                            className={`w-full max-w-[150px] border rounded-lg p-2 text-xs font-bold transition-all outline-none ${(attendanceRecords[user.id] || 'P') === 'P' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
                                                 ['DPM', 'JS', 'INSP', 'LI', 'A', 'F'].includes(attendanceRecords[user.id]) ? 'bg-red-50 text-red-700 border-red-100' :
                                                     'bg-blue-50 text-blue-700 border-blue-100'
                                                 }`}
@@ -223,6 +244,24 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, att
                                                 <option key={code} value={code}>{code} - {label}</option>
                                             ))}
                                         </select>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <button
+                                                title="Mover para outro setor"
+                                                onClick={() => { setSoldierToMove(user); setShowMoveModal(true); }}
+                                                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                            >
+                                                <Plus className="w-4 h-4 rotate-45" />
+                                            </button>
+                                            <button
+                                                title="Excluir da chamada"
+                                                onClick={() => { if (confirm(`Remover ${user.warName || user.name} desta chamada?`)) onExcludeUser(user.id); }}
+                                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -248,9 +287,11 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, att
                     <div className="flex flex-col md:flex-row gap-4">
                         <button
                             onClick={() => {
-                                if (confirm('Confirmar assinatura digital para esta chamada?')) {
-                                    setIsSigned(true);
+                                if (!responsible) {
+                                    alert('Informe o responsável pela chamada antes de assinar.');
+                                    return;
                                 }
+                                setShowPasswordModal(true);
                             }}
                             className={`flex-1 py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 ${isSigned
                                 ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-200 cursor-default'
@@ -272,7 +313,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, att
                 </div>
             </div>
 
-            {/* Ad-Hoc Modal */}
+            {/* Ad-Hoc Modal (unchanged but included for reference) */}
             {showAdHocModal && (
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-[2rem] w-full max-w-md p-8 shadow-2xl relative animate-in zoom-in-95 duration-200">
@@ -318,6 +359,108 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, att
                             >
                                 Adicionar à Lista
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Password Modal */}
+            {showPasswordModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl relative animate-in zoom-in-95 duration-200 border-4 border-slate-100">
+                        <div className="flex flex-col items-center text-center mb-8">
+                            <div className="bg-slate-900 p-4 rounded-3xl shadow-xl shadow-slate-200 mb-6">
+                                <FileSignature className="w-8 h-8 text-white" />
+                            </div>
+                            <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Assinatura Digital</h3>
+                            <p className="text-slate-500 text-sm font-medium">Confirme sua senha para assinar como<br /><span className="text-slate-900 font-bold">{responsible}</span></p>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Senha de Acesso</label>
+                                <input
+                                    type="password"
+                                    autoFocus
+                                    value={passwordInput}
+                                    onChange={e => { setPasswordInput(e.target.value); setPasswordError(false); }}
+                                    className={`w-full bg-slate-50 border-2 rounded-2xl p-4 text-center text-lg font-bold outline-none transition-all ${passwordError ? 'border-red-500 ring-4 ring-red-50' : 'border-slate-100 focus:border-slate-900 focus:ring-4 focus:ring-slate-100'}`}
+                                    placeholder="••••••••"
+                                    onKeyDown={e => e.key === 'Enter' && (passwordInput === currentUser.password ? (setIsSigned(true), setShowPasswordModal(false), setPasswordInput('')) : setPasswordError(true))}
+                                />
+                                {passwordError && <p className="text-red-500 text-[10px] font-bold uppercase text-center mt-2 animate-bounce">Senha Incorreta</p>}
+                            </div>
+
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => { setShowPasswordModal(false); setPasswordInput(''); setPasswordError(false); }}
+                                    className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all font-mono tracking-tighter"
+                                >
+                                    CANCELAR
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (passwordInput === currentUser.password) {
+                                            setIsSigned(true);
+                                            setShowPasswordModal(false);
+                                            setPasswordInput('');
+                                        } else {
+                                            setPasswordError(true);
+                                        }
+                                    }}
+                                    className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl"
+                                >
+                                    CONFIRMAR
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Move Sector Modal */}
+            {showMoveModal && soldierToMove && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl relative animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="bg-blue-100 p-4 rounded-3xl">
+                                <Plus className="w-8 h-8 text-blue-600 rotate-45" />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-black text-slate-900 tracking-tight">Alterar Chamada</h3>
+                                <p className="text-slate-500 text-sm font-medium">Mover <span className="text-blue-600 font-bold">{soldierToMove.rank} {soldierToMove.warName}</span></p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Selecione o Novo Setor</label>
+                                <select
+                                    value={targetSector}
+                                    onChange={e => setTargetSector(e.target.value)}
+                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 focus:border-blue-500 outline-none transition-all"
+                                >
+                                    {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                            </div>
+
+                            <div className="flex gap-4 pt-4">
+                                <button
+                                    onClick={() => setShowMoveModal(false)}
+                                    className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all"
+                                >
+                                    CANCELAR
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        onMoveUser(soldierToMove.id, targetSector);
+                                        setShowMoveModal(false);
+                                    }}
+                                    className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg"
+                                >
+                                    MOVER AGORA
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
