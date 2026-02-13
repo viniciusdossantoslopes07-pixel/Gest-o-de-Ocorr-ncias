@@ -768,7 +768,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             )}
 
             {/* Printable Area (Hidden in UI) */}
-            <div className="hidden print:block bg-white text-black font-sans">
+            <div className="hidden print:block bg-white">
                 <style>{`
                     @media print {
                         @page { 
@@ -776,19 +776,27 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             margin: 25mm 20mm 25mm 20mm; 
                         }
                         
-                        /* Garante que nada antes do relatório ocupe espaço */
-                        body * { visibility: hidden; }
+                        /* Oculta absolutamente tudo da interface para evitar resíduos ou vácuos */
+                        body * { display: none !important; }
                         
-                        .print-weekly, .print-weekly * { visibility: visible; }
+                        /* Exibe apenas o container do relatório e seus descendentes */
+                        .print-weekly, .print-weekly * { display: block !important; }
+                        
+                        /* Ajustes específicos para elementos que não podem ser apenas 'block' */
+                        .print-weekly table { display: table !important; }
+                        .print-weekly thead { display: table-header-group !important; }
+                        .print-weekly tbody { display: table-row-group !important; }
+                        .print-weekly tr { display: table-row !important; }
+                        .print-weekly th, .print-weekly td { display: table-cell !important; }
+                        .print-weekly .flex { display: flex !important; }
+                        .print-weekly .grid { display: grid !important; }
                         
                         .print-weekly { 
-                            position: absolute;
-                            top: 0;
-                            left: 0;
                             width: 100%; 
                             height: auto; 
-                            box-sizing: border-box;
                             background: white;
+                            margin: 0;
+                            padding: 0;
                         }
 
                         table { 
