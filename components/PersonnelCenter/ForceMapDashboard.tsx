@@ -10,7 +10,8 @@ interface ForceMapProps {
 }
 
 const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
-    const today = new Date().toISOString().split('T')[0];
+    const todayDate = new Date();
+    const today = `${todayDate.getFullYear()}-${String(todayDate.getMonth() + 1).padStart(2, '0')}-${String(todayDate.getDate()).padStart(2, '0')}`;
 
     // Most recent attendance per sector and per call type for today
     const currentAttendances = attendanceHistory?.filter(a => a.date === today) || [];
