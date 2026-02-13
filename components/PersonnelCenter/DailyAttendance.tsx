@@ -124,6 +124,18 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [isSigned, setIsSigned] = useState(false);
     const [recordToPrint, setRecordToPrint] = useState<DailyAttendance | null>(null);
 
+    // Sincronizar assinaturas do histórico para o estado local
+    useEffect(() => {
+        const sigs: Record<string, { signedBy: string, signedAt: string }> = {};
+        attendanceHistory.forEach(a => {
+            if (a.signedBy && a.signedAt) {
+                const key = `${a.date}-${a.callType}`;
+                sigs[key] = { signedBy: a.signedBy, signedAt: a.signedAt };
+            }
+        });
+        setSignedDates(sigs);
+    }, [attendanceHistory]);
+
     // Security states
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [dateToSign, setDateToSign] = useState<string | null>(null);
@@ -194,20 +206,32 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 [key]: signatureInfo
             }));
 
-            // PERSISTÊNCIA: Encontrar o registro existente e atualizar ou criar um novo
+            // PERSISTÊNCIA: Usamos a lista completa de usuários do setor, NÃO a lista filtrada pela busca
+            const sectorUsers = users.filter(u => u.sector === selectedSector);
             const existing = attendanceHistory.find(a => a.date === dateToSign && a.callType === callToSign && a.sector === selectedSector);
 
             let attendanceToSave: DailyAttendance;
             if (existing) {
                 attendanceToSave = {
                     ...existing,
+                    // Atualiza os registros para garantir que todos do setor estejam presentes
+                    records: sectorUsers.map(u => {
+                        const existingRecord = existing.records.find(r => r.militarId === u.id);
+                        return {
+                            militarId: u.id,
+                            militarName: u.warName || u.name,
+                            militarRank: u.rank,
+                            status: existingRecord?.status || weeklyGrid[u.id]?.[dateToSign]?.[callToSign] || 'N',
+                            timestamp: existingRecord?.timestamp || new Date().toISOString()
+                        };
+                    }),
                     signedBy: signatureInfo.signedBy,
                     signedAt: signatureInfo.signedAt,
-                    responsible: signatureInfo.signedBy // Também atualiza o responsável
+                    responsible: signatureInfo.signedBy
                 };
             } else {
-                // Se não existe (chamada em branco mas assinada), pegamos o que está no weeklyGrid
-                const records: AttendanceRecord[] = filteredUsers.map(u => ({
+                // Se não existe, criamos com todos do setor
+                const records: AttendanceRecord[] = sectorUsers.map(u => ({
                     militarId: u.id,
                     militarName: u.warName || u.name,
                     militarRank: u.rank,
