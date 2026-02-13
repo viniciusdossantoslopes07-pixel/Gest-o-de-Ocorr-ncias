@@ -1,6 +1,7 @@
 
 import { FC } from 'react';
 import { DailyAttendance, User } from '../../types';
+import { PRESENCE_STATUS, SETORES } from '../../constants';
 import { BarChart3, Users, CheckCircle, AlertTriangle, ExternalLink, ShieldAlert, Clock } from 'lucide-react';
 
 interface ForceMapProps {
