@@ -773,7 +773,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     @media print {
                         @page { 
                             size: portrait; 
-                            margin: 25mm 20mm 25mm 20mm; 
+                            margin: 20mm 15mm 20mm 15mm; 
                         }
                         
                         /* Oculta absolutamente tudo da interface para evitar resíduos ou vácuos */
