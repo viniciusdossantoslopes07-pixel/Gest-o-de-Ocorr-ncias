@@ -16,6 +16,20 @@ interface DailyAttendanceProps {
     absenceJustifications: AbsenceJustification[];
 }
 
+// Helper functions for local date handling
+const formatDateToISO = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+const parseISOToDate = (isoStr: string) => {
+    if (!isoStr) return new Date();
+    const [year, month, day] = isoStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+};
+
 const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     users,
     currentUser,
@@ -34,17 +48,18 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [signedDates, setSignedDates] = useState<Record<string, { signedBy: string, signedAt: string }>>({});
     const [currentWeek, setCurrentWeek] = useState(() => {
         const d = new Date();
+        d.setHours(0, 0, 0, 0);
         const day = d.getDay();
         // Ajuste: 0 (Dom) vira -6 para pegar a segunda anterior, 1 (Seg) vira 0, etc.
-        const diff = d.getDate() - (day === 0 ? 6 : day - 1);
-        const monday = new Date(new Date().setDate(diff));
-        monday.setHours(0, 0, 0, 0);
+        const diff = (day === 0 ? -6 : 1 - day);
+        const monday = new Date(d);
+        monday.setDate(d.getDate() + diff);
 
         const days = [];
         for (let i = 0; i < 5; i++) {
             const temp = new Date(monday);
             temp.setDate(monday.getDate() + i);
-            days.push(temp.toISOString().split('T')[0]);
+            days.push(formatDateToISO(temp));
         }
         return days;
     });
@@ -121,13 +136,13 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     const changeWeek = (offset: number) => {
         setCurrentWeek(prev => {
-            const firstDay = new Date(prev[0]);
+            const firstDay = parseISOToDate(prev[0]);
             firstDay.setDate(firstDay.getDate() + (offset * 7));
             const days = [];
             for (let i = 0; i < 5; i++) {
                 const temp = new Date(firstDay);
                 temp.setDate(firstDay.getDate() + i);
-                days.push(temp.toISOString().split('T')[0]);
+                days.push(formatDateToISO(temp));
             }
             return days;
         });
@@ -146,8 +161,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const isFutureDate = (date: string) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const cellDate = new Date(date);
-        cellDate.setHours(0, 0, 0, 0);
+        const cellDate = parseISOToDate(date);
         return cellDate > today;
     };
 
@@ -283,7 +297,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                         <Filter className="w-4 h-4 rotate-180" />
                                     </button>
                                     <span className="text-xs font-black text-slate-700 px-2 uppercase">
-                                        {new Date(currentWeek[0]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} a {new Date(currentWeek[4]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                                        {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} a {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                                     </span>
                                     <button onClick={() => changeWeek(1)} className="p-2 hover:bg-white rounded-lg transition-all text-slate-400 hover:text-slate-900 shadow-sm">
                                         <Filter className="w-4 h-4" />
@@ -345,8 +359,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                         <th rowSpan={2} className="px-6 py-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left min-w-[200px]">Militar</th>
                                         {currentWeek.map(date => (
                                             <th key={date} colSpan={2} className="px-2 py-4 border-b border-slate-100 border-l border-slate-100 text-[10px] font-black text-slate-900 uppercase tracking-widest text-center bg-slate-50/30">
-                                                {new Date(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}
-                                                <div className="text-[8px] font-bold text-slate-400 mt-1">{new Date(date).toLocaleDateString('pt-BR')}</div>
+                                                {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}
+                                                <div className="text-[8px] font-bold text-slate-400 mt-1">{parseISOToDate(date).toLocaleDateString('pt-BR')}</div>
                                             </th>
                                         ))}
                                     </tr>
@@ -439,7 +453,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             {currentWeek.map(date => (
                                 <div key={date} className={`p-4 rounded-3xl border-2 transition-all ${signedDates[date] ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
                                     <div className="text-[10px] font-black text-slate-400 uppercase mb-2">
-                                        {new Date(date).toLocaleDateString('pt-BR', { weekday: 'long' })}
+                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long' })}
                                     </div>
                                     {signedDates[date] ? (
                                         <div className="flex flex-col gap-1">
@@ -510,7 +524,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                     {CALL_TYPES[attendance.callType as keyof typeof CALL_TYPES]}
                                                 </span>
                                                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                                                    {new Date(attendance.date).toLocaleDateString('pt-BR')}
+                                                    {parseISOToDate(attendance.date).toLocaleDateString('pt-BR')}
                                                 </span>
                                             </div>
 
@@ -572,7 +586,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                 <tr key={j.id} className="hover:bg-slate-50/50 transition-colors">
                                                     <td className="px-6 py-5">
                                                         <div className="font-black text-slate-900 uppercase text-xs">{j.militarRank} {j.militarName}</div>
-                                                        <div className="text-[10px] text-slate-400 font-bold uppercase mt-1">{new Date(j.timestamp).toLocaleDateString('pt-BR')}</div>
+                                                        <div className="text-[10px] text-slate-400 font-bold uppercase mt-1">{parseISOToDate(j.timestamp.split('T')[0]).toLocaleDateString('pt-BR')}</div>
                                                     </td>
                                                     <td className="px-6 py-5 max-w-xs">
                                                         <p className="text-xs text-slate-600 italic line-clamp-2">"{j.justification}"</p>
@@ -667,7 +681,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
 
                     <div className="flex justify-between items-center mb-4 font-black uppercase text-sm">
-                        <span>SEMANA: {new Date(currentWeek[0]).toLocaleDateString('pt-BR')} A {new Date(currentWeek[4]).toLocaleDateString('pt-BR')}</span>
+                        <span>SEMANA: {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR')} A {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR')}</span>
                         <span>ESCALA DE SERVIÇO INTERNO (ESI)</span>
                     </div>
 
@@ -678,8 +692,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 <th rowSpan={2} className="border-2 border-black px-2 py-2 text-left uppercase w-[180px]">POSTO/GRAD - NOME DE GUERRA</th>
                                 {currentWeek.map(date => (
                                     <th key={date} colSpan={2} className="border-2 border-black p-1 text-center uppercase text-[10px]">
-                                        {new Date(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}
-                                        <div className="text-[8px]">{new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</div>
+                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}
+                                        <div className="text-[8px]">{parseISOToDate(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</div>
                                     </th>
                                 ))}
                             </tr>
@@ -747,7 +761,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
                             <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">Assinatura Digital</h3>
                             <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-8">
-                                Confirmar chamada de {dateToSign ? new Date(dateToSign).toLocaleDateString('pt-BR') : ''}
+                                Confirmar chamada de {dateToSign ? parseISOToDate(dateToSign).toLocaleDateString('pt-BR') : ''}
                             </p>
 
                             <div className="w-full space-y-4">
