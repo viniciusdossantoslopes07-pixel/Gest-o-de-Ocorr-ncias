@@ -59,7 +59,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             setIsSigned(true);
         } else {
             setAttendanceRecords({});
-            setResponsible('');
+            setResponsible(`${currentUser.rank} ${currentUser.warName || currentUser.name}`);
             setIsSigned(false);
         }
     }, [selectedSector, callType, attendanceHistory]);
