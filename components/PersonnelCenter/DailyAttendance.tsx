@@ -236,9 +236,15 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             militarId: u.id,
             militarName: u.warName || u.name,
             militarRank: u.rank,
-            status: attendanceRecords[u.id] || 'P',
+            status: attendanceRecords[u.id] || 'N',
             timestamp: new Date().toISOString()
         }));
+
+        if (records.some(r => r.status === 'N')) {
+            if (!confirm('Existem militares com status "NÃO INFORMADO". Deseja prosseguir mesmo assim?')) {
+                return;
+            }
+        }
 
         const daily: DailyAttendance = {
             id: Math.random().toString(36).substr(2, 9),
@@ -410,11 +416,12 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                     <td key={`${user.id}-${date}-INICIO`} className="p-1 border-l border-slate-50">
                                                         <select
                                                             disabled={isFutureDate(date)}
-                                                            value={weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : 'P')}
+                                                            value={weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : 'N')}
                                                             onChange={(e) => handleWeeklyChange(user.id, date, 'INICIO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : 'P')) === 'P' ? 'text-emerald-600' :
+                                                            className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : 'N')) === 'P' ? 'text-emerald-600' :
                                                                 ['F', 'A'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-600 bg-red-50' :
-                                                                    !isFutureDate(date) ? 'text-blue-600 bg-blue-50' : 'text-slate-200'
+                                                                    (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
+                                                                        !isFutureDate(date) ? 'text-blue-600 bg-blue-50' : 'text-slate-200'
                                                                 }`}
                                                         >
                                                             {isFutureDate(date) && <option value="">-</option>}
@@ -426,11 +433,12 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                     <td key={`${user.id}-${date}-TERMINO`} className="p-1">
                                                         <select
                                                             disabled={isFutureDate(date)}
-                                                            value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : 'P')}
+                                                            value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : 'N')}
                                                             onChange={(e) => handleWeeklyChange(user.id, date, 'TERMINO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : 'P')) === 'P' ? 'text-emerald-600' :
+                                                            className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : 'N')) === 'P' ? 'text-emerald-600' :
                                                                 ['F', 'A'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-600 bg-red-50' :
-                                                                    !isFutureDate(date) ? 'text-blue-600 bg-blue-50' : 'text-slate-200'
+                                                                    (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
+                                                                        !isFutureDate(date) ? 'text-blue-600 bg-blue-50' : 'text-slate-200'
                                                                 }`}
                                                         >
                                                             {isFutureDate(date) && <option value="">-</option>}

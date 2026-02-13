@@ -57,6 +57,7 @@ export const SETORES = [
 ];
 
 export const PRESENCE_STATUS = {
+  'N': 'NÃO INFORMADO',
   'P': 'PRESENTE',
   'F': 'FALTA',
   'ESV': 'SERVIÇO',

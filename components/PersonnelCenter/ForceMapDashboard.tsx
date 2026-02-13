@@ -47,11 +47,12 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
     const absenceCount = totalEfetivo - presentCount;
 
     const stats = [
-        { title: 'Total Efetivo', value: totalEfetivo, icon: Users, color: 'bg-slate-100 text-slate-600' },
-        { title: 'Prontos (P/INST)', value: presentCount, icon: CheckCircle, color: 'bg-emerald-100 text-emerald-600' },
-        { title: 'Baixas (Med/L)', value: getCount(['DPM', 'JS', 'INSP', 'LI']), icon: AlertTriangle, color: 'bg-red-100 text-red-600' },
-        { title: 'Em Serviço', value: getCount(['ESV', 'DSV', 'MIS']), icon: Clock, color: 'bg-blue-100 text-blue-600' },
-        { title: 'Ausentes (F/A/FE)', value: getCount(['F', 'A', 'FE']), icon: ShieldAlert, color: 'bg-slate-900 text-white shadow-lg' },
+        { title: 'Prontos (P)', value: getCount(['P', 'INST']), icon: CheckCircle, color: 'bg-emerald-100 text-emerald-600' },
+        { title: 'Faltas (F)', value: getCount(['F', 'A']), icon: ShieldAlert, color: 'bg-red-100 text-red-600' },
+        { title: 'Missão (MIS)', value: getCount(['MIS']), icon: ExternalLink, color: 'bg-indigo-100 text-indigo-600' },
+        { title: 'Serviço (ESV)', value: getCount(['ESV', 'DSV']), icon: Clock, color: 'bg-blue-100 text-blue-600' },
+        { title: 'Dispensa (DPM)', value: getCount(['DPM', 'JS', 'INSP']), icon: AlertTriangle, color: 'bg-amber-100 text-amber-600' },
+        { title: 'Curso (C-E)', value: getCount(['C-E']), icon: ShieldAlert, color: 'bg-slate-900 text-white shadow-lg' },
     ];
 
     const StatCard = ({ title, value, icon: Icon, color }: any) => (
@@ -118,7 +119,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {stats.map(s => <StatCard key={s.title} {...s} />)}
             </div>
 
