@@ -62,7 +62,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             setResponsible(`${currentUser.rank} ${currentUser.warName || currentUser.name}`);
             setIsSigned(false);
         }
-    }, [selectedSector, callType, attendanceHistory]);
+    }, [selectedSector, callType, attendanceHistory, currentUser]);
 
     // Ad-hoc military management (now passed via props)
     const [showAdHocModal, setShowAdHocModal] = useState(false);
@@ -293,21 +293,13 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 }
                                 setShowPasswordModal(true);
                             }}
-                            className={`flex-1 py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 ${isSigned
+                            className={`w-full py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 ${isSigned
                                 ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-200 cursor-default'
                                 : 'bg-slate-900 text-white hover:bg-slate-800 shadow-xl'
                                 }`}
                         >
                             <FileSignature className="w-5 h-5" />
                             {isSigned ? 'Assinado Digitalmente' : 'Assinar Chamada'}
-                        </button>
-
-                        <button
-                            onClick={handleSave}
-                            disabled={!isSigned}
-                            className="flex-1 py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-2xl font-bold transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2"
-                        >
-                            <Save className="w-5 h-5" /> Finalizar Chamada do Setor
                         </button>
                     </div>
                 </div>
@@ -404,6 +396,29 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                             setIsSigned(true);
                                             setShowPasswordModal(false);
                                             setPasswordInput('');
+                                            // Handle auto-save
+                                            const records: AttendanceRecord[] = filteredUsers.map(u => ({
+                                                militarId: u.id,
+                                                militarName: u.warName || u.name,
+                                                militarRank: u.rank,
+                                                status: attendanceRecords[u.id] || 'P',
+                                                timestamp: new Date().toISOString()
+                                            }));
+
+                                            const daily: DailyAttendance = {
+                                                id: Math.random().toString(36).substr(2, 9),
+                                                date: new Date().toISOString().split('T')[0],
+                                                sector: selectedSector,
+                                                callType,
+                                                records,
+                                                responsible,
+                                                signedAt: new Date().toISOString(),
+                                                signedBy: currentUser.name,
+                                                createdAt: new Date().toISOString()
+                                            };
+
+                                            onSaveAttendance(daily);
+                                            alert(`Chamada de ${CALL_TYPES[callType]} salva e assinada automaticamente!`);
                                         } else {
                                             setPasswordError(true);
                                         }
