@@ -627,14 +627,11 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                             <div className="flex items-center gap-4">
-                                <div className="bg-indigo-600 p-3 rounded-2xl shadow-lg shadow-indigo-200">
-                                    <FileSignature className="w-6 h-6 text-white" />
-                                </div>
                                 <div className="flex flex-col">
                                     <img
                                         src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Coat_of_arms_of_Brazil.svg"
                                         alt="Brasão da República"
-                                        className="w-12 h-12 mb-2 object-contain print:block"
+                                        className="w-12 h-12 mb-2 object-contain"
                                     />
                                     <h2 className="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-1">Ministério da Defesa / Comando da Aeronáutica</h2>
                                     <h2 className="text-2xl font-black text-slate-900 tracking-tight">Base Aérea de São Paulo</h2>
@@ -647,6 +644,22 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             >
                                 <Plus className="w-4 h-4" /> Gerar Relatório (PDF)
                             </button>
+                        </div>
+
+                        {/* Seletor de Setor na Tela de Cupons */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 pt-8 border-t border-slate-100">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                                    Setor Selecionado
+                                </label>
+                                <select
+                                    value={selectedSector}
+                                    onChange={(e) => setSelectedSector(e.target.value)}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm"
+                                >
+                                    {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                            </div>
                         </div>
                     </div>
 
