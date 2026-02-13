@@ -771,23 +771,54 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             <div className="hidden print:block fixed inset-0 bg-white z-[9999] p-4 text-black font-sans">
                 <style>{`
                     @media print {
-                        @page { size: portrait; margin: 10mm; }
+                        @page { 
+                            size: portrait; 
+                            margin: 15mm 10mm 15mm 10mm; 
+                        }
+                        
                         body * { visibility: hidden; }
+                        
                         .print-weekly, .print-weekly * { visibility: visible; }
+                        
                         .print-weekly { 
                             position: absolute; 
                             left: 0; 
                             top: 0; 
                             width: 100%; 
                             height: auto; 
-                            padding: 15mm;
+                            padding: 0;
                             box-sizing: border-box;
+                        }
+
+                        table { 
+                            width: 100%;
+                            border-collapse: collapse;
+                            table-layout: fixed;
+                            page-break-inside: auto;
+                        }
+
+                        thead { display: table-header-group; }
+                        tfoot { display: table-footer-group; }
+                        
+                        tr { 
+                            page-break-inside: avoid; 
+                            page-break-after: auto;
+                        }
+
+                        /* Evita que o Brasão ou Header quebrem de forma estranha */
+                        .print-header {
+                            page-break-inside: avoid;
+                        }
+
+                        .print-footer {
+                            page-break-inside: avoid;
+                            margin-top: 2rem;
                         }
                     }
                 `}</style>
                 <div className="print-weekly w-full mx-auto">
                     {/* Institutional Header */}
-                    <div className="text-center mb-6 space-y-0.5">
+                    <div className="text-center mb-6 space-y-0.5 print-header">
                         <div className="flex flex-col items-center">
                             <img
                                 src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Coat_of_arms_of_Brazil.svg"
@@ -802,7 +833,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         </div>
                     </div>
 
-                    <div className="flex justify-between items-end mb-2 font-bold uppercase text-[9px] border-b border-black pb-1">
+                    <div className="flex justify-between items-end mb-2 font-bold uppercase text-[9px] border-b border-black pb-1 print-header">
                         <div className="flex flex-col">
                             <span>SEMANA: {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR')} A {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR')}</span>
                         </div>
@@ -850,7 +881,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </table>
 
                     {/* Official Legend Footer */}
-                    <div className="mt-4 grid grid-cols-6 gap-x-2 gap-y-1 text-[6px] font-bold border border-black p-2 uppercase bg-slate-50/50">
+                    <div className="mt-4 grid grid-cols-6 gap-x-2 gap-y-1 text-[6px] font-bold border border-black p-2 uppercase bg-slate-50/50 print-footer">
                         {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
                             <div key={code} className="flex gap-1 items-baseline">
                                 <span className="text-black">{code}</span>
@@ -860,7 +891,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
 
                     {/* Weekly Digital Signatures Footer (Style OMISS) */}
-                    <div className="mt-6 border-t-2 border-black pt-4">
+                    <div className="mt-6 border-t-2 border-black pt-4 print-footer">
                         <h5 className="text-[10px] font-black uppercase tracking-widest mb-4 text-center">Registro de Assinaturas Digitais da Semana</h5>
                         <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                             {currentWeek.map(date => {
