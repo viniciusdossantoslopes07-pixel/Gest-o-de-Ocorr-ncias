@@ -795,7 +795,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     <table className="w-full border-collapse border border-black text-[8px]">
                         <thead>
                             <tr className="bg-slate-100">
-                                <th rowSpan={2} className="border border-black px-2 py-2 text-left uppercase w-[200px]">SETOR / GRAD / NOME</th>
+                                <th rowSpan={2} className="border border-black px-2 py-2 text-left uppercase w-[140px]">SETOR / GRAD / NOME</th>
                                 {currentWeek.map(date => (
                                     <th key={date} colSpan={2} className="border border-black p-1 text-center uppercase text-[9px]">
                                         {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long' })}
@@ -841,31 +841,41 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         ))}
                     </div>
 
-                    {/* Digital Signatures Footer (Style OMISS) */}
-                    <div className="mt-8 space-y-6">
-                        {(['INICIO', 'TERMINO'] as CallTypeCode[]).map(type => {
-                            const today = formatDateToISO(new Date());
-                            const sigKey = `${today}-${type}-${selectedSector}`;
-                            const sig = signedDates[sigKey];
+                    {/* Weekly Digital Signatures Footer (Style OMISS) */}
+                    <div className="mt-6 border-t-2 border-black pt-4">
+                        <h5 className="text-[10px] font-black uppercase tracking-widest mb-4 text-center">Registro de Assinaturas Digitais da Semana</h5>
+                        <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                            {currentWeek.map(date => {
+                                const calls: CallTypeCode[] = ['INICIO', 'TERMINO'];
+                                return calls.map(type => {
+                                    const sigKey = `${date}-${type}-${selectedSector}`;
+                                    const sig = signedDates[sigKey];
 
-                            if (!sig) return null;
+                                    if (!sig) return null;
 
-                            return (
-                                <div key={type} className="border-t border-dashed border-slate-300 pt-6">
-                                    <div className="text-center">
-                                        <h5 className="text-[10px] font-black uppercase tracking-widest mb-3">
-                                            ASSINATURA DIGITAL - {type === 'INICIO' ? '1ª CHAMADA' : '2ª CHAMADA'} ({selectedSector})
-                                        </h5>
-                                        <div className="inline-block bg-slate-50 border border-slate-200 rounded-lg px-6 py-2 text-[10px] font-bold text-slate-600">
-                                            ASSINADO DIGITALMENTE POR {sig.signedBy.toUpperCase()} EM {new Date(sig.signedAt).toLocaleString('pt-BR')}
+                                    return (
+                                        <div key={sigKey} className="border border-slate-200 rounded p-2 bg-slate-50/30">
+                                            <div className="flex flex-col text-[7px] uppercase leading-tight">
+                                                <span className="font-black text-slate-800">
+                                                    {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' })} - {type === 'INICIO' ? '1ª CHAMADA' : '2ª CHAMADA'}
+                                                </span>
+                                                <span className="font-bold text-slate-600 mt-1">
+                                                    ASSINADO DIGITALMENTE POR {sig.signedBy}
+                                                </span>
+                                                <span className="text-slate-400 font-mono mt-0.5">
+                                                    EM {new Date(sig.signedAt).toLocaleString('pt-BR')}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <p className="mt-2 text-[8px] italic text-slate-400 uppercase tracking-tighter">
-                                            Documento assinado digitalmente. Verifique a autenticidade junto ao GSD-SP.
-                                        </p>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                    );
+                                });
+                            })}
+                        </div>
+                        <div className="mt-4 text-center">
+                            <p className="text-[7px] italic text-slate-400 uppercase tracking-tighter">
+                                Documento assinado digitalmente. Verifique a autenticidade junto ao GSD-SP via QR Code ou Chave Criptográfica.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
