@@ -1,5 +1,5 @@
 
-import { useState, useEffect, FC } from 'react';
+import { useState, useEffect, FC, Fragment } from 'react';
 import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '../../types';
 import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, SETORES, RANKS } from '../../constants';
 import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2 } from 'lucide-react';
@@ -46,6 +46,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [activeSubTab, setActiveSubTab] = useState<'retirar-faltas' | 'faltas-retiradas'>('retirar-faltas');
     const [searchTerm, setSearchTerm] = useState('');
     const [signedDates, setSignedDates] = useState<Record<string, { signedBy: string, signedAt: string }>>({});
+    const [callToSign, setCallToSign] = useState<CallTypeCode | null>(null);
     const [currentWeek, setCurrentWeek] = useState(() => {
         const d = new Date();
         d.setHours(0, 0, 0, 0);
@@ -165,29 +166,36 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         return cellDate > today;
     };
 
-    const handleSignDate = (date: string) => {
-        if (signedDates[date]) return;
+    const handleSignDate = (date: string, type: CallTypeCode) => {
+        const key = `${date}-${type}`;
+        if (signedDates[key]) {
+            alert('Esta chamada já foi assinada.');
+            return;
+        }
         setDateToSign(date);
+        setCallToSign(type);
         setShowPasswordModal(true);
         setPasswordInput('');
         setPasswordError(false);
     };
 
     const confirmSignature = () => {
-        if (!dateToSign) return;
+        if (!dateToSign || !callToSign) return;
 
         if (passwordInput === currentUser.password) {
+            const key = `${dateToSign}-${callToSign}`;
             setSignedDates(prev => ({
                 ...prev,
-                [dateToSign]: {
+                [key]: {
                     signedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
                     signedAt: new Date().toISOString()
                 }
             }));
             setShowPasswordModal(false);
             setDateToSign(null);
+            setCallToSign(null);
             setPasswordInput('');
-            alert('Chamada assinada com sucesso!');
+            alert(`${CALL_TYPES[callToSign]} assinada com sucesso!`);
         } else {
             setPasswordError(true);
         }
@@ -356,20 +364,22 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             <table className="w-full border-collapse">
                                 <thead>
                                     <tr className="bg-slate-50/50">
-                                        <th rowSpan={2} className="px-6 py-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left min-w-[200px]">Militar</th>
+                                        <th rowSpan={2} className="px-6 py-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left min-w-[200px] sticky left-0 z-20 bg-slate-50">Militar</th>
                                         {currentWeek.map(date => (
                                             <th key={date} colSpan={2} className="px-2 py-4 border-b border-slate-100 border-l border-slate-100 text-[10px] font-black text-slate-900 uppercase tracking-widest text-center bg-slate-50/30">
-                                                {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}
-                                                <div className="text-[8px] font-bold text-slate-400 mt-1">{parseISOToDate(date).toLocaleDateString('pt-BR')}</div>
+                                                <div className="flex flex-col items-center">
+                                                    <span>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
+                                                    <span className="text-[8px] font-bold text-slate-400 mt-0.5">{parseISOToDate(date).toLocaleDateString('pt-BR')}</span>
+                                                </div>
                                             </th>
                                         ))}
                                     </tr>
                                     <tr className="bg-slate-50/50">
                                         {currentWeek.map(date => (
-                                            <>
-                                                <th key={`${date}-1`} className="px-1 py-2 border-b border-slate-100 border-l border-slate-100 text-[9px] font-black text-slate-400 text-center">1ª</th>
-                                                <th key={`${date}-2`} className="px-1 py-2 border-b border-slate-100 text-[9px] font-black text-slate-400 text-center">2ª</th>
-                                            </>
+                                            <Fragment key={date}>
+                                                <th className="px-1 py-2 border-b border-slate-100 border-l border-slate-100 text-[9px] font-black text-slate-400 text-center">1ª Chamada</th>
+                                                <th className="px-1 py-2 border-b border-slate-100 text-[9px] font-black text-slate-400 text-center">2ª Chamada</th>
+                                            </Fragment>
                                         ))}
                                     </tr>
                                 </thead>
@@ -451,27 +461,38 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
                         <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 mt-8">
                             {currentWeek.map(date => (
-                                <div key={date} className={`p-4 rounded-3xl border-2 transition-all ${signedDates[date] ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'}`}>
-                                    <div className="text-[10px] font-black text-slate-400 uppercase mb-2">
-                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long' })}
+                                <div key={date} className="flex flex-col gap-3 p-5 rounded-3xl border-2 bg-slate-50 border-slate-100 shadow-sm">
+                                    <div className="text-[10px] font-black text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">
+                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })}
                                     </div>
-                                    {signedDates[date] ? (
-                                        <div className="flex flex-col gap-1">
-                                            <div className="flex items-center gap-2 text-emerald-600">
-                                                <CheckCircle className="w-4 h-4" />
-                                                <span className="text-[10px] font-black uppercase">Assinado</span>
-                                            </div>
-                                            <div className="text-[8px] font-bold text-slate-400 line-clamp-1">{signedDates[date].signedBy}</div>
-                                        </div>
-                                    ) : (
-                                        <button
-                                            onClick={() => handleSignDate(date)}
-                                            disabled={isFutureDate(date)}
-                                            className="w-full py-2 bg-white text-slate-400 border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                                        >
-                                            Assinar
-                                        </button>
-                                    )}
+                                    <div className="space-y-3">
+                                        {(['INICIO', 'TERMINO'] as CallTypeCode[]).map(type => {
+                                            const key = `${date}-${type}`;
+                                            const sig = signedDates[key];
+                                            return (
+                                                <div key={type} className={`p-3 rounded-2xl border transition-all ${sig ? 'bg-emerald-50 border-emerald-100' : 'bg-white border-slate-200'}`}>
+                                                    <div className="text-[9px] font-black text-slate-400 uppercase mb-1.5 flex justify-between">
+                                                        <span>{type === 'INICIO' ? '1ª Chamada' : '2ª Chamada'}</span>
+                                                        {sig && <CheckCircle className="w-3 h-3 text-emerald-500" />}
+                                                    </div>
+                                                    {sig ? (
+                                                        <div className="flex flex-col">
+                                                            <div className="text-[9px] font-black text-emerald-700 leading-tight uppercase">Assinado</div>
+                                                            <div className="text-[8px] font-bold text-slate-400 line-clamp-1 mt-0.5">{sig.signedBy.split(' ').slice(1).join(' ')}</div>
+                                                        </div>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => handleSignDate(date, type)}
+                                                            disabled={isFutureDate(date)}
+                                                            className="w-full py-2 bg-slate-900 text-white rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-md shadow-slate-200"
+                                                        >
+                                                            Assinar
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             ))}
                         </div>
