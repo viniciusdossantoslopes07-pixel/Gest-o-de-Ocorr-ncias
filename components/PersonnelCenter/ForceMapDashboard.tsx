@@ -156,7 +156,8 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                             <tbody className="divide-y divide-slate-100">
                                 {(selectedSector === 'TODOS' ? SETORES : [selectedSector]).map(sector => {
                                     const sectorUsers = users.filter(u => u.sector === sector);
-                                    if (sectorUsers.length === 0) return null;
+                                    // Comentado para permitir visualização de setores vazios (Ex: BASP)
+                                    // if (sectorUsers.length === 0) return null;
 
                                     const sectorRecords = Array.from(latestRecordsMap.values()).filter(r => r.sector === sector);
                                     const ready = sectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
@@ -230,7 +231,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                                 const hasInicio = sectorCalls.some(c => c.callType === 'INICIO');
                                 const hasTermino = sectorCalls.some(c => c.callType === 'TERMINO');
 
-                                if (sectorCalls.length === 0) return null;
+                                // if (sectorCalls.length === 0) return null;
 
                                 return (
                                     <div key={sector} className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl p-3">
