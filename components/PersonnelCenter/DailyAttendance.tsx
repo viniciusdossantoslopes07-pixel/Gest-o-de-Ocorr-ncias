@@ -185,6 +185,15 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             return;
         }
 
+        // REGRA SEQUENCIAL: 2ª Chamada (TERMINO) exige 1ª Chamada (INICIO) assinada
+        if (type === 'TERMINO') {
+            const inicioKey = `${date}-INICIO-${selectedSector}`;
+            if (!signedDates[inicioKey]) {
+                alert('Não é possível assinar o Término de Expediente (2ª Chamada) sem que a 1ª Chamada tenha sido assinada primeiro.');
+                return;
+            }
+        }
+
         // VALIDAÇÃO: Bloquear assinatura se houver status 'N' no setor
         const sectorUsers = users.filter(u => u.sector === selectedSector);
         const hasPending = sectorUsers.some(u => {
@@ -349,8 +358,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             {/* Sub-Tabs Navigation */}
             <div className="flex bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm w-fit">
                 {[
-                    { id: 'retirar-faltas', label: 'Retirar Faltas (Semanal)', icon: FileSignature },
-                    { id: 'faltas-retiradas', label: 'Faltas Retiradas', icon: Calendar }
+                    { id: 'retirar-faltas', label: 'Retirada de Faltas Diária', icon: FileSignature },
+                    { id: 'faltas-retiradas', label: 'Cupons Gerados', icon: Calendar }
                 ].map(tab => (
                     <button
                         key={tab.id}
@@ -376,7 +385,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     <FileSignature className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Retirar Faltas (Semanal)</h2>
+                                    <h2 className="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-1">Ministério da Defesa / Comando da Aeronáutica / BASP</h2>
+                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Retirada de Faltas Diária</h2>
                                     <p className="text-slate-500 text-sm font-medium">Controle semanal de presença - {selectedSector}</p>
                                 </div>
                             </div>
@@ -490,38 +500,50 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                             {currentWeek.map(date => (
                                                 <>
                                                     <td key={`${user.id}-${date}-INICIO`} className="p-1 border-l border-slate-50">
-                                                        <select
-                                                            disabled={isFutureDate(date)}
-                                                            value={weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : 'N')}
-                                                            onChange={(e) => handleWeeklyChange(user.id, date, 'INICIO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : 'N')) === 'P' ? 'text-emerald-600' :
-                                                                ['F', 'A'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-600 bg-red-50' :
-                                                                    (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
-                                                                        !isFutureDate(date) ? 'text-blue-600 bg-blue-50' : 'text-slate-200'
-                                                                }`}
-                                                        >
-                                                            {isFutureDate(date) && <option value="">-</option>}
-                                                            {Object.keys(PRESENCE_STATUS).map(s => (
-                                                                <option key={s} value={s}>{s}</option>
-                                                            ))}
-                                                        </select>
+                                                        {formatDateToISO(new Date()) === date ? (
+                                                            <select
+                                                                disabled={isFutureDate(date)}
+                                                                value={weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : 'N')}
+                                                                onChange={(e) => handleWeeklyChange(user.id, date, 'INICIO', e.target.value)}
+                                                                className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : 'N')) === 'P' ? 'text-emerald-600' :
+                                                                    ['F', 'A'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-600 bg-red-50' :
+                                                                        (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
+                                                                            !isFutureDate(date) ? 'text-blue-600 bg-blue-50' : 'text-slate-200'
+                                                                    }`}
+                                                            >
+                                                                {isFutureDate(date) && <option value="">-</option>}
+                                                                {Object.keys(PRESENCE_STATUS).map(s => (
+                                                                    <option key={s} value={s}>{s}</option>
+                                                                ))}
+                                                            </select>
+                                                        ) : (
+                                                            <div className={`w-full text-[10px] font-black text-center p-1 rounded-lg ${weeklyGrid[user.id]?.[date]?.['INICIO'] === 'P' ? 'text-emerald-600' : 'text-slate-300'}`}>
+                                                                {weeklyGrid[user.id]?.[date]?.['INICIO'] || '-'}
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td key={`${user.id}-${date}-TERMINO`} className="p-1">
-                                                        <select
-                                                            disabled={isFutureDate(date)}
-                                                            value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : 'N')}
-                                                            onChange={(e) => handleWeeklyChange(user.id, date, 'TERMINO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : 'N')) === 'P' ? 'text-emerald-600' :
-                                                                ['F', 'A'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-600 bg-red-50' :
-                                                                    (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
-                                                                        !isFutureDate(date) ? 'text-blue-600 bg-blue-50' : 'text-slate-200'
-                                                                }`}
-                                                        >
-                                                            {isFutureDate(date) && <option value="">-</option>}
-                                                            {Object.keys(PRESENCE_STATUS).map(s => (
-                                                                <option key={s} value={s}>{s}</option>
-                                                            ))}
-                                                        </select>
+                                                        {formatDateToISO(new Date()) === date ? (
+                                                            <select
+                                                                disabled={isFutureDate(date)}
+                                                                value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : 'N')}
+                                                                onChange={(e) => handleWeeklyChange(user.id, date, 'TERMINO', e.target.value)}
+                                                                className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : 'N')) === 'P' ? 'text-emerald-600' :
+                                                                    ['F', 'A'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-600 bg-red-50' :
+                                                                        (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
+                                                                            !isFutureDate(date) ? 'text-blue-600 bg-blue-50' : 'text-slate-200'
+                                                                    }`}
+                                                            >
+                                                                {isFutureDate(date) && <option value="">-</option>}
+                                                                {Object.keys(PRESENCE_STATUS).map(s => (
+                                                                    <option key={s} value={s}>{s}</option>
+                                                                ))}
+                                                            </select>
+                                                        ) : (
+                                                            <div className={`w-full text-[10px] font-black text-center p-1 rounded-lg ${weeklyGrid[user.id]?.[date]?.['TERMINO'] === 'P' ? 'text-emerald-600' : 'text-slate-300'}`}>
+                                                                {weeklyGrid[user.id]?.[date]?.['TERMINO'] || '-'}
+                                                            </div>
+                                                        )}
                                                     </td>
                                                 </>
                                             ))}
@@ -599,117 +621,121 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 </>
             )}
 
-            {
-                activeSubTab === 'faltas-retiradas' && (
-                    <div className="space-y-6">
-                        <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
-                            <div className="flex items-center justify-between mb-8">
-                                <div className="flex items-center gap-4">
-                                    <div className="bg-indigo-100 p-3 rounded-2xl">
-                                        <Calendar className="w-6 h-6 text-indigo-600" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xl font-black text-slate-900 tracking-tight">Faltas Retiradas (Cupons)</h3>
-                                        <p className="text-slate-500 text-sm">Histórico de chamadas finalizadas e cupons diários</p>
-                                    </div>
+            {activeSubTab === 'faltas-retiradas' && (
+                <div className="space-y-6">
+                    {/* Header do Cupom */}
+                    <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-emerald-600 p-3 rounded-2xl shadow-lg shadow-emerald-200">
+                                    <FileSignature className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <h2 className="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-1">Ministério da Defesa / Comando da Aeronáutica / BASP</h2>
+                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Cupom de Faltas Retiradas</h2>
+                                    <p className="text-slate-500 text-sm font-medium">Data: {parseISOToDate(formatDateToISO(new Date())).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', weekday: 'long' })}</p>
                                 </div>
                             </div>
+                            <button
+                                onClick={() => window.print()}
+                                className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg"
+                            >
+                                <Plus className="w-4 h-4" /> Gerar Cupom (PDF)
+                            </button>
+                        </div>
 
-                            {attendanceHistory.length === 0 ? (
-                                <div className="py-20 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
-                                    <Calendar className="w-12 h-12 text-slate-200 mx-auto mb-4" />
-                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Nenhum registro encontrado</p>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {[...attendanceHistory].reverse().map((attendance) => (
-                                        <div key={attendance.id} className="bg-white border border-slate-200 rounded-3xl p-6 hover:shadow-xl hover:shadow-slate-100 transition-all group relative overflow-hidden">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <span className="px-3 py-1 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-full">
-                                                    {CALL_TYPES[attendance.callType as keyof typeof CALL_TYPES]}
-                                                </span>
-                                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                                                    {parseISOToDate(attendance.date).toLocaleDateString('pt-BR')}
-                                                </span>
-                                            </div>
+                        {/* Estatísticas do Cupom */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+                            <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Efetivo Previsto</p>
+                                <p className="text-2xl font-black text-slate-900">{users.filter(u => u.sector === selectedSector).length}</p>
+                            </div>
+                            <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Faltas/Afastados</p>
+                                <p className="text-2xl font-black text-red-600">
+                                    {users.filter(u => u.sector === selectedSector).length -
+                                        users.filter(u => u.sector === selectedSector).filter(user => {
+                                            const today = formatDateToISO(new Date());
+                                            return weeklyGrid[user.id]?.[today]?.['INICIO'] === 'P' &&
+                                                weeklyGrid[user.id]?.[today]?.['TERMINO'] === 'P';
+                                        }).length
+                                    }
+                                </p>
+                            </div>
+                            <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Presentes (Retirada)</p>
+                                <p className="text-2xl font-black text-emerald-600">
+                                    {users.filter(u => u.sector === selectedSector).filter(user => {
+                                        const today = formatDateToISO(new Date());
+                                        return weeklyGrid[user.id]?.[today]?.['INICIO'] === 'P' &&
+                                            weeklyGrid[user.id]?.[today]?.['TERMINO'] === 'P';
+                                    }).length}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 
-                                            <h4 className="text-lg font-black text-slate-900 mb-2 uppercase">
-                                                {attendance.sector}
-                                            </h4>
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase mb-4">Assinado por: {attendance.signedBy || attendance.responsible}</p>
-
-                                            <div className="flex items-center gap-2 mb-6">
-                                                <div className="flex -space-x-1.5">
-                                                    {attendance.records.slice(0, 4).map((r, i) => (
-                                                        <div key={i} className={`w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-[8px] font-black ${r.status === 'P' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
-                                                            {r.status}
-                                                        </div>
-                                                    ))}
-                                                    {attendance.records.length > 4 && (
-                                                        <div className="w-7 h-7 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-[8px] font-black text-slate-400">
-                                                            +{attendance.records.length - 4}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <span className="text-[10px] font-bold text-slate-500 uppercase">
-                                                    {attendance.records.length} Militares
-                                                </span>
-                                            </div>
-
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => {
-                                                        setRecordToPrint(attendance);
-                                                        setTimeout(() => window.print(), 300);
-                                                    }}
-                                                    className="flex-1 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-md shadow-slate-100 text-[10px] font-black uppercase tracking-widest"
-                                                >
-                                                    Visualizar Cupom
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
+                    <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest border-l-4 border-emerald-500 pl-4">Relação Nominal - Militares Presentes</h3>
+                            {signedDates[`${formatDateToISO(new Date())}-TERMINO-${selectedSector}`] && (
+                                <div className="flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100">
+                                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                                    <span className="text-[10px] font-black text-emerald-700 uppercase">Validado Digitalmente</span>
                                 </div>
                             )}
                         </div>
 
-                        {/* Justification Audit */}
-                        {absenceJustifications.length > 0 && (
-                            <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
-                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">Auditoria de Justificativas</h3>
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left">
-                                        <thead>
-                                            <tr className="border-b border-slate-100">
-                                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Militar</th>
-                                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Justificativa</th>
-                                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Responsável</th>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead>
+                                    <tr className="border-b border-slate-100">
+                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nº</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Posto/Grad</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nome de Guerra</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status (1ª/2ª)</th>
+                                        <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Autenticação</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50">
+                                    {users.filter(u => u.sector === selectedSector).filter(user => {
+                                        const today = formatDateToISO(new Date());
+                                        return weeklyGrid[user.id]?.[today]?.['INICIO'] === 'P' &&
+                                            weeklyGrid[user.id]?.[today]?.['TERMINO'] === 'P';
+                                    }).map((user, idx) => (
+                                        <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
+                                            <td className="px-6 py-4 text-[10px] font-black text-slate-300">{idx + 1}</td>
+                                            <td className="px-6 py-4 text-xs font-bold text-slate-900 uppercase">{user.rank}</td>
+                                            <td className="px-6 py-4 text-xs font-black text-slate-900 uppercase">{user.warName || user.name}</td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center justify-center gap-1">
+                                                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[8px] font-black rounded uppercase">P</span>
+                                                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[8px] font-black rounded uppercase">P</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <span className="text-[8px] font-bold text-slate-300 font-mono tracking-tighter uppercase">Authentic-BASP-{Math.random().toString(36).substr(2, 6).toUpperCase()}</span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {users.filter(u => u.sector === selectedSector).filter(user => {
+                                        const today = formatDateToISO(new Date());
+                                        return weeklyGrid[user.id]?.[today]?.['INICIO'] === 'P' &&
+                                            weeklyGrid[user.id]?.[today]?.['TERMINO'] === 'P';
+                                    }).length === 0 && (
+                                            <tr>
+                                                <td colSpan={5} className="py-20 text-center">
+                                                    <AlertTriangle className="w-8 h-8 text-slate-200 mx-auto mb-3" />
+                                                    <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Nenhum militar presente nas duas chamadas ainda</p>
+                                                </td>
                                             </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-50">
-                                            {absenceJustifications.map((j) => (
-                                                <tr key={j.id} className="hover:bg-slate-50/50 transition-colors">
-                                                    <td className="px-6 py-5">
-                                                        <div className="font-black text-slate-900 uppercase text-xs">{j.militarRank} {j.militarName}</div>
-                                                        <div className="text-[10px] text-slate-400 font-bold uppercase mt-1">{parseISOToDate(j.timestamp.split('T')[0]).toLocaleDateString('pt-BR')}</div>
-                                                    </td>
-                                                    <td className="px-6 py-5 max-w-xs">
-                                                        <p className="text-xs text-slate-600 italic line-clamp-2">"{j.justification}"</p>
-                                                        <span className="inline-block mt-1 px-2 py-0.5 bg-blue-50 text-blue-600 text-[8px] font-black uppercase rounded">{j.newStatus}</span>
-                                                    </td>
-                                                    <td className="px-6 py-5">
-                                                        <div className="text-xs font-bold text-slate-900 uppercase">{j.performedBy}</div>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        )}
+                                        )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                )
-            }
+                </div>
+            )}
 
             {/* Adicionar Militar Modal */}
             {showAdHocModal && (
