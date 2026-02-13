@@ -768,7 +768,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             )}
 
             {/* Printable Area (Hidden in UI) */}
-            <div className="hidden print:block bg-white text-black font-sans min-h-screen">
+            <div className="hidden print:block bg-white text-black font-sans">
                 <style>{`
                     @media print {
                         @page { 
@@ -776,11 +776,15 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             margin: 25mm 20mm 25mm 20mm; 
                         }
                         
+                        /* Garante que nada antes do relatório ocupe espaço */
                         body * { visibility: hidden; }
                         
                         .print-weekly, .print-weekly * { visibility: visible; }
                         
                         .print-weekly { 
+                            position: absolute;
+                            top: 0;
+                            left: 0;
                             width: 100%; 
                             height: auto; 
                             box-sizing: border-box;
