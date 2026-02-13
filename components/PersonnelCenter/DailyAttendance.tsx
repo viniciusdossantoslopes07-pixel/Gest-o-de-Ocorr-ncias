@@ -773,7 +773,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     @media print {
                         @page { 
                             size: portrait; 
-                            margin: 15mm 10mm 15mm 10mm; 
+                            margin: 20mm 15mm 20mm 15mm; 
                         }
                         
                         body * { visibility: hidden; }
@@ -781,12 +781,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         .print-weekly, .print-weekly * { visibility: visible; }
                         
                         .print-weekly { 
-                            position: absolute; 
-                            left: 0; 
-                            top: 0; 
                             width: 100%; 
                             height: auto; 
-                            padding: 0;
                             box-sizing: border-box;
                         }
 
@@ -795,6 +791,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             border-collapse: collapse;
                             table-layout: fixed;
                             page-break-inside: auto;
+                            margin-bottom: 30px;
                         }
 
                         thead { display: table-header-group; }
@@ -805,9 +802,9 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             page-break-after: auto;
                         }
 
-                        /* Evita que o Brasão ou Header quebrem de forma estranha */
                         .print-header {
                             page-break-inside: avoid;
+                            margin-bottom: 2rem;
                         }
 
                         .print-footer {
@@ -818,7 +815,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 `}</style>
                 <div className="print-weekly w-full mx-auto">
                     {/* Institutional Header */}
-                    <div className="text-center mb-6 space-y-0.5 print-header">
+                    <div className="text-center mb-10 space-y-0.5 print-header">
                         <div className="flex flex-col items-center">
                             <img
                                 src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Coat_of_arms_of_Brazil.svg"
