@@ -630,7 +630,12 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 <div className="bg-indigo-600 p-3 rounded-2xl shadow-lg shadow-indigo-200">
                                     <FileSignature className="w-6 h-6 text-white" />
                                 </div>
-                                <div>
+                                <div className="flex flex-col">
+                                    <img
+                                        src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Coat_of_arms_of_Brazil.svg"
+                                        alt="Brasão da República"
+                                        className="w-12 h-12 mb-2 object-contain print:block"
+                                    />
                                     <h2 className="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-1">Ministério da Defesa / Comando da Aeronáutica</h2>
                                     <h2 className="text-2xl font-black text-slate-900 tracking-tight">Base Aérea de São Paulo</h2>
                                     <p className="text-slate-500 text-sm font-medium">Retirada de Faltas Diária - {selectedSector}</p>
@@ -776,7 +781,6 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             width: 100%; 
                             height: auto; 
                             padding: 15mm;
-                            border: 1px solid #000;
                             box-sizing: border-box;
                         }
                     }
@@ -785,6 +789,11 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     {/* Institutional Header */}
                     <div className="text-center mb-6 space-y-0.5">
                         <div className="flex flex-col items-center">
+                            <img
+                                src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Coat_of_arms_of_Brazil.svg"
+                                alt="Brasão da República"
+                                className="w-[60px] h-[60px] mb-4 object-contain"
+                            />
                             <h1 className="text-xs font-bold uppercase tracking-[0.1em]">Ministério da Defesa</h1>
                             <h2 className="text-xs font-bold uppercase tracking-[0.1em]">Comando da Aeronáutica</h2>
                             <h3 className="text-xs font-bold uppercase tracking-[0.1em]">Base Aérea de São Paulo</h3>
