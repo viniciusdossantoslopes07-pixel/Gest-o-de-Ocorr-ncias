@@ -57,23 +57,23 @@ export const SETORES = [
 ];
 
 export const PRESENCE_STATUS = {
-  'C-E': 'CURSO-ESTÁGIO',
+  'P': 'PRESENTE',
+  'F': 'FALTA',
+  'SV': 'SERVIÇO',
+  'SSV': 'SITUAÇÃO DE SERVIÇO',
+  'DCH': 'DISPENSA PELA CHEFIA',
+  'MISS': 'MISSÃO',
+  'FER': 'FÉRIAS',
+  'LI': 'LICENÇA',
+  'TRA': 'TRANSFERIDO',
   'DPM': 'DISPENSA MÉDICA',
-  'ESV': 'SERVIÇO',
-  'DSV': 'DISP DE SERVIÇO',
   'JS': 'JUNTA DE SAÚDE',
   'INSP': 'INSPEÇÃO DE SAÚDE',
-  'TRA': 'TRANSFERIDO',
-  'LI': 'LICENÇA',
-  'MIS': 'MISSÃO',
-  'FE': 'FÉRIAS',
+  'C-E': 'CURSO-ESTÁGIO',
   'AGD': 'AGUARDANDO DESLIGAMENTO',
   'DESL': 'DESLIGADO',
   'INST': 'INSTRUÇÃO',
-  'A': 'AUSENTE',
-  'F': 'FALTA',
-  'P': 'PRESENTE (Padrão)',
-  'DCH': 'DISPENSA PELA CHEFIA'
+  'A': 'AUSENTE'
 } as const;
 
 export const CALL_TYPES = {

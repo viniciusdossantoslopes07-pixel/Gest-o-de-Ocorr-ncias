@@ -881,7 +881,9 @@ const App: FC = () => {
               attendanceHistory={attendanceHistory}
               absenceJustifications={absenceJustifications}
               onSaveAttendance={(a) => setAttendanceHistory(prev => {
-                const next = [...prev, a];
+                const next = prev.find(h => h.id === a.id)
+                  ? prev.map(h => h.id === a.id ? a : h)
+                  : [...prev, a];
                 localStorage.setItem('attendanceHistory', JSON.stringify(next));
                 return next;
               })}
