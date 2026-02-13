@@ -107,6 +107,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     // Security states
     const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [dateToSign, setDateToSign] = useState<string | null>(null);
     const [passwordInput, setPasswordInput] = useState('');
     const [passwordError, setPasswordError] = useState(false);
 
@@ -149,20 +150,29 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     const handleSignDate = (date: string) => {
         if (signedDates[date]) return;
+        setDateToSign(date);
+        setShowPasswordModal(true);
+        setPasswordInput('');
+        setPasswordError(false);
+    };
 
-        // This would typically open a password modal
-        const password = prompt('Confirme sua senha para assinar a chamada de ' + new Date(date).toLocaleDateString() + ':');
-        if (password === currentUser.password) {
+    const confirmSignature = () => {
+        if (!dateToSign) return;
+
+        if (passwordInput === currentUser.password) {
             setSignedDates(prev => ({
                 ...prev,
-                [date]: {
+                [dateToSign]: {
                     signedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
                     signedAt: new Date().toISOString()
                 }
             }));
-            alert('Chamada de ' + new Date(date).toLocaleDateString() + ' assinada com sucesso!');
+            setShowPasswordModal(false);
+            setDateToSign(null);
+            setPasswordInput('');
+            alert('Chamada assinada com sucesso!');
         } else {
-            alert('Senha incorreta.');
+            setPasswordError(true);
         }
     };
 
@@ -693,6 +703,64 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
                 </div>
             </div>
+            {/* Signature Password Modal */}
+            {showPasswordModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl relative animate-in zoom-in-95 duration-200">
+                        <div className="flex flex-col items-center text-center">
+                            <div className="bg-blue-600 p-4 rounded-3xl shadow-lg shadow-blue-200 mb-6">
+                                <FileSignature className="w-8 h-8 text-white" />
+                            </div>
+
+                            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">Assinatura Digital</h3>
+                            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-8">
+                                Confirmar chamada de {dateToSign ? new Date(dateToSign).toLocaleDateString('pt-BR') : ''}
+                            </p>
+
+                            <div className="w-full space-y-4">
+                                <div className="space-y-2 text-left">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Senha Individual</label>
+                                    <input
+                                        type="password"
+                                        autoFocus
+                                        value={passwordInput}
+                                        onChange={e => {
+                                            setPasswordInput(e.target.value);
+                                            setPasswordError(false);
+                                        }}
+                                        onKeyDown={e => e.key === 'Enter' && confirmSignature()}
+                                        className={`w-full bg-slate-50 border-2 rounded-2xl p-4 text-center font-black tracking-[0.5em] outline-none transition-all ${passwordError ? 'border-red-500 bg-red-50' : 'border-slate-100 focus:border-blue-600'
+                                            }`}
+                                        placeholder="••••••"
+                                    />
+                                    {passwordError && (
+                                        <p className="text-[10px] font-black text-red-500 text-center uppercase mt-2">Senha Incorreta</p>
+                                    )}
+                                </div>
+
+                                <div className="flex flex-col gap-3 mt-4">
+                                    <button
+                                        onClick={confirmSignature}
+                                        className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-slate-800 transition-all shadow-xl"
+                                    >
+                                        Confirmar Assinatura
+                                    </button>
+                                    <button
+                                        onClick={() => setShowPasswordModal(false)}
+                                        className="w-full py-2 text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-slate-600 transition-all"
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Visual Detail - Ticket Style Cutouts */}
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 -ml-3 w-6 h-12 bg-slate-900/10 rounded-full" />
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 -mr-3 w-6 h-12 bg-slate-900/10 rounded-full" />
+                    </div>
+                </div>
+            )}
         </div >
     );
 };
