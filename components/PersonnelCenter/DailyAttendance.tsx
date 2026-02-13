@@ -184,6 +184,19 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             alert('Esta chamada já foi assinada para este setor.');
             return;
         }
+
+        // VALIDAÇÃO: Bloquear assinatura se houver status 'N' no setor
+        const sectorUsers = users.filter(u => u.sector === selectedSector);
+        const hasPending = sectorUsers.some(u => {
+            const status = weeklyGrid[u.id]?.[date]?.[type] || 'N';
+            return status === 'N';
+        });
+
+        if (hasPending) {
+            alert(`Não é possível assinar: existem militares com status "NÃO INFORMADO" (N) na ${type === 'INICIO' ? '1ª Chamada' : '2ª Chamada'} deste setor.`);
+            return;
+        }
+
         setDateToSign(date);
         setCallToSign(type);
         setShowPasswordModal(true);
