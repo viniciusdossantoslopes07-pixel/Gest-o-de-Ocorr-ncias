@@ -657,7 +657,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             <table className="w-full border-collapse border border-slate-200 text-[10px]">
                                 <thead>
                                     <tr className="bg-slate-50">
-                                        <th rowSpan={2} className="border border-slate-200 px-4 py-3 text-left uppercase font-black text-slate-900">Militar (Posto/Grad - Nome)</th>
+                                        <th rowSpan={2} className="border border-slate-200 px-4 py-3 text-left uppercase font-black text-slate-900 w-[180px]">Militar (Posto/Grad - Nome)</th>
                                         {currentWeek.map(date => (
                                             <th key={date} colSpan={2} className="border border-slate-200 p-2 text-center uppercase font-black text-slate-900">
                                                 {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}
@@ -769,7 +769,16 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         @page { size: portrait; margin: 10mm; }
                         body * { visibility: hidden; }
                         .print-weekly, .print-weekly * { visibility: visible; }
-                        .print-weekly { position: absolute; left: 0; top: 0; width: 100%; height: auto; }
+                        .print-weekly { 
+                            position: absolute; 
+                            left: 0; 
+                            top: 0; 
+                            width: 100%; 
+                            height: auto; 
+                            padding: 15mm;
+                            border: 1px solid #000;
+                            box-sizing: border-box;
+                        }
                     }
                 `}</style>
                 <div className="print-weekly w-full mx-auto">
@@ -795,7 +804,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     <table className="w-full border-collapse border border-black text-[8px]">
                         <thead>
                             <tr className="bg-slate-100">
-                                <th rowSpan={2} className="border border-black px-2 py-2 text-left uppercase w-[140px]">SETOR / GRAD / NOME</th>
+                                <th rowSpan={2} className="border border-black px-2 py-2 text-left uppercase w-[110px]">MILITAR (POSTO/GRAD - NOME)</th>
                                 {currentWeek.map(date => (
                                     <th key={date} colSpan={2} className="border border-black p-1 text-center uppercase text-[9px]">
                                         {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long' })}
