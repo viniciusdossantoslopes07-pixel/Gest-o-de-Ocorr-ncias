@@ -1,5 +1,5 @@
 
-import { useState, FC } from 'react';
+import { useState, useEffect, FC } from 'react';
 import { User, DailyAttendance, AttendanceRecord } from '../../types';
 import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, SETORES, RANKS } from '../../constants';
 import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus } from 'lucide-react';
@@ -7,17 +7,42 @@ import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSigna
 interface DailyAttendanceProps {
     users: User[];
     currentUser: User;
+    attendanceHistory: DailyAttendance[]; // Added to check for existing calls
     onSaveAttendance: (attendance: DailyAttendance) => void;
     onAddAdHoc: (user: User) => void;
 }
 
-const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, onSaveAttendance, onAddAdHoc }) => {
+const DailyAttendanceView: FC<DailyAttendanceProps> = ({ users, currentUser, attendanceHistory, onSaveAttendance, onAddAdHoc }) => {
     const [selectedSector, setSelectedSector] = useState(SETORES[0]);
     const [callType, setCallType] = useState<CallTypeCode>('INICIO');
     const [searchTerm, setSearchTerm] = useState('');
     const [attendanceRecords, setAttendanceRecords] = useState<Record<string, string>>({});
     const [responsible, setResponsible] = useState('');
     const [isSigned, setIsSigned] = useState(false);
+
+    // Pre-fill logic when sector or callType changes
+    useEffect(() => {
+        const today = new Date().toISOString().split('T')[0];
+        const existingCall = attendanceHistory?.find(a =>
+            a.date === today &&
+            a.sector === selectedSector &&
+            a.callType === callType
+        );
+
+        if (existingCall) {
+            const records: Record<string, string> = {};
+            existingCall.records.forEach(r => {
+                records[r.militarId] = r.status;
+            });
+            setAttendanceRecords(records);
+            setResponsible(existingCall.responsible || '');
+            setIsSigned(true);
+        } else {
+            setAttendanceRecords({});
+            setResponsible('');
+            setIsSigned(false);
+        }
+    }, [selectedSector, callType, attendanceHistory]);
 
     // Ad-hoc military management (now passed via props)
     const [showAdHocModal, setShowAdHocModal] = useState(false);

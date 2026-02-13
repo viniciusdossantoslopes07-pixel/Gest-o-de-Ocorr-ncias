@@ -2,7 +2,7 @@
 import { useState, FC } from 'react';
 import { User, UserRole } from '../../types';
 import { RANKS, SETORES } from '../../constants';
-import { UserPlus, Search, Edit2, Trash2, Shield, User as UserIcon, Hash, Building2 } from 'lucide-react';
+import { UserPlus, Search, Edit2, Trash2, Shield, User as UserIcon, Hash, Building2, Users } from 'lucide-react';
 
 interface PersonnelManagementProps {
     users: User[];
@@ -64,7 +64,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
             <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                     <div className="flex items-center gap-4">
-                        <div className="bg-indigo-600 p-3 rounded-2xl shadow-lg shadow-indigo-200">
+                        <div className="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-200">
                             <Users className="w-6 h-6 text-white" />
                         </div>
                         <div>
@@ -90,7 +90,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             placeholder="Buscar por nome, nome de guerra ou SARAM..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                         />
                     </div>
                 )}
@@ -100,7 +100,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                 /* Registration Form */
                 <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm animate-in zoom-in-95 duration-200">
                     <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                        {editingId ? <Edit2 className="w-5 h-5 text-indigo-500" /> : <UserPlus className="w-5 h-5 text-indigo-500" />}
+                        {editingId ? <Edit2 className="w-5 h-5 text-blue-500" /> : <UserPlus className="w-5 h-5 text-blue-500" />}
                         {editingId ? 'Editar Dados do Militar' : 'Novo Cadastro Militar'}
                     </h3>
 
@@ -109,21 +109,21 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
                                 <UserIcon className="w-3 h-3" /> Nome Completo
                             </label>
-                            <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                            <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
 
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
                                 <UserIcon className="w-3 h-3" /> Nome de Guerra
                             </label>
-                            <input required type="text" value={formData.warName} onChange={e => setFormData({ ...formData, warName: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                            <input required type="text" value={formData.warName} onChange={e => setFormData({ ...formData, warName: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
 
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
                                 <Shield className="w-3 h-3" /> Posto / Graduação
                             </label>
-                            <select required value={formData.rank} onChange={e => setFormData({ ...formData, rank: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <select required value={formData.rank} onChange={e => setFormData({ ...formData, rank: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                                 <option value="">Selecione...</option>
                                 {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
                             </select>
@@ -133,21 +133,21 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
                                 <Hash className="w-3 h-3" /> SARAM
                             </label>
-                            <input required type="text" value={formData.saram} onChange={e => setFormData({ ...formData, saram: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                            <input required type="text" value={formData.saram} onChange={e => setFormData({ ...formData, saram: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
 
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
                                 <Hash className="w-3 h-3" /> CPF
                             </label>
-                            <input required type="text" value={formData.cpf} onChange={e => setFormData({ ...formData, cpf: e.target.value })} placeholder="000.000.000-00" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                            <input required type="text" value={formData.cpf} onChange={e => setFormData({ ...formData, cpf: e.target.value })} placeholder="000.000.000-00" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
 
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
                                 <Building2 className="w-3 h-3" /> Setor de Lotação
                             </label>
-                            <select required value={formData.sector} onChange={e => setFormData({ ...formData, sector: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <select required value={formData.sector} onChange={e => setFormData({ ...formData, sector: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                                 {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
                         </div>
@@ -162,7 +162,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             </button>
                             <button
                                 type="submit"
-                                className="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
+                                className="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
                             >
                                 {editingId ? 'Salvar Alterações' : 'Confirmar Cadastro'}
                             </button>
@@ -187,7 +187,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                     <tr key={user.id} className="hover:bg-slate-50/30 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="font-bold text-slate-900">{user.name}</div>
-                                            <div className="text-[10px] text-indigo-500 font-bold uppercase tracking-tight">
+                                            <div className="text-[10px] text-blue-500 font-bold uppercase tracking-tight">
                                                 {user.rank} {user.warName}
                                             </div>
                                         </td>
@@ -202,7 +202,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-2">
-                                                <button onClick={() => handleEdit(user)} className="p-2 text-slate-400 hover:text-indigo-600 transition-colors">
+                                                <button onClick={() => handleEdit(user)} className="p-2 text-slate-400 hover:text-blue-600 transition-colors">
                                                     <Edit2 className="w-4 h-4" />
                                                 </button>
                                                 <button onClick={() => { if (confirm('Excluir militar?')) onDeletePersonnel(user.id); }} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
@@ -227,10 +227,5 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
         </div>
     );
 };
-
-// Re-using the Users lucide icon
-const Users = ({ className }: { className?: string }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M17 11a4 4 0 0 0 0-8" /></svg>
-);
 
 export default PersonnelManagementView;

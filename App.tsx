@@ -873,6 +873,7 @@ const App: FC = () => {
             <DailyAttendanceView
               users={[...users, ...adHocUsers]}
               currentUser={currentUser!}
+              attendanceHistory={attendanceHistory}
               onSaveAttendance={(a) => setAttendanceHistory([...attendanceHistory, a])}
               onAddAdHoc={(u) => setAdHocUsers([...adHocUsers, u])}
             />
@@ -880,10 +881,22 @@ const App: FC = () => {
 
           {activeTab === 'personnel-management' && (
             <PersonnelManagementView
-              users={users}
-              onAddPersonnel={(p) => setUsers([...users, { ...p, id: Math.random().toString(36).substr(2, 9), approved: true } as User])}
-              onUpdatePersonnel={(u) => setUsers(users.map(old => old.id === u.id ? u : old))}
-              onDeletePersonnel={(id) => setUsers(users.filter(u => u.id !== id))}
+              users={[...users, ...adHocUsers]}
+              onAddPersonnel={(u) => setAdHocUsers([...adHocUsers, { ...u, id: `adhoc-${Date.now()}` } as User])}
+              onUpdatePersonnel={(u) => {
+                if (u.id.startsWith('adhoc-')) {
+                  setAdHocUsers(adHocUsers.map(v => v.id === u.id ? v : u));
+                } else {
+                  alert('Usuários do sistema (Supabase) devem ser editados pelo administrador do sistema.');
+                }
+              }}
+              onDeletePersonnel={(id) => {
+                if (id.startsWith('adhoc-')) {
+                  setAdHocUsers(adHocUsers.filter(u => u.id !== id));
+                } else {
+                  alert('Usuários do sistema (Supabase) não podem ser excluídos por este painel.');
+                }
+              }}
             />
           )}
 
