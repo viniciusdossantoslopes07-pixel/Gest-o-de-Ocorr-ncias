@@ -124,12 +124,12 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [isSigned, setIsSigned] = useState(false);
     const [recordToPrint, setRecordToPrint] = useState<DailyAttendance | null>(null);
 
-    // Sincronizar assinaturas do histórico para o estado local
+    // Sincronizar assinaturas do histórico para o estado local (incluindo setor)
     useEffect(() => {
         const sigs: Record<string, { signedBy: string, signedAt: string }> = {};
         attendanceHistory.forEach(a => {
             if (a.signedBy && a.signedAt) {
-                const key = `${a.date}-${a.callType}`;
+                const key = `${a.date}-${a.callType}-${a.sector}`;
                 sigs[key] = { signedBy: a.signedBy, signedAt: a.signedAt };
             }
         });
@@ -179,9 +179,9 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     };
 
     const handleSignDate = (date: string, type: CallTypeCode) => {
-        const key = `${date}-${type}`;
+        const key = `${date}-${type}-${selectedSector}`;
         if (signedDates[key]) {
-            alert('Esta chamada já foi assinada.');
+            alert('Esta chamada já foi assinada para este setor.');
             return;
         }
         setDateToSign(date);
@@ -195,7 +195,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         if (!dateToSign || !callToSign) return;
 
         if (passwordInput === currentUser.password) {
-            const key = `${dateToSign}-${callToSign}`;
+            const key = `${dateToSign}-${callToSign}-${selectedSector}`;
             const signatureInfo = {
                 signedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
                 signedAt: new Date().toISOString()
@@ -538,7 +538,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     </div>
                                     <div className="space-y-3">
                                         {(['INICIO', 'TERMINO'] as CallTypeCode[]).map(type => {
-                                            const key = `${date}-${type}`;
+                                            const key = `${date}-${type}-${selectedSector}`;
                                             const sig = signedDates[key];
                                             return (
                                                 <div key={type} className={`p-3 rounded-2xl border transition-all ${sig ? 'bg-emerald-50 border-emerald-100' : 'bg-white border-slate-200'}`}>
