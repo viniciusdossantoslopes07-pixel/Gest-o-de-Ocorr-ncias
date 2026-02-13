@@ -871,7 +871,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     <div className="print-container max-w-4xl mx-auto border-2 border-black p-8">
                         {/* Header */}
                         <div className="text-center mb-8">
-                            <img src="/logo-fab.png" alt="FAB Logo" className="w-20 h-20 mx-auto mb-4 opacity-70 grayscale" />
+                            <img src="/logo_republica.png" alt="Brasão da República" className="w-24 h-24 mx-auto mb-4" />
                             <h1 className="text-lg font-bold leading-tight uppercase tracking-widest">Ministério da Defesa</h1>
                             <h2 className="text-base font-bold leading-tight uppercase tracking-wider">Comando da Aeronáutica</h2>
                             <h3 className="text-base font-bold leading-tight uppercase tracking-wide">Base Aérea de São Paulo</h3>
