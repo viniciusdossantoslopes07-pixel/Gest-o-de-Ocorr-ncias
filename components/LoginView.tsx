@@ -142,7 +142,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">3. Nome de Guerra (LOPES)</label>
-                  <input required type="text" className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold" placeholder="EX: SGT SILVA" value={regData.warName} onChange={e => setRegData({ ...regData, warName: e.target.value.toUpperCase() })} />
+                  <input required type="text" className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold" placeholder="SILVA" value={regData.warName} onChange={e => setRegData({ ...regData, warName: e.target.value.toUpperCase() })} />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
