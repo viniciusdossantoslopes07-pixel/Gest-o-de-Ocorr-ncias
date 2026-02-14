@@ -313,9 +313,12 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                         const val = e.target.value.toUpperCase();
                                                         updatePersonnel(p.id, 'warName', val);
 
-                                                        // Opcional: Busca automática enquanto digita se tiver mais de 3 letras
+                                                        // Busca automática em Nome de Guerra OU Nome Completo
                                                         if (val.length >= 3) {
-                                                            const found = users.find(u => (u.warName || '').toUpperCase() === val);
+                                                            const found = users.find(u =>
+                                                                (u.warName || '').toUpperCase().includes(val) ||
+                                                                (u.name || '').toUpperCase().includes(val)
+                                                            );
                                                             if (found) {
                                                                 updatePersonnelFields(p.id, {
                                                                     rank: found.rank,
@@ -326,11 +329,16 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                     }}
                                                     onBlur={e => {
                                                         const val = e.target.value.toUpperCase();
-                                                        const found = users.find(u => (u.warName || '').toUpperCase() === val);
+                                                        // Busca exata ou por inclusão ao sair do campo
+                                                        const found = users.find(u =>
+                                                            (u.warName || '').toUpperCase() === val ||
+                                                            (u.name || '').toUpperCase() === val ||
+                                                            (u.warName || '').toUpperCase().includes(val)
+                                                        );
                                                         if (found) {
                                                             updatePersonnelFields(p.id, {
                                                                 rank: found.rank,
-                                                                warName: found.warName || found.name,
+                                                                warName: found.warName || found.name.split(' ').pop() || found.name,
                                                                 saram: found.saram
                                                             });
                                                         }
@@ -356,7 +364,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                             if (found) {
                                                                 updatePersonnelFields(p.id, {
                                                                     rank: found.rank,
-                                                                    warName: found.warName || found.name
+                                                                    warName: found.warName || found.name.split(' ').pop() || found.name
                                                                 });
                                                             }
                                                         }
@@ -367,7 +375,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                         if (found) {
                                                             updatePersonnelFields(p.id, {
                                                                 rank: found.rank,
-                                                                warName: found.warName || found.name,
+                                                                warName: found.warName || found.name.split(' ').pop() || found.name,
                                                                 saram: found.saram
                                                             });
                                                         }
