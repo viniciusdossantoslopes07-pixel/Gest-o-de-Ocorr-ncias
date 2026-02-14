@@ -270,51 +270,114 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
       </div>
 
       <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
-        {users.filter(u => u.approved === false).length > 0 && (
+        {(users.filter(u => u.approved === false).length > 0 || users.filter(u => u.pending_password_reset === true).length > 0) && (
           <div className="mb-8 border-b-4 border-slate-100 pb-8">
-            <div className="p-6 bg-amber-50/50 border-b border-amber-100 flex items-center gap-3">
-              <ShieldCheck className="w-5 h-5 text-amber-600" />
-              <h3 className="text-sm font-black text-amber-700 uppercase tracking-widest">Pendências de Aprovação</h3>
-            </div>
-            <table className="w-full text-left text-sm">
-              <thead className="bg-amber-50/20">
-                <tr>
-                  <th className="px-6 py-4 text-[10px] font-black text-amber-400 uppercase tracking-widest">Militar</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-amber-400 uppercase tracking-widest">Dados</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-amber-400 uppercase tracking-widest text-right">Ação de Comando</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-amber-50">
-                {users.filter(u => u.approved === false).map(u => (
-                  <tr key={u.id}>
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-slate-900">{u.name}</div>
-                      <div className="text-[10px] text-slate-400 font-bold uppercase">{u.rank}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-slate-600">@{u.username}</div>
-                      <div className="text-[10px] text-slate-400 font-bold uppercase">SARAM: {u.saram}</div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => onUpdateUser({ ...u, approved: true })}
-                          className="px-4 py-2 bg-green-100 text-green-700 hover:bg-green-200 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
-                        >
-                          <ShieldCheck className="w-3 h-3" /> Aprovar
-                        </button>
-                        <button
-                          onClick={() => onDeleteUser(u.id)}
-                          className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
-                        >
-                          <Trash2 className="w-3 h-3" /> Recusar
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {/* Seção de Cadastro Pendente */}
+            {users.filter(u => u.approved === false).length > 0 && (
+              <>
+                <div className="p-6 bg-amber-50/50 border-b border-amber-100 flex items-center gap-3">
+                  <ShieldCheck className="w-5 h-5 text-amber-600" />
+                  <h3 className="text-sm font-black text-amber-700 uppercase tracking-widest">Pendências de Aprovação de Cadastro</h3>
+                </div>
+                <table className="w-full text-left text-sm mb-6">
+                  <thead className="bg-amber-50/20">
+                    <tr>
+                      <th className="px-6 py-4 text-[10px] font-black text-amber-400 uppercase tracking-widest">Militar</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-amber-400 uppercase tracking-widest">Dados</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-amber-400 uppercase tracking-widest text-right">Ação de Comando</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-amber-50">
+                    {users.filter(u => u.approved === false).map(u => (
+                      <tr key={u.id}>
+                        <td className="px-6 py-4">
+                          <div className="font-bold text-slate-900">{u.name}</div>
+                          <div className="text-[10px] text-slate-400 font-bold uppercase">{u.rank}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="font-medium text-slate-600">@{u.username}</div>
+                          <div className="text-[10px] text-slate-400 font-bold uppercase">SARAM: {u.saram}</div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => onUpdateUser({ ...u, approved: true })}
+                              className="px-4 py-2 bg-green-100 text-green-700 hover:bg-green-200 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+                            >
+                              <ShieldCheck className="w-3 h-3" /> Aprovar
+                            </button>
+                            <button
+                              onClick={() => onDeleteUser(u.id)}
+                              className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+                            >
+                              <Trash2 className="w-3 h-3" /> Recusar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            )}
+
+            {/* Seção de Redefinição de Senha */}
+            {users.filter(u => u.pending_password_reset === true).length > 0 && (
+              <>
+                <div className="p-6 bg-blue-50/50 border-b border-blue-100 flex items-center gap-3">
+                  <Key className="w-5 h-5 text-blue-600" />
+                  <h3 className="text-sm font-black text-blue-700 uppercase tracking-widest">Solicitações de Redefinição de Senha</h3>
+                </div>
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-blue-50/20">
+                    <tr>
+                      <th className="px-6 py-4 text-[10px] font-black text-blue-400 uppercase tracking-widest">Militar</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-blue-400 uppercase tracking-widest">SARAM</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-blue-400 uppercase tracking-widest text-right">Ação de Comando</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-blue-50">
+                    {users.filter(u => u.pending_password_reset === true).map(u => (
+                      <tr key={u.id}>
+                        <td className="px-6 py-4">
+                          <div className="font-bold text-slate-900">{u.name}</div>
+                          <div className="text-[10px] text-slate-400 font-bold uppercase">{u.rank}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="font-medium text-slate-600">{u.saram}</div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => {
+                                if (confirm(`Deseja resetar a senha do militar ${u.name} para o padrão '123456'?`)) {
+                                  onUpdateUser({
+                                    ...u,
+                                    password: '123456',
+                                    pending_password_reset: false,
+                                    reset_password_at_login: true,
+                                    password_status: 'EXPIRED'
+                                  });
+                                }
+                              }}
+                              className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+                            >
+                              <Key className="w-3 h-3" /> Resetar para 123456
+                            </button>
+                            <button
+                              onClick={() => onUpdateUser({ ...u, pending_password_reset: false })}
+                              className="px-4 py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+                            >
+                              <XCircle className="w-3 h-3" /> Negar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            )}
           </div>
         )}
 

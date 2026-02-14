@@ -41,6 +41,9 @@ export interface User {
   cpf?: string;
   warName?: string;
   themePreference?: 'light' | 'dark';
+  pending_password_reset?: boolean;
+  reset_password_at_login?: boolean;
+  password_status?: 'ACTIVE' | 'PENDING_RESET' | 'EXPIRED';
 }
 
 export interface Attachment {

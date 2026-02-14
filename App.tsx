@@ -243,6 +243,28 @@ const App: FC = () => {
     }
   };
 
+  const onRequestPasswordReset = async (saram: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id')
+        .eq('saram', saram)
+        .single();
+
+      if (error || !data) return false;
+
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ pending_password_reset: true })
+        .eq('id', data.id);
+
+      return !updateError;
+    } catch (err) {
+      console.error('Error requesting password reset:', err);
+      return false;
+    }
+  };
+
   const handleLogin = async (username: string, password: string): Promise<boolean> => {
     try {
       const { data, error } = await supabase
@@ -271,11 +293,39 @@ const App: FC = () => {
         warName: data.war_name,
         phoneNumber: data.phone_number,
         cpf: data.cpf,
+        pending_password_reset: data.pending_password_reset,
+        reset_password_at_login: data.reset_password_at_login,
+        password_status: data.password_status,
       };
 
       if (user.approved === false) {
         alert('Seu cadastro está pendente de aprovação pelo Comandante.');
         return false;
+      }
+
+      if (user.reset_password_at_login) {
+        const newPassword = prompt('Sua senha foi resetada. Por favor, defina uma nova senha (mín. 8 caracteres):');
+        if (newPassword && newPassword.length >= 8) {
+          const { error: resetError } = await supabase
+            .from('users')
+            .update({
+              password: newPassword,
+              reset_password_at_login: false,
+              password_status: 'ACTIVE'
+            })
+            .eq('id', user.id);
+
+          if (resetError) {
+            alert('Erro ao atualizar senha. Tente novamente.');
+            return false;
+          }
+          user.password = newPassword;
+          user.reset_password_at_login = false;
+          alert('Senha atualizada com sucesso!');
+        } else {
+          alert('Troca de senha obrigatória cancelada ou senha muito curta.');
+          return false;
+        }
       }
 
       setCurrentUser(user);
@@ -728,7 +778,14 @@ const App: FC = () => {
   }
 
   if (!currentUser) {
-    return <LoginView onLogin={handleLogin} onRegister={handleRegister} onPublicAccess={handlePublicAccess} />;
+    return (
+      <LoginView
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+        onPublicAccess={handlePublicAccess}
+        onRequestPasswordReset={onRequestPasswordReset}
+      />
+    );
   }
 
   return (
