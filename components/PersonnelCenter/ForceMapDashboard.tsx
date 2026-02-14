@@ -195,11 +195,14 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                                             <td className="px-4 py-4 text-center">
                                                 <button
                                                     onClick={() => {
-                                                        setSelectedSector(sector);
+                                                        setSelectedSector(prev => prev === sector ? 'TODOS' : sector);
                                                         window.scrollTo({ top: 0, behavior: 'smooth' });
                                                     }}
-                                                    title="Ver Detalhes deste Setor"
-                                                    className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-900 transition-all border border-transparent hover:border-slate-200"
+                                                    title={selectedSector === sector ? "Mostrar Todos os Setores" : "Ver Detalhes deste Setor"}
+                                                    className={`p-2 rounded-lg transition-all border ${selectedSector === sector
+                                                        ? 'bg-slate-900 text-white border-slate-900 shadow-lg'
+                                                        : 'bg-transparent text-slate-400 hover:text-slate-900 hover:bg-slate-100 border-transparent hover:border-slate-200'
+                                                        }`}
                                                 >
                                                     <BarChart3 className="w-4 h-4" />
                                                 </button>
