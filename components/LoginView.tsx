@@ -148,7 +148,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">4. SARAM</label>
-                    <input required type="text" className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold" placeholder="000.000-0" value={regData.saram} onChange={e => setRegData({ ...regData, saram: maskSaram(e.target.value) })} />
+                    <input required type="text" className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold" placeholder="0000000" value={regData.saram} onChange={e => setRegData({ ...regData, saram: maskSaram(e.target.value) })} />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">5. CPF</label>
@@ -193,7 +193,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                 </p>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Informe seu SARAM</label>
-                  <input required type="text" className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm font-bold" placeholder="000.000-0" value={forgotSaram} onChange={e => setForgotSaram(maskSaram(e.target.value))} />
+                  <input required type="text" className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm font-bold" placeholder="0000000" value={forgotSaram} onChange={e => setForgotSaram(maskSaram(e.target.value))} />
                   <p className="text-[9px] text-slate-400 font-bold uppercase mt-2">A redefinição será avaliada pelo administrador da BASP.</p>
                 </div>
 
