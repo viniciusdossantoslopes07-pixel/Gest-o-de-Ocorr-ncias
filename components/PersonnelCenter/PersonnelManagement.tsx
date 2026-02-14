@@ -1,5 +1,4 @@
-
-import { useState, FC } from 'react';
+import React, { useState, FC } from 'react';
 import { User, UserRole } from '../../types';
 import { RANKS, SETORES } from '../../constants';
 import { UserPlus, Search, Edit2, Trash2, Shield, User as UserIcon, Hash, Building2, Users } from 'lucide-react';

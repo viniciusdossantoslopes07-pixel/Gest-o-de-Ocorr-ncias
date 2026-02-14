@@ -1,5 +1,4 @@
-
-import { type FC, useState } from 'react';
+import React, { type FC, useState } from 'react';
 import {
   PlusCircle,
   AlertTriangle,
