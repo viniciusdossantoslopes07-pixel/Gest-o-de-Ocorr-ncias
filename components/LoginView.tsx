@@ -137,7 +137,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">2. Nome Completo</label>
-                  <input required type="text" className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold" placeholder="Nome Civil Completo" value={regData.name} onChange={e => setRegData({ ...regData, name: e.target.value.toUpperCase() })} />
+                  <input required type="text" className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold" placeholder="Nome Completo" value={regData.name} onChange={e => setRegData({ ...regData, name: e.target.value.toUpperCase() })} />
                 </div>
 
                 <div className="space-y-1">
