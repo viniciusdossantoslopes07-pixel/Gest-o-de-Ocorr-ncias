@@ -226,11 +226,11 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    SARAM (Usuário)
+                    LOGIN (Usuário)
                   </label>
                   <div className="relative">
                     <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl pl-12 pr-4 py-4 font-bold text-sm outline-none focus:border-blue-500 transition-all" placeholder="SARAM sem pontos" required />
+                    <input type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl pl-12 pr-4 py-4 font-bold text-sm outline-none focus:border-blue-500 transition-all" placeholder="SARAM" required />
                   </div>
                 </div>
 
