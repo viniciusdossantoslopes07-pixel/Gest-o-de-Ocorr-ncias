@@ -399,12 +399,17 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
               {users.filter(u => u.approved !== false).map(u => (
                 <tr key={u.id} className={`hover:bg-slate-50/50 transition-colors ${editingUserId === u.id ? 'bg-amber-50/50' : ''}`}>
                   <td className="px-6 py-4">
-                    <div className="font-bold text-slate-900">{u.name}</div>
-                    <div className="text-[10px] text-slate-400 font-bold uppercase">{u.rank}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] bg-slate-100 text-slate-500 font-black px-1.5 py-0.5 rounded">ID {u.militarId || '0'}</span>
+                      <div>
+                        <div className="font-bold text-slate-900">{u.name}</div>
+                        <div className="text-[10px] text-slate-400 font-bold uppercase">{u.rank}</div>
+                      </div>
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="font-medium text-slate-600">@{u.username}</div>
-                    <div className="text-[10px] text-slate-400 font-bold uppercase">{u.saram}</div>
+                    <div className="text-[10px] text-slate-400 font-bold uppercase">SARAM: {u.saram}</div>
                   </td>
                   <td className="px-6 py-4 text-slate-500 font-medium">{u.sector}</td>
                   <td className="px-6 py-4">

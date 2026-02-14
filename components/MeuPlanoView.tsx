@@ -108,8 +108,9 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
 
         doc.setFontSize(12);
         doc.text(`Militar: ${user.rank} ${user.warName}`, 20, 30);
-        doc.text(`Saram: ${user.saram}`, 20, 36);
-        doc.text(`Data: ${new Date().toLocaleDateString()}`, 20, 42);
+        doc.text(`ID Militar: ${user.militarId || 'N/A'}`, 20, 36);
+        doc.text(`Saram: ${user.saram}`, 20, 42);
+        doc.text(`Data: ${new Date().toLocaleDateString()}`, 20, 48);
 
         doc.line(20, 48, 190, 48);
 
@@ -155,7 +156,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                             Meu Plano
                         </h1>
                         <p className={`text-sm mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                            Painel pessoal de controle e estatísticas
+                            ID Militar: <span className="font-bold">{user.militarId || 'N/A'}</span> | Painel pessoal de controle e estatísticas
                         </p>
                     </div>
                     {activeTab === 'estatisticas' && (

@@ -291,6 +291,7 @@ const App: FC = () => {
         approved: data.approved,
         password: data.password,
         warName: data.war_name,
+        militarId: data.militar_id,
         phoneNumber: data.phone_number,
         cpf: data.cpf,
         pending_password_reset: data.pending_password_reset,
@@ -355,6 +356,7 @@ const App: FC = () => {
         saram: u.saram,
         cpf: u.cpf,
         warName: u.war_name,
+        militarId: u.militar_id,
         sector: u.sector,
         accessLevel: u.access_level,
         phoneNumber: u.phone_number,
@@ -414,6 +416,7 @@ const App: FC = () => {
         approved: data.approved,
         password: data.password,
         warName: data.war_name,
+        militarId: data.militar_id,
         cpf: data.cpf
       };
       setUsers([...users, createdUser]);

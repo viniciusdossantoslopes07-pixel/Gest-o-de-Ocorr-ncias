@@ -40,6 +40,7 @@ export interface User {
   approved?: boolean;
   cpf?: string;
   warName?: string;
+  militarId?: number;
   themePreference?: 'light' | 'dark';
   pending_password_reset?: boolean;
   reset_password_at_login?: boolean;
