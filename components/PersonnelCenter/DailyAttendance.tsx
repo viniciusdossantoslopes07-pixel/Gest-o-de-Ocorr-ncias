@@ -502,48 +502,46 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                             {currentWeek.map(date => (
                                                 <>
                                                     <td key={`${user.id}-${date}-INICIO`} className="p-1 border-l border-slate-50">
-                                                        {formatDateToISO(new Date()) === date ? (
+                                                        {!isFutureDate(date) ? (
                                                             <select
-                                                                disabled={isFutureDate(date)}
-                                                                value={weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : 'N')}
+                                                                disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
+                                                                value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N'}
                                                                 onChange={(e) => handleWeeklyChange(user.id, date, 'INICIO', e.target.value)}
-                                                                className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : 'N')) === 'P' ? 'text-emerald-600' :
-                                                                    ['F', 'A'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-600 bg-red-50' :
+                                                                className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N') === 'P' ? 'text-emerald-600' :
+                                                                    ['F', 'A', 'CR', 'C-C', 'DPM', 'CSV', 'DSV', 'JS', 'R-1', 'R-2', 'L-E', 'L-S', 'L-N', 'L-P', 'N-V', 'N-C', 'N-S'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-600 bg-red-50' :
                                                                         (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
-                                                                            !isFutureDate(date) ? 'text-blue-600 bg-blue-50' : 'text-slate-200'
+                                                                            'text-blue-600 bg-blue-50'
                                                                     }`}
                                                             >
-                                                                {isFutureDate(date) && <option value="">-</option>}
                                                                 {Object.keys(PRESENCE_STATUS).map(s => (
                                                                     <option key={s} value={s}>{s}</option>
                                                                 ))}
                                                             </select>
                                                         ) : (
-                                                            <div className={`w-full text-[10px] font-black text-center p-1 rounded-lg ${weeklyGrid[user.id]?.[date]?.['INICIO'] === 'P' ? 'text-emerald-600' : 'text-slate-300'}`}>
-                                                                {weeklyGrid[user.id]?.[date]?.['INICIO'] || '-'}
+                                                            <div className="w-full text-[10px] font-black text-center p-1 rounded-lg text-slate-200">
+                                                                -
                                                             </div>
                                                         )}
                                                     </td>
                                                     <td key={`${user.id}-${date}-TERMINO`} className="p-1">
-                                                        {formatDateToISO(new Date()) === date ? (
+                                                        {!isFutureDate(date) ? (
                                                             <select
-                                                                disabled={isFutureDate(date)}
-                                                                value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : 'N')}
+                                                                disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
+                                                                value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N'}
                                                                 onChange={(e) => handleWeeklyChange(user.id, date, 'TERMINO', e.target.value)}
-                                                                className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : 'N')) === 'P' ? 'text-emerald-600' :
-                                                                    ['F', 'A'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-600 bg-red-50' :
+                                                                className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N') === 'P' ? 'text-emerald-600' :
+                                                                    ['F', 'A', 'CR', 'C-C', 'DPM', 'CSV', 'DSV', 'JS', 'R-1', 'R-2', 'L-E', 'L-S', 'L-N', 'L-P', 'N-V', 'N-C', 'N-S'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-600 bg-red-50' :
                                                                         (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
-                                                                            !isFutureDate(date) ? 'text-blue-600 bg-blue-50' : 'text-slate-200'
+                                                                            'text-blue-600 bg-blue-50'
                                                                     }`}
                                                             >
-                                                                {isFutureDate(date) && <option value="">-</option>}
                                                                 {Object.keys(PRESENCE_STATUS).map(s => (
                                                                     <option key={s} value={s}>{s}</option>
                                                                 ))}
                                                             </select>
                                                         ) : (
-                                                            <div className={`w-full text-[10px] font-black text-center p-1 rounded-lg ${weeklyGrid[user.id]?.[date]?.['TERMINO'] === 'P' ? 'text-emerald-600' : 'text-slate-300'}`}>
-                                                                {weeklyGrid[user.id]?.[date]?.['TERMINO'] || '-'}
+                                                            <div className="w-full text-[10px] font-black text-center p-1 rounded-lg text-slate-200">
+                                                                -
                                                             </div>
                                                         )}
                                                     </td>
