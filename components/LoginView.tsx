@@ -235,13 +235,13 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                      <Lock className="w-3 h-3" /> Senha
-                    </label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Lock className="w-3 h-3" /> Senha
+                  </label>
+                  <input required type="password" className="w-full bg-white border border-slate-200 rounded-xl p-4 font-bold text-sm outline-none focus:border-blue-500 transition-all" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
+                  <div className="flex justify-end">
                     <button type="button" onClick={() => setView('forgot-password')} className="text-[9px] font-black text-blue-600 uppercase tracking-widest hover:underline">Esqueci a Senha</button>
                   </div>
-                  <input required type="password" className="w-full bg-white border border-slate-200 rounded-xl p-4 font-bold text-sm outline-none focus:border-blue-500 transition-all" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
                 </div>
 
                 <button type="submit" disabled={isLoading} className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:bg-blue-700 shadow-xl shadow-blue-600/20 transition-all active:scale-[0.98]">
