@@ -214,6 +214,7 @@ export interface AttendanceRecord {
   militarId: string;
   militarName: string;
   militarRank: string;
+  saram?: string;
   status: string; // From PRESENCE_STATUS
   timestamp: string;
 }
@@ -236,6 +237,7 @@ export interface AbsenceJustification {
   militarId: string;
   militarName: string;
   militarRank: string;
+  saram?: string;
   originalStatus: string;
   newStatus: string;
   justification: string;

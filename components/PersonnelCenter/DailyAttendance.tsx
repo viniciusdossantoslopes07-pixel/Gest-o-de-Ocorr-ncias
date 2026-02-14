@@ -97,14 +97,16 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
         let newAttendance: DailyAttendance;
         if (existing) {
+            const user = users.find(u => u.id === userId);
             newAttendance = {
                 ...existing,
                 records: existing.records.some(r => r.militarId === userId)
-                    ? existing.records.map(r => r.militarId === userId ? { ...r, status } : r)
+                    ? existing.records.map(r => r.militarId === userId ? { ...r, status, saram: user?.saram } : r)
                     : [...existing.records, {
                         militarId: userId,
-                        militarName: users.find(u => u.id === userId)?.warName || '',
-                        militarRank: users.find(u => u.id === userId)?.rank || '',
+                        militarName: user?.warName || '',
+                        militarRank: user?.rank || '',
+                        saram: user?.saram,
                         status,
                         timestamp: new Date().toISOString()
                     }]
@@ -120,6 +122,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     militarId: userId,
                     militarName: user?.warName || '',
                     militarRank: user?.rank || '',
+                    saram: user?.saram,
                     status,
                     timestamp: new Date().toISOString()
                 }],
@@ -173,7 +176,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     // Ad-hoc military management (now passed via props)
     const [showAdHocModal, setShowAdHocModal] = useState(false);
-    const [newAdHoc, setNewAdHoc] = useState({ rank: '', warName: '' });
+    const [newAdHoc, setNewAdHoc] = useState({ rank: '', warName: '', saram: '' });
 
     const filteredUsers = users.filter(u =>
         u.sector === selectedSector &&
@@ -253,6 +256,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             militarId: u.id,
                             militarName: u.warName || u.name,
                             militarRank: u.rank,
+                            saram: u.saram,
                             status: existingRecord?.status || weeklyGrid[u.id]?.[dateToSign]?.[callToSign] || 'N',
                             timestamp: existingRecord?.timestamp || new Date().toISOString()
                         };
@@ -267,6 +271,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     militarId: u.id,
                     militarName: u.warName || u.name,
                     militarRank: u.rank,
+                    saram: u.saram,
                     status: weeklyGrid[u.id]?.[dateToSign]?.[callToSign] || 'N',
                     timestamp: new Date().toISOString()
                 }));
@@ -311,13 +316,13 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             warName: newAdHoc.warName,
             rank: newAdHoc.rank,
             sector: selectedSector,
-            saram: 'AVULSO',
+            saram: newAdHoc.saram || '',
             role: {} as any, // Not relevant for this view
             email: '',
             username: `adhoc-${Date.now()}`
         };
         onAddAdHoc(newUser);
-        setNewAdHoc({ rank: '', warName: '' });
+        setNewAdHoc({ rank: '', warName: '', saram: '' });
         setShowAdHocModal(false);
     };
 
@@ -765,6 +770,17 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                         onChange={e => setNewAdHoc(prev => ({ ...prev, warName: e.target.value.toUpperCase() }))}
                                     />
                                 </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">SARAM (Opcional)</label>
+                                <input
+                                    type="text"
+                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
+                                    placeholder="SARAM se houver"
+                                    value={newAdHoc.saram}
+                                    onChange={e => setNewAdHoc(prev => ({ ...prev, saram: e.target.value }))}
+                                />
                             </div>
 
                             <button
