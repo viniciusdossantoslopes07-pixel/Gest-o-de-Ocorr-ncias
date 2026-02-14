@@ -9,6 +9,7 @@ import MissionRequestForm from './MissionRequestForm';
 import MissionRequestCard from './MissionRequestCard';
 
 import MissionOrderPrintView from './MissionOrderPrintView';
+import { notificationService } from '../services/notificationService';
 
 interface MissionManagerProps {
     user: User;
@@ -268,6 +269,30 @@ export default function MissionManager({ user }: MissionManagerProps) {
             }
 
             alert(`Ordem de Missão ${omisNumber} gerada e enviada para assinatura do Ch SOP.`);
+
+            // Enviar notificações para a equipe escalada
+            const missionCommander = users.find(u => u.id === missionCommanderId);
+            const commanderName = missionCommander ? `${missionCommander.rank} ${missionCommander.warName || missionCommander.name}` : undefined;
+
+            if (orderData.personnel) {
+                console.log(`[Notification] Iniciando disparos de e-mail para ${orderData.personnel.length} militares.`);
+                for (const p of orderData.personnel) {
+                    // Buscar o usuário pelo SARAM para obter o e-mail
+                    const foundUser = users.find(u => u.saram === p.saram);
+                    if (foundUser && foundUser.email) {
+                        await notificationService.sendMissionAssignmentNotification({
+                            militarEmail: foundUser.email,
+                            militarName: foundUser.warName || foundUser.name,
+                            missionTitle: orderData.mission || 'Missão Sem Título',
+                            missionDate: orderData.date || '',
+                            missionLocation: orderData.location || '',
+                            omisNumber: omisNumber,
+                            commanderName: commanderName
+                        });
+                    }
+                }
+            }
+
             setShowOrderForm(false);
             setSelectedMission(null);
             fetchData();
