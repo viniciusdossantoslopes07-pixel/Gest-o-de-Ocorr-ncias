@@ -50,9 +50,19 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [currentWeek, setCurrentWeek] = useState(() => {
         const d = new Date();
         d.setHours(0, 0, 0, 0);
-        const day = d.getDay();
-        // Ajuste: 0 (Dom) vira -6 para pegar a segunda anterior, 1 (Seg) vira 0, etc.
-        const diff = (day === 0 ? -6 : 1 - day);
+        const day = d.getDay(); // 0 = Domingo, 1 = Segunda, ..., 5 = Sexta, 6 = Sábado
+
+        // Regra: No Sábado (6) e Domingo (0), mostrar a PRÓXIMA SEGUNDA por padrão
+        // De Segunda a Sexta, mostrar a SEGUNDA desta semana
+        let diff = (day === 0 ? 1 : (day === 6 ? 2 : 1 - day));
+
+        // Se quisermos que na SEXTA ele já mude (ou ofereça mudar), mantemos diff atual aqui
+        // Mas o usuário pediu "sempre que chegar na sexta", então a inicialização pode ser 
+        // conservadora (manter a semana atual) e o botão faz o resto.
+        if (day === 0) diff = 1; // Próxima segunda
+        else if (day === 6) diff = 2; // Próxima segunda
+        else diff = 1 - day; // Segunda desta semana
+
         const monday = new Date(d);
         monday.setDate(d.getDate() + diff);
 
@@ -403,6 +413,16 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                         <Filter className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
+
+                                {new Date().getDay() >= 5 || new Date().getDay() === 0 ? (
+                                    <button
+                                        onClick={() => changeWeek(1)}
+                                        className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg animate-pulse"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" /> Preencher Próxima Semana
+                                    </button>
+                                ) : null}
+
                                 <div className="flex gap-2 w-full lg:w-auto">
                                     <button
                                         onClick={() => setShowAdHocModal(true)}
