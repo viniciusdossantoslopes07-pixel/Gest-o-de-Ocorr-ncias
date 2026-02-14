@@ -1,7 +1,7 @@
 
 import { useState, type FC, type FormEvent } from 'react';
 import { MissionOrder, MissionOrderPersonnel, MissionOrderSchedule } from '../types';
-import { Save, X, Plus, Trash2 } from 'lucide-react';
+import { Save, X, Plus, Trash2, Search } from 'lucide-react';
 import { RANKS, ARMAMENT_OPTIONS, MISSION_FUNCTIONS } from '../constants';
 
 interface MissionOrderFormProps {
@@ -305,42 +305,78 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                             </select>
                                         </td>
                                         <td className="px-2 py-2">
-                                            <select
-                                                value={p.warName}
-                                                onChange={e => {
-                                                    const selectedName = e.target.value;
-                                                    const foundUser = users.find(u => (u.warName || u.name) === selectedName);
+                                            <div className="relative group">
+                                                <input
+                                                    type="text"
+                                                    value={p.warName}
+                                                    onChange={e => {
+                                                        const val = e.target.value.toUpperCase();
+                                                        updatePersonnel(p.id, 'warName', val);
 
-                                                    const updates: Partial<MissionOrderPersonnel> = { warName: selectedName };
-
-                                                    if (foundUser) {
-                                                        updates.rank = foundUser.rank;
-                                                        updates.saram = foundUser.saram;
-                                                    }
-
-                                                    updatePersonnelFields(p.id, updates);
-                                                }}
-                                                className="w-full px-2 py-1 border border-slate-200 rounded text-xs"
-                                            >
-                                                <option value="">Selecione</option>
-                                                {users.map(u => (
-                                                    <option key={u.id} value={u.warName || u.name}>
-                                                        {u.rank} {u.warName || u.name}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                                        // Opcional: Busca automática enquanto digita se tiver mais de 3 letras
+                                                        if (val.length >= 3) {
+                                                            const found = users.find(u => (u.warName || '').toUpperCase() === val);
+                                                            if (found) {
+                                                                updatePersonnelFields(p.id, {
+                                                                    rank: found.rank,
+                                                                    saram: found.saram
+                                                                });
+                                                            }
+                                                        }
+                                                    }}
+                                                    onBlur={e => {
+                                                        const val = e.target.value.toUpperCase();
+                                                        const found = users.find(u => (u.warName || '').toUpperCase() === val);
+                                                        if (found) {
+                                                            updatePersonnelFields(p.id, {
+                                                                rank: found.rank,
+                                                                warName: found.warName || found.name,
+                                                                saram: found.saram
+                                                            });
+                                                        }
+                                                    }}
+                                                    className="w-full px-2 py-1 pr-7 border border-slate-200 rounded text-xs focus:border-blue-500 outline-none"
+                                                    placeholder="Nome"
+                                                />
+                                                <Search className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                            </div>
                                         </td>
                                         <td className="px-2 py-2">
-                                            <input
-                                                type="text"
-                                                value={p.saram}
-                                                onChange={e => {
-                                                    updatePersonnel(p.id, 'saram', e.target.value);
-                                                }}
-                                                className="w-full px-2 py-1 border border-slate-200 rounded text-xs"
-                                                placeholder="Saram"
-                                                readOnly // Make it read-only to encourage using the dropdown, or keep editable? User said to avoid errors, so auto-fill is best. Let's keep it editable but typically filled by dropdown.
-                                            />
+                                            <div className="relative group">
+                                                <input
+                                                    type="text"
+                                                    value={p.saram}
+                                                    onChange={e => {
+                                                        const val = e.target.value;
+                                                        updatePersonnel(p.id, 'saram', val);
+
+                                                        // Busca automática por SARAM
+                                                        if (val.length >= 4) {
+                                                            const found = users.find(u => u.saram === val);
+                                                            if (found) {
+                                                                updatePersonnelFields(p.id, {
+                                                                    rank: found.rank,
+                                                                    warName: found.warName || found.name
+                                                                });
+                                                            }
+                                                        }
+                                                    }}
+                                                    onBlur={e => {
+                                                        const val = e.target.value;
+                                                        const found = users.find(u => u.saram === val);
+                                                        if (found) {
+                                                            updatePersonnelFields(p.id, {
+                                                                rank: found.rank,
+                                                                warName: found.warName || found.name,
+                                                                saram: found.saram
+                                                            });
+                                                        }
+                                                    }}
+                                                    className="w-full px-2 py-1 pr-7 border border-slate-200 rounded text-xs focus:border-blue-500 outline-none"
+                                                    placeholder="SARAM"
+                                                />
+                                                <Search className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                            </div>
                                         </td>
                                         <td className="px-2 py-2">
                                             <input
