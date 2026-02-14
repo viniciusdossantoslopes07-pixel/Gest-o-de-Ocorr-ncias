@@ -206,6 +206,24 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
               </div>
             ) : (
               <div className="space-y-6">
+                {/* BOTÃO DE OCORRÊNCIA PÚBLICA EM DESTAQUE */}
+                <button
+                  type="button"
+                  onClick={onPublicAccess}
+                  className="w-full bg-amber-500 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:bg-amber-600 shadow-lg shadow-amber-500/20 transition-all active:scale-[0.98] border-b-4 border-amber-700"
+                >
+                  <Megaphone className="w-5 h-5" /> REGISTRAR OCORRÊNCIA
+                </button>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div className="w-full border-t border-slate-200"></div>
+                  </div>
+                  <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest">
+                    <span className="bg-[#f8fafc] px-4 text-slate-400">Ou use Acesso Militar</span>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     SARAM (Usuário)
@@ -230,12 +248,9 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                   {isLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <>Autenticar Militar <ArrowRight className="w-5 h-5" /></>}
                 </button>
 
-                <div className="flex flex-col gap-2 pt-4">
+                <div className="flex flex-col gap-2 pt-2">
                   <button type="button" onClick={() => setView('register')} className="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-200 transition-all">
                     Criar Conta Militar
-                  </button>
-                  <button type="button" onClick={onPublicAccess} className="w-full border border-slate-200 text-slate-400 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-50 transition-all">
-                    Ocorrência Pública
                   </button>
                 </div>
               </div>
