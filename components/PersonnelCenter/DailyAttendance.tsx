@@ -356,21 +356,21 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 pb-20">
             {/* Sub-Tabs Navigation */}
-            <div className="flex bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm w-fit">
+            <div className="flex flex-wrap bg-white p-1 lg:p-1.5 rounded-2xl border border-slate-200 shadow-sm w-full lg:w-fit">
                 {[
-                    { id: 'retirar-faltas', label: 'Retirada de Faltas Diária', icon: FileSignature },
+                    { id: 'retirar-faltas', label: 'Retirada de Faltas', icon: FileSignature },
                     { id: 'faltas-retiradas', label: 'Cupons Gerados', icon: Calendar }
                 ].map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveSubTab(tab.id as any)}
-                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === tab.id
+                        className={`flex-1 lg:flex-none flex items-center justify-center gap-2 px-3 lg:px-6 py-2 lg:py-2.5 rounded-xl text-[10px] lg:text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === tab.id
                             ? 'bg-slate-900 text-white shadow-lg'
                             : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
                             }`}
                     >
-                        <tab.icon className="w-4 h-4" />
-                        {tab.label}
+                        <tab.icon className="w-3.5 h-3.5" />
+                        <span className="truncate">{tab.label}</span>
                     </button>
                 ))}
             </div>
@@ -378,43 +378,45 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             {activeSubTab === 'retirar-faltas' && (
                 <>
                     {/* Header */}
-                    <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="bg-white rounded-[2rem] p-6 lg:p-8 border border-slate-200 shadow-sm">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                             <div className="flex items-center gap-4">
-                                <div className="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-200">
-                                    <FileSignature className="w-6 h-6 text-white" />
+                                <div className="bg-blue-600 p-2.5 lg:p-3 rounded-2xl shadow-lg shadow-blue-200">
+                                    <FileSignature className="w-5 h-5 lg:w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <h2 className="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-1">Ministério da Defesa / Comando da Aeronáutica / BASP</h2>
-                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Retirada de Faltas Diária</h2>
-                                    <p className="text-slate-500 text-sm font-medium">Controle semanal de presença - {selectedSector}</p>
+                                    <h2 className="text-[9px] lg:text-[10px] font-black text-slate-400 tracking-widest uppercase mb-1">Ministério da Defesa / BASP</h2>
+                                    <h2 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">Retirada de Faltas</h2>
+                                    <p className="text-slate-500 text-xs lg:sm font-medium">Controle semanal - {selectedSector}</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-100">
+                            <div className="flex flex-wrap items-center gap-2 lg:gap-3">
+                                <div className="flex items-center gap-2 bg-slate-50 p-1.5 lg:p-2 rounded-2xl border border-slate-100 w-full lg:w-auto justify-between lg:justify-start">
                                     <button onClick={() => changeWeek(-1)} className="p-2 hover:bg-white rounded-lg transition-all text-slate-400 hover:text-slate-900 shadow-sm">
-                                        <Filter className="w-4 h-4 rotate-180" />
+                                        <Filter className="w-3.5 h-3.5 rotate-180" />
                                     </button>
-                                    <span className="text-xs font-black text-slate-700 px-2 uppercase">
+                                    <span className="text-[10px] lg:text-xs font-black text-slate-700 px-2 uppercase">
                                         {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} a {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                                     </span>
                                     <button onClick={() => changeWeek(1)} className="p-2 hover:bg-white rounded-lg transition-all text-slate-400 hover:text-slate-900 shadow-sm">
-                                        <Filter className="w-4 h-4" />
+                                        <Filter className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
-                                <button
-                                    onClick={() => setShowAdHocModal(true)}
-                                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg"
-                                >
-                                    <UserPlus className="w-4 h-4" /> Adicionar Militar
-                                </button>
-                                <button
-                                    onClick={() => window.print()}
-                                    className="flex items-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg"
-                                >
-                                    <Plus className="w-4 h-4" /> Imprimir Semana
-                                </button>
+                                <div className="flex gap-2 w-full lg:w-auto">
+                                    <button
+                                        onClick={() => setShowAdHocModal(true)}
+                                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-blue-600 text-white px-3 lg:px-4 py-3 rounded-xl text-[10px] lg:text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg"
+                                    >
+                                        <UserPlus className="w-3.5 h-3.5" /> Incluir
+                                    </button>
+                                    <button
+                                        onClick={() => window.print()}
+                                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-slate-900 text-white px-3 lg:px-4 py-3 rounded-xl text-[10px] lg:text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" /> PDF
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -565,32 +567,32 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 mt-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
                             {currentWeek.map(date => (
-                                <div key={date} className="flex flex-col gap-3 p-5 rounded-3xl border-2 bg-slate-50 border-slate-100 shadow-sm">
+                                <div key={date} className="flex flex-col gap-3 p-4 lg:p-5 rounded-3xl border-2 bg-slate-50 border-slate-100 shadow-sm">
                                     <div className="text-[10px] font-black text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">
-                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })}
+                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })}
                                     </div>
-                                    <div className="space-y-3">
+                                    <div className="grid grid-cols-2 lg:flex lg:flex-col gap-3">
                                         {(['INICIO', 'TERMINO'] as CallTypeCode[]).map(type => {
                                             const key = `${date}-${type}-${selectedSector}`;
                                             const sig = signedDates[key];
                                             return (
-                                                <div key={type} className={`p-3 rounded-2xl border transition-all ${sig ? 'bg-emerald-50 border-emerald-100' : 'bg-white border-slate-200'}`}>
-                                                    <div className="text-[9px] font-black text-slate-400 uppercase mb-1.5 flex justify-between">
-                                                        <span>{type === 'INICIO' ? '1ª Chamada' : '2ª Chamada'}</span>
+                                                <div key={type} className={`p-2 lg:p-3 rounded-2xl border transition-all ${sig ? 'bg-emerald-50 border-emerald-100' : 'bg-white border-slate-200'}`}>
+                                                    <div className="text-[8px] lg:text-[9px] font-black text-slate-400 uppercase mb-1 flex justify-between">
+                                                        <span>{type === 'INICIO' ? '1ª Ch.' : '2ª Ch.'}</span>
                                                         {sig && <CheckCircle className="w-3 h-3 text-emerald-500" />}
                                                     </div>
                                                     {sig ? (
                                                         <div className="flex flex-col">
-                                                            <div className="text-[9px] font-black text-emerald-700 leading-tight uppercase">Assinado</div>
-                                                            <div className="text-[8px] font-bold text-slate-400 line-clamp-1 mt-0.5">{sig.signedBy.split(' ').slice(1).join(' ')}</div>
+                                                            <div className="text-[8px] lg:text-[9px] font-black text-emerald-700 leading-tight uppercase">OK</div>
+                                                            <div className="text-[8px] font-bold text-slate-400 truncate mt-0.5">{sig.signedBy.split(' ').pop()}</div>
                                                         </div>
                                                     ) : (
                                                         <button
                                                             onClick={() => handleSignDate(date, type)}
                                                             disabled={isFutureDate(date)}
-                                                            className="w-full py-2 bg-slate-900 text-white rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-md shadow-slate-200"
+                                                            className="w-full py-1.5 bg-slate-900 text-white rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-md shadow-slate-200"
                                                         >
                                                             Assinar
                                                         </button>

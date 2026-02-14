@@ -62,22 +62,22 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 pb-20">
             {/* Header & Search */}
             <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
                     <div className="flex items-center gap-4">
-                        <div className="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-200">
-                            <Users className="w-6 h-6 text-white" />
+                        <div className="bg-blue-600 p-2.5 lg:p-3 rounded-2xl shadow-lg shadow-blue-200">
+                            <Users className="w-5 h-5 lg:w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Gestão de Efetivo</h2>
-                            <p className="text-slate-500 text-sm font-medium">Cadastro e vinculação de militares aos setores</p>
+                            <h2 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">Gestão de Efetivo</h2>
+                            <p className="text-slate-500 text-xs lg:sm font-medium">Cadastro e vinculação de militares</p>
                         </div>
                     </div>
 
                     <button
                         onClick={() => { setIsAdding(!isAdding); setEditingId(null); }}
-                        className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl"
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl text-sm lg:text-base w-full lg:w-auto"
                     >
-                        <UserPlus className="w-5 h-5" />
+                        {isAdding ? <Users className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
                         {isAdding ? 'Ver Lista' : 'Cadastrar Militar'}
                     </button>
                 </div>
@@ -104,65 +104,65 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                         {editingId ? 'Editar Dados do Militar' : 'Novo Cadastro Militar'}
                     </h3>
 
-                    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                    <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                        <div className="space-y-1.5 lg:space-y-2">
+                            <label className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
                                 <UserIcon className="w-3 h-3" /> Nome Completo
                             </label>
-                            <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                            <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                        <div className="space-y-1.5 lg:space-y-2">
+                            <label className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
                                 <UserIcon className="w-3 h-3" /> Nome de Guerra
                             </label>
-                            <input required type="text" value={formData.warName} onChange={e => setFormData({ ...formData, warName: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                            <input required type="text" value={formData.warName} onChange={e => setFormData({ ...formData, warName: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                        <div className="space-y-1.5 lg:space-y-2">
+                            <label className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
                                 <Shield className="w-3 h-3" /> Posto / Graduação
                             </label>
-                            <select required value={formData.rank} onChange={e => setFormData({ ...formData, rank: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <select required value={formData.rank} onChange={e => setFormData({ ...formData, rank: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                                 <option value="">Selecione...</option>
                                 {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
                             </select>
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                        <div className="space-y-1.5 lg:space-y-2">
+                            <label className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
                                 <Hash className="w-3 h-3" /> SARAM
                             </label>
-                            <input required type="text" value={formData.saram} onChange={e => setFormData({ ...formData, saram: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                            <input required type="text" value={formData.saram} onChange={e => setFormData({ ...formData, saram: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                        <div className="space-y-1.5 lg:space-y-2">
+                            <label className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
                                 <Hash className="w-3 h-3" /> CPF
                             </label>
-                            <input required type="text" value={formData.cpf} onChange={e => setFormData({ ...formData, cpf: e.target.value })} placeholder="000.000.000-00" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                            <input required type="text" value={formData.cpf} onChange={e => setFormData({ ...formData, cpf: e.target.value })} placeholder="000.000.000-00" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                        <div className="space-y-1.5 lg:space-y-2">
+                            <label className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
                                 <Building2 className="w-3 h-3" /> Setor de Lotação
                             </label>
-                            <select required value={formData.sector} onChange={e => setFormData({ ...formData, sector: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <select required value={formData.sector} onChange={e => setFormData({ ...formData, sector: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                                 {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
                         </div>
 
-                        <div className="md:col-span-3 flex justify-end gap-3 pt-4">
+                        <div className="sm:col-span-2 lg:col-span-3 flex flex-col sm:flex-row justify-end gap-3 pt-4">
                             <button
                                 type="button"
                                 onClick={() => { setIsAdding(false); setEditingId(null); }}
-                                className="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all"
+                                className="w-full sm:w-auto px-6 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all font-bold"
                             >
                                 Cancelar
                             </button>
                             <button
                                 type="submit"
-                                className="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
+                                className="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
                             >
                                 {editingId ? 'Salvar Alterações' : 'Confirmar Cadastro'}
                             </button>
@@ -172,7 +172,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
             ) : (
                 /* Personnel List */
                 <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
-                    <div className="overflow-x-auto">
+                    {/* Desktop View (Table) */}
+                    <div className="hidden lg:block overflow-x-auto">
                         <table className="w-full text-left text-sm">
                             <thead className="bg-slate-50/50">
                                 <tr>
@@ -212,16 +213,48 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                         </td>
                                     </tr>
                                 ))}
-                                {filteredUsers.length === 0 && (
-                                    <tr>
-                                        <td colSpan={4} className="px-6 py-12 text-center opacity-40">
-                                            <p className="text-sm font-bold">Nenhum militar encontrado para os critérios de busca</p>
-                                        </td>
-                                    </tr>
-                                )}
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Mobile View (Cards) */}
+                    <div className="lg:hidden divide-y divide-slate-100">
+                        {filteredUsers.map(user => (
+                            <div key={user.id} className="p-4 flex flex-col gap-4">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <div className="font-bold text-slate-900 text-sm">{user.name}</div>
+                                        <div className="text-[10px] text-blue-500 font-bold uppercase tracking-tight">
+                                            {user.rank} {user.warName}
+                                        </div>
+                                    </div>
+                                    <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded-md text-[9px] font-black border border-slate-200">
+                                        {user.sector}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-end">
+                                    <div className="text-[10px] text-slate-500 font-medium">
+                                        SARAM: <span className="text-slate-700 font-bold">{user.saram}</span><br />
+                                        CPF: {user.cpf || '---'}
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button onClick={() => handleEdit(user)} className="p-2.5 bg-blue-50 text-blue-600 rounded-xl active:bg-blue-100">
+                                            <Edit2 className="w-4 h-4" />
+                                        </button>
+                                        <button onClick={() => { if (confirm('Excluir militar?')) onDeletePersonnel(user.id); }} className="p-2.5 bg-red-50 text-red-500 rounded-xl active:bg-red-100">
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {filteredUsers.length === 0 && (
+                        <div className="px-6 py-12 text-center opacity-40">
+                            <p className="text-sm font-bold">Nenhum militar encontrado</p>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

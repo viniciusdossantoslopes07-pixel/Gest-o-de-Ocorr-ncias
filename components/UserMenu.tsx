@@ -72,7 +72,7 @@ export default function UserMenu({
 
             {/* Dropdown Menu */}
             {isOpen && (
-                <div className={`absolute right-0 mt-2 w-72 rounded-2xl shadow-2xl border transform transition-all duration-200 z-50 overflow-hidden ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                <div className={`absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-72 rounded-2xl shadow-2xl border transform transition-all duration-200 z-50 overflow-hidden ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
 
                     {/* Header */}
                     <div className={`p-4 border-b ${isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-100 bg-slate-50'}`}>
