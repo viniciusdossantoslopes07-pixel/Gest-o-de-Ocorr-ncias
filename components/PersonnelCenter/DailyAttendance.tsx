@@ -869,7 +869,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     @media print {
                         @page { 
                             size: portrait; 
-                            margin: 20mm 15mm 20mm 15mm; 
+                            margin: 10mm; 
                         }
                         
                         /* Estratégia segura: esconde tudo mas mantém a estrutura para o React */
@@ -878,11 +878,11 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         .print-weekly, .print-weekly * { visibility: visible; }
                         
                         .print-weekly { 
-                            position: absolute;
-                            top: 0;
-                            left: 0;
+                            position: relative;
                             width: 100%; 
                             height: auto; 
+                            margin: 0;
+                            padding: 0;
                             box-sizing: border-box;
                             background: white;
                         }
