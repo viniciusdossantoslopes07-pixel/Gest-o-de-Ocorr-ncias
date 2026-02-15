@@ -1,3 +1,4 @@
+// SAP-03 Painel v1.1 - Forçando Deploy 15/02/2026
 import { useState, useEffect, FC } from 'react';
 import { supabase } from './services/supabase';
 import {
