@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
-import { Package, CheckCircle, XCircle, Clock, Truck, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Package, CheckCircle, XCircle, Clock, Truck, ShieldCheck, AlertCircle, Lock } from 'lucide-react';
 
 interface LoanRequest {
     id: string;
@@ -36,13 +36,19 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
     const [selectedRequest, setSelectedRequest] = useState<LoanRequest | null>(null);
     const [activeTab, setActiveTab] = useState<'Solicitações' | 'Devoluções' | 'Em Uso' | 'Histórico'>('Solicitações');
 
-    // Direct Release States
     const [showDirectRelease, setShowDirectRelease] = useState(false);
+    const [showDirectReturn, setShowDirectReturn] = useState(false);
     const [directSaram, setDirectSaram] = useState('');
     const [directMaterialId, setDirectMaterialId] = useState('');
     const [directQuantity, setDirectQuantity] = useState(1);
     const [isSearchingSaram, setIsSearchingSaram] = useState(false);
     const [foundUser, setFoundUser] = useState<any>(null);
+
+    // Signature Modal States
+    const [showSignatureModal, setShowSignatureModal] = useState(false);
+    const [signaturePassword, setSignaturePassword] = useState('');
+    const [signatureAction, setSignatureAction] = useState<'release' | 'return' | 'update_release' | 'update_return' | null>(null);
+    const [signatureRequestId, setSignatureRequestId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchRequests();
@@ -82,7 +88,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
 
             const { data: userData, error: userError } = await supabase
                 .from('users')
-                .select('id, rank, war_name')
+                .select('id, rank, war_name, name')
                 .in('id', userIds);
 
             if (userError) {
@@ -91,7 +97,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
             } else {
                 // Map users to requests
                 const userMap = (userData || []).reduce((acc: any, u) => {
-                    acc[u.id] = { rank: u.rank, war_name: u.war_name };
+                    acc[u.id] = { rank: u.rank, war_name: u.war_name || u.name };
                     return acc;
                 }, {});
 
@@ -106,6 +112,58 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
             setRequests([]);
         }
         setLoading(false);
+    };
+
+    // Auto-search user by SARAM
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (directSaram.length >= 4) {
+                handleSaramSearch();
+            } else {
+                setFoundUser(null);
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [directSaram]);
+
+    const handleSaramSearch = async () => {
+        setIsSearchingSaram(true);
+        const { data, error } = await supabase
+            .from('users')
+            .select('id, name, rank, war_name, password')
+            .eq('saram', directSaram.replace(/\D/g, ''))
+            .single();
+
+        if (data) {
+            setFoundUser(data);
+        } else {
+            setFoundUser(null);
+        }
+        setIsSearchingSaram(false);
+    };
+
+    const startSignatureFlow = async (requestId: string, userId: string, action: 'update_release' | 'update_return') => {
+        setActionLoading(requestId);
+        try {
+            const { data, error } = await supabase
+                .from('users')
+                .select('id, name, rank, war_name, password')
+                .eq('id', userId)
+                .single();
+
+            if (data) {
+                setFoundUser(data);
+                setSignatureRequestId(requestId);
+                setSignatureAction(action);
+                setShowSignatureModal(true);
+            } else {
+                alert('Militar não encontrado para assinatura.');
+            }
+        } catch (err) {
+            console.error('Error starting signature flow:', err);
+        } finally {
+            setActionLoading(null);
+        }
     };
 
     const handleSaramBlur = async () => {
@@ -131,35 +189,99 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
             alert('Selecione um militar válido e um material.');
             return;
         }
+        setSignatureAction('release');
+        setShowSignatureModal(true);
+    };
 
-        setActionLoading('direct');
+    const handleDirectReturn = async () => {
+        if (!foundUser || !directMaterialId) {
+            alert('Selecione um militar válido e um material.');
+            return;
+        }
+        setSignatureAction('return');
+        setShowSignatureModal(true);
+    };
+
+    const confirmSignature = async () => {
+        if (!foundUser || signaturePassword !== foundUser.password) {
+            alert('Senha incorreta!');
+            return;
+        }
+
+        setActionLoading('signature');
         try {
             const userName = `${user.rank || ''} ${user.war_name || user.name}`.trim();
+            const militaryName = `${foundUser.rank} ${foundUser.war_name || foundUser.name}`.trim();
+            const now = new Date().toISOString();
 
-            const { data, error } = await supabase
-                .from('movimentacao_cautela')
-                .insert([{
-                    id_material: directMaterialId,
-                    id_usuario: foundUser.id,
-                    status: 'Em Uso',
-                    quantidade: directQuantity,
-                    autorizado_por: userName,
-                    entregue_por: userName,
-                    created_at: new Date().toISOString()
-                }]);
+            if (signatureAction === 'release') {
+                const { error } = await supabase
+                    .from('movimentacao_cautela')
+                    .insert([{
+                        id_material: directMaterialId,
+                        id_usuario: foundUser.id,
+                        status: 'Em Uso',
+                        quantidade: directQuantity,
+                        autorizado_por: userName,
+                        entregue_por: userName,
+                        observacao: `Assinado digitalmente por ${militaryName} em ${new Date().toLocaleString()}`,
+                        created_at: now
+                    }]);
+                if (error) throw error;
+                alert('Material liberado com sucesso!');
+            } else if (signatureAction === 'return') {
+                const { error } = await supabase
+                    .from('movimentacao_cautela')
+                    .insert([{
+                        id_material: directMaterialId,
+                        id_usuario: foundUser.id,
+                        status: 'Concluído',
+                        quantidade: directQuantity,
+                        autorizado_por: userName,
+                        entregue_por: userName,
+                        recebido_por: userName,
+                        observacao: `Devolução Direta: Assinado digitalmente por ${militaryName} em ${new Date().toLocaleString()}`,
+                        created_at: now
+                    }]);
+                if (error) throw error;
+                alert('Devolução registrada com sucesso!');
+            } else if (signatureAction === 'update_release' && signatureRequestId) {
+                const { error } = await supabase
+                    .from('movimentacao_cautela')
+                    .update({
+                        status: 'Em Uso',
+                        entregue_por: userName,
+                        observacao: `Retirada assinada digitalmente por ${militaryName} em ${new Date().toLocaleString()}`
+                    })
+                    .eq('id', signatureRequestId);
+                if (error) throw error;
+                alert('Entrega confirmada e assinada!');
+            } else if (signatureAction === 'update_return' && signatureRequestId) {
+                const { error } = await supabase
+                    .from('movimentacao_cautela')
+                    .update({
+                        status: 'Concluído',
+                        recebido_por: userName,
+                        observacao: `Devolução assinada digitalmente por ${militaryName} em ${new Date().toLocaleString()}`
+                    })
+                    .eq('id', signatureRequestId);
+                if (error) throw error;
+                alert('Devolução aprovada e assinada!');
+            }
 
-            if (error) throw error;
-
-            alert('Material liberado com sucesso!');
             setDirectSaram('');
             setDirectMaterialId('');
             setDirectQuantity(1);
             setFoundUser(null);
             setShowDirectRelease(false);
+            setShowDirectReturn(false);
+            setShowSignatureModal(false);
+            setSignaturePassword('');
+            setSignatureRequestId(null);
             fetchRequests();
         } catch (err: any) {
-            console.error('Error in direct release:', err);
-            alert('Erro ao liberar material: ' + err.message);
+            console.error('Error in signature action:', err);
+            alert('Erro ao processar: ' + err.message);
         } finally {
             setActionLoading(null);
         }
@@ -241,19 +363,27 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                         <ShieldCheck className="w-8 h-8 text-white" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black tracking-tight">Aprovações e Devoluções (SAP-03)</h1>
+                        <h1 className="text-2xl font-black tracking-tight">Material e Cautela (SAP-03)</h1>
                         <p className="text-slate-500 text-sm font-medium">Gerencie o fluxo de materiais da seção.</p>
                     </div>
                 </div>
 
                 <div className="flex gap-2">
                     <button
-                        onClick={() => setShowDirectRelease(!showDirectRelease)}
+                        onClick={() => { setShowDirectRelease(!showDirectRelease); setShowDirectReturn(false); }}
                         className={`px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 ${showDirectRelease ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-blue-600 text-white hover:bg-blue-700'
                             }`}
                     >
                         <Package className="w-4 h-4" />
                         {showDirectRelease ? 'Cancelar Liberação' : 'Liberação Direta'}
+                    </button>
+                    <button
+                        onClick={() => { setShowDirectReturn(!showDirectReturn); setShowDirectRelease(false); }}
+                        className={`px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 ${showDirectReturn ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                            }`}
+                    >
+                        <CheckCircle className="w-4 h-4" />
+                        {showDirectReturn ? 'Cancelar Devolução' : 'Devolução Direta'}
                     </button>
                     <button onClick={fetchRequests} className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 shadow-sm">
                         <Clock className="w-5 h-5" />
@@ -261,12 +391,12 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                 </div>
             </div>
 
-            {/* Direct Release Form */}
-            {showDirectRelease && (
+            {/* Direct Release/Return Form */}
+            {(showDirectRelease || showDirectReturn) && (
                 <div className="bg-white p-6 rounded-2xl border-2 border-blue-100 shadow-xl shadow-blue-50 space-y-4 animate-scale-in">
                     <h2 className="font-black text-slate-800 flex items-center gap-2 uppercase text-xs tracking-widest">
-                        <div className="w-2 h-2 rounded-full bg-blue-600"></div>
-                        Nova Liberação Direta (Sem Solicitação)
+                        <div className={`w-2 h-2 rounded-full ${showDirectRelease ? 'bg-blue-600' : 'bg-emerald-600'}`}></div>
+                        {showDirectRelease ? 'Nova Liberação Direta (Sem Solicitação)' : 'Nova Devolução Direta (Sem fluxo pendente)'}
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div className="space-y-1">
@@ -275,11 +405,12 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                                 type="text"
                                 value={directSaram}
                                 onChange={(e) => setDirectSaram(e.target.value)}
-                                onBlur={handleSaramBlur}
                                 placeholder="Digite o SARAM..."
                                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none"
                             />
+                            {isSearchingSaram && <p className="text-[10px] font-bold text-blue-500 mt-1 animate-pulse">Buscando militar...</p>}
                             {foundUser && <p className="text-[10px] font-bold text-green-600 mt-1">✓ {foundUser.rank} {foundUser.war_name || foundUser.name}</p>}
+                            {directSaram.length >= 4 && !foundUser && !isSearchingSaram && <p className="text-[10px] font-bold text-red-500 mt-1">Militar não encontrado.</p>}
                         </div>
                         <div className="md:col-span-2 space-y-1">
                             <label className="text-[10px] font-bold text-slate-400 uppercase">Material Disponível</label>
@@ -296,11 +427,11 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                         </div>
                         <div className="space-y-1 flex flex-col justify-end">
                             <button
-                                onClick={handleDirectRelease}
+                                onClick={showDirectRelease ? handleDirectRelease : handleDirectReturn}
                                 disabled={actionLoading === 'direct' || !foundUser || !directMaterialId}
-                                className="w-full h-[50px] bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 transition-all disabled:opacity-50 shadow-lg text-sm"
+                                className={`w-full h-[50px] text-white rounded-xl font-bold transition-all disabled:opacity-50 shadow-lg text-sm ${showDirectRelease ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
                             >
-                                {actionLoading === 'direct' ? 'Processando...' : 'Liberar Agora'}
+                                {actionLoading === 'direct' ? 'Processando...' : (showDirectRelease ? 'Liberar Agora' : 'Devolver Agora')}
                             </button>
                         </div>
                     </div>
@@ -416,22 +547,22 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
 
                                 {req.status === 'Aguardando Confirmação' && (
                                     <button
-                                        onClick={() => updateStatus(req.id, 'Em Uso', undefined, false, undefined, 1, `${user.rank} ${user.war_name}`)}
+                                        onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_release')}
                                         disabled={!!actionLoading}
                                         className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                                     >
-                                        <Truck className="w-4 h-4" /> Confirmar Entrega (Cautela)
+                                        <Truck className="w-4 h-4" /> Confirmar Entrega (Assinar)
                                     </button>
                                 )}
 
                                 {req.status === 'Pendente Devolução' && (
                                     <>
                                         <button
-                                            onClick={() => updateStatus(req.id, 'Concluído', undefined, false, undefined, 1, `${user.rank} ${user.war_name}`)}
+                                            onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return')}
                                             disabled={!!actionLoading}
                                             className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
                                         >
-                                            <CheckCircle className="w-4 h-4" /> Aprovar Devolução
+                                            <CheckCircle className="w-4 h-4" /> Aprovar Devolução (Assinar)
                                         </button>
                                         <button
                                             onClick={() => handleRejectReturn(req)}
@@ -541,6 +672,65 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                             >
                                 Fechar
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Signature Modal */}
+            {showSignatureModal && (
+                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden animate-scale-in">
+                        <div className="p-8 pb-4 text-center">
+                            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <ShieldCheck className="w-10 h-10 text-blue-600" />
+                            </div>
+                            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Assinar Cautela</h3>
+                            <p className="text-slate-500 text-sm font-medium mt-1">O militar deve inserir sua senha para {signatureAction === 'release' ? 'autorizar a retirada' : 'confirmar a devolução'}.</p>
+                        </div>
+
+                        <div className="p-8 pt-0 space-y-6">
+                            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm font-bold text-blue-600">
+                                        {foundUser?.rank || '?'}
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Militar</p>
+                                        <p className="font-bold text-slate-800">{foundUser?.war_name || foundUser?.name}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                    <Lock className="w-3 h-3" /> Senha do App
+                                </label>
+                                <input
+                                    type="password"
+                                    value={signaturePassword}
+                                    onChange={(e) => setSignaturePassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-bold text-lg outline-none focus:border-blue-500 transition-all text-center tracking-[0.5em]"
+                                    autoFocus
+                                    onKeyDown={(e) => e.key === 'Enter' && confirmSignature()}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3 pt-2">
+                                <button
+                                    onClick={() => { setShowSignatureModal(false); setSignaturePassword(''); }}
+                                    className="w-full bg-slate-100 text-slate-600 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-slate-200 transition-all font-bold"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={confirmSignature}
+                                    disabled={!signaturePassword || !!actionLoading}
+                                    className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-600/20 transition-all disabled:opacity-50"
+                                >
+                                    {actionLoading ? 'Verificando...' : 'Confirmar'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

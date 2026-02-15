@@ -114,7 +114,7 @@ export default function SideMenu({
                                 >
                                     <div className="flex items-center gap-3">
                                         <Package className="w-5 h-5 shrink-0" />
-                                        {!isCollapsed && <span className="text-sm font-bold">Material e Cautela</span>}
+                                        {!isCollapsed && <span className="text-sm font-bold">Painel de Material</span>}
                                     </div>
                                     {!isCollapsed && (
                                         <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isMaterialMenuOpen ? 'rotate-90' : ''}`} />
@@ -127,7 +127,7 @@ export default function SideMenu({
                                         {isMaterialManager && (
                                             <>
                                                 <div className="my-2 border-t border-slate-800" />
-                                                <MenuItem id="material-approvals" label="Aprovações" icon={ShieldCheck} />
+                                                <MenuItem id="material-approvals" label="Material e Cautela" icon={ShieldCheck} />
                                                 <MenuItem id="inventory-management" label="Gestão de Estoque" icon={LayoutDashboard} />
                                                 <MenuItem id="material-statistics" label="Estatísticas" icon={LayoutDashboard} />
                                             </>
