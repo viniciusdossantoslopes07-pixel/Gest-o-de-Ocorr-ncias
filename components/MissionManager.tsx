@@ -724,46 +724,46 @@ export default function MissionManager({ user }: MissionManagerProps) {
                 {activeTab === 'missoes_ativas' && (
                     <div className="space-y-4">
                         {getFilteredItems().length === 0 ? (
-                            <div className="text-center py-12 text-slate-400">Nenhuma missão ativa ou pronta para execução no momento.</div>
+                            <div className="text-center py-12 text-slate-400 text-sm">Nenhuma missão ativa ou pronta para execução no momento.</div>
                         ) : (
                             getFilteredItems().map(order => (
-                                <div key={order.id} className="p-5 rounded-xl border border-l-4 border-l-emerald-500 border-slate-200 bg-white hover:shadow-md transition-all">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <h3 className="text-lg font-bold text-slate-900">{order.mission}</h3>
-                                                <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${MISSION_STATUS_COLORS[order.status || ''] || 'bg-slate-100'}`}>
+                                <div key={order.id} className="p-4 sm:p-5 rounded-xl border border-l-4 border-l-emerald-500 border-slate-200 bg-white hover:shadow-md transition-all">
+                                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                                                <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">{order.mission}</h3>
+                                                <span className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase whitespace-nowrap ${MISSION_STATUS_COLORS[order.status || ''] || 'bg-slate-100'}`}>
                                                     {MISSION_STATUS_LABELS[order.status || ''] || order.status}
                                                 </span>
                                             </div>
-                                            <p className="text-slate-600 text-sm mb-4 max-w-2xl">{order.description}</p>
-                                            <div className="flex items-center gap-6 text-sm text-slate-500">
-                                                <span className="flex items-center gap-2"><Clock className="w-4 h-4" /> {new Date(order.date).toLocaleDateString()}</span>
-                                                <span className="flex items-center gap-2 rounded bg-slate-100 px-2 py-1"><Shield className="w-3 h-3" /> OM #{order.omisNumber}</span>
+                                            <p className="text-slate-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 md:line-clamp-none">{order.description}</p>
+                                            <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-[11px] sm:text-sm text-slate-500">
+                                                <span className="flex items-center gap-1.5 whitespace-nowrap"><Clock className="w-3.5 h-3.5" /> {new Date(order.date).toLocaleDateString()}</span>
+                                                <span className="flex items-center gap-1.5 rounded bg-slate-100 px-2 py-0.5 whitespace-nowrap font-medium"><Shield className="w-3 h-3" /> OM #{order.omisNumber}</span>
                                             </div>
                                         </div>
-                                        <div className="flex flex-col gap-2">
+                                        <div className="flex sm:flex-col gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                                             {order.status === 'PRONTA_PARA_EXECUCAO' && canManageMission(order) && (
                                                 <button
                                                     onClick={() => handleMissionStart(order)}
-                                                    className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700 transition-colors flex items-center gap-2 shadow-lg shadow-emerald-200"
+                                                    className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
                                                 >
-                                                    <Play className="w-4 h-4" /> Iniciar Missão
+                                                    <Play className="w-3.5 h-3.5" /> Iniciar
                                                 </button>
                                             )}
                                             {order.status === 'EM_MISSAO' && canManageMission(order) && (
                                                 <button
                                                     onClick={() => handleMissionEnd(order)}
-                                                    className="px-4 py-2 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors flex items-center gap-2 shadow-lg shadow-red-200"
+                                                    className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
                                                 >
-                                                    <Square className="w-4 h-4" /> Finalizar Missão
+                                                    <Square className="w-3.5 h-3.5" /> Finalizar
                                                 </button>
                                             )}
                                             <button
                                                 onClick={() => handlePrintOrder(order)}
-                                                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-bold hover:bg-slate-200 transition-colors flex items-center gap-2"
+                                                className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-xs sm:text-sm font-bold hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
                                             >
-                                                <FileText className="w-4 h-4" /> Imprimir OM
+                                                <FileText className="w-3.5 h-3.5" /> Imprimir
                                             </button>
                                         </div>
                                     </div>
@@ -829,29 +829,29 @@ export default function MissionManager({ user }: MissionManagerProps) {
                 {activeTab === 'missoes_finalizadas' && (
                     <div className="space-y-4">
                         {orders.filter(o => o.status === 'CONCLUIDA' || o.status === 'CANCELADA').length === 0 ? (
-                            <div className="text-center py-12 text-slate-400">Nenhuma missão finalizada.</div>
+                            <div className="text-center py-12 text-slate-400 text-sm">Nenhuma missão finalizada.</div>
                         ) : (
                             orders.filter(o => o.status === 'CONCLUIDA' || o.status === 'CANCELADA').map(order => (
-                                <div key={order.id} className={`p-5 rounded-xl border border-l-4 ${order.status === 'CONCLUIDA' ? 'border-l-green-500' : 'border-l-red-500'} border-slate-200 bg-slate-50`}>
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <h3 className="text-lg font-bold text-slate-900">{order.mission}</h3>
-                                                <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${order.status === 'CONCLUIDA' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                <div key={order.id} className={`p-4 sm:p-5 rounded-xl border border-l-4 ${order.status === 'CONCLUIDA' ? 'border-l-green-500' : 'border-l-red-500'} border-slate-200 bg-slate-50 hover:shadow-md transition-all`}>
+                                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                                                <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">{order.mission}</h3>
+                                                <span className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase whitespace-nowrap ${order.status === 'CONCLUIDA' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                                     {order.status === 'CONCLUIDA' ? 'Concluída' : 'Cancelada'}
                                                 </span>
                                             </div>
-                                            <p className="text-slate-600 text-sm mb-4 max-w-2xl">{order.description}</p>
-                                            <div className="flex items-center gap-6 text-sm text-slate-500">
-                                                <span className="flex items-center gap-2"><Clock className="w-4 h-4" /> {new Date(order.date).toLocaleDateString()}</span>
-                                                <span className="flex items-center gap-2 rounded bg-slate-100 px-2 py-1"><Shield className="w-3 h-3" /> OM #{order.omisNumber}</span>
+                                            <p className="text-slate-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 md:line-clamp-none">{order.description}</p>
+                                            <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-[11px] sm:text-sm text-slate-500">
+                                                <span className="flex items-center gap-1.5 whitespace-nowrap"><Clock className="w-3.5 h-3.5" /> {new Date(order.date).toLocaleDateString()}</span>
+                                                <span className="flex items-center gap-1.5 rounded bg-slate-100 px-2 py-0.5 whitespace-nowrap font-medium"><Shield className="w-3 h-3" /> OM #{order.omisNumber}</span>
                                             </div>
                                         </div>
                                         <button
                                             onClick={() => handlePrintOrder(order)}
-                                            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-bold hover:bg-slate-200 transition-colors flex items-center gap-2"
+                                            className="w-full sm:w-auto px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-xs sm:text-sm font-bold hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
                                         >
-                                            <FileText className="w-4 h-4" /> Ver Detalhes
+                                            <FileText className="w-3.5 h-3.5" /> Ver Detalhes
                                         </button>
                                     </div>
                                 </div>
