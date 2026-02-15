@@ -19,7 +19,14 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
     // Filter attendances based on date and sector, AND only signed ones
     const currentAttendances = attendanceHistory?.filter(a => {
         const matchesDate = a.date === selectedDate;
-        const matchesSector = selectedSector === 'TODOS' || a.sector === selectedSector;
+        let matchesSector = false;
+        if (selectedSector === 'TODOS') {
+            matchesSector = true;
+        } else if (selectedSector === 'GSD-SP') {
+            matchesSector = a.sector !== 'BASP';
+        } else {
+            matchesSector = a.sector === selectedSector;
+        }
         const isSigned = !!a.signedBy; // Apenas chamadas assinadas geram indicadores
         return matchesDate && matchesSector && isSigned;
     }) || [];
@@ -30,7 +37,9 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
     // Get relevant users based on sector filter
     const relevantUsers = selectedSector === 'TODOS'
         ? users
-        : users.filter(u => u.sector === selectedSector);
+        : selectedSector === 'GSD-SP'
+            ? users.filter(u => u.sector !== 'BASP')
+            : users.filter(u => u.sector === selectedSector);
 
     currentAttendances
         .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
@@ -105,6 +114,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                                 className="bg-transparent border-none text-xs font-black text-slate-700 uppercase focus:ring-0 cursor-pointer min-w-[140px]"
                             >
                                 <option value="TODOS">TODOS OS SETORES</option>
+                                <option value="GSD-SP">TODOS GSD-SP</option>
                                 {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
                         </div>
@@ -154,62 +164,64 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
-                                {(selectedSector === 'TODOS' ? SETORES : [selectedSector]).map(sector => {
-                                    const sectorUsers = users.filter(u => u.sector === sector);
-                                    // Comentado para permitir visualização de setores vazios (Ex: BASP)
-                                    // if (sectorUsers.length === 0) return null;
+                                {((selectedSector === 'TODOS' || selectedSector === 'GSD-SP')
+                                    ? (selectedSector === 'GSD-SP' ? SETORES.filter(s => s !== 'BASP') : SETORES)
+                                    : [selectedSector]).map(sector => {
+                                        const sectorUsers = users.filter(u => u.sector === sector);
+                                        // Comentado para permitir visualização de setores vazios (Ex: BASP)
+                                        // if (sectorUsers.length === 0) return null;
 
-                                    const sectorRecords = Array.from(latestRecordsMap.values()).filter(r => r.sector === sector);
-                                    const ready = sectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
-                                    const total = sectorUsers.length;
-                                    const absent = total - ready;
-                                    const pct = total > 0 ? (ready / total) * 100 : 0;
+                                        const sectorRecords = Array.from(latestRecordsMap.values()).filter(r => r.sector === sector);
+                                        const ready = sectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
+                                        const total = sectorUsers.length;
+                                        const absent = total - ready;
+                                        const pct = total > 0 ? (ready / total) * 100 : 0;
 
-                                    return (
-                                        <tr key={sector} className="group hover:bg-slate-50/50 transition-colors">
-                                            <td className="px-8 py-4">
-                                                <span className="text-xs font-black text-slate-900 uppercase tracking-tight">{sector}</span>
-                                            </td>
-                                            <td className="px-4 py-4 text-center">
-                                                <span className="text-xs font-bold text-slate-500">{total}</span>
-                                            </td>
-                                            <td className="px-4 py-4 text-center">
-                                                <span className="text-xs font-black text-emerald-600">{ready}</span>
-                                            </td>
-                                            <td className="px-4 py-4 text-center">
-                                                <span className={`text-xs font-black ${absent > 0 ? 'text-red-500' : 'text-slate-300'}`}>{absent}</span>
-                                            </td>
-                                            <td className="px-8 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                                                        <div
-                                                            className={`h-full rounded-full transition-all duration-700 shadow-sm ${pct > 85 ? 'bg-emerald-500' : pct > 60 ? 'bg-amber-400' : 'bg-red-500'}`}
-                                                            style={{ width: `${pct}%` }}
-                                                        />
+                                        return (
+                                            <tr key={sector} className="group hover:bg-slate-50/50 transition-colors">
+                                                <td className="px-8 py-4">
+                                                    <span className="text-xs font-black text-slate-900 uppercase tracking-tight">{sector}</span>
+                                                </td>
+                                                <td className="px-4 py-4 text-center">
+                                                    <span className="text-xs font-bold text-slate-500">{total}</span>
+                                                </td>
+                                                <td className="px-4 py-4 text-center">
+                                                    <span className="text-xs font-black text-emerald-600">{ready}</span>
+                                                </td>
+                                                <td className="px-4 py-4 text-center">
+                                                    <span className={`text-xs font-black ${absent > 0 ? 'text-red-500' : 'text-slate-300'}`}>{absent}</span>
+                                                </td>
+                                                <td className="px-8 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                                            <div
+                                                                className={`h-full rounded-full transition-all duration-700 shadow-sm ${pct > 85 ? 'bg-emerald-500' : pct > 60 ? 'bg-amber-400' : 'bg-red-500'}`}
+                                                                style={{ width: `${pct}%` }}
+                                                            />
+                                                        </div>
+                                                        <span className={`text-[10px] font-black w-8 text-right ${pct > 85 ? 'text-emerald-600' : pct > 60 ? 'text-amber-600' : 'text-red-600'}`}>
+                                                            {Math.round(pct)}%
+                                                        </span>
                                                     </div>
-                                                    <span className={`text-[10px] font-black w-8 text-right ${pct > 85 ? 'text-emerald-600' : pct > 60 ? 'text-amber-600' : 'text-red-600'}`}>
-                                                        {Math.round(pct)}%
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-4 text-center">
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedSector(prev => prev === sector ? 'TODOS' : sector);
-                                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                    }}
-                                                    title={selectedSector === sector ? "Mostrar Todos os Setores" : "Ver Detalhes deste Setor"}
-                                                    className={`p-2 rounded-lg transition-all border ${selectedSector === sector
-                                                        ? 'bg-slate-900 text-white border-slate-900 shadow-lg'
-                                                        : 'bg-transparent text-slate-400 hover:text-slate-900 hover:bg-slate-100 border-transparent hover:border-slate-200'
-                                                        }`}
-                                                >
-                                                    <BarChart3 className="w-4 h-4" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
+                                                </td>
+                                                <td className="px-4 py-4 text-center">
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedSector(prev => prev === sector ? 'TODOS' : sector);
+                                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                        }}
+                                                        title={selectedSector === sector ? "Mostrar Todos os Setores" : "Ver Detalhes deste Setor"}
+                                                        className={`p-2 rounded-lg transition-all border ${selectedSector === sector
+                                                            ? 'bg-slate-900 text-white border-slate-900 shadow-lg'
+                                                            : 'bg-transparent text-slate-400 hover:text-slate-900 hover:bg-slate-100 border-transparent hover:border-slate-200'
+                                                            }`}
+                                                    >
+                                                        <BarChart3 className="w-4 h-4" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                             </tbody>
                         </table>
 
@@ -229,7 +241,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                         </div>
                         <h3 className="text-lg font-black tracking-tight mb-6">Controle de Assinaturas</h3>
                         <div className="space-y-4 relative z-10">
-                            {SETORES.map(sector => {
+                            {(selectedSector === 'GSD-SP' ? SETORES.filter(s => s !== 'BASP') : SETORES).map(sector => {
                                 const sectorCalls = currentAttendances.filter(a => a.sector === sector);
                                 const hasInicio = sectorCalls.some(c => c.callType === 'INICIO');
                                 const hasTermino = sectorCalls.some(c => c.callType === 'TERMINO');
