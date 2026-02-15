@@ -841,6 +841,9 @@ const App: FC = () => {
       />
 
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        <div className="bg-red-600 text-white text-[10px] py-1 text-center font-black uppercase tracking-[0.2em] z-50 animate-pulse">
+          Diagnóstico Ativo: 15/02 - 12:47
+        </div>
         {/* HEADER (Simplified) */}
         {!isPublic && (
           <header className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} border-b px-4 lg:px-8 py-4 lg:py-5 flex items-center justify-between z-40`}>
