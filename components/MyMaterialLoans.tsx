@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
-import { Package, Clock, Truck, CornerDownLeft } from 'lucide-react';
+import { Package, Clock, Truck, CornerDownLeft, XCircle, ShieldCheck, CheckCircle } from 'lucide-react';
 
 interface MaterialLoan {
     id: string;
@@ -24,6 +24,7 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
     const [loans, setLoans] = useState<MaterialLoan[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const [selectedLoan, setSelectedLoan] = useState<MaterialLoan | null>(null);
 
     useEffect(() => {
         if (user) fetchLoans();
@@ -88,7 +89,11 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                     </div>
                 ) : (
                     loans.map(loan => (
-                        <div key={loan.id} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all relative overflow-hidden">
+                        <div
+                            key={loan.id}
+                            onClick={() => setSelectedLoan(loan)}
+                            className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all relative overflow-hidden cursor-pointer hover:border-blue-400"
+                        >
                             {/* Status Bar */}
                             <div className={`absolute top-0 left-0 right-0 h-1 ${loan.status === 'Pendente' ? 'bg-yellow-400' :
                                 loan.status === 'Aprovado' ? 'bg-blue-400' :
@@ -178,6 +183,96 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                     ))
                 )}
             </div>
+
+            {/* Detail Modal */}
+            {selectedLoan && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-in">
+                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                            <h3 className="font-bold text-xl text-slate-800 flex items-center gap-2">
+                                <Package className="w-6 h-6 text-blue-600" />
+                                Detalhes do Item
+                            </h3>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setSelectedLoan(null); }}
+                                className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400"
+                            >
+                                <XCircle className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Material</p>
+                                    <p className="font-bold text-slate-800">{selectedLoan.material?.material || 'Desconhecido'}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</p>
+                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${selectedLoan.status === 'Concluído' ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
+                                        }`}>{selectedLoan.status}</span>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quantidade</p>
+                                    <p className="text-slate-800">{selectedLoan.quantidade || 1} un.</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Data do Pedido</p>
+                                    <p className="text-slate-800">{new Date(selectedLoan.created_at).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+
+                            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-4">
+                                <h4 className="text-xs font-bold text-slate-500 flex items-center gap-2 border-b border-slate-200 pb-2">
+                                    <ShieldCheck className="w-4 h-4 text-blue-500" />
+                                    TRILHA DE AUDITORIA
+                                </h4>
+
+                                <div className="space-y-3">
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                                            <CheckCircle className="w-4 h-4 text-blue-600" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Autorizado Por</p>
+                                            <p className="text-sm font-semibold text-slate-700">{selectedLoan.autorizado_por || 'Aguardando Aprovação'}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center shrink-0">
+                                            <Truck className="w-4 h-4 text-yellow-600" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Entregue Por</p>
+                                            <p className="text-sm font-semibold text-slate-700">{selectedLoan.entregue_por || '---'}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                                            <CheckCircle className="w-4 h-4 text-green-600" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Recebido Por</p>
+                                            <p className="text-sm font-semibold text-slate-700">{selectedLoan.recebido_por || '---'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end">
+                            <button
+                                onClick={() => setSelectedLoan(null)}
+                                className="px-6 py-2 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 transition-all shadow-lg text-sm"
+                            >
+                                Fechar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
