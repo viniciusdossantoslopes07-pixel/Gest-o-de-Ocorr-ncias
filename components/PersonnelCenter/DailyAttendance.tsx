@@ -487,7 +487,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 pb-20">
             {/* Header */}
-            <div className="bg-white rounded-[2rem] p-6 lg:p-8 border border-slate-200 shadow-sm">
+            <div className="bg-white rounded-[2rem] p-4 lg:p-8 border border-slate-200 shadow-sm">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                     <div className="flex items-center gap-4">
                         <div className="bg-blue-600 p-2.5 lg:p-3 rounded-2xl shadow-lg shadow-blue-200">
@@ -574,7 +574,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     onClick={() => setActiveSubTab('cupons')}
                     className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${activeSubTab === 'cupons' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
-                    <FileText className="w-4 h-4" /> Cupons Gerados (Faltas)
+                    <FileText className="w-4 h-4" /> Cupons Gerados
                 </button>
             </div>
 
@@ -766,11 +766,11 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
                     <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm p-8">
                         {/* Institutional Header within Tab */}
-                        <div className="flex flex-col items-center mb-8 text-center">
+                        <div className="flex flex-col items-center mb-6 lg:mb-8 text-center px-4">
                             <img
                                 src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Coat_of_arms_of_Brazil.svg"
                                 alt="Brasão da República"
-                                className="w-16 h-16 mb-4 object-contain"
+                                className="w-12 h-12 lg:w-16 lg:h-16 mb-4 object-contain"
                             />
                             <div className="space-y-1">
                                 <h1 className="text-xs font-black uppercase tracking-[0.2em] text-slate-800">Ministério da Defesa</h1>

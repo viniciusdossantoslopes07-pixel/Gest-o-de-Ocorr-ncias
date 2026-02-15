@@ -412,22 +412,22 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                     </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2 w-full md:w-auto">
                     <button
                         onClick={() => { setShowDirectRelease(!showDirectRelease); setShowReceiveMaterial(false); }}
-                        className={`px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 ${showDirectRelease ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                        className={`flex-1 md:flex-none px-3 md:px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 text-xs md:text-sm ${showDirectRelease ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
                     >
-                        <Package className="w-4 h-4" />
-                        {showDirectRelease ? 'Cancelar Cautela' : 'Cautelar Material'}
+                        <Package className="w-4 h-4 shrink-0" />
+                        <span className="truncate">{showDirectRelease ? 'Cancelar' : 'Cautelar'}</span>
                     </button>
                     <button
                         onClick={() => { setShowReceiveMaterial(!showReceiveMaterial); setShowDirectRelease(false); }}
-                        className={`px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 ${showReceiveMaterial ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
+                        className={`flex-1 md:flex-none px-3 md:px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 text-xs md:text-sm ${showReceiveMaterial ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
                     >
-                        <Plus className="w-4 h-4" />
-                        {showReceiveMaterial ? 'Cancelar Recebimento' : 'Receber Material'}
+                        <Plus className="w-4 h-4 shrink-0" />
+                        <span className="truncate">{showReceiveMaterial ? 'Cancelar' : 'Receber'}</span>
                     </button>
-                    <button onClick={fetchRequests} className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 shadow-sm">
+                    <button onClick={fetchRequests} className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 shadow-sm shrink-0">
                         <Clock className="w-5 h-5" />
                     </button>
                 </div>
@@ -538,7 +538,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
             )}
 
             {/* Tabs */}
-            <div className="flex bg-slate-100 p-1 rounded-2xl w-full md:w-fit self-start border border-slate-200 overflow-x-auto">
+            <div className="flex bg-slate-100 p-1 rounded-2xl w-full md:w-fit self-start border border-slate-200 overflow-x-auto scrollbar-hide">
                 {(['Solicitações', 'Devoluções', 'Em Uso', 'Histórico'] as const).map(tab => (
                     <button
                         key={tab}
@@ -630,17 +630,17 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                                     <div className={`p-4 rounded-full shrink-0 ${req.status === 'Pendente' ? 'bg-yellow-100 text-yellow-600' : req.status === 'Aprovado' ? 'bg-blue-100 text-blue-600' : req.status === 'Pendente Devolução' ? 'bg-purple-100 text-purple-600' : req.status === 'Concluído' ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-600'}`}>
                                         <Package className="w-6 h-6" />
                                     </div>
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <h3 className="font-bold text-lg text-slate-900">
-                                                {req.quantidade && req.quantidade > 1 && <span className="text-blue-600 mr-2">{req.quantidade}x</span>}
-                                                {req.material?.material || 'Material Desconhecido'}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                                            <h3 className="font-bold text-base md:text-lg text-slate-900 truncate">
+                                                {req.quantidade && req.quantidade > 1 && <span className="text-blue-600 mr-1">{req.quantidade}x</span>}
+                                                {req.material?.material || 'Material'}
                                             </h3>
-                                            <span className={`text-[10px] px-2 py-1 rounded-full font-black uppercase ${req.status === 'Em Uso' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                                            <span className={`text-[8px] md:text-[10px] px-2 py-0.5 md:py-1 rounded-full font-black uppercase ${req.status === 'Em Uso' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
                                                 {req.status}
                                             </span>
                                         </div>
-                                        <p className="text-sm text-slate-500">
+                                        <p className="text-xs text-slate-500 truncate">
                                             Solicitante: <span className="font-bold text-slate-700">{req.solicitante ? `${req.solicitante.rank} ${req.solicitante.war_name}` : `ID: ${req.id_usuario}`}</span>
                                         </p>
                                     </div>
