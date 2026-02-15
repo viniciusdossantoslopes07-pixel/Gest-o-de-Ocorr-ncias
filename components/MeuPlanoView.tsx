@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { User, MissionOrder } from '../types';
-import { FileText, BarChart3, Download, Calendar, Shield, MapPin, Package } from 'lucide-react';
+import { FileText, BarChart3, Download, Calendar, Shield, MapPin, Package, Filter, X } from 'lucide-react';
 import MissionRequestList from './MissionRequestList';
 import { supabase } from '../services/supabase';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
@@ -22,6 +22,10 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         activeLoans: 0
     });
     const [loading, setLoading] = useState(false);
+    const [allMissions, setAllMissions] = useState<any[]>([]);
+    const [filterDateStart, setFilterDateStart] = useState('');
+    const [filterDateEnd, setFilterDateEnd] = useState('');
+    const [filterType, setFilterType] = useState('');
 
     // Data for Requests Tab
     const [requests, setRequests] = useState<any[]>([]);
@@ -48,6 +52,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                 .order('date', { ascending: false });
 
             if (mError) throw mError;
+            setAllMissions(missions || []);
 
             // 2. Fetch Material Loans (History)
             const { data: loans, error: lError } = await supabase
@@ -57,31 +62,8 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
 
             if (lError) throw lError;
 
-            // Process Data
-            const totalMissions = missions?.length || 0;
-            const recentMissions = missions?.slice(0, 5) || [];
-
-            // Group by Type
-            const typeCount: Record<string, number> = {};
-            missions?.forEach((m: any) => {
-                const type = m.mission || 'Outros';
-                typeCount[type] = (typeCount[type] || 0) + 1;
-            });
-            const missionsByType = Object.entries(typeCount).map(([name, value]) => ({ name, value }));
-
-            // Loans
-            const loanHistory = loans?.length || 0;
-            const activeLoans = loans?.filter((l: any) => l.status === 'Em Uso').reduce((acc: number, curr: any) => acc + (curr.quantidade || 1), 0) || 0;
-
-
-            setStats({
-                totalMissions,
-                totalHours: 0, // Need accurate duration data for this, defaulting to 0 or could estimate
-                missionsByType,
-                recentMissions,
-                loanHistory,
-                activeLoans
-            });
+            // Process Initial Data (Full)
+            processAndSetStats(missions || [], loans || []);
 
         } catch (error) {
             console.error('Error fetching personal stats:', error);
@@ -89,6 +71,73 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             setLoading(false);
         }
     };
+
+    const processAndSetStats = (missions: any[], loans: any[]) => {
+        const totalMissions = missions.length;
+        const recentMissions = missions.slice(0, 5);
+
+        // Group by Type
+        const typeCount: Record<string, number> = {};
+        missions.forEach((m: any) => {
+            const type = m.mission || 'Outros';
+            typeCount[type] = (typeCount[type] || 0) + 1;
+        });
+        const missionsByType = Object.entries(typeCount).map(([name, value]) => ({ name, value }));
+
+        // Loans
+        const loanHistory = loans.length;
+        const activeLoans = loans.filter((l: any) => l.status === 'Em Uso').reduce((acc: number, curr: any) => acc + (curr.quantidade || 1), 0);
+
+        setStats({
+            totalMissions,
+            totalHours: 0,
+            missionsByType,
+            recentMissions,
+            loanHistory,
+            activeLoans
+        });
+    };
+
+    // Derived filtered stats
+    const filteredStats = useMemo(() => {
+        const filtered = allMissions.filter(m => {
+            const matchType = !filterType || m.mission === filterType;
+            const mDate = new Date(m.date);
+            const matchDateStart = !filterDateStart || mDate >= new Date(filterDateStart);
+            const matchDateEnd = !filterDateEnd || mDate <= new Date(filterDateEnd);
+            return matchType && matchDateStart && matchDateEnd;
+        });
+
+        // Re-calculate grouped data for charts and cards based on filtered set
+        const typeCount: Record<string, number> = {};
+        filtered.forEach((m: any) => {
+            const type = m.mission || 'Outros';
+            typeCount[type] = (typeCount[type] || 0) + 1;
+        });
+        const missionsByType = Object.entries(typeCount).map(([name, value]) => ({ name, value }));
+        const recentMissions = filtered.slice(0, 5);
+
+        return {
+            totalMissions: filtered.length,
+            missionsByType,
+            recentMissions,
+            allFiltered: filtered
+        };
+    }, [allMissions, filterType, filterDateStart, filterDateEnd]);
+
+    const missionTypes = useMemo(() => {
+        const types = new Set<string>();
+        allMissions.forEach(m => { if (m.mission) types.add(m.mission); });
+        return Array.from(types).sort();
+    }, [allMissions]);
+
+    const clearFilters = () => {
+        setFilterDateStart('');
+        setFilterDateEnd('');
+        setFilterType('');
+    };
+
+    const hasActiveFilters = filterDateStart || filterDateEnd || filterType;
 
     const fetchMyRequests = async () => {
         const { data } = await supabase
@@ -101,6 +150,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
 
     const generateReport = () => {
         const doc = new jsPDF();
+        const missionsToPrint = hasActiveFilters ? filteredStats.allFiltered : allMissions;
 
         // Header
         doc.setFontSize(18);
@@ -112,23 +162,39 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         doc.text(`Saram: ${user.saram}`, 20, 42);
         doc.text(`Data: ${new Date().toLocaleDateString()}`, 20, 48);
 
-        doc.line(20, 48, 190, 48);
+        if (hasActiveFilters) {
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            let filterText = 'Filtros aplicados: ';
+            if (filterType) filterText += `Tipo: ${filterType} | `;
+            if (filterDateStart || filterDateEnd) filterText += `Período: ${filterDateStart || '...'} a ${filterDateEnd || '...'}`;
+            doc.text(filterText, 20, 54);
+            doc.setTextColor(0);
+        }
+
+        doc.line(20, 56, 190, 56);
 
         // Stats Summary
         doc.setFontSize(14);
-        doc.text('Resumo Operacional', 20, 60);
+        doc.text('Resumo Operacional', 20, 65);
 
         doc.setFontSize(12);
-        doc.text(`Total de Missões: ${stats.totalMissions}`, 20, 70);
-        doc.text(`Cautelas Ativas: ${stats.activeLoans} itens`, 20, 78);
-        doc.text(`Histórico de Cautelas: ${stats.loanHistory} registros`, 20, 86);
+        doc.text(`Total de Missões: ${hasActiveFilters ? filteredStats.totalMissions : stats.totalMissions}`, 20, 75);
+        doc.text(`Cautelas Ativas: ${stats.activeLoans} itens`, 20, 83);
+        doc.text(`Histórico de Cautelas: ${stats.loanHistory} registros`, 20, 91);
 
         // Recent Missions
         doc.setFontSize(14);
-        doc.text('Últimas Missões', 20, 100);
+        doc.text(hasActiveFilters ? 'Missões Filtradas' : 'Últimas Missões', 20, 105);
 
-        let y = 110;
-        stats.recentMissions.forEach((m: any) => {
+        let y = 115;
+        const listToRender = hasActiveFilters ? missionsToPrint.slice(0, 15) : stats.recentMissions;
+
+        listToRender.forEach((m: any) => {
+            if (y > 270) {
+                doc.addPage();
+                y = 20;
+            }
             doc.setFontSize(10);
             const date = new Date(m.date).toLocaleDateString();
             doc.text(`${date} - ${m.mission} (${m.omis_number})`, 20, y);
@@ -140,7 +206,6 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             doc.setTextColor(0);
         });
 
-        // Update: Instead of saving automatically, open in new tab with print dialog
         doc.autoPrint();
         window.open(doc.output('bloburl'), '_blank');
     };
@@ -207,6 +272,55 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                 <div className="p-6">
                     {activeTab === 'estatisticas' && (
                         <div className="space-y-6 animate-fade-in">
+                            {/* Filter Bar */}
+                            <div className={`p-4 rounded-2xl border flex flex-wrap items-center gap-4 ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-200'}`}>
+                                <div className={`flex items-center gap-2 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                                    <Filter className="w-4 h-4 text-blue-500" />
+                                    <span className="font-bold text-xs uppercase tracking-wider">Filtrar</span>
+                                </div>
+
+                                <div className={`flex flex-wrap items-center gap-3 bg-opacity-50 rounded-xl px-3 py-1.5 ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
+                                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                                    <input
+                                        type="date"
+                                        value={filterDateStart}
+                                        onChange={(e) => setFilterDateStart(e.target.value)}
+                                        className="bg-transparent text-xs font-bold text-slate-500 outline-none w-28"
+                                    />
+                                    <span className="text-slate-400 text-xs">até</span>
+                                    <input
+                                        type="date"
+                                        value={filterDateEnd}
+                                        onChange={(e) => setFilterDateEnd(e.target.value)}
+                                        className="bg-transparent text-xs font-bold text-slate-500 outline-none w-28"
+                                    />
+                                </div>
+
+                                <div className={`flex items-center gap-3 bg-opacity-50 rounded-xl px-3 py-1.5 flex-1 min-w-[150px] ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
+                                    <Shield className="w-3.5 h-3.5 text-slate-400" />
+                                    <select
+                                        value={filterType}
+                                        onChange={(e) => setFilterType(e.target.value)}
+                                        className="bg-transparent text-xs font-bold text-slate-500 outline-none flex-1 appearance-none cursor-pointer"
+                                    >
+                                        <option value="">Todos os Tipos</option>
+                                        {missionTypes.map(type => (
+                                            <option key={type} value={type}>{type}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {hasActiveFilters && (
+                                    <button
+                                        onClick={clearFilters}
+                                        className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors"
+                                        title="Limpar Filtros"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                )}
+                            </div>
+
                             {/* Stats Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
@@ -216,7 +330,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                                         </div>
                                         <h3 className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>Missões Cumpridas</h3>
                                     </div>
-                                    <p className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{stats.totalMissions}</p>
+                                    <p className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{hasActiveFilters ? filteredStats.totalMissions : stats.totalMissions}</p>
                                     <p className="text-xs text-slate-500 mt-1">Participações em OMIS</p>
                                 </div>
 
@@ -246,12 +360,12 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {/* Chart */}
                                 <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-white border-slate-200'}`}>
-                                    <h3 className={`font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Tipos de Missão</h3>
+                                    <h3 className={`font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Tipos de Missão {hasActiveFilters && '(Filtrado)'}</h3>
                                     <div className="h-64 w-full">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
                                                 <Pie
-                                                    data={stats.missionsByType}
+                                                    data={hasActiveFilters ? filteredStats.missionsByType : stats.missionsByType}
                                                     cx="50%"
                                                     cy="50%"
                                                     innerRadius={60}
@@ -260,7 +374,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                                                     paddingAngle={5}
                                                     dataKey="value"
                                                 >
-                                                    {stats.missionsByType.map((entry, index) => (
+                                                    {(hasActiveFilters ? filteredStats.missionsByType : stats.missionsByType).map((entry, index) => (
                                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                                     ))}
                                                 </Pie>
@@ -273,28 +387,30 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
 
                                 {/* List */}
                                 <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-white border-slate-200'}`}>
-                                    <h3 className={`font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Últimas Missões</h3>
-                                    <div className="space-y-4">
-                                        {stats.recentMissions.map((mission: any) => (
+                                    <h3 className={`font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                        {hasActiveFilters ? 'Missões no Período' : 'Últimas Missões'}
+                                    </h3>
+                                    <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin">
+                                        {(hasActiveFilters ? filteredStats.recentMissions : stats.recentMissions).map((mission: any) => (
                                             <div key={mission.id} className={`flex items-start gap-3 p-3 rounded-lg ${isDarkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
-                                                <div className="mt-1 p-2 bg-blue-100 text-blue-600 rounded-lg">
+                                                <div className="mt-1 p-2 bg-blue-100 text-blue-600 rounded-lg flex-shrink-0">
                                                     <Calendar className="w-4 h-4" />
                                                 </div>
-                                                <div>
-                                                    <h4 className={`font-bold text-sm ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
+                                                <div className="min-w-0">
+                                                    <h4 className={`font-bold text-sm truncate ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
                                                         {mission.mission}
                                                         <span className="text-xs font-normal text-slate-500 ml-2">({mission.omis_number})</span>
                                                     </h4>
                                                     <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
                                                         <MapPin className="w-3 h-3" />
-                                                        {mission.location}
+                                                        <span className="truncate">{mission.location}</span>
                                                     </div>
                                                     <p className="text-xs text-slate-400 mt-1">{new Date(mission.date).toLocaleDateString()}</p>
                                                 </div>
                                             </div>
                                         ))}
-                                        {stats.recentMissions.length === 0 && (
-                                            <p className="text-slate-500 text-sm italic">Nenhuma missão recente encontrada.</p>
+                                        {(hasActiveFilters ? filteredStats.recentMissions : stats.recentMissions).length === 0 && (
+                                            <p className="text-slate-500 text-sm italic py-4 text-center">Nenhuma missão encontrada com estes filtros.</p>
                                         )}
                                     </div>
                                 </div>

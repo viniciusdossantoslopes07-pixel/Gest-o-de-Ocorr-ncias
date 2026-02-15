@@ -1,8 +1,7 @@
-
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { MissionOrder } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import { Target, Users, CheckCircle, Clock, Play } from 'lucide-react';
+import { Target, Users, CheckCircle, Clock, Play, Filter, Calendar, X } from 'lucide-react';
 
 interface MissionStatisticsProps {
     orders: MissionOrder[];
@@ -10,16 +9,51 @@ interface MissionStatisticsProps {
 }
 
 export default function MissionStatistics({ orders, missions = [] }: MissionStatisticsProps) {
-    // 1. Calculate Totals
-    const totalMissions = orders.length;
-    const activeMissions = orders.filter(o => o.status === 'EM_MISSAO' || o.status === 'PRONTA_PARA_EXECUCAO').length;
-    const completedMissions = orders.filter(o => o.status === 'CONCLUIDA').length;
-    const pendingMissions = orders.filter(o => o.status === 'AGUARDANDO_ASSINATURA').length;
+    // Filter States
+    const [filterDateStart, setFilterDateStart] = useState('');
+    const [filterDateEnd, setFilterDateEnd] = useState('');
+    const [filterType, setFilterType] = useState('');
+
+    // Pre-calculate unique types for filter dropdown
+    const missionTypes = useMemo(() => {
+        const types = new Set<string>();
+        orders.forEach(o => { if (o.mission) types.add(o.mission); });
+        missions.forEach(m => { if (m.dados_missao?.tipo_missao) types.add(m.dados_missao.tipo_missao); });
+        return Array.from(types).sort();
+    }, [orders, missions]);
+
+    // Apply Filters
+    const filteredOrders = useMemo(() => {
+        return orders.filter(order => {
+            const matchType = !filterType || order.mission === filterType;
+            const orderDate = new Date(order.date);
+            const matchDateStart = !filterDateStart || orderDate >= new Date(filterDateStart);
+            const matchDateEnd = !filterDateEnd || orderDate <= new Date(filterDateEnd);
+            return matchType && matchDateStart && matchDateEnd;
+        });
+    }, [orders, filterType, filterDateStart, filterDateEnd]);
+
+    const filteredMissions = useMemo(() => {
+        return missions.filter(mission => {
+            const mType = mission.dados_missao?.tipo_missao;
+            const matchType = !filterType || mType === filterType;
+            const mDate = mission.dados_missao?.data ? new Date(mission.dados_missao.data) : null;
+            const matchDateStart = !filterDateStart || (mDate && mDate >= new Date(filterDateStart));
+            const matchDateEnd = !filterDateEnd || (mDate && mDate <= new Date(filterDateEnd));
+            return matchType && matchDateStart && matchDateEnd;
+        });
+    }, [missions, filterType, filterDateStart, filterDateEnd]);
+
+    // 1. Calculate Totals based on filtered data
+    const totalMissions = filteredOrders.length;
+    const activeMissions = filteredOrders.filter(o => o.status === 'EM_MISSAO' || o.status === 'PRONTA_PARA_EXECUCAO').length;
+    const completedMissions = filteredOrders.filter(o => o.status === 'CONCLUIDA').length;
+    const pendingMissions = filteredOrders.filter(o => o.status === 'AGUARDANDO_ASSINATURA').length;
 
     // 2. Prepare Data for Charts
 
     // By Category
-    const categoryDataMap = orders.reduce((acc, order) => {
+    const categoryDataMap = filteredOrders.reduce((acc, order) => {
         const category = order.mission || 'Outros';
         acc[category] = (acc[category] || 0) + 1;
         return acc;
@@ -36,8 +70,78 @@ export default function MissionStatistics({ orders, missions = [] }: MissionStat
 
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
+    const clearFilters = () => {
+        setFilterDateStart('');
+        setFilterDateEnd('');
+        setFilterType('');
+    };
+
+    const hasActiveFilters = filterDateStart || filterDateEnd || filterType;
+
     return (
         <div className="space-y-8 animate-fade-in">
+            {/* Filters Header */}
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2 text-slate-600">
+                    <Filter className="w-5 h-5 text-blue-600" />
+                    <span className="font-bold text-sm uppercase tracking-wider">Filtros</span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4 flex-1">
+                    <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 min-w-[320px]">
+                        <Calendar className="w-4 h-4 text-slate-400" />
+                        <span className="text-xs font-bold text-slate-500 uppercase">Período:</span>
+                        <input
+                            type="date"
+                            value={filterDateStart}
+                            onChange={(e) => setFilterDateStart(e.target.value)}
+                            className="bg-transparent text-sm font-bold text-slate-700 outline-none w-32"
+                        />
+                        <span className="text-slate-300">até</span>
+                        <input
+                            type="date"
+                            value={filterDateEnd}
+                            onChange={(e) => setFilterDateEnd(e.target.value)}
+                            className="bg-transparent text-sm font-bold text-slate-700 outline-none w-32"
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 flex-1 min-w-[200px]">
+                        <Target className="w-4 h-4 text-slate-400" />
+                        <span className="text-xs font-bold text-slate-500 uppercase">Tipo:</span>
+                        <select
+                            value={filterType}
+                            onChange={(e) => setFilterType(e.target.value)}
+                            className="bg-transparent text-sm font-bold text-slate-700 outline-none flex-1 appearance-none cursor-pointer"
+                        >
+                            <option value="">Todos os Tipos</option>
+                            {missionTypes.map(type => (
+                                <option key={type} value={type}>{type}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {hasActiveFilters && (
+                        <button
+                            onClick={clearFilters}
+                            className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs hover:bg-red-50 hover:text-red-600 transition-all border border-transparent hover:border-red-100"
+                        >
+                            <X className="w-3.5 h-3.5" />
+                            Limpar Filtros
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {hasActiveFilters && (
+                <div className="bg-blue-50 border border-blue-100 p-3 rounded-xl flex items-center gap-2 animate-pulse">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <p className="text-xs font-bold text-blue-700 uppercase tracking-widest">
+                        Visualizando dados filtrados ({totalMissions} resultados encontrados)
+                    </p>
+                </div>
+            )}
+
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
@@ -93,7 +197,7 @@ export default function MissionStatistics({ orders, missions = [] }: MissionStat
                     </div>
                     <div className="space-y-3">
                         {(() => {
-                            const requesterCounts = missions.reduce((acc, mission) => {
+                            const requesterCounts = filteredMissions.reduce((acc, mission) => {
                                 const name = mission.dados_missao?.nome_guerra || 'Desconhecido';
                                 const rank = mission.dados_missao?.posto || '';
                                 const key = `${rank} ${name}`;
@@ -106,7 +210,7 @@ export default function MissionStatistics({ orders, missions = [] }: MissionStat
                                 .slice(0, 5);
 
                             if (topRequesters.length === 0) {
-                                return <p className="text-sm text-slate-400 text-center py-4">Nenhum dado disponível</p>;
+                                return <p className="text-sm text-slate-400 text-center py-4">Nenhum dado disponível para estes filtros</p>;
                             }
 
                             const maxCount = topRequesters[0][1];
@@ -146,7 +250,7 @@ export default function MissionStatistics({ orders, missions = [] }: MissionStat
                     </div>
                     <div className="space-y-3">
                         {(() => {
-                            const commanderCounts = orders.reduce((acc, order) => {
+                            const commanderCounts = filteredOrders.reduce((acc, order) => {
                                 const commander = order.missionCommanderId || 'Não Atribuído';
                                 acc[commander] = (acc[commander] || 0) + 1;
                                 return acc;
@@ -158,7 +262,7 @@ export default function MissionStatistics({ orders, missions = [] }: MissionStat
                                 .slice(0, 5);
 
                             if (topCommanders.length === 0) {
-                                return <p className="text-sm text-slate-400 text-center py-4">Nenhum dado disponível</p>;
+                                return <p className="text-sm text-slate-400 text-center py-4">Nenhum dado disponível para estes filtros</p>;
                             }
 
                             const maxCount = topCommanders[0][1];
