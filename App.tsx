@@ -183,7 +183,7 @@ const App: FC = () => {
   const fetchOccurrences = async () => {
     const { data, error } = await supabase
       .from('occurrences')
-      .select('*')
+      .select('id, date, status, timeline, category, type, description, location, requester_id, created_at')
       .order('date', { ascending: false });
 
     if (error) {
@@ -203,7 +203,7 @@ const App: FC = () => {
   const fetchMissionRequests = async () => {
     const { data, error } = await supabase
       .from('missoes_gsd')
-      .select('*')
+      .select('id, solicitante_id, status, dados_missao, data_criacao, parecer_sop')
       .order('data_criacao', { ascending: false });
 
     if (error) {

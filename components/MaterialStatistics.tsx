@@ -46,7 +46,7 @@ export const MaterialStatistics = () => {
             // 2. Inventory Stats
             const { data: inventory, error: invError } = await supabase
                 .from('gestao_estoque')
-                .select('*')
+                .select('id, material, setor, entrada, saida, tipo_de_material')
                 .order('material');
 
             if (invError) throw invError;
@@ -60,7 +60,7 @@ export const MaterialStatistics = () => {
             const { data: loans, error: loanError } = await supabase
                 .from('movimentacao_cautela')
                 .select(`
-                    *,
+                    id, id_material, id_usuario, status, quantidade, created_at,
                     material:gestao_estoque(material, tipo_de_material)
                 `)
                 .order('created_at', { ascending: false });

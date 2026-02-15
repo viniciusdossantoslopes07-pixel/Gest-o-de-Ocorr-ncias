@@ -21,10 +21,11 @@ const MaterialDashboard: React.FC = () => {
             const { data, error } = await supabase
                 .from('material_loans')
                 .select(`
-          *,
-          item:inventory_items(*),
-          requester:users(*)
-        `)
+                  id, user_id, item_id, quantity, status, observation, created_at, 
+                  expected_return_date, return_date,
+                  item:inventory_items(id, name, description, total_quantity, available_quantity, details, status),
+                  requester:users(id, name, rank, saram, sector, role, email, username)
+                `)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;

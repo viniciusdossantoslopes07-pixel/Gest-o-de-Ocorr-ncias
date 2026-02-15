@@ -44,8 +44,9 @@ export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
         const { data: rawData, error } = await supabase
             .from('movimentacao_cautela')
             .select(`
-                *,
-                material:gestao_estoque(*)
+                id, id_material, id_usuario, status, observacao, quantidade, 
+                autorizado_por, entregue_por, recebido_por, created_at,
+                material:gestao_estoque(material, tipo_de_material, qtdisponivel)
             `)
             .order('created_at', { ascending: false });
 
