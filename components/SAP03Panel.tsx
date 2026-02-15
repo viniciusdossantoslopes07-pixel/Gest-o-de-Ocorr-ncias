@@ -43,6 +43,8 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
     const [directQuantity, setDirectQuantity] = useState(1);
     const [isSearchingSaram, setIsSearchingSaram] = useState(false);
     const [foundUser, setFoundUser] = useState<any>(null);
+    const [materialSearch, setMaterialSearch] = useState('');
+    const [isMaterialDropdownOpen, setIsMaterialDropdownOpen] = useState(false);
 
     // Signature Modal States
     const [showSignatureModal, setShowSignatureModal] = useState(false);
@@ -278,6 +280,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
             setShowSignatureModal(false);
             setSignaturePassword('');
             setSignatureRequestId(null);
+            setMaterialSearch('');
             fetchRequests();
         } catch (err: any) {
             console.error('Error in signature action:', err);
@@ -412,24 +415,67 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                             {foundUser && <p className="text-[10px] font-bold text-green-600 mt-1">✓ {foundUser.rank} {foundUser.war_name || foundUser.name}</p>}
                             {directSaram.length >= 4 && !foundUser && !isSearchingSaram && <p className="text-[10px] font-bold text-red-500 mt-1">Militar não encontrado.</p>}
                         </div>
-                        <div className="md:col-span-2 space-y-1">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase">Material Disponível</label>
-                            <select
-                                value={directMaterialId}
-                                onChange={(e) => setDirectMaterialId(e.target.value)}
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none font-bold"
-                            >
-                                <option value="">Selecione o material...</option>
-                                {inventory.map(item => (
-                                    <option key={item.id} value={item.id}>{item.material} ({item.qtdisponivel} disponíveis)</option>
-                                ))}
-                            </select>
+                        <div className="md:col-span-2 space-y-1 relative">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase">Buscar Material</label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={materialSearch}
+                                    onChange={(e) => {
+                                        setMaterialSearch(e.target.value);
+                                        setIsMaterialDropdownOpen(true);
+                                    }}
+                                    onFocus={() => setIsMaterialDropdownOpen(true)}
+                                    placeholder="Digite o nome do material..."
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none"
+                                />
+                                <Package className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                            </div>
+
+                            {isMaterialDropdownOpen && materialSearch && (
+                                <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl max-h-60 overflow-y-auto overflow-x-hidden">
+                                    {inventory
+                                        .filter(item => item.material.toLowerCase().includes(materialSearch.toLowerCase()))
+                                        .map(item => (
+                                            <button
+                                                key={item.id}
+                                                onClick={() => {
+                                                    setDirectMaterialId(item.id);
+                                                    setMaterialSearch(item.material);
+                                                    setIsMaterialDropdownOpen(false);
+                                                }}
+                                                className="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors border-b border-slate-50 last:border-0 flex justify-between items-center"
+                                            >
+                                                <div>
+                                                    <p className="font-bold text-slate-800 text-sm">{item.material}</p>
+                                                    <p className="text-[10px] text-slate-400 font-medium">{item.qtdisponivel} unidades disponíveis</p>
+                                                </div>
+                                                {directMaterialId === item.id && <CheckCircle className="w-4 h-4 text-blue-600" />}
+                                            </button>
+                                        ))}
+                                    {inventory.filter(item => item.material.toLowerCase().includes(materialSearch.toLowerCase())).length === 0 && (
+                                        <div className="p-4 text-center text-slate-400 text-sm font-medium">Nenhum material encontrado.</div>
+                                    )}
+                                </div>
+                            )}
                         </div>
-                        <div className="space-y-1 flex flex-col justify-end">
+
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase">Quantidade</label>
+                            <input
+                                type="number"
+                                min="1"
+                                value={directQuantity}
+                                onChange={(e) => setDirectQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-black outline-none text-center"
+                            />
+                        </div>
+
+                        <div className="md:col-span-4 flex justify-end">
                             <button
                                 onClick={showDirectRelease ? handleDirectRelease : handleDirectReturn}
                                 disabled={actionLoading === 'direct' || !foundUser || !directMaterialId}
-                                className={`w-full h-[50px] text-white rounded-xl font-bold transition-all disabled:opacity-50 shadow-lg text-sm ${showDirectRelease ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                                className={`min-w-[200px] h-[50px] text-white rounded-xl font-black transition-all disabled:opacity-50 shadow-lg text-sm uppercase tracking-widest ${showDirectRelease ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
                             >
                                 {actionLoading === 'direct' ? 'Processando...' : (showDirectRelease ? 'Liberar Agora' : 'Devolver Agora')}
                             </button>
@@ -738,3 +784,5 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
         </div>
     );
 };
+
+export default SAP03Panel;
