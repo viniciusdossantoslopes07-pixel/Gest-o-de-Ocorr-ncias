@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
-import { Package, CheckCircle, XCircle, Clock, Truck, ShieldCheck, AlertCircle, Lock } from 'lucide-react';
+import { Package, CheckCircle, XCircle, Clock, Truck, ShieldCheck, AlertCircle, Lock, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface LoanRequest {
     id: string;
@@ -45,6 +45,8 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
     const [foundUser, setFoundUser] = useState<any>(null);
     const [materialSearch, setMaterialSearch] = useState('');
     const [isMaterialDropdownOpen, setIsMaterialDropdownOpen] = useState(false);
+    const [selectedItems, setSelectedItems] = useState<{ id_material: string, material: string, quantidade: number }[]>([]);
+    const [expandedRequestId, setExpandedRequestId] = useState<string | null>(null);
 
     // Signature Modal States
     const [showSignatureModal, setShowSignatureModal] = useState(false);
@@ -187,8 +189,8 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
     };
 
     const handleDirectRelease = async () => {
-        if (!foundUser || !directMaterialId) {
-            alert('Selecione um militar válido e um material.');
+        if (!foundUser || selectedItems.length === 0) {
+            alert('Selecione um militar válido e pelo menos um material.');
             return;
         }
         setSignatureAction('release');
@@ -196,12 +198,36 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
     };
 
     const handleDirectReturn = async () => {
-        if (!foundUser || !directMaterialId) {
-            alert('Selecione um militar válido e um material.');
+        if (!foundUser || selectedItems.length === 0) {
+            alert('Selecione um militar válido e pelo menos um material.');
             return;
         }
         setSignatureAction('return');
         setShowSignatureModal(true);
+    };
+
+    const addItem = () => {
+        if (!directMaterialId) {
+            alert('Selecione um material primeiro.');
+            return;
+        }
+        const mat = inventory.find(i => i.id === directMaterialId);
+        if (!mat) return;
+
+        setSelectedItems([...selectedItems, {
+            id_material: directMaterialId,
+            material: mat.material,
+            quantidade: directQuantity
+        }]);
+
+        // Reset search but keep user
+        setDirectMaterialId('');
+        setMaterialSearch('');
+        setDirectQuantity(1);
+    };
+
+    const removeItem = (idx: number) => {
+        setSelectedItems(selectedItems.filter((_, i) => i !== idx));
     };
 
     const confirmSignature = async () => {
@@ -217,36 +243,38 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
             const now = new Date().toISOString();
 
             if (signatureAction === 'release') {
+                const inserts = selectedItems.map(item => ({
+                    id_material: item.id_material,
+                    id_usuario: foundUser.id,
+                    status: 'Em Uso',
+                    quantidade: item.quantidade,
+                    autorizado_por: userName,
+                    entregue_por: userName,
+                    observacao: `Assinado digitalmente por ${militaryName} em ${new Date().toLocaleString()}`,
+                    created_at: now
+                }));
                 const { error } = await supabase
                     .from('movimentacao_cautela')
-                    .insert([{
-                        id_material: directMaterialId,
-                        id_usuario: foundUser.id,
-                        status: 'Em Uso',
-                        quantidade: directQuantity,
-                        autorizado_por: userName,
-                        entregue_por: userName,
-                        observacao: `Assinado digitalmente por ${militaryName} em ${new Date().toLocaleString()}`,
-                        created_at: now
-                    }]);
+                    .insert(inserts);
                 if (error) throw error;
-                alert('Material liberado com sucesso!');
+                alert('Materiais liberados com sucesso!');
             } else if (signatureAction === 'return') {
+                const inserts = selectedItems.map(item => ({
+                    id_material: item.id_material,
+                    id_usuario: foundUser.id,
+                    status: 'Concluído',
+                    quantidade: item.quantidade,
+                    autorizado_por: userName,
+                    entregue_por: userName,
+                    recebido_por: userName,
+                    observacao: `Devolução Direta: Assinado digitalmente por ${militaryName} em ${new Date().toLocaleString()}`,
+                    created_at: now
+                }));
                 const { error } = await supabase
                     .from('movimentacao_cautela')
-                    .insert([{
-                        id_material: directMaterialId,
-                        id_usuario: foundUser.id,
-                        status: 'Concluído',
-                        quantidade: directQuantity,
-                        autorizado_por: userName,
-                        entregue_por: userName,
-                        recebido_por: userName,
-                        observacao: `Devolução Direta: Assinado digitalmente por ${militaryName} em ${new Date().toLocaleString()}`,
-                        created_at: now
-                    }]);
+                    .insert(inserts);
                 if (error) throw error;
-                alert('Devolução registrada com sucesso!');
+                alert('Itens registrados como devolvidos!');
             } else if (signatureAction === 'update_release' && signatureRequestId) {
                 const { error } = await supabase
                     .from('movimentacao_cautela')
@@ -275,6 +303,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
             setDirectMaterialId('');
             setDirectQuantity(1);
             setFoundUser(null);
+            setSelectedItems([]);
             setShowDirectRelease(false);
             setShowDirectReturn(false);
             setShowSignatureModal(false);
@@ -471,15 +500,49 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                             />
                         </div>
 
-                        <div className="md:col-span-4 flex justify-end">
+                        <div className="md:col-span-4 flex flex-col md:flex-row gap-4 items-end">
+                            <button
+                                onClick={addItem}
+                                disabled={!directMaterialId || !foundUser}
+                                className="px-6 h-[50px] bg-slate-800 text-white rounded-xl font-black hover:bg-slate-900 transition-all flex items-center justify-center gap-2 uppercase text-xs tracking-widest disabled:opacity-50"
+                            >
+                                <Plus className="w-5 h-5" /> Adicionar Item
+                            </button>
+
+                            <div className="flex-1"></div>
+
                             <button
                                 onClick={showDirectRelease ? handleDirectRelease : handleDirectReturn}
-                                disabled={actionLoading === 'direct' || !foundUser || !directMaterialId}
+                                disabled={actionLoading === 'direct' || !foundUser || selectedItems.length === 0}
                                 className={`min-w-[200px] h-[50px] text-white rounded-xl font-black transition-all disabled:opacity-50 shadow-lg text-sm uppercase tracking-widest ${showDirectRelease ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
                             >
                                 {actionLoading === 'direct' ? 'Processando...' : (showDirectRelease ? 'Liberar Agora' : 'Devolver Agora')}
                             </button>
                         </div>
+
+                        {selectedItems.length > 0 && (
+                            <div className="md:col-span-4 mt-4 space-y-2 border-t pt-4 border-slate-100">
+                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Itens Selecionados</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    {selectedItems.map((item, idx) => (
+                                        <div key={idx} className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100 group">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm font-bold text-blue-600 text-xs text-center leading-none">
+                                                    {item.quantidade}x
+                                                </div>
+                                                <span className="font-bold text-slate-800 text-sm">{item.material}</span>
+                                            </div>
+                                            <button
+                                                onClick={() => removeItem(idx)}
+                                                className="p-2 text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
@@ -519,107 +582,151 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                     filteredRequests.map(req => (
                         <div
                             key={req.id}
-                            onClick={() => setSelectedRequest(req)}
-                            className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6 items-start md:items-center cursor-pointer hover:border-blue-300 transition-all"
+                            className={`bg-white rounded-xl border transition-all overflow-hidden ${expandedRequestId === req.id ? 'border-blue-300 ring-2 ring-blue-50' : 'border-slate-200'}`}
                         >
-
-                            {/* Icon based on status */}
-                            <div className={`p-4 rounded-full shrink-0 ${req.status === 'Pendente' ? 'bg-yellow-100 text-yellow-600' :
-                                req.status === 'Aprovado' ? 'bg-blue-100 text-blue-600' :
-                                    req.status === 'Pendente Devolução' ? 'bg-purple-100 text-purple-600' :
-                                        req.status === 'Concluído' ? 'bg-green-100 text-green-600' :
-                                            'bg-slate-100 text-slate-600'
-                                }`}>
-                                {req.status === 'Pendente' && <Clock className="w-6 h-6" />}
-                                {req.status === 'Aprovado' && <CheckCircle className="w-6 h-6" />}
-                                {req.status === 'Em Uso' && <Truck className="w-6 h-6" />}
-                                {req.status === 'Pendente Devolução' && <Package className="w-6 h-6" />}
-                                {req.status === 'Concluído' && <CheckCircle className="w-6 h-6" />}
-                                {req.status === 'Rejeitado' && <XCircle className="w-6 h-6" />}
-                            </div>
-
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="font-bold text-lg text-slate-900">
-                                        {req.quantidade && req.quantidade > 1 && <span className="text-blue-600 mr-2">{req.quantidade}x</span>}
-                                        {req.material?.material || 'Material Desconhecido'}
-                                    </h3>
-                                    <span className="text-xs px-2 py-1 bg-slate-100 rounded text-slate-500 font-bold uppercase">{req.status}</span>
+                            <div
+                                onClick={() => setExpandedRequestId(expandedRequestId === req.id ? null : req.id)}
+                                className="p-6 flex flex-col md:flex-row gap-6 items-start md:items-center cursor-pointer hover:bg-slate-50/50 transition-all"
+                            >
+                                {/* Icon based on status */}
+                                <div className={`p-4 rounded-full shrink-0 ${req.status === 'Pendente' ? 'bg-yellow-100 text-yellow-600' :
+                                    req.status === 'Aprovado' ? 'bg-blue-100 text-blue-600' :
+                                        req.status === 'Pendente Devolução' ? 'bg-purple-100 text-purple-600' :
+                                            req.status === 'Concluído' ? 'bg-green-100 text-green-600' :
+                                                'bg-slate-100 text-slate-600'
+                                    }`}>
+                                    {req.status === 'Pendente' && <Clock className="w-6 h-6" />}
+                                    {req.status === 'Aprovado' && <CheckCircle className="w-6 h-6" />}
+                                    {req.status === 'Em Uso' && <Truck className="w-6 h-6" />}
+                                    {req.status === 'Pendente Devolução' && <Package className="w-6 h-6" />}
+                                    {req.status === 'Concluído' && <CheckCircle className="w-6 h-6" />}
+                                    {req.status === 'Rejeitado' && <XCircle className="w-6 h-6" />}
                                 </div>
-                                <p className="text-sm text-slate-500 mb-1">
-                                    Solicitante: <span className="font-bold text-slate-700">
-                                        {req.solicitante ? `${req.solicitante.rank} ${req.solicitante.war_name}` : `ID: ${req.id_usuario}`}
-                                    </span>
-                                </p>
-                                <p className="text-xs text-slate-400">
-                                    {new Date(req.created_at).toLocaleString()}
-                                </p>
 
-                                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-                                    {req.autorizado_por && (
-                                        <p className="text-[10px] text-slate-500">
-                                            <span className="font-bold">Autorizado por:</span> {req.autorizado_por}
-                                        </p>
-                                    )}
-                                    {req.entregue_por && (
-                                        <p className="text-[10px] text-slate-500">
-                                            <span className="font-bold">Entregue por:</span> {req.entregue_por}
-                                        </p>
-                                    )}
-                                    {req.recebido_por && (
-                                        <p className="text-[10px] text-slate-500">
-                                            <span className="font-bold">Recebido por:</span> {req.recebido_por}
-                                        </p>
-                                    )}
-                                </div>
-                                {req.observacao && (
-                                    <div className="mt-2 p-2 bg-slate-50 rounded text-xs text-slate-600 border border-slate-100">
-                                        Obs: {req.observacao}
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <h3 className="font-bold text-lg text-slate-900">
+                                            {req.quantidade && req.quantidade > 1 && <span className="text-blue-600 mr-2">{req.quantidade}x</span>}
+                                            {req.material?.material || 'Material Desconhecido'}
+                                        </h3>
+                                        <span className={`text-[10px] px-2 py-1 rounded-full font-black uppercase tracking-widest ${req.status === 'Em Uso' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                                            {req.status}
+                                        </span>
                                     </div>
-                                )}
+                                    <p className="text-sm text-slate-500 mb-1">
+                                        Solicitante: <span className="font-bold text-slate-700">
+                                            {req.solicitante ? `${req.solicitante.rank} ${req.solicitante.war_name}` : `ID: ${req.id_usuario}`}
+                                        </span>
+                                    </p>
+                                    <p className="text-xs text-slate-400">
+                                        {new Date(req.created_at).toLocaleString()}
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center gap-4">
+                                    <div className="p-2 text-slate-300">
+                                        {expandedRequestId === req.id ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                                    </div>
+
+                                    {/* Quick Actions (Keep primary action visible) */}
+                                    <div className="flex flex-col gap-2 min-w-[160px]" onClick={e => e.stopPropagation()}>
+                                        {req.status === 'Pendente' && (
+                                            <button
+                                                onClick={() => updateStatus(req.id, 'Aprovado', undefined, false, undefined, 1, `${user.rank} ${user.war_name}`)}
+                                                disabled={!!actionLoading}
+                                                className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                                            >
+                                                <CheckCircle className="w-4 h-4" /> Aprovar
+                                            </button>
+                                        )}
+
+                                        {req.status === 'Aguardando Confirmação' && (
+                                            <button
+                                                onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_release')}
+                                                disabled={!!actionLoading}
+                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                                            >
+                                                <Truck className="w-4 h-4" /> Confirmar Entrega
+                                            </button>
+                                        )}
+
+                                        {req.status === 'Pendente Devolução' && (
+                                            <button
+                                                onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return')}
+                                                disabled={!!actionLoading}
+                                                className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                                            >
+                                                <CheckCircle className="w-4 h-4" /> Aprovar Devolução
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
 
-                            {/* Actions */}
-                            <div className="flex flex-col gap-2 min-w-[200px]">
-                                {req.status === 'Pendente' && (
-                                    <button
-                                        onClick={() => updateStatus(req.id, 'Aprovado', undefined, false, undefined, 1, `${user.rank} ${user.war_name}`)}
-                                        disabled={!!actionLoading}
-                                        className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <CheckCircle className="w-4 h-4" /> Aprovar Solicitação
-                                    </button>
-                                )}
+                            {/* Expanded Content (Accordion) */}
+                            {expandedRequestId === req.id && (
+                                <div className="px-6 pb-6 pt-0 border-t border-slate-50 animate-fade-in">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+                                        <div className="col-span-2 space-y-4">
+                                            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-4">
+                                                <h4 className="text-[10px] font-black text-slate-400 flex items-center gap-2 border-b border-slate-200 pb-2 uppercase tracking-widest">
+                                                    <ShieldCheck className="w-4 h-4 text-blue-500" />
+                                                    Histórico de Movimentação
+                                                </h4>
 
-                                {req.status === 'Aguardando Confirmação' && (
-                                    <button
-                                        onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_release')}
-                                        disabled={!!actionLoading}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <Truck className="w-4 h-4" /> Confirmar Entrega (Assinar)
-                                    </button>
-                                )}
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Autorizado Por</p>
+                                                        <p className="text-sm font-semibold text-slate-700 mb-2">{req.autorizado_por || '---'}</p>
 
-                                {req.status === 'Pendente Devolução' && (
-                                    <>
-                                        <button
-                                            onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return')}
-                                            disabled={!!actionLoading}
-                                            className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <CheckCircle className="w-4 h-4" /> Aprovar Devolução (Assinar)
-                                        </button>
-                                        <button
-                                            onClick={() => handleRejectReturn(req)}
-                                            disabled={!!actionLoading}
-                                            className="px-4 py-2 bg-red-100 text-red-600 rounded-lg font-bold text-sm hover:bg-red-200 transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <XCircle className="w-4 h-4" /> Rejeitar Devolução
-                                        </button>
-                                    </>
-                                )}
-                            </div>
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Entregue Por</p>
+                                                        <p className="text-sm font-semibold text-slate-700">{req.entregue_por || '---'}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Recebido Por (Devolução)</p>
+                                                        <p className="text-sm font-semibold text-slate-700 mb-2">{req.recebido_por || '---'}</p>
+
+                                                        {req.quantidade && (
+                                                            <>
+                                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Qtde.</p>
+                                                                <p className="text-sm font-semibold text-slate-700">{req.quantidade} un.</p>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {req.observacao && (
+                                                <div className="space-y-1">
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Observações / Assinaturas</p>
+                                                    <div className="text-sm text-slate-600 bg-blue-50/50 p-4 rounded-xl border border-blue-100/50 italic leading-relaxed">
+                                                        "{req.observacao}"
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Ações Disponíveis</h4>
+                                            {req.status === 'Pendente Devolução' && (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleRejectReturn(req); }}
+                                                    disabled={!!actionLoading}
+                                                    className="w-full px-4 py-3 bg-red-50 text-red-600 rounded-xl font-bold text-xs hover:bg-red-100 transition-colors flex items-center justify-center gap-2 border border-red-100"
+                                                >
+                                                    <XCircle className="w-4 h-4" /> Rejeitar Devolução
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); setSelectedRequest(req); }}
+                                                className="w-full px-4 py-3 bg-slate-800 text-white rounded-xl font-bold text-xs hover:bg-slate-900 transition-colors flex items-center justify-center gap-2 shadow-lg"
+                                            >
+                                                Visualizar Cupom
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ))
                 )}
