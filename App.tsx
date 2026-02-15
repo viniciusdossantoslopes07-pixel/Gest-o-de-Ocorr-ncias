@@ -30,7 +30,7 @@ import SettingsView from './components/SettingsView'; // Import SettingsView
 import FAQModal from './components/FAQModal'; // Import FAQModal
 import UserMenu from './components/UserMenu'; // Import UserMenu
 
-import { LoanApprovals } from './components/LoanApprovals';
+import { SAP03Panel } from './components/SAP03Panel';
 import LoanRequestForm from './components/LoanRequestForm';
 import { MaterialStatistics } from './components/MaterialStatistics';
 import MaterialDashboard from './components/MaterialDashboard';
@@ -1139,7 +1139,7 @@ const App: FC = () => {
           )}
 
           {activeTab === 'material-approvals' && (
-            <LoanApprovals user={currentUser} />
+            <SAP03Panel user={currentUser} />
           )}
 
           {activeTab === 'request-material' && (

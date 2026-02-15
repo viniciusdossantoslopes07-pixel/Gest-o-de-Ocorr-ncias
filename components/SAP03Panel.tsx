@@ -28,7 +28,7 @@ interface LoanApprovalsProps {
     user: any;
 }
 
-export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
+export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
     const [requests, setRequests] = useState<LoanRequest[]>([]);
     const [inventory, setInventory] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -314,8 +314,8 @@ export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
                         key={tab}
                         onClick={() => setActiveTab(tab)}
                         className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab
-                                ? 'bg-white text-blue-600 shadow-md'
-                                : 'text-slate-500 hover:text-slate-700'
+                            ? 'bg-white text-blue-600 shadow-md'
+                            : 'text-slate-500 hover:text-slate-700'
                             }`}
                     >
                         {tab}
