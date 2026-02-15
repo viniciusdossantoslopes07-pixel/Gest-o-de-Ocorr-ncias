@@ -21,6 +21,7 @@ interface LoanRequest {
     solicitante?: {
         rank: string;
         war_name: string;
+        saram: string;
     };
 }
 
@@ -48,11 +49,15 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
     const [selectedItems, setSelectedItems] = useState<{ id_material: string, material: string, quantidade: number }[]>([]);
     const [expandedRequestId, setExpandedRequestId] = useState<string | null>(null);
 
+    // Mass Action States
+    const [inUseSearch, setInUseSearch] = useState('');
+    const [selectedBatchIds, setSelectedBatchIds] = useState<string[]>([]);
+
     // Signature Modal States
     const [showSignatureModal, setShowSignatureModal] = useState(false);
     const [signaturePassword, setSignaturePassword] = useState('');
     const [signatureAction, setSignatureAction] = useState<'release' | 'return' | 'update_release' | 'update_return' | null>(null);
-    const [signatureRequestId, setSignatureRequestId] = useState<string | null>(null);
+    const [signatureRequestId, setSignatureRequestId] = useState<string | string[] | null>(null);
 
     useEffect(() => {
         fetchRequests();
@@ -70,7 +75,6 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
 
     const fetchRequests = async () => {
         setLoading(true);
-        // Fetch raw requests with material join
         const { data: rawData, error } = await supabase
             .from('movimentacao_cautela')
             .select(`
@@ -87,21 +91,18 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
         }
 
         if (rawData && rawData.length > 0) {
-            // Manually get all unique user IDs to fetch their info
             const userIds = Array.from(new Set(rawData.map(r => r.id_usuario)));
-
             const { data: userData, error: userError } = await supabase
                 .from('users')
-                .select('id, rank, war_name, name')
+                .select('id, rank, war_name, name, saram')
                 .in('id', userIds);
 
             if (userError) {
                 console.error('Error fetching users for labels:', userError);
-                setRequests(rawData); // show with ID if users fetch fails
+                setRequests(rawData);
             } else {
-                // Map users to requests
                 const userMap = (userData || []).reduce((acc: any, u) => {
-                    acc[u.id] = { rank: u.rank, war_name: u.war_name || u.name };
+                    acc[u.id] = { rank: u.rank, war_name: u.war_name || u.name, saram: u.saram };
                     return acc;
                 }, {});
 
@@ -109,7 +110,6 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                     ...r,
                     solicitante: userMap[r.id_usuario]
                 }));
-
                 setRequests(enrichedData);
             }
         } else {
@@ -118,7 +118,6 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
         setLoading(false);
     };
 
-    // Auto-search user by SARAM
     useEffect(() => {
         const timer = setTimeout(() => {
             if (directSaram.length >= 4) {
@@ -132,7 +131,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
 
     const handleSaramSearch = async () => {
         setIsSearchingSaram(true);
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('users')
             .select('id, name, rank, war_name, password')
             .eq('saram', directSaram.replace(/\D/g, ''))
@@ -146,10 +145,10 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
         setIsSearchingSaram(false);
     };
 
-    const startSignatureFlow = async (requestId: string, userId: string, action: 'update_release' | 'update_return') => {
-        setActionLoading(requestId);
+    const startSignatureFlow = async (requestId: string | string[], userId: string, action: 'update_release' | 'update_return') => {
+        setSignatureRequestId(requestId);
         try {
-            const { data, error } = await supabase
+            const { data } = await supabase
                 .from('users')
                 .select('id, name, rank, war_name, password')
                 .eq('id', userId)
@@ -173,8 +172,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
     const handleSaramBlur = async () => {
         if (directSaram.length < 4) return;
         setIsSearchingSaram(true);
-        setFoundUser(null);
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('users')
             .select('id, name, rank, war_name')
             .eq('saram', directSaram)
@@ -220,7 +218,6 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
             quantidade: directQuantity
         }]);
 
-        // Reset search but keep user
         setDirectMaterialId('');
         setMaterialSearch('');
         setDirectQuantity(1);
@@ -253,9 +250,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                     observacao: `Assinado digitalmente por ${militaryName} em ${new Date().toLocaleString()}`,
                     created_at: now
                 }));
-                const { error } = await supabase
-                    .from('movimentacao_cautela')
-                    .insert(inserts);
+                const { error } = await supabase.from('movimentacao_cautela').insert(inserts);
                 if (error) throw error;
                 alert('Materiais liberados com sucesso!');
             } else if (signatureAction === 'return') {
@@ -270,9 +265,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                     observacao: `Recebimento de Material: Assinado digitalmente por ${militaryName} em ${new Date().toLocaleString()}`,
                     created_at: now
                 }));
-                const { error } = await supabase
-                    .from('movimentacao_cautela')
-                    .insert(inserts);
+                const { error } = await supabase.from('movimentacao_cautela').insert(inserts);
                 if (error) throw error;
                 alert('Itens registrados como devolvidos!');
             } else if (signatureAction === 'update_release' && signatureRequestId) {
@@ -283,20 +276,33 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                         entregue_por: userName,
                         observacao: `Retirada assinada digitalmente por ${militaryName} em ${new Date().toLocaleString()}`
                     })
-                    .eq('id', signatureRequestId);
+                    .eq('id', signatureRequestId as string);
                 if (error) throw error;
                 alert('Entrega confirmada e assinada!');
             } else if (signatureAction === 'update_return' && signatureRequestId) {
-                const { error } = await supabase
-                    .from('movimentacao_cautela')
-                    .update({
-                        status: 'Concluído',
-                        recebido_por: userName,
-                        observacao: `Devolução assinada digitalmente por ${militaryName} em ${new Date().toLocaleString()}`
-                    })
-                    .eq('id', signatureRequestId);
-                if (error) throw error;
-                alert('Devolução aprovada e assinada!');
+                if (Array.isArray(signatureRequestId)) {
+                    const { error } = await supabase
+                        .from('movimentacao_cautela')
+                        .update({
+                            status: 'Concluído',
+                            recebido_por: userName,
+                            observacao: `Recebimento em lote: Assinado digitalmente por ${militaryName} em ${new Date().toLocaleString()}`
+                        })
+                        .in('id', signatureRequestId);
+                    if (error) throw error;
+                    alert(`${signatureRequestId.length} itens recebidos com sucesso!`);
+                } else {
+                    const { error } = await supabase
+                        .from('movimentacao_cautela')
+                        .update({
+                            status: 'Concluído',
+                            recebido_por: userName,
+                            observacao: `Devolução assinada digitalmente por ${militaryName} em ${new Date().toLocaleString()}`
+                        })
+                        .eq('id', signatureRequestId);
+                    if (error) throw error;
+                    alert('Devolução aprovada e assinada!');
+                }
             }
 
             setDirectSaram('');
@@ -310,6 +316,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
             setSignaturePassword('');
             setSignatureRequestId(null);
             setMaterialSearch('');
+            setSelectedBatchIds([]);
             fetchRequests();
         } catch (err: any) {
             console.error('Error in signature action:', err);
@@ -325,21 +332,14 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
             const updates: any = { status: newStatus };
             if (observation !== undefined) updates.observacao = observation;
 
-            // Set audit fields based on status
             if (newStatus === 'Aprovado' && auditorName) updates.autorizado_por = auditorName;
             if (newStatus === 'Em Uso' && auditorName) updates.entregue_por = auditorName;
             if (newStatus === 'Concluído' && auditorName) updates.recebido_por = auditorName;
 
-            const { error } = await supabase
-                .from('movimentacao_cautela')
-                .update(updates)
-                .eq('id', id);
-
+            const { error } = await supabase.from('movimentacao_cautela').update(updates).eq('id', id);
             if (error) throw error;
 
-            // If rejecting return (loss), increment 'saida' in stock
             if (incrementExit && materialId) {
-                // First get current 'saida'
                 const { data: matData, error: matError } = await supabase
                     .from('gestao_estoque')
                     .select('saida')
@@ -347,15 +347,8 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                     .single();
 
                 if (matError) throw matError;
-
                 const newSaida = (matData.saida || 0) + quantity;
-
-                const { error: updateError } = await supabase
-                    .from('gestao_estoque')
-                    .update({ saida: newSaida })
-                    .eq('id', materialId);
-
-                if (updateError) throw updateError;
+                await supabase.from('gestao_estoque').update({ saida: newSaida }).eq('id', materialId);
             }
 
             fetchRequests();
@@ -369,19 +362,27 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
 
     const handleRejectReturn = async (request: LoanRequest) => {
         const obs = prompt('Motivo da rejeição (Isso pode implicar perda de material):');
-        if (obs === null) return; // Cancelled
-
-        // Ask if it's a loss
+        if (obs === null) return;
         const isLoss = confirm('Isso configura perda/baixa de material? (Clique em OK para sim, Cancelar para rejeição simples sem baixa)');
-
         await updateStatus(request.id, 'Rejeitado', obs, isLoss, request.id_material, request.quantidade);
     };
 
     const filteredRequests = requests.filter(req => {
-        if (activeTab === 'Solicitações') return ['Pendente', 'Aprovado', 'Aguardando Confirmação'].includes(req.status);
-        if (activeTab === 'Devoluções') return req.status === 'Pendente Devolução';
-        if (activeTab === 'Em Uso') return req.status === 'Em Uso';
-        if (activeTab === 'Histórico') return ['Concluído', 'Rejeitado'].includes(req.status);
+        let matchesTab = false;
+        if (activeTab === 'Solicitações') matchesTab = ['Pendente', 'Aprovado', 'Aguardando Confirmação'].includes(req.status);
+        else if (activeTab === 'Devoluções') matchesTab = req.status === 'Pendente Devolução';
+        else if (activeTab === 'Em Uso') matchesTab = req.status === 'Em Uso';
+        else if (activeTab === 'Histórico') matchesTab = ['Concluído', 'Rejeitado'].includes(req.status);
+
+        if (!matchesTab) return false;
+
+        if (inUseSearch) {
+            const saram = req.solicitante?.saram?.toLowerCase() || '';
+            const name = req.solicitante?.war_name?.toLowerCase() || '';
+            const material = req.material?.material?.toLowerCase() || '';
+            const searchObj = inUseSearch.toLowerCase();
+            return saram.includes(searchObj) || name.includes(searchObj) || material.includes(searchObj);
+        }
         return true;
     });
 
@@ -403,16 +404,14 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                 <div className="flex gap-2">
                     <button
                         onClick={() => { setShowDirectRelease(!showDirectRelease); setShowReceiveMaterial(false); }}
-                        className={`px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 ${showDirectRelease ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-blue-600 text-white hover:bg-blue-700'
-                            }`}
+                        className={`px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 ${showDirectRelease ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
                     >
                         <Package className="w-4 h-4" />
                         {showDirectRelease ? 'Cancelar Cautela' : 'Cautelar Material'}
                     </button>
                     <button
                         onClick={() => { setShowReceiveMaterial(!showReceiveMaterial); setShowDirectRelease(false); }}
-                        className={`px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 ${showReceiveMaterial ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-emerald-600 text-white hover:bg-emerald-700'
-                            }`}
+                        className={`px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 ${showReceiveMaterial ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
                     >
                         <Plus className="w-4 h-4" />
                         {showReceiveMaterial ? 'Cancelar Recebimento' : 'Receber Material'}
@@ -423,7 +422,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                 </div>
             </div>
 
-            {/* Direct Release/Return Form */}
+            {/* Direct forms */}
             {(showDirectRelease || showReceiveMaterial) && (
                 <div className="bg-white p-6 rounded-2xl border-2 border-blue-100 shadow-xl shadow-blue-50 space-y-4 animate-scale-in">
                     <h2 className="font-black text-slate-800 flex items-center gap-2 uppercase text-xs tracking-widest">
@@ -442,7 +441,6 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                             />
                             {isSearchingSaram && <p className="text-[10px] font-bold text-blue-500 mt-1 animate-pulse">Buscando militar...</p>}
                             {foundUser && <p className="text-[10px] font-bold text-green-600 mt-1">✓ {foundUser.rank} {foundUser.war_name || foundUser.name}</p>}
-                            {directSaram.length >= 4 && !foundUser && !isSearchingSaram && <p className="text-[10px] font-bold text-red-500 mt-1">Militar não encontrado.</p>}
                         </div>
                         <div className="md:col-span-2 space-y-1 relative">
                             <label className="text-[10px] font-bold text-slate-400 uppercase">Buscar Material</label>
@@ -450,52 +448,33 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                                 <input
                                     type="text"
                                     value={materialSearch}
-                                    onChange={(e) => {
-                                        setMaterialSearch(e.target.value);
-                                        setIsMaterialDropdownOpen(true);
-                                    }}
+                                    onChange={(e) => { setMaterialSearch(e.target.value); setIsMaterialDropdownOpen(true); }}
                                     onFocus={() => setIsMaterialDropdownOpen(true)}
                                     placeholder="Digite o nome do material..."
                                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none pr-10"
                                 />
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setIsMaterialDropdownOpen(!isMaterialDropdownOpen);
-                                    }}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors"
-                                >
+                                <button onClick={(e) => { e.preventDefault(); setIsMaterialDropdownOpen(!isMaterialDropdownOpen); }} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors">
                                     {isMaterialDropdownOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                 </button>
                             </div>
-
                             {isMaterialDropdownOpen && (
-                                <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl max-h-60 overflow-y-auto overflow-x-hidden">
-                                    {(materialSearch ? inventory.filter(item => item.material.toLowerCase().includes(materialSearch.toLowerCase())) : inventory)
-                                        .map(item => (
-                                            <button
-                                                key={item.id}
-                                                onClick={() => {
-                                                    setDirectMaterialId(item.id);
-                                                    setMaterialSearch(item.material);
-                                                    setIsMaterialDropdownOpen(false);
-                                                }}
-                                                className="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors border-b border-slate-50 last:border-0 flex justify-between items-center"
-                                            >
-                                                <div>
-                                                    <p className="font-bold text-slate-800 text-sm">{item.material}</p>
-                                                    <p className="text-[10px] text-slate-400 font-medium">{item.qtdisponivel} unidades disponíveis</p>
-                                                </div>
-                                                {directMaterialId === item.id && <CheckCircle className="w-4 h-4 text-blue-600" />}
-                                            </button>
-                                        ))}
-                                    {inventory.filter(item => item.material.toLowerCase().includes(materialSearch.toLowerCase())).length === 0 && (
-                                        <div className="p-4 text-center text-slate-400 text-sm font-medium">Nenhum material encontrado.</div>
-                                    )}
+                                <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl max-h-60 overflow-y-auto">
+                                    {(materialSearch ? inventory.filter(item => item.material.toLowerCase().includes(materialSearch.toLowerCase())) : inventory).map(item => (
+                                        <button
+                                            key={item.id}
+                                            onClick={() => { setDirectMaterialId(item.id); setMaterialSearch(item.material); setIsMaterialDropdownOpen(false); }}
+                                            className="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors border-b last:border-0 flex justify-between items-center"
+                                        >
+                                            <div>
+                                                <p className="font-bold text-slate-800 text-sm">{item.material}</p>
+                                                <p className="text-[10px] text-slate-400 font-medium">{item.qtdisponivel} disponíveis</p>
+                                            </div>
+                                            {directMaterialId === item.id && <CheckCircle className="w-4 h-4 text-blue-600" />}
+                                        </button>
+                                    ))}
                                 </div>
                             )}
                         </div>
-
                         <div className="space-y-1">
                             <label className="text-[10px] font-bold text-slate-400 uppercase">Quantidade</label>
                             <input
@@ -506,7 +485,6 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-black outline-none text-center"
                             />
                         </div>
-
                         <div className="md:col-span-4 flex flex-col md:flex-row gap-4 items-end">
                             <button
                                 onClick={addItem}
@@ -515,34 +493,28 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                             >
                                 <Plus className="w-5 h-5" /> Adicionar Item
                             </button>
-
                             <div className="flex-1"></div>
-
                             <button
                                 onClick={showDirectRelease ? handleDirectRelease : handleReceiveMaterial}
                                 disabled={actionLoading === 'direct' || !foundUser || selectedItems.length === 0}
-                                className={`min-w-[200px] h-[50px] text-white rounded-xl font-black transition-all disabled:opacity-50 shadow-lg text-sm uppercase tracking-widest ${showDirectRelease ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                                className={`min-w-[200px] h-[50px] text-white rounded-xl font-black transition-all shadow-lg text-sm uppercase tracking-widest ${showDirectRelease ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
                             >
                                 {actionLoading === 'direct' ? 'Processando...' : (showDirectRelease ? 'Confirmar Cautela' : 'Confirmar Recebimento')}
                             </button>
                         </div>
-
                         {selectedItems.length > 0 && (
-                            <div className="md:col-span-4 mt-4 space-y-2 border-t pt-4 border-slate-100">
+                            <div className="md:col-span-4 mt-4 space-y-2 border-t pt-4">
                                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Itens Selecionados</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                     {selectedItems.map((item, idx) => (
-                                        <div key={idx} className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100 group">
+                                        <div key={idx} className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border group">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm font-bold text-blue-600 text-xs text-center leading-none">
+                                                <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm font-bold text-blue-600 text-xs">
                                                     {item.quantidade}x
                                                 </div>
                                                 <span className="font-bold text-slate-800 text-sm">{item.material}</span>
                                             </div>
-                                            <button
-                                                onClick={() => removeItem(idx)}
-                                                className="p-2 text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                                            >
+                                            <button onClick={() => removeItem(idx)} className="p-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
                                         </div>
@@ -560,10 +532,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab
-                            ? 'bg-white text-blue-600 shadow-md'
-                            : 'text-slate-500 hover:text-slate-700'
-                            }`}
+                        className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab ? 'bg-white text-blue-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         {tab}
                         <span className="ml-2 px-1.5 py-0.5 bg-slate-200 text-slate-600 rounded-md text-[10px]">
@@ -579,6 +548,50 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                 ))}
             </div>
 
+            {/* In Use Search and Batch Actions */}
+            {activeTab === 'Em Uso' && (
+                <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-blue-50/50 p-4 rounded-2xl border border-blue-100 animate-scale-in">
+                    <div className="relative w-full md:w-80">
+                        <input
+                            type="text"
+                            placeholder="Buscar por SARAM, Militar ou Material..."
+                            value={inUseSearch}
+                            onChange={(e) => setInUseSearch(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none text-sm"
+                        />
+                        <Package className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    </div>
+
+                    <div className="flex items-center gap-4 w-full md:w-auto">
+                        <label className="flex items-center gap-2 cursor-pointer group bg-white px-4 py-2 rounded-xl border border-slate-200">
+                            <input
+                                type="checkbox"
+                                className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                                checked={filteredRequests.length > 0 && selectedBatchIds.length === filteredRequests.length}
+                                onChange={(e) => {
+                                    if (e.target.checked) setSelectedBatchIds(filteredRequests.map(r => r.id));
+                                    else setSelectedBatchIds([]);
+                                }}
+                            />
+                            <span className="text-sm font-bold text-slate-600 group-hover:text-blue-600">Selecionar Tudo ({filteredRequests.length})</span>
+                        </label>
+
+                        {selectedBatchIds.length > 0 && (
+                            <button
+                                onClick={() => {
+                                    const firstId = selectedBatchIds[0];
+                                    const firstReq = requests.find(r => r.id === firstId);
+                                    if (firstReq) startSignatureFlow(selectedBatchIds, firstReq.id_usuario, 'update_return');
+                                }}
+                                className="px-4 py-2 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 transition-all flex items-center gap-2"
+                            >
+                                <CheckCircle className="w-4 h-4" /> Receber Selecionados ({selectedBatchIds.length})
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
+
             <div className="space-y-4">
                 {filteredRequests.length === 0 ? (
                     <div className="text-center p-12 bg-white rounded-2xl border-dashed border-2 border-slate-200 text-slate-400 space-y-3">
@@ -587,159 +600,92 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                     </div>
                 ) : (
                     filteredRequests.map(req => (
-                        <div
-                            key={req.id}
-                            className={`bg-white rounded-xl border transition-all overflow-hidden ${expandedRequestId === req.id ? 'border-blue-300 ring-2 ring-blue-50' : 'border-slate-200'}`}
-                        >
-                            <div
-                                onClick={() => setExpandedRequestId(expandedRequestId === req.id ? null : req.id)}
-                                className="p-6 flex flex-col md:flex-row gap-6 items-start md:items-center cursor-pointer hover:bg-slate-50/50 transition-all"
-                            >
-                                {/* Icon based on status */}
-                                <div className={`p-4 rounded-full shrink-0 ${req.status === 'Pendente' ? 'bg-yellow-100 text-yellow-600' :
-                                    req.status === 'Aprovado' ? 'bg-blue-100 text-blue-600' :
-                                        req.status === 'Pendente Devolução' ? 'bg-purple-100 text-purple-600' :
-                                            req.status === 'Concluído' ? 'bg-green-100 text-green-600' :
-                                                'bg-slate-100 text-slate-600'
-                                    }`}>
-                                    {req.status === 'Pendente' && <Clock className="w-6 h-6" />}
-                                    {req.status === 'Aprovado' && <CheckCircle className="w-6 h-6" />}
-                                    {req.status === 'Em Uso' && <Truck className="w-6 h-6" />}
-                                    {req.status === 'Pendente Devolução' && <Package className="w-6 h-6" />}
-                                    {req.status === 'Concluído' && <CheckCircle className="w-6 h-6" />}
-                                    {req.status === 'Rejeitado' && <XCircle className="w-6 h-6" />}
-                                </div>
-
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <h3 className="font-bold text-lg text-slate-900">
-                                            {req.quantidade && req.quantidade > 1 && <span className="text-blue-600 mr-2">{req.quantidade}x</span>}
-                                            {req.material?.material || 'Material Desconhecido'}
-                                        </h3>
-                                        <span className={`text-[10px] px-2 py-1 rounded-full font-black uppercase tracking-widest ${req.status === 'Em Uso' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                                            {req.status}
-                                        </span>
+                        <div key={req.id} className={`bg-white rounded-xl border transition-all ${expandedRequestId === req.id ? 'border-blue-300 ring-2 ring-blue-50' : 'border-slate-200'}`}>
+                            <div className="p-6 flex flex-col md:flex-row gap-6 items-start md:items-center cursor-pointer hover:bg-slate-50/50" onClick={() => setExpandedRequestId(expandedRequestId === req.id ? null : req.id)}>
+                                {activeTab === 'Em Uso' && (
+                                    <div className="shrink-0" onClick={e => e.stopPropagation()}>
+                                        <input
+                                            type="checkbox"
+                                            className="w-5 h-5 rounded-lg text-blue-600 focus:ring-blue-500"
+                                            checked={selectedBatchIds.includes(req.id)}
+                                            onChange={(e) => {
+                                                if (e.target.checked) setSelectedBatchIds([...selectedBatchIds, req.id]);
+                                                else setSelectedBatchIds(selectedBatchIds.filter(id => id !== req.id));
+                                            }}
+                                        />
                                     </div>
-                                    <p className="text-sm text-slate-500 mb-1">
-                                        Solicitante: <span className="font-bold text-slate-700">
-                                            {req.solicitante ? `${req.solicitante.rank} ${req.solicitante.war_name}` : `ID: ${req.id_usuario}`}
-                                        </span>
-                                    </p>
-                                    <p className="text-xs text-slate-400">
-                                        {new Date(req.created_at).toLocaleString()}
-                                    </p>
-                                </div>
-
-                                <div className="flex items-center gap-4">
-                                    <div className="p-2 text-slate-300">
-                                        {expandedRequestId === req.id ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                                )}
+                                <div className="flex-1 flex flex-col md:flex-row gap-6 items-start md:items-center">
+                                    <div className={`p-4 rounded-full shrink-0 ${req.status === 'Pendente' ? 'bg-yellow-100 text-yellow-600' : req.status === 'Aprovado' ? 'bg-blue-100 text-blue-600' : req.status === 'Pendente Devolução' ? 'bg-purple-100 text-purple-600' : req.status === 'Concluído' ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-600'}`}>
+                                        <Package className="w-6 h-6" />
                                     </div>
-
-                                    {/* Quick Actions (Keep primary action visible) */}
-                                    <div className="flex flex-col gap-2 min-w-[160px]" onClick={e => e.stopPropagation()}>
-                                        {req.status === 'Pendente' && (
-                                            <button
-                                                onClick={() => updateStatus(req.id, 'Aprovado', undefined, false, undefined, 1, `${user.rank} ${user.war_name}`)}
-                                                disabled={!!actionLoading}
-                                                className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-                                            >
-                                                <CheckCircle className="w-4 h-4" /> Aprovar
-                                            </button>
-                                        )}
-
-                                        {req.status === 'Aguardando Confirmação' && (
-                                            <button
-                                                onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_release')}
-                                                disabled={!!actionLoading}
-                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-                                            >
-                                                <Truck className="w-4 h-4" /> Confirmar Entrega
-                                            </button>
-                                        )}
-
-                                        {req.status === 'Pendente Devolução' && (
-                                            <button
-                                                onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return')}
-                                                disabled={!!actionLoading}
-                                                className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-                                            >
-                                                <CheckCircle className="w-4 h-4" /> Receber Material (Assinar)
-                                            </button>
-                                        )}
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <h3 className="font-bold text-lg text-slate-900">
+                                                {req.quantidade && req.quantidade > 1 && <span className="text-blue-600 mr-2">{req.quantidade}x</span>}
+                                                {req.material?.material || 'Material Desconhecido'}
+                                            </h3>
+                                            <span className={`text-[10px] px-2 py-1 rounded-full font-black uppercase ${req.status === 'Em Uso' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                                                {req.status}
+                                            </span>
+                                        </div>
+                                        <p className="text-sm text-slate-500">
+                                            Solicitante: <span className="font-bold text-slate-700">{req.solicitante ? `${req.solicitante.rank} ${req.solicitante.war_name}` : `ID: ${req.id_usuario}`}</span>
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <ChevronDown className={`w-5 h-5 text-slate-300 transition-transform ${expandedRequestId === req.id ? 'rotate-180' : ''}`} />
+                                        <div className="flex flex-col gap-2 min-w-[160px]" onClick={e => e.stopPropagation()}>
+                                            {req.status === 'Pendente' && (
+                                                <button onClick={() => updateStatus(req.id, 'Aprovado', undefined, false, undefined, 1, `${user.rank} ${user.war_name}`)} className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm">Aprovar</button>
+                                            )}
+                                            {req.status === 'Aguardando Confirmação' && (
+                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_release')} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm">Confirmar Entrega</button>
+                                            )}
+                                            {req.status === 'Pendente Devolução' && (
+                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return')} className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm">Receber Material</button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Expanded Content (Accordion) */}
                             {expandedRequestId === req.id && (
                                 <div className="px-6 pb-6 pt-0 border-t border-slate-50 animate-fade-in">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
                                         <div className="col-span-2 space-y-4">
-                                            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-4">
-                                                <h4 className="text-[10px] font-black text-slate-400 flex items-center gap-2 border-b border-slate-200 pb-2 uppercase tracking-widest">
+                                            <div className="p-4 bg-slate-50 rounded-xl border space-y-4">
+                                                <h4 className="text-[10px] font-black text-slate-400 flex items-center gap-2 border-b pb-2 uppercase tracking-widest">
                                                     <ShieldCheck className="w-4 h-4 text-blue-500" />
-                                                    Histórico de Movimentação
+                                                    Histórico
                                                 </h4>
-
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Autorizado Por</p>
-                                                        <p className="text-sm font-semibold text-slate-700 mb-2">{req.autorizado_por || '---'}</p>
-
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Entregue Por</p>
-                                                        <p className="text-sm font-semibold text-slate-700">{req.entregue_por || '---'}</p>
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Autorizado Por</p>
+                                                        <p className="text-sm font-semibold text-slate-700">{req.autorizado_por || '---'}</p>
                                                     </div>
                                                     <div>
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Recebido Por (Devolução)</p>
-                                                        <p className="text-sm font-semibold text-slate-700 mb-2">{req.recebido_por || '---'}</p>
-
-                                                        {req.quantidade && (
-                                                            <>
-                                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Qtde.</p>
-                                                                <p className="text-sm font-semibold text-slate-700">{req.quantidade} un.</p>
-                                                            </>
-                                                        )}
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Entregue Por</p>
+                                                        <p className="text-sm font-semibold text-slate-700">{req.entregue_por || '---'}</p>
                                                     </div>
                                                 </div>
                                             </div>
-
                                             {req.observacao && (
                                                 <div className="space-y-1">
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Observações / Assinaturas</p>
-                                                    <div className="text-sm text-slate-600 bg-blue-50/50 p-4 rounded-xl border border-blue-100/50 italic leading-relaxed">
-                                                        "{req.observacao}"
-                                                    </div>
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Observações</p>
+                                                    <div className="text-sm text-slate-600 bg-blue-50/50 p-4 rounded-xl border italic">"{req.observacao}"</div>
                                                 </div>
                                             )}
                                         </div>
-
                                         <div className="space-y-3">
-                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Ações Disponíveis</h4>
+                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Ações</h4>
                                             {req.status === 'Pendente Devolução' && (
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); handleRejectReturn(req); }}
-                                                    disabled={!!actionLoading}
-                                                    className="w-full px-4 py-3 bg-red-50 text-red-600 rounded-xl font-bold text-xs hover:bg-red-100 transition-colors flex items-center justify-center gap-2 border border-red-100"
-                                                >
-                                                    <XCircle className="w-4 h-4" /> Rejeitar Devolução
-                                                </button>
+                                                <button onClick={(e) => { e.stopPropagation(); handleRejectReturn(req); }} className="w-full px-4 py-3 bg-red-50 text-red-600 rounded-xl font-bold text-xs">Rejeitar Devolução</button>
                                             )}
-
                                             {req.status === 'Em Uso' && (
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); startSignatureFlow(req.id, req.id_usuario, 'update_return'); }}
-                                                    disabled={!!actionLoading}
-                                                    className="w-full px-4 py-3 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-xs hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2 border border-emerald-100"
-                                                >
-                                                    <Plus className="w-4 h-4" /> Receber Material
-                                                </button>
+                                                <button onClick={(e) => { e.stopPropagation(); startSignatureFlow(req.id, req.id_usuario, 'update_return'); }} className="w-full px-4 py-3 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-xs">Receber Material</button>
                                             )}
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); setSelectedRequest(req); }}
-                                                className="w-full px-4 py-3 bg-slate-800 text-white rounded-xl font-bold text-xs hover:bg-slate-900 transition-colors flex items-center justify-center gap-2 shadow-lg"
-                                            >
-                                                Visualizar Cupom
-                                            </button>
+                                            <button onClick={(e) => { e.stopPropagation(); setSelectedRequest(req); }} className="w-full px-4 py-3 bg-slate-800 text-white rounded-xl font-bold text-xs">Visualizar Cupom</button>
                                         </div>
                                     </div>
                                 </div>
@@ -749,157 +695,48 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                 )}
             </div>
 
-            {/* Detail Modal */}
+            {/* Modal Detalhes */}
             {selectedRequest && (
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-in">
-                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                            <h3 className="font-bold text-xl text-slate-800 flex items-center gap-2">
-                                <Package className="w-6 h-6 text-blue-600" />
-                                Detalhes da Cautela
-                            </h3>
-                            <button
-                                onClick={(e) => { e.stopPropagation(); setSelectedRequest(null); }}
-                                className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400"
-                            >
-                                <XCircle className="w-6 h-6" />
-                            </button>
+                        <div className="p-6 border-b flex justify-between items-center bg-slate-50">
+                            <h3 className="font-bold text-xl text-slate-800 flex items-center gap-2"><Package className="w-6 h-6 text-blue-600" /> Detalhes</h3>
+                            <button onClick={() => setSelectedRequest(null)}><XCircle className="w-6 h-6 text-slate-400" /></button>
                         </div>
-
                         <div className="p-6 space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Material</p>
-                                    <p className="font-bold text-slate-800">{selectedRequest.material?.material || 'Desconhecido'}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</p>
-                                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-[10px] font-bold uppercase">{selectedRequest.status}</span>
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quantidade</p>
-                                    <p className="text-slate-800">{selectedRequest.quantidade || 1} un.</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Data do Pedido</p>
-                                    <p className="text-slate-800">{new Date(selectedRequest.created_at).toLocaleDateString()}</p>
-                                </div>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div><p className="text-[10px] font-bold text-slate-400 uppercase">Material</p><p className="font-bold">{selectedRequest.material?.material}</p></div>
+                                <div><p className="text-[10px] font-bold text-slate-400 uppercase">Status</p><p className="font-bold">{selectedRequest.status}</p></div>
+                                <div><p className="text-[10px] font-bold text-slate-400 uppercase">Quantidade</p><p>{selectedRequest.quantidade} un.</p></div>
+                                <div><p className="text-[10px] font-bold text-slate-400 uppercase">Data</p><p>{new Date(selectedRequest.created_at).toLocaleDateString()}</p></div>
                             </div>
-
-                            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-4">
-                                <h4 className="text-xs font-bold text-slate-500 flex items-center gap-2 border-b border-slate-200 pb-2">
-                                    <ShieldCheck className="w-4 h-4 text-blue-500" />
-                                    TRILHA DE AUDITORIA
-                                </h4>
-
-                                <div className="space-y-3">
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                                            <CheckCircle className="w-4 h-4 text-blue-600" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Autorizado Por</p>
-                                            <p className="text-sm font-semibold text-slate-700">{selectedRequest.autorizado_por || '---'}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center shrink-0">
-                                            <Truck className="w-4 h-4 text-yellow-600" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Entregue Por</p>
-                                            <p className="text-sm font-semibold text-slate-700">{selectedRequest.entregue_por || '---'}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                                            <CheckCircle className="w-4 h-4 text-green-600" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Recebido Por (Devolução)</p>
-                                            <p className="text-sm font-semibold text-slate-700">{selectedRequest.recebido_por || '---'}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {selectedRequest.observacao && (
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Observações</p>
-                                    <p className="text-sm text-slate-600 bg-yellow-50 p-3 rounded-lg border border-yellow-100 italic">
-                                        "{selectedRequest.observacao}"
-                                    </p>
-                                </div>
-                            )}
                         </div>
-
-                        <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end">
-                            <button
-                                onClick={() => setSelectedRequest(null)}
-                                className="px-6 py-2 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 transition-all shadow-lg"
-                            >
-                                Fechar
-                            </button>
-                        </div>
+                        <div className="p-6 bg-slate-50 text-right"><button onClick={() => setSelectedRequest(null)} className="px-6 py-2 bg-slate-800 text-white rounded-xl font-bold">Fechar</button></div>
                     </div>
                 </div>
             )}
-            {/* Signature Modal */}
+
+            {/* Modal Assinatura */}
             {showSignatureModal && (
                 <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
                     <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden animate-scale-in">
                         <div className="p-8 pb-4 text-center">
-                            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <ShieldCheck className="w-10 h-10 text-blue-600" />
-                            </div>
-                            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Assinar Cautela</h3>
-                            <p className="text-slate-500 text-sm font-medium mt-1">O militar deve inserir sua senha para {signatureAction === 'release' ? 'autorizar a retirada' : 'confirmar a devolução'}.</p>
+                            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4"><ShieldCheck className="w-10 h-10 text-blue-600" /></div>
+                            <h3 className="text-xl font-black uppercase tracking-tighter">Assinar Cautela</h3>
+                            <p className="text-slate-500 text-sm mt-1">Insira sua senha para confirmar.</p>
                         </div>
-
                         <div className="p-8 pt-0 space-y-6">
-                            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 mb-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm font-bold text-blue-600">
-                                        {foundUser?.rank || '?'}
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Militar</p>
-                                        <p className="font-bold text-slate-800">{foundUser?.war_name || foundUser?.name}</p>
-                                    </div>
-                                </div>
+                            <div className="bg-slate-50 p-4 rounded-2xl border mb-6 flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm font-bold text-blue-600">{foundUser?.rank}</div>
+                                <p className="font-bold text-slate-800">{foundUser?.war_name || foundUser?.name}</p>
                             </div>
-
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                    <Lock className="w-3 h-3" /> Senha do App
-                                </label>
-                                <input
-                                    type="password"
-                                    value={signaturePassword}
-                                    onChange={(e) => setSignaturePassword(e.target.value)}
-                                    placeholder="••••••••"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 font-bold text-lg outline-none focus:border-blue-500 transition-all text-center tracking-[0.5em]"
-                                    autoFocus
-                                    onKeyDown={(e) => e.key === 'Enter' && confirmSignature()}
-                                />
+                                <label className="text-[10px] font-black text-slate-400 uppercase flex items-center gap-2"><Lock className="w-3 h-3" /> Senha</label>
+                                <input type="password" value={signaturePassword} onChange={(e) => setSignaturePassword(e.target.value)} className="w-full bg-slate-50 border rounded-xl p-4 font-bold text-lg text-center" autoFocus onKeyDown={(e) => e.key === 'Enter' && confirmSignature()} />
                             </div>
-
                             <div className="grid grid-cols-2 gap-3 pt-2">
-                                <button
-                                    onClick={() => { setShowSignatureModal(false); setSignaturePassword(''); }}
-                                    className="w-full bg-slate-100 text-slate-600 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-slate-200 transition-all font-bold"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    onClick={confirmSignature}
-                                    disabled={!signaturePassword || !!actionLoading}
-                                    className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-600/20 transition-all disabled:opacity-50"
-                                >
-                                    {actionLoading ? 'Verificando...' : 'Confirmar'}
-                                </button>
+                                <button onClick={() => setShowSignatureModal(false)} className="bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold">Cancelar</button>
+                                <button onClick={confirmSignature} disabled={!signaturePassword || !!actionLoading} className="bg-blue-600 text-white py-4 rounded-2xl font-bold disabled:opacity-50">Confirmar</button>
                             </div>
                         </div>
                     </div>
