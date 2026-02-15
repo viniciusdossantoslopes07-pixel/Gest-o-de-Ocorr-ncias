@@ -295,6 +295,8 @@ const App: FC = () => {
         phoneNumber: data.phone_number,
         cpf: data.cpf,
         displayOrder: data.display_order,
+        menu_order: data.menu_order,
+        home_order: data.home_order,
         pending_password_reset: data.pending_password_reset,
         reset_password_at_login: data.reset_password_at_login,
         password_status: data.password_status,
@@ -363,7 +365,9 @@ const App: FC = () => {
         phoneNumber: u.phone_number,
         approved: u.approved,
         password: u.password,
-        displayOrder: u.display_order
+        displayOrder: u.display_order,
+        menu_order: u.menu_order,
+        home_order: u.home_order
       }));
       setUsers(mappedUsers);
     }

@@ -4,8 +4,10 @@ import { User, UserRole } from '../types';
 import {
     Home, PlusCircle, ShieldCheck, ShieldAlert, Package,
     LayoutDashboard, FileText, LogOut, ChevronLeft, ChevronRight,
-    User as UserIcon, Settings, HelpCircle, Moon, Sun, Lock, Siren, BarChart3
+    User as UserIcon, Settings, HelpCircle, Moon, Sun, Lock, Siren, BarChart3,
+    ChevronUp, ChevronDown, Check, Settings2
 } from 'lucide-react';
+import { supabase } from '../services/supabase';
 
 interface SideMenuProps {
     isOpen: boolean;
@@ -27,6 +29,8 @@ export default function SideMenu({
     const [isMaterialMenuOpen, setIsMaterialMenuOpen] = useState(false);
     const [isOccurrencesOpen, setIsOccurrencesOpen] = useState(false);
     const [isPersonnelOpen, setIsPersonnelOpen] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [customOrder, setCustomOrder] = useState<string[]>(currentUser.menu_order || ['operacional', 'material', 'pessoal', 'admin']);
 
     // Permission Checks
     const isPublic = currentUser.role === UserRole.PUBLIC;
@@ -40,6 +44,47 @@ export default function SideMenu({
     const isMaterialManager = !!currentUser && (isOM || isAdmin || ["SAP-03", "CH-SAP"].includes(currentUser.sector));
     const canManageUsers = !!currentUser && (isOM || ["CH-SOP", "SOP-01"].includes(currentUser.sector));
     const canManagePersonnel = !!currentUser && (isOM || ["CH-SAP", "SAP-01", "SOP-01"].includes(currentUser.sector));
+
+    const moveSection = (index: number, direction: 'up' | 'down') => {
+        const newOrder = [...customOrder];
+        const newIndex = direction === 'up' ? index - 1 : index + 1;
+        if (newIndex >= 0 && newIndex < newOrder.length) {
+            [newOrder[index], newOrder[newIndex]] = [newOrder[newIndex], newOrder[index]];
+            setCustomOrder(newOrder);
+        }
+    };
+
+    const saveOrder = async () => {
+        const { error } = await supabase
+            .from('users')
+            .update({ menu_order: customOrder })
+            .eq('id', currentUser.id);
+
+        if (error) {
+            alert('Erro ao salvar preferência: ' + error.message);
+        } else {
+            setIsEditMode(false);
+            // We might need to update the local currentUser object if we want immediate sync without refresh
+            // But usually, setting customOrder locally is enough for current session, 
+            // and the DB handles persistence.
+        }
+    };
+
+    const SectionHeader = ({ id, label, index }: { id: string, label: string, index: number }) => (
+        <div className="flex items-center justify-between mb-2 px-2 group">
+            {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest">{label}</h3>}
+            {isEditMode && !isCollapsed && (
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => moveSection(index, 'up')} className="p-1 hover:bg-slate-800 rounded text-slate-400">
+                        <ChevronUp className="w-3 h-3" />
+                    </button>
+                    <button onClick={() => moveSection(index, 'down')} className="p-1 hover:bg-slate-800 rounded text-slate-400">
+                        <ChevronDown className="w-3 h-3" />
+                    </button>
+                </div>
+            )}
+        </div>
+    );
 
     const MenuItem = ({ id, label, icon: Icon, onClick }: any) => (
         <button
@@ -90,114 +135,125 @@ export default function SideMenu({
                         </div>
                     )}
 
-                    {/* Restricted Menu */}
+                    {/* Restricted Menu - Sorted by Custom Order */}
                     {!isPublic && (
                         <>
-                            {/* SECTION 1: OPERACIONAL */}
-                            <div>
-                                {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2">Operacional</h3>}
-                                <MenuItem id="home" label="Painel Geral" icon={Home} />
-
-                                {(canManageMissions || canRequestMission) && (
-                                    <MenuItem id="mission-center" label="Central de Missões" icon={ShieldAlert} />
-                                )}
-                                <MenuItem id="meu-plano" label="Meu Plano" icon={UserIcon} />
-                            </div>
-
-                            {/* SECTION 2: CENTRAL DE MATERIAL */}
-                            <div>
-                                {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2">Central de Material</h3>}
-
+                            <div className="flex items-center justify-between px-2 mb-4">
+                                {!isCollapsed && <span className="text-[9px] font-bold text-slate-600 uppercase">Personalização</span>}
                                 <button
-                                    onClick={() => !isCollapsed && setIsMaterialMenuOpen(!isMaterialMenuOpen)}
-                                    className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
-                                    title={isCollapsed ? "Central de Material" : ''}
+                                    onClick={() => isEditMode ? saveOrder() : setIsEditMode(true)}
+                                    className={`p-1.5 rounded-lg transition-colors ${isEditMode ? 'bg-green-600 text-white' : 'text-slate-500 hover:bg-slate-800 hover:text-white'}`}
+                                    title={isEditMode ? "Salvar Ordem" : "Personalizar Ordem"}
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <Package className="w-5 h-5 shrink-0" />
-                                        {!isCollapsed && <span className="text-sm font-bold">Material e Cautela</span>}
-                                    </div>
-                                    {!isCollapsed && (
-                                        <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isMaterialMenuOpen ? 'rotate-90' : ''}`} />
-                                    )}
+                                    {isEditMode ? <Check className="w-4 h-4" /> : <Settings2 className="w-4 h-4" />}
                                 </button>
-
-                                {(!isCollapsed && isMaterialMenuOpen) && (
-                                    <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
-                                        <MenuItem id="my-material-loans" label="Minhas Cautelas" icon={Package} />
-                                        <MenuItem id="request-material" label="Solicitar Material" icon={PlusCircle} />
-
-                                        {isMaterialManager && (
-                                            <>
-                                                <div className="my-2 border-t border-slate-800" />
-                                                <MenuItem id="material-approvals" label="Aprovações" icon={ShieldCheck} />
-                                                <MenuItem id="inventory-management" label="Gestão de Estoque" icon={LayoutDashboard} />
-                                                <MenuItem id="material-statistics" label="Estatísticas" icon={LayoutDashboard} />
-                                            </>
-                                        )}
-                                    </div>
-                                )}
                             </div>
 
-
-
-                            {/* SECTION 3: CENTRAL DE PESSOAL */}
-                            {canManagePersonnel && (
-                                <div>
-                                    {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2">Gestão de Pessoal</h3>}
-                                    <button
-                                        onClick={() => !isCollapsed && setIsPersonnelOpen(!isPersonnelOpen)}
-                                        className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
-                                        title={isCollapsed ? "Central de Pessoal" : ''}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <UserIcon className="w-5 h-5 shrink-0" />
-                                            {!isCollapsed && <span className="text-sm font-bold">Central de Pessoal</span>}
+                            {customOrder.map((sectionId, index) => {
+                                if (sectionId === 'operacional') {
+                                    return (
+                                        <div key="operacional" className="space-y-1">
+                                            <SectionHeader id="operacional" label="Operacional" index={index} />
+                                            <MenuItem id="home" label="Painel Geral" icon={Home} />
+                                            {(canManageMissions || canRequestMission) && (
+                                                <MenuItem id="mission-center" label="Central de Missões" icon={ShieldAlert} />
+                                            )}
+                                            <MenuItem id="meu-plano" label="Meu Plano" icon={UserIcon} />
+                                            <div className="h-4" />
                                         </div>
-                                        {!isCollapsed && (
-                                            <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isPersonnelOpen ? 'rotate-90' : ''}`} />
-                                        )}
-                                    </button>
-
-                                    {(!isCollapsed && isPersonnelOpen) && (
-                                        <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
-                                            <MenuItem id="daily-attendance" label="Chamada Diária" icon={ShieldCheck} />
-                                            <MenuItem id="personnel-management" label="Gestão de Efetivo" icon={UserIcon} />
-                                            <MenuItem id="force-map" label="Mapa de Força" icon={BarChart3} />
+                                    );
+                                }
+                                if (sectionId === 'material') {
+                                    return (
+                                        <div key="material" className="space-y-1">
+                                            <SectionHeader id="material" label="Central de Material" index={index} />
+                                            <button
+                                                onClick={() => !isCollapsed && setIsMaterialMenuOpen(!isMaterialMenuOpen)}
+                                                className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <Package className="w-5 h-5 shrink-0" />
+                                                    {!isCollapsed && <span className="text-sm font-bold">Material e Cautela</span>}
+                                                </div>
+                                                {!isCollapsed && (
+                                                    <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isMaterialMenuOpen ? 'rotate-90' : ''}`} />
+                                                )}
+                                            </button>
+                                            {(!isCollapsed && isMaterialMenuOpen) && (
+                                                <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
+                                                    <MenuItem id="my-material-loans" label="Minhas Cautelas" icon={Package} />
+                                                    <MenuItem id="request-material" label="Solicitar Material" icon={PlusCircle} />
+                                                    {isMaterialManager && (
+                                                        <>
+                                                            <div className="my-2 border-t border-slate-800" />
+                                                            <MenuItem id="material-approvals" label="Aprovações" icon={ShieldCheck} />
+                                                            <MenuItem id="inventory-management" label="Gestão de Estoque" icon={LayoutDashboard} />
+                                                            <MenuItem id="material-statistics" label="Estatísticas" icon={LayoutDashboard} />
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
+                                            <div className="h-4" />
                                         </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* SECTION 5: CENTRAL DE OCORRÊNCIAS (Antiga Administração) */}
-                            {(isAdmin || canManageUsers) && (
-                                <div>
-                                    {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2">Administração</h3>}
-
-                                    <button
-                                        onClick={() => !isCollapsed && setIsOccurrencesOpen(!isOccurrencesOpen)}
-                                        className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
-                                        title={isCollapsed ? "Central de Ocorrências" : ''}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <Siren className="w-5 h-5 shrink-0" />
-                                            {!isCollapsed && <span className="text-sm font-bold">Central de Ocorrências</span>}
+                                    );
+                                }
+                                if (sectionId === 'pessoal' && canManagePersonnel) {
+                                    return (
+                                        <div key="pessoal" className="space-y-1">
+                                            <SectionHeader id="pessoal" label="Gestão de Pessoal" index={index} />
+                                            <button
+                                                onClick={() => !isCollapsed && setIsPersonnelOpen(!isPersonnelOpen)}
+                                                className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <UserIcon className="w-5 h-5 shrink-0" />
+                                                    {!isCollapsed && <span className="text-sm font-bold">Central de Pessoal</span>}
+                                                </div>
+                                                {!isCollapsed && (
+                                                    <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isPersonnelOpen ? 'rotate-90' : ''}`} />
+                                                )}
+                                            </button>
+                                            {(!isCollapsed && isPersonnelOpen) && (
+                                                <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
+                                                    <MenuItem id="daily-attendance" label="Chamada Diária" icon={ShieldCheck} />
+                                                    <MenuItem id="personnel-management" label="Gestão de Efetivo" icon={UserIcon} />
+                                                    <MenuItem id="force-map" label="Mapa de Força" icon={BarChart3} />
+                                                </div>
+                                            )}
+                                            <div className="h-4" />
                                         </div>
-                                        {!isCollapsed && (
-                                            <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isOccurrencesOpen ? 'rotate-90' : ''}`} />
-                                        )}
-                                    </button>
-
-                                    {(!isCollapsed && isOccurrencesOpen) && (
-                                        <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
-                                            {isAdmin && <MenuItem id="kanban" label="Fila de Serviço" icon={LayoutDashboard} />}
-                                            {canManageUsers && <MenuItem id="users" label="Gestão Militar" icon={UserIcon} />}
-                                            <MenuItem id="dashboard" label="Estatísticas BI" icon={BarChart3} />
-                                            <MenuItem id="list" label="Arquivo Geral" icon={FileText} />
+                                    );
+                                }
+                                if (sectionId === 'admin' && (isAdmin || canManageUsers)) {
+                                    return (
+                                        <div key="admin" className="space-y-1">
+                                            <SectionHeader id="admin" label="Administração" index={index} />
+                                            <button
+                                                onClick={() => !isCollapsed && setIsOccurrencesOpen(!isOccurrencesOpen)}
+                                                className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <Siren className="w-5 h-5 shrink-0" />
+                                                    {!isCollapsed && <span className="text-sm font-bold">Central de Ocorrências</span>}
+                                                </div>
+                                                {!isCollapsed && (
+                                                    <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isOccurrencesOpen ? 'rotate-90' : ''}`} />
+                                                )}
+                                            </button>
+                                            {(!isCollapsed && isOccurrencesOpen) && (
+                                                <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
+                                                    {isAdmin && <MenuItem id="kanban" label="Fila de Serviço" icon={LayoutDashboard} />}
+                                                    {canManageUsers && <MenuItem id="users" label="Gestão Militar" icon={UserIcon} />}
+                                                    <MenuItem id="dashboard" label="Estatísticas BI" icon={BarChart3} />
+                                                    <MenuItem id="list" label="Arquivo Geral" icon={FileText} />
+                                                </div>
+                                            )}
+                                            <div className="h-4" />
                                         </div>
-                                    )}
-                                </div>
-                            )}
+                                    );
+                                }
+                                return null;
+                            })}
                         </>
                     )}
 

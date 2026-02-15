@@ -15,8 +15,13 @@ import {
   Users,
   Box,
   Clock,
-  RefreshCw
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  Settings2
 } from 'lucide-react';
+import { supabase } from '../services/supabase';
 import { User, Occurrence } from '../types';
 import { STATUS_COLORS, URGENCY_COLORS } from '../constants';
 
@@ -40,6 +45,9 @@ const HomeView: React.FC<HomeViewProps> = ({
   onRequestMission
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const defaultHomeOrder = ['MISSION_REQUEST', 'Ocorrências de Emergência', 'Controle de Acesso e Credenciamento', 'Segurança Orgânica / Patrimonial', 'Segurança de Sistemas e Tecnologia', 'Veículos e Tráfego Interno', 'Pessoas e Conduta', 'Materiais e Logística'];
+  const [customOrder, setCustomOrder] = useState<string[]>(user.home_order || defaultHomeOrder);
 
   const handleRefresh = async () => {
     if (!onRefresh) return;
@@ -51,7 +59,29 @@ const HomeView: React.FC<HomeViewProps> = ({
     }
   };
 
-  const quickActions = [
+  const moveAction = (index: number, direction: 'left' | 'right') => {
+    const newOrder = [...customOrder];
+    const newIndex = direction === 'left' ? index - 1 : index + 1;
+    if (newIndex >= 0 && newIndex < newOrder.length) {
+      [newOrder[index], newOrder[newIndex]] = [newOrder[newIndex], newOrder[index]];
+      setCustomOrder(newOrder);
+    }
+  };
+
+  const saveHomeOrder = async () => {
+    const { error } = await supabase
+      .from('users')
+      .update({ home_order: customOrder })
+      .eq('id', user.id);
+
+    if (error) {
+      alert('Erro ao salvar ordem: ' + error.message);
+    } else {
+      setIsEditMode(false);
+    }
+  };
+
+  const baseQuickActions = [
     { title: 'Emergências', icon: <Zap className="w-8 h-8" />, color: 'bg-red-600', category: 'Ocorrências de Emergência' },
     { title: 'Acesso', icon: <Lock className="w-8 h-8" />, color: 'bg-orange-600', category: 'Controle de Acesso e Credenciamento' },
     { title: 'Patrimonial', icon: <Shield className="w-8 h-8" />, color: 'bg-blue-700', category: 'Segurança Orgânica / Patrimonial' },
@@ -63,8 +93,8 @@ const HomeView: React.FC<HomeViewProps> = ({
 
   // Add Mission button if handler is provided
   if (onRequestMission) {
-    quickActions.unshift({
-      title: 'Missão', // User asked for "Solicitar missão" but title spacing in grid might be tight. "Missão" is concise. Let's try "Solicitar Missão" if space permits, or just "Missões".
+    baseQuickActions.unshift({
+      title: 'Missão',
       icon: <ShieldAlert className="w-8 h-8" />,
       color: 'bg-slate-900',
       category: 'MISSION_REQUEST'
@@ -109,20 +139,54 @@ const HomeView: React.FC<HomeViewProps> = ({
             <span className="w-8 h-[2px] bg-blue-600"></span>
             Abertura Rápida de Chamado
           </h3>
+          <button
+            onClick={() => isEditMode ? saveHomeOrder() : setIsEditMode(true)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${isEditMode ? 'bg-green-600 text-white shadow-lg' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+          >
+            {isEditMode ? <><Check className="w-4 h-4" /> Salvar Ordem</> : <><Settings2 className="w-4 h-4" /> Personalizar</>}
+          </button>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-          {quickActions.map((action, idx) => (
-            <button
-              key={idx}
-              onClick={() => action.category === 'MISSION_REQUEST' && onRequestMission ? onRequestMission() : onNewOccurrence(action.category)}
-              className="flex flex-col items-center justify-center p-4 lg:p-6 bg-white rounded-2xl lg:rounded-3xl shadow-sm border border-slate-200 hover:border-blue-500 hover:shadow-xl transition-all group relative overflow-hidden active:scale-95"
-            >
-              <div className={`${action.color} p-3 lg:p-4 rounded-xl lg:rounded-2xl text-white mb-2 lg:mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
-                {React.cloneElement(action.icon as React.ReactElement, { className: 'w-6 h-6 lg:w-8 h-8' })}
+          {customOrder.map((categoryId, idx) => {
+            const action = [
+              { title: 'Missão', icon: <ShieldAlert className="w-8 h-8" />, color: 'bg-slate-900', category: 'MISSION_REQUEST' },
+              { title: 'Emergências', icon: <Zap className="w-8 h-8" />, color: 'bg-red-600', category: 'Ocorrências de Emergência' },
+              { title: 'Acesso', icon: <Lock className="w-8 h-8" />, color: 'bg-orange-600', category: 'Controle de Acesso e Credenciamento' },
+              { title: 'Patrimonial', icon: <Shield className="w-8 h-8" />, color: 'bg-blue-700', category: 'Segurança Orgânica / Patrimonial' },
+              { title: 'Tecnologia', icon: <Camera className="w-8 h-8" />, color: 'bg-indigo-600', category: 'Segurança de Sistemas e Tecnologia' },
+              { title: 'Tráfego', icon: <Truck className="w-8 h-8" />, color: 'bg-slate-700', category: 'Veículos e Tráfego Interno' },
+              { title: 'Conduta', icon: <Users className="w-8 h-8" />, color: 'bg-purple-600', category: 'Pessoas e Conduta' },
+              { title: 'Logística', icon: <Box className="w-8 h-8" />, color: 'bg-emerald-600', category: 'Materiais e Logística' },
+            ].find(a => a.category === categoryId);
+
+            if (!action) return null;
+            if (action.category === 'MISSION_REQUEST' && !onRequestMission) return null;
+
+            return (
+              <div key={categoryId} className="relative group">
+                <button
+                  onClick={() => !isEditMode && (action.category === 'MISSION_REQUEST' && onRequestMission ? onRequestMission() : onNewOccurrence(action.category))}
+                  className={`w-full h-full flex flex-col items-center justify-center p-4 lg:p-6 bg-white rounded-2xl lg:rounded-3xl shadow-sm border border-slate-200 transition-all relative overflow-hidden active:scale-95 ${isEditMode ? 'cursor-default opacity-80' : 'hover:border-blue-500 hover:shadow-xl group'}`}
+                >
+                  <div className={`${action.color} p-3 lg:p-4 rounded-xl lg:rounded-2xl text-white mb-2 lg:mb-4 transition-transform shadow-lg ${!isEditMode && 'group-hover:scale-110'}`}>
+                    {React.cloneElement(action.icon as React.ReactElement<any>, { className: 'w-6 h-6 lg:w-8 h-8' })}
+                  </div>
+                  <span className="text-[10px] lg:text-[11px] font-black text-slate-800 text-center uppercase tracking-tight">{action.title}</span>
+                </button>
+
+                {isEditMode && (
+                  <div className="absolute top-2 inset-x-2 flex justify-between z-20">
+                    <button onClick={() => moveAction(idx, 'left')} className="p-1 bg-white/90 shadow rounded-full hover:bg-slate-100 text-slate-600 disabled:opacity-30" disabled={idx === 0}>
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => moveAction(idx, 'right')} className="p-1 bg-white/90 shadow rounded-full hover:bg-slate-100 text-slate-600 disabled:opacity-30" disabled={idx === customOrder.length - 1}>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
-              <span className="text-[10px] lg:text-[11px] font-black text-slate-800 text-center uppercase tracking-tight">{action.title}</span>
-            </button>
-          ))}
+            );
+          })}
         </div>
       </section>
 
