@@ -30,13 +30,33 @@ interface LoanApprovalsProps {
 
 export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
     const [requests, setRequests] = useState<LoanRequest[]>([]);
+    const [inventory, setInventory] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [selectedRequest, setSelectedRequest] = useState<LoanRequest | null>(null);
+    const [activeTab, setActiveTab] = useState<'Solicitações' | 'Devoluções' | 'Em Uso' | 'Histórico'>('Solicitações');
+
+    // Direct Release States
+    const [showDirectRelease, setShowDirectRelease] = useState(false);
+    const [directSaram, setDirectSaram] = useState('');
+    const [directMaterialId, setDirectMaterialId] = useState('');
+    const [directQuantity, setDirectQuantity] = useState(1);
+    const [isSearchingSaram, setIsSearchingSaram] = useState(false);
+    const [foundUser, setFoundUser] = useState<any>(null);
 
     useEffect(() => {
         fetchRequests();
+        fetchInventory();
     }, []);
+
+    const fetchInventory = async () => {
+        const { data } = await supabase
+            .from('gestao_estoque')
+            .select('id, material, qtdisponivel')
+            .gt('qtdisponivel', 0)
+            .order('material');
+        if (data) setInventory(data);
+    };
 
     const fetchRequests = async () => {
         setLoading(true);
@@ -86,6 +106,63 @@ export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
             setRequests([]);
         }
         setLoading(false);
+    };
+
+    const handleSaramBlur = async () => {
+        if (directSaram.length < 4) return;
+        setIsSearchingSaram(true);
+        setFoundUser(null);
+        const { data, error } = await supabase
+            .from('users')
+            .select('id, name, rank, war_name')
+            .eq('saram', directSaram)
+            .single();
+
+        if (data) {
+            setFoundUser(data);
+        } else {
+            alert('Militar não encontrado com este SARAM.');
+        }
+        setIsSearchingSaram(false);
+    };
+
+    const handleDirectRelease = async () => {
+        if (!foundUser || !directMaterialId) {
+            alert('Selecione um militar válido e um material.');
+            return;
+        }
+
+        setActionLoading('direct');
+        try {
+            const userName = `${user.rank || ''} ${user.war_name || user.name}`.trim();
+
+            const { data, error } = await supabase
+                .from('movimentacao_cautela')
+                .insert([{
+                    id_material: directMaterialId,
+                    id_usuario: foundUser.id,
+                    status: 'Em Uso',
+                    quantidade: directQuantity,
+                    autorizado_por: userName,
+                    entregue_por: userName,
+                    created_at: new Date().toISOString()
+                }]);
+
+            if (error) throw error;
+
+            alert('Material liberado com sucesso!');
+            setDirectSaram('');
+            setDirectMaterialId('');
+            setDirectQuantity(1);
+            setFoundUser(null);
+            setShowDirectRelease(false);
+            fetchRequests();
+        } catch (err: any) {
+            console.error('Error in direct release:', err);
+            alert('Erro ao liberar material: ' + err.message);
+        } finally {
+            setActionLoading(null);
+        }
     };
 
     const updateStatus = async (id: string, newStatus: string, observation?: string, incrementExit?: boolean, materialId?: string, quantity: number = 1, auditorName?: string) => {
@@ -146,27 +223,123 @@ export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
         await updateStatus(request.id, 'Rejeitado', obs, isLoss, request.id_material, request.quantidade);
     };
 
+    const filteredRequests = requests.filter(req => {
+        if (activeTab === 'Solicitações') return ['Pendente', 'Aprovado', 'Aguardando Confirmação'].includes(req.status);
+        if (activeTab === 'Devoluções') return req.status === 'Pendente Devolução';
+        if (activeTab === 'Em Uso') return req.status === 'Em Uso';
+        if (activeTab === 'Histórico') return ['Concluído', 'Rejeitado'].includes(req.status);
+        return true;
+    });
+
     if (loading) return <div className="text-center p-8 text-slate-500">Carregando aprovações...</div>;
 
     return (
-        <div className="space-y-6 animate-fade-in">
-            <div className="flex items-center gap-4">
-                <div className="bg-blue-100 p-3 rounded-xl">
-                    <ShieldCheck className="w-8 h-8 text-blue-600" />
+        <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-8 animate-fade-in">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center gap-4 text-slate-800">
+                    <div className="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-200">
+                        <ShieldCheck className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-black tracking-tight">Aprovações e Devoluções (SAP-03)</h1>
+                        <p className="text-slate-500 text-sm font-medium">Gerencie o fluxo de materiais da seção.</p>
+                    </div>
                 </div>
-                <div>
-                    <h2 className="text-2xl font-bold text-slate-800">Aprovações e Devoluções (SAP-03)</h2>
-                    <p className="text-slate-500">Gerencie solicitações de cautela e devoluções de material.</p>
+
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setShowDirectRelease(!showDirectRelease)}
+                        className={`px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 ${showDirectRelease ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-blue-600 text-white hover:bg-blue-700'
+                            }`}
+                    >
+                        <Package className="w-4 h-4" />
+                        {showDirectRelease ? 'Cancelar Liberação' : 'Liberação Direta'}
+                    </button>
+                    <button onClick={fetchRequests} className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 shadow-sm">
+                        <Clock className="w-5 h-5" />
+                    </button>
                 </div>
             </div>
 
+            {/* Direct Release Form */}
+            {showDirectRelease && (
+                <div className="bg-white p-6 rounded-2xl border-2 border-blue-100 shadow-xl shadow-blue-50 space-y-4 animate-scale-in">
+                    <h2 className="font-black text-slate-800 flex items-center gap-2 uppercase text-xs tracking-widest">
+                        <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                        Nova Liberação Direta (Sem Solicitação)
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase">SARAM do Militar</label>
+                            <input
+                                type="text"
+                                value={directSaram}
+                                onChange={(e) => setDirectSaram(e.target.value)}
+                                onBlur={handleSaramBlur}
+                                placeholder="Digite o SARAM..."
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none"
+                            />
+                            {foundUser && <p className="text-[10px] font-bold text-green-600 mt-1">✓ {foundUser.rank} {foundUser.war_name || foundUser.name}</p>}
+                        </div>
+                        <div className="md:col-span-2 space-y-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase">Material Disponível</label>
+                            <select
+                                value={directMaterialId}
+                                onChange={(e) => setDirectMaterialId(e.target.value)}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none font-bold"
+                            >
+                                <option value="">Selecione o material...</option>
+                                {inventory.map(item => (
+                                    <option key={item.id} value={item.id}>{item.material} ({item.qtdisponivel} disponíveis)</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="space-y-1 flex flex-col justify-end">
+                            <button
+                                onClick={handleDirectRelease}
+                                disabled={actionLoading === 'direct' || !foundUser || !directMaterialId}
+                                className="w-full h-[50px] bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 transition-all disabled:opacity-50 shadow-lg text-sm"
+                            >
+                                {actionLoading === 'direct' ? 'Processando...' : 'Liberar Agora'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Tabs */}
+            <div className="flex bg-slate-100 p-1 rounded-2xl w-full md:w-fit self-start border border-slate-200 overflow-x-auto">
+                {(['Solicitações', 'Devoluções', 'Em Uso', 'Histórico'] as const).map(tab => (
+                    <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab
+                                ? 'bg-white text-blue-600 shadow-md'
+                                : 'text-slate-500 hover:text-slate-700'
+                            }`}
+                    >
+                        {tab}
+                        <span className="ml-2 px-1.5 py-0.5 bg-slate-200 text-slate-600 rounded-md text-[10px]">
+                            {requests.filter(req => {
+                                if (tab === 'Solicitações') return ['Pendente', 'Aprovado', 'Aguardando Confirmação'].includes(req.status);
+                                if (tab === 'Devoluções') return req.status === 'Pendente Devolução';
+                                if (tab === 'Em Uso') return req.status === 'Em Uso';
+                                if (tab === 'Histórico') return ['Concluído', 'Rejeitado'].includes(req.status);
+                                return false;
+                            }).length}
+                        </span>
+                    </button>
+                ))}
+            </div>
+
             <div className="space-y-4">
-                {requests.length === 0 ? (
-                    <div className="text-center p-12 bg-slate-50 rounded-xl border-dashed border-2 border-slate-200 text-slate-400">
-                        Nenhuma solicitação pendente.
+                {filteredRequests.length === 0 ? (
+                    <div className="text-center p-12 bg-white rounded-2xl border-dashed border-2 border-slate-200 text-slate-400 space-y-3">
+                        <AlertCircle className="w-12 h-12 text-slate-200 mx-auto" />
+                        <p className="font-bold">Nenhuma cautela em "{activeTab}"</p>
                     </div>
                 ) : (
-                    requests.map(req => (
+                    filteredRequests.map(req => (
                         <div
                             key={req.id}
                             onClick={() => setSelectedRequest(req)}
