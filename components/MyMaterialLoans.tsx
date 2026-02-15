@@ -25,6 +25,9 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [selectedLoan, setSelectedLoan] = useState<MaterialLoan | null>(null);
+    const [showSignatureModal, setShowSignatureModal] = useState(false);
+    const [signaturePassword, setSignaturePassword] = useState('');
+    const [pendingAction, setPendingAction] = useState<{ id: string, status: string } | null>(null);
 
     useEffect(() => {
         if (user) fetchLoans();
@@ -53,6 +56,12 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
     };
 
     const handleAction = async (id: string, newStatus: string) => {
+        if (newStatus === 'Em Uso') {
+            setPendingAction({ id, status: newStatus });
+            setShowSignatureModal(true);
+            return;
+        }
+
         try {
             setActionLoading(id);
             const { error } = await supabase
@@ -66,6 +75,39 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
         } catch (err: any) {
             console.error('Error updating loan:', err);
             alert('Erro ao atualizar: ' + err.message);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const confirmSignature = async () => {
+        if (signaturePassword !== user.password) {
+            alert('Senha incorreta!');
+            return;
+        }
+
+        if (!pendingAction) return;
+
+        try {
+            setActionLoading(pendingAction.id);
+            const { error } = await supabase
+                .from('movimentacao_cautela')
+                .update({
+                    status: pendingAction.status,
+                    observacao: `Retirada solicitada pelo usuário em ${new Date().toLocaleString()}`
+                })
+                .eq('id', pendingAction.id);
+
+            if (error) throw error;
+
+            setShowSignatureModal(false);
+            setSignaturePassword('');
+            setPendingAction(null);
+            await fetchLoans();
+            alert('Solicitação de retirada enviada! Dirija-se ao balcão para retirar o material.');
+        } catch (err: any) {
+            console.error('Error updating loan with signature:', err);
+            alert('Erro ao confirmar retirada: ' + err.message);
         } finally {
             setActionLoading(null);
         }
@@ -100,7 +142,8 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                                 loan.status === 'Aprovado' ? 'bg-blue-400' :
                                     loan.status === 'Em Uso' ? 'bg-green-500' :
                                         loan.status === 'Rejeitado' ? 'bg-red-400' :
-                                            'bg-purple-400'
+                                            loan.status === 'Aguardando Confirmação' ? 'bg-orange-400' :
+                                                'bg-purple-400'
                                 }`} />
 
                             <div className="flex justify-between items-start mb-3 mt-2">
@@ -115,7 +158,8 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                                     loan.status === 'Aprovado' ? 'bg-blue-50 text-blue-700' :
                                         loan.status === 'Em Uso' ? 'bg-green-50 text-green-700' :
                                             loan.status === 'Rejeitado' ? 'bg-red-50 text-red-700' :
-                                                'bg-purple-50 text-purple-700'
+                                                loan.status === 'Aguardando Confirmação' ? 'bg-orange-50 text-orange-700' :
+                                                    'bg-purple-50 text-purple-700'
                                     }`}>
                                     {loan.status}
                                 </div>
@@ -148,7 +192,7 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                             <div className="mt-auto">
                                 {loan.status === 'Aprovado' && (
                                     <button
-                                        onClick={() => handleAction(loan.id, 'Em Uso')}
+                                        onClick={(e) => { e.stopPropagation(); handleAction(loan.id, 'Em Uso'); }}
                                         disabled={!!actionLoading}
                                         className="w-full py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                                     >
@@ -162,7 +206,7 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
 
                                 {loan.status === 'Em Uso' && (
                                     <button
-                                        onClick={() => handleAction(loan.id, 'Pendente Devolução')}
+                                        onClick={(e) => { e.stopPropagation(); handleAction(loan.id, 'Pendente Devolução'); }}
                                         disabled={!!actionLoading}
                                         className="w-full py-2 bg-purple-600 text-white rounded-lg font-bold text-sm hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
                                     >
@@ -175,8 +219,8 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                                 )}
 
                                 {loan.status === 'Aguardando Confirmação' && (
-                                    <div className="w-full py-2 bg-slate-100 text-slate-500 rounded-lg font-bold text-xs text-center flex items-center justify-center gap-2">
-                                        <Clock className="w-3 h-3" /> Aguardando Entrega
+                                    <div className="w-full py-2 bg-orange-100 text-orange-600 rounded-lg font-bold text-xs text-center flex items-center justify-center gap-2">
+                                        <Clock className="w-3 h-3" /> Aguardando Entrega Física
                                     </div>
                                 )}
                             </div>
@@ -198,7 +242,7 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                                 onClick={(e) => { e.stopPropagation(); setSelectedLoan(null); }}
                                 className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400"
                             >
-                                <XCircle className="w-6 h-6" />
+                                <CornerDownLeft className="w-6 h-6 rotate-90" />
                             </button>
                         </div>
 
@@ -270,6 +314,57 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                             >
                                 Fechar
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Signature Modal for User Withdrawal */}
+            {showSignatureModal && (
+                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden animate-scale-in">
+                        <div className="p-8 pb-4 text-center">
+                            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Truck className="w-10 h-10 text-blue-600" />
+                            </div>
+                            <h3 className="text-xl font-black uppercase tracking-tighter">Confirmar Retirada</h3>
+                            <p className="text-slate-500 text-sm mt-1">Insira sua senha para confirmar que está retirando o material no balcão.</p>
+                        </div>
+                        <div className="p-8 pt-0 space-y-6">
+                            <div className="bg-slate-50 p-4 rounded-2xl border mb-6 flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm font-bold text-blue-600">
+                                    {user.rank}
+                                </div>
+                                <p className="font-bold text-slate-800">{user.war_name || user.name}</p>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase flex items-center gap-2">
+                                    <Package className="w-3 h-3" /> Sua Senha
+                                </label>
+                                <input
+                                    type="password"
+                                    value={signaturePassword}
+                                    onChange={(e) => setSignaturePassword(e.target.value)}
+                                    className="w-full bg-slate-50 border rounded-xl p-4 font-bold text-lg text-center"
+                                    autoFocus
+                                    onKeyDown={(e) => e.key === 'Enter' && confirmSignature()}
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 pt-2">
+                                <button
+                                    onClick={() => { setShowSignatureModal(false); setSignaturePassword(''); setPendingAction(null); }}
+                                    className="bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={confirmSignature}
+                                    disabled={!signaturePassword || !!actionLoading}
+                                    className="bg-blue-600 text-white py-4 rounded-2xl font-bold disabled:opacity-50"
+                                >
+                                    {actionLoading ? 'Processando...' : 'Confirmar Retirada'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

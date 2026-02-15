@@ -56,7 +56,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
     // Signature Modal States
     const [showSignatureModal, setShowSignatureModal] = useState(false);
     const [signaturePassword, setSignaturePassword] = useState('');
-    const [signatureAction, setSignatureAction] = useState<'release' | 'return' | 'update_release' | 'update_return' | null>(null);
+    const [signatureAction, setSignatureAction] = useState<'release' | 'return' | 'update_release' | 'update_return' | 'approve' | null>(null);
     const [signatureRequestId, setSignatureRequestId] = useState<string | string[] | null>(null);
 
     useEffect(() => {
@@ -253,6 +253,17 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                 const { error } = await supabase.from('movimentacao_cautela').insert(inserts);
                 if (error) throw error;
                 alert('Materiais liberados com sucesso!');
+            } else if (signatureAction === 'approve' && signatureRequestId) {
+                const { error } = await supabase
+                    .from('movimentacao_cautela')
+                    .update({
+                        status: 'Aprovado',
+                        autorizado_por: userName,
+                        observacao: `Autorizado com assinatura digital por ${userName} em ${new Date().toLocaleString()}`
+                    })
+                    .eq('id', signatureRequestId as string);
+                if (error) throw error;
+                alert('Solicitação aprovada e assinada!');
             } else if (signatureAction === 'return') {
                 const inserts = selectedItems.map(item => ({
                     id_material: item.id_material,
@@ -369,7 +380,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
 
     const filteredRequests = requests.filter(req => {
         let matchesTab = false;
-        if (activeTab === 'Solicitações') matchesTab = ['Pendente', 'Aprovado', 'Aguardando Confirmação'].includes(req.status);
+        if (activeTab === 'Solicitações') matchesTab = ['Pendente', 'Aprovado'].includes(req.status);
         else if (activeTab === 'Devoluções') matchesTab = req.status === 'Pendente Devolução';
         else if (activeTab === 'Em Uso') matchesTab = req.status === 'Em Uso';
         else if (activeTab === 'Histórico') matchesTab = ['Concluído', 'Rejeitado'].includes(req.status);
@@ -537,7 +548,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                         {tab}
                         <span className="ml-2 px-1.5 py-0.5 bg-slate-200 text-slate-600 rounded-md text-[10px]">
                             {requests.filter(req => {
-                                if (tab === 'Solicitações') return ['Pendente', 'Aprovado', 'Aguardando Confirmação'].includes(req.status);
+                                if (tab === 'Solicitações') return ['Pendente', 'Aprovado'].includes(req.status);
                                 if (tab === 'Devoluções') return req.status === 'Pendente Devolução';
                                 if (tab === 'Em Uso') return req.status === 'Em Uso';
                                 if (tab === 'Histórico') return ['Concluído', 'Rejeitado'].includes(req.status);
@@ -637,10 +648,12 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                                         <ChevronDown className={`w-5 h-5 text-slate-300 transition-transform ${expandedRequestId === req.id ? 'rotate-180' : ''}`} />
                                         <div className="flex flex-col gap-2 min-w-[160px]" onClick={e => e.stopPropagation()}>
                                             {req.status === 'Pendente' && (
-                                                <button onClick={() => updateStatus(req.id, 'Aprovado', undefined, false, undefined, 1, `${user.rank} ${user.war_name}`)} className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm">Aprovar</button>
-                                            )}
-                                            {req.status === 'Aguardando Confirmação' && (
-                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_release')} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm">Confirmar Entrega</button>
+                                                <button onClick={() => {
+                                                    setFoundUser(user); // Analyst signing
+                                                    setSignatureRequestId(req.id);
+                                                    setSignatureAction('approve');
+                                                    setShowSignatureModal(true);
+                                                }} className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm">Aprovar com Senha</button>
                                             )}
                                             {req.status === 'Pendente Devolução' && (
                                                 <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return')} className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm">Receber Material</button>
