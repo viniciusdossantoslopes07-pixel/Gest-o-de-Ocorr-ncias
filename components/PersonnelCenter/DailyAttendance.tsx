@@ -764,77 +764,90 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
             {activeSubTab === 'cupons' && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
-                    <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
-                        <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-blue-600 p-2 rounded-xl">
-                                    <FileCheck className="w-5 h-5 text-white" />
-                                </div>
-                                <div>
-                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Cupons de Retirada de Faltas</h3>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase">Histórico de justificativas neste setor</p>
-                                </div>
+                    <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm p-8">
+                        {/* Institutional Header within Tab */}
+                        <div className="flex flex-col items-center mb-8 text-center">
+                            <img
+                                src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Coat_of_arms_of_Brazil.svg"
+                                alt="Brasão da República"
+                                className="w-16 h-16 mb-4 object-contain"
+                            />
+                            <div className="space-y-1">
+                                <h1 className="text-xs font-black uppercase tracking-[0.2em] text-slate-800">Ministério da Defesa</h1>
+                                <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-600">Comando da Aeronáutica</h2>
+                                <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-600">Base Aérea de São Paulo</h3>
+                                <div className="w-12 h-0.5 bg-blue-600 mx-auto my-3 rounded-full" />
+                                <h4 className="text-sm font-black text-slate-900 uppercase">{selectedSector}</h4>
                             </div>
                         </div>
+
+                        {/* Weekly Grid (Image Style) */}
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left text-[10px] lg:text-xs">
-                                <thead className="bg-slate-50/30">
-                                    <tr className="text-slate-400 font-black uppercase tracking-widest border-b border-slate-100">
-                                        <th className="px-6 py-4">Militar</th>
-                                        <th className="px-6 py-4">Data/Chamada</th>
-                                        <th className="px-6 py-4">Justificativa</th>
-                                        <th className="px-6 py-4">Status</th>
-                                        <th className="px-6 py-4 text-center">Ações</th>
+                            <table className="w-full border-collapse border border-slate-300">
+                                <thead className="bg-slate-50">
+                                    <tr>
+                                        <th className="border-0 bg-white"></th>
+                                        <th colSpan={10} className="border border-slate-300 py-2 text-xs font-black text-slate-900 uppercase tracking-[0.3em] bg-slate-100/50">
+                                            {selectedSector}
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th rowSpan={3} className="border border-slate-300 px-4 py-3 text-left text-[10px] font-black text-slate-800 uppercase italic min-w-[200px]">
+                                            SETOR/GRAD/NOME
+                                        </th>
+                                        {currentWeek.map(date => (
+                                            <th key={date} colSpan={2} className="border border-slate-300 px-2 py-1.5 text-center text-[10px] font-black text-slate-700 uppercase bg-white">
+                                                {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long' }).split('-')[0].toUpperCase()}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        {currentWeek.map(date => (
+                                            <th key={`${date}-date`} colSpan={2} className="border border-slate-300 px-2 py-1 text-center text-[9px] font-bold text-slate-500 bg-white">
+                                                {parseISOToDate(date).toLocaleDateString('pt-BR')}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                    <tr className="bg-slate-200/50">
+                                        {currentWeek.map(date => (
+                                            <Fragment key={`${date}-sub`}>
+                                                <th className="border border-slate-300 py-1 text-[9px] font-black text-slate-600 w-12">1ª</th>
+                                                <th className="border border-slate-300 py-1 text-[9px] font-black text-slate-600 w-12">2ª</th>
+                                            </Fragment>
+                                        ))}
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {absenceJustifications
-                                        .filter(j => j.sector === selectedSector)
-                                        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-                                        .map(just => (
-                                            <tr key={just.id} className="hover:bg-slate-50/30 transition-colors">
-                                                <td className="px-6 py-4">
-                                                    <div className="font-black text-slate-900 uppercase">{just.militarRank} {just.militarName}</div>
-                                                    <div className="text-[9px] text-slate-400 font-bold uppercase">SARAM: {just.saram || 'N/I'}</div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="font-bold text-slate-700">{new Date(just.date).toLocaleDateString('pt-BR')}</div>
-                                                    <div className="text-[9px] text-slate-400 font-bold uppercase">{just.callType === 'INICIO' ? '1ª CHAMADA' : '2ª CHAMADA'}</div>
-                                                </td>
-                                                <td className="px-6 py-4 max-w-xs">
-                                                    <p className="italic text-slate-600 line-clamp-2">{just.justification}</p>
-                                                    <span className="text-[8px] text-slate-400 font-bold uppercase mt-1 block">POR: {just.performedBy}</span>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="px-2 py-0.5 bg-red-50 text-red-600 rounded text-[9px] font-black">{just.originalStatus}</span>
-                                                        <div className="w-3 h-px bg-slate-200" />
-                                                        <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded text-[9px] font-black">{just.newStatus}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <button
-                                                        onClick={() => handlePrintJustification(just)}
-                                                        className="p-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-md group"
-                                                        title="Imprimir Cupom"
-                                                    >
-                                                        <Printer className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    {absenceJustifications.filter(j => j.sector === selectedSector).length === 0 && (
-                                        <tr>
-                                            <td colSpan={5} className="px-6 py-20 text-center">
-                                                <div className="flex flex-col items-center opacity-30">
-                                                    <FileText className="w-12 h-12 mb-3" />
-                                                    <p className="text-xs font-black uppercase tracking-widest text-slate-400">Nenhum cupom gerado para este setor</p>
-                                                </div>
+                                <tbody>
+                                    {filteredUsers.map(user => (
+                                        <tr key={user.id} className="hover:bg-blue-50/30 transition-colors h-10">
+                                            <td className="border border-slate-300 px-4 py-2 font-black text-slate-900 text-[10px] uppercase truncate bg-white">
+                                                {user.rank} {user.warName || user.name}
                                             </td>
+                                            {currentWeek.map(date => (
+                                                <Fragment key={`${user.id}-${date}`}>
+                                                    <td className={`border border-slate-300 text-center text-[10px] font-black ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N') === 'P' ? 'text-slate-900' : 'text-blue-600 font-black italic'
+                                                        }`}>
+                                                        {weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : '-')}
+                                                    </td>
+                                                    <td className={`border border-slate-300 text-center text-[10px] font-black ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N') === 'P' ? 'text-slate-900' : 'text-blue-600 font-black italic'
+                                                        }`}>
+                                                        {weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : '-')}
+                                                    </td>
+                                                </Fragment>
+                                            ))}
                                         </tr>
-                                    )}
+                                    ))}
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div className="mt-8 flex justify-end gap-3 no-print">
+                            <button
+                                onClick={() => window.print()}
+                                className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg"
+                            >
+                                <Printer className="w-4 h-4" /> Imprimir Relatório
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -842,68 +855,70 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
             {/* Modals & Printable Areas */}
             <div className="modals-container">
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[120] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl relative animate-in zoom-in-95 duration-200">
-                        <button onClick={() => setShowAdHocModal(false)} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-all text-slate-400">
-                            <X className="w-6 h-6" />
-                        </button>
+                {showAdHocModal && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[120] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl relative animate-in zoom-in-95 duration-200">
+                            <button onClick={() => setShowAdHocModal(false)} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-all text-slate-400">
+                                <X className="w-6 h-6" />
+                            </button>
 
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="bg-blue-600 p-4 rounded-3xl shadow-lg shadow-blue-200">
-                                <UserPlus className="w-8 h-8 text-white" />
-                            </div>
-                            <div>
-                                <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Adicionar Militar</h3>
-                                <p className="text-slate-500 text-sm">Inserir novo militar na grade semanal</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Posto/Grad</label>
-                                    <select
-                                        className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
-                                        value={newAdHoc.rank}
-                                        onChange={e => setNewAdHoc(prev => ({ ...prev, rank: e.target.value }))}
-                                    >
-                                        <option value="">Selecione...</option>
-                                        {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
-                                    </select>
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="bg-blue-600 p-4 rounded-3xl shadow-lg shadow-blue-200">
+                                    <UserPlus className="w-8 h-8 text-white" />
                                 </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Adicionar Militar</h3>
+                                    <p className="text-slate-500 text-sm">Inserir novo militar na grade semanal</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Posto/Grad</label>
+                                        <select
+                                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
+                                            value={newAdHoc.rank}
+                                            onChange={e => setNewAdHoc(prev => ({ ...prev, rank: e.target.value }))}
+                                        >
+                                            <option value="">Selecione...</option>
+                                            {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Guerra</label>
+                                        <input
+                                            type="text"
+                                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
+                                            placeholder="EX: SILVA"
+                                            value={newAdHoc.warName}
+                                            onChange={e => setNewAdHoc(prev => ({ ...prev, warName: e.target.value.toUpperCase() }))}
+                                        />
+                                    </div>
+                                </div>
+
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Guerra</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">SARAM (Opcional)</label>
                                     <input
                                         type="text"
                                         className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
-                                        placeholder="EX: SILVA"
-                                        value={newAdHoc.warName}
-                                        onChange={e => setNewAdHoc(prev => ({ ...prev, warName: e.target.value.toUpperCase() }))}
+                                        placeholder="SARAM se houver"
+                                        value={newAdHoc.saram}
+                                        onChange={e => setNewAdHoc(prev => ({ ...prev, saram: e.target.value }))}
                                     />
                                 </div>
-                            </div>
 
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">SARAM (Opcional)</label>
-                                <input
-                                    type="text"
-                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
-                                    placeholder="SARAM se houver"
-                                    value={newAdHoc.saram}
-                                    onChange={e => setNewAdHoc(prev => ({ ...prev, saram: e.target.value }))}
-                                />
+                                <button
+                                    onClick={handleAddAdHoc}
+                                    disabled={!newAdHoc.rank || !newAdHoc.warName}
+                                    className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 uppercase text-xs tracking-widest disabled:opacity-50"
+                                >
+                                    Adicionar à Grade
+                                </button>
                             </div>
-
-                            <button
-                                onClick={handleAddAdHoc}
-                                disabled={!newAdHoc.rank || !newAdHoc.warName}
-                                className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 uppercase text-xs tracking-widest disabled:opacity-50"
-                            >
-                                Adicionar à Grade
-                            </button>
                         </div>
                     </div>
-                </div>
+                )}
 
                 {/* Printable Area (Hidden in UI) */}
                 <div className="hidden print:block bg-white text-black font-sans">
