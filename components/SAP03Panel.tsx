@@ -663,7 +663,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                                                 disabled={!!actionLoading}
                                                 className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
                                             >
-                                                <CheckCircle className="w-4 h-4" /> Aprovar Devolução
+                                                <CheckCircle className="w-4 h-4" /> Receber Material (Assinar)
                                             </button>
                                         )}
                                     </div>
@@ -722,6 +722,16 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                                                     className="w-full px-4 py-3 bg-red-50 text-red-600 rounded-xl font-bold text-xs hover:bg-red-100 transition-colors flex items-center justify-center gap-2 border border-red-100"
                                                 >
                                                     <XCircle className="w-4 h-4" /> Rejeitar Devolução
+                                                </button>
+                                            )}
+
+                                            {req.status === 'Em Uso' && (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); startSignatureFlow(req.id, req.id_usuario, 'update_return'); }}
+                                                    disabled={!!actionLoading}
+                                                    className="w-full px-4 py-3 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-xs hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2 border border-emerald-100"
+                                                >
+                                                    <Plus className="w-4 h-4" /> Receber Material
                                                 </button>
                                             )}
                                             <button
