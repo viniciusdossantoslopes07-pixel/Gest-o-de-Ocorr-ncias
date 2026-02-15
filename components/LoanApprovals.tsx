@@ -14,9 +14,11 @@ interface LoanRequest {
         material: string;
         tipo_de_material: string;
         qtdisponivel: number;
-    } | any; // Using any for nested join if type not strictly defined yet
-    // In real app, we join with profiles to get user name
-    usuario_nome?: string;
+    } | any;
+    solicitante?: {
+        rank: string;
+        war_name: string;
+    };
 }
 
 interface LoanApprovalsProps {
@@ -40,7 +42,8 @@ export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
             .from('movimentacao_cautela')
             .select(`
                 *,
-                material:gestao_estoque(*)
+                material:gestao_estoque(*),
+                solicitante:users(rank, war_name)
             `)
             .order('created_at', { ascending: false });
 
@@ -155,7 +158,9 @@ export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
                                     <span className="text-xs px-2 py-1 bg-slate-100 rounded text-slate-500 font-bold uppercase">{req.status}</span>
                                 </div>
                                 <p className="text-sm text-slate-500 mb-1">
-                                    Solicitante ID: <span className="font-mono text-slate-700">{req.id_usuario}</span>
+                                    Solicitante: <span className="font-bold text-slate-700">
+                                        {req.solicitante ? `${req.solicitante.rank} ${req.solicitante.war_name}` : `ID: ${req.id_usuario}`}
+                                    </span>
                                 </p>
                                 <p className="text-xs text-slate-400">
                                     {new Date(req.created_at).toLocaleString()}
