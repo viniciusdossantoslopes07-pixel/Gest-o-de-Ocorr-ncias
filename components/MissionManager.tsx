@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { Mission, User, MissionOrder, UserRole } from '../types';
-import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown } from 'lucide-react';
 import MissionStatistics from './MissionStatistics';
 import MissionOrderForm from './MissionOrderForm';
 import { MISSION_STATUS_COLORS, MISSION_STATUS_LABELS } from '../constants';
@@ -698,8 +698,8 @@ export default function MissionManager({ user }: MissionManagerProps) {
 
                                     <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto mt-4 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-slate-100">
                                         <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${m.status === 'PENDENTE' ? 'bg-yellow-100 text-yellow-700' :
-                                                m.status === 'APROVADA' || m.status === 'ATRIBUIDA' ? 'bg-emerald-100 text-emerald-700' :
-                                                    m.status === 'RASCUNHO' ? 'bg-slate-200 text-slate-600' : 'bg-slate-100 text-slate-500'
+                                            m.status === 'APROVADA' || m.status === 'ATRIBUIDA' ? 'bg-emerald-100 text-emerald-700' :
+                                                m.status === 'RASCUNHO' ? 'bg-slate-200 text-slate-600' : 'bg-slate-100 text-slate-500'
                                             }`}>
                                             {m.status}
                                         </span>
