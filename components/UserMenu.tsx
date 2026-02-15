@@ -8,7 +8,8 @@ import {
     Sun,
     HelpCircle,
     LogOut,
-    ChevronDown
+    ChevronDown,
+    Lightbulb
 } from 'lucide-react';
 
 interface UserMenuProps {
@@ -135,6 +136,17 @@ export default function UserMenu({
                         >
                             <HelpCircle className="w-4 h-4" />
                             Suporte
+                        </button>
+
+                        <button
+                            onClick={() => handleAction(() => {
+                                // Redirecionar para o canal de sugestões ou abrir modal
+                                window.open('https://forms.gle/vHwG7y7j7z7z7z7z7', '_blank'); // Link placeholder ou lógica customizada
+                            })}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${isDarkMode ? 'text-amber-200 hover:bg-amber-900/20' : 'text-amber-700 hover:bg-amber-50'}`}
+                        >
+                            <Lightbulb className="w-4 h-4" />
+                            Sugestões
                         </button>
 
                         <div className={`my-2 border-t ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`} />

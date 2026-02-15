@@ -203,7 +203,7 @@ export default function SideMenu({
                         </button>
                         {!isCollapsed && (
                             <div className="mt-4 px-2 text-[10px] text-slate-600 font-medium text-center">
-                                v1.0.0 © 2024
+                                v1.0.0 © 2026
                             </div>
                         )}
                     </div>
