@@ -869,22 +869,31 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     @media print {
                         @page { 
                             size: portrait; 
-                            margin: 10mm; 
+                            margin: 0; 
                         }
                         
-                        /* Estratégia segura: esconde tudo mas mantém a estrutura para o React */
-                        body * { visibility: hidden; }
-                        
-                        .print-weekly, .print-weekly * { visibility: visible; }
+                        body { 
+                            visibility: hidden !important;
+                            background: white !important;
+                        }
                         
                         .print-weekly { 
-                            position: relative;
-                            width: 100%; 
+                            visibility: visible !important;
+                            position: absolute !important;
+                            top: 10mm !important;
+                            left: 10mm !important;
+                            right: 10mm !important;
+                            width: calc(100% - 20mm) !important;
                             height: auto; 
-                            margin: 0;
-                            padding: 0;
-                            box-sizing: border-box;
-                            background: white;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            box-sizing: border-box !important;
+                            background: white !important;
+                            border: 1px solid transparent; /* Borda não visual para correção de renderização */
+                        }
+
+                        .print-weekly * { 
+                            visibility: visible !important; 
                         }
 
                         table { 
