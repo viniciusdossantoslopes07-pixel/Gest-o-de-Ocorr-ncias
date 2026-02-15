@@ -84,7 +84,7 @@ export const CALL_TYPES = {
 export type PresenceStatusCode = keyof typeof PRESENCE_STATUS;
 export type CallTypeCode = keyof typeof CALL_TYPES;
 
-export const ARMAMENT_OPTIONS = ['Pistola', 'Fuzil', 'Nenhum'];
+export const ARMAMENT_OPTIONS = ['Pistola', 'Fuzil', 'Gaúgio', 'Pist/Fuzil', 'Pist/Gáugio'];
 
 export const LOAN_STATUS_COLORS: Record<string, string> = {
   'PENDENTE': 'bg-yellow-100 text-yellow-700',

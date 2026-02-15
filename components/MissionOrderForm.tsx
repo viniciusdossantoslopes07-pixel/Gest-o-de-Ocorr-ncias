@@ -692,7 +692,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <button
                     type="submit"
-                    className="w-full sm:flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-2 order-1 sm:order-1"
+                    className="w-full sm:flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-2 order-1 sm:order-1 whitespace-nowrap min-w-fit px-4"
                 >
                     <Save className="w-5 h-5" />
                     {order && order.id ? 'Salvar Alterações' : 'Criar Ordem de Missão'}
