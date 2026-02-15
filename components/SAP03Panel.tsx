@@ -407,7 +407,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                             }`}
                     >
                         <Package className="w-4 h-4" />
-                        {showDirectRelease ? 'Cancelar Liberação' : 'Liberação Direta'}
+                        {showDirectRelease ? 'Cancelar Cautela' : 'Cautelar Material'}
                     </button>
                     <button
                         onClick={() => { setShowReceiveMaterial(!showReceiveMaterial); setShowDirectRelease(false); }}
@@ -428,7 +428,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                 <div className="bg-white p-6 rounded-2xl border-2 border-blue-100 shadow-xl shadow-blue-50 space-y-4 animate-scale-in">
                     <h2 className="font-black text-slate-800 flex items-center gap-2 uppercase text-xs tracking-widest">
                         <div className={`w-2 h-2 rounded-full ${showDirectRelease ? 'bg-blue-600' : 'bg-emerald-600'}`}></div>
-                        {showDirectRelease ? 'Nova Liberação (Carga/Cautela)' : 'Receber Material (Entrada no Estoque)'}
+                        {showDirectRelease ? 'Cautelar Material (Saída do Estoque)' : 'Receber Material (Entrada no Estoque)'}
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div className="space-y-1">
