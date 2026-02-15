@@ -45,6 +45,7 @@ export interface User {
   pending_password_reset?: boolean;
   reset_password_at_login?: boolean;
   password_status?: 'ACTIVE' | 'PENDING_RESET' | 'EXPIRED';
+  displayOrder?: number;
 }
 
 export interface Attachment {

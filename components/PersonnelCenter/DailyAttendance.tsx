@@ -2,7 +2,7 @@
 import { useState, useEffect, FC, Fragment } from 'react';
 import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '../../types';
 import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, SETORES, RANKS } from '../../constants';
-import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle } from 'lucide-react';
+import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical } from 'lucide-react';
 
 interface DailyAttendanceProps {
     users: User[];
@@ -13,6 +13,7 @@ interface DailyAttendanceProps {
     onAddAdHoc: (user: User) => void;
     onMoveUser: (userId: string, newSector: string) => void;
     onExcludeUser: (userId: string) => void;
+    onReorderUsers: (reorderedUsers: User[]) => void;
     absenceJustifications: AbsenceJustification[];
 }
 
@@ -39,6 +40,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     onAddAdHoc,
     onMoveUser,
     onExcludeUser,
+    onReorderUsers,
     absenceJustifications
 }) => {
     const [selectedSector, setSelectedSector] = useState(SETORES[0]);
@@ -189,6 +191,48 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         today.setHours(0, 0, 0, 0);
         const cellDate = parseISOToDate(date);
         return cellDate > today;
+    };
+
+    // Drag and drop logic
+    const [draggedItem, setDraggedItem] = useState<number | null>(null);
+
+    const handleDragStart = (index: number) => {
+        setDraggedItem(index);
+    };
+
+    const handleDragOver = (e: React.DragEvent, index: number) => {
+        e.preventDefault();
+        if (draggedItem === null || draggedItem === index) return;
+
+        const newFilteredUsers = [...filteredUsers];
+        const itemToMove = newFilteredUsers[draggedItem];
+        newFilteredUsers.splice(draggedItem, 1);
+        newFilteredUsers.splice(index, 0, itemToMove);
+
+        // We don't update state here yet to avoid jitter, 
+        // but we can if we want immediate feedback.
+        // For simplicity and standard HTML5 DnD, we update on Drop.
+    };
+
+    const handleDrop = (index: number) => {
+        if (draggedItem === null || draggedItem === index) {
+            setDraggedItem(null);
+            return;
+        }
+
+        const newFilteredUsers = [...filteredUsers];
+        const itemToMove = newFilteredUsers[draggedItem];
+        newFilteredUsers.splice(draggedItem, 1);
+        newFilteredUsers.splice(index, 0, itemToMove);
+
+        // Update displayOrder for ALL users in this filtered list
+        const updatedUsers = newFilteredUsers.map((user, idx) => ({
+            ...user,
+            displayOrder: idx
+        }));
+
+        onReorderUsers(updatedUsers);
+        setDraggedItem(null);
     };
 
     const handleSignDate = (date: string, type: CallTypeCode) => {
@@ -474,7 +518,12 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             <table className="w-full border-collapse">
                                 <thead>
                                     <tr className="bg-slate-50/50">
-                                        <th rowSpan={2} className="px-6 py-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left min-w-[200px] sticky left-0 z-20 bg-slate-50">Militar</th>
+                                        <th rowSpan={2} className="px-6 py-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left min-w-[200px] sticky left-0 z-20 bg-slate-50">
+                                            <div className="flex items-center gap-2">
+                                                <GripVertical className="w-3.5 h-3.5 opacity-0" />
+                                                <span>Militar</span>
+                                            </div>
+                                        </th>
                                         {currentWeek.map(date => (
                                             <th key={date} colSpan={2} className="px-2 py-4 border-b border-slate-100 border-l border-slate-100 text-[10px] font-black text-slate-900 uppercase tracking-widest text-center bg-slate-50/30">
                                                 <div className="flex flex-col items-center">
@@ -494,25 +543,37 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
-                                    {filteredUsers.map(user => (
-                                        <tr key={user.id} className="hover:bg-slate-50/30 transition-colors">
+                                    {filteredUsers.map((user, index) => (
+                                        <tr
+                                            key={user.id}
+                                            className={`hover:bg-slate-50/30 transition-colors ${draggedItem === index ? 'opacity-40 bg-blue-50' : ''}`}
+                                            draggable
+                                            onDragStart={() => handleDragStart(index)}
+                                            onDragOver={(e) => handleDragOver(e, index)}
+                                            onDrop={() => handleDrop(index)}
+                                        >
                                             <td className="px-6 py-3">
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <div className="font-bold text-slate-900 text-xs uppercase">{user.warName || user.name}</div>
-                                                        <div className="text-[9px] text-slate-400 font-bold uppercase">{user.rank}</div>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 transition-colors">
+                                                        <GripVertical className="w-4 h-4" />
                                                     </div>
-                                                    <button
-                                                        onClick={() => {
-                                                            if (confirm(`Deseja remover ${user.rank} ${user.warName || user.name} desta lista?`)) {
-                                                                onExcludeUser(user.id);
-                                                            }
-                                                        }}
-                                                        className="p-1.5 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-all"
-                                                        title="Excluir militar desta chamada"
-                                                    >
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                    </button>
+                                                    <div className="flex-1 flex items-center justify-between">
+                                                        <div>
+                                                            <div className="font-bold text-slate-900 text-xs uppercase">{user.warName || user.name}</div>
+                                                            <div className="text-[9px] text-slate-400 font-bold uppercase">{user.rank}</div>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => {
+                                                                if (confirm(`Deseja remover ${user.rank} ${user.warName || user.name} desta lista?`)) {
+                                                                    onExcludeUser(user.id);
+                                                                }
+                                                            }}
+                                                            className="p-1.5 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-all"
+                                                            title="Excluir militar desta chamada"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </td>
                                             {currentWeek.map(date => (

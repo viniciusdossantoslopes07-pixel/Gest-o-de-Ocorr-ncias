@@ -294,6 +294,7 @@ const App: FC = () => {
         militarId: data.militar_id,
         phoneNumber: data.phone_number,
         cpf: data.cpf,
+        displayOrder: data.display_order,
         pending_password_reset: data.pending_password_reset,
         reset_password_at_login: data.reset_password_at_login,
         password_status: data.password_status,
@@ -344,7 +345,7 @@ const App: FC = () => {
   };
 
   const fetchUsers = async () => {
-    const { data } = await supabase.from('users').select('*');
+    const { data } = await supabase.from('users').select('*').order('display_order', { ascending: true });
     if (data) {
       const mappedUsers = data.map((u: any) => ({
         id: u.id,
@@ -361,7 +362,8 @@ const App: FC = () => {
         accessLevel: u.access_level,
         phoneNumber: u.phone_number,
         approved: u.approved,
-        password: u.password
+        password: u.password,
+        displayOrder: u.display_order
       }));
       setUsers(mappedUsers);
     }
@@ -392,7 +394,8 @@ const App: FC = () => {
       phone_number: newUser.phoneNumber,
       approved: true,
       war_name: newUser.warName,
-      cpf: newUser.cpf
+      cpf: newUser.cpf,
+      display_order: newUser.displayOrder || 0
     };
 
     const { data, error } = await supabase
@@ -417,7 +420,8 @@ const App: FC = () => {
         password: data.password,
         warName: data.war_name,
         militarId: data.militar_id,
-        cpf: data.cpf
+        cpf: data.cpf,
+        displayOrder: data.display_order
       };
       setUsers([...users, createdUser]);
       return true;
@@ -474,7 +478,8 @@ const App: FC = () => {
         sector: updatedUser.sector,
         access_level: updatedUser.accessLevel,
         phone_number: updatedUser.phoneNumber,
-        approved: updatedUser.approved
+        approved: updatedUser.approved,
+        display_order: updatedUser.displayOrder
       })
       .eq('id', updatedUser.id);
 
@@ -494,6 +499,24 @@ const App: FC = () => {
       setUsers(users.filter(u => u.id !== id));
     } else {
       alert('Erro ao excluir usuário: ' + error.message);
+    }
+  };
+
+  const handleReorderUsers = async (reorderedUsers: User[]) => {
+    // Optimistic update
+    setUsers(prev => {
+      const otherUsers = prev.filter(u => !reorderedUsers.find(ru => ru.id === u.id));
+      return [...otherUsers, ...reorderedUsers].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+    });
+
+    // Update in Supabase
+    for (const user of reorderedUsers) {
+      const { error } = await supabase
+        .from('users')
+        .update({ display_order: user.displayOrder })
+        .eq('id', user.id);
+
+      if (error) console.error('Error updating user order:', error);
     }
   };
 
@@ -937,6 +960,7 @@ const App: FC = () => {
           {activeTab === 'daily-attendance' && (
             <DailyAttendanceView
               users={[...users, ...adHocUsers]}
+              onReorderUsers={handleReorderUsers}
               currentUser={currentUser!}
               attendanceHistory={attendanceHistory}
               absenceJustifications={absenceJustifications}
