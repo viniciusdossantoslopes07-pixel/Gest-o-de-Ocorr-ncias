@@ -36,24 +36,49 @@ export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
 
     const fetchRequests = async () => {
         setLoading(true);
-        // We need to fetch requests and join with material info
-        // Assuming we can get user info or we just display ID for now if profiles table isn't linked
-        const { data, error } = await supabase
+        // Fetch raw requests with material join
+        const { data: rawData, error } = await supabase
             .from('movimentacao_cautela')
             .select(`
                 *,
-                material:gestao_estoque(*),
-                solicitante:users(rank, war_name)
+                material:gestao_estoque(*)
             `)
             .order('created_at', { ascending: false });
 
         if (error) {
             console.error('Error fetching loans:', error);
+            setLoading(false);
+            return;
+        }
+
+        if (rawData && rawData.length > 0) {
+            // Manually get all unique user IDs to fetch their info
+            const userIds = Array.from(new Set(rawData.map(r => r.id_usuario)));
+
+            const { data: userData, error: userError } = await supabase
+                .from('users')
+                .select('id, rank, war_name')
+                .in('id', userIds);
+
+            if (userError) {
+                console.error('Error fetching users for labels:', userError);
+                setRequests(rawData); // show with ID if users fetch fails
+            } else {
+                // Map users to requests
+                const userMap = (userData || []).reduce((acc: any, u) => {
+                    acc[u.id] = { rank: u.rank, war_name: u.war_name };
+                    return acc;
+                }, {});
+
+                const enrichedData = rawData.map(r => ({
+                    ...r,
+                    solicitante: userMap[r.id_usuario]
+                }));
+
+                setRequests(enrichedData);
+            }
         } else {
-            // Mocking user name since we don't have a direct join to users table in this context easily without a profiles table
-            // In a real scenario, we'd fetch profiles or use metadata. 
-            // For now, we'll just use the ID or a placeholder.
-            setRequests(data || []);
+            setRequests([]);
         }
         setLoading(false);
     };

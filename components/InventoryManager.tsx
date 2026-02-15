@@ -22,6 +22,8 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
     const [items, setItems] = useState<StockItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterCategory, setFilterCategory] = useState('');
+    const [filterSector, setFilterSector] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<StockItem | null>(null);
 
@@ -130,11 +132,16 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
         else fetchItems();
     };
 
-    const filteredItems = items.filter(i =>
-        i.material.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        i.tipo_de_material?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        i.setor?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredItems = items.filter(i => {
+        const matchesSearch = i.material.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            i.tipo_de_material?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            i.setor?.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesCategory = filterCategory === '' || i.tipo_de_material === filterCategory;
+        const matchesSector = filterSector === '' || i.setor === filterSector;
+
+        return matchesSearch && matchesCategory && matchesSector;
+    });
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -154,16 +161,55 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
                 </button>
             </div>
 
-            {/* Search */}
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                <input
-                    type="text"
-                    placeholder="Buscar material, tipo ou setor..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-                />
+            {/* Filters and Search */}
+            <div className="flex flex-col lg:flex-row gap-4">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                    <input
+                        type="text"
+                        placeholder="Buscar material..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
+                    />
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <select
+                        value={filterCategory}
+                        onChange={e => setFilterCategory(e.target.value)}
+                        className="px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium shadow-sm transition-all min-w-[150px]"
+                    >
+                        <option value="">Todas as Categorias</option>
+                        {MATERIAL_TYPES.map(type => (
+                            <option key={type} value={type}>{type}</option>
+                        ))}
+                    </select>
+
+                    <select
+                        value={filterSector}
+                        onChange={e => setFilterSector(e.target.value)}
+                        className="px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium shadow-sm transition-all min-w-[150px]"
+                    >
+                        <option value="">Todos os Setores</option>
+                        {GESTAO_MATERIAL_SETORES.map(sector => (
+                            <option key={sector} value={sector}>{sector}</option>
+                        ))}
+                    </select>
+
+                    {(filterCategory || filterSector || searchTerm) && (
+                        <button
+                            onClick={() => {
+                                setSearchTerm('');
+                                setFilterCategory('');
+                                setFilterSector('');
+                            }}
+                            className="px-4 py-3 text-blue-600 font-bold text-sm hover:bg-blue-50 rounded-xl transition-all whitespace-nowrap"
+                        >
+                            Limpar Filtros
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Table View */}
