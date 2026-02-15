@@ -9,6 +9,9 @@ interface LoanRequest {
     status: string;
     observacao: string;
     quantidade?: number;
+    autorizado_por?: string;
+    entregue_por?: string;
+    recebido_por?: string;
     created_at: string;
     material: {
         material: string;
@@ -83,11 +86,16 @@ export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
         setLoading(false);
     };
 
-    const updateStatus = async (id: string, newStatus: string, observation?: string, incrementExit?: boolean, materialId?: string, quantity: number = 1) => {
+    const updateStatus = async (id: string, newStatus: string, observation?: string, incrementExit?: boolean, materialId?: string, quantity: number = 1, auditorName?: string) => {
         setActionLoading(id);
         try {
             const updates: any = { status: newStatus };
             if (observation !== undefined) updates.observacao = observation;
+
+            // Set audit fields based on status
+            if (newStatus === 'Aprovado' && auditorName) updates.autorizado_por = auditorName;
+            if (newStatus === 'Em Uso' && auditorName) updates.entregue_por = auditorName;
+            if (newStatus === 'Concluído' && auditorName) updates.recebido_por = auditorName;
 
             const { error } = await supabase
                 .from('movimentacao_cautela')
@@ -190,6 +198,24 @@ export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
                                 <p className="text-xs text-slate-400">
                                     {new Date(req.created_at).toLocaleString()}
                                 </p>
+
+                                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                                    {req.autorizado_por && (
+                                        <p className="text-[10px] text-slate-500">
+                                            <span className="font-bold">Autorizado por:</span> {req.autorizado_por}
+                                        </p>
+                                    )}
+                                    {req.entregue_por && (
+                                        <p className="text-[10px] text-slate-500">
+                                            <span className="font-bold">Entregue por:</span> {req.entregue_por}
+                                        </p>
+                                    )}
+                                    {req.recebido_por && (
+                                        <p className="text-[10px] text-slate-500">
+                                            <span className="font-bold">Recebido por:</span> {req.recebido_por}
+                                        </p>
+                                    )}
+                                </div>
                                 {req.observacao && (
                                     <div className="mt-2 p-2 bg-slate-50 rounded text-xs text-slate-600 border border-slate-100">
                                         Obs: {req.observacao}
@@ -201,7 +227,7 @@ export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
                             <div className="flex flex-col gap-2 min-w-[200px]">
                                 {req.status === 'Pendente' && (
                                     <button
-                                        onClick={() => updateStatus(req.id, 'Aprovado')}
+                                        onClick={() => updateStatus(req.id, 'Aprovado', undefined, false, undefined, 1, `${user.rank} ${user.war_name}`)}
                                         disabled={!!actionLoading}
                                         className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
                                     >
@@ -209,18 +235,9 @@ export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
                                     </button>
                                 )}
 
-                                {req.status === 'Aguardando Confirmação' && ( // "User clicked Cautelar" -> Implicit state or we use logic? User prompt said: User clicks Cautelar, then Analyst clicks Confirm.
-                                    // Let's assume User clicking 'Cautelar' sets status to 'Aguardando Confirmação' (or just reuse 'Aprovado' and add a flag, but easier to use status).
-                                    // Wait, the prompt says: 
-                                    // 1. User requests -> Pendente
-                                    // 2. Analyst approves -> Aprovado
-                                    // 3. User clicks "Cautelar Material" -> (What status?). Prompt says: "Confirmar que está retirando".
-                                    // 4. Analyst clicks "Confirmar Cautela" -> Em Uso.
-                                    // So step 3 must change status to something intermediate like 'Retirada Solicitada' or keep 'Aprovado' but maybe we need a dedicated status?
-                                    // Let's use 'Em Processo de Retirada' or simplified: 'Aprovado' allows user to withdraw. User withdrawing sets it to 'Aguardando Confirmação'.
-                                    // I'll use 'Aguardando Confirmação'.
+                                {req.status === 'Aguardando Confirmação' && (
                                     <button
-                                        onClick={() => updateStatus(req.id, 'Em Uso')}
+                                        onClick={() => updateStatus(req.id, 'Em Uso', undefined, false, undefined, 1, `${user.rank} ${user.war_name}`)}
                                         disabled={!!actionLoading}
                                         className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                                     >
@@ -231,7 +248,7 @@ export const LoanApprovals: React.FC<LoanApprovalsProps> = ({ user }) => {
                                 {req.status === 'Pendente Devolução' && (
                                     <>
                                         <button
-                                            onClick={() => updateStatus(req.id, 'Concluído')}
+                                            onClick={() => updateStatus(req.id, 'Concluído', undefined, false, undefined, 1, `${user.rank} ${user.war_name}`)}
                                             disabled={!!actionLoading}
                                             className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
                                         >

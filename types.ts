@@ -205,6 +205,8 @@ export interface MaterialLoan {
   quantity: number;
   requestDate: string;
   authorizedBy?: string;
+  deliveredBy?: string;
+  receivedBy?: string;
   pickupDate?: string;
   expectedReturnDate: string;
   returnDate?: string;

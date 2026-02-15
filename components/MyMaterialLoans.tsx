@@ -6,6 +6,9 @@ interface MaterialLoan {
     id: string;
     status: string;
     quantidade?: number;
+    autorizado_por?: string;
+    entregue_por?: string;
+    recebido_por?: string;
     created_at: string;
     material: {
         material: string;
@@ -116,6 +119,24 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                                 <Clock className="w-3 h-3" />
                                 {new Date(loan.created_at).toLocaleDateString()}
                             </p>
+
+                            <div className="mb-4 space-y-1">
+                                {loan.autorizado_por && (
+                                    <p className="text-[10px] text-slate-500">
+                                        <span className="font-bold">Autorizado por:</span> {loan.autorizado_por}
+                                    </p>
+                                )}
+                                {loan.entregue_por && (
+                                    <p className="text-[10px] text-slate-500">
+                                        <span className="font-bold">Entregue por:</span> {loan.entregue_por}
+                                    </p>
+                                )}
+                                {loan.recebido_por && (
+                                    <p className="text-[10px] text-slate-500">
+                                        <span className="font-bold">Recebido por:</span> {loan.recebido_por}
+                                    </p>
+                                )}
+                            </div>
 
                             {/* Actions */}
                             <div className="mt-auto">
