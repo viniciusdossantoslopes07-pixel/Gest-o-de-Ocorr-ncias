@@ -219,31 +219,53 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                     {/* Mobile View (Cards) */}
                     <div className="lg:hidden divide-y divide-slate-100">
                         {filteredUsers.map(user => (
-                            <div key={user.id} className="p-4 flex flex-col gap-4">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <div className="font-bold text-slate-900 text-sm">{user.name}</div>
-                                        <div className="text-[10px] text-blue-500 font-bold uppercase tracking-tight">
-                                            {user.rank} {user.warName}
+                            <div key={user.id} className="p-6 flex flex-col gap-5 hover:bg-slate-50 transition-colors">
+                                <div className="flex justify-between items-start gap-4">
+                                    <div className="flex gap-4">
+                                        <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center shrink-0 border border-slate-200/50">
+                                            <UserIcon className="w-6 h-6 text-slate-400" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <div className="font-bold text-slate-900 text-sm leading-tight mb-1 truncate">{user.name}</div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[9px] font-black uppercase tracking-tight">
+                                                    {user.rank}
+                                                </span>
+                                                <span className="text-[10px] text-slate-500 font-bold uppercase truncate">
+                                                    {user.warName}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded-md text-[9px] font-black border border-slate-200">
+                                    <span className="px-2.5 py-1 bg-slate-900 text-white rounded-lg text-[9px] font-black tracking-widest uppercase shrink-0">
                                         {user.sector}
                                     </span>
                                 </div>
-                                <div className="flex justify-between items-end">
-                                    <div className="text-[10px] text-slate-500 font-medium">
-                                        SARAM: <span className="text-slate-700 font-bold">{user.saram}</span><br />
-                                        CPF: {user.cpf || '---'}
+
+                                <div className="bg-slate-50 rounded-2xl p-4 grid grid-cols-2 gap-4 border border-slate-100">
+                                    <div className="space-y-1">
+                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">SARAM</p>
+                                        <p className="text-xs font-bold text-slate-700">{user.saram}</p>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <button onClick={() => handleEdit(user)} className="p-2.5 bg-blue-50 text-blue-600 rounded-xl active:bg-blue-100">
-                                            <Edit2 className="w-4 h-4" />
-                                        </button>
-                                        <button onClick={() => { if (confirm('Excluir militar?')) onDeletePersonnel(user.id); }} className="p-2.5 bg-red-50 text-red-500 rounded-xl active:bg-red-100">
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
+                                    <div className="space-y-1">
+                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">CPF</p>
+                                        <p className="text-xs font-bold text-slate-700">{user.cpf || '---'}</p>
                                     </div>
+                                </div>
+
+                                <div className="flex gap-3 mt-1">
+                                    <button
+                                        onClick={() => handleEdit(user)}
+                                        className="flex-1 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2 active:bg-slate-50 transition-all shadow-sm"
+                                    >
+                                        <Edit2 className="w-4 h-4 text-blue-500" /> Editar Dados
+                                    </button>
+                                    <button
+                                        onClick={() => { if (confirm('Excluir militar?')) onDeletePersonnel(user.id); }}
+                                        className="py-3 px-4 border border-red-100 text-red-500 rounded-xl font-bold text-xs flex items-center justify-center gap-2 active:bg-red-50 transition-all shadow-sm bg-red-50/30"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
                                 </div>
                             </div>
                         ))}

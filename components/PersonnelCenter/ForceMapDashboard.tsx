@@ -130,7 +130,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
                 {stats.map(s => <StatCard key={s.title} {...s} />)}
             </div>
 
@@ -151,7 +151,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    <div className="hidden lg:block overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50/30 text-[9px] font-black text-slate-400 uppercase tracking-widest">
@@ -168,9 +168,6 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                                     ? (selectedSector === 'GSD-SP' ? SETORES.filter(s => s !== 'BASP') : SETORES)
                                     : [selectedSector]).map(sector => {
                                         const sectorUsers = users.filter(u => u.sector === sector);
-                                        // Comentado para permitir visualização de setores vazios (Ex: BASP)
-                                        // if (sectorUsers.length === 0) return null;
-
                                         const sectorRecords = Array.from(latestRecordsMap.values()).filter(r => r.sector === sector);
                                         const ready = sectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
                                         const total = sectorUsers.length;
@@ -210,7 +207,6 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                                                             setSelectedSector(prev => prev === sector ? 'TODOS' : sector);
                                                             window.scrollTo({ top: 0, behavior: 'smooth' });
                                                         }}
-                                                        title={selectedSector === sector ? "Mostrar Todos os Setores" : "Ver Detalhes deste Setor"}
                                                         className={`p-2 rounded-lg transition-all border ${selectedSector === sector
                                                             ? 'bg-slate-900 text-white border-slate-900 shadow-lg'
                                                             : 'bg-transparent text-slate-400 hover:text-slate-900 hover:bg-slate-100 border-transparent hover:border-slate-200'
@@ -224,14 +220,70 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                                     })}
                             </tbody>
                         </table>
-
-                        {allRecords.length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-20 bg-slate-50/30">
-                                <AlertTriangle className="w-8 h-8 text-slate-200 mb-3" />
-                                <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Nenhuma chamada encontrada para este filtro</p>
-                            </div>
-                        )}
                     </div>
+
+                    {/* Mobile View (Cards) */}
+                    <div className="lg:hidden p-4 space-y-4">
+                        {((selectedSector === 'TODOS' || selectedSector === 'GSD-SP')
+                            ? (selectedSector === 'GSD-SP' ? SETORES.filter(s => s !== 'BASP') : SETORES)
+                            : [selectedSector]).map(sector => {
+                                const sectorUsers = users.filter(u => u.sector === sector);
+                                const sectorRecords = Array.from(latestRecordsMap.values()).filter(r => r.sector === sector);
+                                const ready = sectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
+                                const total = sectorUsers.length;
+                                const absent = total - ready;
+                                const pct = total > 0 ? (ready / total) * 100 : 0;
+
+                                return (
+                                    <div key={sector} className="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-3">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-xs font-black text-slate-900 uppercase">{sector}</span>
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedSector(prev => prev === sector ? 'TODOS' : sector);
+                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                }}
+                                                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${selectedSector === sector ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 border-slate-200'}`}
+                                            >
+                                                {selectedSector === sector ? 'Ver Todos' : 'Detalhes'}
+                                            </button>
+                                        </div>
+
+                                        <div className="grid grid-cols-3 gap-2 py-2 border-y border-slate-200/50">
+                                            <div className="text-center">
+                                                <p className="text-[8px] font-black text-slate-400 uppercase">Efetivo</p>
+                                                <p className="text-xs font-bold text-slate-700">{total}</p>
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-[8px] font-black text-slate-400 uppercase">Presente</p>
+                                                <p className="text-xs font-bold text-emerald-600">{ready}</p>
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-[8px] font-black text-slate-400 uppercase">Ausente</p>
+                                                <p className={`text-xs font-bold ${absent > 0 ? 'text-red-500' : 'text-slate-300'}`}>{absent}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-3 pt-1">
+                                            <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                                                <div
+                                                    className={`h-full rounded-full ${pct > 85 ? 'bg-emerald-500' : pct > 60 ? 'bg-amber-400' : 'bg-red-500'}`}
+                                                    style={{ width: `${pct}%` }}
+                                                />
+                                            </div>
+                                            <span className="text-[10px] font-black text-slate-500">{Math.round(pct)}%</span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                    </div>
+
+                    {allRecords.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-20 bg-slate-50/30">
+                            <AlertTriangle className="w-8 h-8 text-slate-200 mb-3" />
+                            <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Nenhuma chamada encontrada hoje</p>
+                        </div>
+                    )}
                 </div>
 
                 <div className="space-y-4">

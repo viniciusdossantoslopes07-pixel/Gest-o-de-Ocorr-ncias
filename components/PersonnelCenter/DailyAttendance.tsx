@@ -521,7 +521,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             </div>
                         </div>
 
-                        <div className="overflow-x-auto scrollbar-hide lg:scrollbar-default">
+                        <div className="hidden lg:block overflow-x-auto scrollbar-hide lg:scrollbar-default">
                             <table className="w-full border-collapse">
                                 <thead>
                                     <tr className="bg-slate-50/50">
@@ -623,6 +623,72 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+
+                        {/* Mobile View (Control Cards) */}
+                        <div className="lg:hidden divide-y divide-slate-100">
+                            {filteredUsers.map((user) => (
+                                <div key={user.id} className="p-4 space-y-4">
+                                    <div className="flex justify-between items-center bg-slate-50 rounded-xl p-3 border border-slate-100">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black text-[10px]">
+                                                {user.rank.slice(0, 2)}
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-slate-900 text-xs uppercase">{user.warName || user.name}</p>
+                                                <p className="text-[9px] text-slate-400 font-bold uppercase">{user.rank}</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                if (confirm(`Remover ${user.warName || user.name}?`)) onExcludeUser(user.id);
+                                            }}
+                                            className="p-2 text-slate-300 hover:text-red-500 transition-colors"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {currentWeek.map(date => (
+                                            <div key={date} className="flex items-center gap-2 bg-white rounded-xl border border-slate-100 p-2">
+                                                <div className="w-12 text-center border-r border-slate-100 pr-2">
+                                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">
+                                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}
+                                                    </p>
+                                                    <p className="text-[7px] font-bold text-slate-900">
+                                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { day: '2-digit' })}
+                                                    </p>
+                                                </div>
+                                                <div className="flex-1 grid grid-cols-2 gap-2">
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-[7px] font-black text-slate-400 uppercase text-center">1ª Chamada</span>
+                                                        <select
+                                                            disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
+                                                            value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N'}
+                                                            onChange={(e) => handleWeeklyChange(user.id, date, 'INICIO', e.target.value)}
+                                                            className={`w-full bg-slate-50 text-[10px] font-black text-center p-1.5 rounded-lg outline-none border border-transparent focus:border-blue-500 ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N') === 'P' ? 'text-emerald-600' : 'text-slate-600'}`}
+                                                        >
+                                                            {Object.keys(PRESENCE_STATUS).map(s => <option key={s} value={s}>{s}</option>)}
+                                                        </select>
+                                                    </div>
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-[7px] font-black text-slate-400 uppercase text-center">2ª Chamada</span>
+                                                        <select
+                                                            disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
+                                                            value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N'}
+                                                            onChange={(e) => handleWeeklyChange(user.id, date, 'TERMINO', e.target.value)}
+                                                            className={`w-full bg-slate-50 text-[10px] font-black text-center p-1.5 rounded-lg outline-none border border-transparent focus:border-blue-500 ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N') === 'P' ? 'text-emerald-600' : 'text-slate-600'}`}
+                                                        >
+                                                            {Object.keys(PRESENCE_STATUS).map(s => <option key={s} value={s}>{s}</option>)}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
@@ -795,73 +861,76 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         </div>
                     </div>
                 </div>
-            )}
+            )
+            }
 
             {/* Adicionar Militar Modal */}
-            {showAdHocModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[120] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl relative animate-in zoom-in-95 duration-200">
-                        <button onClick={() => setShowAdHocModal(false)} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-all text-slate-400">
-                            <X className="w-6 h-6" />
-                        </button>
+            {
+                showAdHocModal && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[120] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl relative animate-in zoom-in-95 duration-200">
+                            <button onClick={() => setShowAdHocModal(false)} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-all text-slate-400">
+                                <X className="w-6 h-6" />
+                            </button>
 
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="bg-blue-600 p-4 rounded-3xl shadow-lg shadow-blue-200">
-                                <UserPlus className="w-8 h-8 text-white" />
-                            </div>
-                            <div>
-                                <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Adicionar Militar</h3>
-                                <p className="text-slate-500 text-sm">Inserir novo militar na grade semanal</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Posto/Grad</label>
-                                    <select
-                                        className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
-                                        value={newAdHoc.rank}
-                                        onChange={e => setNewAdHoc(prev => ({ ...prev, rank: e.target.value }))}
-                                    >
-                                        <option value="">Selecione...</option>
-                                        {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
-                                    </select>
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="bg-blue-600 p-4 rounded-3xl shadow-lg shadow-blue-200">
+                                    <UserPlus className="w-8 h-8 text-white" />
                                 </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Adicionar Militar</h3>
+                                    <p className="text-slate-500 text-sm">Inserir novo militar na grade semanal</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Posto/Grad</label>
+                                        <select
+                                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
+                                            value={newAdHoc.rank}
+                                            onChange={e => setNewAdHoc(prev => ({ ...prev, rank: e.target.value }))}
+                                        >
+                                            <option value="">Selecione...</option>
+                                            {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Guerra</label>
+                                        <input
+                                            type="text"
+                                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
+                                            placeholder="EX: SILVA"
+                                            value={newAdHoc.warName}
+                                            onChange={e => setNewAdHoc(prev => ({ ...prev, warName: e.target.value.toUpperCase() }))}
+                                        />
+                                    </div>
+                                </div>
+
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Guerra</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">SARAM (Opcional)</label>
                                     <input
                                         type="text"
                                         className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
-                                        placeholder="EX: SILVA"
-                                        value={newAdHoc.warName}
-                                        onChange={e => setNewAdHoc(prev => ({ ...prev, warName: e.target.value.toUpperCase() }))}
+                                        placeholder="SARAM se houver"
+                                        value={newAdHoc.saram}
+                                        onChange={e => setNewAdHoc(prev => ({ ...prev, saram: e.target.value }))}
                                     />
                                 </div>
-                            </div>
 
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">SARAM (Opcional)</label>
-                                <input
-                                    type="text"
-                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
-                                    placeholder="SARAM se houver"
-                                    value={newAdHoc.saram}
-                                    onChange={e => setNewAdHoc(prev => ({ ...prev, saram: e.target.value }))}
-                                />
+                                <button
+                                    onClick={handleAddAdHoc}
+                                    disabled={!newAdHoc.rank || !newAdHoc.warName}
+                                    className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 uppercase text-xs tracking-widest disabled:opacity-50"
+                                >
+                                    Adicionar à Grade
+                                </button>
                             </div>
-
-                            <button
-                                onClick={handleAddAdHoc}
-                                disabled={!newAdHoc.rank || !newAdHoc.warName}
-                                className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 uppercase text-xs tracking-widest disabled:opacity-50"
-                            >
-                                Adicionar à Grade
-                            </button>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Printable Area (Hidden in UI) */}
             <div className="hidden print:block bg-white text-black font-sans">
@@ -1041,63 +1110,65 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 </div>
             </div>
             {/* Signature Password Modal */}
-            {showPasswordModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl relative animate-in zoom-in-95 duration-200">
-                        <div className="flex flex-col items-center text-center">
-                            <div className="bg-blue-600 p-4 rounded-3xl shadow-lg shadow-blue-200 mb-6">
-                                <FileSignature className="w-8 h-8 text-white" />
-                            </div>
-
-                            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">Assinatura Digital</h3>
-                            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-8">
-                                Confirmar chamada de {dateToSign ? parseISOToDate(dateToSign).toLocaleDateString('pt-BR') : ''}
-                            </p>
-
-                            <div className="w-full space-y-4">
-                                <div className="space-y-2 text-left">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Senha Individual</label>
-                                    <input
-                                        type="password"
-                                        autoFocus
-                                        value={passwordInput}
-                                        onChange={e => {
-                                            setPasswordInput(e.target.value);
-                                            setPasswordError(false);
-                                        }}
-                                        onKeyDown={e => e.key === 'Enter' && confirmSignature()}
-                                        className={`w-full bg-slate-50 border-2 rounded-2xl p-4 text-center font-black tracking-[0.5em] outline-none transition-all ${passwordError ? 'border-red-500 bg-red-50' : 'border-slate-100 focus:border-blue-600'
-                                            }`}
-                                        placeholder="••••••"
-                                    />
-                                    {passwordError && (
-                                        <p className="text-[10px] font-black text-red-500 text-center uppercase mt-2">Senha Incorreta</p>
-                                    )}
+            {
+                showPasswordModal && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl relative animate-in zoom-in-95 duration-200">
+                            <div className="flex flex-col items-center text-center">
+                                <div className="bg-blue-600 p-4 rounded-3xl shadow-lg shadow-blue-200 mb-6">
+                                    <FileSignature className="w-8 h-8 text-white" />
                                 </div>
 
-                                <div className="flex flex-col gap-3 mt-4">
-                                    <button
-                                        onClick={confirmSignature}
-                                        className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-slate-800 transition-all shadow-xl"
-                                    >
-                                        Confirmar Assinatura
-                                    </button>
-                                    <button
-                                        onClick={() => setShowPasswordModal(false)}
-                                        className="w-full py-2 text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-slate-600 transition-all"
-                                    >
-                                        Cancelar
-                                    </button>
+                                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">Assinatura Digital</h3>
+                                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-8">
+                                    Confirmar chamada de {dateToSign ? parseISOToDate(dateToSign).toLocaleDateString('pt-BR') : ''}
+                                </p>
+
+                                <div className="w-full space-y-4">
+                                    <div className="space-y-2 text-left">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Senha Individual</label>
+                                        <input
+                                            type="password"
+                                            autoFocus
+                                            value={passwordInput}
+                                            onChange={e => {
+                                                setPasswordInput(e.target.value);
+                                                setPasswordError(false);
+                                            }}
+                                            onKeyDown={e => e.key === 'Enter' && confirmSignature()}
+                                            className={`w-full bg-slate-50 border-2 rounded-2xl p-4 text-center font-black tracking-[0.5em] outline-none transition-all ${passwordError ? 'border-red-500 bg-red-50' : 'border-slate-100 focus:border-blue-600'
+                                                }`}
+                                            placeholder="••••••"
+                                        />
+                                        {passwordError && (
+                                            <p className="text-[10px] font-black text-red-500 text-center uppercase mt-2">Senha Incorreta</p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-col gap-3 mt-4">
+                                        <button
+                                            onClick={confirmSignature}
+                                            className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-slate-800 transition-all shadow-xl"
+                                        >
+                                            Confirmar Assinatura
+                                        </button>
+                                        <button
+                                            onClick={() => setShowPasswordModal(false)}
+                                            className="w-full py-2 text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-slate-600 transition-all"
+                                        >
+                                            Cancelar
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
+
+                            {/* Visual Detail - Ticket Style Cutouts */}
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 -ml-3 w-6 h-12 bg-slate-900/10 rounded-full" />
+                            <div className="absolute right-0 top-1/2 -translate-y-1/2 -mr-3 w-6 h-12 bg-slate-900/10 rounded-full" />
                         </div>
-
-                        {/* Visual Detail - Ticket Style Cutouts */}
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 -ml-3 w-6 h-12 bg-slate-900/10 rounded-full" />
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 -mr-3 w-6 h-12 bg-slate-900/10 rounded-full" />
                     </div>
-                </div>
-            )}
+                )
+            }
         </div >
     );
 };
