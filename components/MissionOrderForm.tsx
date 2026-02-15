@@ -337,7 +337,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                             if (found) {
                                                                 updatePersonnelFields(p.id, {
                                                                     rank: found.rank,
-                                                                    warName: found.warName || found.name.split(' ').pop() || found.name,
+                                                                    warName: found.warName || found.name,
                                                                     saram: found.saram
                                                                 });
                                                             }
@@ -361,7 +361,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                                 if (found) {
                                                                     updatePersonnelFields(p.id, {
                                                                         rank: found.rank,
-                                                                        warName: found.warName || found.name.split(' ').pop() || found.name
+                                                                        warName: found.warName || found.name
                                                                     });
                                                                 }
                                                             }
@@ -372,7 +372,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                             if (found) {
                                                                 updatePersonnelFields(p.id, {
                                                                     rank: found.rank,
-                                                                    warName: found.warName || found.name.split(' ').pop() || found.name,
+                                                                    warName: found.warName || found.name,
                                                                     saram: found.saram
                                                                 });
                                                             }

@@ -69,7 +69,14 @@ export default function MissionManager({ user }: MissionManagerProps) {
                 return;
             }
             if (data) {
-                setUsers(data);
+                // Mapear snake_case para camelCase para consistência com os componentes
+                const mappedUsers = data.map((u: any) => ({
+                    ...u,
+                    warName: u.war_name,
+                    militarId: u.militar_id,
+                    displayOrder: u.display_order
+                }));
+                setUsers(mappedUsers as User[]);
             }
         } catch (err) {
             console.error('Exceção ao buscar usuários:', err);

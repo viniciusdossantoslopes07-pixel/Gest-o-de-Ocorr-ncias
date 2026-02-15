@@ -19,7 +19,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
     const [formData, setFormData] = useState({
         saram: initialData ? '' : (user.saram || ''), // Don't overwrite if editing, but we might need to lookup user again if not provided
         posto: initialData?.dados_missao.posto || user.rank || '',
-        nome_guerra: initialData?.dados_missao.nome_guerra || user.name.split(' ').pop() || '',
+        nome_guerra: initialData?.dados_missao.nome_guerra || user.warName || user.name || '',
         setor: initialData?.dados_missao.setor || user.sector || '',
         tipo_missao: initialData?.dados_missao.tipo_missao || TIPOS_MISSAO[0],
         data: initialData?.dados_missao.data || new Date().toISOString().split('T')[0],
@@ -67,7 +67,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                 setFormData(prev => ({
                     ...prev,
                     posto: data.rank || '',
-                    nome_guerra: data.warName || data.name.split(' ').pop() || '',
+                    nome_guerra: data.war_name || data.warName || data.name.split(' ').pop() || '',
                     setor: data.sector || ''
                 }));
             }
