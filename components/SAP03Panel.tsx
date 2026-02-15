@@ -37,7 +37,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
     const [activeTab, setActiveTab] = useState<'Solicitações' | 'Devoluções' | 'Em Uso' | 'Histórico'>('Solicitações');
 
     const [showDirectRelease, setShowDirectRelease] = useState(false);
-    const [showDirectReturn, setShowDirectReturn] = useState(false);
+    const [showReceiveMaterial, setShowReceiveMaterial] = useState(false);
     const [directSaram, setDirectSaram] = useState('');
     const [directMaterialId, setDirectMaterialId] = useState('');
     const [directQuantity, setDirectQuantity] = useState(1);
@@ -197,7 +197,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
         setShowSignatureModal(true);
     };
 
-    const handleDirectReturn = async () => {
+    const handleReceiveMaterial = async () => {
         if (!foundUser || selectedItems.length === 0) {
             alert('Selecione um militar válido e pelo menos um material.');
             return;
@@ -267,7 +267,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                     autorizado_por: userName,
                     entregue_por: userName,
                     recebido_por: userName,
-                    observacao: `Devolução Direta: Assinado digitalmente por ${militaryName} em ${new Date().toLocaleString()}`,
+                    observacao: `Recebimento de Material: Assinado digitalmente por ${militaryName} em ${new Date().toLocaleString()}`,
                     created_at: now
                 }));
                 const { error } = await supabase
@@ -305,7 +305,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
             setFoundUser(null);
             setSelectedItems([]);
             setShowDirectRelease(false);
-            setShowDirectReturn(false);
+            setShowReceiveMaterial(false);
             setShowSignatureModal(false);
             setSignaturePassword('');
             setSignatureRequestId(null);
@@ -402,7 +402,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
 
                 <div className="flex gap-2">
                     <button
-                        onClick={() => { setShowDirectRelease(!showDirectRelease); setShowDirectReturn(false); }}
+                        onClick={() => { setShowDirectRelease(!showDirectRelease); setShowReceiveMaterial(false); }}
                         className={`px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 ${showDirectRelease ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-blue-600 text-white hover:bg-blue-700'
                             }`}
                     >
@@ -410,12 +410,12 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                         {showDirectRelease ? 'Cancelar Liberação' : 'Liberação Direta'}
                     </button>
                     <button
-                        onClick={() => { setShowDirectReturn(!showDirectReturn); setShowDirectRelease(false); }}
-                        className={`px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 ${showDirectReturn ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                        onClick={() => { setShowReceiveMaterial(!showReceiveMaterial); setShowDirectRelease(false); }}
+                        className={`px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 ${showReceiveMaterial ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-emerald-600 text-white hover:bg-emerald-700'
                             }`}
                     >
-                        <CheckCircle className="w-4 h-4" />
-                        {showDirectReturn ? 'Cancelar Devolução' : 'Devolução Direta'}
+                        <Plus className="w-4 h-4" />
+                        {showReceiveMaterial ? 'Cancelar Recebimento' : 'Receber Material'}
                     </button>
                     <button onClick={fetchRequests} className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 shadow-sm">
                         <Clock className="w-5 h-5" />
@@ -424,11 +424,11 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
             </div>
 
             {/* Direct Release/Return Form */}
-            {(showDirectRelease || showDirectReturn) && (
+            {(showDirectRelease || showReceiveMaterial) && (
                 <div className="bg-white p-6 rounded-2xl border-2 border-blue-100 shadow-xl shadow-blue-50 space-y-4 animate-scale-in">
                     <h2 className="font-black text-slate-800 flex items-center gap-2 uppercase text-xs tracking-widest">
                         <div className={`w-2 h-2 rounded-full ${showDirectRelease ? 'bg-blue-600' : 'bg-emerald-600'}`}></div>
-                        {showDirectRelease ? 'Nova Liberação Direta (Sem Solicitação)' : 'Nova Devolução Direta (Sem fluxo pendente)'}
+                        {showDirectRelease ? 'Nova Liberação (Carga/Cautela)' : 'Receber Material (Entrada no Estoque)'}
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div className="space-y-1">
@@ -456,15 +456,22 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                                     }}
                                     onFocus={() => setIsMaterialDropdownOpen(true)}
                                     placeholder="Digite o nome do material..."
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none"
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none pr-10"
                                 />
-                                <Package className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setIsMaterialDropdownOpen(!isMaterialDropdownOpen);
+                                    }}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors"
+                                >
+                                    {isMaterialDropdownOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                </button>
                             </div>
 
-                            {isMaterialDropdownOpen && materialSearch && (
+                            {isMaterialDropdownOpen && (
                                 <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl max-h-60 overflow-y-auto overflow-x-hidden">
-                                    {inventory
-                                        .filter(item => item.material.toLowerCase().includes(materialSearch.toLowerCase()))
+                                    {(materialSearch ? inventory.filter(item => item.material.toLowerCase().includes(materialSearch.toLowerCase())) : inventory)
                                         .map(item => (
                                             <button
                                                 key={item.id}
@@ -512,11 +519,11 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                             <div className="flex-1"></div>
 
                             <button
-                                onClick={showDirectRelease ? handleDirectRelease : handleDirectReturn}
+                                onClick={showDirectRelease ? handleDirectRelease : handleReceiveMaterial}
                                 disabled={actionLoading === 'direct' || !foundUser || selectedItems.length === 0}
                                 className={`min-w-[200px] h-[50px] text-white rounded-xl font-black transition-all disabled:opacity-50 shadow-lg text-sm uppercase tracking-widest ${showDirectRelease ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
                             >
-                                {actionLoading === 'direct' ? 'Processando...' : (showDirectRelease ? 'Liberar Agora' : 'Devolver Agora')}
+                                {actionLoading === 'direct' ? 'Processando...' : (showDirectRelease ? 'Confirmar Cautela' : 'Confirmar Recebimento')}
                             </button>
                         </div>
 
