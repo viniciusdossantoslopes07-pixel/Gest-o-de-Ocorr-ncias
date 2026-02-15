@@ -45,7 +45,6 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 }) => {
     const [selectedSector, setSelectedSector] = useState(SETORES[0]);
     const [callType, setCallType] = useState<CallTypeCode>('INICIO');
-    const [activeSubTab, setActiveSubTab] = useState<'retirar-faltas' | 'faltas-retiradas'>('retirar-faltas');
     const [searchTerm, setSearchTerm] = useState('');
     const [signedDates, setSignedDates] = useState<Record<string, { signedBy: string, signedAt: string }>>({});
     const [callToSign, setCallToSign] = useState<CallTypeCode | null>(null);
@@ -414,455 +413,262 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 pb-20">
-            {/* Sub-Tabs Navigation */}
-            <div className="flex flex-wrap bg-white p-1 lg:p-1.5 rounded-2xl border border-slate-200 shadow-sm w-full lg:w-fit">
-                {[
-                    { id: 'retirar-faltas', label: 'Retirada de Faltas', icon: FileSignature },
-                    { id: 'faltas-retiradas', label: 'Cupons Gerados', icon: Calendar }
-                ].map(tab => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveSubTab(tab.id as any)}
-                        className={`flex-1 lg:flex-none flex items-center justify-center gap-2 px-3 lg:px-6 py-2 lg:py-2.5 rounded-xl text-[10px] lg:text-xs font-black uppercase tracking-widest transition-all ${activeSubTab === tab.id
-                            ? 'bg-slate-900 text-white shadow-lg'
-                            : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
-                            }`}
-                    >
-                        <tab.icon className="w-3.5 h-3.5" />
-                        <span className="truncate">{tab.label}</span>
-                    </button>
-                ))}
-            </div>
-
-            {activeSubTab === 'retirar-faltas' && (
-                <>
-                    {/* Header */}
-                    <div className="bg-white rounded-[2rem] p-6 lg:p-8 border border-slate-200 shadow-sm">
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                            <div className="flex items-center gap-4">
-                                <div className="bg-blue-600 p-2.5 lg:p-3 rounded-2xl shadow-lg shadow-blue-200">
-                                    <FileSignature className="w-5 h-5 lg:w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <h2 className="text-[9px] lg:text-[10px] font-black text-slate-400 tracking-widest uppercase mb-1">Ministério da Defesa / BASP</h2>
-                                    <h2 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">Retirada de Faltas</h2>
-                                    <p className="text-slate-500 text-xs lg:sm font-medium">Controle semanal - {selectedSector}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-wrap items-center gap-2 lg:gap-3">
-                                <div className="flex items-center gap-2 bg-slate-50 p-1.5 lg:p-2 rounded-2xl border border-slate-100 w-full lg:w-auto justify-between lg:justify-start">
-                                    <button onClick={() => changeWeek(-1)} className="p-2 hover:bg-white rounded-lg transition-all text-slate-400 hover:text-slate-900 shadow-sm">
-                                        <Filter className="w-3.5 h-3.5 rotate-180" />
-                                    </button>
-                                    <span className="text-[10px] lg:text-xs font-black text-slate-700 px-2 uppercase">
-                                        {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} a {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                                    </span>
-                                    <button onClick={() => changeWeek(1)} className="p-2 hover:bg-white rounded-lg transition-all text-slate-400 hover:text-slate-900 shadow-sm">
-                                        <Filter className="w-3.5 h-3.5" />
-                                    </button>
-                                </div>
-
-                                <div className="flex gap-2 w-full lg:w-auto">
-                                    <button
-                                        onClick={() => setShowAdHocModal(true)}
-                                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-blue-600 text-white px-3 lg:px-4 py-3 rounded-xl text-[10px] lg:text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg"
-                                    >
-                                        <UserPlus className="w-3.5 h-3.5" /> Incluir
-                                    </button>
-                                    <button
-                                        onClick={() => window.print()}
-                                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-slate-900 text-white px-3 lg:px-4 py-3 rounded-xl text-[10px] lg:text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg"
-                                    >
-                                        <Plus className="w-3.5 h-3.5" /> PDF
-                                    </button>
-                                </div>
-                            </div>
+            {/* Header */}
+            <div className="bg-white rounded-[2rem] p-6 lg:p-8 border border-slate-200 shadow-sm">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-blue-600 p-2.5 lg:p-3 rounded-2xl shadow-lg shadow-blue-200">
+                            <FileSignature className="w-5 h-5 lg:w-6 h-6 text-white" />
                         </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
-                                    Setor Selecionado
-                                </label>
-                                <select
-                                    value={selectedSector}
-                                    onChange={(e) => setSelectedSector(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                                >
-                                    {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
-                                </select>
-                            </div>
-
-                            <div className="space-y-2 md:col-span-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
-                                    Buscar Militar na Grade
-                                </label>
-                                <div className="relative">
-                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                    <input
-                                        type="text"
-                                        placeholder="Nome ou Nome de Guerra..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                                    />
-                                </div>
-                            </div>
+                        <div>
+                            <h2 className="text-[9px] lg:text-[10px] font-black text-slate-400 tracking-widest uppercase mb-1">Ministério da Defesa / BASP</h2>
+                            <h2 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">Retirada de Faltas</h2>
+                            <p className="text-slate-500 text-xs lg:sm font-medium">Controle semanal - {selectedSector}</p>
                         </div>
                     </div>
 
-                    {/* Weekly Grid Table */}
-                    <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm relative group">
-                        {/* Mobile Scroll Hint */}
-                        <div className="lg:hidden absolute right-4 top-4 z-30 animate-pulse pointer-events-none">
-                            <div className="bg-slate-900/80 backdrop-blur-sm text-white text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-xl">
-                                <Filter className="w-2.5 h-2.5 rotate-90" /> Deslize para ver mais
-                            </div>
-                        </div>
-
-                        <div className="hidden lg:block overflow-x-auto scrollbar-hide lg:scrollbar-default">
-                            <table className="w-full border-collapse">
-                                <thead>
-                                    <tr className="bg-slate-50/50">
-                                        <th rowSpan={2} className="px-4 lg:px-6 py-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left min-w-[150px] lg:min-w-[200px] sticky left-0 z-20 bg-slate-50 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
-                                            <div className="flex items-center gap-2">
-                                                <GripVertical className="w-3.5 h-3.5 opacity-0" />
-                                                <span>Militar</span>
-                                            </div>
-                                        </th>
-                                        {currentWeek.map(date => (
-                                            <th key={date} colSpan={2} className="px-2 py-4 border-b border-slate-100 border-l border-slate-100 text-[10px] font-black text-slate-900 uppercase tracking-widest text-center bg-slate-50/30 min-w-[120px]">
-                                                <div className="flex flex-col items-center">
-                                                    <span>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
-                                                    <span className="text-[8px] font-bold text-slate-400 mt-0.5">{parseISOToDate(date).toLocaleDateString('pt-BR')}</span>
-                                                </div>
-                                            </th>
-                                        ))}
-                                    </tr>
-                                    <tr className="bg-slate-50/50">
-                                        {currentWeek.map(date => (
-                                            <Fragment key={date}>
-                                                <th className="px-1 py-1 lg:py-2 border-b border-slate-100 border-l border-slate-100 text-[8px] lg:text-[9px] font-black text-slate-400 text-center">1ª Chamada</th>
-                                                <th className="px-1 py-1 lg:py-2 border-b border-slate-100 text-[8px] lg:text-[9px] font-black text-slate-400 text-center">2ª Chamada</th>
-                                            </Fragment>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {filteredUsers.map((user, index) => (
-                                        <tr
-                                            key={user.id}
-                                            className={`hover:bg-slate-50/30 transition-colors ${draggedItem === index ? 'opacity-40 bg-blue-50' : ''}`}
-                                            draggable
-                                            onDragStart={() => handleDragStart(index)}
-                                            onDragOver={(e) => handleDragOver(e, index)}
-                                            onDrop={() => handleDrop(index)}
-                                        >
-                                            <td className="px-4 lg:px-6 py-2 lg:py-3 sticky left-0 z-10 bg-white shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
-                                                <div className="flex items-center gap-2 lg:gap-3">
-                                                    <div className="cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 transition-colors hidden lg:block">
-                                                        <GripVertical className="w-4 h-4" />
-                                                    </div>
-                                                    <div className="flex-1 flex items-center justify-between min-w-0">
-                                                        <div className="truncate">
-                                                            <div className="font-bold text-slate-900 text-[10px] lg:text-xs uppercase truncate">{user.warName || user.name}</div>
-                                                            <div className="text-[8px] lg:text-[9px] text-slate-400 font-bold uppercase">{user.rank}</div>
-                                                        </div>
-                                                        <button
-                                                            onClick={() => {
-                                                                if (confirm(`Deseja remover ${user.rank} ${user.warName || user.name} desta lista?`)) {
-                                                                    onExcludeUser(user.id);
-                                                                }
-                                                            }}
-                                                            className="p-1.5 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-all ml-1"
-                                                            title="Excluir militar desta chamada"
-                                                        >
-                                                            <Trash2 className="w-3.5 h-3.5" />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            {currentWeek.map(date => (
-                                                <Fragment key={`${user.id}-${date}`}>
-                                                    <td key={`${user.id}-${date}-INICIO`} className="p-0.5 lg:p-1 border-l border-slate-50">
-                                                        <select
-                                                            disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
-                                                            value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N'}
-                                                            onChange={(e) => handleWeeklyChange(user.id, date, 'INICIO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N') === 'P' ? 'text-emerald-600' :
-                                                                ['F', 'A', 'CR', 'C-C', 'DPM', 'CSV', 'DSV', 'JS', 'R-1', 'R-2', 'L-E', 'L-S', 'L-N', 'L-P', 'N-V', 'N-C', 'N-S'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-600 bg-red-50' :
-                                                                    (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
-                                                                        'text-blue-600 bg-blue-50'
-                                                                }`}
-                                                        >
-                                                            {Object.keys(PRESENCE_STATUS).map(s => (
-                                                                <option key={s} value={s}>{s}</option>
-                                                            ))}
-                                                        </select>
-                                                    </td>
-                                                    <td key={`${user.id}-${date}-TERMINO`} className="p-0.5 lg:p-1 border-l border-slate-50">
-                                                        <select
-                                                            disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
-                                                            value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N'}
-                                                            onChange={(e) => handleWeeklyChange(user.id, date, 'TERMINO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N') === 'P' ? 'text-emerald-600' :
-                                                                ['F', 'A', 'CR', 'C-C', 'DPM', 'CSV', 'DSV', 'JS', 'R-1', 'R-2', 'L-E', 'L-S', 'L-N', 'L-P', 'N-V', 'N-C', 'N-S'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-600 bg-red-50' :
-                                                                    (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
-                                                                        'text-blue-600 bg-blue-50'
-                                                                }`}
-                                                        >
-                                                            {Object.keys(PRESENCE_STATUS).map(s => (
-                                                                <option key={s} value={s}>{s}</option>
-                                                            ))}
-                                                        </select>
-                                                    </td>
-                                                </Fragment>
-                                            ))}
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Mobile View (Control Cards) */}
-                        <div className="lg:hidden divide-y divide-slate-100">
-                            {filteredUsers.map((user) => (
-                                <div key={user.id} className="p-4 space-y-4">
-                                    <div className="flex justify-between items-center bg-slate-50 rounded-xl p-3 border border-slate-100">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black text-[10px]">
-                                                {user.rank.slice(0, 2)}
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-slate-900 text-xs uppercase">{user.warName || user.name}</p>
-                                                <p className="text-[9px] text-slate-400 font-bold uppercase">{user.rank}</p>
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={() => {
-                                                if (confirm(`Remover ${user.warName || user.name}?`)) onExcludeUser(user.id);
-                                            }}
-                                            className="p-2 text-slate-300 hover:text-red-500 transition-colors"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 gap-2">
-                                        {currentWeek.map(date => (
-                                            <div key={date} className="flex items-center gap-2 bg-white rounded-xl border border-slate-100 p-2">
-                                                <div className="w-12 text-center border-r border-slate-100 pr-2">
-                                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">
-                                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}
-                                                    </p>
-                                                    <p className="text-[7px] font-bold text-slate-900">
-                                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { day: '2-digit' })}
-                                                    </p>
-                                                </div>
-                                                <div className="flex-1 grid grid-cols-2 gap-2">
-                                                    <div className="flex flex-col gap-1">
-                                                        <span className="text-[7px] font-black text-slate-400 uppercase text-center">1ª Chamada</span>
-                                                        <select
-                                                            disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
-                                                            value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N'}
-                                                            onChange={(e) => handleWeeklyChange(user.id, date, 'INICIO', e.target.value)}
-                                                            className={`w-full bg-slate-50 text-[10px] font-black text-center p-1.5 rounded-lg outline-none border border-transparent focus:border-blue-500 ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N') === 'P' ? 'text-emerald-600' : 'text-slate-600'}`}
-                                                        >
-                                                            {Object.keys(PRESENCE_STATUS).map(s => <option key={s} value={s}>{s}</option>)}
-                                                        </select>
-                                                    </div>
-                                                    <div className="flex flex-col gap-1">
-                                                        <span className="text-[7px] font-black text-slate-400 uppercase text-center">2ª Chamada</span>
-                                                        <select
-                                                            disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
-                                                            value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N'}
-                                                            onChange={(e) => handleWeeklyChange(user.id, date, 'TERMINO', e.target.value)}
-                                                            className={`w-full bg-slate-50 text-[10px] font-black text-center p-1.5 rounded-lg outline-none border border-transparent focus:border-blue-500 ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N') === 'P' ? 'text-emerald-600' : 'text-slate-600'}`}
-                                                        >
-                                                            {Object.keys(PRESENCE_STATUS).map(s => <option key={s} value={s}>{s}</option>)}
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm mt-8">
-                        <div className="flex items-center gap-4">
-                            <div className="bg-indigo-100 p-3 rounded-2xl">
-                                <Plus className="w-6 h-6 text-indigo-600" />
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-black text-slate-900 tracking-tight">Status das Assinaturas</h3>
-                                <p className="text-slate-500 text-sm italic">Cada dia deve ser assinado individualmente pelo responsável</p>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
-                            {currentWeek.map(date => (
-                                <div key={date} className="flex flex-col gap-3 p-4 lg:p-5 rounded-3xl border-2 bg-slate-50 border-slate-100 shadow-sm">
-                                    <div className="text-[10px] font-black text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">
-                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })}
-                                    </div>
-                                    <div className="grid grid-cols-2 lg:flex lg:flex-col gap-3">
-                                        {(['INICIO', 'TERMINO'] as CallTypeCode[]).map(type => {
-                                            const key = `${date}-${type}-${selectedSector}`;
-                                            const sig = signedDates[key];
-                                            return (
-                                                <div key={type} className={`p-2 lg:p-3 rounded-2xl border transition-all ${sig ? 'bg-emerald-50 border-emerald-100' : 'bg-white border-slate-200'}`}>
-                                                    <div className="text-[8px] lg:text-[9px] font-black text-slate-400 uppercase mb-1 flex justify-between">
-                                                        <span>{type === 'INICIO' ? '1ª Ch.' : '2ª Ch.'}</span>
-                                                        {sig && <CheckCircle className="w-3 h-3 text-emerald-500" />}
-                                                    </div>
-                                                    {sig ? (
-                                                        <div className="flex flex-col">
-                                                            <div className="text-[8px] lg:text-[9px] font-black text-emerald-700 leading-tight uppercase">OK</div>
-                                                            <div className="text-[8px] font-bold text-slate-400 truncate mt-0.5">{sig.signedBy.split(' ').pop()}</div>
-                                                        </div>
-                                                    ) : (
-                                                        <button
-                                                            onClick={() => handleSignDate(date, type)}
-                                                            disabled={isFutureDate(date)}
-                                                            className="w-full py-1.5 bg-slate-900 text-white rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-md shadow-slate-200"
-                                                        >
-                                                            Assinar
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 mt-8">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
-                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Legenda de Situações</h3>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-y-4 gap-x-6">
-                            {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
-                                <div key={code} className="flex items-baseline gap-2">
-                                    <span className="text-[10px] font-black text-blue-600 min-w-[30px]">{code}</span>
-                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{label}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </>
-            )}
-
-            {activeSubTab === 'faltas-retiradas' && (
-                <div className="space-y-6">
-                    {/* Header do Cupom */}
-                    <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                            <div className="flex items-center gap-4">
-                                <div className="flex flex-col">
-                                    <img
-                                        src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Coat_of_arms_of_Brazil.svg"
-                                        alt="Brasão da República"
-                                        className="w-12 h-12 mb-2 object-contain"
-                                    />
-                                    <h2 className="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-1">Ministério da Defesa / Comando da Aeronáutica</h2>
-                                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Base Aérea de São Paulo</h2>
-                                    <p className="text-slate-500 text-sm font-medium">Retirada de Faltas Diária - {selectedSector}</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => window.print()}
-                                className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg"
-                            >
-                                <Plus className="w-4 h-4" /> Gerar Relatório (PDF)
+                    <div className="flex flex-wrap items-center gap-2 lg:gap-3">
+                        <div className="flex items-center gap-2 bg-slate-50 p-1.5 lg:p-2 rounded-2xl border border-slate-100 w-full lg:w-auto justify-between lg:justify-start">
+                            <button onClick={() => changeWeek(-1)} className="p-2 hover:bg-white rounded-lg transition-all text-slate-400 hover:text-slate-900 shadow-sm">
+                                <Filter className="w-3.5 h-3.5 rotate-180" />
+                            </button>
+                            <span className="text-[10px] lg:text-xs font-black text-slate-700 px-2 uppercase">
+                                {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} a {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                            </span>
+                            <button onClick={() => changeWeek(1)} className="p-2 hover:bg-white rounded-lg transition-all text-slate-400 hover:text-slate-900 shadow-sm">
+                                <Filter className="w-3.5 h-3.5" />
                             </button>
                         </div>
 
-                        {/* Seletor de Setor na Tela de Cupons */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 pt-8 border-t border-slate-100">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
-                                    Setor Selecionado
-                                </label>
-                                <select
-                                    value={selectedSector}
-                                    onChange={(e) => setSelectedSector(e.target.value)}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm"
-                                >
-                                    {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm overflow-hidden">
-                        <div className="flex items-center justify-between mb-8">
-                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest border-l-4 border-indigo-500 pl-4">Grade Semanal de Controle (ESI)</h3>
-                            <div className="text-[10px] font-black text-slate-400 uppercase">
-                                Semana: {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR')} a {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR')}
-                            </div>
-                        </div>
-
-                        <div className="overflow-x-auto">
-                            <table className="w-full border-collapse border border-slate-200 text-[10px]">
-                                <thead>
-                                    <tr className="bg-slate-50">
-                                        <th rowSpan={2} className="border border-slate-200 px-4 py-3 text-left uppercase font-black text-slate-900 w-[180px]">Militar (Posto/Grad - Nome)</th>
-                                        {currentWeek.map(date => (
-                                            <th key={date} colSpan={2} className="border border-slate-200 p-2 text-center uppercase font-black text-slate-900">
-                                                {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}
-                                                <div className="text-[8px] text-slate-400">{parseISOToDate(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</div>
-                                            </th>
-                                        ))}
-                                    </tr>
-                                    <tr className="bg-slate-50/50">
-                                        {currentWeek.map(date => (
-                                            <Fragment key={date}>
-                                                <th className="border border-slate-200 p-1 text-center font-black text-slate-400 w-10 text-[8px]">1ª</th>
-                                                <th className="border border-slate-200 p-1 text-center font-black text-slate-400 w-10 text-[8px]">2ª</th>
-                                            </Fragment>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredUsers.map(user => (
-                                        <tr key={user.id} className="hover:bg-slate-50 transition-colors">
-                                            <td className="border border-slate-200 px-4 py-2 font-bold uppercase text-slate-700">{user.rank} {user.warName}</td>
-                                            {currentWeek.map(date => (
-                                                <Fragment key={date}>
-                                                    <td className="border border-slate-200 text-center font-black text-slate-900">
-                                                        {weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : '-')}
-                                                    </td>
-                                                    <td className="border border-slate-200 text-center font-black text-slate-900">
-                                                        {weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : '-')}
-                                                    </td>
-                                                </Fragment>
-                                            ))}
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Legenda Resumida na UI */}
-                        <div className="mt-8 pt-8 border-t border-slate-100 flex flex-wrap gap-4 justify-center">
-                            {Object.entries(PRESENCE_STATUS).slice(0, 8).map(([code, label]) => (
-                                <div key={code} className="flex items-center gap-1 text-[9px] font-black uppercase text-slate-400">
-                                    <span className="text-indigo-600">{code}</span>: <span>{label}</span>
-                                </div>
-                            ))}
-                            <div className="text-[9px] font-black uppercase text-slate-300 italic">... ver PDF para legenda completa</div>
+                        <div className="flex gap-2 w-full lg:w-auto">
+                            <button
+                                onClick={() => setShowAdHocModal(true)}
+                                className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-blue-600 text-white px-3 lg:px-4 py-3 rounded-xl text-[10px] lg:text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg"
+                            >
+                                <UserPlus className="w-3.5 h-3.5" /> Incluir
+                            </button>
+                            <button
+                                onClick={() => window.print()}
+                                className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-slate-900 text-white px-3 lg:px-4 py-3 rounded-xl text-[10px] lg:text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg"
+                            >
+                                <Plus className="w-3.5 h-3.5" /> PDF
+                            </button>
                         </div>
                     </div>
                 </div>
-            )
-            }
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                            Setor Selecionado
+                        </label>
+                        <select
+                            value={selectedSector}
+                            onChange={(e) => setSelectedSector(e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                        >
+                            {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                    </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                            Buscar Militar na Grade
+                        </label>
+                        <div className="relative">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Nome ou Nome de Guerra..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Weekly Grid Table */}
+            <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm relative group">
+                {/* Mobile Scroll Hint */}
+                <div className="lg:hidden absolute right-4 top-4 z-30 animate-pulse pointer-events-none">
+                    <div className="bg-slate-900/80 backdrop-blur-sm text-white text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-xl">
+                        <Filter className="w-2.5 h-2.5 rotate-90" /> Deslize para ver mais
+                    </div>
+                </div>
+
+                <div className="overflow-x-auto scrollbar-hide lg:scrollbar-default relative group">
+                    <table className="w-full border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50/50">
+                                <th rowSpan={2} className="px-4 lg:px-6 py-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left min-w-[150px] lg:min-w-[200px] sticky left-0 z-20 bg-slate-50 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
+                                    <div className="flex items-center gap-2">
+                                        <GripVertical className="w-3.5 h-3.5 opacity-0" />
+                                        <span>Militar</span>
+                                    </div>
+                                </th>
+                                {currentWeek.map(date => (
+                                    <th key={date} colSpan={2} className="px-2 py-4 border-b border-slate-100 border-l border-slate-100 text-[10px] font-black text-slate-900 uppercase tracking-widest text-center bg-slate-50/30 min-w-[120px]">
+                                        <div className="flex flex-col items-center">
+                                            <span>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
+                                            <span className="text-[8px] font-bold text-slate-400 mt-0.5">{parseISOToDate(date).toLocaleDateString('pt-BR')}</span>
+                                        </div>
+                                    </th>
+                                ))}
+                            </tr>
+                            <tr className="bg-slate-50/50">
+                                {currentWeek.map(date => (
+                                    <Fragment key={date}>
+                                        <th className="px-1 py-1 lg:py-2 border-b border-slate-100 border-l border-slate-100 text-[8px] lg:text-[9px] font-black text-slate-400 text-center">1ª Chamada</th>
+                                        <th className="px-1 py-1 lg:py-2 border-b border-slate-100 text-[8px] lg:text-[9px] font-black text-slate-400 text-center">2ª Chamada</th>
+                                    </Fragment>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {filteredUsers.map((user, index) => (
+                                <tr
+                                    key={user.id}
+                                    className={`hover:bg-slate-50/30 transition-colors ${draggedItem === index ? 'opacity-40 bg-blue-50' : ''}`}
+                                    draggable
+                                    onDragStart={() => handleDragStart(index)}
+                                    onDragOver={(e) => handleDragOver(e, index)}
+                                    onDrop={() => handleDrop(index)}
+                                >
+                                    <td className="px-4 lg:px-6 py-2 lg:py-3 sticky left-0 z-10 bg-white shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
+                                        <div className="flex items-center gap-2 lg:gap-3">
+                                            <div className="cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 transition-colors hidden lg:block">
+                                                <GripVertical className="w-4 h-4" />
+                                            </div>
+                                            <div className="flex-1 flex items-center justify-between min-w-0">
+                                                <div className="truncate">
+                                                    <div className="font-bold text-slate-900 text-[10px] lg:text-xs uppercase truncate">{user.warName || user.name}</div>
+                                                    <div className="text-[8px] lg:text-[9px] text-slate-400 font-bold uppercase">{user.rank}</div>
+                                                </div>
+                                                <button
+                                                    onClick={() => {
+                                                        if (confirm(`Deseja remover ${user.rank} ${user.warName || user.name} desta lista?`)) {
+                                                            onExcludeUser(user.id);
+                                                        }
+                                                    }}
+                                                    className="p-1.5 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-all ml-1"
+                                                    title="Excluir militar desta chamada"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    {currentWeek.map(date => (
+                                        <Fragment key={`${user.id}-${date}`}>
+                                            <td key={`${user.id}-${date}-INICIO`} className="p-0.5 lg:p-1 border-l border-slate-50">
+                                                <select
+                                                    disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
+                                                    value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N'}
+                                                    onChange={(e) => handleWeeklyChange(user.id, date, 'INICIO', e.target.value)}
+                                                    className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N') === 'P' ? 'text-emerald-600' :
+                                                        ['F', 'A', 'CR', 'C-C', 'DPM', 'CSV', 'DSV', 'JS', 'R-1', 'R-2', 'L-E', 'L-S', 'L-N', 'L-P', 'N-V', 'N-C', 'N-S'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-600 bg-red-50' :
+                                                            (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
+                                                                'text-blue-600 bg-blue-50'
+                                                        }`}
+                                                >
+                                                    {Object.keys(PRESENCE_STATUS).map(s => (
+                                                        <option key={s} value={s}>{s}</option>
+                                                    ))}
+                                                </select>
+                                            </td>
+                                            <td key={`${user.id}-${date}-TERMINO`} className="p-0.5 lg:p-1 border-l border-slate-50">
+                                                <select
+                                                    disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
+                                                    value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N'}
+                                                    onChange={(e) => handleWeeklyChange(user.id, date, 'TERMINO', e.target.value)}
+                                                    className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N') === 'P' ? 'text-emerald-600' :
+                                                        ['F', 'A', 'CR', 'C-C', 'DPM', 'CSV', 'DSV', 'JS', 'R-1', 'R-2', 'L-E', 'L-S', 'L-N', 'L-P', 'N-V', 'N-C', 'N-S'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-600 bg-red-50' :
+                                                            (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
+                                                                'text-blue-600 bg-blue-50'
+                                                        }`}
+                                                >
+                                                    {Object.keys(PRESENCE_STATUS).map(s => (
+                                                        <option key={s} value={s}>{s}</option>
+                                                    ))}
+                                                </select>
+                                            </td>
+                                        </Fragment>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm mt-8">
+                <div className="flex items-center gap-4">
+                    <div className="bg-indigo-100 p-3 rounded-2xl">
+                        <Plus className="w-6 h-6 text-indigo-600" />
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-black text-slate-900 tracking-tight">Status das Assinaturas</h3>
+                        <p className="text-slate-500 text-sm italic">Cada dia deve ser assinado individualmente pelo responsável</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
+                    {currentWeek.map(date => (
+                        <div key={date} className="flex flex-col gap-3 p-4 lg:p-5 rounded-3xl border-2 bg-slate-50 border-slate-100 shadow-sm">
+                            <div className="text-[10px] font-black text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">
+                                {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })}
+                            </div>
+                            <div className="grid grid-cols-2 lg:flex lg:flex-col gap-3">
+                                {(['INICIO', 'TERMINO'] as CallTypeCode[]).map(type => {
+                                    const key = `${date}-${type}-${selectedSector}`;
+                                    const sig = signedDates[key];
+                                    return (
+                                        <div key={type} className={`p-2 lg:p-3 rounded-2xl border transition-all ${sig ? 'bg-emerald-50 border-emerald-100' : 'bg-white border-slate-200'}`}>
+                                            <div className="text-[8px] lg:text-[9px] font-black text-slate-400 uppercase mb-1 flex justify-between">
+                                                <span>{type === 'INICIO' ? '1ª Ch.' : '2ª Ch.'}</span>
+                                                {sig && <CheckCircle className="w-3 h-3 text-emerald-500" />}
+                                            </div>
+                                            {sig ? (
+                                                <div className="flex flex-col">
+                                                    <div className="text-[8px] lg:text-[9px] font-black text-emerald-700 leading-tight uppercase">OK</div>
+                                                    <div className="text-[8px] font-bold text-slate-400 truncate mt-0.5">{sig.signedBy.split(' ').pop()}</div>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleSignDate(date, type)}
+                                                    disabled={isFutureDate(date)}
+                                                    className="w-full py-1.5 bg-slate-900 text-white rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-md shadow-slate-200"
+                                                >
+                                                    Assinar
+                                                </button>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 mt-8">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
+                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Legenda de Situações</h3>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-y-4 gap-x-6">
+                    {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
+                        <div key={code} className="flex items-baseline gap-2">
+                            <span className="text-[10px] font-black text-blue-600 min-w-[30px]">{code}</span>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{label}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
 
             {/* Adicionar Militar Modal */}
             {
@@ -1161,15 +967,11 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Visual Detail - Ticket Style Cutouts */}
-                            <div className="absolute left-0 top-1/2 -translate-y-1/2 -ml-3 w-6 h-12 bg-slate-900/10 rounded-full" />
-                            <div className="absolute right-0 top-1/2 -translate-y-1/2 -mr-3 w-6 h-12 bg-slate-900/10 rounded-full" />
                         </div>
                     </div>
                 )
             }
-        </div >
+        </div>
     );
 };
 
