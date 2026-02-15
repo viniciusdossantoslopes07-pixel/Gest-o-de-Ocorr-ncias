@@ -2,7 +2,7 @@
 import { useState, useEffect, FC, Fragment } from 'react';
 import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '../../types';
 import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, SETORES, RANKS } from '../../constants';
-import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical } from 'lucide-react';
+import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck } from 'lucide-react';
 
 interface DailyAttendanceProps {
     users: User[];
@@ -134,6 +134,61 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         onSaveAttendance(newAttendance);
     };
 
+    const handleOpenJustification = (userId: string, date: string, callType: string, currentStatus: string) => {
+        const user = users.find(u => u.id === userId);
+        if (!user) return;
+
+        setJustifyingSoldier({
+            userId,
+            userName: user.warName || user.name,
+            userRank: user.rank,
+            saram: user.saram,
+            date,
+            originalStatus: currentStatus,
+            callType
+        });
+        setJustificationForm({ newStatus: 'P', text: '' });
+        setShowJustificationModal(true);
+    };
+
+    const confirmJustification = () => {
+        if (!justifyingSoldier || !justificationForm.text) return;
+
+        const justification: AbsenceJustification = {
+            id: Math.random().toString(36).substr(2, 9),
+            attendanceId: '', // Will be linked if needed
+            militarId: justifyingSoldier.userId,
+            militarName: justifyingSoldier.userName,
+            militarRank: justifyingSoldier.userRank,
+            saram: justifyingSoldier.saram,
+            originalStatus: justifyingSoldier.originalStatus,
+            newStatus: justificationForm.newStatus,
+            justification: justificationForm.text,
+            performedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
+            timestamp: new Date().toISOString(),
+            sector: selectedSector,
+            date: justifyingSoldier.date,
+            callType: justifyingSoldier.callType
+        };
+
+        // Update attendance status
+        handleWeeklyChange(justifyingSoldier.userId, justifyingSoldier.date, justifyingSoldier.callType, justificationForm.newStatus);
+
+        // Save justification
+        onSaveJustification(justification);
+
+        setShowJustificationModal(false);
+        setJustifyingSoldier(null);
+        alert('Falta retirada e cupom gerado com sucesso!');
+    };
+
+    const handlePrintJustification = (justification: AbsenceJustification) => {
+        setSelectedJustification(justification);
+        setTimeout(() => {
+            window.print();
+        }, 300);
+    };
+
     const [responsible, setResponsible] = useState(`${currentUser.rank} ${currentUser.warName || currentUser.name}`);
     const [isSigned, setIsSigned] = useState(false);
     const [recordToPrint, setRecordToPrint] = useState<DailyAttendance | null>(null);
@@ -178,6 +233,24 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     // Ad-hoc military management (now passed via props)
     const [showAdHocModal, setShowAdHocModal] = useState(false);
     const [newAdHoc, setNewAdHoc] = useState({ rank: '', warName: '', saram: '' });
+    const [activeSubTab, setActiveSubTab] = useState<'chamada' | 'cupons'>('chamada');
+
+    // Justification States
+    const [showJustificationModal, setShowJustificationModal] = useState(false);
+    const [justifyingSoldier, setJustifyingSoldier] = useState<{
+        userId: string;
+        userName: string;
+        userRank: string;
+        saram: string;
+        date: string;
+        originalStatus: string;
+        callType: string;
+    } | null>(null);
+    const [justificationForm, setJustificationForm] = useState({
+        newStatus: 'P',
+        text: ''
+    });
+    const [selectedJustification, setSelectedJustification] = useState<AbsenceJustification | null>(null);
 
     const filteredUsers = users.filter(u =>
         u.sector === selectedSector &&
@@ -489,258 +562,352 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 </div>
             </div>
 
-            {/* Weekly Grid Table */}
-            <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm relative group">
-                {/* Mobile Scroll Hint */}
-                <div className="lg:hidden absolute right-4 top-4 z-30 animate-pulse pointer-events-none">
-                    <div className="bg-slate-900/80 backdrop-blur-sm text-white text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-xl">
-                        <Filter className="w-2.5 h-2.5 rotate-90" /> Deslize para ver mais
-                    </div>
-                </div>
+            {/* Sub-Tabs Navigation */}
+            <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl w-fit">
+                <button
+                    onClick={() => setActiveSubTab('chamada')}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${activeSubTab === 'chamada' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    <Users className="w-4 h-4" /> Chamada Diária
+                </button>
+                <button
+                    onClick={() => setActiveSubTab('cupons')}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${activeSubTab === 'cupons' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    <FileText className="w-4 h-4" /> Cupons Gerados (Faltas)
+                </button>
+            </div>
 
-                <div className="overflow-x-auto scrollbar-hide lg:scrollbar-default relative group">
-                    <table className="w-full border-collapse">
-                        <thead>
-                            <tr className="bg-slate-50/50">
-                                <th rowSpan={2} className="px-4 lg:px-6 py-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left min-w-[150px] lg:min-w-[200px] sticky left-0 z-20 bg-slate-50 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
-                                    <div className="flex items-center gap-2">
-                                        <GripVertical className="w-3.5 h-3.5 opacity-0" />
-                                        <span>Militar</span>
-                                    </div>
-                                </th>
-                                {currentWeek.map(date => (
-                                    <th key={date} colSpan={2} className="px-2 py-4 border-b border-slate-100 border-l border-slate-100 text-[10px] font-black text-slate-900 uppercase tracking-widest text-center bg-slate-50/30 min-w-[120px]">
-                                        <div className="flex flex-col items-center">
-                                            <span>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
-                                            <span className="text-[8px] font-bold text-slate-400 mt-0.5">{parseISOToDate(date).toLocaleDateString('pt-BR')}</span>
-                                        </div>
-                                    </th>
-                                ))}
-                            </tr>
-                            <tr className="bg-slate-50/50">
-                                {currentWeek.map(date => (
-                                    <Fragment key={date}>
-                                        <th className="px-1 py-1 lg:py-2 border-b border-slate-100 border-l border-slate-100 text-[8px] lg:text-[9px] font-black text-slate-400 text-center">1ª Chamada</th>
-                                        <th className="px-1 py-1 lg:py-2 border-b border-slate-100 text-[8px] lg:text-[9px] font-black text-slate-400 text-center">2ª Chamada</th>
-                                    </Fragment>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {filteredUsers.map((user, index) => (
-                                <tr
-                                    key={user.id}
-                                    className={`hover:bg-slate-50/30 transition-colors ${draggedItem === index ? 'opacity-40 bg-blue-50' : ''}`}
-                                    draggable
-                                    onDragStart={() => handleDragStart(index)}
-                                    onDragOver={(e) => handleDragOver(e, index)}
-                                    onDrop={() => handleDrop(index)}
-                                >
-                                    <td className="px-4 lg:px-6 py-2 lg:py-3 sticky left-0 z-10 bg-white shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
-                                        <div className="flex items-center gap-2 lg:gap-3">
-                                            <div className="cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 transition-colors hidden lg:block">
-                                                <GripVertical className="w-4 h-4" />
+            {activeSubTab === 'chamada' && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                    {/* Weekly Grid Table */}
+                    <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm relative group">
+                        {/* Mobile Scroll Hint */}
+                        <div className="lg:hidden absolute right-4 top-4 z-30 animate-pulse pointer-events-none">
+                            <div className="bg-slate-900/80 backdrop-blur-sm text-white text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-xl">
+                                <Filter className="w-2.5 h-2.5 rotate-90" /> Deslize para ver mais
+                            </div>
+                        </div>
+
+                        <div className="overflow-x-auto scrollbar-hide lg:scrollbar-default relative group">
+                            <table className="w-full border-collapse">
+                                <thead>
+                                    <tr className="bg-slate-50/50">
+                                        <th rowSpan={2} className="px-4 lg:px-6 py-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left min-w-[150px] lg:min-w-[200px] sticky left-0 z-20 bg-slate-50 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
+                                            <div className="flex items-center gap-2">
+                                                <GripVertical className="w-3.5 h-3.5 opacity-0" />
+                                                <span>Militar</span>
                                             </div>
-                                            <div className="flex-1 flex items-center justify-between min-w-0">
-                                                <div className="truncate">
-                                                    <div className="font-bold text-slate-900 text-[10px] lg:text-xs uppercase truncate">{user.warName || user.name}</div>
-                                                    <div className="text-[8px] lg:text-[9px] text-slate-400 font-bold uppercase">{user.rank}</div>
+                                        </th>
+                                        {currentWeek.map(date => (
+                                            <th key={date} colSpan={2} className="px-2 py-4 border-b border-slate-100 border-l border-slate-100 text-[10px] font-black text-slate-900 uppercase tracking-widest text-center bg-slate-50/30 min-w-[120px]">
+                                                <div className="flex flex-col items-center">
+                                                    <span>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
+                                                    <span className="text-[8px] font-bold text-slate-400 mt-0.5">{parseISOToDate(date).toLocaleDateString('pt-BR')}</span>
                                                 </div>
-                                                <button
-                                                    onClick={() => {
-                                                        if (confirm(`Deseja remover ${user.rank} ${user.warName || user.name} desta lista?`)) {
-                                                            onExcludeUser(user.id);
-                                                        }
-                                                    }}
-                                                    className="p-1.5 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-all ml-1"
-                                                    title="Excluir militar desta chamada"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    {currentWeek.map(date => (
-                                        <Fragment key={`${user.id}-${date}`}>
-                                            <td key={`${user.id}-${date}-INICIO`} className="p-0.5 lg:p-1 border-l border-slate-50">
-                                                <select
-                                                    disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
-                                                    value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N'}
-                                                    onChange={(e) => handleWeeklyChange(user.id, date, 'INICIO', e.target.value)}
-                                                    className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N') === 'P' ? 'text-emerald-600' :
-                                                        ['F', 'A', 'CR', 'C-C', 'DPM', 'CSV', 'DSV', 'JS', 'R-1', 'R-2', 'L-E', 'L-S', 'L-N', 'L-P', 'N-V', 'N-C', 'N-S'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-600 bg-red-50' :
-                                                            (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
-                                                                'text-blue-600 bg-blue-50'
-                                                        }`}
-                                                >
-                                                    {Object.keys(PRESENCE_STATUS).map(s => (
-                                                        <option key={s} value={s}>{s}</option>
-                                                    ))}
-                                                </select>
+                                            </th>
+                                        ))}
+                                    </tr>
+                                    <tr className="bg-slate-50/50">
+                                        {currentWeek.map(date => (
+                                            <Fragment key={date}>
+                                                <th className="px-1 py-1 lg:py-2 border-b border-slate-100 border-l border-slate-100 text-[8px] lg:text-[9px] font-black text-slate-400 text-center">1ª Chamada</th>
+                                                <th className="px-1 py-1 lg:py-2 border-b border-slate-100 text-[8px] lg:text-[9px] font-black text-slate-400 text-center">2ª Chamada</th>
+                                            </Fragment>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {filteredUsers.map((user, index) => (
+                                        <tr
+                                            key={user.id}
+                                            className={`hover:bg-slate-50/30 transition-colors ${draggedItem === index ? 'opacity-40 bg-blue-50' : ''}`}
+                                            draggable
+                                            onDragStart={() => handleDragStart(index)}
+                                            onDragOver={(e) => handleDragOver(e, index)}
+                                            onDrop={() => handleDrop(index)}
+                                        >
+                                            <td className="px-4 lg:px-6 py-2 lg:py-3 sticky left-0 z-10 bg-white shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
+                                                <div className="flex items-center gap-2 lg:gap-3">
+                                                    <div className="cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 transition-colors hidden lg:block">
+                                                        <GripVertical className="w-4 h-4" />
+                                                    </div>
+                                                    <div className="flex-1 flex items-center justify-between min-w-0">
+                                                        <div className="truncate">
+                                                            <div className="font-bold text-slate-900 text-[10px] lg:text-xs uppercase truncate">{user.warName || user.name}</div>
+                                                            <div className="text-[8px] lg:text-[9px] text-slate-400 font-bold uppercase">{user.rank}</div>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => {
+                                                                if (confirm(`Deseja remover ${user.rank} ${user.warName || user.name} desta lista?`)) {
+                                                                    onExcludeUser(user.id);
+                                                                }
+                                                            }}
+                                                            className="p-1.5 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-all ml-1"
+                                                            title="Excluir militar desta chamada"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </td>
-                                            <td key={`${user.id}-${date}-TERMINO`} className="p-0.5 lg:p-1 border-l border-slate-50">
-                                                <select
-                                                    disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
-                                                    value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N'}
-                                                    onChange={(e) => handleWeeklyChange(user.id, date, 'TERMINO', e.target.value)}
-                                                    className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N') === 'P' ? 'text-emerald-600' :
-                                                        ['F', 'A', 'CR', 'C-C', 'DPM', 'CSV', 'DSV', 'JS', 'R-1', 'R-2', 'L-E', 'L-S', 'L-N', 'L-P', 'N-V', 'N-C', 'N-S'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-600 bg-red-50' :
-                                                            (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
-                                                                'text-blue-600 bg-blue-50'
-                                                        }`}
-                                                >
-                                                    {Object.keys(PRESENCE_STATUS).map(s => (
-                                                        <option key={s} value={s}>{s}</option>
-                                                    ))}
-                                                </select>
-                                            </td>
-                                        </Fragment>
+                                            {currentWeek.map(date => (
+                                                <Fragment key={`${user.id}-${date}`}>
+                                                    <td key={`${user.id}-${date}-INICIO`} className="p-0.5 lg:p-1 border-l border-slate-50">
+                                                        <select
+                                                            disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
+                                                            value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N'}
+                                                            onChange={(e) => handleWeeklyChange(user.id, date, 'INICIO', e.target.value)}
+                                                            className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N') === 'P' ? 'text-emerald-600' :
+                                                                ['F', 'A', 'CR', 'C-C', 'DPM', 'CSV', 'DSV', 'JS', 'R-1', 'R-2', 'L-E', 'L-S', 'L-N', 'L-P', 'N-V', 'N-C', 'N-S'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-600 bg-red-50' :
+                                                                    (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
+                                                                        'text-blue-600 bg-blue-50'
+                                                                }`}
+                                                        >
+                                                            {Object.keys(PRESENCE_STATUS).map(s => (
+                                                                <option key={s} value={s}>{s}</option>
+                                                            ))}
+                                                        </select>
+                                                    </td>
+                                                    <td key={`${user.id}-${date}-TERMINO`} className="p-0.5 lg:p-1 border-l border-slate-50">
+                                                        <select
+                                                            disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
+                                                            value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N'}
+                                                            onChange={(e) => handleWeeklyChange(user.id, date, 'TERMINO', e.target.value)}
+                                                            className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N') === 'P' ? 'text-emerald-600' :
+                                                                ['F', 'A', 'CR', 'C-C', 'DPM', 'CSV', 'DSV', 'JS', 'R-1', 'R-2', 'L-E', 'L-S', 'L-N', 'L-P', 'N-V', 'N-C', 'N-S'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-600 bg-red-50' :
+                                                                    (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
+                                                                        'text-blue-600 bg-blue-50'
+                                                                }`}
+                                                        >
+                                                            {Object.keys(PRESENCE_STATUS).map(s => (
+                                                                <option key={s} value={s}>{s}</option>
+                                                            ))}
+                                                        </select>
+                                                    </td>
+                                                </Fragment>
+                                            ))}
+                                        </tr>
                                     ))}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                                </tbody>
+                            </table>
+                        </div>
 
-            </div>
-
-            <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm mt-8">
-                <div className="flex items-center gap-4">
-                    <div className="bg-indigo-100 p-3 rounded-2xl">
-                        <Plus className="w-6 h-6 text-indigo-600" />
                     </div>
-                    <div>
-                        <h3 className="text-xl font-black text-slate-900 tracking-tight">Status das Assinaturas</h3>
-                        <p className="text-slate-500 text-sm italic">Cada dia deve ser assinado individualmente pelo responsável</p>
-                    </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
-                    {currentWeek.map(date => (
-                        <div key={date} className="flex flex-col gap-3 p-4 lg:p-5 rounded-3xl border-2 bg-slate-50 border-slate-100 shadow-sm">
-                            <div className="text-[10px] font-black text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">
-                                {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })}
+                    <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm mt-8">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-indigo-100 p-3 rounded-2xl">
+                                <Plus className="w-6 h-6 text-indigo-600" />
                             </div>
-                            <div className="grid grid-cols-2 lg:flex lg:flex-col gap-3">
-                                {(['INICIO', 'TERMINO'] as CallTypeCode[]).map(type => {
-                                    const key = `${date}-${type}-${selectedSector}`;
-                                    const sig = signedDates[key];
-                                    return (
-                                        <div key={type} className={`p-2 lg:p-3 rounded-2xl border transition-all ${sig ? 'bg-emerald-50 border-emerald-100' : 'bg-white border-slate-200'}`}>
-                                            <div className="text-[8px] lg:text-[9px] font-black text-slate-400 uppercase mb-1 flex justify-between">
-                                                <span>{type === 'INICIO' ? '1ª Ch.' : '2ª Ch.'}</span>
-                                                {sig && <CheckCircle className="w-3 h-3 text-emerald-500" />}
-                                            </div>
-                                            {sig ? (
-                                                <div className="flex flex-col">
-                                                    <div className="text-[8px] lg:text-[9px] font-black text-emerald-700 leading-tight uppercase">OK</div>
-                                                    <div className="text-[8px] font-bold text-slate-400 truncate mt-0.5">{sig.signedBy.split(' ').pop()}</div>
+                            <div>
+                                <h3 className="text-xl font-black text-slate-900 tracking-tight">Status das Assinaturas</h3>
+                                <p className="text-slate-500 text-sm italic">Cada dia deve ser assinado individualmente pelo responsável</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
+                            {currentWeek.map(date => (
+                                <div key={date} className="flex flex-col gap-3 p-4 lg:p-5 rounded-3xl border-2 bg-slate-50 border-slate-100 shadow-sm">
+                                    <div className="text-[10px] font-black text-slate-900 uppercase tracking-widest border-b border-slate-200 pb-2">
+                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })}
+                                    </div>
+                                    <div className="grid grid-cols-2 lg:flex lg:flex-col gap-3">
+                                        {(['INICIO', 'TERMINO'] as CallTypeCode[]).map(type => {
+                                            const key = `${date}-${type}-${selectedSector}`;
+                                            const sig = signedDates[key];
+                                            return (
+                                                <div key={type} className={`p-2 lg:p-3 rounded-2xl border transition-all ${sig ? 'bg-emerald-50 border-emerald-100' : 'bg-white border-slate-200'}`}>
+                                                    <div className="text-[8px] lg:text-[9px] font-black text-slate-400 uppercase mb-1 flex justify-between">
+                                                        <span>{type === 'INICIO' ? '1ª Ch.' : '2ª Ch.'}</span>
+                                                        {sig && <CheckCircle className="w-3 h-3 text-emerald-500" />}
+                                                    </div>
+                                                    {sig ? (
+                                                        <div className="flex flex-col">
+                                                            <div className="text-[8px] lg:text-[9px] font-black text-emerald-700 leading-tight uppercase">OK</div>
+                                                            <div className="text-[8px] font-bold text-slate-400 truncate mt-0.5">{sig.signedBy.split(' ').pop()}</div>
+                                                        </div>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => handleSignDate(date, type)}
+                                                            disabled={isFutureDate(date)}
+                                                            className="w-full py-1.5 bg-slate-900 text-white rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-md shadow-slate-200"
+                                                        >
+                                                            Assinar
+                                                        </button>
+                                                    )}
                                                 </div>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleSignDate(date, type)}
-                                                    disabled={isFutureDate(date)}
-                                                    className="w-full py-1.5 bg-slate-900 text-white rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-md shadow-slate-200"
-                                                >
-                                                    Assinar
-                                                </button>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
-            </div>
+                    </div>
 
-            <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 mt-8">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
-                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Legenda de Situações</h3>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-y-4 gap-x-6">
-                    {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
-                        <div key={code} className="flex items-baseline gap-2">
-                            <span className="text-[10px] font-black text-blue-600 min-w-[30px]">{code}</span>
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{label}</span>
+                    <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 mt-8">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
+                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Legenda de Situações</h3>
                         </div>
-                    ))}
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-y-4 gap-x-6">
+                            {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
+                                <div key={code} className="flex items-baseline gap-2">
+                                    <span className="text-[10px] font-black text-blue-600 min-w-[30px]">{code}</span>
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{label}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
-            </div>
+            )}
 
-
-            {/* Adicionar Militar Modal */}
-            {
-                showAdHocModal && (
-                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[120] flex items-center justify-center p-4">
-                        <div className="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl relative animate-in zoom-in-95 duration-200">
-                            <button onClick={() => setShowAdHocModal(false)} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-all text-slate-400">
-                                <X className="w-6 h-6" />
-                            </button>
-
-                            <div className="flex items-center gap-4 mb-8">
-                                <div className="bg-blue-600 p-4 rounded-3xl shadow-lg shadow-blue-200">
-                                    <UserPlus className="w-8 h-8 text-white" />
+            {activeSubTab === 'cupons' && (
+                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
+                    <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
+                        <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-blue-600 p-2 rounded-xl">
+                                    <FileCheck className="w-5 h-5 text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Adicionar Militar</h3>
-                                    <p className="text-slate-500 text-sm">Inserir novo militar na grade semanal</p>
+                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Cupons de Retirada de Faltas</h3>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase">Histórico de justificativas neste setor</p>
                                 </div>
                             </div>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-[10px] lg:text-xs">
+                                <thead className="bg-slate-50/30">
+                                    <tr className="text-slate-400 font-black uppercase tracking-widest border-b border-slate-100">
+                                        <th className="px-6 py-4">Militar</th>
+                                        <th className="px-6 py-4">Data/Chamada</th>
+                                        <th className="px-6 py-4">Justificativa</th>
+                                        <th className="px-6 py-4">Status</th>
+                                        <th className="px-6 py-4 text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {absenceJustifications
+                                        .filter(j => j.sector === selectedSector)
+                                        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                                        .map(just => (
+                                            <tr key={just.id} className="hover:bg-slate-50/30 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <div className="font-black text-slate-900 uppercase">{just.militarRank} {just.militarName}</div>
+                                                    <div className="text-[9px] text-slate-400 font-bold uppercase">SARAM: {just.saram || 'N/I'}</div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="font-bold text-slate-700">{new Date(just.date).toLocaleDateString('pt-BR')}</div>
+                                                    <div className="text-[9px] text-slate-400 font-bold uppercase">{just.callType === 'INICIO' ? '1ª CHAMADA' : '2ª CHAMADA'}</div>
+                                                </td>
+                                                <td className="px-6 py-4 max-w-xs">
+                                                    <p className="italic text-slate-600 line-clamp-2">{just.justification}</p>
+                                                    <span className="text-[8px] text-slate-400 font-bold uppercase mt-1 block">POR: {just.performedBy}</span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="px-2 py-0.5 bg-red-50 text-red-600 rounded text-[9px] font-black">{just.originalStatus}</span>
+                                                        <div className="w-3 h-px bg-slate-200" />
+                                                        <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded text-[9px] font-black">{just.newStatus}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <button
+                                                        onClick={() => handlePrintJustification(just)}
+                                                        className="p-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-md group"
+                                                        title="Imprimir Cupom"
+                                                    >
+                                                        <Printer className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    {absenceJustifications.filter(j => j.sector === selectedSector).length === 0 && (
+                                        <tr>
+                                            <td colSpan={5} className="px-6 py-20 text-center">
+                                                <div className="flex flex-col items-center opacity-30">
+                                                    <FileText className="w-12 h-12 mb-3" />
+                                                    <p className="text-xs font-black uppercase tracking-widest text-slate-400">Nenhum cupom gerado para este setor</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
 
-                            <div className="space-y-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Posto/Grad</label>
-                                        <select
-                                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
-                                            value={newAdHoc.rank}
-                                            onChange={e => setNewAdHoc(prev => ({ ...prev, rank: e.target.value }))}
-                                        >
-                                            <option value="">Selecione...</option>
-                                            {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
-                                        </select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Guerra</label>
-                                        <input
-                                            type="text"
-                                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
-                                            placeholder="EX: SILVA"
-                                            value={newAdHoc.warName}
-                                            onChange={e => setNewAdHoc(prev => ({ ...prev, warName: e.target.value.toUpperCase() }))}
-                                        />
-                                    </div>
-                                </div>
+            {/* Modals & Printable Areas */}
+            <div className="modals-container">
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[120] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl relative animate-in zoom-in-95 duration-200">
+                        <button onClick={() => setShowAdHocModal(false)} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-all text-slate-400">
+                            <X className="w-6 h-6" />
+                        </button>
 
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="bg-blue-600 p-4 rounded-3xl shadow-lg shadow-blue-200">
+                                <UserPlus className="w-8 h-8 text-white" />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Adicionar Militar</h3>
+                                <p className="text-slate-500 text-sm">Inserir novo militar na grade semanal</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">SARAM (Opcional)</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Posto/Grad</label>
+                                    <select
+                                        className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
+                                        value={newAdHoc.rank}
+                                        onChange={e => setNewAdHoc(prev => ({ ...prev, rank: e.target.value }))}
+                                    >
+                                        <option value="">Selecione...</option>
+                                        {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Guerra</label>
                                     <input
                                         type="text"
                                         className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
-                                        placeholder="SARAM se houver"
-                                        value={newAdHoc.saram}
-                                        onChange={e => setNewAdHoc(prev => ({ ...prev, saram: e.target.value }))}
+                                        placeholder="EX: SILVA"
+                                        value={newAdHoc.warName}
+                                        onChange={e => setNewAdHoc(prev => ({ ...prev, warName: e.target.value.toUpperCase() }))}
                                     />
                                 </div>
-
-                                <button
-                                    onClick={handleAddAdHoc}
-                                    disabled={!newAdHoc.rank || !newAdHoc.warName}
-                                    className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 uppercase text-xs tracking-widest disabled:opacity-50"
-                                >
-                                    Adicionar à Grade
-                                </button>
                             </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">SARAM (Opcional)</label>
+                                <input
+                                    type="text"
+                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
+                                    placeholder="SARAM se houver"
+                                    value={newAdHoc.saram}
+                                    onChange={e => setNewAdHoc(prev => ({ ...prev, saram: e.target.value }))}
+                                />
+                            </div>
+
+                            <button
+                                onClick={handleAddAdHoc}
+                                disabled={!newAdHoc.rank || !newAdHoc.warName}
+                                className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 uppercase text-xs tracking-widest disabled:opacity-50"
+                            >
+                                Adicionar à Grade
+                            </button>
                         </div>
                     </div>
-                )
-            }
+                </div>
 
-            {/* Printable Area (Hidden in UI) */}
-            <div className="hidden print:block bg-white text-black font-sans">
-                <style>{`
+                {/* Printable Area (Hidden in UI) */}
+                <div className="hidden print:block bg-white text-black font-sans">
+                    <style>{`
                     @media print {
                         @page { 
                             size: portrait; 
@@ -798,126 +965,125 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         }
                     }
                 `}</style>
-                <div className="print-weekly w-full mx-auto">
-                    {/* Institutional Header */}
-                    <div className="text-center mb-10 space-y-0.5 print-header">
-                        <div className="flex flex-col items-center">
-                            <img
-                                src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Coat_of_arms_of_Brazil.svg"
-                                alt="Brasão da República"
-                                className="w-[60px] h-[60px] mb-4 object-contain"
-                            />
-                            <h1 className="text-xs font-bold uppercase tracking-[0.1em]">Ministério da Defesa</h1>
-                            <h2 className="text-xs font-bold uppercase tracking-[0.1em]">Comando da Aeronáutica</h2>
-                            <h3 className="text-xs font-bold uppercase tracking-[0.1em]">Base Aérea de São Paulo</h3>
-                            <div className="w-16 h-px bg-black my-2" />
-                            <h4 className="text-sm font-black uppercase underline decoration-2 underline-offset-4">{selectedSector}</h4>
+                    <div className="print-weekly w-full mx-auto">
+                        {/* Institutional Header */}
+                        <div className="text-center mb-10 space-y-0.5 print-header">
+                            <div className="flex flex-col items-center">
+                                <img
+                                    src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Coat_of_arms_of_Brazil.svg"
+                                    alt="Brasão da República"
+                                    className="w-[60px] h-[60px] mb-4 object-contain"
+                                />
+                                <h1 className="text-xs font-bold uppercase tracking-[0.1em]">Ministério da Defesa</h1>
+                                <h2 className="text-xs font-bold uppercase tracking-[0.1em]">Comando da Aeronáutica</h2>
+                                <h3 className="text-xs font-bold uppercase tracking-[0.1em]">Base Aérea de São Paulo</h3>
+                                <div className="w-16 h-px bg-black my-2" />
+                                <h4 className="text-sm font-black uppercase underline decoration-2 underline-offset-4">{selectedSector}</h4>
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="flex justify-between items-end mb-2 font-bold uppercase text-[9px] border-b border-black pb-1 print-header">
-                        <div className="flex flex-col">
-                            <span>SEMANA: {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR')} A {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR')}</span>
+                        <div className="flex justify-between items-end mb-2 font-bold uppercase text-[9px] border-b border-black pb-1 print-header">
+                            <div className="flex flex-col">
+                                <span>SEMANA: {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR')} A {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR')}</span>
+                            </div>
+                            <span className="text-xs font-black">RETIRADA DE FALTAS DIÁRIA</span>
                         </div>
-                        <span className="text-xs font-black">RETIRADA DE FALTAS DIÁRIA</span>
-                    </div>
 
-                    {/* Weekly Table */}
-                    <table className="w-full border-collapse border border-black text-[8px]">
-                        <thead>
-                            <tr className="bg-slate-100">
-                                <th rowSpan={2} className="border border-black px-2 py-2 text-left uppercase w-[110px]">MILITAR (POSTO/GRAD - NOME)</th>
-                                {currentWeek.map(date => (
-                                    <th key={date} colSpan={2} className="border border-black p-1 text-center uppercase text-[9px]">
-                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long' })}
-                                        <div className="text-[7px] font-normal">{parseISOToDate(date).toLocaleDateString('pt-BR')}</div>
-                                    </th>
-                                ))}
-                            </tr>
-                            <tr className="bg-slate-100/50">
-                                {currentWeek.map(date => (
-                                    <Fragment key={date}>
-                                        <th className="border border-black p-0.5 text-center w-6">1ª</th>
-                                        <th className="border border-black p-0.5 text-center w-6">2ª</th>
-                                    </Fragment>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredUsers.map(user => (
-                                <tr key={user.id} className="h-6">
-                                    <td className="border border-black px-2 py-0.5 font-bold uppercase truncate">{user.rank} {user.warName}</td>
+                        {/* Weekly Table */}
+                        <table className="w-full border-collapse border border-black text-[8px]">
+                            <thead>
+                                <tr className="bg-slate-100">
+                                    <th rowSpan={2} className="border border-black px-2 py-2 text-left uppercase w-[110px]">MILITAR (POSTO/GRAD - NOME)</th>
+                                    {currentWeek.map(date => (
+                                        <th key={date} colSpan={2} className="border border-black p-1 text-center uppercase text-[9px]">
+                                            {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long' })}
+                                            <div className="text-[7px] font-normal">{parseISOToDate(date).toLocaleDateString('pt-BR')}</div>
+                                        </th>
+                                    ))}
+                                </tr>
+                                <tr className="bg-slate-100/50">
                                     {currentWeek.map(date => (
                                         <Fragment key={date}>
-                                            <td className="border border-black text-center font-black">
-                                                {weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : '-')}
-                                            </td>
-                                            <td className="border border-black text-center font-black">
-                                                {weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : '-')}
-                                            </td>
+                                            <th className="border border-black p-0.5 text-center w-6">1ª</th>
+                                            <th className="border border-black p-0.5 text-center w-6">2ª</th>
                                         </Fragment>
                                     ))}
                                 </tr>
+                            </thead>
+                            <tbody>
+                                {filteredUsers.map(user => (
+                                    <tr key={user.id} className="h-6">
+                                        <td className="border border-black px-2 py-0.5 font-bold uppercase truncate">{user.rank} {user.warName}</td>
+                                        {currentWeek.map(date => (
+                                            <Fragment key={date}>
+                                                <td className="border border-black text-center font-black">
+                                                    {weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : '-')}
+                                                </td>
+                                                <td className="border border-black text-center font-black">
+                                                    {weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : '-')}
+                                                </td>
+                                            </Fragment>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+
+                        {/* Official Legend Footer */}
+                        <div className="mt-4 grid grid-cols-6 gap-x-2 gap-y-1 text-[6px] font-bold border border-black p-2 uppercase bg-slate-50/50 print-footer">
+                            {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
+                                <div key={code} className="flex gap-1 items-baseline">
+                                    <span className="text-black">{code}</span>
+                                    <span className="text-slate-600 font-normal truncate">{label}</span>
+                                </div>
                             ))}
-                        </tbody>
-                    </table>
+                        </div>
 
-                    {/* Official Legend Footer */}
-                    <div className="mt-4 grid grid-cols-6 gap-x-2 gap-y-1 text-[6px] font-bold border border-black p-2 uppercase bg-slate-50/50 print-footer">
-                        {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
-                            <div key={code} className="flex gap-1 items-baseline">
-                                <span className="text-black">{code}</span>
-                                <span className="text-slate-600 font-normal truncate">{label}</span>
-                            </div>
-                        ))}
-                    </div>
+                        {/* Weekly Digital Signatures Footer (Style OMISS) */}
+                        <div className="mt-10 border-t-2 border-black pt-6 print-footer">
+                            <h5 className="text-[12px] font-black uppercase tracking-widest mb-6 text-center">Registro de Assinaturas Digitais da Semana</h5>
+                            <div className="grid grid-cols-2 gap-x-10 gap-y-6">
+                                {currentWeek.flatMap(date => {
+                                    const calls: CallTypeCode[] = ['INICIO', 'TERMINO'];
+                                    return calls.map(type => {
+                                        const sigKey = `${date}-${type}-${selectedSector}`;
+                                        const sig = signedDates[sigKey];
 
-                    {/* Weekly Digital Signatures Footer (Style OMISS) */}
-                    <div className="mt-10 border-t-2 border-black pt-6 print-footer">
-                        <h5 className="text-[12px] font-black uppercase tracking-widest mb-6 text-center">Registro de Assinaturas Digitais da Semana</h5>
-                        <div className="grid grid-cols-2 gap-x-10 gap-y-6">
-                            {currentWeek.flatMap(date => {
-                                const calls: CallTypeCode[] = ['INICIO', 'TERMINO'];
-                                return calls.map(type => {
-                                    const sigKey = `${date}-${type}-${selectedSector}`;
-                                    const sig = signedDates[sigKey];
+                                        if (!sig) return null;
 
-                                    if (!sig) return null;
-
-                                    return (
-                                        <div key={sigKey} className="border border-black p-3 bg-white flex flex-col justify-center min-h-[50px]">
-                                            <div className="flex flex-col text-[8px] uppercase leading-tight">
-                                                <div className="flex justify-between items-center mb-1 border-b border-black/10 pb-1">
-                                                    <span className="font-black text-black">
-                                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })}
+                                        return (
+                                            <div key={sigKey} className="border border-black p-3 bg-white flex flex-col justify-center min-h-[50px]">
+                                                <div className="flex flex-col text-[8px] uppercase leading-tight">
+                                                    <div className="flex justify-between items-center mb-1 border-b border-black/10 pb-1">
+                                                        <span className="font-black text-black">
+                                                            {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })}
+                                                        </span>
+                                                        <span className="font-black text-indigo-600">
+                                                            {type === 'INICIO' ? '1ª CHAMADA' : '2ª CHAMADA'}
+                                                        </span>
+                                                    </div>
+                                                    <span className="font-bold text-black mt-1">
+                                                        ASSINADO DIGITALMENTE POR: {sig.signedBy}
                                                     </span>
-                                                    <span className="font-black text-indigo-600">
-                                                        {type === 'INICIO' ? '1ª CHAMADA' : '2ª CHAMADA'}
+                                                    <span className="text-black/60 font-mono mt-0.5">
+                                                        AUTENTICAÇÃO: {new Date(sig.signedAt).toLocaleString('pt-BR')}
                                                     </span>
                                                 </div>
-                                                <span className="font-bold text-black mt-1">
-                                                    ASSINADO DIGITALMENTE POR: {sig.signedBy}
-                                                </span>
-                                                <span className="text-black/60 font-mono mt-0.5">
-                                                    AUTENTICAÇÃO: {new Date(sig.signedAt).toLocaleString('pt-BR')}
-                                                </span>
                                             </div>
-                                        </div>
-                                    );
-                                });
-                            }).filter(Boolean)}
-                        </div>
-                        <div className="mt-8 text-center border-t border-black/5 pt-4">
-                            <p className="text-[8px] italic text-slate-400 uppercase tracking-tighter">
-                                Documento assinado digitalmente nos termos da MP 2.200-2/2001. A autenticidade pode ser confirmada via GSD-SP.
-                            </p>
+                                        );
+                                    });
+                                }).filter(Boolean)}
+                            </div>
+                            <div className="mt-8 text-center border-t border-black/5 pt-4">
+                                <p className="text-[8px] italic text-slate-400 uppercase tracking-tighter">
+                                    Documento assinado digitalmente nos termos da MP 2.200-2/2001. A autenticidade pode ser confirmada via GSD-SP.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            {/* Signature Password Modal */}
-            {
-                showPasswordModal && (
+                {/* Signature Password Modal */}
+                {showPasswordModal && (
                     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
                         <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl relative animate-in zoom-in-95 duration-200">
                             <div className="flex flex-col items-center text-center">
@@ -942,8 +1108,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                 setPasswordError(false);
                                             }}
                                             onKeyDown={e => e.key === 'Enter' && confirmSignature()}
-                                            className={`w-full bg-slate-50 border-2 rounded-2xl p-4 text-center font-black tracking-[0.5em] outline-none transition-all ${passwordError ? 'border-red-500 bg-red-50' : 'border-slate-100 focus:border-blue-600'
-                                                }`}
+                                            className={`w-full bg-slate-50 border-2 rounded-2xl p-4 text-center font-black tracking-[0.5em] outline-none transition-all ${passwordError ? 'border-red-500 bg-red-50' : 'border-slate-100 focus:border-blue-600'}`}
                                             placeholder="••••••"
                                         />
                                         {passwordError && (
@@ -969,8 +1134,144 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             </div>
                         </div>
                     </div>
-                )
-            }
+                )}
+
+                {/* Justification Modal */}
+                {showJustificationModal && justifyingSoldier && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-[2.5rem] w-full max-w-lg p-8 shadow-2xl relative animate-in zoom-in-95 duration-200">
+                            <button onClick={() => setShowJustificationModal(false)} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-all text-slate-400">
+                                <X className="w-6 h-6" />
+                            </button>
+
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="bg-emerald-600 p-4 rounded-3xl shadow-lg shadow-emerald-200">
+                                    <FileCheck className="w-8 h-8 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Retirada de Falta</h3>
+                                    <p className="text-slate-500 text-sm font-bold uppercase tracking-widest">Gerar Cupom de Justificativa</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100 mb-8">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Militar</span>
+                                        <p className="font-black text-slate-900 uppercase text-sm">{justifyingSoldier.userRank} {justifyingSoldier.userName}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Data/Chamada</span>
+                                        <p className="font-bold text-slate-700 text-sm">{new Date(justifyingSoldier.date).toLocaleDateString('pt-BR')} - {justifyingSoldier.callType === 'INICIO' ? '1ª' : '2ª'}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 block">Status Original</label>
+                                        <div className="bg-red-50 border-2 border-red-100 rounded-2xl p-4 text-center font-black text-red-600">
+                                            {justifyingSoldier.originalStatus} - {PRESENCE_STATUS[justifyingSoldier.originalStatus as keyof typeof PRESENCE_STATUS] || 'AUSENTE'}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 block">Novo Status</label>
+                                        <select
+                                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-emerald-600 transition-all"
+                                            value={justificationForm.newStatus}
+                                            onChange={e => setJustificationForm(prev => ({ ...prev, newStatus: e.target.value }))}
+                                        >
+                                            <option value="P">P - Presente</option>
+                                            <option value="JS">JS - Justificado</option>
+                                            <option value="DPM">DPM - Disp. Missão</option>
+                                            <option value="CR">CR - Conv. Retido</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 block">Motivo / Justificativa</label>
+                                    <textarea
+                                        className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-medium text-slate-700 outline-none focus:border-emerald-600 transition-all min-h-[120px]"
+                                        placeholder="Descreva o motivo da retirada da falta..."
+                                        value={justificationForm.text}
+                                        onChange={e => setJustificationForm(prev => ({ ...prev, text: e.target.value }))}
+                                    />
+                                </div>
+
+                                <button
+                                    onClick={confirmJustification}
+                                    disabled={!justificationForm.text}
+                                    className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-emerald-700 transition-all shadow-xl disabled:opacity-50 shadow-emerald-100"
+                                >
+                                    Confirmar e Gerar Cupom
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Justification Print View (Thermal Receipt Style) */}
+                {selectedJustification && (
+                    <div className="hidden print:block fixed inset-0 bg-white z-[500] p-4 text-black font-mono">
+                        <div className="w-[80mm] mx-auto border-2 border-dashed border-black p-4 space-y-4">
+                            <div className="text-center space-y-1">
+                                <p className="text-sm font-bold">BASP - CENTRAL DE PESSOAL</p>
+                                <p className="text-xs">COMPROVANTE DE RETIRADA DE FALTA</p>
+                                <div className="border-b border-black w-full my-2" />
+                            </div>
+
+                            <div className="space-y-2 text-[10px]">
+                                <div className="flex justify-between">
+                                    <span>ID:</span>
+                                    <span>#{selectedJustification.id.toUpperCase()}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>DATA:</span>
+                                    <span>{new Date(selectedJustification.timestamp).toLocaleString('pt-BR')}</span>
+                                </div>
+                                <div className="border-b border-black w-full" />
+
+                                <p className="font-bold">MILITAR:</p>
+                                <p className="text-xs">{selectedJustification.militarRank} {selectedJustification.militarName}</p>
+                                <p>SARAM: {selectedJustification.saram || 'N/I'}</p>
+
+                                <div className="border-b border-black w-full" />
+
+                                <div className="flex justify-between">
+                                    <span>REF. DATA:</span>
+                                    <span>{new Date(selectedJustification.date).toLocaleDateString('pt-BR')}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>CHAMADA:</span>
+                                    <span>{selectedJustification.callType === 'INICIO' ? '1ª CHAMADA' : '2ª CHAMADA'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>ALTERACAO:</span>
+                                    <span>{selectedJustification.originalStatus} {"->"} {selectedJustification.newStatus}</span>
+                                </div>
+
+                                <div className="border-b border-black w-full" />
+
+                                <p className="font-bold">JUSTIFICATIVA:</p>
+                                <p className="italic uppercase">{selectedJustification.justification}</p>
+
+                                <div className="border-b border-black w-full" />
+
+                                <p className="font-bold">RESPONSAVEL:</p>
+                                <p>{selectedJustification.performedBy}</p>
+                            </div>
+
+                            <div className="text-center pt-8 space-y-1">
+                                <div className="border-t border-black w-48 mx-auto" />
+                                <p className="text-[8px] uppercase font-bold">Autenticado Digitalmente</p>
+                                <p className="text-[6px] text-gray-500 uppercase mt-2">Documento para fins de controle interno da BASP</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

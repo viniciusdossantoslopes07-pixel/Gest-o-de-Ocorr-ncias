@@ -250,4 +250,5 @@ export interface AbsenceJustification {
   timestamp: string;
   sector: string;
   date: string;
+  callType: string;
 }
