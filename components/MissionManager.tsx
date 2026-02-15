@@ -418,43 +418,43 @@ export default function MissionManager({ user }: MissionManagerProps) {
             <div className="space-y-4 mt-8">
                 <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Ordens de Missão (Envolvendo Você)</h3>
                 {myOrders.map(order => (
-                    <div key={order.id} className="p-5 rounded-xl border border-l-4 border-l-emerald-500 border-slate-200 bg-white hover:shadow-md transition-all">
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <h3 className="text-lg font-bold text-slate-900">{order.mission}</h3>
-                                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${MISSION_STATUS_COLORS[order.status || ''] || 'bg-slate-100'}`}>
+                    <div key={order.id} className="p-4 sm:p-5 rounded-xl border border-l-4 border-l-emerald-500 border-slate-200 bg-white hover:shadow-md transition-all">
+                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                            <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-center gap-2 mb-2">
+                                    <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">{order.mission}</h3>
+                                    <span className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase whitespace-nowrap ${MISSION_STATUS_COLORS[order.status || ''] || 'bg-slate-100'}`}>
                                         {MISSION_STATUS_LABELS[order.status || ''] || order.status}
                                     </span>
                                 </div>
-                                <p className="text-slate-600 text-sm mb-4 max-w-2xl">{order.description}</p>
-                                <div className="flex items-center gap-6 text-sm text-slate-500">
-                                    <span className="flex items-center gap-2"><Clock className="w-4 h-4" /> {new Date(order.date).toLocaleDateString()}</span>
-                                    <span className="flex items-center gap-2 rounded bg-slate-100 px-2 py-1"><Shield className="w-3 h-3" /> OM #{order.omisNumber}</span>
+                                <p className="text-slate-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">{order.description}</p>
+                                <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-[11px] sm:text-sm text-slate-500">
+                                    <span className="flex items-center gap-1.5 whitespace-nowrap"><Clock className="w-3.5 h-3.5" /> {new Date(order.date).toLocaleDateString()}</span>
+                                    <span className="flex items-center gap-1.5 rounded bg-slate-100 px-2 py-0.5 whitespace-nowrap font-medium"><Shield className="w-3 h-3" /> OM #{order.omisNumber}</span>
                                 </div>
                             </div>
-                            <div className="flex flex-col gap-2">
+                            <div className="flex sm:flex-col gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                                 {order.status === 'PRONTA_PARA_EXECUCAO' && canManageMission(order) && (
                                     <button
                                         onClick={() => handleMissionStart(order)}
-                                        className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700 transition-colors flex items-center gap-2 shadow-lg shadow-emerald-200"
+                                        className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
                                     >
-                                        <Play className="w-4 h-4" /> Iniciar Missão
+                                        <Play className="w-3.5 h-3.5" /> Iniciar
                                     </button>
                                 )}
                                 {order.status === 'EM_MISSAO' && canManageMission(order) && (
                                     <button
                                         onClick={() => handleMissionEnd(order)}
-                                        className="px-4 py-2 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors flex items-center gap-2 shadow-lg shadow-red-200"
+                                        className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
                                     >
-                                        <Square className="w-4 h-4" /> Finalizar Missão
+                                        <Square className="w-3.5 h-3.5" /> Finalizar
                                     </button>
                                 )}
                                 <button
                                     onClick={() => handlePrintOrder(order)}
-                                    className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-bold hover:bg-slate-200 transition-colors flex items-center gap-2"
+                                    className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-xs sm:text-sm font-bold hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
                                 >
-                                    <FileText className="w-4 h-4" /> Imprimir OM
+                                    <FileText className="w-3.5 h-3.5" /> Imprimir
                                 </button>
                             </div>
                         </div>
@@ -502,22 +502,19 @@ export default function MissionManager({ user }: MissionManagerProps) {
                         }}
                         className="bg-white p-4 rounded-xl border border-l-4 border-l-yellow-400 border-slate-200 shadow-sm flex justify-between items-center cursor-pointer hover:shadow-md transition-shadow"
                     >
-                        <div>
-                            <div className="font-bold text-slate-900">{m.dados_missao.tipo_missao}</div>
-                            <div className="text-sm text-slate-500">
+                        <div className="flex-1 min-w-0">
+                            <div className="font-bold text-slate-900 truncate">{m.dados_missao.tipo_missao}</div>
+                            <div className="text-[11px] sm:text-sm text-slate-500 mt-0.5 truncate">
                                 {m.dados_missao.local} - {m.dados_missao.data ? new Date(m.dados_missao.data).toLocaleDateString() : 'Data não informada'}
                             </div>
-                            <div className="text-xs text-slate-400 mt-1">Solicitante: {m.dados_missao.posto} {m.dados_missao.nome_guerra}</div>
+                            <div className="text-[10px] text-slate-400 mt-1 truncate">Solicitante: {m.dados_missao.posto} {m.dados_missao.nome_guerra}</div>
                         </div>
-                        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                            <button onClick={() => handleAnalyzeRequest(m)} className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-colors">
+                        <div className="flex flex-wrap justify-end gap-1.5 sm:gap-2 ml-2" onClick={(e) => e.stopPropagation()}>
+                            <button onClick={() => handleAnalyzeRequest(m)} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-600 text-white rounded-lg text-[10px] sm:text-xs font-bold hover:bg-blue-700 shadow-sm transition-colors whitespace-nowrap">
                                 Analisar
                             </button>
-                            <button onClick={() => handleRejectRequest(m)} className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-bold hover:bg-red-200 transition-colors">
+                            <button onClick={() => handleRejectRequest(m)} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-red-100 text-red-700 rounded-lg text-[10px] sm:text-xs font-bold hover:bg-red-200 transition-colors whitespace-nowrap">
                                 Rejeitar
-                            </button>
-                            <button onClick={() => handleDeleteRequest(m)} className="px-3 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-bold hover:bg-slate-900 transition-colors">
-                                Excluir
                             </button>
                         </div>
                     </div>
@@ -597,59 +594,61 @@ export default function MissionManager({ user }: MissionManagerProps) {
 
     return (
         <div className="max-w-7xl mx-auto space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-800">Central de Missões</h2>
-                    <p className="text-slate-500">Gestão unificada de solicitações e ordens de serviço</p>
+                    <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Central de Missões</h2>
+                    <p className="text-xs sm:text-sm text-slate-500">Gestão unificada de solicitações e ordens de serviço</p>
                 </div>
             </div>
 
-            {/* Unified Tabs */}
-            <div className="flex p-1 bg-slate-100 rounded-xl w-fit">
-                <button
-                    onClick={() => setActiveTab('solicitar_missao')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'solicitar_missao' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                    <PlusCircle className="w-4 h-4" /> Solicitar Missão
-                </button>
-                <button
-                    onClick={() => setActiveTab('minhas_solicitacoes')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'minhas_solicitacoes' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                    <List className="w-4 h-4" /> Minhas Solicitações
-                </button>
-                {(isSop || isChSop) && (
+            {/* Unified Tabs - Responsive with horizontal scroll */}
+            <div className="overflow-x-auto pb-2 -mx-1 sm:mx-0 scrollbar-hide">
+                <div className="flex p-1 bg-slate-100 rounded-xl w-max sm:w-fit min-w-full sm:min-w-0">
                     <button
-                        onClick={() => setActiveTab('painel_gestao')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'painel_gestao' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        onClick={() => setActiveTab('solicitar_missao')}
+                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'solicitar_missao' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
-                        <Shield className="w-4 h-4" /> Painel de Gestão
+                        <PlusCircle className="w-3.5 h-3.5 sm:w-4 h-4" /> <span className="hidden xs:inline">Solicitar Missão</span><span className="xs:hidden">Solicitar</span>
                     </button>
-                )}
-                <button
-                    onClick={() => setActiveTab('missoes_ativas')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'missoes_ativas' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                    <Play className="w-4 h-4" /> Missões Ativas
-                </button>
-                <button
-                    onClick={() => setActiveTab('missoes_finalizadas')}
-                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'missoes_finalizadas' ? 'bg-white text-slate-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                    <CheckCircle className="w-4 h-4" /> Missões Finalizadas
-                </button>
-                {(isSop || isChSop) && (
                     <button
-                        onClick={() => setActiveTab('estatisticas')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'estatisticas' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        onClick={() => setActiveTab('minhas_solicitacoes')}
+                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'minhas_solicitacoes' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
-                        <LayoutDashboard className="w-4 h-4" /> Estatísticas
+                        <List className="w-3.5 h-3.5 sm:w-4 h-4" /> <span className="hidden xs:inline">Minhas Solicitações</span><span className="xs:hidden">Minhas</span>
                     </button>
-                )}
+                    {(isSop || isChSop) && (
+                        <button
+                            onClick={() => setActiveTab('painel_gestao')}
+                            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'painel_gestao' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            <Shield className="w-3.5 h-3.5 sm:w-4 h-4" /> Gestão
+                        </button>
+                    )}
+                    <button
+                        onClick={() => setActiveTab('missoes_ativas')}
+                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'missoes_ativas' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        <Play className="w-3.5 h-3.5 sm:w-4 h-4" /> Ativas
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('missoes_finalizadas')}
+                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'missoes_finalizadas' ? 'bg-white text-slate-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        <CheckCircle className="w-3.5 h-3.5 sm:w-4 h-4" /> Finalizadas
+                    </button>
+                    {(isSop || isChSop) && (
+                        <button
+                            onClick={() => setActiveTab('estatisticas')}
+                            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'estatisticas' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            <LayoutDashboard className="w-3.5 h-3.5 sm:w-4 h-4" /> Estatísticas
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Content Area */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 min-h-[400px]">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 sm:p-4 md:p-6 min-h-[400px]">
 
                 {/* 1. Minhas Solicitações Tab */}
                 {activeTab === 'minhas_solicitacoes' && (
@@ -666,16 +665,18 @@ export default function MissionManager({ user }: MissionManagerProps) {
                                     }}
                                     className="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100 transition-colors flex justify-between items-center cursor-pointer hover:shadow-md"
                                 >
-                                    <div>
-                                        <div className="font-bold text-slate-900 flex items-center gap-2">
-                                            {m.dados_missao.tipo_missao}
-                                            <span className="text-[10px] text-slate-400 font-normal ml-2">#{m.id.slice(0, 8)}</span>
-                                            {m.status === 'RASCUNHO' && <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full uppercase ml-2">Rascunho</span>}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="font-bold text-slate-900 flex flex-wrap items-center gap-x-2 gap-y-1">
+                                            <span className="truncate">{m.dados_missao.tipo_missao}</span>
+                                            <span className="text-[10px] text-slate-400 font-normal">#{m.id.slice(0, 8)}</span>
+                                            {m.status === 'RASCUNHO' && <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full uppercase">Rascunho</span>}
                                         </div>
-                                        <div className="text-sm text-slate-500">{m.dados_missao.data ? new Date(m.dados_missao.data).toLocaleDateString() : 'Data não informada'} - {m.dados_missao.local}</div>
+                                        <div className="text-[11px] sm:text-sm text-slate-500 mt-1 truncate">
+                                            {m.dados_missao.data ? new Date(m.dados_missao.data).toLocaleDateString() : 'Data não informada'} - {m.dados_missao.local}
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${m.status === 'PENDENTE' ? 'bg-yellow-100 text-yellow-700' :
+                                    <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 ml-2" onClick={(e) => e.stopPropagation()}>
+                                        <span className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-xs font-bold whitespace-nowrap ${m.status === 'PENDENTE' ? 'bg-yellow-100 text-yellow-700' :
                                             m.status === 'APROVADA' || m.status === 'ATRIBUIDA' ? 'bg-emerald-100 text-emerald-700' :
                                                 m.status === 'RASCUNHO' ? 'bg-slate-300 text-slate-700' : 'bg-slate-200 text-slate-600'}`}>
                                             {m.status}

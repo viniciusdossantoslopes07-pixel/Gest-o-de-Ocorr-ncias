@@ -513,19 +513,26 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
 
                     {/* Weekly Grid Table */}
-                    <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
-                        <div className="overflow-x-auto">
+                    <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm relative group">
+                        {/* Mobile Scroll Hint */}
+                        <div className="lg:hidden absolute right-4 top-4 z-30 animate-pulse pointer-events-none">
+                            <div className="bg-slate-900/80 backdrop-blur-sm text-white text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-xl">
+                                <Filter className="w-2.5 h-2.5 rotate-90" /> Deslize para ver mais
+                            </div>
+                        </div>
+
+                        <div className="overflow-x-auto scrollbar-hide lg:scrollbar-default">
                             <table className="w-full border-collapse">
                                 <thead>
                                     <tr className="bg-slate-50/50">
-                                        <th rowSpan={2} className="px-6 py-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left min-w-[200px] sticky left-0 z-20 bg-slate-50">
+                                        <th rowSpan={2} className="px-4 lg:px-6 py-4 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left min-w-[150px] lg:min-w-[200px] sticky left-0 z-20 bg-slate-50 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
                                             <div className="flex items-center gap-2">
                                                 <GripVertical className="w-3.5 h-3.5 opacity-0" />
                                                 <span>Militar</span>
                                             </div>
                                         </th>
                                         {currentWeek.map(date => (
-                                            <th key={date} colSpan={2} className="px-2 py-4 border-b border-slate-100 border-l border-slate-100 text-[10px] font-black text-slate-900 uppercase tracking-widest text-center bg-slate-50/30">
+                                            <th key={date} colSpan={2} className="px-2 py-4 border-b border-slate-100 border-l border-slate-100 text-[10px] font-black text-slate-900 uppercase tracking-widest text-center bg-slate-50/30 min-w-[120px]">
                                                 <div className="flex flex-col items-center">
                                                     <span>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
                                                     <span className="text-[8px] font-bold text-slate-400 mt-0.5">{parseISOToDate(date).toLocaleDateString('pt-BR')}</span>
@@ -536,8 +543,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     <tr className="bg-slate-50/50">
                                         {currentWeek.map(date => (
                                             <Fragment key={date}>
-                                                <th className="px-1 py-2 border-b border-slate-100 border-l border-slate-100 text-[9px] font-black text-slate-400 text-center">1ª Chamada</th>
-                                                <th className="px-1 py-2 border-b border-slate-100 text-[9px] font-black text-slate-400 text-center">2ª Chamada</th>
+                                                <th className="px-1 py-1 lg:py-2 border-b border-slate-100 border-l border-slate-100 text-[8px] lg:text-[9px] font-black text-slate-400 text-center">1ª Chamada</th>
+                                                <th className="px-1 py-1 lg:py-2 border-b border-slate-100 text-[8px] lg:text-[9px] font-black text-slate-400 text-center">2ª Chamada</th>
                                             </Fragment>
                                         ))}
                                     </tr>
@@ -552,15 +559,15 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                             onDragOver={(e) => handleDragOver(e, index)}
                                             onDrop={() => handleDrop(index)}
                                         >
-                                            <td className="px-6 py-3">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 transition-colors">
+                                            <td className="px-4 lg:px-6 py-2 lg:py-3 sticky left-0 z-10 bg-white shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
+                                                <div className="flex items-center gap-2 lg:gap-3">
+                                                    <div className="cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 transition-colors hidden lg:block">
                                                         <GripVertical className="w-4 h-4" />
                                                     </div>
-                                                    <div className="flex-1 flex items-center justify-between">
-                                                        <div>
-                                                            <div className="font-bold text-slate-900 text-xs uppercase">{user.warName || user.name}</div>
-                                                            <div className="text-[9px] text-slate-400 font-bold uppercase">{user.rank}</div>
+                                                    <div className="flex-1 flex items-center justify-between min-w-0">
+                                                        <div className="truncate">
+                                                            <div className="font-bold text-slate-900 text-[10px] lg:text-xs uppercase truncate">{user.warName || user.name}</div>
+                                                            <div className="text-[8px] lg:text-[9px] text-slate-400 font-bold uppercase">{user.rank}</div>
                                                         </div>
                                                         <button
                                                             onClick={() => {
@@ -568,7 +575,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                                     onExcludeUser(user.id);
                                                                 }
                                                             }}
-                                                            className="p-1.5 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-all"
+                                                            className="p-1.5 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-all ml-1"
                                                             title="Excluir militar desta chamada"
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5" />
@@ -577,13 +584,13 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                 </div>
                                             </td>
                                             {currentWeek.map(date => (
-                                                <>
-                                                    <td key={`${user.id}-${date}-INICIO`} className="p-1 border-l border-slate-50">
+                                                <Fragment key={`${user.id}-${date}`}>
+                                                    <td key={`${user.id}-${date}-INICIO`} className="p-0.5 lg:p-1 border-l border-slate-50">
                                                         <select
                                                             disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
                                                             value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N'}
                                                             onChange={(e) => handleWeeklyChange(user.id, date, 'INICIO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N') === 'P' ? 'text-emerald-600' :
+                                                            className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N') === 'P' ? 'text-emerald-600' :
                                                                 ['F', 'A', 'CR', 'C-C', 'DPM', 'CSV', 'DSV', 'JS', 'R-1', 'R-2', 'L-E', 'L-S', 'L-N', 'L-P', 'N-V', 'N-C', 'N-S'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-600 bg-red-50' :
                                                                     (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
                                                                         'text-blue-600 bg-blue-50'
@@ -594,12 +601,12 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                             ))}
                                                         </select>
                                                     </td>
-                                                    <td key={`${user.id}-${date}-TERMINO`} className="p-1">
+                                                    <td key={`${user.id}-${date}-TERMINO`} className="p-0.5 lg:p-1 border-l border-slate-50">
                                                         <select
                                                             disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
                                                             value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N'}
                                                             onChange={(e) => handleWeeklyChange(user.id, date, 'TERMINO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N') === 'P' ? 'text-emerald-600' :
+                                                            className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N') === 'P' ? 'text-emerald-600' :
                                                                 ['F', 'A', 'CR', 'C-C', 'DPM', 'CSV', 'DSV', 'JS', 'R-1', 'R-2', 'L-E', 'L-S', 'L-N', 'L-P', 'N-V', 'N-C', 'N-S'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-600 bg-red-50' :
                                                                     (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
                                                                         'text-blue-600 bg-blue-50'
@@ -610,7 +617,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                             ))}
                                                         </select>
                                                     </td>
-                                                </>
+                                                </Fragment>
                                             ))}
                                         </tr>
                                     ))}
