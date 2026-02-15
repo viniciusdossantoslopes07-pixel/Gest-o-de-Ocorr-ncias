@@ -79,40 +79,44 @@ export default function MissionStatistics({ orders, missions = [] }: MissionStat
     const hasActiveFilters = filterDateStart || filterDateEnd || filterType;
 
     return (
-        <div className="space-y-8 animate-fade-in">
+        <div className="space-y-4 sm:space-y-8 animate-fade-in">
             {/* Filters Header */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center gap-4">
+            <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                 <div className="flex items-center gap-2 text-slate-600">
-                    <Filter className="w-5 h-5 text-blue-600" />
-                    <span className="font-bold text-sm uppercase tracking-wider">Filtros</span>
+                    <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                    <span className="font-bold text-xs sm:text-sm uppercase tracking-wider">Filtros</span>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-4 flex-1">
-                    <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 min-w-[320px]">
-                        <Calendar className="w-4 h-4 text-slate-400" />
-                        <span className="text-xs font-bold text-slate-500 uppercase">Período:</span>
-                        <input
-                            type="date"
-                            value={filterDateStart}
-                            onChange={(e) => setFilterDateStart(e.target.value)}
-                            className="bg-transparent text-sm font-bold text-slate-700 outline-none w-32"
-                        />
-                        <span className="text-slate-300">até</span>
-                        <input
-                            type="date"
-                            value={filterDateEnd}
-                            onChange={(e) => setFilterDateEnd(e.target.value)}
-                            className="bg-transparent text-sm font-bold text-slate-700 outline-none w-32"
-                        />
+                <div className="grid grid-cols-1 md:flex md:flex-wrap items-center gap-3 sm:gap-4 flex-1">
+                    <div className="flex flex-col xs:flex-row xs:items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 sm:py-1.5 min-w-0">
+                        <div className="flex items-center gap-2">
+                            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                            <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Período:</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-1">
+                            <input
+                                type="date"
+                                value={filterDateStart}
+                                onChange={(e) => setFilterDateStart(e.target.value)}
+                                className="bg-transparent text-xs sm:text-sm font-bold text-slate-700 outline-none w-full xs:w-28"
+                            />
+                            <span className="text-slate-300 text-xs">até</span>
+                            <input
+                                type="date"
+                                value={filterDateEnd}
+                                onChange={(e) => setFilterDateEnd(e.target.value)}
+                                className="bg-transparent text-xs sm:text-sm font-bold text-slate-700 outline-none w-full xs:w-28"
+                            />
+                        </div>
                     </div>
 
-                    <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 flex-1 min-w-[200px]">
-                        <Target className="w-4 h-4 text-slate-400" />
-                        <span className="text-xs font-bold text-slate-500 uppercase">Tipo:</span>
+                    <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 sm:py-1.5 flex-1 min-w-0">
+                        <Target className="w-3.5 h-3.5 text-slate-400" />
+                        <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Tipo:</span>
                         <select
                             value={filterType}
                             onChange={(e) => setFilterType(e.target.value)}
-                            className="bg-transparent text-sm font-bold text-slate-700 outline-none flex-1 appearance-none cursor-pointer"
+                            className="bg-transparent text-xs sm:text-sm font-bold text-slate-700 outline-none flex-1 appearance-none cursor-pointer min-w-0"
                         >
                             <option value="">Todos os Tipos</option>
                             {missionTypes.map(type => (
@@ -124,9 +128,9 @@ export default function MissionStatistics({ orders, missions = [] }: MissionStat
                     {hasActiveFilters && (
                         <button
                             onClick={clearFilters}
-                            className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs hover:bg-red-50 hover:text-red-600 transition-all border border-transparent hover:border-red-100"
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold text-[10px] sm:text-xs hover:bg-red-50 hover:text-red-600 transition-all border border-transparent hover:border-red-100"
                         >
-                            <X className="w-3.5 h-3.5" />
+                            <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                             Limpar Filtros
                         </button>
                     )}
@@ -134,68 +138,68 @@ export default function MissionStatistics({ orders, missions = [] }: MissionStat
             </div>
 
             {hasActiveFilters && (
-                <div className="bg-blue-50 border border-blue-100 p-3 rounded-xl flex items-center gap-2 animate-pulse">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <p className="text-xs font-bold text-blue-700 uppercase tracking-widest">
-                        Visualizando dados filtrados ({totalMissions} resultados encontrados)
+                <div className="bg-blue-50 border border-blue-100 p-2 sm:p-3 rounded-xl flex items-center gap-2 animate-pulse">
+                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full"></div>
+                    <p className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase tracking-widest leading-tight">
+                        Visualizando dados filtrados ({totalMissions} resultados)
                     </p>
                 </div>
             )}
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                    <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
-                        <Target className="w-8 h-8" />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4">
+                    <div className="p-2 sm:p-3 bg-blue-100 text-blue-600 rounded-xl">
+                        <Target className="w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
                     <div>
-                        <p className="text-sm text-slate-500 font-medium">Total de Missões</p>
-                        <h3 className="text-2xl font-black text-slate-900">{totalMissions}</h3>
+                        <p className="text-[10px] sm:text-sm text-slate-500 font-medium leading-tight">Total Missões</p>
+                        <h3 className="text-lg sm:text-2xl font-black text-slate-900">{totalMissions}</h3>
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                    <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl">
-                        <Play className="w-8 h-8" />
+                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4">
+                    <div className="p-2 sm:p-3 bg-emerald-100 text-emerald-600 rounded-xl">
+                        <Play className="w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
                     <div>
-                        <p className="text-sm text-slate-500 font-medium">Em Andamento</p>
-                        <h3 className="text-2xl font-black text-slate-900">{activeMissions}</h3>
+                        <p className="text-[10px] sm:text-sm text-slate-500 font-medium leading-tight">Em Andamento</p>
+                        <h3 className="text-lg sm:text-2xl font-black text-slate-900">{activeMissions}</h3>
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                    <div className="p-3 bg-indigo-100 text-indigo-600 rounded-xl">
-                        <CheckCircle className="w-8 h-8" />
+                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4">
+                    <div className="p-2 sm:p-3 bg-indigo-100 text-indigo-600 rounded-xl">
+                        <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
                     <div>
-                        <p className="text-sm text-slate-500 font-medium">Concluídas</p>
-                        <h3 className="text-2xl font-black text-slate-900">{completedMissions}</h3>
+                        <p className="text-[10px] sm:text-sm text-slate-500 font-medium leading-tight">Concluídas</p>
+                        <h3 className="text-lg sm:text-2xl font-black text-slate-900">{completedMissions}</h3>
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                    <div className="p-3 bg-amber-100 text-amber-600 rounded-xl">
-                        <Clock className="w-8 h-8" />
+                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4">
+                    <div className="p-2 sm:p-3 bg-amber-100 text-amber-600 rounded-xl">
+                        <Clock className="w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
                     <div>
-                        <p className="text-sm text-slate-500 font-medium">Pendentes (Assinatura)</p>
-                        <h3 className="text-2xl font-black text-slate-900">{pendingMissions}</h3>
+                        <p className="text-[10px] sm:text-sm text-slate-500 font-medium leading-tight">Pendentes</p>
+                        <h3 className="text-lg sm:text-2xl font-black text-slate-900">{pendingMissions}</h3>
                     </div>
                 </div>
             </div>
 
             {/* Top Military Personnel Statistics */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
                 {/* Top Mission Requesters */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <div className="flex items-center gap-3 mb-6">
+                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div className="flex items-center gap-3 mb-4 sm:mb-6">
                         <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
-                            <Users className="w-5 h-5" />
+                            <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
-                        <h3 className="text-lg font-bold text-slate-800">Militares que Mais Solicitam Missões</h3>
+                        <h3 className="text-base sm:text-lg font-bold text-slate-800">Solicitantes</h3>
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {(() => {
                             const requesterCounts = filteredMissions.reduce((acc, mission) => {
                                 const name = mission.dados_missao?.nome_guerra || 'Desconhecido';
@@ -210,30 +214,30 @@ export default function MissionStatistics({ orders, missions = [] }: MissionStat
                                 .slice(0, 5);
 
                             if (topRequesters.length === 0) {
-                                return <p className="text-sm text-slate-400 text-center py-4">Nenhum dado disponível para estes filtros</p>;
+                                return <p className="text-xs sm:text-sm text-slate-400 text-center py-4 italic">Sem dados disponíveis</p>;
                             }
 
                             const maxCount = topRequesters[0][1];
 
                             return topRequesters.map(([name, count], index) => (
                                 <div key={name} className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
+                                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold flex-shrink-0 ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
                                         index === 1 ? 'bg-slate-200 text-slate-700' :
                                             index === 2 ? 'bg-orange-100 text-orange-700' :
                                                 'bg-slate-100 text-slate-600'
                                         }`}>
                                         {index + 1}º
                                     </div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-bold text-slate-900">{name}</p>
-                                        <div className="w-full bg-slate-100 rounded-full h-2 mt-1">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">{name}</p>
+                                        <div className="w-full bg-slate-100 rounded-full h-1.5 sm:h-2 mt-1">
                                             <div
-                                                className="bg-blue-500 h-2 rounded-full transition-all"
+                                                className="bg-blue-500 h-full rounded-full transition-all"
                                                 style={{ width: `${((count as number) / (maxCount as number)) * 100}%` }}
                                             />
                                         </div>
                                     </div>
-                                    <span className="text-sm font-bold text-slate-600">{count as number}</span>
+                                    <span className="text-xs sm:text-sm font-bold text-slate-600">{count as number}</span>
                                 </div>
                             ));
                         })()}
@@ -241,14 +245,14 @@ export default function MissionStatistics({ orders, missions = [] }: MissionStat
                 </div>
 
                 {/* Top Mission Commanders */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <div className="flex items-center gap-3 mb-6">
+                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div className="flex items-center gap-3 mb-4 sm:mb-6">
                         <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
-                            <Target className="w-5 h-5" />
+                            <Target className="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
-                        <h3 className="text-lg font-bold text-slate-800">Militares Mais Responsáveis por Missões</h3>
+                        <h3 className="text-base sm:text-lg font-bold text-slate-800">Responsáveis</h3>
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {(() => {
                             const commanderCounts = filteredOrders.reduce((acc, order) => {
                                 const commander = order.missionCommanderId || 'Não Atribuído';
@@ -262,30 +266,30 @@ export default function MissionStatistics({ orders, missions = [] }: MissionStat
                                 .slice(0, 5);
 
                             if (topCommanders.length === 0) {
-                                return <p className="text-sm text-slate-400 text-center py-4">Nenhum dado disponível para estes filtros</p>;
+                                return <p className="text-xs sm:text-sm text-slate-400 text-center py-4 italic">Sem dados disponíveis</p>;
                             }
 
                             const maxCount = topCommanders[0][1];
 
                             return topCommanders.map(([name, count], index) => (
                                 <div key={name} className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
+                                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold flex-shrink-0 ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
                                         index === 1 ? 'bg-slate-200 text-slate-700' :
                                             index === 2 ? 'bg-orange-100 text-orange-700' :
                                                 'bg-slate-100 text-slate-600'
                                         }`}>
                                         {index + 1}º
                                     </div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-bold text-slate-900">{name}</p>
-                                        <div className="w-full bg-slate-100 rounded-full h-2 mt-1">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">{name}</p>
+                                        <div className="w-full bg-slate-100 rounded-full h-1.5 sm:h-2 mt-1">
                                             <div
-                                                className="bg-emerald-500 h-2 rounded-full transition-all"
+                                                className="bg-emerald-500 h-full rounded-full transition-all"
                                                 style={{ width: `${((count as number) / (maxCount as number)) * 100}%` }}
                                             />
                                         </div>
                                     </div>
-                                    <span className="text-sm font-bold text-slate-600">{count as number}</span>
+                                    <span className="text-xs sm:text-sm font-bold text-slate-600">{count as number}</span>
                                 </div>
                             ));
                         })()}
@@ -294,18 +298,18 @@ export default function MissionStatistics({ orders, missions = [] }: MissionStat
             </div>
 
             {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
                 {/* Status Breakdown Bar Chart */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <h3 className="text-lg font-bold text-slate-800 mb-6">Status das Missões</h3>
-                    <div className="h-80 w-full">
+                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 className="text-base sm:text-lg font-bold text-slate-800 mb-4 sm:mb-6">Status das Missões</h3>
+                    <div className="h-64 sm:h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={statusData} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+                            <BarChart data={statusData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                                 <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} />
-                                <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                                <Bar dataKey="value" radius={[0, 10, 10, 0]} barSize={40}>
+                                <YAxis dataKey="name" type="category" width={90} tick={{ fontSize: 10, fontWeight: 'bold' }} />
+                                <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }} />
+                                <Bar dataKey="value" radius={[0, 10, 10, 0]} barSize={30}>
                                     {statusData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.fill} />
                                     ))}
@@ -316,34 +320,32 @@ export default function MissionStatistics({ orders, missions = [] }: MissionStat
                 </div>
 
                 {/* Category Pie Chart */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <h3 className="text-lg font-bold text-slate-800 mb-6">Missões por Categoria</h3>
-                    <div className="h-80 w-full flex justify-center">
+                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 className="text-base sm:text-lg font-bold text-slate-800 mb-4 sm:mb-6">Missões por Categoria</h3>
+                    <div className="h-64 sm:h-80 w-full flex justify-center">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
                                     data={categoryData}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={100}
+                                    innerRadius={window.innerWidth < 640 ? 40 : 60}
+                                    outerRadius={window.innerWidth < 640 ? 70 : 100}
                                     fill="#8884d8"
                                     paddingAngle={5}
                                     dataKey="value"
-                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                    label={({ name, percent }) => window.innerWidth < 640 ? `${(percent * 100).toFixed(0)}%` : `${name} ${(percent * 100).toFixed(0)}%`}
                                 >
                                     {categoryData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
             </div>
-
-            {/* Recent Activity or Detailed Stats Table could go here if requested later */}
         </div>
     );
 }

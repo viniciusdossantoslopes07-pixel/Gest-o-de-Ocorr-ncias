@@ -92,24 +92,24 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-slate-900">
+            <div className="flex items-center justify-between mb-2 sm:mb-0">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">
                     {order && order.id ? 'Editar OMIS' : 'Nova Ordem de Missão'}
                 </h2>
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-all"
+                    className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-all shrink-0"
                 >
-                    <X className="w-6 h-6" />
+                    <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
             </div>
 
             {/* Basic Info */}
-            <div className="bg-white rounded-xl p-6 border border-slate-200 space-y-4">
-                <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest">Informações Básicas</h3>
+            <div className="bg-white rounded-xl p-4 sm:p-6 border border-slate-200 space-y-4">
+                <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest text-xs sm:text-sm">Informações Básicas</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
@@ -158,7 +158,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                         />
                     </div>
                 </div>
-            </div>
+            </div >
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -689,10 +689,10 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <button
                     type="submit"
-                    className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+                    className="w-full sm:flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-2 order-1 sm:order-1"
                 >
                     <Save className="w-5 h-5" />
                     {order && order.id ? 'Salvar Alterações' : 'Criar Ordem de Missão'}
@@ -700,7 +700,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all"
+                    className="w-full sm:px-6 py-3 bg-slate-50 text-slate-500 rounded-xl font-bold hover:bg-slate-100 transition-all order-2 sm:order-2"
                 >
                     Cancelar
                 </button>
@@ -712,8 +712,8 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                     <div className="border-t border-slate-200 pt-6 mt-6">
                         <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest mb-4">Fluxo da Missão</h3>
 
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest ${order.status === 'CONCLUIDA' ? 'bg-green-100 text-green-700' :
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-6">
+                            <div className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-widest ${order.status === 'CONCLUIDA' ? 'bg-green-100 text-green-700' :
                                 order.status === 'EM_MISSAO' ? 'bg-blue-100 text-blue-700' :
                                     'bg-slate-100 text-slate-600'
                                 }`}>
@@ -725,10 +725,10 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                 <button
                                     type="button"
                                     onClick={() => onSubmit({ ...order, status: 'EM_MISSAO' })}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-all flex items-center gap-2"
+                                    className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                                    Iniciar Missão
+                                    Iniciar
                                 </button>
                             )}
 
@@ -744,33 +744,33 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                     {
                                                         id: Math.random().toString(),
                                                         timestamp: new Date().toISOString(),
-                                                        userId: currentUser, //Ideally ID
-                                                        userName: currentUser, //Ideally Name
+                                                        userId: currentUser,
+                                                        userName: currentUser,
                                                         text: report,
                                                         type: 'REPORT'
                                                     }
-                                                ]; // Cast to avoid TS issues if type is strict
+                                                ];
                                                 onSubmit({ ...order, timeline: newTimeline as any });
                                             }
                                         }}
-                                        className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-all flex items-center gap-2"
+                                        className="flex-1 sm:flex-none px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200 transition-all flex items-center justify-center gap-2"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                        Adicionar Relato
+                                        Relato
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => onSubmit({ ...order, status: 'CONCLUIDA' })}
-                                        className="px-4 py-2 bg-green-600 text-white rounded-lg text-xs font-bold hover:bg-green-700 transition-all flex items-center gap-2"
+                                        className="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                        Concluir Missão
+                                        Concluir
                                     </button>
                                 </>
                             )}
 
                             {/* Cancel Button - Available for all active statuses */}
-                            {order.status !== 'CANCELADA' && (
+                            {order.status !== 'CANCELADA' && order.status !== 'CONCLUIDA' && (
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -778,10 +778,10 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                             onSubmit({ ...order, status: 'CANCELADA' });
                                         }
                                     }}
-                                    className="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-xs font-bold hover:bg-red-200 transition-all flex items-center gap-2 ml-auto"
+                                    className="w-full sm:w-auto mt-2 sm:mt-0 px-4 py-2 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-all flex items-center justify-center gap-2 sm:ml-auto"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-                                    Cancelar Missão
+                                    Cancelar
                                 </button>
                             )}
                         </div>

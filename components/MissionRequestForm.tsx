@@ -118,18 +118,18 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
     };
 
     return (
-        <form onSubmit={(e) => handleSubmit(e, false)} className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col">
-            <div className="bg-slate-900 p-6 text-white flex justify-between items-center shrink-0">
-                <div>
-                    <h2 className="text-xl font-bold">{initialData ? 'Editar Solicitação' : 'Solicitação de Missão'}</h2>
-                    <p className="text-slate-400 text-xs mt-1">GSD-SP - Gestão de Operações</p>
+        <form onSubmit={(e) => handleSubmit(e, false)} className="bg-white w-full h-full sm:h-auto sm:rounded-2xl shadow-xl border border-slate-200 overflow-hidden sm:max-h-[90vh] flex flex-col">
+            <div className="bg-slate-900 p-4 sm:p-6 text-white flex justify-between items-center shrink-0">
+                <div className="min-w-0">
+                    <h2 className="text-lg sm:text-xl font-bold truncate">{initialData ? 'Editar Solicitação' : 'Solicitação de Missão'}</h2>
+                    <p className="text-slate-400 text-[10px] sm:text-xs mt-0.5 sm:mt-1 truncate">GSD-SP - Gestão de Operações</p>
                 </div>
-                <button type="button" onClick={onCancel} className="hover:bg-slate-800 p-2 rounded-full transition-colors">
-                    <X className="w-6 h-6" />
+                <button type="button" onClick={onCancel} className="hover:bg-slate-800 p-2 rounded-full transition-colors shrink-0">
+                    <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
             </div>
 
-            <div className="p-8 space-y-8 overflow-y-auto flex-1">
+            <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 overflow-y-auto flex-1 custom-scrollbar">
                 {/* 1. Identificação */}
                 <section className="space-y-4">
                     <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
@@ -441,28 +441,28 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                 </div>
             </div>
 
-            <div className="bg-slate-50 p-6 border-t border-slate-200 flex justify-end gap-3 shrink-0">
+            <div className="bg-slate-50 p-4 sm:p-6 border-t border-slate-200 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 shrink-0">
                 <button
-                    type="button"
-                    onClick={onCancel}
-                    className="px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-200 transition-colors"
+                    type="submit"
+                    className="w-full sm:w-auto bg-blue-600 px-8 py-3 rounded-xl font-bold text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 transition-all active:scale-95 order-1 sm:order-3"
                 >
-                    Cancelar
+                    <Save className="w-4 h-4" />
+                    Enviar Solicitação
                 </button>
                 <button
                     type="button"
                     onClick={(e) => handleSubmit(e as any, true)}
-                    className="bg-amber-100 px-6 py-3 rounded-xl font-bold text-amber-700 hover:bg-amber-200 transition-colors flex items-center gap-2"
+                    className="w-full sm:w-auto bg-amber-100 px-6 py-3 rounded-xl font-bold text-amber-700 hover:bg-amber-200 transition-colors flex items-center justify-center gap-2 order-2 sm:order-2"
                 >
                     <Save className="w-4 h-4" />
                     Salvar Rascunho
                 </button>
                 <button
-                    type="submit"
-                    className="bg-blue-600 px-8 py-3 rounded-xl font-bold text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex items-center gap-2 transition-all active:scale-95"
+                    type="button"
+                    onClick={onCancel}
+                    className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-200 transition-colors order-3 sm:order-1"
                 >
-                    <Save className="w-4 h-4" />
-                    Enviar Solicitação
+                    Cancelar
                 </button>
             </div>
         </form>

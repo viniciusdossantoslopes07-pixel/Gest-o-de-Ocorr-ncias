@@ -82,18 +82,18 @@ const OccurrenceForm: React.FC<OccurrenceFormProps> = ({ user, onSubmit, onCance
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col">
-      <div className="bg-slate-900 p-6 text-white flex justify-between items-center shrink-0">
-        <div>
-          <h2 className="text-xl font-bold">Novo Registro</h2>
-          <p className="text-slate-400 text-xs mt-1">Preencha os detalhes da ocorrência de segurança</p>
+    <form onSubmit={handleSubmit} className="bg-white w-full h-full sm:h-auto sm:rounded-2xl shadow-2xl border border-slate-200 overflow-hidden sm:max-h-[90vh] flex flex-col">
+      <div className="bg-slate-900 p-4 sm:p-6 text-white flex justify-between items-center shrink-0">
+        <div className="min-w-0">
+          <h2 className="text-lg sm:text-xl font-bold truncate">Novo Registro</h2>
+          <p className="text-slate-400 text-[10px] sm:text-xs mt-0.5 sm:mt-1 truncate">Preencha os detalhes da ocorrência de segurança</p>
         </div>
-        <button type="button" onClick={onCancel} className="hover:bg-slate-800 p-2 rounded-full transition-colors">
-          <X className="w-6 h-6" />
+        <button type="button" onClick={onCancel} className="hover:bg-slate-800 p-2 rounded-full transition-colors shrink-0">
+          <X className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
       </div>
 
-      <div className="p-8 space-y-8 overflow-y-auto flex-1">
+      <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 overflow-y-auto flex-1 custom-scrollbar">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2 col-span-full">
             <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Título da Ocorrência</label>
@@ -207,20 +207,20 @@ const OccurrenceForm: React.FC<OccurrenceFormProps> = ({ user, onSubmit, onCance
         </div>
       </div>
 
-      <div className="bg-slate-50 p-6 border-t border-slate-200 flex justify-end gap-3 shrink-0">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-200 transition-colors"
-        >
-          Cancelar
-        </button>
+      <div className="bg-slate-50 p-4 sm:p-6 border-t border-slate-200 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 shrink-0">
         <button
           type="submit"
-          className="bg-blue-600 px-8 py-3 rounded-xl font-bold text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex items-center gap-2 transition-all active:scale-95"
+          className="w-full sm:w-auto bg-blue-600 px-8 py-3 rounded-xl font-bold text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 transition-all active:scale-95 order-1 sm:order-2"
         >
           <Send className="w-4 h-4" />
           Registrar Ocorrência
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-200 transition-colors order-2 sm:order-1"
+        >
+          Cancelar
         </button>
       </div>
     </form>

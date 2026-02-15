@@ -145,18 +145,18 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-0 sm:p-4">
+            <div className="bg-white shadow-2xl w-full h-full sm:h-auto sm:max-w-4xl sm:max-h-[90vh] sm:rounded-2xl flex flex-col overflow-hidden">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white flex justify-between items-center shrink-0 rounded-t-2xl">
-                    <div>
-                        <h2 className="text-xl font-bold">Solicitação de Missão</h2>
-                        <p className="text-blue-100 text-sm mt-1">
-                            {mission.dados_missao.tipo_missao} - Status: {mission.status}
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 sm:p-6 text-white flex justify-between items-center shrink-0">
+                    <div className="min-w-0">
+                        <h2 className="text-lg sm:text-xl font-bold truncate">Solicitação de Missão</h2>
+                        <p className="text-blue-100 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">
+                            {mission.dados_missao.tipo_missao} • {mission.status}
                         </p>
                     </div>
-                    <button onClick={onClose} className="hover:bg-blue-800 p-2 rounded-full transition-colors">
-                        <X className="w-6 h-6" />
+                    <button onClick={onClose} className="hover:bg-blue-800 p-2 rounded-full transition-colors shrink-0">
+                        <X className="w-5 h-5 sm:w-6 sm:h-6" />
                     </button>
                 </div>
 
@@ -189,7 +189,7 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
                     {activeTab === 'dados' && (
                         <div className="space-y-6">
                             {/* Edit Toggle */}
@@ -486,10 +486,10 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                 </div>
 
                 {/* Footer */}
-                <div className="bg-slate-50 p-6 border-t border-slate-200 flex justify-end gap-3 shrink-0 rounded-b-2xl">
+                <div className="bg-slate-50 p-4 sm:p-6 border-t border-slate-200 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 shrink-0 rounded-b-2xl">
                     <button
                         onClick={onClose}
-                        className="px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-200 transition-colors"
+                        className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-200 transition-colors text-sm sm:text-base order-2 sm:order-1"
                     >
                         Fechar
                     </button>
@@ -497,7 +497,7 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                         <button
                             onClick={handleSave}
                             disabled={isSaving}
-                            className="bg-blue-600 px-8 py-3 rounded-xl font-bold text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex items-center gap-2 transition-all active:scale-95 disabled:bg-slate-300 disabled:cursor-not-allowed"
+                            className="w-full sm:w-auto bg-blue-600 px-8 py-3 rounded-xl font-bold text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:bg-slate-300 disabled:cursor-not-allowed text-sm sm:text-base order-1 sm:order-2"
                         >
                             <Save className="w-4 h-4" />
                             {isSaving ? 'Salvando...' : 'Salvar Alterações'}
