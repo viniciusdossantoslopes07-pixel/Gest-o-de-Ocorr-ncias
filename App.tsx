@@ -184,7 +184,7 @@ const App: FC = () => {
   const fetchOccurrences = async () => {
     const { data, error } = await supabase
       .from('occurrences')
-      .select('id, date, status, timeline, category, type, description, location, requester_id, created_at')
+      .select('id, title, type, category, status, urgency, date, location, description, creator, sector, assigned_to, attachments, timeline, sla_deadline, geolocation')
       .order('date', { ascending: false });
 
     if (error) {
