@@ -57,11 +57,11 @@ export default function UserMenu({
                 className={`flex items-center gap-3 p-2 rounded-full transition-all hover:bg-slate-200/50 dark:hover:bg-slate-700/50 ${isOpen ? 'bg-slate-200/50 dark:bg-slate-700/50' : ''}`}
             >
                 <div className="flex flex-col items-end hidden md:block">
-                    <span className={`text-sm font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                        {currentUser.warName || currentUser.name}
-                    </span>
-                    <span className="text-[10px] uppercase font-bold text-slate-500">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 leading-tight">
                         {currentUser.rank}
+                    </span>
+                    <span className={`text-sm font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'} leading-tight`}>
+                        {currentUser.warName || currentUser.name}
                     </span>
                 </div>
 
