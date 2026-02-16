@@ -255,16 +255,29 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                 if (error) throw error;
                 alert('Materiais liberados com sucesso!');
             } else if (signatureAction === 'approve' && signatureRequestId) {
-                const { error } = await supabase
-                    .from('movimentacao_cautela')
-                    .update({
-                        status: 'Aprovado',
-                        autorizado_por: userName,
-                        observacao: `Autorizado com assinatura digital por ${userName} em ${new Date().toLocaleString()}`
-                    })
-                    .eq('id', signatureRequestId as string);
-                if (error) throw error;
-                alert('Solicitação aprovada e assinada!');
+                if (Array.isArray(signatureRequestId)) {
+                    const { error } = await supabase
+                        .from('movimentacao_cautela')
+                        .update({
+                            status: 'Aprovado',
+                            autorizado_por: userName,
+                            observacao: `Aprovação em lote: Autorizado com assinatura digital por ${userName} em ${new Date().toLocaleString()}`
+                        })
+                        .in('id', signatureRequestId);
+                    if (error) throw error;
+                    alert(`${signatureRequestId.length} solicitações aprovadas com sucesso!`);
+                } else {
+                    const { error } = await supabase
+                        .from('movimentacao_cautela')
+                        .update({
+                            status: 'Aprovado',
+                            autorizado_por: userName,
+                            observacao: `Autorizado com assinatura digital por ${userName} em ${new Date().toLocaleString()}`
+                        })
+                        .eq('id', signatureRequestId as string);
+                    if (error) throw error;
+                    alert('Solicitação aprovada e assinada!');
+                }
             } else if (signatureAction === 'return') {
                 const inserts = selectedItems.map(item => ({
                     id_material: item.id_material,
@@ -568,7 +581,10 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                 {(['Solicitações', 'Devoluções', 'Em Uso', 'Histórico'] as const).map(tab => (
                     <button
                         key={tab}
-                        onClick={() => setActiveTab(tab)}
+                        onClick={() => {
+                            setActiveTab(tab);
+                            setSelectedBatchIds([]);
+                        }}
                         className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab ? 'bg-white text-blue-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         {tab}
@@ -599,31 +615,44 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                         <Package className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     </div>
 
-                    {activeTab === 'Em Uso' && (
+                    {(activeTab === 'Em Uso' || (activeTab === 'Solicitações' && filteredRequests.some(r => r.status === 'Pendente'))) && (
                         <div className="flex items-center gap-4 w-full md:w-auto">
                             <label className="flex items-center gap-2 cursor-pointer group bg-white px-4 py-2 rounded-xl border border-slate-200">
                                 <input
                                     type="checkbox"
                                     className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
-                                    checked={filteredRequests.length > 0 && selectedBatchIds.length === filteredRequests.length}
+                                    checked={filteredRequests.filter(r => activeTab === 'Em Uso' || r.status === 'Pendente').length > 0 && selectedBatchIds.length === filteredRequests.filter(r => activeTab === 'Em Uso' || r.status === 'Pendente').length}
                                     onChange={(e) => {
-                                        if (e.target.checked) setSelectedBatchIds(filteredRequests.map(r => r.id));
+                                        if (e.target.checked) {
+                                            const selectable = activeTab === 'Em Uso'
+                                                ? filteredRequests.map(r => r.id)
+                                                : filteredRequests.filter(r => r.status === 'Pendente').map(r => r.id);
+                                            setSelectedBatchIds(selectable);
+                                        }
                                         else setSelectedBatchIds([]);
                                     }}
                                 />
-                                <span className="text-sm font-bold text-slate-600 group-hover:text-blue-600">Selecionar Tudo ({filteredRequests.length})</span>
+                                <span className="text-sm font-bold text-slate-600 group-hover:text-blue-600">Selecionar Tudo ({activeTab === 'Em Uso' ? filteredRequests.length : filteredRequests.filter(r => r.status === 'Pendente').length})</span>
                             </label>
 
                             {selectedBatchIds.length > 0 && (
                                 <button
                                     onClick={() => {
-                                        const firstId = selectedBatchIds[0];
-                                        const firstReq = requests.find(r => r.id === firstId);
-                                        if (firstReq) startSignatureFlow(selectedBatchIds, firstReq.id_usuario, 'update_return');
+                                        if (activeTab === 'Em Uso') {
+                                            const firstId = selectedBatchIds[0];
+                                            const firstReq = requests.find(r => r.id === firstId);
+                                            if (firstReq) startSignatureFlow(selectedBatchIds, firstReq.id_usuario, 'update_return');
+                                        } else {
+                                            setFoundUser(user);
+                                            setSignatureRequestId(selectedBatchIds);
+                                            setSignatureAction('approve');
+                                            setShowSignatureModal(true);
+                                        }
                                     }}
-                                    className="px-4 py-2 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 transition-all flex items-center gap-2"
+                                    className={`px-4 py-2 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${activeTab === 'Em Uso' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'}`}
                                 >
-                                    <CheckCircle className="w-4 h-4" /> Receber Selecionados ({selectedBatchIds.length})
+                                    <CheckCircle className="w-4 h-4" />
+                                    {activeTab === 'Em Uso' ? `Receber Selecionados (${selectedBatchIds.length})` : `Aprovar Selecionados (${selectedBatchIds.length})`}
                                 </button>
                             )}
                         </div>
@@ -721,7 +750,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                     filteredRequests.map(req => (
                         <div key={req.id} className={`bg-white rounded-xl border transition-all ${expandedRequestId === req.id ? 'border-blue-300 ring-2 ring-blue-50' : 'border-slate-200'}`}>
                             <div className="p-6 flex flex-col md:flex-row gap-6 items-start md:items-center cursor-pointer hover:bg-slate-50/50" onClick={() => setExpandedRequestId(expandedRequestId === req.id ? null : req.id)}>
-                                {activeTab === 'Em Uso' && (
+                                {(activeTab === 'Em Uso' || (activeTab === 'Solicitações' && req.status === 'Pendente')) && (
                                     <div className="shrink-0" onClick={e => e.stopPropagation()}>
                                         <input
                                             type="checkbox"
