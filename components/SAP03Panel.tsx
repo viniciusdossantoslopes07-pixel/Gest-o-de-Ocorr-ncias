@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
-import { Package, CheckCircle, XCircle, Clock, Truck, ShieldCheck, AlertCircle, Lock, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Package, CheckCircle, XCircle, Clock, Truck, ShieldCheck, AlertCircle, Lock, Plus, Trash2, ChevronDown, ChevronUp, BarChart3, PieChart as PieIcon, History } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 interface LoanRequest {
     id: string;
@@ -397,6 +398,27 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
         return true;
     });
 
+    const getHistoryStats = () => {
+        if (!inUseSearch || activeTab !== 'Histórico') return null;
+
+        const stats: { [key: string]: number } = {};
+        let totalItems = 0;
+
+        filteredRequests.forEach(req => {
+            const category = req.material?.tipo_de_material || 'Não Categorizado';
+            const qty = req.quantidade || 1;
+            stats[category] = (stats[category] || 0) + qty;
+            totalItems += qty;
+        });
+
+        const chartData = Object.entries(stats).map(([name, value]) => ({ name, value }));
+        const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+
+        return { totalItems, chartData, COLORS };
+    };
+
+    const historyStats = getHistoryStats();
+
     if (loading) return <div className="text-center p-8 text-slate-500">Carregando aprovações...</div>;
 
     return (
@@ -602,6 +624,66 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                             )}
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* History Dashboard */}
+            {activeTab === 'Histórico' && historyStats && historyStats.totalItems > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col justify-center">
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="bg-blue-50 p-3 rounded-2xl text-blue-600">
+                                <History className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Total Cautelas</p>
+                                <h3 className="text-2xl font-black text-slate-800">{filteredRequests.length}</h3>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="bg-emerald-50 p-3 rounded-2xl text-emerald-600">
+                                <Package className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Materiais Retirados</p>
+                                <h3 className="text-2xl font-black text-slate-800">{historyStats.totalItems}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="md:col-span-2 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm min-h-[200px]">
+                        <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <BarChart3 className="w-4 h-4 text-blue-500" />
+                                Uso por Categoria
+                            </h4>
+                        </div>
+                        <div className="h-[150px] w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={historyStats.chartData} layout="vertical" margin={{ left: 20 }}>
+                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                                    <XAxis type="number" hide />
+                                    <YAxis
+                                        dataKey="name"
+                                        type="category"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }}
+                                        width={100}
+                                    />
+                                    <Tooltip
+                                        cursor={{ fill: '#f8fafc' }}
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold' }}
+                                    />
+                                    <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={20}>
+                                        {historyStats.chartData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={historyStats.COLORS[index % historyStats.COLORS.length]} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
                 </div>
             )}
 
