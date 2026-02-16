@@ -78,6 +78,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     const [weeklyGrid, setWeeklyGrid] = useState<Record<string, Record<string, Record<string, string>>>>({});
     const [attendanceRecords, setAttendanceRecords] = useState<Record<string, string>>({});
+    const [openNoWorkMenu, setOpenNoWorkMenu] = useState<string | null>(null);
 
     useEffect(() => {
         const grid: Record<string, Record<string, Record<string, string>>> = {};
@@ -132,6 +133,58 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             };
         }
         onSaveAttendance(newAttendance);
+    };
+
+    const handleNoWorkDay = async (date: string, reason: string) => {
+        const sectorUsers = users.filter(u => u.sector === selectedSector);
+        const signatureInfo = {
+            signedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
+            signedAt: new Date().toISOString()
+        };
+
+        const calls: CallTypeCode[] = ['INICIO', 'TERMINO'];
+
+        for (const type of calls) {
+            const existing = attendanceHistory.find(a => a.date === date && a.callType === type && a.sector === selectedSector);
+
+            let attendanceToSave: DailyAttendance;
+            const records: AttendanceRecord[] = sectorUsers.map(u => ({
+                militarId: u.id,
+                militarName: u.warName || u.name,
+                militarRank: u.rank,
+                saram: u.saram,
+                status: 'NIL',
+                timestamp: new Date().toISOString()
+            }));
+
+            if (existing) {
+                attendanceToSave = {
+                    ...existing,
+                    records,
+                    signedBy: signatureInfo.signedBy,
+                    signedAt: signatureInfo.signedAt,
+                    responsible: signatureInfo.signedBy,
+                    observacao: reason
+                };
+            } else {
+                attendanceToSave = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    date,
+                    callType: type,
+                    sector: selectedSector,
+                    records,
+                    signedBy: signatureInfo.signedBy,
+                    signedAt: signatureInfo.signedAt,
+                    responsible: signatureInfo.signedBy,
+                    createdAt: new Date().toISOString(),
+                    observacao: reason
+                };
+            }
+            onSaveAttendance(attendanceToSave);
+        }
+
+        setOpenNoWorkMenu(null);
+        alert(`Dia ${new Date(date).toLocaleDateString()} marcado como ${reason} com sucesso!`);
     };
 
     const handleOpenJustification = (userId: string, date: string, callType: string, currentStatus: string) => {
@@ -600,11 +653,47 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                             </div>
                                         </th>
                                         {currentWeek.map(date => (
-                                            <th key={date} colSpan={2} className="px-2 py-4 border-b border-slate-100 border-l border-slate-100 text-[10px] font-black text-slate-900 uppercase tracking-widest text-center bg-slate-50/30 min-w-[120px]">
+                                            <th key={date} colSpan={2} className="px-2 py-4 border-b border-slate-100 border-l border-slate-100 text-[10px] font-black text-slate-900 uppercase tracking-widest text-center bg-slate-50/30 min-w-[120px] relative">
                                                 <div className="flex flex-col items-center">
-                                                    <span>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <span>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
+                                                        <button
+                                                            onClick={() => setOpenNoWorkMenu(openNoWorkMenu === date ? null : date)}
+                                                            className="p-1 hover:bg-slate-200 rounded-md transition-colors text-slate-400 hover:text-slate-600"
+                                                        >
+                                                            <Filter className="w-2.5 h-2.5" />
+                                                        </button>
+                                                    </div>
                                                     <span className="text-[8px] font-bold text-slate-400 mt-0.5">{parseISOToDate(date).toLocaleDateString('pt-BR')}</span>
                                                 </div>
+
+                                                {openNoWorkMenu === date && (
+                                                    <div className="absolute top-full left-1/2 -translate-x-1/2 z-50 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 min-w-[160px] animate-scale-in">
+                                                        <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest p-2 mb-1 border-b border-slate-50">Sem Expediente</div>
+                                                        <button
+                                                            onClick={() => handleNoWorkDay(date, 'Feriado')}
+                                                            className="w-full flex items-center gap-2 p-2 hover:bg-blue-50 text-slate-700 hover:text-blue-600 rounded-xl transition-all text-left group"
+                                                        >
+                                                            <span className="text-lg group-hover:scale-110 transition-transform">🏝️</span>
+                                                            <span className="text-[10px] font-bold">Feriado</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleNoWorkDay(date, 'Expediente Cancelado')}
+                                                            className="w-full flex items-center gap-2 p-2 hover:bg-amber-50 text-slate-700 hover:text-amber-600 rounded-xl transition-all text-left group"
+                                                        >
+                                                            <span className="text-lg group-hover:scale-110 transition-transform">🚫</span>
+                                                            <span className="text-[10px] font-bold">Exp. Cancelado</span>
+                                                        </button>
+                                                        <div className="mt-1 pt-1 border-t border-slate-50">
+                                                            <button
+                                                                onClick={() => setOpenNoWorkMenu(null)}
+                                                                className="w-full p-2 text-[8px] font-black uppercase text-slate-400 hover:text-slate-600"
+                                                            >
+                                                                Fechar
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </th>
                                         ))}
                                     </tr>
@@ -661,7 +750,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                             className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'P' ? 'text-emerald-600' :
                                                                 ['F', 'A', 'DPM', 'DCH', 'JS', 'INSP', 'LP', 'LM'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-600 bg-red-50' :
                                                                     (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
-                                                                        'text-blue-600 bg-blue-50'
+                                                                        (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'NIL' ? 'text-blue-400 bg-blue-50/50' :
+                                                                            'text-blue-600 bg-blue-50'
                                                                 }`}
                                                         >
                                                             {Object.keys(PRESENCE_STATUS).map(s => (
@@ -677,7 +767,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                             className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'P' ? 'text-emerald-600' :
                                                                 ['F', 'A', 'DPM', 'DCH', 'JS', 'INSP', 'LP', 'LM'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-600 bg-red-50' :
                                                                     (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
-                                                                        'text-blue-600 bg-blue-50'
+                                                                        (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'NIL' ? 'text-blue-400 bg-blue-50/50' :
+                                                                            'text-blue-600 bg-blue-50'
                                                                 }`}
                                                         >
                                                             {Object.keys(PRESENCE_STATUS).map(s => (
@@ -828,10 +919,18 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                 const sigTermino = !!signedDates[`${date}-TERMINO-${selectedSector}`];
                                                 return (
                                                     <Fragment key={`${user.id}-${date}`}>
-                                                        <td className={`border border-slate-300 text-center text-[10px] font-black ${!sigInicio ? 'text-slate-300 bg-slate-50/50 italic font-medium' : (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'P' ? 'text-slate-900' : 'text-blue-600 font-black italic'}`}>
+                                                        <td className={`border border-slate-300 text-center text-[10px] font-black ${!sigInicio ? 'text-slate-300 bg-slate-50/50 italic font-medium' :
+                                                                (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'P' ? 'text-slate-900' :
+                                                                    (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'NIL' ? 'text-slate-400 bg-slate-50/30' :
+                                                                        'text-blue-600 font-black italic'
+                                                            }`}>
                                                             {!sigInicio ? (isFutureDate(date) ? '' : 'PEN.') : (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P')}
                                                         </td>
-                                                        <td className={`border border-slate-300 text-center text-[10px] font-black ${!sigTermino ? 'text-slate-300 bg-slate-50/50 italic font-medium' : (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'P' ? 'text-slate-900' : 'text-blue-600 font-black italic'}`}>
+                                                        <td className={`border border-slate-300 text-center text-[10px] font-black ${!sigTermino ? 'text-slate-300 bg-slate-50/50 italic font-medium' :
+                                                                (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'P' ? 'text-slate-900' :
+                                                                    (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'NIL' ? 'text-slate-400 bg-slate-50/30' :
+                                                                        'text-blue-600 font-black italic'
+                                                            }`}>
                                                             {!sigTermino ? (isFutureDate(date) ? '' : 'PEN.') : (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P')}
                                                         </td>
                                                     </Fragment>

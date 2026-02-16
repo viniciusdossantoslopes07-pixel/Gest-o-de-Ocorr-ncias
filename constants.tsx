@@ -73,7 +73,8 @@ export const PRESENCE_STATUS = {
   'JS': 'JUNTA DE SAÚDE',
   'INSP': 'INSPEÇÃO DE SAÚDE',
   'LP': 'LICENÇA PATERNIDADE',
-  'LM': 'LICENÇA MATERNIDADE'
+  'LM': 'LICENÇA MATERNIDADE',
+  'NIL': 'SEM EXPEDIENTE'
 } as const;
 
 export const CALL_TYPES = {

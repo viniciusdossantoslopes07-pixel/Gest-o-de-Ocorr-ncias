@@ -234,6 +234,7 @@ export interface DailyAttendance {
   signedAt?: string;
   signedBy?: string;
   createdAt: string;
+  observacao?: string;
 }
 
 export interface AbsenceJustification {
