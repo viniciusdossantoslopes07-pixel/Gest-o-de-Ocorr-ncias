@@ -602,7 +602,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
             </div>
 
             {/* Search and Batch Actions */}
-            {(activeTab === 'Em Uso' || activeTab === 'Histórico') && (
+            {(activeTab === 'Em Uso' || activeTab === 'Histórico' || activeTab === 'Solicitações') && (
                 <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-blue-50/50 p-4 rounded-2xl border border-blue-100 animate-scale-in">
                     <div className="relative w-full md:w-80">
                         <input
