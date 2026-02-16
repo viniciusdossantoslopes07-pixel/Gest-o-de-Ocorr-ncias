@@ -144,27 +144,75 @@ const App: FC = () => {
   }, []);
 
   useEffect(() => {
-    const savedHistory = localStorage.getItem('attendanceHistory');
-    const savedAdHoc = localStorage.getItem('adHocUsers');
-    const savedJustifications = localStorage.getItem('absenceJustifications');
+    // Fetch initial data for attendance and justifications
+    const fetchAttendanceData = async () => {
+      const { data: attendanceData } = await supabase
+        .from('daily_attendance')
+        .select('*, attendance_records(*)');
 
-    if (savedHistory) {
-      try { setAttendanceHistory(JSON.parse(savedHistory)); } catch (e) { }
-    }
-    if (savedAdHoc) {
-      try { setAdHocUsers(JSON.parse(savedAdHoc)); } catch (e) { }
-    }
-    if (savedJustifications) {
-      try { setAbsenceJustifications(JSON.parse(savedJustifications)); } catch (e) { }
-    }
+      if (attendanceData) {
+        setAttendanceHistory(attendanceData.map(a => ({
+          id: a.id,
+          date: a.date,
+          sector: a.sector,
+          callType: a.call_type,
+          responsible: a.responsible,
+          signedAt: a.signed_at,
+          signedBy: a.signed_by,
+          createdAt: a.created_at,
+          records: a.attendance_records.map((r: any) => ({
+            militarId: r.militar_id,
+            militarName: r.militar_name,
+            militarRank: r.militar_rank,
+            saram: r.saram,
+            status: r.status,
+            timestamp: r.timestamp
+          }))
+        })));
+      }
+
+      const { data: justificationsData } = await supabase
+        .from('absence_justifications')
+        .select('*');
+
+      if (justificationsData) {
+        setAbsenceJustifications(justificationsData.map(j => ({
+          id: j.id,
+          attendanceId: j.attendance_id,
+          militarId: j.militar_id,
+          militarName: j.militar_name,
+          militarRank: j.militar_rank,
+          saram: j.saram,
+          originalStatus: j.original_status,
+          newStatus: j.new_status,
+          justification: j.justification,
+          performedBy: j.performed_by,
+          timestamp: j.timestamp,
+          sector: j.sector,
+          date: j.date,
+          callType: j.call_type
+        })));
+      }
+    };
+
+    fetchAttendanceData();
+
+    // Set up Realtime Subscriptions
+    const attendanceChannel = supabase.channel('attendance_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'daily_attendance' }, () => fetchAttendanceData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_records' }, () => fetchAttendanceData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'absence_justifications' }, () => fetchAttendanceData())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(attendanceChannel);
+    };
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('attendanceHistory', JSON.stringify(attendanceHistory));
-  }, [attendanceHistory]);
-
-  useEffect(() => {
-    localStorage.setItem('adHocUsers', JSON.stringify(adHocUsers));
+    if (adHocUsers.length > 0) {
+      localStorage.setItem('adHocUsers', JSON.stringify(adHocUsers));
+    }
   }, [adHocUsers]);
 
   const toggleTheme = () => {
@@ -974,36 +1022,83 @@ const App: FC = () => {
               currentUser={currentUser!}
               attendanceHistory={attendanceHistory}
               absenceJustifications={absenceJustifications}
-              onSaveAttendance={(a) => setAttendanceHistory(prev => {
-                const next = prev.find(h => h.id === a.id)
-                  ? prev.map(h => h.id === a.id ? a : h)
-                  : [...prev, a];
-                localStorage.setItem('attendanceHistory', JSON.stringify(next));
-                return next;
-              })}
-              onSaveJustification={(j) => {
-                setAbsenceJustifications(prev => {
-                  const next = [...prev, j];
-                  localStorage.setItem('absenceJustifications', JSON.stringify(next));
-                  return next;
-                });
+              onSaveAttendance={async (a) => {
+                // Determine if we need to insert or update the daily_attendance record
+                const { data: existingAttendance } = await supabase
+                  .from('daily_attendance')
+                  .select('id')
+                  .eq('date', a.date)
+                  .eq('sector', a.sector)
+                  .eq('call_type', a.callType)
+                  .single();
 
-                // Also update the status in attendanceHistory
-                setAttendanceHistory(prev => {
-                  const next = prev.map(a => {
-                    if (a.id === j.attendanceId) {
-                      return {
-                        ...a,
-                        records: a.records.map(r =>
-                          r.militarId === j.militarId ? { ...r, status: j.newStatus as any } : r
-                        )
-                      };
-                    }
-                    return a;
-                  });
-                  localStorage.setItem('attendanceHistory', JSON.stringify(next));
-                  return next;
-                });
+                let attendanceId = existingAttendance?.id;
+
+                if (!attendanceId) {
+                  const { data: newAtt, error: attErr } = await supabase
+                    .from('daily_attendance')
+                    .insert([{
+                      date: a.date,
+                      sector: a.sector,
+                      call_type: a.callType,
+                      responsible: a.responsible,
+                      signed_at: a.signedAt,
+                      signed_by: a.signedBy
+                    }])
+                    .select()
+                    .single();
+
+                  if (attErr) return console.error('Error saving attendance header:', attErr);
+                  attendanceId = newAtt.id;
+                } else {
+                  // Update header if needed (signatures)
+                  await supabase
+                    .from('daily_attendance')
+                    .update({
+                      responsible: a.responsible,
+                      signed_at: a.signedAt,
+                      signed_by: a.signedBy
+                    })
+                    .eq('id', attendanceId);
+                }
+
+                // Upsert records
+                for (const record of a.records) {
+                  const { error: recErr } = await supabase
+                    .from('attendance_records')
+                    .upsert({
+                      attendance_id: attendanceId,
+                      militar_id: record.militarId,
+                      militar_name: record.militarName,
+                      militar_rank: record.militarRank,
+                      saram: record.saram,
+                      status: record.status,
+                      timestamp: record.timestamp
+                    }, { onConflict: 'attendance_id, militar_id' });
+
+                  if (recErr) console.error('Error saving attendance record:', recErr);
+                }
+              }}
+              onSaveJustification={async (j) => {
+                const { error } = await supabase
+                  .from('absence_justifications')
+                  .insert([{
+                    attendance_id: j.attendanceId || null,
+                    militar_id: j.militarId,
+                    militar_name: j.militarName,
+                    militar_rank: j.militarRank,
+                    saram: j.saram,
+                    original_status: j.originalStatus,
+                    new_status: j.newStatus,
+                    justification: j.justification,
+                    performed_by: j.performedBy,
+                    timestamp: j.timestamp,
+                    sector: j.sector,
+                    date: j.date,
+                    call_type: j.callType
+                  }]);
+
+                if (error) console.error('Error saving justification:', error);
               }}
               onAddAdHoc={(u) => setAdHocUsers([...adHocUsers, u])}
               onMoveUser={(userId, newSector) => {
