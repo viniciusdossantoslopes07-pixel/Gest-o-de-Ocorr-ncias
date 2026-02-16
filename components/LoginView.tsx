@@ -2,7 +2,9 @@
 import { useState, type FC, type FormEvent } from 'react';
 import { User } from '../types';
 import { RANKS, SETORES } from '../constants';
-import { ShieldCheck, ArrowRight, Lock, User as UserIcon, Megaphone } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Lock, User as UserIcon, Megaphone, Fingerprint } from 'lucide-react';
+import { isWebAuthnSupported, registerBiometrics, authenticateBiometrics } from '../services/webauthn';
+import { supabase } from '../services/supabase';
 
 interface LoginViewProps {
   onLogin: (username: string, password: string) => Promise<boolean> | boolean;
@@ -31,6 +33,23 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
   });
 
   const [forgotSaram, setForgotSaram] = useState('');
+
+  // Biometric States
+  const [showBiometricPrompt, setShowBiometricPrompt] = useState(false);
+  const [lastLoggedInUser, setLastLoggedInUser] = useState<any>(null);
+  const [isBiometricAvailable, setIsBiometricAvailable] = useState(false);
+  const [savedCredentialId, setSavedCredentialId] = useState<string | null>(null);
+
+  useState(() => {
+    const saved = localStorage.getItem('gsdsp_biometric_id');
+    if (saved && isWebAuthnSupported()) {
+      setIsBiometricAvailable(true);
+      setSavedCredentialId(saved);
+      // Auto-fill username if available
+      const savedUser = localStorage.getItem('gsdsp_last_saram');
+      if (savedUser && !username) setUsername(savedUser);
+    }
+  });
 
   // Máscaras simples
   const maskCPF = (v: string) => v.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4").substring(0, 14);
@@ -79,12 +98,78 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
         }
       } else {
         const successRes = await onLogin(username, password);
-        if (!successRes) {
+        if (successRes) {
+          // After successful login, check if biometrics should be offered
+          const { data: userData } = await supabase.from('users').select('id, name, saram, webauthn_credential').eq('username', username).single();
+
+          if (userData && !userData.webauthn_credential && isWebAuthnSupported()) {
+            setLastLoggedInUser(userData);
+            setShowBiometricPrompt(true);
+            return; // Don't navigate yet, wait for prompt
+          }
+
+          // If already has biometrics or not supported, just save saram for convenience
+          localStorage.setItem('gsdsp_last_saram', username);
+        } else {
           setError('Acesso negado. Verifique credenciais ou status de aprovação.');
         }
       }
     } catch (err) {
+      console.error(err);
       setError('Erro ao processar solicitação.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRegisterBiometrics = async () => {
+    try {
+      setIsLoading(true);
+      const credential = await registerBiometrics(lastLoggedInUser.name, lastLoggedInUser.id);
+
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ webauthn_credential: credential })
+        .eq('id', lastLoggedInUser.id);
+
+      if (updateError) throw updateError;
+
+      localStorage.setItem('gsdsp_biometric_id', credential.id);
+      localStorage.setItem('gsdsp_last_saram', lastLoggedInUser.saram);
+
+      alert('Biometria cadastrada com sucesso!');
+      setShowBiometricPrompt(false);
+      // Now proceed to home (handled by parent context which reflects currentUser change)
+      window.location.reload(); // Simple way to trigger App's login state reflection
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao cadastrar biometria: ' + (err instanceof Error ? err.message : 'Erro desconhecido'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBiometricLogin = async () => {
+    try {
+      if (!savedCredentialId) return;
+      setIsLoading(true);
+
+      const success = await authenticateBiometrics(savedCredentialId);
+      if (success) {
+        // Find user by credential ID
+        const { data: userData, error } = await supabase
+          .from('users')
+          .select('username, password')
+          .filter('webauthn_credential->>id', 'eq', savedCredentialId)
+          .single();
+
+        if (error || !userData) throw new Error('Credencial não encontrada ou inválida.');
+
+        await onLogin(userData.username, userData.password);
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Falha na autenticação biométrica.');
     } finally {
       setIsLoading(false);
     }
@@ -248,6 +333,17 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                   {isLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <>Autenticar Militar <ArrowRight className="w-5 h-5" /></>}
                 </button>
 
+                {isBiometricAvailable && (
+                  <button
+                    type="button"
+                    onClick={handleBiometricLogin}
+                    disabled={isLoading}
+                    className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:bg-emerald-700 shadow-xl shadow-emerald-600/20 transition-all active:scale-[0.98]"
+                  >
+                    <Fingerprint className="w-5 h-5" /> Entrar com Digital/FaceID
+                  </button>
+                )}
+
                 <div className="flex flex-col gap-2 pt-2">
                   <button type="button" onClick={() => setView('register')} className="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-200 transition-all">
                     Criar Conta Militar
@@ -259,6 +355,34 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
         </div>
         <p className="mt-8 text-center text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] opacity-40">Ministério da Defesa • Uso Restrito • BASP</p>
       </div>
+
+      {/* Biometric Prompt Modal */}
+      {showBiometricPrompt && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-10 shadow-2xl relative animate-in zoom-in-95 duration-200 text-center">
+            <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Fingerprint className="w-10 h-10 text-emerald-600" />
+            </div>
+            <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase mb-2">Acesso Rápido</h3>
+            <p className="text-slate-500 text-sm mb-8">Deseja ativar a digital ou reconhecimento facial para facilitar seus próximos acessos?</p>
+
+            <div className="space-y-3">
+              <button
+                onClick={handleRegisterBiometrics}
+                className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-blue-700 transition-all"
+              >
+                Ativar Biometria
+              </button>
+              <button
+                onClick={() => setShowBiometricPrompt(false)}
+                className="w-full text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-slate-600"
+              >
+                Agora não
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
