@@ -86,6 +86,17 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         const grid: Record<string, Record<string, Record<string, string>>> = {};
         attendanceHistory.forEach(a => {
             if (currentWeek.includes(a.date) && a.sector === selectedSector) {
+                // Pre-fill NIL if the signature or observation indicates a no-work-day
+                const isNoWorkDay = a.observacao === 'Feriado' || a.observacao === 'Expediente Cancelado' || a.records.every(r => r.status === 'NIL');
+
+                if (isNoWorkDay) {
+                    filteredUsers.forEach(u => {
+                        if (!grid[u.id]) grid[u.id] = {};
+                        if (!grid[u.id][a.date]) grid[u.id][a.date] = {};
+                        grid[u.id][a.date][a.callType] = 'NIL';
+                    });
+                }
+
                 a.records.forEach(r => {
                     if (!grid[r.militarId]) grid[r.militarId] = {};
                     if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
@@ -148,7 +159,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         for (const date of dates) {
             for (const sector of SETORES) {
                 const sectorUsers = users.filter(u => u.sector === sector);
-                if (sectorUsers.length === 0) continue;
+                // Do not continue if sectorUsers is empty, we want to create a NIL record for the sector anyway
 
                 for (const type of calls) {
                     const existing = attendanceHistory.find(a => a.date === date && a.callType === type && a.sector === sector);
