@@ -184,7 +184,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         }
 
         setOpenNoWorkMenu(null);
-        alert(`Dia ${new Date(date).toLocaleDateString()} marcado como ${reason} com sucesso!`);
+        alert(`Dia ${parseISOToDate(date).toLocaleDateString()} marcado como ${reason} com sucesso!`);
     };
 
     const handleOpenJustification = (userId: string, date: string, callType: string, currentStatus: string) => {
@@ -920,16 +920,16 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                 return (
                                                     <Fragment key={`${user.id}-${date}`}>
                                                         <td className={`border border-slate-300 text-center text-[10px] font-black ${!sigInicio ? 'text-slate-300 bg-slate-50/50 italic font-medium' :
-                                                                (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'P' ? 'text-slate-900' :
-                                                                    (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'NIL' ? 'text-slate-400 bg-slate-50/30' :
-                                                                        'text-blue-600 font-black italic'
+                                                            (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'P' ? 'text-slate-900' :
+                                                                (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'NIL' ? 'text-slate-400 bg-slate-50/30' :
+                                                                    'text-blue-600 font-black italic'
                                                             }`}>
                                                             {!sigInicio ? (isFutureDate(date) ? '' : 'PEN.') : (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P')}
                                                         </td>
                                                         <td className={`border border-slate-300 text-center text-[10px] font-black ${!sigTermino ? 'text-slate-300 bg-slate-50/50 italic font-medium' :
-                                                                (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'P' ? 'text-slate-900' :
-                                                                    (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'NIL' ? 'text-slate-400 bg-slate-50/30' :
-                                                                        'text-blue-600 font-black italic'
+                                                            (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'P' ? 'text-slate-900' :
+                                                                (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'NIL' ? 'text-slate-400 bg-slate-50/30' :
+                                                                    'text-blue-600 font-black italic'
                                                             }`}>
                                                             {!sigTermino ? (isFutureDate(date) ? '' : 'PEN.') : (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P')}
                                                         </td>
