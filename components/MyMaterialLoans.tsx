@@ -35,10 +35,11 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
     const [signaturePassword, setSignaturePassword] = useState('');
     const [pendingAction, setPendingAction] = useState<{ id: string, status: string } | null>(null);
 
-    // Filter states
     const [filterDateStart, setFilterDateStart] = useState('');
     const [filterDateEnd, setFilterDateEnd] = useState('');
     const [filterSearch, setFilterSearch] = useState('');
+
+    const [selectedBatchIds, setSelectedBatchIds] = useState<string[]>([]);
 
     const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
@@ -100,24 +101,29 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
         if (!pendingAction) return;
 
         try {
-            setActionLoading(pendingAction.id);
+            const idsToUpdate = Array.isArray(pendingAction.id) ? pendingAction.id : [pendingAction.id];
+            setActionLoading(idsToUpdate[0]); // Visual indicator
+
             const { error } = await supabase
                 .from('movimentacao_cautela')
                 .update({
                     status: pendingAction.status,
-                    observacao: `Retirada solicitada pelo usuário em ${new Date().toLocaleString()}`
+                    observacao: `Ação em lote solicitada pelo usuário em ${new Date().toLocaleString()}`
                 })
-                .eq('id', pendingAction.id);
+                .in('id', idsToUpdate);
 
             if (error) throw error;
             setShowSignatureModal(false);
             setSignaturePassword('');
             setPendingAction(null);
+            setSelectedBatchIds([]);
             await fetchLoans();
-            alert('Solicitação de retirada enviada! Dirija-se ao balcão para retirar o material.');
+            alert(idsToUpdate.length > 1
+                ? `${idsToUpdate.length} itens processados com sucesso!`
+                : 'Solicitação enviada com sucesso!');
         } catch (err: any) {
             console.error('Error updating loan with signature:', err);
-            alert('Erro ao confirmar retirada: ' + err.message);
+            alert('Erro ao confirmar ação: ' + err.message);
         } finally {
             setActionLoading(null);
         }
@@ -180,14 +186,14 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
 
                 <div className="flex bg-slate-100 p-1.5 rounded-2xl gap-1">
                     <button
-                        onClick={() => setActiveTab('lista')}
+                        onClick={() => { setActiveTab('lista'); setSelectedBatchIds([]); }}
                         className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'lista' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         <FileText className="w-4 h-4" />
                         Lista de Itens
                     </button>
                     <button
-                        onClick={() => setActiveTab('estatisticas')}
+                        onClick={() => { setActiveTab('estatisticas'); setSelectedBatchIds([]); }}
                         className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'estatisticas' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         <BarChart3 className="w-4 h-4" />
@@ -204,7 +210,7 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                         type="text"
                         placeholder="Buscar por material ou categoria..."
                         value={filterSearch}
-                        onChange={(e) => setFilterSearch(e.target.value)}
+                        onChange={(e) => { setFilterSearch(e.target.value); setSelectedBatchIds([]); }}
                         className="w-full bg-slate-50 border-none rounded-2xl pl-11 pr-4 py-3 text-sm font-semibold focus:ring-2 focus:ring-blue-500 transition-all"
                     />
                 </div>
@@ -214,21 +220,65 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                     <input
                         type="date"
                         value={filterDateStart}
-                        onChange={(e) => setFilterDateStart(e.target.value)}
+                        onChange={(e) => { setFilterDateStart(e.target.value); setSelectedBatchIds([]); }}
                         className="bg-transparent border-none text-xs font-bold text-slate-600 outline-none w-32"
                     />
                     <span className="text-slate-300 font-black">/</span>
                     <input
                         type="date"
                         value={filterDateEnd}
-                        onChange={(e) => setFilterDateEnd(e.target.value)}
+                        onChange={(e) => { setFilterDateEnd(e.target.value); setSelectedBatchIds([]); }}
                         className="bg-transparent border-none text-xs font-bold text-slate-600 outline-none w-32"
                     />
                 </div>
 
+                {activeTab === 'lista' && filteredLoans.length > 0 && (
+                    <div className="flex items-center gap-2">
+                        <label className="flex items-center gap-2 cursor-pointer bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100 hover:bg-slate-100 transition-all">
+                            <input
+                                type="checkbox"
+                                className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                                checked={selectedBatchIds.length > 0 && selectedBatchIds.length === filteredLoans.filter(l => l.status === 'Aprovado' || l.status === 'Em Uso').length}
+                                onChange={(e) => {
+                                    if (e.target.checked) {
+                                        const selectable = filteredLoans.filter(l => l.status === 'Aprovado' || l.status === 'Em Uso').map(l => l.id);
+                                        setSelectedBatchIds(selectable);
+                                    } else {
+                                        setSelectedBatchIds([]);
+                                    }
+                                }}
+                            />
+                            <span className="text-xs font-bold text-slate-600">Selecionar Tudo ({filteredLoans.filter(l => l.status === 'Aprovado' || l.status === 'Em Uso').length})</span>
+                        </label>
+
+                        {selectedBatchIds.length > 0 && (() => {
+                            const firstSelected = loans.find(l => l.id === selectedBatchIds[0]);
+                            const allSameStatus = selectedBatchIds.every(id => loans.find(l => l.id === id)?.status === firstSelected?.status);
+
+                            if (!allSameStatus) return <div className="text-[10px] font-bold text-red-500 bg-red-50 px-3 py-2 rounded-xl border border-red-100 flex items-center gap-2"><XCircle className="w-3 h-3" /> Seleção Mista</div>;
+
+                            const actionLabel = firstSelected?.status === 'Aprovado' ? 'Retirar' : 'Devolver';
+                            const actionColor = firstSelected?.status === 'Aprovado' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700';
+                            const nextStatus = firstSelected?.status === 'Aprovado' ? 'Em Uso' : 'Pendente Devolução';
+
+                            return (
+                                <button
+                                    onClick={() => {
+                                        setPendingAction({ id: selectedBatchIds as any, status: nextStatus });
+                                        setShowSignatureModal(true);
+                                    }}
+                                    className={`px-4 py-2 ${actionColor} text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-lg transition-all`}
+                                >
+                                    <CheckCircle className="w-4 h-4" /> {actionLabel} ({selectedBatchIds.length})
+                                </button>
+                            );
+                        })()}
+                    </div>
+                )}
+
                 {(filterDateStart || filterDateEnd || filterSearch) && (
                     <button
-                        onClick={() => { setFilterDateStart(''); setFilterDateEnd(''); setFilterSearch(''); }}
+                        onClick={() => { setFilterDateStart(''); setFilterDateEnd(''); setFilterSearch(''); setSelectedBatchIds([]); }}
                         className="p-3 bg-red-50 text-red-500 rounded-2xl hover:bg-red-100 transition-colors"
                         title="Limpar Filtros"
                     >
@@ -355,20 +405,34 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                                 className="bg-white group p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:ring-2 hover:ring-blue-100 transition-all relative overflow-hidden cursor-pointer flex flex-col"
                             >
                                 <div className={`absolute top-0 left-0 bottom-0 w-1.5 transition-all group-hover:w-2 ${loan.status === 'Pendente' ? 'bg-yellow-400' :
-                                    loan.status === 'Aprovado' ? 'bg-blue-400' :
-                                        loan.status === 'Em Uso' ? 'bg-emerald-500' :
-                                            loan.status === 'Rejeitado' ? 'bg-red-400' :
-                                                loan.status === 'Aguardando Confirmação' ? 'bg-orange-400' :
-                                                    'bg-slate-300'
+                                        loan.status === 'Aprovado' ? 'bg-blue-400' :
+                                            loan.status === 'Em Uso' ? 'bg-emerald-500' :
+                                                loan.status === 'Rejeitado' ? 'bg-red-400' :
+                                                    loan.status === 'Aguardando Confirmação' ? 'bg-orange-400' :
+                                                        'bg-slate-300'
                                     }`} />
 
-                                <div className="flex justify-between items-start mb-4">
+                                {(loan.status === 'Aprovado' || loan.status === 'Em Uso') && (
+                                    <div className="absolute top-4 left-4 z-10" onClick={e => e.stopPropagation()}>
+                                        <input
+                                            type="checkbox"
+                                            className="w-5 h-5 rounded-lg text-blue-600 focus:ring-blue-500 border-slate-300 shadow-sm"
+                                            checked={selectedBatchIds.includes(loan.id)}
+                                            onChange={(e) => {
+                                                if (e.target.checked) setSelectedBatchIds([...selectedBatchIds, loan.id]);
+                                                else setSelectedBatchIds(selectedBatchIds.filter(id => id !== loan.id));
+                                            }}
+                                        />
+                                    </div>
+                                )}
+
+                                <div className="flex justify-between items-start mb-4 pl-6">
                                     <div className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${loan.status === 'Pendente' ? 'bg-yellow-100 text-yellow-700' :
-                                        loan.status === 'Aprovado' ? 'bg-blue-100 text-blue-700' :
-                                            loan.status === 'Em Uso' ? 'bg-emerald-100 text-emerald-700' :
-                                                loan.status === 'Rejeitado' ? 'bg-red-100 text-red-700' :
-                                                    loan.status === 'Concluído' ? 'bg-slate-100 text-slate-600' :
-                                                        'bg-slate-50 text-slate-500'
+                                            loan.status === 'Aprovado' ? 'bg-blue-100 text-blue-700' :
+                                                loan.status === 'Em Uso' ? 'bg-emerald-100 text-emerald-700' :
+                                                    loan.status === 'Rejeitado' ? 'bg-red-100 text-red-700' :
+                                                        loan.status === 'Concluído' ? 'bg-slate-100 text-slate-600' :
+                                                            'bg-slate-50 text-slate-500'
                                         }`}>
                                         {loan.status}
                                     </div>
