@@ -659,7 +659,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                             value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N'}
                                                             onChange={(e) => handleWeeklyChange(user.id, date, 'INICIO', e.target.value)}
                                                             className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N') === 'P' ? 'text-emerald-600' :
-                                                                ['F', 'A', 'CR', 'C-C', 'DPM', 'CSV', 'DSV', 'JS', 'R-1', 'R-2', 'L-E', 'L-S', 'L-N', 'L-P', 'N-V', 'N-C', 'N-S'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-600 bg-red-50' :
+                                                                ['F', 'A', 'DPM', 'DCH', 'JS', 'INSP', 'LP', 'LM'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-600 bg-red-50' :
                                                                     (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
                                                                         'text-blue-600 bg-blue-50'
                                                                 }`}
@@ -675,7 +675,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                             value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N'}
                                                             onChange={(e) => handleWeeklyChange(user.id, date, 'TERMINO', e.target.value)}
                                                             className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N') === 'P' ? 'text-emerald-600' :
-                                                                ['F', 'A', 'CR', 'C-C', 'DPM', 'CSV', 'DSV', 'JS', 'R-1', 'R-2', 'L-E', 'L-S', 'L-N', 'L-P', 'N-V', 'N-C', 'N-S'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-600 bg-red-50' :
+                                                                ['F', 'A', 'DPM', 'DCH', 'JS', 'INSP', 'LP', 'LM'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-600 bg-red-50' :
                                                                     (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
                                                                         'text-blue-600 bg-blue-50'
                                                                 }`}

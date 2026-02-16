@@ -60,20 +60,20 @@ export const PRESENCE_STATUS = {
   'N': 'NÃO INFORMADO',
   'P': 'PRESENTE',
   'F': 'FALTA',
+  'A': 'AUSENTE',
   'ESV': 'SERVIÇO',
+  'SSV': 'SAINDO SERVIÇO',
   'DSV': 'DISP DE SERVIÇO',
-  'MIS': 'MISSAO',
-  'FE': 'FERIAS',
+  'MIS': 'MISSÃO',
+  'FE': 'FÉRIAS',
+  'INST': 'INSTRUÇÃO',
   'C-E': 'CURSO-ESTÁGIO',
   'DPM': 'DISPENSA MÉDICA',
+  'DCH': 'DISPENSA CHEFE',
   'JS': 'JUNTA DE SAÚDE',
   'INSP': 'INSPEÇÃO DE SAÚDE',
-  'TRA': 'TRANSFERIDO',
-  'LI': 'LICENÇA',
-  'AGD': 'DESLIGAMENTO',
-  'DESL': 'DESLIGADO',
-  'INST': 'INTRUÇAO',
-  'A': 'AUSENTE'
+  'LP': 'LICENÇA PATERNIDADE',
+  'LM': 'LICENÇA MATERNIDADE'
 } as const;
 
 export const CALL_TYPES = {
