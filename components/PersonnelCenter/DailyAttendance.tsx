@@ -79,6 +79,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [weeklyGrid, setWeeklyGrid] = useState<Record<string, Record<string, Record<string, string>>>>({});
     const [attendanceRecords, setAttendanceRecords] = useState<Record<string, string>>({});
     const [openNoWorkMenu, setOpenNoWorkMenu] = useState<string | null>(null);
+    const [showManageWeekModal, setShowManageWeekModal] = useState(false);
+    const [selectedDaysForNoWork, setSelectedDaysForNoWork] = useState<string[]>([]);
 
     useEffect(() => {
         const grid: Record<string, Record<string, Record<string, string>>> = {};
@@ -135,8 +137,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         onSaveAttendance(newAttendance);
     };
 
-    const handleNoWorkDay = async (date: string, reason: string) => {
-        const sectorUsers = users.filter(u => u.sector === selectedSector);
+    const handleNoWorkDay = async (dates: string[], reason: string) => {
         const signatureInfo = {
             signedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
             signedAt: new Date().toISOString()
@@ -144,47 +145,55 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
         const calls: CallTypeCode[] = ['INICIO', 'TERMINO'];
 
-        for (const type of calls) {
-            const existing = attendanceHistory.find(a => a.date === date && a.callType === type && a.sector === selectedSector);
+        for (const date of dates) {
+            for (const sector of SETORES) {
+                const sectorUsers = users.filter(u => u.sector === sector);
+                if (sectorUsers.length === 0) continue;
 
-            let attendanceToSave: DailyAttendance;
-            const records: AttendanceRecord[] = sectorUsers.map(u => ({
-                militarId: u.id,
-                militarName: u.warName || u.name,
-                militarRank: u.rank,
-                saram: u.saram,
-                status: 'NIL',
-                timestamp: new Date().toISOString()
-            }));
+                for (const type of calls) {
+                    const existing = attendanceHistory.find(a => a.date === date && a.callType === type && a.sector === sector);
 
-            if (existing) {
-                attendanceToSave = {
-                    ...existing,
-                    records,
-                    signedBy: signatureInfo.signedBy,
-                    signedAt: signatureInfo.signedAt,
-                    responsible: signatureInfo.signedBy,
-                    observacao: reason
-                };
-            } else {
-                attendanceToSave = {
-                    id: Math.random().toString(36).substr(2, 9),
-                    date,
-                    callType: type,
-                    sector: selectedSector,
-                    records,
-                    signedBy: signatureInfo.signedBy,
-                    signedAt: signatureInfo.signedAt,
-                    responsible: signatureInfo.signedBy,
-                    createdAt: new Date().toISOString(),
-                    observacao: reason
-                };
+                    let attendanceToSave: DailyAttendance;
+                    const records: AttendanceRecord[] = sectorUsers.map(u => ({
+                        militarId: u.id,
+                        militarName: u.warName || u.name,
+                        militarRank: u.rank,
+                        saram: u.saram,
+                        status: 'NIL',
+                        timestamp: new Date().toISOString()
+                    }));
+
+                    if (existing) {
+                        attendanceToSave = {
+                            ...existing,
+                            records,
+                            signedBy: signatureInfo.signedBy,
+                            signedAt: signatureInfo.signedAt,
+                            responsible: signatureInfo.signedBy,
+                            observacao: reason
+                        };
+                    } else {
+                        attendanceToSave = {
+                            id: Math.random().toString(36).substr(2, 9),
+                            date,
+                            callType: type,
+                            sector,
+                            records,
+                            signedBy: signatureInfo.signedBy,
+                            signedAt: signatureInfo.signedAt,
+                            responsible: signatureInfo.signedBy,
+                            createdAt: new Date().toISOString(),
+                            observacao: reason
+                        };
+                    }
+                    onSaveAttendance(attendanceToSave);
+                }
             }
-            onSaveAttendance(attendanceToSave);
         }
 
-        setOpenNoWorkMenu(null);
-        alert(`Dia ${parseISOToDate(date).toLocaleDateString()} marcado como ${reason} com sucesso!`);
+        setShowManageWeekModal(false);
+        setSelectedDaysForNoWork([]);
+        alert(`${dates.length} dias marcados como ${reason} para TODOS os setores!`);
     };
 
     const handleOpenJustification = (userId: string, date: string, callType: string, currentStatus: string) => {
@@ -554,15 +563,23 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 lg:gap-3">
-                        <div className="flex items-center gap-2 bg-slate-50 p-1.5 lg:p-2 rounded-2xl border border-slate-100 w-full lg:w-auto justify-between lg:justify-start">
-                            <button onClick={() => changeWeek(-1)} className="p-2 hover:bg-white rounded-lg transition-all text-slate-400 hover:text-slate-900 shadow-sm">
-                                <Filter className="w-3.5 h-3.5 rotate-180" />
-                            </button>
-                            <span className="text-[10px] lg:text-xs font-black text-slate-700 px-2 uppercase">
-                                {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} a {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                            </span>
-                            <button onClick={() => changeWeek(1)} className="p-2 hover:bg-white rounded-lg transition-all text-slate-400 hover:text-slate-900 shadow-sm">
-                                <Filter className="w-3.5 h-3.5" />
+                        <div className="flex flex-col gap-2 w-full lg:w-auto">
+                            <div className="flex items-center gap-2 bg-slate-50 p-1.5 lg:p-2 rounded-2xl border border-slate-100 w-full lg:w-auto justify-between lg:justify-start">
+                                <button onClick={() => changeWeek(-1)} className="p-2 hover:bg-white rounded-lg transition-all text-slate-400 hover:text-slate-900 shadow-sm">
+                                    <Filter className="w-3.5 h-3.5 rotate-180" />
+                                </button>
+                                <span className="text-[10px] lg:text-xs font-black text-slate-700 px-2 uppercase">
+                                    {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} a {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                                </span>
+                                <button onClick={() => changeWeek(1)} className="p-2 hover:bg-white rounded-lg transition-all text-slate-400 hover:text-slate-900 shadow-sm">
+                                    <Filter className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+                            <button
+                                onClick={() => setShowManageWeekModal(true)}
+                                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-[0.2em] transition-all border border-slate-200"
+                            >
+                                Gerir Semana
                             </button>
                         </div>
 
@@ -655,45 +672,9 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                         {currentWeek.map(date => (
                                             <th key={date} colSpan={2} className="px-2 py-4 border-b border-slate-100 border-l border-slate-100 text-[10px] font-black text-slate-900 uppercase tracking-widest text-center bg-slate-50/30 min-w-[120px] relative">
                                                 <div className="flex flex-col items-center">
-                                                    <div className="flex items-center gap-1">
-                                                        <span>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
-                                                        <button
-                                                            onClick={() => setOpenNoWorkMenu(openNoWorkMenu === date ? null : date)}
-                                                            className="p-1 hover:bg-slate-200 rounded-md transition-colors text-slate-400 hover:text-slate-600"
-                                                        >
-                                                            <Filter className="w-2.5 h-2.5" />
-                                                        </button>
-                                                    </div>
+                                                    <span>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
                                                     <span className="text-[8px] font-bold text-slate-400 mt-0.5">{parseISOToDate(date).toLocaleDateString('pt-BR')}</span>
                                                 </div>
-
-                                                {openNoWorkMenu === date && (
-                                                    <div className="absolute top-full left-1/2 -translate-x-1/2 z-50 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 min-w-[160px] animate-scale-in">
-                                                        <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest p-2 mb-1 border-b border-slate-50">Sem Expediente</div>
-                                                        <button
-                                                            onClick={() => handleNoWorkDay(date, 'Feriado')}
-                                                            className="w-full flex items-center gap-2 p-2 hover:bg-blue-50 text-slate-700 hover:text-blue-600 rounded-xl transition-all text-left group"
-                                                        >
-                                                            <span className="text-lg group-hover:scale-110 transition-transform">🏝️</span>
-                                                            <span className="text-[10px] font-bold">Feriado</span>
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleNoWorkDay(date, 'Expediente Cancelado')}
-                                                            className="w-full flex items-center gap-2 p-2 hover:bg-amber-50 text-slate-700 hover:text-amber-600 rounded-xl transition-all text-left group"
-                                                        >
-                                                            <span className="text-lg group-hover:scale-110 transition-transform">🚫</span>
-                                                            <span className="text-[10px] font-bold">Exp. Cancelado</span>
-                                                        </button>
-                                                        <div className="mt-1 pt-1 border-t border-slate-50">
-                                                            <button
-                                                                onClick={() => setOpenNoWorkMenu(null)}
-                                                                className="w-full p-2 text-[8px] font-black uppercase text-slate-400 hover:text-slate-600"
-                                                            >
-                                                                Fechar
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                )}
                                             </th>
                                         ))}
                                     </tr>
@@ -956,6 +937,72 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
             {/* Modals & Printable Areas */}
             <div className="modals-container">
+                {showManageWeekModal && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[150] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-[2.5rem] w-full max-w-lg p-10 shadow-2xl relative animate-in zoom-in-95 duration-200">
+                            <button onClick={() => setShowManageWeekModal(false)} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-all text-slate-400">
+                                <X className="w-6 h-6" />
+                            </button>
+
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="bg-amber-600 p-4 rounded-3xl shadow-lg shadow-amber-200">
+                                    <Calendar className="w-8 h-8 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Gerir Sem Expediente</h3>
+                                    <p className="text-slate-500 text-sm">Marcar dias da semana para TODOS os setores</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Selecione os Dias</label>
+                                    <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                        {currentWeek.map(date => {
+                                            const isSelected = selectedDaysForNoWork.includes(date);
+                                            return (
+                                                <button
+                                                    key={date}
+                                                    onClick={() => {
+                                                        setSelectedDaysForNoWork(prev =>
+                                                            prev.includes(date) ? prev.filter(d => d !== date) : [...prev, date]
+                                                        );
+                                                    }}
+                                                    className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${isSelected ? 'bg-blue-50 border-blue-600 text-blue-700' : 'bg-slate-50 border-slate-100 text-slate-600'}`}
+                                                >
+                                                    <span className="font-bold uppercase text-xs">
+                                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })}
+                                                    </span>
+                                                    {isSelected && <CheckCircle className="w-5 h-5" />}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button
+                                        onClick={() => handleNoWorkDay(selectedDaysForNoWork, 'Feriado')}
+                                        disabled={selectedDaysForNoWork.length === 0}
+                                        className="flex flex-col items-center gap-2 p-4 bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-600 hover:bg-blue-50 transition-all group disabled:opacity-50"
+                                    >
+                                        <span className="text-2xl group-hover:scale-110 transition-transform">🏝️</span>
+                                        <span className="text-[10px] font-black uppercase text-slate-900">Feriado</span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleNoWorkDay(selectedDaysForNoWork, 'Expediente Cancelado')}
+                                        disabled={selectedDaysForNoWork.length === 0}
+                                        className="flex flex-col items-center gap-2 p-4 bg-white border-2 border-slate-100 rounded-2xl hover:border-amber-600 hover:bg-amber-50 transition-all group disabled:opacity-50"
+                                    >
+                                        <span className="text-2xl group-hover:scale-110 transition-transform">🚫</span>
+                                        <span className="text-[10px] font-black uppercase text-slate-900">Exp. Cancelado</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {showAdHocModal && (
                     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[120] flex items-center justify-center p-4">
                         <div className="bg-white rounded-[2.5rem] w-full max-w-md p-10 shadow-2xl relative animate-in zoom-in-95 duration-200">
