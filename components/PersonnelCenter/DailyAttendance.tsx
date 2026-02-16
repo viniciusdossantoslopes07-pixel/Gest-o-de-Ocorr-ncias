@@ -326,7 +326,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         // VALIDAÇÃO: Bloquear assinatura se houver status 'N' no setor
         const sectorUsers = users.filter(u => u.sector === selectedSector);
         const hasPending = sectorUsers.some(u => {
-            const status = weeklyGrid[u.id]?.[date]?.[type] || 'N';
+            const status = weeklyGrid[u.id]?.[date]?.[type] || 'N'; // We keep 'N' here only if the user explicitly wants to mark someone as "Not Informed"
             return status === 'N';
         });
 
@@ -373,7 +373,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             militarName: u.warName || u.name,
                             militarRank: u.rank,
                             saram: u.saram,
-                            status: existingRecord?.status || weeklyGrid[u.id]?.[dateToSign]?.[callToSign] || 'N',
+                            status: existingRecord?.status || weeklyGrid[u.id]?.[dateToSign]?.[callToSign] || 'P',
                             timestamp: existingRecord?.timestamp || new Date().toISOString()
                         };
                     }),
@@ -388,7 +388,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     militarName: u.warName || u.name,
                     militarRank: u.rank,
                     saram: u.saram,
-                    status: weeklyGrid[u.id]?.[dateToSign]?.[callToSign] || 'N',
+                    status: weeklyGrid[u.id]?.[dateToSign]?.[callToSign] || 'P',
                     timestamp: new Date().toISOString()
                 }));
 
@@ -656,9 +656,9 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                     <td key={`${user.id}-${date}-INICIO`} className="p-0.5 lg:p-1 border-l border-slate-50">
                                                         <select
                                                             disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
-                                                            value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N'}
+                                                            value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P'}
                                                             onChange={(e) => handleWeeklyChange(user.id, date, 'INICIO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N') === 'P' ? 'text-emerald-600' :
+                                                            className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'P' ? 'text-emerald-600' :
                                                                 ['F', 'A', 'DPM', 'DCH', 'JS', 'INSP', 'LP', 'LM'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-600 bg-red-50' :
                                                                     (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
                                                                         'text-blue-600 bg-blue-50'
@@ -672,9 +672,9 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                     <td key={`${user.id}-${date}-TERMINO`} className="p-0.5 lg:p-1 border-l border-slate-50">
                                                         <select
                                                             disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
-                                                            value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N'}
+                                                            value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P'}
                                                             onChange={(e) => handleWeeklyChange(user.id, date, 'TERMINO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N') === 'P' ? 'text-emerald-600' :
+                                                            className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'P' ? 'text-emerald-600' :
                                                                 ['F', 'A', 'DPM', 'DCH', 'JS', 'INSP', 'LP', 'LM'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-600 bg-red-50' :
                                                                     (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
                                                                         'text-blue-600 bg-blue-50'
@@ -823,18 +823,20 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                             <td className="border border-slate-300 px-4 py-2 font-black text-slate-900 text-[10px] uppercase truncate bg-white">
                                                 {user.rank} {user.warName || user.name}
                                             </td>
-                                            {currentWeek.map(date => (
-                                                <Fragment key={`${user.id}-${date}`}>
-                                                    <td className={`border border-slate-300 text-center text-[10px] font-black ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'N') === 'P' ? 'text-slate-900' : 'text-blue-600 font-black italic'
-                                                        }`}>
-                                                        {weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : '-')}
-                                                    </td>
-                                                    <td className={`border border-slate-300 text-center text-[10px] font-black ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'N') === 'P' ? 'text-slate-900' : 'text-blue-600 font-black italic'
-                                                        }`}>
-                                                        {weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : '-')}
-                                                    </td>
-                                                </Fragment>
-                                            ))}
+                                            {currentWeek.map(date => {
+                                                const sigInicio = !!signedDates[`${date}-INICIO-${selectedSector}`];
+                                                const sigTermino = !!signedDates[`${date}-TERMINO-${selectedSector}`];
+                                                return (
+                                                    <Fragment key={`${user.id}-${date}`}>
+                                                        <td className={`border border-slate-300 text-center text-[10px] font-black ${!sigInicio ? 'text-slate-300 bg-slate-50/50 italic font-medium' : (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'P' ? 'text-slate-900' : 'text-blue-600 font-black italic'}`}>
+                                                            {!sigInicio ? (isFutureDate(date) ? '' : 'PEN.') : (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P')}
+                                                        </td>
+                                                        <td className={`border border-slate-300 text-center text-[10px] font-black ${!sigTermino ? 'text-slate-300 bg-slate-50/50 italic font-medium' : (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'P' ? 'text-slate-900' : 'text-blue-600 font-black italic'}`}>
+                                                            {!sigTermino ? (isFutureDate(date) ? '' : 'PEN.') : (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P')}
+                                                        </td>
+                                                    </Fragment>
+                                                );
+                                            })}
                                         </tr>
                                     ))}
                                 </tbody>
@@ -1029,16 +1031,20 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 {filteredUsers.map(user => (
                                     <tr key={user.id} className="h-6">
                                         <td className="border border-black px-2 py-0.5 font-bold uppercase truncate">{user.rank} {user.warName}</td>
-                                        {currentWeek.map(date => (
-                                            <Fragment key={date}>
-                                                <td className="border border-black text-center font-black">
-                                                    {weeklyGrid[user.id]?.[date]?.['INICIO'] || (isFutureDate(date) ? '' : '-')}
-                                                </td>
-                                                <td className="border border-black text-center font-black">
-                                                    {weeklyGrid[user.id]?.[date]?.['TERMINO'] || (isFutureDate(date) ? '' : '-')}
-                                                </td>
-                                            </Fragment>
-                                        ))}
+                                        {currentWeek.map(date => {
+                                            const sigInicio = !!signedDates[`${date}-INICIO-${selectedSector}`];
+                                            const sigTermino = !!signedDates[`${date}-TERMINO-${selectedSector}`];
+                                            return (
+                                                <Fragment key={date}>
+                                                    <td className="border border-black text-center font-black">
+                                                        {sigInicio ? (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') : (isFutureDate(date) ? '' : '---')}
+                                                    </td>
+                                                    <td className="border border-black text-center font-black">
+                                                        {sigTermino ? (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') : (isFutureDate(date) ? '' : '---')}
+                                                    </td>
+                                                </Fragment>
+                                            );
+                                        })}
                                     </tr>
                                 ))}
                             </tbody>
