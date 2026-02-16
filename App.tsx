@@ -127,6 +127,16 @@ const App: FC = () => {
     supabase.from('test').select('*').then(({ data, error }) => {
       console.log('Supabase connection test:', { data, error });
     });
+
+    // Rehydrate adHocUsers from localStorage
+    const savedAdHoc = localStorage.getItem('adHocUsers');
+    if (savedAdHoc) {
+      try {
+        setAdHocUsers(JSON.parse(savedAdHoc));
+      } catch (e) {
+        console.error('Error parsing adHocUsers from localStorage:', e);
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -210,9 +220,7 @@ const App: FC = () => {
   }, []);
 
   useEffect(() => {
-    if (adHocUsers.length > 0) {
-      localStorage.setItem('adHocUsers', JSON.stringify(adHocUsers));
-    }
+    localStorage.setItem('adHocUsers', JSON.stringify(adHocUsers));
   }, [adHocUsers]);
 
   const toggleTheme = () => {
