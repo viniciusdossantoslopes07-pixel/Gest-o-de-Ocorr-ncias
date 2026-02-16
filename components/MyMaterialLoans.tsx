@@ -1,6 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../services/supabase';
-import { Package, Clock, Truck, CornerDownLeft, XCircle, ShieldCheck, CheckCircle } from 'lucide-react';
+import {
+    Package, Clock, Truck, CornerDownLeft, XCircle, ShieldCheck,
+    CheckCircle, BarChart3, FileText, Calendar, Filter, X,
+    ChevronRight, Info
+} from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 
 interface MaterialLoan {
     id: string;
@@ -21,6 +26,7 @@ interface MyMaterialLoansProps {
 }
 
 export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
+    const [activeTab, setActiveTab] = useState<'estatisticas' | 'lista'>('estatisticas');
     const [loans, setLoans] = useState<MaterialLoan[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -28,6 +34,13 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
     const [showSignatureModal, setShowSignatureModal] = useState(false);
     const [signaturePassword, setSignaturePassword] = useState('');
     const [pendingAction, setPendingAction] = useState<{ id: string, status: string } | null>(null);
+
+    // Filter states
+    const [filterDateStart, setFilterDateStart] = useState('');
+    const [filterDateEnd, setFilterDateEnd] = useState('');
+    const [filterSearch, setFilterSearch] = useState('');
+
+    const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
     useEffect(() => {
         if (user) fetchLoans();
@@ -70,7 +83,6 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                 .eq('id', id);
 
             if (error) throw error;
-
             await fetchLoans();
         } catch (err: any) {
             console.error('Error updating loan:', err);
@@ -85,7 +97,6 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
             alert('Senha incorreta!');
             return;
         }
-
         if (!pendingAction) return;
 
         try {
@@ -99,7 +110,6 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                 .eq('id', pendingAction.id);
 
             if (error) throw error;
-
             setShowSignatureModal(false);
             setSignaturePassword('');
             setPendingAction(null);
@@ -113,205 +123,359 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
         }
     };
 
-    if (loading) return <div className="text-center py-8 text-slate-400">Carregando suas cautelas...</div>;
+    const filteredLoans = useMemo(() => {
+        return loans.filter(loan => {
+            const loanDate = new Date(loan.created_at);
+            const matchDateStart = !filterDateStart || loanDate >= new Date(filterDateStart);
+            const matchDateEnd = !filterDateEnd || loanDate <= new Date(`${filterDateEnd}T23:59:59`);
+            const matchSearch = !filterSearch ||
+                loan.material?.material?.toLowerCase().includes(filterSearch.toLowerCase()) ||
+                loan.material?.tipo_de_material?.toLowerCase().includes(filterSearch.toLowerCase());
+
+            return matchDateStart && matchDateEnd && matchSearch;
+        });
+    }, [loans, filterDateStart, filterDateEnd, filterSearch]);
+
+    const stats = useMemo(() => {
+        const totalItems = filteredLoans.length;
+        const totalUnits = filteredLoans.reduce((acc, curr) => acc + (curr.quantidade || 1), 0);
+        const inUseItems = filteredLoans.filter(l => l.status === 'Em Uso').length;
+
+        // Group by category
+        const categoryMap: Record<string, number> = {};
+        filteredLoans.forEach(l => {
+            const cat = l.material?.tipo_de_material || 'Não Categorizado';
+            categoryMap[cat] = (categoryMap[cat] || 0) + (l.quantidade || 1);
+        });
+
+        const categoryData = Object.entries(categoryMap).map(([name, value]) => ({ name, value }))
+            .sort((a, b) => b.value - a.value);
+
+        return {
+            totalItems,
+            totalUnits,
+            inUseItems,
+            categoryData
+        };
+    }, [filteredLoans]);
+
+    if (loading) return (
+        <div className="flex flex-col items-center justify-center py-20 animate-pulse">
+            <Package className="w-12 h-12 text-blue-200 mb-4" />
+            <div className="text-slate-400 font-bold">Carregando painel de cautelas...</div>
+        </div>
+    );
 
     return (
-        <div className="space-y-6 animate-fade-in">
-            <div>
-                <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                    <Package className="w-8 h-8 text-blue-600" />
-                    Minhas Cautelas
-                </h2>
-                <p className="text-slate-500">Acompanhe seus pedidos e materiais em uso.</p>
+        <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div>
+                    <h2 className="text-3xl font-black text-slate-900 flex items-center gap-3 tracking-tighter">
+                        <Package className="w-10 h-10 text-blue-600" />
+                        Minhas Cautelas
+                    </h2>
+                    <p className="text-slate-500 font-medium mt-1">Gestão inteligente e histórica dos seus materiais cautelados.</p>
+                </div>
+
+                <div className="flex bg-slate-100 p-1.5 rounded-2xl gap-1">
+                    <button
+                        onClick={() => setActiveTab('estatisticas')}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'estatisticas' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        <BarChart3 className="w-4 h-4" />
+                        Estatísticas
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('lista')}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'lista' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        <FileText className="w-4 h-4" />
+                        Lista de Itens
+                    </button>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {loans.length === 0 ? (
-                    <div className="col-span-full text-center py-12 bg-slate-50 rounded-xl border-dashed border-2 border-slate-200 text-slate-400">
-                        Você não possui cautelas ativas.
-                    </div>
-                ) : (
-                    loans.map(loan => (
-                        <div
-                            key={loan.id}
-                            onClick={() => setSelectedLoan(loan)}
-                            className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all relative overflow-hidden cursor-pointer hover:border-blue-400"
-                        >
-                            {/* Status Bar */}
-                            <div className={`absolute top-0 left-0 right-0 h-1 ${loan.status === 'Pendente' ? 'bg-yellow-400' :
-                                loan.status === 'Aprovado' ? 'bg-blue-400' :
-                                    loan.status === 'Em Uso' ? 'bg-green-500' :
-                                        loan.status === 'Rejeitado' ? 'bg-red-400' :
-                                            loan.status === 'Aguardando Confirmação' ? 'bg-orange-400' :
-                                                'bg-purple-400'
-                                }`} />
+            {/* Filter Bar */}
+            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex flex-wrap items-center gap-4">
+                <div className="flex-1 min-w-[280px] relative">
+                    <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                        type="text"
+                        placeholder="Buscar por material ou categoria..."
+                        value={filterSearch}
+                        onChange={(e) => setFilterSearch(e.target.value)}
+                        className="w-full bg-slate-50 border-none rounded-2xl pl-11 pr-4 py-3 text-sm font-semibold focus:ring-2 focus:ring-blue-500 transition-all"
+                    />
+                </div>
 
-                            <div className="flex justify-between items-start mb-3 mt-2">
-                                <div>
-                                    <h3 className="font-bold text-lg text-slate-900 line-clamp-1">
-                                        {loan.quantidade && loan.quantidade > 1 && <span className="text-blue-600 mr-2">{loan.quantidade}x</span>}
-                                        {loan.material?.material || 'Material'}
-                                    </h3>
-                                    <p className="text-xs font-bold text-slate-500 uppercase">{loan.material?.tipo_de_material}</p>
-                                </div>
-                                <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${loan.status === 'Pendente' ? 'bg-yellow-50 text-yellow-700' :
-                                    loan.status === 'Aprovado' ? 'bg-blue-50 text-blue-700' :
-                                        loan.status === 'Em Uso' ? 'bg-green-50 text-green-700' :
-                                            loan.status === 'Rejeitado' ? 'bg-red-50 text-red-700' :
-                                                loan.status === 'Aguardando Confirmação' ? 'bg-orange-50 text-orange-700' :
-                                                    'bg-purple-50 text-purple-700'
-                                    }`}>
-                                    {loan.status}
-                                </div>
-                            </div>
+                <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-2xl">
+                    <Calendar className="w-4 h-4 text-slate-400" />
+                    <input
+                        type="date"
+                        value={filterDateStart}
+                        onChange={(e) => setFilterDateStart(e.target.value)}
+                        className="bg-transparent border-none text-xs font-bold text-slate-600 outline-none w-32"
+                    />
+                    <span className="text-slate-300 font-black">/</span>
+                    <input
+                        type="date"
+                        value={filterDateEnd}
+                        onChange={(e) => setFilterDateEnd(e.target.value)}
+                        className="bg-transparent border-none text-xs font-bold text-slate-600 outline-none w-32"
+                    />
+                </div>
 
-                            <p className="text-xs text-slate-400 flex items-center gap-1 mb-4">
-                                <Clock className="w-3 h-3" />
-                                {new Date(loan.created_at).toLocaleDateString()}
-                            </p>
-
-                            <div className="mb-4 space-y-1">
-                                {loan.autorizado_por && (
-                                    <p className="text-[10px] text-slate-500">
-                                        <span className="font-bold">Autorizado por:</span> {loan.autorizado_por}
-                                    </p>
-                                )}
-                                {loan.entregue_por && (
-                                    <p className="text-[10px] text-slate-500">
-                                        <span className="font-bold">Entregue por:</span> {loan.entregue_por}
-                                    </p>
-                                )}
-                                {loan.recebido_por && (
-                                    <p className="text-[10px] text-slate-500">
-                                        <span className="font-bold">Recebido por:</span> {loan.recebido_por}
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Actions */}
-                            <div className="mt-auto">
-                                {loan.status === 'Aprovado' && (
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleAction(loan.id, 'Em Uso'); }}
-                                        disabled={!!actionLoading}
-                                        className="w-full py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        {actionLoading === loan.id ? 'Processando...' : (
-                                            <>
-                                                <Truck className="w-4 h-4" /> Retirar Material
-                                            </>
-                                        )}
-                                    </button>
-                                )}
-
-                                {loan.status === 'Em Uso' && (
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleAction(loan.id, 'Pendente Devolução'); }}
-                                        disabled={!!actionLoading}
-                                        className="w-full py-2 bg-purple-600 text-white rounded-lg font-bold text-sm hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        {actionLoading === loan.id ? 'Processando...' : (
-                                            <>
-                                                <CornerDownLeft className="w-4 h-4" /> Devolver Material
-                                            </>
-                                        )}
-                                    </button>
-                                )}
-
-                                {loan.status === 'Aguardando Confirmação' && (
-                                    <div className="w-full py-2 bg-orange-100 text-orange-600 rounded-lg font-bold text-xs text-center flex items-center justify-center gap-2">
-                                        <Clock className="w-3 h-3" /> Aguardando Entrega Física
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ))
+                {(filterDateStart || filterDateEnd || filterSearch) && (
+                    <button
+                        onClick={() => { setFilterDateStart(''); setFilterDateEnd(''); setFilterSearch(''); }}
+                        className="p-3 bg-red-50 text-red-500 rounded-2xl hover:bg-red-100 transition-colors"
+                        title="Limpar Filtros"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
                 )}
             </div>
 
-            {/* Detail Modal */}
+            {activeTab === 'estatisticas' ? (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col justify-between">
+                            <div className="bg-blue-50 w-14 h-14 rounded-2xl flex items-center justify-center text-blue-600 mb-6">
+                                <Package className="w-7 h-7" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Total de Registros</p>
+                                <h3 className="text-4xl font-black text-slate-900 tracking-tighter">{stats.totalItems}</h3>
+                                <p className="text-sm font-bold text-slate-400 mt-2">{stats.totalUnits} unidades totais</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col justify-between">
+                            <div className="bg-emerald-50 w-14 h-14 rounded-2xl flex items-center justify-center text-emerald-600 mb-6">
+                                <Truck className="w-7 h-7" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Materiais em Uso</p>
+                                <h3 className="text-4xl font-black text-slate-900 tracking-tighter">{stats.inUseItems}</h3>
+                                <p className="text-sm font-bold text-slate-400 mt-2">Atualmente sob sua posse</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col justify-between">
+                            <div className="bg-amber-50 w-14 h-14 rounded-2xl flex items-center justify-center text-amber-600 mb-6">
+                                <BarChart3 className="w-7 h-7" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Diversidade de Categorias</p>
+                                <h3 className="text-4xl font-black text-slate-900 tracking-tighter">{stats.categoryData.length}</h3>
+                                <p className="text-sm font-bold text-slate-400 mt-2">Diferentes tipos de materiais</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Charts Section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-blue-600" />
+                                Uso por Categoria
+                            </h4>
+                            <div className="h-72 w-full">
+                                {stats.categoryData.length > 0 ? (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={stats.categoryData}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={60}
+                                                outerRadius={90}
+                                                paddingAngle={5}
+                                                dataKey="value"
+                                            >
+                                                {stats.categoryData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
+                                                ))}
+                                            </Pie>
+                                            <RechartsTooltip
+                                                contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
+                                            />
+                                            <Legend verticalAlign="bottom" height={36} />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                ) : (
+                                    <div className="h-full flex flex-col items-center justify-center text-slate-300 gap-3">
+                                        <Package className="w-12 h-12" />
+                                        <p className="font-bold text-sm italic">Sem dados para este período</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-blue-600" />
+                                Distribuição de Quantidade
+                            </h4>
+                            <div className="space-y-4 max-h-[280px] overflow-y-auto pr-2 scrollbar-thin">
+                                {stats.categoryData.map((item, idx) => (
+                                    <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group hover:border-blue-200 transition-all">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
+                                            <span className="font-bold text-slate-700">{item.name}</span>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="text-xl font-black text-slate-900">{item.value}</span>
+                                            <span className="text-[10px] font-black text-slate-400 uppercase ml-1">un</span>
+                                        </div>
+                                    </div>
+                                ))}
+                                {stats.categoryData.length === 0 && (
+                                    <div className="py-20 text-center text-slate-300 font-bold italic">Nenhum registro encontrado</div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    {filteredLoans.length === 0 ? (
+                        <div className="col-span-full text-center py-24 bg-white rounded-[2.5rem] border-dashed border-2 border-slate-200 text-slate-400 space-y-4">
+                            <Package className="w-16 h-16 mx-auto text-slate-200" />
+                            <p className="font-black text-xl tracking-tighter uppercase">Nenhuma cautela encontrada</p>
+                            <p className="text-sm font-medium">Experimente ajustar os filtros ou pesquisar outro termo.</p>
+                        </div>
+                    ) : (
+                        filteredLoans.map(loan => (
+                            <div
+                                key={loan.id}
+                                onClick={() => setSelectedLoan(loan)}
+                                className="bg-white group p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:ring-2 hover:ring-blue-100 transition-all relative overflow-hidden cursor-pointer flex flex-col"
+                            >
+                                <div className={`absolute top-0 left-0 bottom-0 w-1.5 transition-all group-hover:w-2 ${loan.status === 'Pendente' ? 'bg-yellow-400' :
+                                        loan.status === 'Aprovado' ? 'bg-blue-400' :
+                                            loan.status === 'Em Uso' ? 'bg-emerald-500' :
+                                                loan.status === 'Rejeitado' ? 'bg-red-400' :
+                                                    loan.status === 'Aguardando Confirmação' ? 'bg-orange-400' :
+                                                        'bg-slate-300'
+                                    }`} />
+
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${loan.status === 'Pendente' ? 'bg-yellow-100 text-yellow-700' :
+                                            loan.status === 'Aprovado' ? 'bg-blue-100 text-blue-700' :
+                                                loan.status === 'Em Uso' ? 'bg-emerald-100 text-emerald-700' :
+                                                    loan.status === 'Rejeitado' ? 'bg-red-100 text-red-700' :
+                                                        loan.status === 'Concluído' ? 'bg-slate-100 text-slate-600' :
+                                                            'bg-slate-50 text-slate-500'
+                                        }`}>
+                                        {loan.status}
+                                    </div>
+                                    <div className="text-[10px] font-black text-slate-400 flex items-center gap-1">
+                                        <Clock className="w-3 h-3" />
+                                        {new Date(loan.created_at).toLocaleDateString()}
+                                    </div>
+                                </div>
+
+                                <h3 className="font-black text-xl text-slate-900 line-clamp-2 tracking-tighter leading-tight mb-2">
+                                    {loan.quantidade && loan.quantidade > 1 && <span className="text-blue-600 mr-2">{loan.quantidade}x</span>}
+                                    {loan.material?.material || 'Material'}
+                                </h3>
+                                <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-6">{loan.material?.tipo_de_material}</p>
+
+                                <div className="mt-auto pt-6 border-t border-slate-50 space-y-4">
+                                    {loan.status === 'Aprovado' && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleAction(loan.id, 'Em Uso'); }}
+                                            className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100"
+                                        >
+                                            <Truck className="w-4 h-4" /> Retirar Material
+                                        </button>
+                                    )}
+
+                                    {loan.status === 'Em Uso' && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleAction(loan.id, 'Pendente Devolução'); }}
+                                            className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-100"
+                                        >
+                                            <CornerDownLeft className="w-4 h-4" /> Devolver Material
+                                        </button>
+                                    )}
+
+                                    <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold px-1">
+                                        <span className="flex items-center gap-1"><Info className="w-3 h-3" /> Ver Detalhes</span>
+                                        <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            )}
+
+            {/* Modal Detalhes */}
             {selectedLoan && (
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-in">
-                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                            <h3 className="font-bold text-xl text-slate-800 flex items-center gap-2">
-                                <Package className="w-6 h-6 text-blue-600" />
-                                Detalhes do Item
+                    <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden animate-scale-in">
+                        <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                            <h3 className="font-black text-2xl text-slate-900 flex items-center gap-3 tracking-tighter">
+                                <Package className="w-8 h-8 text-blue-600" />
+                                Detalhes
                             </h3>
-                            <button
-                                onClick={(e) => { e.stopPropagation(); setSelectedLoan(null); }}
-                                className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400"
-                            >
-                                <CornerDownLeft className="w-6 h-6 rotate-90" />
+                            <button onClick={() => setSelectedLoan(null)} className="p-3 hover:bg-white rounded-2xl transition-colors text-slate-400 shadow-sm border border-transparent hover:border-slate-100">
+                                <X className="w-6 h-6" />
                             </button>
                         </div>
 
-                        <div className="p-6 space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
+                        <div className="p-8 space-y-8">
+                            <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Material</p>
-                                    <p className="font-bold text-slate-800">{selectedLoan.material?.material || 'Desconhecido'}</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Material</p>
+                                    <p className="font-black text-lg text-slate-900 leading-tight">{selectedLoan.material?.material}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</p>
-                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${selectedLoan.status === 'Concluído' ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'
-                                        }`}>{selectedLoan.status}</span>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status Atual</p>
+                                    <div className="inline-flex px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest">{selectedLoan.status}</div>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quantidade</p>
-                                    <p className="text-slate-800">{selectedLoan.quantidade || 1} un.</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Quantidade</p>
+                                    <p className="font-black text-slate-900 text-lg">{selectedLoan.quantidade || 1} <span className="text-xs text-slate-400 uppercase">Unidades</span></p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Data do Pedido</p>
-                                    <p className="text-slate-800">{new Date(selectedLoan.created_at).toLocaleDateString()}</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Data do Pedido</p>
+                                    <p className="font-black text-slate-900 text-lg">{new Date(selectedLoan.created_at).toLocaleDateString()}</p>
                                 </div>
                             </div>
 
-                            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-4">
-                                <h4 className="text-xs font-bold text-slate-500 flex items-center gap-2 border-b border-slate-200 pb-2">
+                            <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 space-y-6">
+                                <h4 className="text-[10px] font-black text-slate-400 flex items-center gap-2 border-b border-slate-200 pb-3 uppercase tracking-widest">
                                     <ShieldCheck className="w-4 h-4 text-blue-500" />
-                                    TRILHA DE AUDITORIA
+                                    Trilha de Segurança
                                 </h4>
 
-                                <div className="space-y-3">
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                                            <CheckCircle className="w-4 h-4 text-blue-600" />
+                                <div className="space-y-4">
+                                    {[
+                                        { label: 'Autorizado Por', value: selectedLoan.autorizado_por, icon: CheckCircle, color: 'text-blue-500', bg: 'bg-blue-100' },
+                                        { label: 'Entregue Por', value: selectedLoan.entregue_por, icon: Truck, color: 'text-amber-500', bg: 'bg-amber-100' },
+                                        { label: 'Recebido Por', value: selectedLoan.recebido_por, icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-100' }
+                                    ].map((item, i) => (
+                                        <div key={i} className="flex items-center gap-4 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                                            <div className={`w-10 h-10 rounded-xl ${item.bg} flex items-center justify-center shrink-0`}>
+                                                <item.icon className={`w-5 h-5 ${item.color}`} />
+                                            </div>
+                                            <div>
+                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">{item.label}</p>
+                                                <p className="text-sm font-black text-slate-700 mt-0.5">{item.value || '---'}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Autorizado Por</p>
-                                            <p className="text-sm font-semibold text-slate-700">{selectedLoan.autorizado_por || 'Aguardando Aprovação'}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center shrink-0">
-                                            <Truck className="w-4 h-4 text-yellow-600" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Entregue Por</p>
-                                            <p className="text-sm font-semibold text-slate-700">{selectedLoan.entregue_por || '---'}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                                            <CheckCircle className="w-4 h-4 text-green-600" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase">Recebido Por</p>
-                                            <p className="text-sm font-semibold text-slate-700">{selectedLoan.recebido_por || '---'}</p>
-                                        </div>
-                                    </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end">
-                            <button
-                                onClick={() => setSelectedLoan(null)}
-                                className="px-6 py-2 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 transition-all shadow-lg text-sm"
-                            >
+                        <div className="p-8 bg-slate-50/50 border-t border-slate-50 flex justify-end">
+                            <button onClick={() => setSelectedLoan(null)} className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all shadow-xl">
                                 Fechar
                             </button>
                         </div>
@@ -319,50 +483,54 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                 </div>
             )}
 
-            {/* Signature Modal for User Withdrawal */}
+            {/* Signature Modal */}
             {showSignatureModal && (
                 <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden animate-scale-in">
-                        <div className="p-8 pb-4 text-center">
-                            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Truck className="w-10 h-10 text-blue-600" />
+                    <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-md overflow-hidden animate-scale-in">
+                        <div className="p-10 pb-6 text-center">
+                            <div className="w-24 h-24 bg-blue-100 rounded-[2rem] flex items-center justify-center mx-auto mb-6 transform -rotate-3 hover:rotate-0 transition-transform">
+                                <Truck className="w-12 h-12 text-blue-600" />
                             </div>
-                            <h3 className="text-xl font-black uppercase tracking-tighter">Confirmar Retirada</h3>
-                            <p className="text-slate-500 text-sm mt-1">Insira sua senha para confirmar que está retirando o material no balcão.</p>
+                            <h3 className="text-2xl font-black uppercase tracking-tighter text-slate-900">Confirmar Retirada</h3>
+                            <p className="text-slate-500 font-medium text-sm mt-2 px-4">Insira sua senha para assinar digitalmente a retirada de material no balcão.</p>
                         </div>
-                        <div className="p-8 pt-0 space-y-6">
-                            <div className="bg-slate-50 p-4 rounded-2xl border mb-6 flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm font-bold text-blue-600">
+                        <div className="p-10 pt-0 space-y-8">
+                            <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 flex items-center gap-4">
+                                <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-sm font-black text-blue-600 text-xl border border-slate-100">
                                     {user.rank}
                                 </div>
-                                <p className="font-bold text-slate-800">{user.war_name || user.name}</p>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Identidade</p>
+                                    <p className="font-black text-slate-900 text-lg">{user.war_name || user.name}</p>
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase flex items-center gap-2">
-                                    <Package className="w-3 h-3" /> Sua Senha
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                                    <ShieldCheck className="w-3 h-3 text-blue-500" /> Senha Digital
                                 </label>
                                 <input
                                     type="password"
                                     value={signaturePassword}
                                     onChange={(e) => setSignaturePassword(e.target.value)}
-                                    className="w-full bg-slate-50 border rounded-xl p-4 font-bold text-lg text-center"
+                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-3xl p-5 font-black text-2xl text-center focus:border-blue-500 outline-none transition-all placeholder:text-slate-200"
+                                    placeholder="••••••"
                                     autoFocus
                                     onKeyDown={(e) => e.key === 'Enter' && confirmSignature()}
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-3 pt-2">
+                            <div className="grid grid-cols-2 gap-4">
                                 <button
                                     onClick={() => { setShowSignatureModal(false); setSignaturePassword(''); setPendingAction(null); }}
-                                    className="bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold"
+                                    className="bg-slate-100 text-slate-600 py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     onClick={confirmSignature}
                                     disabled={!signaturePassword || !!actionLoading}
-                                    className="bg-blue-600 text-white py-4 rounded-2xl font-bold disabled:opacity-50"
+                                    className="bg-blue-600 text-white py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 disabled:opacity-50"
                                 >
-                                    {actionLoading ? 'Processando...' : 'Confirmar Retirada'}
+                                    Confirmar
                                 </button>
                             </div>
                         </div>
