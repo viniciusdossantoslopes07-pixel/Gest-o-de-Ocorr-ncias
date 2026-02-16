@@ -26,7 +26,7 @@ interface MyMaterialLoansProps {
 }
 
 export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
-    const [activeTab, setActiveTab] = useState<'estatisticas' | 'lista'>('estatisticas');
+    const [activeTab, setActiveTab] = useState<'estatisticas' | 'lista'>('lista');
     const [loans, setLoans] = useState<MaterialLoan[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -180,18 +180,18 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
 
                 <div className="flex bg-slate-100 p-1.5 rounded-2xl gap-1">
                     <button
-                        onClick={() => setActiveTab('estatisticas')}
-                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'estatisticas' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                        <BarChart3 className="w-4 h-4" />
-                        Estatísticas
-                    </button>
-                    <button
                         onClick={() => setActiveTab('lista')}
                         className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'lista' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         <FileText className="w-4 h-4" />
                         Lista de Itens
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('estatisticas')}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'estatisticas' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    >
+                        <BarChart3 className="w-4 h-4" />
+                        Estatísticas
                     </button>
                 </div>
             </div>
@@ -355,20 +355,20 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                                 className="bg-white group p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:ring-2 hover:ring-blue-100 transition-all relative overflow-hidden cursor-pointer flex flex-col"
                             >
                                 <div className={`absolute top-0 left-0 bottom-0 w-1.5 transition-all group-hover:w-2 ${loan.status === 'Pendente' ? 'bg-yellow-400' :
-                                        loan.status === 'Aprovado' ? 'bg-blue-400' :
-                                            loan.status === 'Em Uso' ? 'bg-emerald-500' :
-                                                loan.status === 'Rejeitado' ? 'bg-red-400' :
-                                                    loan.status === 'Aguardando Confirmação' ? 'bg-orange-400' :
-                                                        'bg-slate-300'
+                                    loan.status === 'Aprovado' ? 'bg-blue-400' :
+                                        loan.status === 'Em Uso' ? 'bg-emerald-500' :
+                                            loan.status === 'Rejeitado' ? 'bg-red-400' :
+                                                loan.status === 'Aguardando Confirmação' ? 'bg-orange-400' :
+                                                    'bg-slate-300'
                                     }`} />
 
                                 <div className="flex justify-between items-start mb-4">
                                     <div className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${loan.status === 'Pendente' ? 'bg-yellow-100 text-yellow-700' :
-                                            loan.status === 'Aprovado' ? 'bg-blue-100 text-blue-700' :
-                                                loan.status === 'Em Uso' ? 'bg-emerald-100 text-emerald-700' :
-                                                    loan.status === 'Rejeitado' ? 'bg-red-100 text-red-700' :
-                                                        loan.status === 'Concluído' ? 'bg-slate-100 text-slate-600' :
-                                                            'bg-slate-50 text-slate-500'
+                                        loan.status === 'Aprovado' ? 'bg-blue-100 text-blue-700' :
+                                            loan.status === 'Em Uso' ? 'bg-emerald-100 text-emerald-700' :
+                                                loan.status === 'Rejeitado' ? 'bg-red-100 text-red-700' :
+                                                    loan.status === 'Concluído' ? 'bg-slate-100 text-slate-600' :
+                                                        'bg-slate-50 text-slate-500'
                                         }`}>
                                         {loan.status}
                                     </div>
