@@ -17,6 +17,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         totalMissions: 0,
         totalHours: 0,
         missionsByType: [] as any[],
+        loansByCategory: [] as any[],
         recentMissions: [] as any[],
         loanHistory: 0,
         activeLoans: 0
@@ -54,10 +55,17 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             if (mError) throw mError;
             setAllMissions(missions || []);
 
-            // 2. Fetch Material Loans (History)
+            // 2. Fetch Material Loans (History) with Material Category Join
             const { data: loans, error: lError } = await supabase
                 .from('movimentacao_cautela')
-                .select('id, status, quantidade')
+                .select(`
+                    id, 
+                    status, 
+                    quantidade,
+                    gestao_estoque (
+                        tipo_de_material
+                    )
+                `)
                 .eq('id_usuario', user.id);
 
             if (lError) throw lError;
@@ -84,7 +92,16 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         });
         const missionsByType = Object.entries(typeCount).map(([name, value]) => ({ name, value }));
 
-        // Loans
+        // Group Loans by Category
+        const categoryCount: Record<string, number> = {};
+        loans.forEach((l: any) => {
+            const category = l.gestao_estoque?.tipo_de_material || 'Outros';
+            categoryCount[category] = (categoryCount[category] || 0) + (l.quantidade || 1);
+        });
+        const loansByCategory = Object.entries(categoryCount)
+            .map(([name, value]) => ({ name, value }))
+            .sort((a, b) => b.value - a.value);
+
         const loanHistory = loans.length;
         const activeLoans = loans.filter((l: any) => l.status === 'Em Uso').reduce((acc: number, curr: any) => acc + (curr.quantidade || 1), 0);
 
@@ -92,6 +109,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             totalMissions,
             totalHours: 0,
             missionsByType,
+            loansByCategory,
             recentMissions,
             loanHistory,
             activeLoans
@@ -412,6 +430,33 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                                         {(hasActiveFilters ? filteredStats.recentMissions : stats.recentMissions).length === 0 && (
                                             <p className="text-slate-500 text-sm italic py-4 text-center">Nenhuma missão encontrada com estes filtros.</p>
                                         )}
+                                    </div>
+                                </div>
+
+                                {/* Material Categories Chart */}
+                                <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-white border-slate-200'}`}>
+                                    <h3 className={`font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Categorias de Materiais Cautelados</h3>
+                                    <div className="h-64 w-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={stats.loansByCategory}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={60}
+                                                    outerRadius={80}
+                                                    fill="#8884d8"
+                                                    paddingAngle={5}
+                                                    dataKey="value"
+                                                >
+                                                    {stats.loansByCategory.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <RechartsTooltip />
+                                                <Legend />
+                                            </PieChart>
+                                        </ResponsiveContainer>
                                     </div>
                                 </div>
                             </div>

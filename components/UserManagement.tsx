@@ -96,10 +96,10 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900">
-                {editingUserId ? 'Editar Usuário' : 'Cadastrar Novo Usuário'}
+                {editingUserId ? 'Editar Usuário' : 'Novo Cadastro de Permissões'}
               </h2>
               <p className="text-slate-500 text-xs font-medium">
-                {editingUserId ? `Alterando dados de acesso de @${formData.username}` : 'Defina as credenciais e o nível de acesso militar'}
+                {editingUserId ? `Alterando dados de acesso de @${formData.username}` : 'Defina as credenciais e o nível de acesso militar no sistema'}
               </p>
             </div>
           </div>

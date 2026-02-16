@@ -181,7 +181,6 @@ export default function SideMenu({
                                     {(!isCollapsed && isOccurrencesOpen) && (
                                         <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
                                             {isAdmin && <MenuItem id="kanban" label="Fila de Serviço" icon={LayoutDashboard} />}
-                                            {canManageUsers && <MenuItem id="users" label="Gestão Militar" icon={UserIcon} />}
                                             <MenuItem id="dashboard" label="Estatísticas BI" icon={BarChart3} />
                                             <MenuItem id="list" label="Arquivo Geral" icon={FileText} />
                                         </div>

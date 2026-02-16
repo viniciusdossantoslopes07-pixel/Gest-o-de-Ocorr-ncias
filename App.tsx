@@ -897,7 +897,7 @@ const App: FC = () => {
               <h2 className={`text-lg lg:text-xl font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'} truncate max-w-[200px] sm:max-w-none`}>
                 {activeTab === 'new' ? 'Novo Registro Militar' :
                   activeTab === 'home' ? 'Central de Comando' :
-                    activeTab === 'users' ? 'Gestão de Acessos' :
+                    activeTab === 'users' ? 'Gerir Permissões' :
                       activeTab === 'dashboard' ? 'Painel de Inteligência' :
                         activeTab === 'kanban' ? 'Fluxo de Gestão' :
                           activeTab === 'mission-request' ? 'Nova Missão' :

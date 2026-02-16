@@ -151,6 +151,25 @@ export default function UserMenu({
 
                         <div className={`my-2 border-t ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`} />
 
+                        {/* Configurações Avançadas (Admin Only) */}
+                        {(currentUser.role === 'Gestor Master / OSD' || currentUser.accessLevel === 'OM') && (
+                            <>
+                                <div className="px-3 py-2">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <Settings className="w-3 h-3" /> Configurações
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => handleAction(() => setActiveTab('users'))}
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${isDarkMode ? 'text-blue-300 hover:bg-blue-900/20' : 'text-blue-700 hover:bg-blue-50'}`}
+                                >
+                                    <Shield className="w-4 h-4" />
+                                    Gerir Permissões
+                                </button>
+                                <div className={`my-2 border-t ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`} />
+                            </>
+                        )}
+
                         <button
                             onClick={() => handleAction(onLogout)}
                             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 transition-colors ${isDarkMode ? 'hover:bg-red-900/20' : 'hover:bg-red-50'}`}
