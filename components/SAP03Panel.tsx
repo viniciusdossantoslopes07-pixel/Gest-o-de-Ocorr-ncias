@@ -559,8 +559,8 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                 ))}
             </div>
 
-            {/* In Use Search and Batch Actions */}
-            {activeTab === 'Em Uso' && (
+            {/* Search and Batch Actions */}
+            {(activeTab === 'Em Uso' || activeTab === 'Histórico') && (
                 <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-blue-50/50 p-4 rounded-2xl border border-blue-100 animate-scale-in">
                     <div className="relative w-full md:w-80">
                         <input
@@ -573,33 +573,35 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                         <Package className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     </div>
 
-                    <div className="flex items-center gap-4 w-full md:w-auto">
-                        <label className="flex items-center gap-2 cursor-pointer group bg-white px-4 py-2 rounded-xl border border-slate-200">
-                            <input
-                                type="checkbox"
-                                className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
-                                checked={filteredRequests.length > 0 && selectedBatchIds.length === filteredRequests.length}
-                                onChange={(e) => {
-                                    if (e.target.checked) setSelectedBatchIds(filteredRequests.map(r => r.id));
-                                    else setSelectedBatchIds([]);
-                                }}
-                            />
-                            <span className="text-sm font-bold text-slate-600 group-hover:text-blue-600">Selecionar Tudo ({filteredRequests.length})</span>
-                        </label>
+                    {activeTab === 'Em Uso' && (
+                        <div className="flex items-center gap-4 w-full md:w-auto">
+                            <label className="flex items-center gap-2 cursor-pointer group bg-white px-4 py-2 rounded-xl border border-slate-200">
+                                <input
+                                    type="checkbox"
+                                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                                    checked={filteredRequests.length > 0 && selectedBatchIds.length === filteredRequests.length}
+                                    onChange={(e) => {
+                                        if (e.target.checked) setSelectedBatchIds(filteredRequests.map(r => r.id));
+                                        else setSelectedBatchIds([]);
+                                    }}
+                                />
+                                <span className="text-sm font-bold text-slate-600 group-hover:text-blue-600">Selecionar Tudo ({filteredRequests.length})</span>
+                            </label>
 
-                        {selectedBatchIds.length > 0 && (
-                            <button
-                                onClick={() => {
-                                    const firstId = selectedBatchIds[0];
-                                    const firstReq = requests.find(r => r.id === firstId);
-                                    if (firstReq) startSignatureFlow(selectedBatchIds, firstReq.id_usuario, 'update_return');
-                                }}
-                                className="px-4 py-2 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 transition-all flex items-center gap-2"
-                            >
-                                <CheckCircle className="w-4 h-4" /> Receber Selecionados ({selectedBatchIds.length})
-                            </button>
-                        )}
-                    </div>
+                            {selectedBatchIds.length > 0 && (
+                                <button
+                                    onClick={() => {
+                                        const firstId = selectedBatchIds[0];
+                                        const firstReq = requests.find(r => r.id === firstId);
+                                        if (firstReq) startSignatureFlow(selectedBatchIds, firstReq.id_usuario, 'update_return');
+                                    }}
+                                    className="px-4 py-2 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 transition-all flex items-center gap-2"
+                                >
+                                    <CheckCircle className="w-4 h-4" /> Receber Selecionados ({selectedBatchIds.length})
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
 
