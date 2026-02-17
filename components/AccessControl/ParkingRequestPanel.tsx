@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
-import { Car, Clock, Printer, History, List, Eye, FileText, BarChart3, ChevronRight, CheckCircle, XCircle } from 'lucide-react';
+import { Car, Clock, Printer, History, List, Eye, FileText, BarChart3, ChevronRight, CheckCircle, XCircle, Download } from 'lucide-react';
 import ParkingStatistics from './ParkingStatistics';
 
 interface ParkingVehicle {
@@ -74,10 +74,12 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
     // Aprovar / Rejeitar
     const handleApprove = async (id: string) => {
         await supabase.from('parking_requests').update({ status: 'Aprovado', aprovado_por: `${user.rank} ${user.war_name || user.name}` }).eq('id', id);
+        setAnalysingRequest(null);
         await fetchAllRequests(); await fetchMyRequests();
     };
     const handleReject = async (id: string) => {
         await supabase.from('parking_requests').update({ status: 'Rejeitado', aprovado_por: `${user.rank} ${user.war_name || user.name}` }).eq('id', id);
+        setAnalysingRequest(null); // Ensure modal closes
         await fetchAllRequests(); await fetchMyRequests();
     };
 
@@ -96,12 +98,12 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                 <div className="max-w-[600px] mx-auto p-8 font-serif text-black">
                     <p className="text-center text-sm font-bold mb-4">Manter este documento visível no para-brisa e estacionar o carro de ré.</p>
                     <div className="flex items-center justify-between mb-2">
-                        <img src="/basp-logo.png" alt="BASP" className="h-16 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        <img src="/logo_basp_novo.png" alt="BASP" className="h-24 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                         <div className="text-center flex-1">
                             <h1 className="text-3xl font-black tracking-tight">AUTORIZAÇÃO</h1>
                             <p className="text-lg font-bold">Nº {printRequest.numero_autorizacao}/{year}</p>
                         </div>
-                        <img src="/fab-logo.png" alt="FAB" className="h-16 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        <img src="/logo_fab.png" alt="FAB" className="h-24 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                     </div>
                     <h2 className="text-center text-lg font-bold border-b-2 border-black pb-2 mb-4">ESTACIONAMENTO DA BASP</h2>
                     <p className="text-red-600 font-bold text-sm text-center mb-6 leading-snug">
@@ -222,7 +224,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                                 {req.status === 'Aprovado' && (
                                     <button onClick={() => setPrintRequest(req)}
                                         className="w-full py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-blue-100 transition-all">
-                                        <Printer className="w-3.5 h-3.5" /> Imprimir Autorização
+                                        <Download className="w-3.5 h-3.5" /> Baixar Autorização
                                     </button>
                                 )}
                             </div>
