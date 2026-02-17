@@ -934,7 +934,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                             }}
                             className="absolute top-4 right-4 p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-100 rounded-full transition-all"
                         >
-                            <X className="w-5 h-5" />
+                            <XCircle className="w-5 h-5" />
                         </button>
 
                         <div className="text-center space-y-2">
@@ -956,27 +956,61 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                         </div>
 
                         <div className="space-y-2">
-                            .single();
+                            <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-2">
+                                <Lock className="w-3 h-3" /> Senha
+                            </label>
+                            <input
+                                autoFocus
+                                type="password"
+                                value={signaturePassword}
+                                onChange={(e) => setSignaturePassword(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') confirmSignature();
+                                    if (e.key === 'Escape') {
+                                        setShowSignatureModal(false);
+                                        setSignaturePassword('');
+                                    }
+                                }}
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none text-center tracking-widest text-lg"
+                            />
+                        </div>
 
-                            if (userData) {
-                                setSignaturePassword(userData.password);
-                                                // Trigger confirmation in next tick
+                        {localStorage.getItem('gsdsp_biometric_id') && (
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        const credentialId = localStorage.getItem('gsdsp_biometric_id');
+                                        if (!credentialId) return;
+                                        const success = await authenticateBiometrics(credentialId);
+                                        if (success) {
+                                            const { data: userData } = await supabase
+                                                .from('users')
+                                                .select('password')
+                                                .filter('webauthn_credential->>id', 'eq', credentialId)
+                                                .single();
+                                            if (userData) {
+                                                setSignaturePassword(userData.password);
                                                 setTimeout(() => confirmSignature(), 100);
                                             }
                                         }
                                     } catch (err) {
-                                console.error(err);
-                            alert('Falha na autenticação biométrica.');
+                                        console.error(err);
+                                        alert('Falha na autenticação biométrica.');
                                     }
                                 }}
-                            className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-100 transition-all border border-emerald-200"
+                                className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-100 transition-all border border-emerald-200"
                             >
-                            <Fingerprint className="w-5 h-5" /> Assinar com Biometria
-                        </button>
+                                <Fingerprint className="w-5 h-5" /> Assinar com Biometria
+                            </button>
                         )}
 
-                        <div className="grid grid-cols-2 gap-3 pt-2">
-                        </div>
+                        <button
+                            onClick={confirmSignature}
+                            disabled={!signaturePassword || actionLoading === 'signature'}
+                            className="w-full h-[50px] bg-blue-600 text-white rounded-xl font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 uppercase text-xs tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {actionLoading === 'signature' ? 'Assinando...' : 'Confirmar Assinatura'}
+                        </button>
                     </div>
                 </div>
             )}
