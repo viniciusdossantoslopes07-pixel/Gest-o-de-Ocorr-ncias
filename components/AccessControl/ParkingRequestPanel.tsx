@@ -30,6 +30,7 @@ interface ParkingRequest {
     status: string;
     observacao: string;
     aprovado_por: string;
+    aprovado_em?: string;
     created_at: string;
     // Externo — inline vehicle data
     ext_marca_modelo?: string;
@@ -92,9 +93,11 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
 
         setIsProcessing(true);
         try {
+            const now = new Date().toISOString();
             const updatePayload = {
                 status: 'Aprovado',
-                aprovado_por: `${user.rank || ''} ${user.war_name || user.name || 'Desconhecido'}`.trim()
+                aprovado_por: `${user.rank || ''} ${user.war_name || user.name || 'Desconhecido'}`.trim(),
+                aprovado_em: now
             };
 
             // DEBUG: Verificar se linhas foram afetadas
@@ -368,12 +371,14 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
             {printRequest && (() => {
                 const year = new Date(printRequest.created_at).getFullYear();
                 const veiculo = printRequest.vehicle || { marca_modelo: printRequest.ext_marca_modelo || '—', placa: printRequest.ext_placa || '—', cor: printRequest.ext_cor || '' };
+                const aprovadoEm = printRequest.aprovado_em ? new Date(printRequest.aprovado_em) : null;
+
                 return (
                     <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] flex items-center justify-center overflow-auto print:p-0 print:bg-white print:block">
                         <style>{`
-                            @media print { 
-                                .no-print { display: none !important; } 
-                                body { margin: 0; background: white; } 
+                            @media print {
+                                .no-print { display: none !important; }
+                                body { margin: 0; background: white; }
                                 .print-container { box-shadow: none !important; margin: 0 !important; width: 100% !important; max-width: none !important; }
                             }
                         `}</style>
@@ -422,7 +427,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                             <div className="mt-12 text-center border-t border-gray-300 pt-4">
                                 <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Aprovação feita pela Seção de Contrainteligência e Segurança Orgânica, SOP-03 do GSD-SP</p>
                                 <p className="font-black text-sm uppercase">{printRequest.aprovado_por || 'AUTORIDADE COMPETENTE'}</p>
-                                <p className="text-[10px] text-gray-400">Assinado digitalmente</p>
+                                <p className="text-[10px] text-gray-400">Assinado digitalmente {aprovadoEm ? `em ${aprovadoEm.toLocaleDateString('pt-BR')} às ${aprovadoEm.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : ''}</p>
                             </div>
 
                             {/* Floating Action Buttons for Print */}
