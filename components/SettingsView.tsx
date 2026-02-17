@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { User } from '../types';
-import { User as UserIcon, Lock, Moon, Camera, Save, AlertTriangle } from 'lucide-react';
+import { User as UserIcon, Lock, Moon, Camera, Save, AlertTriangle, Loader2, Trash2, ImagePlus } from 'lucide-react';
+import { supabase } from '../services/supabase';
 
 interface SettingsViewProps {
     user: User;
@@ -20,10 +21,100 @@ export default function SettingsView({ user, onUpdateUser, onUpdatePassword, isD
     const [phone, setPhone] = useState(user.phoneNumber || '');
     const [loading, setLoading] = useState(false);
 
+    // Photo upload state
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+    const [uploadingPhoto, setUploadingPhoto] = useState(false);
+    const [photoUrl, setPhotoUrl] = useState(user.photo_url || '');
+
     // Security Form State
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+
+    const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('Por favor, selecione apenas imagens (JPG, PNG, etc.).');
+            return;
+        }
+
+        // Validate file size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('A imagem deve ter no máximo 2MB.');
+            return;
+        }
+
+        // Preview
+        const reader = new FileReader();
+        reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
+        reader.readAsDataURL(file);
+
+        // Upload
+        handlePhotoUpload(file);
+    };
+
+    const handlePhotoUpload = async (file: File) => {
+        setUploadingPhoto(true);
+        try {
+            const ext = file.name.split('.').pop();
+            const filePath = `${user.id}/avatar.${ext}`;
+
+            // Upload to Supabase Storage
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file, { upsert: true });
+
+            if (uploadError) {
+                console.error('Upload error:', uploadError);
+                alert('Erro ao fazer upload da imagem. Verifique se o bucket "avatars" existe no Supabase Storage.');
+                setPhotoPreview(null);
+                return;
+            }
+
+            // Get public URL
+            const { data: urlData } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath);
+
+            const publicUrl = urlData.publicUrl + '?t=' + Date.now(); // Cache bust
+
+            // Save URL to user profile
+            await onUpdateUser({ photo_url: publicUrl });
+            setPhotoUrl(publicUrl);
+            setPhotoPreview(null);
+        } catch (err) {
+            console.error(err);
+            alert('Erro inesperado ao enviar a foto.');
+            setPhotoPreview(null);
+        } finally {
+            setUploadingPhoto(false);
+        }
+    };
+
+    const handleRemovePhoto = async () => {
+        if (!confirm('Deseja remover a foto de perfil?')) return;
+        setUploadingPhoto(true);
+        try {
+            // Remove from storage
+            const fileParts = photoUrl.split('/avatars/')[1]?.split('?')[0];
+            if (fileParts) {
+                await supabase.storage.from('avatars').remove([fileParts]);
+            }
+            // Clear from profile
+            await onUpdateUser({ photo_url: '' });
+            setPhotoUrl('');
+            setPhotoPreview(null);
+        } catch (err) {
+            console.error(err);
+            alert('Erro ao remover foto.');
+        } finally {
+            setUploadingPhoto(false);
+        }
+    };
 
     const handleSaveGeneral = async () => {
         setLoading(true);
@@ -46,7 +137,7 @@ export default function SettingsView({ user, onUpdateUser, onUpdatePassword, isD
             alert('A nova senha e a confirmação não conferem.');
             return;
         }
-        if (newPassword.length < 8) { // Basic check, ideally regex for complexity
+        if (newPassword.length < 8) {
             alert('A senha deve ter no mínimo 8 caracteres.');
             return;
         }
@@ -62,6 +153,8 @@ export default function SettingsView({ user, onUpdateUser, onUpdatePassword, isD
             setConfirmPassword('');
         }
     };
+
+    const displayPhoto = photoPreview || photoUrl;
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
@@ -96,18 +189,62 @@ export default function SettingsView({ user, onUpdateUser, onUpdatePassword, isD
                 {activeTab === 'general' && (
                     <div className="space-y-8">
                         <div className="flex items-center gap-6">
-                            <div className="relative group cursor-pointer">
-                                <div className="w-24 h-24 rounded-full bg-blue-600 flex items-center justify-center text-3xl font-bold text-white shadow-lg">
-                                    {user.name[0]}
-                                </div>
-                                <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Camera className="w-8 h-8 text-white" />
-                                </div>
+                            {/* Avatar with upload */}
+                            <div className="relative group">
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    className="hidden"
+                                    onChange={handlePhotoSelect}
+                                />
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={uploadingPhoto}
+                                    className="relative w-24 h-24 rounded-full overflow-hidden shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all"
+                                >
+                                    {displayPhoto ? (
+                                        <img src={displayPhoto} alt="Foto de perfil" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full bg-blue-600 flex items-center justify-center text-3xl font-bold text-white">
+                                            {user.name[0]}
+                                        </div>
+                                    )}
+                                    {/* Hover overlay */}
+                                    <div className={`absolute inset-0 rounded-full flex flex-col items-center justify-center transition-opacity ${uploadingPhoto ? 'opacity-100 bg-black/60' : 'opacity-0 group-hover:opacity-100 bg-black/40'}`}>
+                                        {uploadingPhoto ? (
+                                            <Loader2 className="w-6 h-6 text-white animate-spin" />
+                                        ) : (
+                                            <>
+                                                <Camera className="w-6 h-6 text-white" />
+                                                <span className="text-[9px] font-bold text-white mt-0.5 uppercase">Alterar</span>
+                                            </>
+                                        )}
+                                    </div>
+                                </button>
+                                {/* Remove photo button */}
+                                {photoUrl && !uploadingPhoto && (
+                                    <button
+                                        onClick={handleRemovePhoto}
+                                        className="absolute -bottom-1 -right-1 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                                        title="Remover foto"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                )}
                             </div>
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900">{user.name}</h3>
                                 <p className="text-slate-500">{user.rank} - {user.sector}</p>
                                 <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider">SARAM: {user.saram}</p>
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={uploadingPhoto}
+                                    className="mt-2 text-xs text-blue-600 hover:text-blue-700 font-bold flex items-center gap-1 transition-colors"
+                                >
+                                    <ImagePlus className="w-3.5 h-3.5" />
+                                    {photoUrl ? 'Trocar foto' : 'Adicionar foto'}
+                                </button>
                             </div>
                         </div>
 

@@ -365,6 +365,7 @@ const App: FC = () => {
         pending_password_reset: data.pending_password_reset,
         reset_password_at_login: data.reset_password_at_login,
         password_status: data.password_status,
+        photo_url: data.photo_url,
       };
 
       if (user.approved === false) {
@@ -432,7 +433,8 @@ const App: FC = () => {
         password: u.password,
         displayOrder: u.display_order,
         menu_order: u.menu_order,
-        home_order: u.home_order
+        home_order: u.home_order,
+        photo_url: u.photo_url
       }));
       setUsers(mappedUsers);
     }
@@ -548,7 +550,8 @@ const App: FC = () => {
         access_level: updatedUser.accessLevel,
         phone_number: updatedUser.phoneNumber,
         approved: updatedUser.approved,
-        display_order: updatedUser.displayOrder
+        display_order: updatedUser.displayOrder,
+        photo_url: updatedUser.photo_url
       })
       .eq('id', updatedUser.id);
 

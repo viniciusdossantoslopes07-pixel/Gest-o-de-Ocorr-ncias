@@ -48,6 +48,7 @@ export interface User {
   displayOrder?: number;
   menu_order?: string[];
   home_order?: string[];
+  photo_url?: string;
 }
 
 export interface Attachment {

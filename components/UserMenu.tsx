@@ -66,8 +66,12 @@ export default function UserMenu({
                     </span>
                 </div>
 
-                <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md ring-2 ring-white dark:ring-slate-800">
-                    {currentUser.name ? currentUser.name[0].toUpperCase() : 'U'}
+                <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-md ring-2 ring-white dark:ring-slate-800 overflow-hidden">
+                    {currentUser.photo_url ? (
+                        <img src={currentUser.photo_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                        currentUser.name ? currentUser.name[0].toUpperCase() : 'U'
+                    )}
                 </div>
             </button>
 
@@ -78,8 +82,12 @@ export default function UserMenu({
                     {/* Header */}
                     <div className={`p-4 border-b ${isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-100 bg-slate-50'}`}>
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-inner">
-                                {currentUser.name ? currentUser.name[0].toUpperCase() : 'U'}
+                            <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-inner overflow-hidden">
+                                {currentUser.photo_url ? (
+                                    <img src={currentUser.photo_url} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                    currentUser.name ? currentUser.name[0].toUpperCase() : 'U'
+                                )}
                             </div>
                             <div className="overflow-hidden">
                                 <p className={`font-bold truncate ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
