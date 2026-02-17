@@ -1173,7 +1173,7 @@ const App: FC = () => {
           )}
 
           {activeTab === 'parking-request' && (
-            <ParkingRequestPanel />
+            <ParkingRequestPanel user={currentUser} />
           )}
 
           {/* Legacy Profile tab mapped to Settings for now, or kept separate if needed. 
