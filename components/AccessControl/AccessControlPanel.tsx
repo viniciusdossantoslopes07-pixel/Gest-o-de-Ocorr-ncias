@@ -502,20 +502,24 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                         <thead className="sticky top-0 bg-slate-50 shadow-sm z-10">
                             <tr>
                                 <th className="px-3 py-2 text-[9px] font-black text-slate-500 uppercase">Hora</th>
+                                <th className="px-3 py-2 text-[9px] font-black text-slate-500 uppercase">Local</th>
                                 <th className="px-3 py-2 text-[9px] font-black text-slate-500 uppercase">Nome / Detalhes</th>
                                 <th className="px-3 py-2 text-[9px] font-black text-slate-500 uppercase text-right">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan={3} className="text-center py-4 text-xs text-slate-400 italic">Carregando...</td></tr>
+                                <tr><td colSpan={4} className="text-center py-4 text-xs text-slate-400 italic">Carregando...</td></tr>
                             ) : filteredRecords.length === 0 ? (
-                                <tr><td colSpan={3} className="text-center py-4 text-xs text-slate-400 italic">Nada por aqui.</td></tr>
+                                <tr><td colSpan={4} className="text-center py-4 text-xs text-slate-400 italic">Nada por aqui.</td></tr>
                             ) : (
                                 filteredRecords.map((record) => (
                                     <tr key={record.id} className="border-b border-slate-50 hover:bg-slate-50">
                                         <td className="px-3 py-2 text-[10px] font-bold text-slate-600 align-top">
                                             {new Date(record.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                        </td>
+                                        <td className="px-3 py-2 text-[10px] font-bold text-slate-600 align-top">
+                                            {record.guard_gate.replace('PORTÃO ', '')}
                                         </td>
                                         <td className="px-3 py-2 align-top">
                                             <div className="flex flex-col">
