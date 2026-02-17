@@ -41,7 +41,6 @@ import { MyMaterialLoans } from './components/MyMaterialLoans';
 import MeuPlanoView from './components/MeuPlanoView';
 import DailyAttendanceView from './components/PersonnelCenter/DailyAttendance';
 import PersonnelManagementView from './components/PersonnelCenter/PersonnelManagement';
-import ForceMapDashboard from './components/PersonnelCenter/ForceMapDashboard';
 import AccessControlPanel from './components/AccessControl/AccessControlPanel';
 import AccessStatistics from './components/AccessControl/AccessStatistics';
 import ParkingRequestPanel from './components/AccessControl/ParkingRequestPanel';
@@ -82,7 +81,7 @@ const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   // Added 'settings' to activeTab type
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'material-statistics' | 'daily-attendance' | 'personnel-management' | 'force-map' | 'access-control' | 'access-statistics' | 'parking-request'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'material-statistics' | 'daily-attendance' | 'personnel-management' | 'access-control' | 'access-statistics' | 'parking-request'>('home');
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [attendanceHistory, setAttendanceHistory] = useState<DailyAttendance[]>([]);
   const [absenceJustifications, setAbsenceJustifications] = useState<AbsenceJustification[]>([]);
@@ -1165,9 +1164,6 @@ const App: FC = () => {
             />
           )}
 
-          {activeTab === 'force-map' && (
-            <ForceMapDashboard users={users} attendanceHistory={attendanceHistory} />
-          )}
 
           {/* Access Control Module */}
           {activeTab === 'access-control' && currentUser && (

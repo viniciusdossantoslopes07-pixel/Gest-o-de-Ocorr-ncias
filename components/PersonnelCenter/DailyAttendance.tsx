@@ -2,7 +2,8 @@
 import { useState, useEffect, FC, Fragment } from 'react';
 import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '../../types';
 import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, SETORES, RANKS } from '../../constants';
-import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint } from 'lucide-react';
+import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint, BarChart3 } from 'lucide-react';
+import ForceMapDashboard from './ForceMapDashboard';
 import { authenticateBiometrics } from '../../services/webauthn';
 import { supabase } from '../../services/supabase';
 
@@ -308,7 +309,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     // Ad-hoc military management (now passed via props)
     const [showAdHocModal, setShowAdHocModal] = useState(false);
     const [newAdHoc, setNewAdHoc] = useState({ rank: '', warName: '', saram: '' });
-    const [activeSubTab, setActiveSubTab] = useState<'chamada' | 'cupons'>('chamada');
+    const [activeSubTab, setActiveSubTab] = useState<'chamada' | 'cupons' | 'mapa_forca'>('chamada');
 
     // Justification States
     const [showJustificationModal, setShowJustificationModal] = useState(false);
@@ -659,6 +660,12 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 >
                     <FileText className="w-4 h-4" /> Cupons Gerados
                 </button>
+                <button
+                    onClick={() => setActiveSubTab('mapa_forca')}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${activeSubTab === 'mapa_forca' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    <BarChart3 className="w-4 h-4" /> Mapa de Força
+                </button>
             </div>
 
             {activeSubTab === 'chamada' && (
@@ -945,6 +952,12 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {activeSubTab === 'mapa_forca' && (
+                <div className="animate-in fade-in slide-in-from-bottom-4">
+                    <ForceMapDashboard users={users} attendanceHistory={attendanceHistory} />
                 </div>
             )}
 

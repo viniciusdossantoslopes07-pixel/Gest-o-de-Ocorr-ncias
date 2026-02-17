@@ -157,7 +157,6 @@ export default function SideMenu({
                                         <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
                                             <MenuItem id="daily-attendance" label="Chamada Diária" icon={ShieldCheck} />
                                             <MenuItem id="personnel-management" label="Gestão de Efetivo" icon={UserIcon} />
-                                            <MenuItem id="force-map" label="Mapa de Força" icon={BarChart3} />
                                         </div>
                                     )}
                                 </div>
