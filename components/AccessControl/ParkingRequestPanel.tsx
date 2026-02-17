@@ -315,13 +315,13 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Identidade (RG/CPF) {tipoPessoa === 'Civil' ? '*' : ''}</label>
-                                    <input value={extIdentidade} onChange={e => setExtIdentidade(e.target.value)} placeholder="(RG,CPF, SARAM,ID MILITAR)" required={tipoPessoa === 'Civil'} style={{ textTransform: 'uppercase' }}
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Identidade (RG, CPF, SARAM, ID Militar) {tipoPessoa === 'Civil' ? '*' : ''}</label>
+                                    <input value={extIdentidade} onChange={e => setExtIdentidade(e.target.value.replace(/\D/g, ''))} placeholder="**********" inputMode="numeric" required={tipoPessoa === 'Civil'}
                                         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Telefone</label>
-                                    <input value={extTelefone} onChange={e => setExtTelefone(e.target.value)} placeholder="11-99999-9999"
+                                    <input value={extTelefone} onChange={e => setExtTelefone(e.target.value.replace(/\D/g, ''))} placeholder="11999999999" inputMode="numeric"
                                         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
                                 </div>
                             </div>
