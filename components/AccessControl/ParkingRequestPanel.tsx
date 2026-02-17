@@ -142,56 +142,9 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
         { id: 'estatisticas' as const, label: 'Estatísticas', icon: BarChart3 },
     ];
 
-    // ========== PRINT VIEW ==========
-    if (printRequest) {
-        const year = new Date(printRequest.created_at).getFullYear();
-        const veiculo = printRequest.vehicle || { marca_modelo: printRequest.ext_marca_modelo || '—', placa: printRequest.ext_placa || '—', cor: printRequest.ext_cor || '' };
-        return (
-            <div className="fixed inset-0 bg-white z-[200] overflow-auto print:p-0">
-                <style>{`@media print { .no-print { display: none !important; } body { margin: 0; } }`}</style>
-                <div className="max-w-[600px] mx-auto p-8 font-serif text-black">
-                    <p className="text-center text-sm font-bold mb-4">Manter este documento visível no para-brisa e estacionar o carro de ré.</p>
-                    <div className="flex items-center justify-between mb-2">
-                        <img src="/logo_basp_novo.png" alt="BASP" className="h-24 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                        <div className="text-center flex-1">
-                            <h1 className="text-3xl font-black tracking-tight">AUTORIZAÇÃO</h1>
-                            <p className="text-lg font-bold">Nº {printRequest.numero_autorizacao}/{year}</p>
-                        </div>
-                        <img src="/logo_fab.png" alt="FAB" className="h-24 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                    </div>
-                    <h2 className="text-center text-lg font-bold border-b-2 border-black pb-2 mb-4">ESTACIONAMENTO DA BASP</h2>
-                    <p className="text-red-600 font-bold text-sm text-center mb-6 leading-snug">
-                        Informo a V.S.ª que a área coberta do Hotel de Trânsito é destinada aos Residentes, Usuários do Hotel em Trânsito, Of. Superiores da OM e Of. Generais
-                    </p>
-                    <div className="mb-6">
-                        <h3 className="font-black text-base mb-2 border-b border-black pb-1">DADOS DO SOLICITANTE:</h3>
-                        <p className="text-sm mb-1">Nome Completo: <strong>{printRequest.nome_completo}</strong></p>
-                        <p className="text-sm mb-1">Posto/Grad: <strong>{printRequest.posto_graduacao}</strong> ({printRequest.tipo_pessoa} — {printRequest.forca})</p>
-                        <p className="text-sm mb-1">Veículo: <strong>{(veiculo as any).marca_modelo}</strong></p>
-                        <p className="text-sm mb-1">Placa: <strong>{(veiculo as any).placa}</strong></p>
-                        {(veiculo as any).cor && <p className="text-sm mb-1">Cor: <strong>{(veiculo as any).cor}</strong></p>}
-                    </div>
-                    <div className="mb-6 border-t border-black pt-4">
-                        <div className="flex justify-between text-sm"><span>Início da Autorização:</span><strong>{new Date(printRequest.inicio + 'T00:00:00').toLocaleDateString('pt-BR')}</strong></div>
-                        <div className="flex justify-between text-sm mt-1"><span>Término da Autorização:</span><strong>{new Date(printRequest.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</strong></div>
-                    </div>
-                    <div className="bg-gray-100 border border-gray-300 p-4 text-xs text-center mt-8 leading-relaxed">
-                        <strong>Ao chegar ao portão G3 utilize esta autorização em mãos para se identificar. Mantenha este documento visível no para-brisa e estacione o carro de ré no Cassino dos Oficiais.</strong>
-                    </div>
-                </div>
-                <div className="no-print fixed bottom-6 right-6 flex gap-3">
-                    <button onClick={() => setPrintRequest(null)} className="px-6 py-3 bg-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-300 transition-all">Voltar</button>
-                    <button onClick={() => window.print()} className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center gap-2">
-                        <Printer className="w-4 h-4" /> Imprimir
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
     // ========== MAIN VIEW ==========
     return (
-        <div className="space-y-4 animate-fade-in">
+        <div className="space-y-4 animate-fade-in relative min-h-screen">
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div>
@@ -368,6 +321,69 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                     </div>
                 </div>
             )}
+
+            {/* ========== PRINT MODAL ========== */}
+            {printRequest && (() => {
+                const year = new Date(printRequest.created_at).getFullYear();
+                const veiculo = printRequest.vehicle || { marca_modelo: printRequest.ext_marca_modelo || '—', placa: printRequest.ext_placa || '—', cor: printRequest.ext_cor || '' };
+                return (
+                    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] flex items-center justify-center overflow-auto print:p-0 print:bg-white print:block">
+                        <style>{`
+                            @media print { 
+                                .no-print { display: none !important; } 
+                                body { margin: 0; background: white; } 
+                                .print-container { box-shadow: none !important; margin: 0 !important; width: 100% !important; max-width: none !important; }
+                            }
+                        `}</style>
+
+                        {/* Overlay Close Area (click outside) */}
+                        <div className="absolute inset-0 no-print" onClick={() => setPrintRequest(null)}></div>
+
+                        <div className="relative bg-white w-full max-w-[210mm] min-h-[297mm] shadow-2xl mx-auto my-8 p-8 font-serif text-black print-container animate-in zoom-in-95 duration-200">
+                            {/* Close Button (Mobile/Desktop friendly) */}
+                            <button onClick={() => setPrintRequest(null)} className="no-print absolute -top-12 right-0 text-white/70 hover:text-white flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full backdrop-blur-md">
+                                <XCircle className="w-5 h-5" /> Fechar Visualização
+                            </button>
+
+                            <p className="text-center text-sm font-bold mb-4">Manter este documento visível no para-brisa e estacionar o carro de ré.</p>
+                            <div className="flex items-center justify-between mb-2">
+                                <img src="/logo_basp_novo.png" alt="BASP" className="h-24 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                <div className="text-center flex-1">
+                                    <h1 className="text-3xl font-black tracking-tight">AUTORIZAÇÃO</h1>
+                                    <p className="text-lg font-bold">Nº {printRequest.numero_autorizacao}/{year}</p>
+                                </div>
+                                <img src="/logo_fab.png" alt="FAB" className="h-24 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                            </div>
+                            <h2 className="text-center text-lg font-bold border-b-2 border-black pb-2 mb-4">ESTACIONAMENTO DA BASP</h2>
+                            <p className="text-red-600 font-bold text-sm text-center mb-6 leading-snug">
+                                Informo a V.S.ª que a área coberta do Hotel de Trânsito é destinada aos Residentes, Usuários do Hotel em Trânsito, Of. Superiores da OM e Of. Generais
+                            </p>
+                            <div className="mb-6">
+                                <h3 className="font-black text-base mb-2 border-b border-black pb-1">DADOS DO SOLICITANTE:</h3>
+                                <p className="text-sm mb-1">Nome Completo: <strong>{printRequest.nome_completo}</strong></p>
+                                <p className="text-sm mb-1">Posto/Grad: <strong>{printRequest.posto_graduacao}</strong> ({printRequest.tipo_pessoa} — {printRequest.forca})</p>
+                                <p className="text-sm mb-1">Veículo: <strong>{(veiculo as any).marca_modelo}</strong></p>
+                                <p className="text-sm mb-1">Placa: <strong>{(veiculo as any).placa}</strong></p>
+                                {(veiculo as any).cor && <p className="text-sm mb-1">Cor: <strong>{(veiculo as any).cor}</strong></p>}
+                            </div>
+                            <div className="mb-6 border-t border-black pt-4">
+                                <div className="flex justify-between text-sm"><span>Início da Autorização:</span><strong>{new Date(printRequest.inicio + 'T00:00:00').toLocaleDateString('pt-BR')}</strong></div>
+                                <div className="flex justify-between text-sm mt-1"><span>Término da Autorização:</span><strong>{new Date(printRequest.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</strong></div>
+                            </div>
+                            <div className="bg-gray-100 border border-gray-300 p-4 text-xs text-center mt-8 leading-relaxed">
+                                <strong>Ao chegar ao portão G3 utilize esta autorização em mãos para se identificar. Mantenha este documento visível no para-brisa e estacione o carro de ré no Cassino dos Oficiais.</strong>
+                            </div>
+
+                            {/* Floating Action Buttons for Print */}
+                            <div className="no-print fixed bottom-8 right-8 flex gap-3 z-[210]">
+                                <button onClick={() => window.print()} className="shadow-xl px-6 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all flex items-center gap-3 animate-bounce-subtle">
+                                    <Printer className="w-5 h-5" /> Imprimir Agora
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
         </div>
     );
 }
