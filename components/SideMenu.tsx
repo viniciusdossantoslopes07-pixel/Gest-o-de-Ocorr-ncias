@@ -130,7 +130,6 @@ export default function SideMenu({
                                                 <div className="my-2 border-t border-slate-800" />
                                                 <MenuItem id="material-approvals" label="Material e Cautela" icon={ShieldCheck} />
                                                 <MenuItem id="inventory-management" label="Gestão de Estoque" icon={LayoutDashboard} />
-                                                <MenuItem id="material-statistics" label="Estatísticas" icon={LayoutDashboard} />
                                             </>
                                         )}
                                     </div>

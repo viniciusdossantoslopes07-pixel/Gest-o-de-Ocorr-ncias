@@ -33,7 +33,6 @@ import UserMenu from './components/UserMenu'; // Import UserMenu
 
 import { SAP03Panel } from './components/SAP03Panel';
 import LoanRequestForm from './components/LoanRequestForm';
-import { MaterialStatistics } from './components/MaterialStatistics';
 import MaterialDashboard from './components/MaterialDashboard';
 import { formatViaturas } from './utils/formatters';
 import MissionManager from './components/MissionManager';
@@ -81,7 +80,7 @@ const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   // Added 'settings' to activeTab type
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'material-statistics' | 'daily-attendance' | 'personnel-management' | 'access-control' | 'access-statistics' | 'parking-request'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'access-control' | 'access-statistics' | 'parking-request'>('home');
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [attendanceHistory, setAttendanceHistory] = useState<DailyAttendance[]>([]);
   const [absenceJustifications, setAbsenceJustifications] = useState<AbsenceJustification[]>([]);
@@ -988,7 +987,6 @@ const App: FC = () => {
 
           {activeTab === 'kanban' && isAdmin && <KanbanBoard occurrences={occurrences} onSelect={setSelectedOccurrence} />}
           {activeTab === 'dashboard' && isAdmin && <Dashboard occurrences={occurrences} />}
-          {activeTab === 'material-statistics' && isMaterialManager && <MaterialStatistics />}
 
           {activeTab === 'mission-request' && canRequestMission && (
             <div className="max-w-4xl mx-auto">
