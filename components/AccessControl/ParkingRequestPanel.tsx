@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
-import { Car, Plus, Trash2, CheckCircle, XCircle, Clock, Printer, AlertCircle, History, List, Eye, FileText } from 'lucide-react';
+import { Car, Clock, Printer, History, List, Eye, FileText, BarChart3, ChevronRight, CheckCircle, XCircle } from 'lucide-react';
+import ParkingStatistics from './ParkingStatistics';
 
 interface ParkingVehicle {
     id: string;
@@ -44,34 +45,18 @@ interface ParkingRequest {
 const TOTAL_VAGAS = 32;
 
 export default function ParkingRequestPanel({ user }: { user: any }) {
-    const [activeTab, setActiveTab] = useState<'veiculos' | 'historico'>('historico');
-    const [vehicles, setVehicles] = useState<ParkingVehicle[]>([]);
+    const [activeTab, setActiveTab] = useState<'gerenciar' | 'estatisticas'>('gerenciar');
     const [requests, setRequests] = useState<ParkingRequest[]>([]);
     const [allRequests, setAllRequests] = useState<ParkingRequest[]>([]);
-    const [loading, setLoading] = useState(false);
     const [printRequest, setPrintRequest] = useState<ParkingRequest | null>(null);
     const [analysingRequest, setAnalysingRequest] = useState<ParkingRequest | null>(null);
-
-    // Form — Novo Veículo (interno)
-    const [vMarcaModelo, setVMarcaModelo] = useState('');
-    const [vPlaca, setVPlaca] = useState('');
-    const [vCor, setVCor] = useState('');
-    const [vCnh, setVCnh] = useState('');
-    const [vCrlv, setVCrlv] = useState('');
-    const [showVehicleForm, setShowVehicleForm] = useState(false);
 
     const isAdmin = user?.role === 'Gestor Master / OSD' || user?.role === 'Comandante OM' || (user?.sector && user.sector.includes('SOP'));
 
     useEffect(() => {
-        fetchVehicles();
         fetchMyRequests();
         if (isAdmin) fetchAllRequests();
     }, []);
-
-    const fetchVehicles = async () => {
-        const { data } = await supabase.from('parking_vehicles').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-        if (data) setVehicles(data);
-    };
 
     const fetchMyRequests = async () => {
         const { data } = await supabase.from('parking_requests').select('*, vehicle:parking_vehicles(*)').eq('user_id', user.id).order('created_at', { ascending: false });
@@ -86,25 +71,6 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
     const vagasOcupadas = (isAdmin ? allRequests : requests).filter(r => r.status === 'Aprovado' && new Date(r.termino) >= new Date()).length;
     const vagasDisponiveis = TOTAL_VAGAS - vagasOcupadas;
 
-    // Cadastrar veículo (interno)
-    const handleAddVehicle = async () => {
-        if (!vMarcaModelo || !vPlaca) return alert('Preencha Marca/Modelo e Placa.');
-        setLoading(true);
-        await supabase.from('parking_vehicles').insert({
-            user_id: user.id, marca_modelo: vMarcaModelo.toUpperCase(), placa: vPlaca.toUpperCase(), cor: vCor, cnh: vCnh, crlv: vCrlv
-        });
-        setVMarcaModelo(''); setVPlaca(''); setVCor(''); setVCnh(''); setVCrlv('');
-        setShowVehicleForm(false);
-        await fetchVehicles();
-        setLoading(false);
-    };
-
-    const handleDeleteVehicle = async (id: string) => {
-        if (!confirm('Remover este veículo?')) return;
-        await supabase.from('parking_vehicles').delete().eq('id', id);
-        await fetchVehicles();
-    };
-
     // Aprovar / Rejeitar
     const handleApprove = async (id: string) => {
         await supabase.from('parking_requests').update({ status: 'Aprovado', aprovado_por: `${user.rank} ${user.war_name || user.name}` }).eq('id', id);
@@ -116,8 +82,8 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
     };
 
     const tabs = [
-        { id: 'veiculos' as const, label: 'Meus Veículos', icon: Car },
-        { id: 'historico' as const, label: 'Histórico', icon: History },
+        { id: 'gerenciar' as const, label: 'Gerenciar Solicitações', icon: List },
+        { id: 'estatisticas' as const, label: 'Estatísticas', icon: BarChart3 },
     ];
 
     // ========== PRINT VIEW ==========
@@ -176,10 +142,12 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                     <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
                         <Car className="w-6 h-6 text-blue-600" /> Estacionamento BASP
                     </h2>
-                    <p className="text-xs text-slate-400 font-medium">Gestão de Veículos e Solicitações</p>
+                    <p className="text-xs text-slate-400 font-medium">Gestão e Controle de Vagas</p>
                 </div>
-                <div className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest ${vagasDisponiveis > 5 ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : vagasDisponiveis > 0 ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>
-                    {vagasDisponiveis}/{TOTAL_VAGAS} vagas
+                <div className="flex items-center gap-3">
+                    <div className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest ${vagasDisponiveis > 5 ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : vagasDisponiveis > 0 ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>
+                        {vagasDisponiveis}/{TOTAL_VAGAS} vagas
+                    </div>
                 </div>
             </div>
 
@@ -193,51 +161,13 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                 ))}
             </div>
 
-            {/* ========== TAB: Meus Veículos ========== */}
-            {activeTab === 'veiculos' && (
-                <div className="space-y-3">
-                    <button onClick={() => setShowVehicleForm(!showVehicleForm)}
-                        className="w-full py-3 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-emerald-100 transition-all flex items-center justify-center gap-2">
-                        <Plus className="w-4 h-4" /> Cadastrar Novo Veículo
-                    </button>
-                    {showVehicleForm && (
-                        <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3 animate-fade-in">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div><label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Marca / Modelo *</label>
-                                    <input value={vMarcaModelo} onChange={e => setVMarcaModelo(e.target.value)} placeholder="FIAT ARGO" style={{ textTransform: 'uppercase' }} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" /></div>
-                                <div><label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Placa *</label>
-                                    <input value={vPlaca} onChange={e => setVPlaca(e.target.value)} placeholder="ABC-1D23" style={{ textTransform: 'uppercase' }} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" /></div>
-                            </div>
-                            <div className="grid grid-cols-3 gap-3">
-                                <div><label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Cor</label>
-                                    <input value={vCor} onChange={e => setVCor(e.target.value)} placeholder="Prata" className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" /></div>
-                                <div><label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">CNH</label>
-                                    <input value={vCnh} onChange={e => setVCnh(e.target.value)} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" /></div>
-                                <div><label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">CRLV</label>
-                                    <input value={vCrlv} onChange={e => setVCrlv(e.target.value)} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" /></div>
-                            </div>
-                            <button onClick={handleAddVehicle} disabled={loading || !vMarcaModelo || !vPlaca}
-                                className="w-full py-3 bg-emerald-600 text-white rounded-xl font-black uppercase text-xs tracking-widest hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">Salvar Veículo</button>
-                        </div>
-                    )}
-                    {vehicles.length === 0 && !showVehicleForm && <div className="text-center py-8 text-sm text-slate-400">Nenhum veículo cadastrado.</div>}
-                    {vehicles.map(v => (
-                        <div key={v.id} className="bg-white rounded-xl border border-slate-200 p-4 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center"><Car className="w-5 h-5 text-blue-600" /></div>
-                                <div>
-                                    <p className="font-black text-sm text-slate-800">{v.marca_modelo}</p>
-                                    <p className="text-[10px] text-slate-400 font-bold">{v.placa} {v.cor ? `• ${v.cor}` : ''}</p>
-                                </div>
-                            </div>
-                            <button onClick={() => handleDeleteVehicle(v.id)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 className="w-4 h-4" /></button>
-                        </div>
-                    ))}
-                </div>
+            {/* ========== TAB: Estatísticas ========== */}
+            {activeTab === 'estatisticas' && (
+                <ParkingStatistics />
             )}
 
-            {/* ========== TAB: Histórico ========== */}
-            {activeTab === 'historico' && (
+            {/* ========== TAB: Gerenciar Solicitações ========== */}
+            {activeTab === 'gerenciar' && (
                 <div className="space-y-3">
                     {/* Admin: pendentes */}
                     {isAdmin && allRequests.filter(r => r.status === 'Pendente').length > 0 && (
