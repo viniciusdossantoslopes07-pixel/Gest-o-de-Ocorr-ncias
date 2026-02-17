@@ -2,7 +2,7 @@
 import { useState, type FC, type FormEvent } from 'react';
 import { User } from '../types';
 import { RANKS, SETORES } from '../constants';
-import { ShieldCheck, ArrowRight, Lock, User as UserIcon, Megaphone, Fingerprint, Car, Send, CheckCircle } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Lock, User as UserIcon, Megaphone, Fingerprint, Car, Send, CheckCircle, X } from 'lucide-react';
 import { isWebAuthnSupported, registerBiometrics, authenticateBiometrics } from '../services/webauthn';
 import { supabase } from '../services/supabase';
 
@@ -20,7 +20,8 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const [view, setView] = useState<'login' | 'register' | 'forgot-password' | 'parking'>('login');
+  const [view, setView] = useState<'login' | 'register' | 'forgot-password'>('login');
+  const [showParkingModal, setShowParkingModal] = useState(false);
 
   // Parking public form
   const [parkData, setParkData] = useState({ nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', telefone: '', marcaModelo: '', placa: '', cor: '', inicio: '', termino: '', obs: '' });
@@ -334,7 +335,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
 
                 <button
                   type="button"
-                  onClick={() => { setView('parking'); setError(''); setParkSuccess(false); }}
+                  onClick={() => { setShowParkingModal(true); setError(''); setParkSuccess(false); }}
                   className="w-full bg-slate-100 text-slate-500 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:bg-slate-200 transition-all"
                 >
                   <Car className="w-4 h-4" /> Solicitar Estacionamento
@@ -390,43 +391,6 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                   </button>
                 </div>
               </div>
-            )} {view === 'parking' && (
-              <div className="space-y-4">
-                {parkSuccess ? (
-                  <div className="text-center space-y-4 py-4">
-                    <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto"><CheckCircle className="w-8 h-8 text-emerald-600" /></div>
-                    <h3 className="text-lg font-black text-slate-800">Solicitação Enviada!</h3>
-                    <p className="text-xs text-slate-500">Protocolo Nº <strong>{parkProto}</strong></p>
-                    <p className="text-[10px] text-slate-400">Sua solicitação será analisada pela SOP-03. Aguarde a aprovação.</p>
-                    <button type="button" onClick={() => { setView('login'); setParkSuccess(false); }} className="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest">Voltar</button>
-                  </div>
-                ) : (
-                  <>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2"><Car className="w-3 h-3" /> Solicitar Estacionamento</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="col-span-2"><input required placeholder="NOME COMPLETO *" value={parkData.nome} onChange={e => setParkData({ ...parkData, nome: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" /></div>
-                      <input placeholder="POSTO/GRAD" value={parkData.posto} onChange={e => setParkData({ ...parkData, posto: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" />
-                      <select value={parkData.tipo} onChange={e => setParkData({ ...parkData, tipo: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500"><option>Militar</option><option>Civil</option></select>
-                      <select value={parkData.forca} onChange={e => setParkData({ ...parkData, forca: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500"><option>FAB</option><option>EB</option><option>MB</option><option>PMSP</option><option>PRF</option><option>PF</option><option>Civil</option><option>Outro</option></select>
-                      <input placeholder="OM / ÓRGÃO" value={parkData.om} onChange={e => setParkData({ ...parkData, om: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" />
-                      <div className="col-span-2"><input placeholder="TELEFONE" value={parkData.telefone} onChange={e => setParkData({ ...parkData, telefone: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" /></div>
-                    </div>
-                    <div className="border-t border-dashed border-slate-200 my-1"></div>
-                    <div className="grid grid-cols-3 gap-3">
-                      <input required placeholder="MARCA/MODELO *" value={parkData.marcaModelo} onChange={e => setParkData({ ...parkData, marcaModelo: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" />
-                      <input required placeholder="PLACA *" value={parkData.placa} onChange={e => setParkData({ ...parkData, placa: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" />
-                      <input placeholder="COR" value={parkData.cor} onChange={e => setParkData({ ...parkData, cor: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div><label className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Início *</label><input required type="date" value={parkData.inicio} onChange={e => setParkData({ ...parkData, inicio: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" /></div>
-                      <div><label className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Término *</label><input required type="date" value={parkData.termino} onChange={e => setParkData({ ...parkData, termino: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" /></div>
-                    </div>
-                    <textarea placeholder="OBSERVAÇÕES" value={parkData.obs} onChange={e => setParkData({ ...parkData, obs: e.target.value })} rows={2} style={{ textTransform: 'uppercase' }} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500 resize-none" />
-                    <button type="button" onClick={handleParkingSubmit} disabled={isLoading} className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:bg-blue-700 transition-all disabled:opacity-50"><Send className="w-4 h-4" /> Enviar Solicitação</button>
-                    <button type="button" onClick={() => setView('login')} className="w-full text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-slate-600 py-2">← Voltar ao Login</button>
-                  </>
-                )}
-              </div>
             )}
           </form>
         </div>
@@ -457,6 +421,105 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                 Agora não
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Parking Request Modal */}
+      {showParkingModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-lg sm:rounded-2xl shadow-2xl border border-slate-200 overflow-hidden sm:max-h-[90vh] flex flex-col">
+            <div className="bg-slate-900 p-4 sm:p-6 text-white flex justify-between items-center shrink-0">
+              <div className="min-w-0">
+                <h2 className="text-lg sm:text-xl font-bold truncate flex items-center gap-2"><Car className="w-5 h-5" /> Solicitar Estacionamento</h2>
+                <p className="text-slate-400 text-[10px] sm:text-xs mt-0.5 truncate">Preencha os dados do veículo e período desejado</p>
+              </div>
+              <button type="button" onClick={() => setShowParkingModal(false)} className="hover:bg-slate-800 p-2 rounded-full transition-colors shrink-0">
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
+            </div>
+
+            {parkSuccess ? (
+              <div className="p-8 text-center space-y-4">
+                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto"><CheckCircle className="w-8 h-8 text-emerald-600" /></div>
+                <h3 className="text-lg font-black text-slate-800">Solicitação Enviada!</h3>
+                <p className="text-xs text-slate-500">Protocolo Nº <strong>{parkProto}</strong></p>
+                <p className="text-[10px] text-slate-400">Sua solicitação será analisada pela SOP-03.<br />Aguarde a aprovação.</p>
+                <button type="button" onClick={() => { setShowParkingModal(false); setParkSuccess(false); setParkData({ nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', telefone: '', marcaModelo: '', placa: '', cor: '', inicio: '', termino: '', obs: '' }); }} className="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-700 transition-all">Fechar</button>
+              </div>
+            ) : (
+              <>
+                <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
+                  {error && <div className="p-3 bg-red-50 text-red-600 text-[10px] font-black rounded-xl border border-red-100 text-center uppercase tracking-widest">{error}</div>}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="sm:col-span-2 space-y-1">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Nome Completo *</label>
+                      <input required placeholder="Ex: JOÃO DA SILVA" value={parkData.nome} onChange={e => setParkData({ ...parkData, nome: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Posto/Grad</label>
+                      <input placeholder="Ex: CAP, SGT" value={parkData.posto} onChange={e => setParkData({ ...parkData, posto: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Tipo</label>
+                      <select value={parkData.tipo} onChange={e => setParkData({ ...parkData, tipo: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500"><option>Militar</option><option>Civil</option></select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Força</label>
+                      <select value={parkData.forca} onChange={e => setParkData({ ...parkData, forca: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500"><option>FAB</option><option>EB</option><option>MB</option><option>PMSP</option><option>PRF</option><option>PF</option><option>Civil</option><option>Outro</option></select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">OM / Órgão</label>
+                      <input placeholder="BASP, AFA..." value={parkData.om} onChange={e => setParkData({ ...parkData, om: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div className="sm:col-span-2 space-y-1">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Telefone</label>
+                      <input placeholder="(11) 99999-9999" value={parkData.telefone} onChange={e => setParkData({ ...parkData, telefone: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+
+                  <div className="border-t border-dashed border-slate-200"></div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Marca/Modelo *</label>
+                      <input required placeholder="FIAT ARGO" value={parkData.marcaModelo} onChange={e => setParkData({ ...parkData, marcaModelo: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Placa *</label>
+                      <input required placeholder="ABC-1D23" value={parkData.placa} onChange={e => setParkData({ ...parkData, placa: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Cor</label>
+                      <input placeholder="PRATA" value={parkData.cor} onChange={e => setParkData({ ...parkData, cor: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Início *</label>
+                      <input required type="date" value={parkData.inicio} onChange={e => setParkData({ ...parkData, inicio: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Término *</label>
+                      <input required type="date" value={parkData.termino} onChange={e => setParkData({ ...parkData, termino: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Observações</label>
+                    <textarea placeholder="Informações adicionais..." value={parkData.obs} onChange={e => setParkData({ ...parkData, obs: e.target.value })} rows={2} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 p-4 sm:p-6 border-t border-slate-200 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 shrink-0">
+                  <button type="button" onClick={() => setShowParkingModal(false)} className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-200 transition-colors order-2 sm:order-1">Cancelar</button>
+                  <button type="button" onClick={handleParkingSubmit} disabled={isLoading} className="w-full sm:w-auto bg-blue-600 px-8 py-3 rounded-xl font-bold text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 transition-all active:scale-95 order-1 sm:order-2 disabled:opacity-50">
+                    {isLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <><Send className="w-4 h-4" /> Enviar Solicitação</>}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
