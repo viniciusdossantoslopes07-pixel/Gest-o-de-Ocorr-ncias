@@ -1,7 +1,7 @@
 import React, { useState, FC } from 'react';
 import { User, UserRole } from '../../types';
 import { RANKS, SETORES } from '../../constants';
-import { UserPlus, Search, Edit2, Trash2, Shield, User as UserIcon, Hash, Building2, Users } from 'lucide-react';
+import { UserPlus, Search, Edit2, Trash2, Shield, User as UserIcon, Hash, Building2, Users, AlertTriangle } from 'lucide-react';
 
 interface PersonnelManagementProps {
     users: User[];
@@ -25,10 +25,14 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
         role: UserRole.OPERATIONAL
     });
 
+    // Sector Filter State
+    const [filterSector, setFilterSector] = useState('TODOS');
+
     const filteredUsers = users.filter(u =>
-        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.warName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.saram.includes(searchTerm)
+        (filterSector === 'TODOS' ? true : u.sector === filterSector) &&
+        (u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            u.warName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            u.saram.includes(searchTerm))
     ).sort((a, b) => a.name.localeCompare(b.name));
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -82,15 +86,28 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                 </div>
 
                 {!isAdding && (
-                    <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                        <input
-                            type="text"
-                            placeholder="Buscar por nome, nome de guerra ou SARAM..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                        />
+                    <div className="flex flex-col md:flex-row gap-4">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Buscar por nome, nome de guerra ou SARAM..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            />
+                        </div>
+                        <div className="md:w-64">
+                            <select
+                                value={filterSector}
+                                onChange={(e) => setFilterSector(e.target.value)}
+                                className={`w-full h-full bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all ${filterSector === 'SEM SETOR' ? 'text-red-500 border-red-200 bg-red-50' : 'text-slate-700'}`}
+                            >
+                                <option value="TODOS">Todos os Setores</option>
+                                <option value="SEM SETOR">⚠ SEM SETOR (Não Alocados)</option>
+                                {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                        </div>
                     </div>
                 )}
             </div>
@@ -202,6 +219,14 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-2">
+                                                {user.sector === 'SEM SETOR' && (
+                                                    <button
+                                                        onClick={() => handleEdit(user)}
+                                                        className="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-[10px] font-black uppercase hover:bg-red-200 transition-colors mr-auto"
+                                                    >
+                                                        Atribuir Setor
+                                                    </button>
+                                                )}
                                                 <button onClick={() => handleEdit(user)} className="p-2 text-slate-400 hover:text-blue-600 transition-colors">
                                                     <Edit2 className="w-4 h-4" />
                                                 </button>
@@ -254,12 +279,21 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                 </div>
 
                                 <div className="flex gap-3 mt-1">
-                                    <button
-                                        onClick={() => handleEdit(user)}
-                                        className="flex-1 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2 active:bg-slate-50 transition-all shadow-sm"
-                                    >
-                                        <Edit2 className="w-4 h-4 text-blue-500" /> Editar Dados
-                                    </button>
+                                    {user.sector === 'SEM SETOR' ? (
+                                        <button
+                                            onClick={() => handleEdit(user)}
+                                            className="flex-1 py-3 bg-red-50 border border-red-100 text-red-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2 active:bg-red-100 transition-all shadow-sm animate-pulse"
+                                        >
+                                            <AlertTriangle className="w-4 h-4" /> Atribuir Setor
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleEdit(user)}
+                                            className="flex-1 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2 active:bg-slate-50 transition-all shadow-sm"
+                                        >
+                                            <Edit2 className="w-4 h-4 text-blue-500" /> Editar Dados
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => { if (confirm('Excluir militar?')) onDeletePersonnel(user.id); }}
                                         className="py-3 px-4 border border-red-100 text-red-500 rounded-xl font-bold text-xs flex items-center justify-center gap-2 active:bg-red-50 transition-all shadow-sm bg-red-50/30"

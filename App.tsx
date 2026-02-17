@@ -1127,15 +1127,25 @@ const App: FC = () => {
                   setUsers(prev => prev.map(u => u.id === userId ? { ...u, sector: newSector } : u));
                 }
               }}
-              onExcludeUser={(userId) => {
+              onExcludeUser={async (userId) => {
                 if (userId.startsWith('adhoc-')) {
                   setAdHocUsers(prev => prev.filter(u => u.id !== userId));
                 } else {
-                  // For permanent users, "excluding" from the call might mean just removing them from the current view
-                  // but for simplicity in this "ad-hoc" focused design, we'll filter them out from the session's user list.
-                  // However, usually "exclude" just means they aren't listed in THIS call.
-                  // For now, let's treat it as a local removal.
-                  setUsers(prev => prev.filter(u => u.id !== userId));
+                  // Persist exclusion by removing user from the sector
+                  if (confirm('Atenção: Ao excluir este militar da chamada, ele será removido do setor atual e ficará "SEM SETOR". Deseja confirmar?')) {
+                    const { error } = await supabase
+                      .from('users')
+                      .update({ sector: 'SEM SETOR' })
+                      .eq('id', userId);
+
+                    if (error) {
+                      alert('Erro ao excluir militar do setor: ' + error.message);
+                    } else {
+                      // Update local state
+                      setUsers(prev => prev.map(u => u.id === userId ? { ...u, sector: 'SEM SETOR' } : u));
+                      alert('Militar removido do setor com sucesso.');
+                    }
+                  }
                 }
               }}
             />
