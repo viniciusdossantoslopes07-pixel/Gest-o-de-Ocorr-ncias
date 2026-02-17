@@ -479,7 +479,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                     </div>
                     <div className="sm:col-span-2 space-y-1">
                       <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Identidade (RG/CPF) {parkData.tipo === 'Civil' ? '*' : ''}</label>
-                      <input required={parkData.tipo === 'Civil'} placeholder="Nº DO DOCUMENTO" value={parkData.identidade} onChange={e => setParkData({ ...parkData, identidade: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+                      <input required={parkData.tipo === 'Civil'} placeholder="(RG,CPF, SARAM,ID MILITAR)" value={parkData.identidade} onChange={e => setParkData({ ...parkData, identidade: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
                     </div>
                     <div className="sm:col-span-2 space-y-1">
                       <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Telefone</label>
