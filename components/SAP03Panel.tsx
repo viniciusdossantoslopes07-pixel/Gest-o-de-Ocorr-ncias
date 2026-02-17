@@ -893,158 +893,118 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                 )}
             </div>
 
-            {/* Modal Cupom Detalhado */}
+            {/* Modal Cupom Compacto */}
             {selectedRequest && (
                 <div
                     className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
                     onClick={() => setSelectedRequest(null)}
                 >
                     <div
-                        className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-in"
+                        className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Header com status */}
-                        <div className={`p-6 text-center relative ${selectedRequest.status === 'Concluído' ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' :
-                                selectedRequest.status === 'Em Uso' ? 'bg-gradient-to-br from-blue-500 to-blue-600' :
-                                    selectedRequest.status === 'Rejeitado' ? 'bg-gradient-to-br from-red-500 to-red-600' :
-                                        'bg-gradient-to-br from-amber-500 to-amber-600'
+                        {/* Header compacto */}
+                        <div className={`px-4 py-3 flex items-center gap-3 relative ${selectedRequest.status === 'Concluído' ? 'bg-emerald-500' :
+                                selectedRequest.status === 'Em Uso' ? 'bg-blue-500' :
+                                    selectedRequest.status === 'Rejeitado' ? 'bg-red-500' :
+                                        'bg-amber-500'
                             }`}>
-                            <button
-                                onClick={() => setSelectedRequest(null)}
-                                className="absolute top-4 right-4 p-1.5 bg-white/20 hover:bg-white/30 rounded-full transition-all"
-                            >
-                                <XCircle className="w-5 h-5 text-white" />
-                            </button>
-                            <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                                {selectedRequest.status === 'Concluído' ? <CheckCircle className="w-7 h-7 text-white" /> :
-                                    selectedRequest.status === 'Em Uso' ? <Truck className="w-7 h-7 text-white" /> :
-                                        selectedRequest.status === 'Rejeitado' ? <XCircle className="w-7 h-7 text-white" /> :
-                                            <Clock className="w-7 h-7 text-white" />}
+                            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                                {selectedRequest.status === 'Concluído' ? <CheckCircle className="w-4 h-4 text-white" /> :
+                                    selectedRequest.status === 'Em Uso' ? <Truck className="w-4 h-4 text-white" /> :
+                                        selectedRequest.status === 'Rejeitado' ? <XCircle className="w-4 h-4 text-white" /> :
+                                            <Clock className="w-4 h-4 text-white" />}
                             </div>
-                            <h2 className="text-white font-black text-lg uppercase tracking-tight">{selectedRequest.status === 'Concluído' ? 'Cautela Concluída' : selectedRequest.status === 'Em Uso' ? 'Material em Uso' : selectedRequest.status === 'Rejeitado' ? 'Cautela Rejeitada' : 'Cautela Pendente'}</h2>
-                            <p className="text-white/80 text-xs font-medium mt-1">Comprovante de Movimentação</p>
+                            <div className="flex-1">
+                                <h2 className="text-white font-black text-sm uppercase tracking-tight">{selectedRequest.status === 'Concluído' ? 'Cautela Concluída' : selectedRequest.status === 'Em Uso' ? 'Material em Uso' : selectedRequest.status === 'Rejeitado' ? 'Cautela Rejeitada' : 'Cautela Pendente'}</h2>
+                                <p className="text-white/70 text-[10px] font-medium">Comprovante</p>
+                            </div>
+                            <button onClick={() => setSelectedRequest(null)} className="p-1 bg-white/20 hover:bg-white/30 rounded-full transition-all">
+                                <XCircle className="w-4 h-4 text-white" />
+                            </button>
                         </div>
 
-                        {/* Linha pontilhada separadora */}
                         <div className="border-t-2 border-dashed border-slate-200"></div>
 
-                        {/* Corpo do Cupom */}
-                        <div className="p-6 space-y-5">
-                            {/* Material */}
-                            <div className="text-center pb-4 border-b border-slate-100">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Material</p>
-                                <p className="text-xl font-black text-slate-800 mt-1">{selectedRequest.material?.material || '—'}</p>
-                                <p className="text-xs text-slate-400 font-medium mt-0.5">{selectedRequest.material?.tipo_de_material || 'Sem categoria'}</p>
+                        {/* Corpo compacto */}
+                        <div className="p-4 space-y-3">
+                            {/* Material + Info */}
+                            <div className="text-center pb-2 border-b border-slate-100">
+                                <p className="text-lg font-black text-slate-800">{selectedRequest.material?.material || '—'}</p>
+                                <p className="text-[10px] text-slate-400 font-medium">{selectedRequest.material?.tipo_de_material || 'Sem categoria'}</p>
                             </div>
 
-                            {/* Grid de informações */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-slate-50 p-3 rounded-xl">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Quantidade</p>
-                                    <p className="font-black text-slate-800 text-lg">{selectedRequest.quantidade || 1} <span className="text-xs font-medium text-slate-400">un.</span></p>
+                            {/* Grid compacto: Qtd + Data + Solicitante */}
+                            <div className="grid grid-cols-3 gap-2 text-center">
+                                <div className="bg-slate-50 p-2 rounded-lg">
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase">Qtd</p>
+                                    <p className="font-black text-slate-800">{selectedRequest.quantidade || 1}</p>
                                 </div>
-                                <div className="bg-slate-50 p-3 rounded-xl">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Data da Cautela</p>
-                                    <p className="font-bold text-slate-800">{new Date(selectedRequest.created_at).toLocaleDateString('pt-BR')}</p>
-                                    <p className="text-[10px] text-slate-400">{new Date(selectedRequest.created_at).toLocaleTimeString('pt-BR')}</p>
+                                <div className="bg-slate-50 p-2 rounded-lg">
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase">Data</p>
+                                    <p className="font-bold text-slate-800 text-xs">{new Date(selectedRequest.created_at).toLocaleDateString('pt-BR')}</p>
+                                    <p className="text-[9px] text-slate-400">{new Date(selectedRequest.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                                 </div>
-                            </div>
-
-                            {/* Solicitante */}
-                            {selectedRequest.solicitante && (
-                                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                                    <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                        <ShieldCheck className="w-3 h-3" /> Solicitante
-                                    </p>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600 text-xs border border-blue-200">
-                                            {selectedRequest.solicitante.rank}
-                                        </div>
-                                        <div>
-                                            <p className="font-black text-slate-800">{selectedRequest.solicitante.war_name || '—'}</p>
-                                            <p className="text-[10px] text-slate-400 font-medium">SARAM: {selectedRequest.solicitante.saram}</p>
-                                        </div>
+                                {selectedRequest.solicitante && (
+                                    <div className="bg-blue-50 p-2 rounded-lg border border-blue-100">
+                                        <p className="text-[9px] font-bold text-blue-400 uppercase">Solic.</p>
+                                        <p className="font-black text-slate-800 text-xs">{selectedRequest.solicitante.rank} {selectedRequest.solicitante.war_name}</p>
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
 
-                            {/* Linha pontilhada */}
-                            <div className="border-t-2 border-dashed border-slate-100"></div>
+                            <div className="border-t border-dashed border-slate-100"></div>
 
-                            {/* Rastreio da Cadeia de Responsabilidade */}
-                            <div className="space-y-3">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cadeia de Responsabilidade</p>
-
+                            {/* Cadeia de Responsabilidade — compacta em linhas */}
+                            <div className="space-y-1.5">
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Responsabilidade</p>
                                 {selectedRequest.autorizado_por && (
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
-                                            <ShieldCheck className="w-4 h-4 text-amber-600" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-[10px] font-bold text-amber-500 uppercase">Autorizado por</p>
-                                            <p className="font-bold text-slate-800 text-sm truncate">{selectedRequest.autorizado_por}</p>
-                                        </div>
+                                    <div className="flex items-center gap-2 bg-amber-50 px-3 py-1.5 rounded-lg">
+                                        <ShieldCheck className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                                        <p className="text-[10px] font-bold text-amber-600 uppercase w-20 shrink-0">Autorizado</p>
+                                        <p className="font-bold text-slate-700 text-xs truncate flex-1">{selectedRequest.autorizado_por}</p>
                                     </div>
                                 )}
-
                                 {selectedRequest.entregue_por && (
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
-                                            <Truck className="w-4 h-4 text-blue-600" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-[10px] font-bold text-blue-500 uppercase">Entregue por</p>
-                                            <p className="font-bold text-slate-800 text-sm truncate">{selectedRequest.entregue_por}</p>
-                                        </div>
+                                    <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg">
+                                        <Truck className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                                        <p className="text-[10px] font-bold text-blue-600 uppercase w-20 shrink-0">Entregue</p>
+                                        <p className="font-bold text-slate-700 text-xs truncate flex-1">{selectedRequest.entregue_por}</p>
                                     </div>
                                 )}
-
                                 {selectedRequest.recebido_por && (
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
-                                            <CheckCircle className="w-4 h-4 text-emerald-600" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-[10px] font-bold text-emerald-500 uppercase">Recebido por</p>
-                                            <p className="font-bold text-slate-800 text-sm truncate">{selectedRequest.recebido_por}</p>
-                                        </div>
+                                    <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-lg">
+                                        <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                        <p className="text-[10px] font-bold text-emerald-600 uppercase w-20 shrink-0">Recebido</p>
+                                        <p className="font-bold text-slate-700 text-xs truncate flex-1">{selectedRequest.recebido_por}</p>
                                     </div>
                                 )}
-
                                 {!selectedRequest.autorizado_por && !selectedRequest.entregue_por && !selectedRequest.recebido_por && (
-                                    <p className="text-xs text-slate-400 italic">Nenhuma movimentação registrada.</p>
+                                    <p className="text-[10px] text-slate-400 italic">Sem movimentação.</p>
                                 )}
                             </div>
 
-                            {/* Observações */}
+                            {/* Observações compactas */}
                             {selectedRequest.observacao && (
                                 <>
-                                    <div className="border-t-2 border-dashed border-slate-100"></div>
-                                    <div>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Observações</p>
-                                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                                            <p className="text-xs text-slate-600 leading-relaxed italic">"{selectedRequest.observacao}"</p>
-                                        </div>
+                                    <div className="border-t border-dashed border-slate-100"></div>
+                                    <div className="bg-slate-50 px-3 py-2 rounded-lg">
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-0.5">Obs</p>
+                                        <p className="text-[10px] text-slate-600 italic leading-snug">"{selectedRequest.observacao}"</p>
                                     </div>
                                 </>
                             )}
 
-                            {/* ID do registro */}
-                            <div className="border-t-2 border-dashed border-slate-100 pt-3">
-                                <div className="flex justify-between items-center text-[10px] text-slate-300 font-mono">
-                                    <span>ID: {selectedRequest.id.slice(0, 8).toUpperCase()}</span>
-                                    <span>GSD-SP • SAP-03</span>
-                                </div>
+                            {/* Footer ID */}
+                            <div className="border-t border-dashed border-slate-100 pt-2 flex justify-between text-[9px] text-slate-300 font-mono">
+                                <span>ID: {selectedRequest.id.slice(0, 8).toUpperCase()}</span>
+                                <span>GSD-SP • SAP-03</span>
                             </div>
                         </div>
 
-                        {/* Footer */}
-                        <div className="p-4 bg-slate-50 border-t">
-                            <button
-                                onClick={() => setSelectedRequest(null)}
-                                className="w-full px-6 py-3 bg-slate-800 text-white rounded-xl font-black uppercase text-xs tracking-widest hover:bg-slate-900 transition-all"
-                            >
-                                Fechar Comprovante
+                        <div className="px-4 pb-4">
+                            <button onClick={() => setSelectedRequest(null)} className="w-full py-2.5 bg-slate-800 text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-900 transition-all">
+                                Fechar
                             </button>
                         </div>
                     </div>
