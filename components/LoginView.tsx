@@ -24,7 +24,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
   const [showParkingModal, setShowParkingModal] = useState(false);
 
   // Parking public form
-  const [parkData, setParkData] = useState({ nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', telefone: '', marcaModelo: '', placa: '', cor: '', inicio: '', termino: '', obs: '' });
+  const [parkData, setParkData] = useState({ nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', telefone: '', identidade: '', marcaModelo: '', placa: '', cor: '', inicio: '', termino: '', obs: '' });
   const [parkSuccess, setParkSuccess] = useState(false);
   const [parkProto, setParkProto] = useState('');
   const [regData, setRegData] = useState({
@@ -186,6 +186,10 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
       setError('Preencha todos os campos obrigatórios.');
       return;
     }
+    if (parkData.tipo === 'Civil' && !parkData.identidade) {
+      setError('Para civil, o campo Identidade é obrigatório.');
+      return;
+    }
     setIsLoading(true); setError('');
     const { data } = await supabase.from('parking_requests').insert({
       user_id: null,
@@ -195,6 +199,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
       tipo_pessoa: parkData.tipo,
       om: parkData.om.toUpperCase() || '—',
       telefone: parkData.telefone,
+      identidade: parkData.identidade.toUpperCase() || null,
       ext_marca_modelo: parkData.marcaModelo.toUpperCase(),
       ext_placa: parkData.placa.toUpperCase(),
       ext_cor: parkData.cor.toUpperCase(),
@@ -445,7 +450,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                 <h3 className="text-lg font-black text-slate-800">Solicitação Enviada!</h3>
                 <p className="text-xs text-slate-500">Protocolo Nº <strong>{parkProto}</strong></p>
                 <p className="text-[10px] text-slate-400">Sua solicitação será analisada pela SOP-03.<br />Aguarde a aprovação.</p>
-                <button type="button" onClick={() => { setShowParkingModal(false); setParkSuccess(false); setParkData({ nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', telefone: '', marcaModelo: '', placa: '', cor: '', inicio: '', termino: '', obs: '' }); }} className="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-700 transition-all">Fechar</button>
+                <button type="button" onClick={() => { setShowParkingModal(false); setParkSuccess(false); setParkData({ nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', telefone: '', identidade: '', marcaModelo: '', placa: '', cor: '', inicio: '', termino: '', obs: '' }); }} className="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-700 transition-all">Fechar</button>
               </div>
             ) : (
               <>
@@ -471,6 +476,10 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                     <div className="space-y-1">
                       <label className="text-xs font-black text-slate-400 uppercase tracking-widest">OM / Órgão</label>
                       <input placeholder="BASP, AFA..." value={parkData.om} onChange={e => setParkData({ ...parkData, om: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div className="sm:col-span-2 space-y-1">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Identidade (RG/CPF) {parkData.tipo === 'Civil' ? '*' : ''}</label>
+                      <input required={parkData.tipo === 'Civil'} placeholder="Nº DO DOCUMENTO" value={parkData.identidade} onChange={e => setParkData({ ...parkData, identidade: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
                     </div>
                     <div className="sm:col-span-2 space-y-1">
                       <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Telefone</label>

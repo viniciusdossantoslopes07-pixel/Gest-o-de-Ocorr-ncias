@@ -75,6 +75,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
     const [extMarcaModelo, setExtMarcaModelo] = useState('');
     const [extPlaca, setExtPlaca] = useState('');
     const [extCor, setExtCor] = useState('');
+    const [extIdentidade, setExtIdentidade] = useState('');
 
     const isAdmin = user?.role === 'Gestor Master / OSD' || user?.role === 'Comandante OM' || (user?.sector && user.sector.includes('SOP'));
 
@@ -127,6 +128,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
 
         if (publicoTipo === 'interno' && !selectedVehicle) return alert('Selecione um veículo.');
         if (publicoTipo === 'externo' && (!extNome || !extMarcaModelo || !extPlaca)) return alert('Preencha Nome, Marca/Modelo e Placa.');
+        if (publicoTipo === 'externo' && tipoPessoa === 'Civil' && !extIdentidade) return alert('Para civil, o campo Identidade é obrigatório.');
 
         setLoading(true);
         const record: any = {
@@ -154,12 +156,13 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
             record.ext_marca_modelo = extMarcaModelo.toUpperCase();
             record.ext_placa = extPlaca.toUpperCase();
             record.ext_cor = extCor;
+            record.identidade = extIdentidade.toUpperCase() || null;
         }
 
         await supabase.from('parking_requests').insert(record);
         // Reset
         setSelectedVehicle(''); setInicio(''); setTermino(''); setObservacao('');
-        setExtNome(''); setExtPosto(''); setExtOM(''); setExtTelefone('');
+        setExtNome(''); setExtPosto(''); setExtOM(''); setExtTelefone(''); setExtIdentidade('');
         setExtMarcaModelo(''); setExtPlaca(''); setExtCor('');
         await fetchMyRequests();
         if (isAdmin) await fetchAllRequests();
@@ -308,10 +311,17 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                                         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
                                 </div>
                             </div>
-                            <div>
-                                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Telefone</label>
-                                <input value={extTelefone} onChange={e => setExtTelefone(e.target.value)} placeholder="11-99999-9999"
-                                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Identidade (RG/CPF) {tipoPessoa === 'Civil' ? '*' : ''}</label>
+                                    <input value={extIdentidade} onChange={e => setExtIdentidade(e.target.value)} placeholder="Nº DO DOCUMENTO" required={tipoPessoa === 'Civil'} style={{ textTransform: 'uppercase' }}
+                                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Telefone</label>
+                                    <input value={extTelefone} onChange={e => setExtTelefone(e.target.value)} placeholder="11-99999-9999"
+                                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
+                                </div>
                             </div>
                             <div className="border-t border-dashed border-slate-200 pt-3"></div>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
