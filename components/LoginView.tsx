@@ -2,7 +2,7 @@
 import { useState, type FC, type FormEvent } from 'react';
 import { User } from '../types';
 import { RANKS, SETORES } from '../constants';
-import { ShieldCheck, ArrowRight, Lock, User as UserIcon, Megaphone, Fingerprint } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Lock, User as UserIcon, Megaphone, Fingerprint, Car, Send, CheckCircle } from 'lucide-react';
 import { isWebAuthnSupported, registerBiometrics, authenticateBiometrics } from '../services/webauthn';
 import { supabase } from '../services/supabase';
 
@@ -20,7 +20,12 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const [view, setView] = useState<'login' | 'register' | 'forgot-password'>('login');
+  const [view, setView] = useState<'login' | 'register' | 'forgot-password' | 'parking'>('login');
+
+  // Parking public form
+  const [parkData, setParkData] = useState({ nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', telefone: '', marcaModelo: '', placa: '', cor: '', inicio: '', termino: '', obs: '' });
+  const [parkSuccess, setParkSuccess] = useState(false);
+  const [parkProto, setParkProto] = useState('');
   const [regData, setRegData] = useState({
     name: '',
     rank: '',
@@ -175,6 +180,33 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
     }
   };
 
+  const handleParkingSubmit = async () => {
+    if (!parkData.nome || !parkData.marcaModelo || !parkData.placa || !parkData.inicio || !parkData.termino) {
+      setError('Preencha todos os campos obrigatórios.');
+      return;
+    }
+    setIsLoading(true); setError('');
+    const { data } = await supabase.from('parking_requests').insert({
+      user_id: null,
+      nome_completo: parkData.nome.toUpperCase(),
+      posto_graduacao: parkData.posto.toUpperCase() || '—',
+      forca: parkData.forca,
+      tipo_pessoa: parkData.tipo,
+      om: parkData.om.toUpperCase() || '—',
+      telefone: parkData.telefone,
+      ext_marca_modelo: parkData.marcaModelo.toUpperCase(),
+      ext_placa: parkData.placa.toUpperCase(),
+      ext_cor: parkData.cor.toUpperCase(),
+      inicio: parkData.inicio,
+      termino: parkData.termino,
+      observacao: parkData.obs,
+      status: 'Pendente'
+    }).select('numero_autorizacao').single();
+    setParkProto(data?.numero_autorizacao || '');
+    setParkSuccess(true);
+    setIsLoading(false);
+  };
+
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
@@ -300,6 +332,14 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                   <Megaphone className="w-5 h-5" /> REGISTRAR OCORRÊNCIA
                 </button>
 
+                <button
+                  type="button"
+                  onClick={() => { setView('parking'); setError(''); setParkSuccess(false); }}
+                  className="w-full bg-slate-100 text-slate-500 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:bg-slate-200 transition-all"
+                >
+                  <Car className="w-4 h-4" /> Solicitar Estacionamento
+                </button>
+
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center" aria-hidden="true">
                     <div className="w-full border-t border-slate-200"></div>
@@ -349,6 +389,43 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                     Criar Conta Militar
                   </button>
                 </div>
+              </div>
+            )} {view === 'parking' && (
+              <div className="space-y-4">
+                {parkSuccess ? (
+                  <div className="text-center space-y-4 py-4">
+                    <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto"><CheckCircle className="w-8 h-8 text-emerald-600" /></div>
+                    <h3 className="text-lg font-black text-slate-800">Solicitação Enviada!</h3>
+                    <p className="text-xs text-slate-500">Protocolo Nº <strong>{parkProto}</strong></p>
+                    <p className="text-[10px] text-slate-400">Sua solicitação será analisada pela SOP-03. Aguarde a aprovação.</p>
+                    <button type="button" onClick={() => { setView('login'); setParkSuccess(false); }} className="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest">Voltar</button>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2"><Car className="w-3 h-3" /> Solicitar Estacionamento</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="col-span-2"><input required placeholder="NOME COMPLETO *" value={parkData.nome} onChange={e => setParkData({ ...parkData, nome: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" /></div>
+                      <input placeholder="POSTO/GRAD" value={parkData.posto} onChange={e => setParkData({ ...parkData, posto: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" />
+                      <select value={parkData.tipo} onChange={e => setParkData({ ...parkData, tipo: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500"><option>Militar</option><option>Civil</option></select>
+                      <select value={parkData.forca} onChange={e => setParkData({ ...parkData, forca: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500"><option>FAB</option><option>EB</option><option>MB</option><option>PMSP</option><option>PRF</option><option>PF</option><option>Civil</option><option>Outro</option></select>
+                      <input placeholder="OM / ÓRGÃO" value={parkData.om} onChange={e => setParkData({ ...parkData, om: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" />
+                      <div className="col-span-2"><input placeholder="TELEFONE" value={parkData.telefone} onChange={e => setParkData({ ...parkData, telefone: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" /></div>
+                    </div>
+                    <div className="border-t border-dashed border-slate-200 my-1"></div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <input required placeholder="MARCA/MODELO *" value={parkData.marcaModelo} onChange={e => setParkData({ ...parkData, marcaModelo: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" />
+                      <input required placeholder="PLACA *" value={parkData.placa} onChange={e => setParkData({ ...parkData, placa: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" />
+                      <input placeholder="COR" value={parkData.cor} onChange={e => setParkData({ ...parkData, cor: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div><label className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Início *</label><input required type="date" value={parkData.inicio} onChange={e => setParkData({ ...parkData, inicio: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" /></div>
+                      <div><label className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Término *</label><input required type="date" value={parkData.termino} onChange={e => setParkData({ ...parkData, termino: e.target.value })} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500" /></div>
+                    </div>
+                    <textarea placeholder="OBSERVAÇÕES" value={parkData.obs} onChange={e => setParkData({ ...parkData, obs: e.target.value })} rows={2} style={{ textTransform: 'uppercase' }} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:border-blue-500 resize-none" />
+                    <button type="button" onClick={handleParkingSubmit} disabled={isLoading} className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:bg-blue-700 transition-all disabled:opacity-50"><Send className="w-4 h-4" /> Enviar Solicitação</button>
+                    <button type="button" onClick={() => setView('login')} className="w-full text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-slate-600 py-2">← Voltar ao Login</button>
+                  </>
+                )}
               </div>
             )}
           </form>

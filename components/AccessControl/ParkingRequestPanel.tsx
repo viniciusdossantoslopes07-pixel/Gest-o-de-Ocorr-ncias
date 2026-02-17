@@ -278,12 +278,12 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Nome Completo *</label>
-                                    <input value={extNome} onChange={e => setExtNome(e.target.value)} placeholder="Nome do visitante"
+                                    <input value={extNome} onChange={e => setExtNome(e.target.value)} placeholder="NOME DO VISITANTE" style={{ textTransform: 'uppercase' }}
                                         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Posto/Graduação</label>
-                                    <input value={extPosto} onChange={e => setExtPosto(e.target.value)} placeholder="Ex: CAP, SGT, Civil..."
+                                    <input value={extPosto} onChange={e => setExtPosto(e.target.value)} placeholder="EX: CAP, SGT, CIVIL..." style={{ textTransform: 'uppercase' }}
                                         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
                                 </div>
                             </div>
@@ -304,7 +304,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">OM / Órgão</label>
-                                    <input value={extOM} onChange={e => setExtOM(e.target.value)} placeholder="BASP, AFA..."
+                                    <input value={extOM} onChange={e => setExtOM(e.target.value)} placeholder="BASP, AFA..." style={{ textTransform: 'uppercase' }}
                                         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
                                 </div>
                             </div>
@@ -317,17 +317,17 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Marca / Modelo *</label>
-                                    <input value={extMarcaModelo} onChange={e => setExtMarcaModelo(e.target.value)} placeholder="FIAT ARGO"
+                                    <input value={extMarcaModelo} onChange={e => setExtMarcaModelo(e.target.value)} placeholder="FIAT ARGO" style={{ textTransform: 'uppercase' }}
                                         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Placa *</label>
-                                    <input value={extPlaca} onChange={e => setExtPlaca(e.target.value)} placeholder="ABC-1D23"
+                                    <input value={extPlaca} onChange={e => setExtPlaca(e.target.value)} placeholder="ABC-1D23" style={{ textTransform: 'uppercase' }}
                                         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Cor</label>
-                                    <input value={extCor} onChange={e => setExtCor(e.target.value)} placeholder="Prata"
+                                    <input value={extCor} onChange={e => setExtCor(e.target.value)} placeholder="PRATA" style={{ textTransform: 'uppercase' }}
                                         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
                                 </div>
                             </div>
@@ -392,7 +392,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
 
                     <div>
                         <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Observações</label>
-                        <textarea value={observacao} onChange={e => setObservacao(e.target.value)} rows={2}
+                        <textarea value={observacao} onChange={e => setObservacao(e.target.value)} rows={2} style={{ textTransform: 'uppercase' }}
                             className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
                     </div>
 
@@ -414,9 +414,9 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                         <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3 animate-fade-in">
                             <div className="grid grid-cols-2 gap-3">
                                 <div><label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Marca / Modelo *</label>
-                                    <input value={vMarcaModelo} onChange={e => setVMarcaModelo(e.target.value)} placeholder="FIAT ARGO" className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" /></div>
+                                    <input value={vMarcaModelo} onChange={e => setVMarcaModelo(e.target.value)} placeholder="FIAT ARGO" style={{ textTransform: 'uppercase' }} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" /></div>
                                 <div><label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Placa *</label>
-                                    <input value={vPlaca} onChange={e => setVPlaca(e.target.value)} placeholder="ABC-1D23" className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" /></div>
+                                    <input value={vPlaca} onChange={e => setVPlaca(e.target.value)} placeholder="ABC-1D23" style={{ textTransform: 'uppercase' }} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" /></div>
                             </div>
                             <div className="grid grid-cols-3 gap-3">
                                 <div><label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Cor</label>
