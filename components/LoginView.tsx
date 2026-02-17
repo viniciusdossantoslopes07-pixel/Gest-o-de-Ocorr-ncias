@@ -471,7 +471,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Força</label>
-                      <select value={parkData.forca} onChange={e => setParkData({ ...parkData, forca: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500"><option>FAB</option><option>EB</option><option>MB</option><option>PMSP</option><option>PRF</option><option>PF</option><option>Civil</option><option>Outro</option></select>
+                      <select value={parkData.tipo === 'Civil' ? 'Civil' : parkData.forca} onChange={e => setParkData({ ...parkData, forca: e.target.value })} disabled={parkData.tipo === 'Civil'} className={`w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 ${parkData.tipo === 'Civil' ? 'opacity-50 cursor-not-allowed' : ''}`}><option>FAB</option><option>EB</option><option>MB</option><option>PMSP</option><option>PRF</option><option>PF</option><option>Civil</option><option>Outro</option></select>
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-black text-slate-400 uppercase tracking-widest">OM / Órgão</label>

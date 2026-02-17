@@ -300,8 +300,8 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Força</label>
-                                    <select value={forca} onChange={e => setForca(e.target.value)}
-                                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                    <select value={tipoPessoa === 'Civil' ? 'Civil' : forca} onChange={e => setForca(e.target.value)} disabled={tipoPessoa === 'Civil'}
+                                        className={`w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500 ${tipoPessoa === 'Civil' ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                         {FORCAS.map(f => <option key={f}>{f}</option>)}
                                     </select>
                                 </div>
@@ -361,8 +361,8 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Força</label>
-                                    <select value={forca} onChange={e => setForca(e.target.value)}
-                                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                    <select value={tipoPessoa === 'Civil' ? 'Civil' : forca} onChange={e => setForca(e.target.value)} disabled={tipoPessoa === 'Civil'}
+                                        className={`w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500 ${tipoPessoa === 'Civil' ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                         {FORCAS.map(f => <option key={f}>{f}</option>)}
                                     </select>
                                 </div>
