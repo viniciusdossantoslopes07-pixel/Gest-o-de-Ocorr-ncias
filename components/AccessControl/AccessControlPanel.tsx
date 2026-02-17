@@ -8,6 +8,7 @@ import {
     History, Sparkles, ChevronUp, AlertCircle, BarChart3, List
 } from 'lucide-react';
 import AccessStatistics from './AccessStatistics';
+import { Combobox } from '../Combobox';
 
 interface AccessControlPanelProps {
     user: User;
@@ -40,7 +41,7 @@ const DESTINATIONS = [
 
 export default function AccessControlPanel({ user }: AccessControlPanelProps) {
     // Tab State
-    const [activeTab, setActiveTab] = useState<'registrar' | 'estatisticas'>('registrar');
+    const [activeTab, setActiveTab] = useState<'registrar' | 'estatisticas' | 'busca'>('registrar');
     const [showStats, setShowStats] = useState(true);
 
     // Form state
@@ -55,7 +56,6 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
     const [authorizer, setAuthorizer] = useState('');
     const [authorizerId, setAuthorizerId] = useState('');
     const [destination, setDestination] = useState('');
-    const [showDestDropdown, setShowDestDropdown] = useState(false);
 
     // Frequent Visitor State
     const [visitorStats, setVisitorStats] = useState<{ count: number; lastVisit: string | null }>({ count: 0, lastVisit: null });
@@ -68,7 +68,14 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
 
     // Filter state (for the list)
     const [filterGate, setFilterGate] = useState('');
+
     const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
+
+    // Global Search State
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<AccessRecord[]>([]);
+    const [loadingSearch, setLoadingSearch] = useState(false);
+    const [hasSearched, setHasSearched] = useState(false);
 
     useEffect(() => {
         if (activeTab === 'registrar') {
@@ -163,6 +170,44 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
         }
     };
 
+    const handleGlobalSearch = async () => {
+        if (!searchQuery.trim()) return;
+
+        setLoadingSearch(true);
+        setHasSearched(true);
+        try {
+            const queryTerm = `%${searchQuery.trim().toUpperCase()}%`;
+            const { data, error } = await supabase
+                .from('access_control')
+                .select('*')
+                .or(`name.ilike.${queryTerm},vehicle_plate.ilike.${queryTerm},vehicle_model.ilike.${queryTerm},identification.ilike.${queryTerm},destination.ilike.${queryTerm}`)
+                .order('timestamp', { ascending: false })
+                .limit(50);
+
+            if (error) throw error;
+            setSearchResults(data || []);
+        } catch (err) {
+            console.error('Erro na busca global:', err);
+            // @ts-ignore
+            alert('Erro ao realizar busca: ' + err.message);
+        } finally {
+            setLoadingSearch(false);
+        }
+    };
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (activeTab === 'busca' && searchQuery.trim().length >= 3) {
+                handleGlobalSearch();
+            } else if (searchQuery.trim().length === 0) {
+                setSearchResults([]);
+                setHasSearched(false);
+            }
+        }, 800);
+        return () => clearTimeout(timer);
+    }, [searchQuery, activeTab]);
+
     const handleSubmit = async () => {
         if (!name.trim()) {
             alert('Informe o nome.');
@@ -209,11 +254,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
         }
     };
 
-    const filteredDestinations = useMemo(() => {
-        if (!destination) return DESTINATIONS;
-        const q = destination.toLowerCase();
-        return DESTINATIONS.filter(d => d.toLowerCase().includes(q));
-    }, [destination]);
+
 
     // Simple today stats for the card (retained but simplified)
     const todayStats = useMemo(() => {
@@ -249,6 +290,16 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                 >
                     <BarChart3 className="w-4 h-4" />
                     Estatísticas
+                </button>
+                <button
+                    onClick={() => setActiveTab('busca')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black uppercase tracking-wider rounded-lg transition-all ${activeTab === 'busca'
+                        ? 'bg-white text-blue-600 shadow-sm'
+                        : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200/50'
+                        }`}
+                >
+                    <Search className="w-4 h-4" />
+                    Busca
                 </button>
             </div>
 
@@ -379,7 +430,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                     <input
                                         type="text"
                                         value={identification}
-                                        onChange={(e) => setIdentification(e.target.value)}
+                                        onChange={(e) => setIdentification(e.target.value.replace(/\D/g, ''))}
                                         placeholder="SARAM / CPF / RG"
                                         className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none uppercase"
                                     />
@@ -417,29 +468,13 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                             {/* Row 5: Destination + Authorizer */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div className="relative">
-                                    <input
-                                        type="text"
+                                    <Combobox
+                                        options={DESTINATIONS}
                                         value={destination}
-                                        onChange={(e) => { setDestination(e.target.value); setShowDestDropdown(true); }}
-                                        onFocus={() => setShowDestDropdown(true)}
-                                        onBlur={() => setTimeout(() => setShowDestDropdown(false), 200)}
+                                        onChange={setDestination}
                                         placeholder="DESTINO (Ex: PISTA)"
                                         disabled={accessCategory === 'Saída'}
-                                        className={`w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none uppercase ${accessCategory === 'Saída' ? 'opacity-50 cursor-not-allowed bg-slate-100' : ''}`}
                                     />
-                                    {showDestDropdown && filteredDestinations.length > 0 && (
-                                        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto">
-                                            {filteredDestinations.map(d => (
-                                                <button
-                                                    key={d}
-                                                    onMouseDown={(e) => { e.preventDefault(); setDestination(d); setShowDestDropdown(false); }}
-                                                    className="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                                                >
-                                                    {d}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
                                 </div>
                                 <input
                                     type="text"
@@ -573,6 +608,139 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
             {/* TAB CONTENT: ESTATÍSTICAS */}
             {activeTab === 'estatisticas' && (
                 <AccessStatistics />
+            )}
+
+            {/* TAB CONTENT: BUSCA */}
+            {activeTab === 'busca' && (
+                <div className="space-y-4 animate-fade-in">
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Pesquisar por NOME, PLACA, MODELO, IDENTIFICAÇÃO ou DESTINO..."
+                                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 font-bold text-lg text-slate-900 placeholder:text-slate-400 focus:border-blue-500 outline-none transition-all uppercase"
+                                autoFocus
+                            />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400" />
+                            {loadingSearch && (
+                                <RefreshCw className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-500 animate-spin" />
+                            )}
+                        </div>
+                        <p className="text-xs text-slate-400 mt-2 font-medium px-1">
+                            Digite pelo menos 3 caracteres para buscar em todo o histórico.
+                        </p>
+                    </div>
+
+                    {/* Search Results */}
+                    {hasSearched && (
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-bottom-4">
+                            <div className="p-3 border-b border-slate-100 flex items-center justify-between">
+                                <span className="text-xs font-black uppercase text-slate-600 flex items-center gap-2">
+                                    <List className="w-3.5 h-3.5" /> Resultados Encontrados
+                                </span>
+                                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
+                                    {searchResults.length} Registros
+                                </span>
+                            </div>
+
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead className="bg-slate-50 border-b border-slate-100">
+                                        <tr>
+                                            <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase">Data / Hora</th>
+                                            <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase">Local / Tipo</th>
+                                            <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase">Solicitante / Veículo</th>
+                                            <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase text-right">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {searchResults.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={4} className="text-center py-8">
+                                                    <div className="flex flex-col items-center justify-center gap-2 text-slate-400">
+                                                        <Search className="w-8 h-8 opacity-20" />
+                                                        <p className="text-sm font-bold">Nenhum registro encontrado para "{searchQuery}"</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            searchResults.map((record) => (
+                                                <tr key={record.id} className="hover:bg-blue-50/30 transition-colors">
+                                                    <td className="px-4 py-3 align-top">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-xs font-bold text-slate-900">
+                                                                {new Date(record.timestamp).toLocaleDateString('pt-BR')}
+                                                            </span>
+                                                            <span className="text-[10px] font-medium text-slate-500 flex items-center gap-1">
+                                                                <Clock className="w-3 h-3" />
+                                                                {new Date(record.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3 align-top">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[10px] font-black text-slate-700 uppercase">
+                                                                {record.guard_gate.replace('PORTÃO ', 'G')}
+                                                            </span>
+                                                            <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">
+                                                                {record.access_mode} • {record.characteristic}
+                                                            </span>
+                                                            {record.destination && (
+                                                                <span className="text-[9px] font-bold text-blue-600 uppercase mt-0.5">
+                                                                    Dest: {record.destination}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3 align-top">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-xs font-black text-slate-800 uppercase">
+                                                                {record.name}
+                                                            </span>
+                                                            {record.access_mode === 'Veículo' && (
+                                                                <div className="flex items-center gap-1.5 mt-1 bg-slate-100 w-fit px-1.5 py-0.5 rounded">
+                                                                    <Car className="w-3 h-3 text-slate-500" />
+                                                                    <span className="text-[10px] font-bold text-slate-600 uppercase">
+                                                                        {record.vehicle_model} • <span className="text-slate-900">{record.vehicle_plate}</span>
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                            {record.identification && (
+                                                                <span className="text-[9px] font-medium text-slate-400 mt-0.5">
+                                                                    Doc: {record.identification}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right align-top">
+                                                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-black uppercase ${record.access_category === 'Entrada'
+                                                            ? 'bg-emerald-100 text-emerald-700'
+                                                            : 'bg-red-100 text-red-700'
+                                                            }`}>
+                                                            {record.access_category === 'Entrada' ? (
+                                                                <ArrowDownToLine className="w-3 h-3" />
+                                                            ) : (
+                                                                <ArrowUpFromLine className="w-3 h-3" />
+                                                            )}
+                                                            {record.access_category}
+                                                        </span>
+                                                        {record.authorizer && (
+                                                            <div className="mt-1 text-[9px] text-slate-400 font-medium">
+                                                                Aut: {record.authorizer}
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                </div>
             )}
         </div>
     );
