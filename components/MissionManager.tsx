@@ -804,7 +804,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
 
                 {/* 4. Estatísticas */}
                 {activeTab === 'estatisticas' && (
-                    <MissionStatistics orders={orders} missions={missions} />
+                    <MissionStatistics orders={orders} missions={missions} users={users} />
                 )}
 
                 {/* 5. Solicitar Missão */}

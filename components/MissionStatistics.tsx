@@ -1,14 +1,15 @@
 import React, { useState, useMemo } from 'react';
-import { MissionOrder } from '../types';
+import { MissionOrder, User } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Target, Users, CheckCircle, Clock, Play, Filter, Calendar, X } from 'lucide-react';
 
 interface MissionStatisticsProps {
     orders: MissionOrder[];
     missions?: any[]; // Mission requests
+    users?: User[];
 }
 
-export default function MissionStatistics({ orders, missions = [] }: MissionStatisticsProps) {
+export default function MissionStatistics({ orders, missions = [], users = [] }: MissionStatisticsProps) {
     // Filter States
     const [filterDateStart, setFilterDateStart] = useState('');
     const [filterDateEnd, setFilterDateEnd] = useState('');
@@ -255,8 +256,16 @@ export default function MissionStatistics({ orders, missions = [] }: MissionStat
                     <div className="space-y-4">
                         {(() => {
                             const commanderCounts = filteredOrders.reduce((acc, order) => {
-                                const commander = order.missionCommanderId || 'Não Atribuído';
-                                acc[commander] = (acc[commander] || 0) + 1;
+                                let commanderName = 'Não Atribuído';
+                                if (order.missionCommanderId) {
+                                    const foundUser = users.find(u => u.id === order.missionCommanderId);
+                                    if (foundUser) {
+                                        commanderName = `${foundUser.rank} ${foundUser.warName || foundUser.name}`;
+                                    } else {
+                                        commanderName = order.missionCommanderId; // Fallback to ID if user not found
+                                    }
+                                }
+                                acc[commanderName] = (acc[commanderName] || 0) + 1;
                                 return acc;
                             }, {} as Record<string, number>);
 
