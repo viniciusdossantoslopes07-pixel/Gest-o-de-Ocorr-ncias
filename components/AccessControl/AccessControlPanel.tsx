@@ -31,9 +31,9 @@ interface AccessRecord {
 const GATES = ['PORTÃO G1', 'PORTÃO G2', 'PORTÃO G3'];
 const CHARACTERISTICS = ['MILITAR', 'CIVIL', 'PRESTADOR', 'ENTREGADOR'];
 const DESTINATIONS = [
-    'BASP (Comando)', 'GSD-SP', 'PASP', 'PCAN', 'HOTEL DE TRÂNSITO BASP',
-    'VILA GRAD.', 'SAP', 'SOP', 'ALMOXARIFADO', 'RANCHO', 'BARBEARIA',
-    'CINEMA', 'ANFITEATRO', 'PISTA DE ATLETISMO', 'QUADRA ESPORTIVA'
+    'BASP (Comando)', 'PCAN', 'PASP', 'ILA', 'SEREP-SP', 'GSD-SP', 'GECAMP',
+    'BOMBEIRO', 'VILA OF.', 'VILA GRAD.', 'CAPELA', 'GSAU', 'RANCHO',
+    'HOTEL DE TRÂNSITO BASP', 'HOTEL DE TRÂNSITO SEREP', 'HOTEL DE TRÂNSITO ILA'
 ];
 
 export default function AccessControlPanel({ user }: AccessControlPanelProps) {
@@ -184,8 +184,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                         key={gate}
                         onClick={() => setSelectedGate(gate)}
                         className={`relative p-4 sm:p-6 rounded-2xl font-black text-sm sm:text-lg uppercase tracking-widest transition-all duration-300 border-2 ${selectedGate === gate
-                                ? `bg-gradient-to-br ${gateColors[gate]} text-white border-transparent shadow-xl scale-[1.02]`
-                                : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:shadow-md'
+                            ? `bg-gradient-to-br ${gateColors[gate]} text-white border-transparent shadow-xl scale-[1.02]`
+                            : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:shadow-md'
                             }`}
                     >
                         <DoorOpen className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 ${selectedGate === gate ? 'text-white' : 'text-slate-400'}`} />
@@ -251,8 +251,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                 <button
                                     onClick={() => setAccessCategory('Entrada')}
                                     className={`py-4 rounded-2xl font-black uppercase text-sm tracking-widest flex items-center justify-center gap-2 transition-all border-2 ${accessCategory === 'Entrada'
-                                            ? 'bg-emerald-500 text-white border-emerald-600 shadow-lg'
-                                            : 'bg-white text-slate-500 border-slate-200 hover:border-emerald-300'
+                                        ? 'bg-emerald-500 text-white border-emerald-600 shadow-lg'
+                                        : 'bg-white text-slate-500 border-slate-200 hover:border-emerald-300'
                                         }`}
                                 >
                                     <ArrowDownToLine className="w-5 h-5" /> Entrada
@@ -260,8 +260,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                 <button
                                     onClick={() => setAccessCategory('Saída')}
                                     className={`py-4 rounded-2xl font-black uppercase text-sm tracking-widest flex items-center justify-center gap-2 transition-all border-2 ${accessCategory === 'Saída'
-                                            ? 'bg-red-500 text-white border-red-600 shadow-lg'
-                                            : 'bg-white text-slate-500 border-slate-200 hover:border-red-300'
+                                        ? 'bg-red-500 text-white border-red-600 shadow-lg'
+                                        : 'bg-white text-slate-500 border-slate-200 hover:border-red-300'
                                         }`}
                                 >
                                     <ArrowUpFromLine className="w-5 h-5" /> Saída
@@ -278,8 +278,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                         key={c}
                                         onClick={() => setCharacteristic(c)}
                                         className={`py-3 rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-wider transition-all border ${characteristic === c
-                                                ? 'bg-slate-900 text-white border-slate-900 shadow'
-                                                : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                                            ? 'bg-slate-900 text-white border-slate-900 shadow'
+                                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
                                             }`}
                                     >
                                         {c}
@@ -320,8 +320,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                 <button
                                     onClick={() => setAccessMode('Pedestre')}
                                     className={`py-3 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all border-2 ${accessMode === 'Pedestre'
-                                            ? 'bg-blue-500 text-white border-blue-600 shadow-lg'
-                                            : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300'
+                                        ? 'bg-blue-500 text-white border-blue-600 shadow-lg'
+                                        : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300'
                                         }`}
                                 >
                                     <Footprints className="w-4 h-4" /> Pedestre
@@ -329,8 +329,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                 <button
                                     onClick={() => setAccessMode('Veículo')}
                                     className={`py-3 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all border-2 ${accessMode === 'Veículo'
-                                            ? 'bg-violet-500 text-white border-violet-600 shadow-lg'
-                                            : 'bg-white text-slate-500 border-slate-200 hover:border-violet-300'
+                                        ? 'bg-violet-500 text-white border-violet-600 shadow-lg'
+                                        : 'bg-white text-slate-500 border-slate-200 hover:border-violet-300'
                                         }`}
                                 >
                                     <Car className="w-4 h-4" /> Veículo
@@ -375,7 +375,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                     onFocus={() => setShowDestDropdown(true)}
                                     onBlur={() => setTimeout(() => setShowDestDropdown(false), 200)}
                                     placeholder="Ex: GSD-SP"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold text-sm text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none uppercase"
+                                    disabled={accessCategory === 'Saída'}
+                                    className={`w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold text-sm text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none uppercase ${accessCategory === 'Saída' ? 'opacity-50 cursor-not-allowed bg-slate-100' : ''}`}
                                 />
                                 {showDestDropdown && filteredDestinations.length > 0 && (
                                     <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto">
@@ -408,8 +409,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                             onClick={handleSubmit}
                             disabled={submitting || !name.trim()}
                             className={`w-full py-5 rounded-2xl font-black uppercase text-sm tracking-widest flex items-center justify-center gap-3 transition-all shadow-xl border-2 ${accessCategory === 'Entrada'
-                                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-700 text-white border-emerald-800 hover:from-emerald-400 hover:to-emerald-600'
-                                    : 'bg-gradient-to-r from-red-500 to-red-700 text-white border-red-800 hover:from-red-400 hover:to-red-600'
+                                ? 'bg-gradient-to-r from-emerald-500 to-emerald-700 text-white border-emerald-800 hover:from-emerald-400 hover:to-emerald-600'
+                                : 'bg-gradient-to-r from-red-500 to-red-700 text-white border-red-800 hover:from-red-400 hover:to-red-600'
                                 } disabled:opacity-40 disabled:cursor-not-allowed`}
                         >
                             {submitting ? (
@@ -495,8 +496,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                         </td>
                                         <td className="px-4 py-3">
                                             <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-lg ${record.guard_gate === 'PORTÃO G1' ? 'bg-blue-100 text-blue-700' :
-                                                    record.guard_gate === 'PORTÃO G2' ? 'bg-emerald-100 text-emerald-700' :
-                                                        'bg-amber-100 text-amber-700'
+                                                record.guard_gate === 'PORTÃO G2' ? 'bg-emerald-100 text-emerald-700' :
+                                                    'bg-amber-100 text-amber-700'
                                                 }`}>
                                                 {record.guard_gate.replace('PORTÃO ', '')}
                                             </span>
