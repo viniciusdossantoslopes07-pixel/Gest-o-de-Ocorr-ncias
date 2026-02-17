@@ -77,6 +77,12 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
     const [loadingSearch, setLoadingSearch] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
 
+    // Search Filters
+    const [searchStartDate, setSearchStartDate] = useState('');
+    const [searchEndDate, setSearchEndDate] = useState('');
+    const [searchFilterType, setSearchFilterType] = useState<'all' | 'Pedestre' | 'Veículo'>('all');
+    const [searchFilterCategory, setSearchFilterCategory] = useState<'all' | 'Entrada' | 'Saída'>('all');
+
     useEffect(() => {
         if (activeTab === 'registrar') {
             fetchRecords();
@@ -171,18 +177,49 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
     };
 
     const handleGlobalSearch = async () => {
-        if (!searchQuery.trim()) return;
+        // If searching text, require 3 chars. If searching by date only, text can be empty.
+        const isTextSearch = searchQuery.trim().length >= 3;
+        const isDateSearch = searchStartDate || searchEndDate;
+
+        if (!isTextSearch && !isDateSearch) {
+            setSearchResults([]);
+            setHasSearched(false);
+            return;
+        }
 
         setLoadingSearch(true);
         setHasSearched(true);
         try {
-            const queryTerm = `%${searchQuery.trim().toUpperCase()}%`;
-            const { data, error } = await supabase
+            let query = supabase
                 .from('access_control')
                 .select('*')
-                .or(`name.ilike.${queryTerm},vehicle_plate.ilike.${queryTerm},vehicle_model.ilike.${queryTerm},identification.ilike.${queryTerm},destination.ilike.${queryTerm}`)
-                .order('timestamp', { ascending: false })
-                .limit(50);
+                .order('timestamp', { ascending: false });
+
+            // Apply Text Filter
+            if (isTextSearch) {
+                const queryTerm = `%${searchQuery.trim().toUpperCase()}%`;
+                query = query.or(`name.ilike.${queryTerm},vehicle_plate.ilike.${queryTerm},vehicle_model.ilike.${queryTerm},identification.ilike.${queryTerm},destination.ilike.${queryTerm}`);
+            }
+
+            // Apply Date Filters
+            if (searchStartDate) {
+                query = query.gte('timestamp', `${searchStartDate}T00:00:00`);
+            }
+            if (searchEndDate) {
+                query = query.lte('timestamp', `${searchEndDate}T23:59:59`);
+            }
+
+            // Apply Type Filter
+            if (searchFilterType !== 'all') {
+                query = query.eq('access_mode', searchFilterType);
+            }
+
+            // Apply Category Filter
+            if (searchFilterCategory !== 'all') {
+                query = query.eq('access_category', searchFilterCategory);
+            }
+
+            const { data, error } = await query.limit(50);
 
             if (error) throw error;
             setSearchResults(data || []);
@@ -195,18 +232,18 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
         }
     };
 
-    // Debounce search
+    // Debounce search (Text only auto-trigger)
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (activeTab === 'busca' && searchQuery.trim().length >= 3) {
-                handleGlobalSearch();
-            } else if (searchQuery.trim().length === 0) {
-                setSearchResults([]);
-                setHasSearched(false);
+            if (activeTab === 'busca') {
+                // Trigger if text is valid OR if dates are set (and text is empty or valid)
+                if (searchQuery.trim().length >= 3 || ((searchStartDate || searchEndDate) && searchQuery.trim().length === 0)) {
+                    handleGlobalSearch();
+                }
             }
         }, 800);
         return () => clearTimeout(timer);
-    }, [searchQuery, activeTab]);
+    }, [searchQuery, activeTab, searchStartDate, searchEndDate, searchFilterType, searchFilterCategory]);
 
     const handleSubmit = async () => {
         if (!name.trim()) {
@@ -613,7 +650,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
             {/* TAB CONTENT: BUSCA */}
             {activeTab === 'busca' && (
                 <div className="space-y-4 animate-fade-in">
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                        {/* Search Input */}
                         <div className="relative">
                             <input
                                 type="text"
@@ -628,9 +666,86 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                 <RefreshCw className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-500 animate-spin" />
                             )}
                         </div>
-                        <p className="text-xs text-slate-400 mt-2 font-medium px-1">
-                            Digite pelo menos 3 caracteres para buscar em todo o histórico.
-                        </p>
+
+                        {/* Filters Panel */}
+                        <div className="flex flex-col md:flex-row gap-4 pt-2">
+                            {/* Date Range */}
+                            <div className="flex gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200">
+                                <span className="text-[10px] font-black uppercase text-slate-400 pl-2">Período:</span>
+                                <input
+                                    type="date"
+                                    value={searchStartDate}
+                                    onChange={(e) => setSearchStartDate(e.target.value)}
+                                    className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-blue-500"
+                                />
+                                <span className="text-slate-300 font-bold">-</span>
+                                <input
+                                    type="date"
+                                    value={searchEndDate}
+                                    onChange={(e) => setSearchEndDate(e.target.value)}
+                                    className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-blue-500"
+                                />
+                                {(searchStartDate || searchEndDate) && (
+                                    <button
+                                        onClick={() => { setSearchStartDate(''); setSearchEndDate(''); }}
+                                        className="p-1 hover:bg-slate-200 rounded-full text-slate-400 hover:text-red-500 transition-colors"
+                                        title="Limpar datas"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Type Filters */}
+                            <div className="flex gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200 overflow-x-auto">
+                                <span className="text-[10px] font-black uppercase text-slate-400 pl-2 whitespace-nowrap">Tipo:</span>
+                                <div className="flex gap-1">
+                                    {(['all', 'Pedestre', 'Veículo'] as const).map(type => (
+                                        <button
+                                            key={type}
+                                            onClick={() => setSearchFilterType(type)}
+                                            className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${searchFilterType === type
+                                                    ? 'bg-blue-600 text-white shadow-sm'
+                                                    : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-200'
+                                                }`}
+                                        >
+                                            {type === 'all' ? 'Todos' : type}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Category Filters */}
+                            <div className="flex gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200 overflow-x-auto">
+                                <span className="text-[10px] font-black uppercase text-slate-400 pl-2 whitespace-nowrap">Sentido:</span>
+                                <div className="flex gap-1">
+                                    {(['all', 'Entrada', 'Saída'] as const).map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => setSearchFilterCategory(cat)}
+                                            className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${searchFilterCategory === cat
+                                                    ? (cat === 'Entrada' ? 'bg-emerald-600' : cat === 'Saída' ? 'bg-red-600' : 'bg-slate-800') + ' text-white shadow-sm'
+                                                    : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-200'
+                                                }`}
+                                        >
+                                            {cat === 'all' ? 'Todos' : cat}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {!searchQuery && !searchStartDate && !searchEndDate ? (
+                            <p className="text-xs text-slate-400 font-medium px-1 text-center py-2">
+                                Digite para buscar ou use os filtros de data para ver o histórico.
+                            </p>
+                        ) : (
+                            <div className="flex items-center justify-between px-1">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                    {loadingSearch ? 'Buscando...' : `${searchResults.length} Resultados encontrados`}
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Search Results */}
