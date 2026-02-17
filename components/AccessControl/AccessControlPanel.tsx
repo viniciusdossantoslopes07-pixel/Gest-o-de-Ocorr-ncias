@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../../services/supabase';
 import { User } from '../../types';
 import {
     DoorOpen, Car, Footprints, ArrowDownToLine, ArrowUpFromLine,
     Shield, UserCheck, Search, Calendar, RefreshCw, Plus, X,
-    ChevronDown, Clock, Filter, Truck, Building2, BadgeCheck
+    ChevronDown, Clock, Filter, Truck, Building2, BadgeCheck,
+    History, Sparkles
 } from 'lucide-react';
+
 
 interface AccessControlPanelProps {
     user: User;
@@ -51,6 +53,10 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
     const [destination, setDestination] = useState('');
     const [showDestDropdown, setShowDestDropdown] = useState(false);
 
+    // Frequent Visitor State
+    const [visitorStats, setVisitorStats] = useState<{ count: number; lastVisit: string | null }>({ count: 0, lastVisit: null });
+    const [isFrequentVisitor, setIsFrequentVisitor] = useState(false);
+
     // Data state
     const [records, setRecords] = useState<AccessRecord[]>([]);
     const [loading, setLoading] = useState(true);
@@ -65,6 +71,65 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
     useEffect(() => {
         fetchRecords();
     }, [filterDate, filterGate]);
+
+    // Auto-fill logic based on Identification or Plate
+    const checkFrequentVisitor = useCallback(async (searchType: 'identification' | 'plate', value: string) => {
+        if (!value || value.length < 3) return;
+
+        try {
+            let query = supabase
+                .from('access_control')
+                .select('*')
+                .order('timestamp', { ascending: false });
+
+            if (searchType === 'identification') {
+                query = query.eq('identification', value.trim());
+            } else {
+                query = query.eq('vehicle_plate', value.trim().toUpperCase());
+            }
+
+            const { data, error } = await query;
+
+            if (data && data.length > 0) {
+                const latest = data[0];
+
+                // Auto-fill form if fields are empty
+                if (!name) setName(latest.name);
+                if (!vehicleModel && latest.vehicle_model) setVehicleModel(latest.vehicle_model);
+                if (!vehiclePlate && latest.vehicle_plate && searchType === 'identification') setVehiclePlate(latest.vehicle_plate);
+                if (!identification && latest.identification && searchType === 'plate') setIdentification(latest.identification);
+                if (latest.characteristic) setCharacteristic(latest.characteristic);
+
+                // Update stats
+                setVisitorStats({
+                    count: data.length,
+                    lastVisit: latest.timestamp
+                });
+                setIsFrequentVisitor(true);
+            } else {
+                setIsFrequentVisitor(false);
+                setVisitorStats({ count: 0, lastVisit: null });
+            }
+        } catch (err) {
+            console.error('Error checking visitor:', err);
+        }
+    }, [name, vehicleModel, vehiclePlate, identification]); // Add dependencies if needed, but be careful of loops
+
+    // Debounced check function
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (identification) checkFrequentVisitor('identification', identification);
+        }, 800);
+        return () => clearTimeout(timer);
+    }, [identification]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (vehiclePlate) checkFrequentVisitor('plate', vehiclePlate);
+        }, 800);
+        return () => clearTimeout(timer);
+    }, [vehiclePlate]);
+
 
     const fetchRecords = async () => {
         setLoading(true);
@@ -127,11 +192,14 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
             setAuthorizer('');
             setAuthorizerId('');
             setDestination('');
+            setIsFrequentVisitor(false);
+            setVisitorStats({ count: 0, lastVisit: null });
 
             await fetchRecords();
         } catch (err) {
             console.error('Erro ao registrar acesso:', err);
-            alert('Erro ao registrar acesso.');
+            // @ts-ignore
+            alert(`Erro ao registrar acesso: ${err.message || JSON.stringify(err)}`);
         } finally {
             setSubmitting(false);
         }
@@ -239,9 +307,20 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
             {/* Registration Form */}
             {showForm && (
                 <div className={`bg-white p-4 sm:p-6 rounded-2xl shadow-lg border-2 ${gateBorderColors[selectedGate]} transition-all`}>
-                    <h3 className="font-black text-lg uppercase tracking-wider mb-4 flex items-center gap-2">
-                        <Shield className="w-5 h-5" /> Registro de Acesso — {selectedGate}
-                    </h3>
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-black text-lg uppercase tracking-wider flex items-center gap-2">
+                            <Shield className="w-5 h-5" /> Registro de Acesso — {selectedGate}
+                        </h3>
+                        {isFrequentVisitor && (
+                            <div className="flex items-center gap-2 bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 px-3 py-1.5 rounded-xl border border-amber-200 shadow-sm animate-fade-in">
+                                <Sparkles className="w-4 h-4 text-amber-500" />
+                                <div className="text-xs">
+                                    <span className="font-black block uppercase">Visitante Frequente</span>
+                                    <span className="font-medium">{visitorStats.count} acessos na história</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
                     <div className="space-y-4">
                         {/* Row 1: Access Category (Entrada / Saída) */}
@@ -301,7 +380,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                     autoFocus
                                 />
                             </div>
-                            <div>
+                            <div className="relative">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Identificação (SARAM/CPF/RG)</label>
                                 <input
                                     type="text"
@@ -310,6 +389,11 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                     placeholder="Ex: 7321104"
                                     className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 sm:p-4 font-bold text-sm text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                                 />
+                                {identification && isFrequentVisitor && (
+                                    <div className="absolute right-3 top-[34px] animate-fade-in">
+                                        <History className="w-5 h-5 text-amber-500" />
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -351,7 +435,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                         className="w-full bg-white border border-violet-200 rounded-xl p-3 font-bold text-sm text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-violet-400 outline-none uppercase"
                                     />
                                 </div>
-                                <div>
+                                <div className="relative">
                                     <label className="text-[10px] font-black text-violet-500 uppercase tracking-widest block mb-1">Placa</label>
                                     <input
                                         type="text"
@@ -360,6 +444,11 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                         placeholder="Ex: FBV6590"
                                         className="w-full bg-white border border-violet-200 rounded-xl p-3 font-bold text-sm text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-violet-400 outline-none uppercase"
                                     />
+                                    {vehiclePlate && isFrequentVisitor && (
+                                        <div className="absolute right-3 top-[30px] animate-fade-in">
+                                            <History className="w-5 h-5 text-amber-500" />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}
