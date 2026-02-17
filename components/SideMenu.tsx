@@ -181,7 +181,7 @@ export default function SideMenu({
                                 {(!isCollapsed && isAccessControlOpen) && (
                                     <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
                                         <MenuItem id="access-control" label="Acesso Visitantes" icon={DoorOpen} />
-                                        <MenuItem id="access-statistics" label="Estatísticas" icon={BarChart3} />
+
                                         <MenuItem id="parking-request" label="Estacionamento" icon={Car} />
                                     </div>
                                 )}

@@ -41,6 +41,7 @@ const DESTINATIONS = [
 export default function AccessControlPanel({ user }: AccessControlPanelProps) {
     // Tab State
     const [activeTab, setActiveTab] = useState<'registrar' | 'estatisticas'>('registrar');
+    const [showStats, setShowStats] = useState(true);
 
     // Form state
     const [selectedGate, setSelectedGate] = useState('PORTÃO G1');
@@ -468,6 +469,41 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                 )}
                             </button>
                         </div>
+                    </div>
+
+                    {/* 1.5. Daily Summary (Restored) */}
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-4">
+                        <button
+                            onClick={() => setShowStats(!showStats)}
+                            className="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 transition-colors"
+                        >
+                            <span className="text-xs font-black uppercase text-slate-600 flex items-center gap-2">
+                                <RefreshCw className="w-3.5 h-3.5" /> Resumo do Dia
+                                <span className="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded text-[10px]">{todayStats.total}</span>
+                            </span>
+                            {showStats ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                        </button>
+
+                        {showStats && (
+                            <div className="p-2 grid grid-cols-2 sm:grid-cols-4 gap-2 animate-fade-in">
+                                <div className="bg-emerald-50 p-1.5 rounded-lg border border-emerald-100 text-center">
+                                    <p className="text-[9px] font-bold text-emerald-600 uppercase">Entradas</p>
+                                    <p className="text-base font-black text-emerald-700 leading-none mt-0.5">{todayStats.entries}</p>
+                                </div>
+                                <div className="bg-red-50 p-1.5 rounded-lg border border-red-100 text-center">
+                                    <p className="text-[9px] font-bold text-red-600 uppercase">Saídas</p>
+                                    <p className="text-base font-black text-red-700 leading-none mt-0.5">{todayStats.exits}</p>
+                                </div>
+                                <div className="bg-blue-50 p-1.5 rounded-lg border border-blue-100 text-center">
+                                    <p className="text-[9px] font-bold text-blue-600 uppercase">Pedestres</p>
+                                    <p className="text-base font-black text-blue-700 leading-none mt-0.5">{records.filter(r => r.access_mode === 'Pedestre').length}</p>
+                                </div>
+                                <div className="bg-violet-50 p-1.5 rounded-lg border border-violet-100 text-center">
+                                    <p className="text-[9px] font-bold text-violet-600 uppercase">Veículos</p>
+                                    <p className="text-base font-black text-violet-700 leading-none mt-0.5">{records.filter(r => r.access_mode === 'Veículo').length}</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* 2. History List (Compact) */}
