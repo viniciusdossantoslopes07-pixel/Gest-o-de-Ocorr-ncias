@@ -24,7 +24,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
   const [showParkingModal, setShowParkingModal] = useState(false);
 
   // Parking public form
-  const [parkData, setParkData] = useState({ nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', telefone: '', identidade: '', marcaModelo: '', placa: '', cor: '', inicio: '', termino: '', obs: '' });
+  const [parkData, setParkData] = useState({ nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', telefone: '', email: '', identidade: '', marcaModelo: '', placa: '', cor: '', inicio: '', termino: '', obs: '' });
   const [parkSuccess, setParkSuccess] = useState(false);
   const [parkProto, setParkProto] = useState('');
   const [regData, setRegData] = useState({
@@ -199,6 +199,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
       tipo_pessoa: parkData.tipo,
       om: parkData.om.toUpperCase() || '—',
       telefone: parkData.telefone,
+      email: parkData.email,
       identidade: parkData.identidade.toUpperCase() || null,
       ext_marca_modelo: parkData.marcaModelo.toUpperCase(),
       ext_placa: parkData.placa.toUpperCase(),
@@ -450,7 +451,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                 <h3 className="text-lg font-black text-slate-800">Solicitação Enviada!</h3>
                 <p className="text-xs text-slate-500">Protocolo Nº <strong>{parkProto}</strong></p>
                 <p className="text-[10px] text-slate-400">Sua solicitação será analisada pela SOP-03.<br />Aguarde a aprovação.</p>
-                <button type="button" onClick={() => { setShowParkingModal(false); setParkSuccess(false); setParkData({ nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', telefone: '', identidade: '', marcaModelo: '', placa: '', cor: '', inicio: '', termino: '', obs: '' }); }} className="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-700 transition-all">Fechar</button>
+                <button type="button" onClick={() => { setShowParkingModal(false); setParkSuccess(false); setParkData({ nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', telefone: '', email: '', identidade: '', marcaModelo: '', placa: '', cor: '', inicio: '', termino: '', obs: '' }); }} className="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-700 transition-all">Fechar</button>
               </div>
             ) : (
               <>
@@ -484,6 +485,10 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                     <div className="sm:col-span-2 space-y-1">
                       <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Telefone</label>
                       <input placeholder="(11) 99999-9999" value={parkData.telefone} onChange={e => setParkData({ ...parkData, telefone: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div className="sm:col-span-2 space-y-1">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Email (Opcional)</label>
+                      <input type="email" placeholder="exemplo@email.com" value={parkData.email} onChange={e => setParkData({ ...parkData, email: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
                     </div>
                   </div>
 

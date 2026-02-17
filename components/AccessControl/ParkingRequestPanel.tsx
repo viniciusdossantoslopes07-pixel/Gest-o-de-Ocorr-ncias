@@ -76,6 +76,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
     const [extPlaca, setExtPlaca] = useState('');
     const [extCor, setExtCor] = useState('');
     const [extIdentidade, setExtIdentidade] = useState('');
+    const [extEmail, setExtEmail] = useState('');
 
     const isAdmin = user?.role === 'Gestor Master / OSD' || user?.role === 'Comandante OM' || (user?.sector && user.sector.includes('SOP'));
 
@@ -157,12 +158,13 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
             record.ext_placa = extPlaca.toUpperCase();
             record.ext_cor = extCor;
             record.identidade = extIdentidade.toUpperCase() || null;
+            record.email = extEmail || null;
         }
 
         await supabase.from('parking_requests').insert(record);
         // Reset
         setSelectedVehicle(''); setInicio(''); setTermino(''); setObservacao('');
-        setExtNome(''); setExtPosto(''); setExtOM(''); setExtTelefone(''); setExtIdentidade('');
+        setExtNome(''); setExtPosto(''); setExtOM(''); setExtTelefone(''); setExtIdentidade(''); setExtEmail('');
         setExtMarcaModelo(''); setExtPlaca(''); setExtCor('');
         await fetchMyRequests();
         if (isAdmin) await fetchAllRequests();
@@ -322,6 +324,11 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                                     <input value={extTelefone} onChange={e => setExtTelefone(e.target.value)} placeholder="11-99999-9999"
                                         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
                                 </div>
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Email (Opcional)</label>
+                                <input type="email" value={extEmail} onChange={e => setExtEmail(e.target.value)} placeholder="exemplo@email.com"
+                                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
                             </div>
                             <div className="border-t border-dashed border-slate-200 pt-3"></div>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
