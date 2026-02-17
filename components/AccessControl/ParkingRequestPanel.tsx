@@ -73,47 +73,65 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
     const vagasDisponiveis = TOTAL_VAGAS - vagasOcupadas;
 
     // Aprovar / Rejeitar
+    // Aprovar / Rejeitar
     const handleApprove = async (id: string) => {
+        if (!id) { alert("Erro: ID da solicitação inválido."); return; }
         setIsProcessing(true);
         try {
-            console.log("Tentando aprovar solicitação:", id);
             const updatePayload = {
                 status: 'Aprovado',
                 aprovado_por: `${user.rank || ''} ${user.war_name || user.name || 'Desconhecido'}`.trim()
             };
-            console.log("Payload:", updatePayload);
 
-            const { error } = await supabase.from('parking_requests').update(updatePayload).eq('id', id);
+            // DEBUG: Verificar se linhas foram afetadas
+            const { data, error } = await supabase.from('parking_requests')
+                .update(updatePayload)
+                .eq('id', id)
+                .select();
 
             if (error) throw error;
+
+            if (!data || data.length === 0) {
+                alert("ALERTA DE DEPURAÇÃO: O comando foi enviado, mas o banco de dados ignorou a atualização (0 linhas afetadas). Isso indica um problema de Permissão (RLS) ou ID incorreto.");
+            }
 
             setAnalysingRequest(null);
             await fetchAllRequests();
             await fetchMyRequests();
         } catch (err: any) {
             console.error("Erro ao aprovar:", err);
-            alert(`Erro ao aprovar: ${err.message || 'Erro desconhecido'}`);
+            alert(`Erro crítico ao aprovar: ${err.message || 'Erro desconhecido'}`);
         } finally {
             setIsProcessing(false);
         }
     };
 
     const handleReject = async (id: string) => {
+        if (!id) { alert("Erro: ID da solicitação inválido."); return; }
         setIsProcessing(true);
         try {
-            const { error } = await supabase.from('parking_requests').update({
+            const updatePayload = {
                 status: 'Rejeitado',
                 aprovado_por: `${user.rank || ''} ${user.war_name || user.name || 'Desconhecido'}`.trim()
-            }).eq('id', id);
+            };
+
+            const { data, error } = await supabase.from('parking_requests')
+                .update(updatePayload)
+                .eq('id', id)
+                .select();
 
             if (error) throw error;
+
+            if (!data || data.length === 0) {
+                alert("ALERTA DE DEPURAÇÃO: O comando foi enviado, mas o banco de dados ignorou a atualização (0 linhas afetadas).");
+            }
 
             setAnalysingRequest(null);
             await fetchAllRequests();
             await fetchMyRequests();
         } catch (err: any) {
             console.error("Erro ao rejeitar:", err);
-            alert(`Erro ao rejeitar: ${err.message || 'Erro desconhecido'}`);
+            alert(`Erro crítico ao rejeitar: ${err.message || 'Erro desconhecido'}`);
         } finally {
             setIsProcessing(false);
         }
