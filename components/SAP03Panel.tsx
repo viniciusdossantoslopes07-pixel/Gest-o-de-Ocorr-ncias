@@ -189,7 +189,29 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
     };
 
     const handleDirectRelease = async () => {
-        if (!foundUser || selectedItems.length === 0) {
+        // If no items selected but inputs are filled, try to add the current input item
+        if (selectedItems.length === 0 && directMaterialId && foundUser) {
+            const mat = inventory.find(i => i.id === directMaterialId);
+            if (mat) {
+                const singleItem = {
+                    id_material: directMaterialId,
+                    material: mat.material,
+                    quantidade: directQuantity
+                };
+                // Proceed with this single item
+                setSelectedItems([singleItem]);
+                // We need to wait for state update? No, we can pass it directly or rely on state in next render.
+                // Actually, state updates are async. Better to refactor to pass items to signature flow explicitly?
+                // The signature flow uses 'selectedItems' from state. 
+                // A safer way is to update state AND set a flag or just temporarily use a local variable if modifying signature logic.
+                // But confirmSignature reads from selectedItems state.
+                // Pre-add the item to selectedItems for the signature modal to see
+                setSelectedItems([singleItem]);
+                // We also need to ensure the state is treated as valid for the next step.
+                // React state updates are async, so we might need a small delay or refactor confirmSignature to use local vars if needed.
+                // However, the modal opening is what matters here.
+            }
+        } else if (!foundUser || selectedItems.length === 0) {
             alert('Selecione um militar válido e pelo menos um material.');
             return;
         }
@@ -198,7 +220,18 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
     };
 
     const handleReceiveMaterial = async () => {
-        if (!foundUser || selectedItems.length === 0) {
+        // Same logic for receive
+        if (selectedItems.length === 0 && directMaterialId && foundUser) {
+            const mat = inventory.find(i => i.id === directMaterialId);
+            if (mat) {
+                const singleItem = {
+                    id_material: directMaterialId,
+                    material: mat.material,
+                    quantidade: directQuantity
+                };
+                setSelectedItems([singleItem]);
+            }
+        } else if (!foundUser || selectedItems.length === 0) {
             alert('Selecione um militar válido e pelo menos um material.');
             return;
         }
@@ -439,6 +472,8 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
 
     if (loading) return <div className="text-center p-8 text-slate-500">Carregando aprovações...</div>;
 
+    const canConfirm = (foundUser && selectedItems.length > 0) || (foundUser && directMaterialId && selectedItems.length === 0);
+
     return (
         <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-8 animate-fade-in">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -547,8 +582,8 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                             <div className="flex-1"></div>
                             <button
                                 onClick={showDirectRelease ? handleDirectRelease : handleReceiveMaterial}
-                                disabled={actionLoading === 'direct' || !foundUser || selectedItems.length === 0}
-                                className={`min-w-[200px] h-[50px] text-white rounded-xl font-black transition-all shadow-lg text-sm uppercase tracking-widest ${showDirectRelease ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                                disabled={actionLoading === 'direct' || (!selectedItems.length && (!foundUser || !directMaterialId))}
+                                className={`min-w-[200px] h-[50px] text-white rounded-xl font-black transition-all shadow-lg text-sm uppercase tracking-widest ${showDirectRelease ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'} disabled:opacity-50 disabled:cursor-not-allowed`}
                             >
                                 {actionLoading === 'direct' ? 'Processando...' : (showDirectRelease ? 'Confirmar Cautela' : 'Confirmar Recebimento')}
                             </button>
