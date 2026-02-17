@@ -561,115 +561,105 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 pb-20">
-            {/* Header */}
-            <div className="bg-white rounded-[2rem] p-4 lg:p-8 border border-slate-200 shadow-sm">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                    <div className="flex items-center gap-4">
-                        <div className="bg-blue-600 p-2.5 lg:p-3 rounded-2xl shadow-lg shadow-blue-200">
-                            <FileSignature className="w-5 h-5 lg:w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                            <h2 className="text-[9px] lg:text-[10px] font-black text-slate-400 tracking-widest uppercase mb-1">Ministério da Defesa / BASP</h2>
-                            <h2 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">Retirada de Faltas</h2>
-                            <p className="text-slate-500 text-xs lg:sm font-medium">Controle semanal - {selectedSector}</p>
-                        </div>
-                    </div>
+        <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 pb-20">
+            {/* Sub-Tabs Navigation — FIRST */}
+            <div className="flex gap-1 p-1 bg-slate-100 rounded-xl w-fit">
+                <button
+                    onClick={() => setActiveSubTab('chamada')}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${activeSubTab === 'chamada' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    <Users className="w-3.5 h-3.5" /> Chamada Diária
+                </button>
+                <button
+                    onClick={() => setActiveSubTab('cupons')}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${activeSubTab === 'cupons' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    <FileText className="w-3.5 h-3.5" /> Cupons Gerados
+                </button>
+                <button
+                    onClick={() => setActiveSubTab('mapa_forca')}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${activeSubTab === 'mapa_forca' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                    <BarChart3 className="w-3.5 h-3.5" /> Mapa de Força
+                </button>
+            </div>
 
-                    <div className="flex flex-wrap items-center gap-2 lg:gap-3">
-                        <div className="flex flex-col gap-2 w-full lg:w-auto">
-                            <div className="flex items-center gap-2 bg-slate-50 p-1.5 lg:p-2 rounded-2xl border border-slate-100 w-full lg:w-auto justify-between lg:justify-start">
-                                <button onClick={() => changeWeek(-1)} className="p-2 hover:bg-white rounded-lg transition-all text-slate-400 hover:text-slate-900 shadow-sm">
-                                    <Filter className="w-3.5 h-3.5 rotate-180" />
+            {/* Compact Header — only for chamada/cupons */}
+            {(activeSubTab === 'chamada' || activeSubTab === 'cupons') && (
+                <div className="bg-white rounded-2xl p-3 lg:p-4 border border-slate-200 shadow-sm">
+                    {/* Top row: Title + Navigation + Actions */}
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-blue-600 p-2 rounded-xl shadow-md shadow-blue-200">
+                                <FileSignature className="w-4 h-4 text-white" />
+                            </div>
+                            <div>
+                                <h2 className="text-sm lg:text-base font-black text-slate-900 tracking-tight leading-tight">Retirada de Faltas</h2>
+                                <p className="text-slate-400 text-[10px] font-bold">{selectedSector}</p>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                            {/* Week Nav */}
+                            <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-100">
+                                <button onClick={() => changeWeek(-1)} className="p-1.5 hover:bg-white rounded-lg transition-all text-slate-400 hover:text-slate-900">
+                                    <Filter className="w-3 h-3 rotate-180" />
                                 </button>
-                                <span className="text-[10px] lg:text-xs font-black text-slate-700 px-2 uppercase">
-                                    {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} a {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                                <span className="text-[10px] font-black text-slate-700 px-1.5">
+                                    {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} — {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                                 </span>
-                                <button onClick={() => changeWeek(1)} className="p-2 hover:bg-white rounded-lg transition-all text-slate-400 hover:text-slate-900 shadow-sm">
-                                    <Filter className="w-3.5 h-3.5" />
+                                <button onClick={() => changeWeek(1)} className="p-1.5 hover:bg-white rounded-lg transition-all text-slate-400 hover:text-slate-900">
+                                    <Filter className="w-3 h-3" />
                                 </button>
                             </div>
+
                             <button
                                 onClick={() => setShowManageWeekModal(true)}
-                                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 py-1.5 rounded-xl text-[8px] font-black uppercase tracking-[0.2em] transition-all border border-slate-200"
+                                className="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-wider transition-all border border-slate-200"
                             >
                                 Gerir Semana
                             </button>
-                        </div>
 
-                        <div className="flex gap-2 w-full lg:w-auto">
                             <button
                                 onClick={() => setShowAdHocModal(true)}
-                                className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-blue-600 text-white px-3 lg:px-4 py-3 rounded-xl text-[10px] lg:text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg"
+                                className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-700 transition-all shadow-sm"
                             >
-                                <UserPlus className="w-3.5 h-3.5" /> Incluir
+                                <UserPlus className="w-3 h-3" /> Incluir
                             </button>
                             <button
                                 onClick={() => window.print()}
-                                className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-slate-900 text-white px-3 lg:px-4 py-3 rounded-xl text-[10px] lg:text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg"
+                                className="flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-slate-800 transition-all shadow-sm"
                             >
-                                <Plus className="w-3.5 h-3.5" /> PDF
+                                <Plus className="w-3 h-3" /> PDF
                             </button>
                         </div>
                     </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
-                            Setor Selecionado
-                        </label>
+                    {/* Bottom row: Sector + Search inline */}
+                    <div className="flex flex-col md:flex-row items-stretch gap-2 mt-3">
                         <select
                             value={selectedSector}
                             onChange={(e) => setSelectedSector(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all md:w-[180px]"
                         >
                             {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
-                    </div>
-
-                    <div className="space-y-2 md:col-span-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
-                            Buscar Militar na Grade
-                        </label>
-                        <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                             <input
                                 type="text"
-                                placeholder="Nome ou Nome de Guerra..."
+                                placeholder="Buscar militar..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                className="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 pl-9 pr-3 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                             />
                         </div>
                     </div>
                 </div>
-            </div>
-
-            {/* Sub-Tabs Navigation */}
-            <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl w-fit">
-                <button
-                    onClick={() => setActiveSubTab('chamada')}
-                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${activeSubTab === 'chamada' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                    <Users className="w-4 h-4" /> Chamada Diária
-                </button>
-                <button
-                    onClick={() => setActiveSubTab('cupons')}
-                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${activeSubTab === 'cupons' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                    <FileText className="w-4 h-4" /> Cupons Gerados
-                </button>
-                <button
-                    onClick={() => setActiveSubTab('mapa_forca')}
-                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${activeSubTab === 'mapa_forca' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                    <BarChart3 className="w-4 h-4" /> Mapa de Força
-                </button>
-            </div>
+            )}
 
             {activeSubTab === 'chamada' && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
                     {/* Weekly Grid Table */}
                     <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm relative group">
                         {/* Mobile Scroll Hint */}
