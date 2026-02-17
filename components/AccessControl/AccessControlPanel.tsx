@@ -5,9 +5,8 @@ import {
     DoorOpen, Car, Footprints, ArrowDownToLine, ArrowUpFromLine,
     Shield, UserCheck, Search, Calendar, RefreshCw, Plus, X,
     ChevronDown, Clock, Filter, Truck, Building2, BadgeCheck,
-    History, Sparkles
+    History, Sparkles, ChevronUp, AlertCircle
 } from 'lucide-react';
-
 
 interface AccessControlPanelProps {
     user: User;
@@ -53,6 +52,9 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
     const [destination, setDestination] = useState('');
     const [showDestDropdown, setShowDestDropdown] = useState(false);
 
+    // UX State
+    const [showStats, setShowStats] = useState(false); // Collapsed by default on mobile
+
     // Frequent Visitor State
     const [visitorStats, setVisitorStats] = useState<{ count: number; lastVisit: string | null }>({ count: 0, lastVisit: null });
     const [isFrequentVisitor, setIsFrequentVisitor] = useState(false);
@@ -70,6 +72,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
 
     useEffect(() => {
         fetchRecords();
+        // Auto-expand stats on large screens
+        if (window.innerWidth >= 1024) setShowStats(true);
     }, [filterDate, filterGate]);
 
     // Auto-fill logic based on Identification or Plate
@@ -113,7 +117,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
         } catch (err) {
             console.error('Error checking visitor:', err);
         }
-    }, [name, vehicleModel, vehiclePlate, identification]); // Add dependencies if needed, but be careful of loops
+    }, [name, vehicleModel, vehiclePlate, identification]);
 
     // Debounced check function
     useEffect(() => {
@@ -243,122 +247,142 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
     };
 
     return (
-        <div className="space-y-4 sm:space-y-6 animate-fade-in max-w-7xl mx-auto">
+        <div className="space-y-4 animate-fade-in max-w-7xl mx-auto pb-20">
 
-            {/* Gate Selector */}
-            <div className="grid grid-cols-3 gap-3">
+            {/* Top Bar: Gate & Quick Stats Toggle */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
                 {GATES.map(gate => (
                     <button
                         key={gate}
                         onClick={() => setSelectedGate(gate)}
-                        className={`relative p-4 sm:p-6 rounded-2xl font-black text-sm sm:text-lg uppercase tracking-widest transition-all duration-300 border-2 ${selectedGate === gate
-                            ? `bg-gradient-to-br ${gateColors[gate]} text-white border-transparent shadow-xl scale-[1.02]`
-                            : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:shadow-md'
+                        className={`flex-1 min-w-[100px] relative p-3 rounded-xl font-black text-xs sm:text-sm uppercase tracking-wider transition-all duration-300 border ${selectedGate === gate
+                                ? `bg-gradient-to-br ${gateColors[gate]} text-white border-transparent shadow-lg scale-[1.02]`
+                                : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
                             }`}
                     >
-                        <DoorOpen className={`w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 ${selectedGate === gate ? 'text-white' : 'text-slate-400'}`} />
-                        <span className="block text-center text-[10px] sm:text-sm">{gate}</span>
+                        <div className="flex flex-col items-center">
+                            <DoorOpen className={`w-5 h-5 mb-1 ${selectedGate === gate ? 'text-white' : 'text-slate-400'}`} />
+                            <span>{gate.replace('PORTÃO ', '')}</span>
+                        </div>
                         {selectedGate === gate && (
-                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow">
-                                <BadgeCheck className="w-3 h-3 text-green-600" />
+                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full flex items-center justify-center shadow">
+                                <BadgeCheck className="w-2.5 h-2.5 text-green-600" />
                             </div>
                         )}
                     </button>
                 ))}
             </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-100 shadow-sm text-center">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total</p>
-                    <p className="text-xl sm:text-2xl font-black text-slate-900">{todayStats.total}</p>
-                </div>
-                <div className="bg-white p-3 sm:p-4 rounded-2xl border border-emerald-100 shadow-sm text-center">
-                    <ArrowDownToLine className="w-4 h-4 text-emerald-500 mx-auto mb-1" />
-                    <p className="text-[10px] font-bold text-emerald-600 uppercase">Entradas</p>
-                    <p className="text-xl sm:text-2xl font-black text-emerald-700">{todayStats.entries}</p>
-                </div>
-                <div className="bg-white p-3 sm:p-4 rounded-2xl border border-red-100 shadow-sm text-center">
-                    <ArrowUpFromLine className="w-4 h-4 text-red-500 mx-auto mb-1" />
-                    <p className="text-[10px] font-bold text-red-600 uppercase">Saídas</p>
-                    <p className="text-xl sm:text-2xl font-black text-red-700">{todayStats.exits}</p>
-                </div>
-                <div className="bg-white p-3 sm:p-4 rounded-2xl border border-blue-100 shadow-sm text-center">
-                    <Footprints className="w-4 h-4 text-blue-500 mx-auto mb-1" />
-                    <p className="text-[10px] font-bold text-blue-600 uppercase">Pedestres</p>
-                    <p className="text-xl sm:text-2xl font-black text-blue-700">{todayStats.pedestrians}</p>
-                </div>
-                <div className="bg-white p-3 sm:p-4 rounded-2xl border border-violet-100 shadow-sm text-center col-span-2 sm:col-span-1">
-                    <Car className="w-4 h-4 text-violet-500 mx-auto mb-1" />
-                    <p className="text-[10px] font-bold text-violet-600 uppercase">Veículos</p>
-                    <p className="text-xl sm:text-2xl font-black text-violet-700">{todayStats.vehicles}</p>
-                </div>
-            </div>
+            {/* Collapsible Stats */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <button
+                    onClick={() => setShowStats(!showStats)}
+                    className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                    <span className="text-xs font-black uppercase text-slate-600 flex items-center gap-2">
+                        <RefreshCw className="w-3.5 h-3.5" /> Resumo do Dia
+                        <span className="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded text-[10px]">{todayStats.total}</span>
+                    </span>
+                    {showStats ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                </button>
 
-            {/* Toggle Form / Collapse */}
-            <button
-                onClick={() => setShowForm(!showForm)}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:from-slate-700 hover:to-slate-800 transition-all shadow-lg"
-            >
-                {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                {showForm ? 'Fechar Formulário' : 'Novo Registro de Acesso'}
-            </button>
+                {showStats && (
+                    <div className="p-3 grid grid-cols-2 sm:grid-cols-4 gap-3 animate-fade-in">
+                        <div className="bg-emerald-50 p-2 rounded-lg border border-emerald-100 text-center">
+                            <p className="text-[10px] font-bold text-emerald-600 uppercase">Entradas</p>
+                            <p className="text-lg font-black text-emerald-700 leading-none mt-1">{todayStats.entries}</p>
+                        </div>
+                        <div className="bg-red-50 p-2 rounded-lg border border-red-100 text-center">
+                            <p className="text-[10px] font-bold text-red-600 uppercase">Saídas</p>
+                            <p className="text-lg font-black text-red-700 leading-none mt-1">{todayStats.exits}</p>
+                        </div>
+                        <div className="bg-blue-50 p-2 rounded-lg border border-blue-100 text-center">
+                            <p className="text-[10px] font-bold text-blue-600 uppercase">Pedestres</p>
+                            <p className="text-lg font-black text-blue-700 leading-none mt-1">{todayStats.pedestrians}</p>
+                        </div>
+                        <div className="bg-violet-50 p-2 rounded-lg border border-violet-100 text-center">
+                            <p className="text-[10px] font-bold text-violet-600 uppercase">Veículos</p>
+                            <p className="text-lg font-black text-violet-700 leading-none mt-1">{todayStats.vehicles}</p>
+                        </div>
+                    </div>
+                )}
+            </div>
 
             {/* Registration Form */}
             {showForm && (
-                <div className={`bg-white p-4 sm:p-6 rounded-2xl shadow-lg border-2 ${gateBorderColors[selectedGate]} transition-all`}>
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-black text-lg uppercase tracking-wider flex items-center gap-2">
-                            <Shield className="w-5 h-5" /> Registro de Acesso — {selectedGate}
+                <div className={`bg-white p-3 sm:p-5 rounded-2xl shadow-xl border-t-4 ${selectedGate === 'PORTÃO G1' ? 'border-t-blue-500' :
+                        selectedGate === 'PORTÃO G2' ? 'border-t-emerald-500' : 'border-t-amber-500'
+                    }`}>
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-black text-sm uppercase tracking-wider flex items-center gap-2 text-slate-700">
+                            <Shield className="w-4 h-4" /> Novo Registro
                         </h3>
                         {isFrequentVisitor && (
-                            <div className="flex items-center gap-2 bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 px-3 py-1.5 rounded-xl border border-amber-200 shadow-sm animate-fade-in">
-                                <Sparkles className="w-4 h-4 text-amber-500" />
-                                <div className="text-xs">
-                                    <span className="font-black block uppercase">Visitante Frequente</span>
-                                    <span className="font-medium">{visitorStats.count} acessos na história</span>
-                                </div>
+                            <div className="flex items-center gap-1.5 bg-amber-50 text-amber-800 px-2 py-1 rounded-lg border border-amber-100 animate-fade-in">
+                                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                                <span className="text-[10px] font-bold uppercase">{visitorStats.count} acessos</span>
                             </div>
                         )}
                     </div>
 
-                    <div className="space-y-4">
-                        {/* Row 1: Access Category (Entrada / Saída) */}
-                        <div>
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Tipo de Acesso</label>
-                            <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-3">
+                        {/* Row 1: Access Type & Mode (Compact) */}
+                        <div className="grid grid-cols-2 gap-2">
+                            {/* Access Category Toggle */}
+                            <div className="bg-slate-100 p-1 rounded-xl flex">
                                 <button
                                     onClick={() => setAccessCategory('Entrada')}
-                                    className={`py-4 rounded-2xl font-black uppercase text-sm tracking-widest flex items-center justify-center gap-2 transition-all border-2 ${accessCategory === 'Entrada'
-                                        ? 'bg-emerald-500 text-white border-emerald-600 shadow-lg'
-                                        : 'bg-white text-slate-500 border-slate-200 hover:border-emerald-300'
+                                    className={`flex-1 py-2 rounded-lg font-bold text-[10px] sm:text-xs uppercase flex items-center justify-center gap-1 transition-all ${accessCategory === 'Entrada'
+                                            ? 'bg-emerald-500 text-white shadow-sm'
+                                            : 'text-slate-500 hover:text-slate-700'
                                         }`}
                                 >
-                                    <ArrowDownToLine className="w-5 h-5" /> Entrada
+                                    <ArrowDownToLine className="w-3.5 h-3.5" /> Entrada
                                 </button>
                                 <button
                                     onClick={() => setAccessCategory('Saída')}
-                                    className={`py-4 rounded-2xl font-black uppercase text-sm tracking-widest flex items-center justify-center gap-2 transition-all border-2 ${accessCategory === 'Saída'
-                                        ? 'bg-red-500 text-white border-red-600 shadow-lg'
-                                        : 'bg-white text-slate-500 border-slate-200 hover:border-red-300'
+                                    className={`flex-1 py-2 rounded-lg font-bold text-[10px] sm:text-xs uppercase flex items-center justify-center gap-1 transition-all ${accessCategory === 'Saída'
+                                            ? 'bg-red-500 text-white shadow-sm'
+                                            : 'text-slate-500 hover:text-slate-700'
                                         }`}
                                 >
-                                    <ArrowUpFromLine className="w-5 h-5" /> Saída
+                                    <ArrowUpFromLine className="w-3.5 h-3.5" /> Saída
+                                </button>
+                            </div>
+
+                            {/* Access Mode Toggle */}
+                            <div className="bg-slate-100 p-1 rounded-xl flex">
+                                <button
+                                    onClick={() => setAccessMode('Pedestre')}
+                                    className={`flex-1 py-2 rounded-lg font-bold text-[10px] sm:text-xs uppercase flex items-center justify-center gap-1 transition-all ${accessMode === 'Pedestre'
+                                            ? 'bg-blue-500 text-white shadow-sm'
+                                            : 'text-slate-500 hover:text-slate-700'
+                                        }`}
+                                >
+                                    <Footprints className="w-3.5 h-3.5" /> Pedestre
+                                </button>
+                                <button
+                                    onClick={() => setAccessMode('Veículo')}
+                                    className={`flex-1 py-2 rounded-lg font-bold text-[10px] sm:text-xs uppercase flex items-center justify-center gap-1 transition-all ${accessMode === 'Veículo'
+                                            ? 'bg-violet-500 text-white shadow-sm'
+                                            : 'text-slate-500 hover:text-slate-700'
+                                        }`}
+                                >
+                                    <Car className="w-3.5 h-3.5" /> Veículo
                                 </button>
                             </div>
                         </div>
 
-                        {/* Row 2: Characteristic */}
-                        <div>
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Característica</label>
-                            <div className="grid grid-cols-4 gap-2">
+                        {/* Row 2: Characteristic - Horizontal Scroll */}
+                        <div className="overflow-x-auto pb-1 -mx-1 px-1">
+                            <div className="flex gap-2">
                                 {CHARACTERISTICS.map(c => (
                                     <button
                                         key={c}
                                         onClick={() => setCharacteristic(c)}
-                                        className={`py-3 rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-wider transition-all border ${characteristic === c
-                                            ? 'bg-slate-900 text-white border-slate-900 shadow'
-                                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                                        className={`whitespace-nowrap px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all border ${characteristic === c
+                                                ? 'bg-slate-800 text-white border-slate-800 shadow'
+                                                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
                                             }`}
                                     >
                                         {c}
@@ -367,105 +391,67 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                             </div>
                         </div>
 
-                        {/* Row 3: Name + ID */}
+                        {/* Row 3: Name + Identification */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Nome</label>
-                                <input
-                                    type="text"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    placeholder="Ex: CB SILVA"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 sm:p-4 font-bold text-sm text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none uppercase"
-                                    autoFocus
-                                />
-                            </div>
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="NOME (Ex: CB SILVA)"
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none uppercase"
+                                autoFocus
+                            />
                             <div className="relative">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Identificação (SARAM/CPF/RG)</label>
                                 <input
                                     type="text"
                                     value={identification}
                                     onChange={(e) => setIdentification(e.target.value)}
-                                    placeholder="Ex: 7321104"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 sm:p-4 font-bold text-sm text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                    placeholder="SARAM / CPF / RG"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none uppercase"
                                 />
                                 {identification && isFrequentVisitor && (
-                                    <div className="absolute right-3 top-[34px] animate-fade-in">
-                                        <History className="w-5 h-5 text-amber-500" />
-                                    </div>
+                                    <History className="absolute right-3 top-3.5 w-4 h-4 text-amber-500 animate-pulse" />
                                 )}
                             </div>
                         </div>
 
-                        {/* Row 4: Access Mode (Pedestre / Veículo) */}
-                        <div>
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Forma de Ingresso</label>
-                            <div className="grid grid-cols-2 gap-3">
-                                <button
-                                    onClick={() => setAccessMode('Pedestre')}
-                                    className={`py-3 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all border-2 ${accessMode === 'Pedestre'
-                                        ? 'bg-blue-500 text-white border-blue-600 shadow-lg'
-                                        : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300'
-                                        }`}
-                                >
-                                    <Footprints className="w-4 h-4" /> Pedestre
-                                </button>
-                                <button
-                                    onClick={() => setAccessMode('Veículo')}
-                                    className={`py-3 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all border-2 ${accessMode === 'Veículo'
-                                        ? 'bg-violet-500 text-white border-violet-600 shadow-lg'
-                                        : 'bg-white text-slate-500 border-slate-200 hover:border-violet-300'
-                                        }`}
-                                >
-                                    <Car className="w-4 h-4" /> Veículo
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Row 5: Vehicle Details (Conditional) */}
+                        {/* Row 4: Vehicle Details (Conditional) */}
                         {accessMode === 'Veículo' && (
-                            <div className="grid grid-cols-2 gap-3 animate-fade-in bg-violet-50 p-3 rounded-xl border border-violet-200">
-                                <div>
-                                    <label className="text-[10px] font-black text-violet-500 uppercase tracking-widest block mb-1">Modelo</label>
-                                    <input
-                                        type="text"
-                                        value={vehicleModel}
-                                        onChange={(e) => setVehicleModel(e.target.value)}
-                                        placeholder="Ex: ONIX"
-                                        className="w-full bg-white border border-violet-200 rounded-xl p-3 font-bold text-sm text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-violet-400 outline-none uppercase"
-                                    />
-                                </div>
+                            <div className="grid grid-cols-2 gap-3 animate-fade-in bg-violet-50 p-2 rounded-xl border border-violet-100">
+                                <input
+                                    type="text"
+                                    value={vehicleModel}
+                                    onChange={(e) => setVehicleModel(e.target.value)}
+                                    placeholder="MODELO (Ex: ONIX)"
+                                    className="w-full bg-white border border-violet-200 rounded-lg p-2 font-bold text-xs text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-violet-400 outline-none uppercase"
+                                />
                                 <div className="relative">
-                                    <label className="text-[10px] font-black text-violet-500 uppercase tracking-widest block mb-1">Placa</label>
                                     <input
                                         type="text"
                                         value={vehiclePlate}
                                         onChange={(e) => setVehiclePlate(e.target.value)}
-                                        placeholder="Ex: FBV6590"
-                                        className="w-full bg-white border border-violet-200 rounded-xl p-3 font-bold text-sm text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-violet-400 outline-none uppercase"
+                                        placeholder="PLACA (Ex: ABC1234)"
+                                        className="w-full bg-white border border-violet-200 rounded-lg p-2 font-bold text-xs text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-violet-400 outline-none uppercase"
                                     />
                                     {vehiclePlate && isFrequentVisitor && (
-                                        <div className="absolute right-3 top-[30px] animate-fade-in">
-                                            <History className="w-5 h-5 text-amber-500" />
-                                        </div>
+                                        <History className="absolute right-2 top-2.5 w-3.5 h-3.5 text-amber-500" />
                                     )}
                                 </div>
                             </div>
                         )}
 
-                        {/* Row 6: Destination + Authorizer */}
+                        {/* Row 5: Destination + Authorizer */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="relative">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Destino</label>
                                 <input
                                     type="text"
                                     value={destination}
                                     onChange={(e) => { setDestination(e.target.value); setShowDestDropdown(true); }}
                                     onFocus={() => setShowDestDropdown(true)}
                                     onBlur={() => setTimeout(() => setShowDestDropdown(false), 200)}
-                                    placeholder="Ex: GSD-SP"
+                                    placeholder="DESTINO (Ex: PISTA)"
                                     disabled={accessCategory === 'Saída'}
-                                    className={`w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold text-sm text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none uppercase ${accessCategory === 'Saída' ? 'opacity-50 cursor-not-allowed bg-slate-100' : ''}`}
+                                    className={`w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none uppercase ${accessCategory === 'Saída' ? 'opacity-50 cursor-not-allowed bg-slate-100' : ''}`}
                                 />
                                 {showDestDropdown && filteredDestinations.length > 0 && (
                                     <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto">
@@ -481,33 +467,30 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                     </div>
                                 )}
                             </div>
-                            <div>
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Quem Autoriza? (Opcional)</label>
-                                <input
-                                    type="text"
-                                    value={authorizer}
-                                    onChange={(e) => setAuthorizer(e.target.value)}
-                                    placeholder="Ex: SGT DUARTE"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold text-sm text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-blue-500 outline-none uppercase"
-                                />
-                            </div>
+                            <input
+                                type="text"
+                                value={authorizer}
+                                onChange={(e) => setAuthorizer(e.target.value)}
+                                placeholder="AUTORIZADOR (Opcional)"
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 font-bold text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none uppercase"
+                            />
                         </div>
 
                         {/* Submit Button */}
                         <button
                             onClick={handleSubmit}
                             disabled={submitting || !name.trim()}
-                            className={`w-full py-5 rounded-2xl font-black uppercase text-sm tracking-widest flex items-center justify-center gap-3 transition-all shadow-xl border-2 ${accessCategory === 'Entrada'
-                                ? 'bg-gradient-to-r from-emerald-500 to-emerald-700 text-white border-emerald-800 hover:from-emerald-400 hover:to-emerald-600'
-                                : 'bg-gradient-to-r from-red-500 to-red-700 text-white border-red-800 hover:from-red-400 hover:to-red-600'
-                                } disabled:opacity-40 disabled:cursor-not-allowed`}
+                            className={`w-full py-3.5 rounded-xl font-black uppercase text-sm tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg border-b-4 active:border-b-0 active:translate-y-1 ${accessCategory === 'Entrada'
+                                    ? 'bg-emerald-500 text-white border-emerald-700 hover:bg-emerald-600'
+                                    : 'bg-red-500 text-white border-red-700 hover:bg-red-600'
+                                } disabled:opacity-40 disabled:cursor-not-allowed disabled:border-none`}
                         >
                             {submitting ? (
                                 <RefreshCw className="w-5 h-5 animate-spin" />
                             ) : (
                                 <>
-                                    {accessCategory === 'Entrada' ? <ArrowDownToLine className="w-5 h-5" /> : <ArrowUpFromLine className="w-5 h-5" />}
-                                    Registrar {accessCategory}
+                                    {accessCategory === 'Entrada' ? <ArrowDownToLine className="w-4 h-4" /> : <ArrowUpFromLine className="w-4 h-4" />}
+                                    CONFIRMAR {accessCategory === 'Entrada' ? 'ENTRADA' : 'SAÍDA'}
                                 </>
                             )}
                         </button>
@@ -515,99 +498,53 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                 </div>
             )}
 
-            {/* History Section */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center gap-3">
-                    <div className="flex items-center gap-2">
-                        <Clock className="w-5 h-5 text-slate-600" />
-                        <h3 className="font-black text-sm sm:text-base uppercase tracking-wider text-slate-800">Histórico de Acessos</h3>
-                    </div>
-                    <div className="flex-1 flex flex-col sm:flex-row gap-2 sm:justify-end">
-                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-                            <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                            <input
-                                type="date"
-                                value={filterDate}
-                                onChange={(e) => setFilterDate(e.target.value)}
-                                className="bg-transparent text-xs font-bold text-slate-700 outline-none"
-                            />
-                        </div>
-                        <select
-                            value={filterGate}
-                            onChange={(e) => setFilterGate(e.target.value)}
-                            className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none"
-                        >
-                            <option value="">Todos os Portões</option>
-                            {GATES.map(g => <option key={g} value={g}>{g}</option>)}
-                        </select>
-                        <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-                            <Search className="w-3.5 h-3.5 text-slate-400 mr-2" />
-                            <input
-                                type="text"
-                                value={filterSearch}
-                                onChange={(e) => setFilterSearch(e.target.value)}
-                                placeholder="Buscar nome, doc, placa..."
-                                className="bg-transparent text-xs font-bold text-slate-700 outline-none w-full"
-                            />
-                        </div>
-                        <button onClick={fetchRecords} className="p-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors">
-                            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                        </button>
-                    </div>
+            {/* History Link / Section */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="p-3 border-b border-slate-100 flex items-center justify-between">
+                    <span className="text-xs font-black uppercase text-slate-600 flex items-center gap-2">
+                        <History className="w-3.5 h-3.5" /> Últimos Acessos
+                    </span>
+                    <button onClick={fetchRecords} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg">
+                        <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                    </button>
                 </div>
 
-                {/* Table */}
-                <div className="overflow-x-auto">
+                {/* Compact Table */}
+                <div className="overflow-x-auto max-h-[300px]">
                     <table className="w-full text-left">
-                        <thead>
-                            <tr className="bg-slate-50 border-b border-slate-200">
-                                <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Hora</th>
-                                <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Portão</th>
-                                <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Nome</th>
-                                <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest hidden sm:table-cell">Tipo</th>
-                                <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest hidden sm:table-cell">Doc</th>
-                                <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Ingresso</th>
-                                <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest hidden md:table-cell">Veículo</th>
-                                <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest hidden md:table-cell">Destino</th>
-                                <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Acesso</th>
+                        <thead className="sticky top-0 bg-slate-50 shadow-sm z-10">
+                            <tr>
+                                <th className="px-3 py-2 text-[9px] font-black text-slate-500 uppercase">Hora</th>
+                                <th className="px-3 py-2 text-[9px] font-black text-slate-500 uppercase">Nome / Detalhes</th>
+                                <th className="px-3 py-2 text-[9px] font-black text-slate-500 uppercase text-right">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan={9} className="text-center py-8 text-sm text-slate-400 italic">Carregando...</td></tr>
+                                <tr><td colSpan={3} className="text-center py-4 text-xs text-slate-400 italic">Carregando...</td></tr>
                             ) : filteredRecords.length === 0 ? (
-                                <tr><td colSpan={9} className="text-center py-8 text-sm text-slate-400 italic">Nenhum registro encontrado</td></tr>
+                                <tr><td colSpan={3} className="text-center py-4 text-xs text-slate-400 italic">Nada por aqui.</td></tr>
                             ) : (
                                 filteredRecords.map((record) => (
-                                    <tr key={record.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
-                                        <td className="px-4 py-3 text-xs font-bold text-slate-600">
+                                    <tr key={record.id} className="border-b border-slate-50 hover:bg-slate-50">
+                                        <td className="px-3 py-2 text-[10px] font-bold text-slate-600 align-top">
                                             {new Date(record.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                         </td>
-                                        <td className="px-4 py-3">
-                                            <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-lg ${record.guard_gate === 'PORTÃO G1' ? 'bg-blue-100 text-blue-700' :
-                                                record.guard_gate === 'PORTÃO G2' ? 'bg-emerald-100 text-emerald-700' :
-                                                    'bg-amber-100 text-amber-700'
+                                        <td className="px-3 py-2 align-top">
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-bold text-slate-900">{record.name}</span>
+                                                <div className="flex items-center gap-1 text-[9px] text-slate-500 mt-0.5">
+                                                    <span className="uppercase">{record.characteristic}</span>
+                                                    {record.access_mode === 'Veículo' && (
+                                                        <>• {record.vehicle_model} <span className="font-mono">{record.vehicle_plate}</span></>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-3 py-2 text-right align-top">
+                                            <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${record.access_category === 'Entrada' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
                                                 }`}>
-                                                {record.guard_gate.replace('PORTÃO ', '')}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-xs font-bold text-slate-900">{record.name}</td>
-                                        <td className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase hidden sm:table-cell">{record.characteristic}</td>
-                                        <td className="px-4 py-3 text-xs font-mono text-slate-600 hidden sm:table-cell">{record.identification || '—'}</td>
-                                        <td className="px-4 py-3">
-                                            <span className="flex items-center gap-1 text-[10px] font-bold text-slate-600">
-                                                {record.access_mode === 'Pedestre' ? <Footprints className="w-3 h-3" /> : <Car className="w-3 h-3" />}
-                                                {record.access_mode}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-xs text-slate-600 hidden md:table-cell">
-                                            {record.vehicle_model ? `${record.vehicle_model} ${record.vehicle_plate || ''}` : '—'}
-                                        </td>
-                                        <td className="px-4 py-3 text-xs text-slate-600 hidden md:table-cell">{record.destination || '—'}</td>
-                                        <td className="px-4 py-3">
-                                            <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-lg ${record.access_category === 'Entrada' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
-                                                }`}>
-                                                {record.access_category}
+                                                {record.access_category === 'Entrada' ? 'ENT' : 'SAI'}
                                             </span>
                                         </td>
                                     </tr>
@@ -615,11 +552,6 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                             )}
                         </tbody>
                     </table>
-                </div>
-                <div className="p-3 bg-slate-50 border-t border-slate-100 text-center">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                        {filteredRecords.length} registro{filteredRecords.length !== 1 ? 's' : ''} encontrado{filteredRecords.length !== 1 ? 's' : ''}
-                    </p>
                 </div>
             </div>
         </div>
