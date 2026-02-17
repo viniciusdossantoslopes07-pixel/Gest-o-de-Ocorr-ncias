@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
-import { Car, Clock, Printer, History, List, Eye, FileText, BarChart3, ChevronRight, CheckCircle, XCircle, Download } from 'lucide-react';
+import { Car, Clock, Printer, History, List, Eye, FileText, BarChart3, ChevronRight, CheckCircle, XCircle, Download, Loader2 } from 'lucide-react';
 import ParkingStatistics from './ParkingStatistics';
 
 interface ParkingVehicle {
@@ -50,6 +50,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
     const [allRequests, setAllRequests] = useState<ParkingRequest[]>([]);
     const [printRequest, setPrintRequest] = useState<ParkingRequest | null>(null);
     const [analysingRequest, setAnalysingRequest] = useState<ParkingRequest | null>(null);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const isAdmin = user?.role === 'Gestor Master / OSD' || user?.role === 'Comandante OM' || (user?.sector && user.sector.includes('SOP'));
 
@@ -73,14 +74,49 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
 
     // Aprovar / Rejeitar
     const handleApprove = async (id: string) => {
-        await supabase.from('parking_requests').update({ status: 'Aprovado', aprovado_por: `${user.rank} ${user.war_name || user.name}` }).eq('id', id);
-        setAnalysingRequest(null);
-        await fetchAllRequests(); await fetchMyRequests();
+        setIsProcessing(true);
+        try {
+            console.log("Tentando aprovar solicitação:", id);
+            const updatePayload = {
+                status: 'Aprovado',
+                aprovado_por: `${user.rank || ''} ${user.war_name || user.name || 'Desconhecido'}`.trim()
+            };
+            console.log("Payload:", updatePayload);
+
+            const { error } = await supabase.from('parking_requests').update(updatePayload).eq('id', id);
+
+            if (error) throw error;
+
+            setAnalysingRequest(null);
+            await fetchAllRequests();
+            await fetchMyRequests();
+        } catch (err: any) {
+            console.error("Erro ao aprovar:", err);
+            alert(`Erro ao aprovar: ${err.message || 'Erro desconhecido'}`);
+        } finally {
+            setIsProcessing(false);
+        }
     };
+
     const handleReject = async (id: string) => {
-        await supabase.from('parking_requests').update({ status: 'Rejeitado', aprovado_por: `${user.rank} ${user.war_name || user.name}` }).eq('id', id);
-        setAnalysingRequest(null); // Ensure modal closes
-        await fetchAllRequests(); await fetchMyRequests();
+        setIsProcessing(true);
+        try {
+            const { error } = await supabase.from('parking_requests').update({
+                status: 'Rejeitado',
+                aprovado_por: `${user.rank || ''} ${user.war_name || user.name || 'Desconhecido'}`.trim()
+            }).eq('id', id);
+
+            if (error) throw error;
+
+            setAnalysingRequest(null);
+            await fetchAllRequests();
+            await fetchMyRequests();
+        } catch (err: any) {
+            console.error("Erro ao rejeitar:", err);
+            alert(`Erro ao rejeitar: ${err.message || 'Erro desconhecido'}`);
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     const tabs = [
@@ -304,8 +340,12 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                         </div>
 
                         <div className="p-4 bg-slate-50 border-t border-slate-200 flex gap-3 justify-end shrink-0">
-                            <button onClick={() => { handleReject(analysingRequest.id); setAnalysingRequest(null); }} className="px-6 py-3 bg-red-100 text-red-700 rounded-xl font-bold hover:bg-red-200 transition-all flex items-center gap-2 outline-none focus:ring-2 focus:ring-red-500"><XCircle className="w-4 h-4" /> Rejeitar</button>
-                            <button onClick={() => { handleApprove(analysingRequest.id); setAnalysingRequest(null); }} className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all flex items-center gap-2 outline-none focus:ring-2 focus:ring-emerald-500"><CheckCircle className="w-4 h-4" /> Aprovar</button>
+                            <button disabled={isProcessing} onClick={() => handleReject(analysingRequest.id)} className="px-6 py-3 bg-red-100 text-red-700 rounded-xl font-bold hover:bg-red-200 transition-all flex items-center gap-2 outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50">
+                                {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />} Rejeitar
+                            </button>
+                            <button disabled={isProcessing} onClick={() => handleApprove(analysingRequest.id)} className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all flex items-center gap-2 outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50">
+                                {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />} Aprovar
+                            </button>
                         </div>
                     </div>
                 </div>
