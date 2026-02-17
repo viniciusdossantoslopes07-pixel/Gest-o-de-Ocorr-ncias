@@ -41,6 +41,9 @@ import MeuPlanoView from './components/MeuPlanoView';
 import DailyAttendanceView from './components/PersonnelCenter/DailyAttendance';
 import PersonnelManagementView from './components/PersonnelCenter/PersonnelManagement';
 import ForceMapDashboard from './components/PersonnelCenter/ForceMapDashboard';
+import AccessControlPanel from './components/AccessControl/AccessControlPanel';
+import AccessStatistics from './components/AccessControl/AccessStatistics';
+import ParkingRequestPanel from './components/AccessControl/ParkingRequestPanel';
 import {
   STATUS_COLORS,
   OCCURRENCE_CATEGORIES,
@@ -78,7 +81,7 @@ const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   // Added 'settings' to activeTab type
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'material-statistics' | 'daily-attendance' | 'personnel-management' | 'force-map'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'material-statistics' | 'daily-attendance' | 'personnel-management' | 'force-map' | 'access-control' | 'access-statistics' | 'parking-request'>('home');
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [attendanceHistory, setAttendanceHistory] = useState<DailyAttendance[]>([]);
   const [absenceJustifications, setAbsenceJustifications] = useState<AbsenceJustification[]>([]);
@@ -913,7 +916,10 @@ const App: FC = () => {
                               activeTab === 'mission-orders' ? 'Ordens de Missão' :
                                 activeTab === 'mission-center' ? 'Central de Missões' : // Added
                                   activeTab === 'material-caution' ? 'Cautela de Material' :
-                                    activeTab === 'settings' ? 'Minhas Configurações' : 'Arquivo Digital'}
+                                    activeTab === 'access-control' ? 'Acesso Visitantes' :
+                                      activeTab === 'access-statistics' ? 'Estatísticas de Acesso' :
+                                        activeTab === 'parking-request' ? 'Solicitação Estacionamento' :
+                                          activeTab === 'settings' ? 'Minhas Configurações' : 'Arquivo Digital'}
               </h2>
             </div>
 
@@ -1155,6 +1161,19 @@ const App: FC = () => {
 
           {activeTab === 'force-map' && (
             <ForceMapDashboard users={users} attendanceHistory={attendanceHistory} />
+          )}
+
+          {/* Access Control Module */}
+          {activeTab === 'access-control' && currentUser && (
+            <AccessControlPanel user={currentUser} />
+          )}
+
+          {activeTab === 'access-statistics' && (
+            <AccessStatistics />
+          )}
+
+          {activeTab === 'parking-request' && (
+            <ParkingRequestPanel />
           )}
 
           {/* Legacy Profile tab mapped to Settings for now, or kept separate if needed. 

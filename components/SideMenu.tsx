@@ -5,7 +5,7 @@ import {
     Home, PlusCircle, ShieldCheck, ShieldAlert, Package,
     LayoutDashboard, FileText, LogOut, ChevronLeft, ChevronRight,
     User as UserIcon, Settings, HelpCircle, Moon, Sun, Lock, Siren, BarChart3,
-    ChevronUp, ChevronDown, Check, Settings2
+    ChevronUp, ChevronDown, Check, Settings2, DoorOpen, Car
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 
@@ -13,7 +13,7 @@ interface SideMenuProps {
     isOpen: boolean;
     onClose: () => void;
     activeTab: string;
-    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'material-statistics' | 'personnel-center' | 'daily-attendance' | 'personnel-management' | 'force-map'>>;
+    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'material-statistics' | 'personnel-center' | 'daily-attendance' | 'personnel-management' | 'force-map' | 'access-control' | 'access-statistics' | 'parking-request'>>;
     currentUser: User;
     onLogout: () => void;
     onToggleTheme: () => void;
@@ -29,6 +29,7 @@ export default function SideMenu({
     const [isMaterialMenuOpen, setIsMaterialMenuOpen] = useState(false);
     const [isOccurrencesOpen, setIsOccurrencesOpen] = useState(false);
     const [isPersonnelOpen, setIsPersonnelOpen] = useState(false);
+    const [isAccessControlOpen, setIsAccessControlOpen] = useState(false);
 
     // Permission Checks
     const isPublic = currentUser.role === UserRole.PUBLIC;
@@ -161,6 +162,30 @@ export default function SideMenu({
                                     )}
                                 </div>
                             )}
+
+                            {/* Access Control Section */}
+                            <div className="space-y-1">
+                                {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Controle de Acesso</h3>}
+                                <button
+                                    onClick={() => !isCollapsed && setIsAccessControlOpen(!isAccessControlOpen)}
+                                    className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <DoorOpen className="w-5 h-5 shrink-0" />
+                                        {!isCollapsed && <span className="text-sm font-bold">Controle de Acesso</span>}
+                                    </div>
+                                    {!isCollapsed && (
+                                        <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isAccessControlOpen ? 'rotate-90' : ''}`} />
+                                    )}
+                                </button>
+                                {(!isCollapsed && isAccessControlOpen) && (
+                                    <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
+                                        <MenuItem id="access-control" label="Acesso Visitantes" icon={DoorOpen} />
+                                        <MenuItem id="access-statistics" label="Estatísticas" icon={BarChart3} />
+                                        <MenuItem id="parking-request" label="Estacionamento" icon={Car} />
+                                    </div>
+                                )}
+                            </div>
 
                             {/* Admin Section */}
                             {(isAdmin || canManageUsers) && (
