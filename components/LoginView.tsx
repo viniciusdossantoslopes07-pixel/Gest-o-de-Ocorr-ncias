@@ -182,7 +182,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
   };
 
   const handleParkingSubmit = async () => {
-    if (!parkData.nome || !parkData.marcaModelo || !parkData.placa || !parkData.inicio || !parkData.termino) {
+    if (!parkData.nome || !parkData.marcaModelo || !parkData.placa || !parkData.inicio || !parkData.termino || !parkData.email) {
       setError('Preencha todos os campos obrigatórios.');
       return;
     }
@@ -487,8 +487,8 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                       <input placeholder="(11) 99999-9999" value={parkData.telefone} onChange={e => setParkData({ ...parkData, telefone: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
                     </div>
                     <div className="sm:col-span-2 space-y-1">
-                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Email (Opcional)</label>
-                      <input type="email" placeholder="exemplo@email.com" value={parkData.email} onChange={e => setParkData({ ...parkData, email: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Email *</label>
+                      <input type="email" required placeholder="exemplo@email.com" value={parkData.email} onChange={e => setParkData({ ...parkData, email: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
                     </div>
                   </div>
 

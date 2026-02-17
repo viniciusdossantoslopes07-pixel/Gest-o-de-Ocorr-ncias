@@ -128,7 +128,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
         if (!inicio || !termino) return alert('Informe o período.');
 
         if (publicoTipo === 'interno' && !selectedVehicle) return alert('Selecione um veículo.');
-        if (publicoTipo === 'externo' && (!extNome || !extMarcaModelo || !extPlaca)) return alert('Preencha Nome, Marca/Modelo e Placa.');
+        if (publicoTipo === 'externo' && (!extNome || !extMarcaModelo || !extPlaca || !extEmail)) return alert('Preencha Nome, Marca/Modelo, Placa e Email.');
         if (publicoTipo === 'externo' && tipoPessoa === 'Civil' && !extIdentidade) return alert('Para civil, o campo Identidade é obrigatório.');
 
         setLoading(true);
@@ -326,8 +326,8 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                                 </div>
                             </div>
                             <div>
-                                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Email (Opcional)</label>
-                                <input type="email" value={extEmail} onChange={e => setExtEmail(e.target.value)} placeholder="exemplo@email.com"
+                                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Email *</label>
+                                <input type="email" required value={extEmail} onChange={e => setExtEmail(e.target.value)} placeholder="exemplo@email.com"
                                     className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
                             </div>
                             <div className="border-t border-dashed border-slate-200 pt-3"></div>
