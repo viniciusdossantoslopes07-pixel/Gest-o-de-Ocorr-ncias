@@ -134,8 +134,9 @@ export default function SettingsView({ user, onUpdateUser, onUpdatePassword, isD
                                 <label className="block text-sm font-bold text-slate-700 mb-1">Telefone / Ramal</label>
                                 <input
                                     type="text"
+                                    inputMode="numeric"
                                     value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
+                                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
                                     className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                 />
                             </div>

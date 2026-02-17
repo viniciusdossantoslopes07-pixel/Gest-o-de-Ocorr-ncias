@@ -182,10 +182,11 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
             </label>
             <input
               type="tel"
+              inputMode="numeric"
               placeholder="5511999999999"
               className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
               value={formData.phoneNumber || ''}
-              onChange={e => setFormData({ ...formData, phoneNumber: e.target.value })}
+              onChange={e => setFormData({ ...formData, phoneNumber: e.target.value.replace(/\D/g, '') })}
             />
             <p className="text-[9px] text-slate-400">Formato: 55 + DDD + Número (ex: 5511999998888)</p>
           </div>

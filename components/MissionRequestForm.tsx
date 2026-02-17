@@ -310,8 +310,9 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                 <label className="block text-xs font-bold text-slate-600 mb-2">Telefone/Ramal</label>
                                 <input
                                     type="text"
+                                    inputMode="numeric"
                                     value={formData.responsavel.telefone}
-                                    onChange={e => setFormData({ ...formData, responsavel: { ...formData.responsavel, telefone: e.target.value } })}
+                                    onChange={e => setFormData({ ...formData, responsavel: { ...formData.responsavel, telefone: e.target.value.replace(/\D/g, '') } })}
                                     className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
                             </div>
