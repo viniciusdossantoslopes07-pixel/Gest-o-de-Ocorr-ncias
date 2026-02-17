@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
-import { Package, CheckCircle, XCircle, Clock, Truck, ShieldCheck, AlertCircle, Lock, Plus, Trash2, ChevronDown, ChevronUp, BarChart3, PieChart as PieIcon, History, Fingerprint } from 'lucide-react';
+import { Package, CheckCircle, XCircle, Clock, Truck, ShieldCheck, AlertCircle, Lock, Plus, Trash2, ChevronDown, ChevronUp, BarChart3, PieChart as PieIcon, History, Fingerprint, MapPin } from 'lucide-react';
 import { authenticateBiometrics } from '../services/webauthn';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
@@ -19,6 +19,7 @@ interface LoanRequest {
         material: string;
         tipo_de_material: string;
         qtdisponivel: number;
+        endereco?: string;
     } | any;
     solicitante?: {
         rank: string;
@@ -48,7 +49,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
     const [foundUser, setFoundUser] = useState<any>(null);
     const [materialSearch, setMaterialSearch] = useState('');
     const [isMaterialDropdownOpen, setIsMaterialDropdownOpen] = useState(false);
-    const [selectedItems, setSelectedItems] = useState<{ id_material: string, material: string, quantidade: number }[]>([]);
+    const [selectedItems, setSelectedItems] = useState<{ id_material: string, material: string, quantidade: number, endereco?: string }[]>([]);
     const [expandedRequestId, setExpandedRequestId] = useState<string | null>(null);
 
     // Mass Action States
@@ -81,7 +82,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
     const fetchInventory = async () => {
         const { data } = await supabase
             .from('gestao_estoque')
-            .select('id, material, qtdisponivel')
+            .select('id, material, qtdisponivel, endereco')
             .gt('qtdisponivel', 0)
             .order('material');
         if (data) setInventory(data);
@@ -94,7 +95,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
             .select(`
                 id, id_material, id_usuario, status, observacao, quantidade, 
                 autorizado_por, entregue_por, recebido_por, created_at,
-                material:gestao_estoque(material, tipo_de_material, qtdisponivel)
+                material:gestao_estoque(material, tipo_de_material, qtdisponivel, endereco)
             `)
             .order('created_at', { ascending: false });
 
@@ -262,7 +263,8 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
         setSelectedItems([...selectedItems, {
             id_material: directMaterialId,
             material: mat.material,
-            quantidade: directQuantity
+            quantidade: directQuantity,
+            endereco: mat.endereco
         }]);
 
         setDirectMaterialId('');
@@ -565,7 +567,14 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                                         >
                                             <div>
                                                 <p className="font-bold text-slate-800 text-sm">{item.material}</p>
-                                                <p className="text-[10px] text-slate-400 font-medium">{item.qtdisponivel} disponíveis</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-[10px] text-slate-400 font-medium">{item.qtdisponivel} disponíveis</p>
+                                                    {item.endereco && (
+                                                        <p className="text-[10px] text-amber-500 font-medium flex items-center gap-0.5">
+                                                            <MapPin className="w-2.5 h-2.5" /> {item.endereco}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
                                             {directMaterialId === item.id && <CheckCircle className="w-4 h-4 text-blue-600" />}
                                         </button>
@@ -610,7 +619,14 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                                                 <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm font-bold text-blue-600 text-xs">
                                                     {item.quantidade}x
                                                 </div>
-                                                <span className="font-bold text-slate-800 text-sm">{item.material}</span>
+                                                <div>
+                                                    <span className="font-bold text-slate-800 text-sm">{item.material}</span>
+                                                    {item.endereco && (
+                                                        <p className="text-[9px] text-amber-500 font-medium flex items-center gap-0.5">
+                                                            <MapPin className="w-2.5 h-2.5" /> {item.endereco}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
                                             <button onClick={() => removeItem(idx)} className="p-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <Trash2 className="w-4 h-4" />
@@ -828,6 +844,11 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                                         <p className="text-xs text-slate-500 truncate">
                                             Solicitante: <span className="font-bold text-slate-700">{req.solicitante ? `${req.solicitante.rank} ${req.solicitante.war_name}` : `ID: ${req.id_usuario}`}</span>
                                         </p>
+                                        {req.material?.endereco && (
+                                            <p className="text-[10px] text-amber-500 font-medium flex items-center gap-1 mt-0.5">
+                                                <MapPin className="w-3 h-3" /> {req.material.endereco}
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <ChevronDown className={`w-5 h-5 text-slate-300 transition-transform ${expandedRequestId === req.id ? 'rotate-180' : ''}`} />
@@ -905,9 +926,9 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                     >
                         {/* Header compacto */}
                         <div className={`px-4 py-3 flex items-center gap-3 relative ${selectedRequest.status === 'Concluído' ? 'bg-emerald-500' :
-                                selectedRequest.status === 'Em Uso' ? 'bg-blue-500' :
-                                    selectedRequest.status === 'Rejeitado' ? 'bg-red-500' :
-                                        'bg-amber-500'
+                            selectedRequest.status === 'Em Uso' ? 'bg-blue-500' :
+                                selectedRequest.status === 'Rejeitado' ? 'bg-red-500' :
+                                    'bg-amber-500'
                             }`}>
                             <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                                 {selectedRequest.status === 'Concluído' ? <CheckCircle className="w-4 h-4 text-white" /> :
@@ -932,6 +953,11 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                             <div className="text-center pb-2 border-b border-slate-100">
                                 <p className="text-lg font-black text-slate-800">{selectedRequest.material?.material || '—'}</p>
                                 <p className="text-[10px] text-slate-400 font-medium">{selectedRequest.material?.tipo_de_material || 'Sem categoria'}</p>
+                                {selectedRequest.material?.endereco && (
+                                    <p className="text-[10px] text-amber-600 font-bold flex items-center justify-center gap-1 mt-1">
+                                        <MapPin className="w-3 h-3" /> {selectedRequest.material.endereco}
+                                    </p>
+                                )}
                             </div>
 
                             {/* Grid compacto: Qtd + Data + Solicitante */}
