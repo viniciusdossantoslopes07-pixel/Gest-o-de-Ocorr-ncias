@@ -279,7 +279,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
             {/* 2. Registration Card */}
             {showForm && (
                 <div className={`bg-white rounded-2xl shadow-xl overflow-hidden border-t-4 ${selectedGate === 'PORTÃO G1' ? 'border-t-blue-500' :
-                        selectedGate === 'PORTÃO G2' ? 'border-t-emerald-500' : 'border-t-amber-500'
+                    selectedGate === 'PORTÃO G2' ? 'border-t-emerald-500' : 'border-t-amber-500'
                     }`}>
                     {/* Header: Title + Gate Selectors */}
                     <div className="p-3 bg-slate-50 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -296,19 +296,28 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                         </div>
 
                         {/* Gate Selectors - Compact & Inline */}
-                        <div className="flex bg-slate-200 p-1 rounded-lg w-full sm:w-auto">
-                            {GATES.map(gate => (
-                                <button
-                                    key={gate}
-                                    onClick={() => setSelectedGate(gate)}
-                                    className={`flex-1 sm:flex-none px-4 py-1.5 rounded-md text-[10px] sm:text-xs font-black uppercase transition-all whitespace-nowrap ${selectedGate === gate
-                                            ? 'bg-white text-slate-800 shadow-sm transform scale-105'
-                                            : 'text-slate-500 hover:text-slate-700'
-                                        }`}
-                                >
-                                    {gate.replace('PORTÃO ', '')}
-                                </button>
-                            ))}
+                        <div className="flex bg-slate-100 p-1 rounded-lg w-full sm:max-w-md ml-auto">
+                            {GATES.map(gate => {
+                                const isSelected = selectedGate === gate;
+                                let activeClass = '';
+                                if (isSelected) {
+                                    if (gate === 'PORTÃO G1') activeClass = 'bg-blue-600 text-white shadow-md ring-2 ring-blue-200';
+                                    else if (gate === 'PORTÃO G2') activeClass = 'bg-emerald-600 text-white shadow-md ring-2 ring-emerald-200';
+                                    else if (gate === 'PORTÃO G3') activeClass = 'bg-amber-600 text-white shadow-md ring-2 ring-amber-200';
+                                } else {
+                                    activeClass = 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50';
+                                }
+
+                                return (
+                                    <button
+                                        key={gate}
+                                        onClick={() => setSelectedGate(gate)}
+                                        className={`flex-1 px-4 py-2 rounded-md text-[10px] sm:text-xs font-black uppercase transition-all whitespace-nowrap ${activeClass}`}
+                                    >
+                                        {gate.replace('PORTÃO ', '')}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -320,8 +329,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                 <button
                                     onClick={() => setAccessCategory('Entrada')}
                                     className={`flex-1 py-2 rounded-lg font-bold text-[10px] sm:text-xs uppercase flex items-center justify-center gap-1 transition-all ${accessCategory === 'Entrada'
-                                            ? 'bg-emerald-500 text-white shadow-sm'
-                                            : 'text-slate-500 hover:text-slate-700'
+                                        ? 'bg-emerald-500 text-white shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700'
                                         }`}
                                 >
                                     <ArrowDownToLine className="w-3.5 h-3.5" /> Entrada
@@ -329,8 +338,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                 <button
                                     onClick={() => setAccessCategory('Saída')}
                                     className={`flex-1 py-2 rounded-lg font-bold text-[10px] sm:text-xs uppercase flex items-center justify-center gap-1 transition-all ${accessCategory === 'Saída'
-                                            ? 'bg-red-500 text-white shadow-sm'
-                                            : 'text-slate-500 hover:text-slate-700'
+                                        ? 'bg-red-500 text-white shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700'
                                         }`}
                                 >
                                     <ArrowUpFromLine className="w-3.5 h-3.5" /> Saída
@@ -342,8 +351,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                 <button
                                     onClick={() => setAccessMode('Pedestre')}
                                     className={`flex-1 py-2 rounded-lg font-bold text-[10px] sm:text-xs uppercase flex items-center justify-center gap-1 transition-all ${accessMode === 'Pedestre'
-                                            ? 'bg-blue-500 text-white shadow-sm'
-                                            : 'text-slate-500 hover:text-slate-700'
+                                        ? 'bg-blue-500 text-white shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700'
                                         }`}
                                 >
                                     <Footprints className="w-3.5 h-3.5" /> Pedestre
@@ -351,8 +360,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                 <button
                                     onClick={() => setAccessMode('Veículo')}
                                     className={`flex-1 py-2 rounded-lg font-bold text-[10px] sm:text-xs uppercase flex items-center justify-center gap-1 transition-all ${accessMode === 'Veículo'
-                                            ? 'bg-violet-500 text-white shadow-sm'
-                                            : 'text-slate-500 hover:text-slate-700'
+                                        ? 'bg-violet-500 text-white shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700'
                                         }`}
                                 >
                                     <Car className="w-3.5 h-3.5" /> Veículo
@@ -368,8 +377,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                         key={c}
                                         onClick={() => setCharacteristic(c)}
                                         className={`whitespace-nowrap px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all border ${characteristic === c
-                                                ? 'bg-slate-800 text-white border-slate-800 shadow'
-                                                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+                                            ? 'bg-slate-800 text-white border-slate-800 shadow'
+                                            : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
                                             }`}
                                     >
                                         {c}
@@ -468,8 +477,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                             onClick={handleSubmit}
                             disabled={submitting || !name.trim()}
                             className={`w-full py-3.5 rounded-xl font-black uppercase text-sm tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg border-b-4 active:border-b-0 active:translate-y-1 ${accessCategory === 'Entrada'
-                                    ? 'bg-emerald-500 text-white border-emerald-700 hover:bg-emerald-600'
-                                    : 'bg-red-500 text-white border-red-700 hover:bg-red-600'
+                                ? 'bg-emerald-500 text-white border-emerald-700 hover:bg-emerald-600'
+                                : 'bg-red-500 text-white border-red-700 hover:bg-red-600'
                                 } disabled:opacity-40 disabled:cursor-not-allowed disabled:border-none`}
                         >
                             {submitting ? (
