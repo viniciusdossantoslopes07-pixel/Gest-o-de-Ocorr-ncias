@@ -58,8 +58,20 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
     // Signature Modal States
     const [showSignatureModal, setShowSignatureModal] = useState(false);
     const [signaturePassword, setSignaturePassword] = useState('');
-    const [signatureAction, setSignatureAction] = useState<'release' | 'return' | 'update_release' | 'update_return' | 'approve' | null>(null);
+    const [signatureAction, setSignatureAction] = useState<'release' | 'approve' | 'return' | 'update_release' | 'update_return'>('release');
     const [signatureRequestId, setSignatureRequestId] = useState<string | string[] | null>(null);
+
+    // Handle Escape key to close modal
+    useEffect(() => {
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && showSignatureModal) {
+                setShowSignatureModal(false);
+                setSignaturePassword('');
+            }
+        };
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, [showSignatureModal]);
 
     useEffect(() => {
         fetchRequests();
@@ -902,58 +914,65 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                 </div>
             )}
 
-            {/* Modal Assinatura */}
-            {showSignatureModal && (
-                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden animate-scale-in">
-                        <div className="p-8 pb-4 text-center">
-                            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4"><ShieldCheck className="w-10 h-10 text-blue-600" /></div>
-                            <h3 className="text-xl font-black uppercase tracking-tighter">Assinar Cautela</h3>
-                            <p className="text-slate-500 text-sm mt-1">Insira sua senha para confirmar.</p>
+            {/* Signature Modal */}
+            {showSignatureModal && foundUser && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm animate-fade-in"
+                    onClick={() => {
+                        setShowSignatureModal(false);
+                        setSignaturePassword('');
+                    }}
+                >
+                    <div
+                        className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md space-y-6 animate-scale-in relative"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            onClick={() => {
+                                setShowSignatureModal(false);
+                                setSignaturePassword('');
+                            }}
+                            className="absolute top-4 right-4 p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-100 rounded-full transition-all"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        <div className="text-center space-y-2">
+                            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <ShieldCheck className="w-8 h-8 text-blue-600" />
+                            </div>
+                            <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">Assinar Cautela</h2>
+                            <p className="text-slate-500 font-medium text-sm">Insira sua senha para confirmar.</p>
                         </div>
-                        <div className="p-8 pt-0 space-y-6">
-                            <div className="bg-slate-50 p-4 rounded-2xl border mb-6 flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm font-bold text-blue-600">{foundUser?.rank}</div>
-                                <p className="font-bold text-slate-800">{foundUser?.war_name || foundUser?.name}</p>
+
+                        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center font-bold text-blue-600 shadow-sm border border-blue-100">
+                                {foundUser.rank}
+                            </div>
+                            <div>
+                                <p className="font-black text-slate-800 uppercase">{foundUser.war_name || foundUser.name}</p>
+                                <p className="text-xs font-bold text-slate-400">Militar Responsável</p>
                             </div>
                         </div>
+
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase flex items-center gap-2"><Lock className="w-3 h-3" /> Senha</label>
-                            <input type="password" value={signaturePassword} onChange={(e) => setSignaturePassword(e.target.value)} className="w-full bg-slate-50 border rounded-xl p-4 font-bold text-lg text-center" autoFocus onKeyDown={(e) => e.key === 'Enter' && confirmSignature()} />
-                        </div>
+                            .single();
 
-                        {localStorage.getItem('gsdsp_biometric_id') && (
-                            <button
-                                onClick={async () => {
-                                    try {
-                                        const credentialId = localStorage.getItem('gsdsp_biometric_id');
-                                        if (!credentialId) return;
-                                        const success = await authenticateBiometrics(credentialId);
-                                        if (success) {
-                                            // If biometric succeeds, we bypass manual password but we need the password for the backend update
-                                            // Assuming we store/retrieve it or use a different validation method.
-                                            // For now, let's look up the stored password from the user record associated with this credential
-                                            const { data: userData } = await supabase
-                                                .from('users')
-                                                .select('password')
-                                                .filter('webauthn_credential->>id', 'eq', credentialId)
-                                                .single();
-
-                                            if (userData) {
-                                                setSignaturePassword(userData.password);
+                            if (userData) {
+                                setSignaturePassword(userData.password);
                                                 // Trigger confirmation in next tick
                                                 setTimeout(() => confirmSignature(), 100);
                                             }
                                         }
                                     } catch (err) {
-                                        console.error(err);
-                                        alert('Falha na autenticação biométrica.');
+                                console.error(err);
+                            alert('Falha na autenticação biométrica.');
                                     }
                                 }}
-                                className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-100 transition-all border border-emerald-200"
+                            className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-100 transition-all border border-emerald-200"
                             >
-                                <Fingerprint className="w-5 h-5" /> Assinar com Biometria
-                            </button>
+                            <Fingerprint className="w-5 h-5" /> Assinar com Biometria
+                        </button>
                         )}
 
                         <div className="grid grid-cols-2 gap-3 pt-2">
