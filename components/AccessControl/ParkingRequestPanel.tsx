@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
-import { Car, Clock, Printer, History, List, Eye, FileText, BarChart3, ChevronRight, CheckCircle, XCircle, Download, Loader2 } from 'lucide-react';
+import { Car, Clock, Printer, History, List, Eye, FileText, BarChart3, ChevronRight, CheckCircle, XCircle, Download, Loader2, Lock } from 'lucide-react';
 import ParkingStatistics from './ParkingStatistics';
 
 interface ParkingVehicle {
@@ -51,6 +51,9 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
     const [printRequest, setPrintRequest] = useState<ParkingRequest | null>(null);
     const [analysingRequest, setAnalysingRequest] = useState<ParkingRequest | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [passwordConfirm, setPasswordConfirm] = useState('');
+    const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null);
 
     const isAdmin = user?.role === 'Gestor Master / OSD' || user?.role === 'Comandante OM' || (user?.sector && user.sector.includes('SOP'));
 
@@ -73,9 +76,20 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
     const vagasDisponiveis = TOTAL_VAGAS - vagasOcupadas;
 
     // Aprovar / Rejeitar
-    // Aprovar / Rejeitar
-    const handleApprove = async (id: string) => {
-        if (!id) { alert("Erro: ID da solicitação inválido."); return; }
+    const handleApprove = (id: string) => {
+        setApprovingRequestId(id);
+        setPasswordConfirm('');
+        setShowPasswordModal(true);
+    };
+
+    const confirmApprove = async () => {
+        if (!approvingRequestId) return;
+
+        if (passwordConfirm !== user.password) {
+            alert("Senha incorreta. A aprovação não foi realizada.");
+            return;
+        }
+
         setIsProcessing(true);
         try {
             const updatePayload = {
@@ -86,7 +100,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
             // DEBUG: Verificar se linhas foram afetadas
             const { data, error } = await supabase.from('parking_requests')
                 .update(updatePayload)
-                .eq('id', id)
+                .eq('id', approvingRequestId)
                 .select();
 
             if (error) throw error;
@@ -96,6 +110,8 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
             }
 
             setAnalysingRequest(null);
+            setShowPasswordModal(false);
+            setApprovingRequestId(null);
             await fetchAllRequests();
             await fetchMyRequests();
         } catch (err: any) {
@@ -240,6 +256,32 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                 </div>
             )}
 
+            {/* Modal de Confirmação de Senha */}
+            {showPasswordModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[250] flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 animate-in zoom-in-95 duration-200">
+                        <div className="bg-blue-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Lock className="w-6 h-6 text-blue-600" />
+                        </div>
+                        <h3 className="text-lg font-black text-center text-slate-800 mb-2">Confirmar Aprovação</h3>
+                        <p className="text-xs text-center text-slate-500 mb-6">Digite sua senha para confirmar a aprovação desta solicitação.</p>
+                        <input
+                            type="password"
+                            placeholder="Sua senha"
+                            value={passwordConfirm}
+                            onChange={(e) => setPasswordConfirm(e.target.value)}
+                            className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 text-center font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <div className="flex gap-2">
+                            <button onClick={() => setShowPasswordModal(false)} className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs hover:bg-slate-200 transition-all">Cancelar</button>
+                            <button onClick={confirmApprove} disabled={!passwordConfirm || isProcessing} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 disabled:opacity-50 flex items-center justify-center gap-2">
+                                {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirmar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Modal de Análise */}
             {analysingRequest && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
@@ -339,39 +381,48 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                         {/* Overlay Close Area (click outside) */}
                         <div className="absolute inset-0 no-print" onClick={() => setPrintRequest(null)}></div>
 
-                        <div className="relative bg-white w-full max-w-[210mm] min-h-[297mm] shadow-2xl mx-auto my-8 p-8 font-serif text-black print-container animate-in zoom-in-95 duration-200">
-                            {/* Close Button (Mobile/Desktop friendly) */}
-                            <button onClick={() => setPrintRequest(null)} className="no-print absolute -top-12 right-0 text-white/70 hover:text-white flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full backdrop-blur-md">
-                                <XCircle className="w-5 h-5" /> Fechar Visualização
-                            </button>
+                        <div className="relative bg-white w-full max-w-[210mm] min-h-[297mm] shadow-2xl mx-auto my-8 p-8 font-serif text-black print-container animate-in zoom-in-95 duration-200 flex flex-col justify-between">
+                            <div>
+                                {/* Close Button (Mobile/Desktop friendly) */}
+                                <button onClick={() => setPrintRequest(null)} className="no-print absolute -top-12 right-0 text-white/70 hover:text-white flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full backdrop-blur-md">
+                                    <XCircle className="w-5 h-5" /> Fechar Visualização
+                                </button>
 
-                            <p className="text-center text-sm font-bold mb-4">Manter este documento visível no para-brisa e estacionar o carro de ré.</p>
-                            <div className="flex items-center justify-between mb-2">
-                                <img src="/logo_basp_novo.png" alt="BASP" className="h-24 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                                <div className="text-center flex-1">
-                                    <h1 className="text-3xl font-black tracking-tight">AUTORIZAÇÃO</h1>
-                                    <p className="text-lg font-bold">Nº {printRequest.numero_autorizacao}/{year}</p>
+                                <p className="text-center text-sm font-bold mb-4">Manter este documento visível no para-brisa e estacionar o carro de ré.</p>
+                                <div className="flex items-center justify-between mb-2">
+                                    <img src="/logo_basp_novo.png" alt="BASP" className="h-24 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                    <div className="text-center flex-1">
+                                        <h1 className="text-3xl font-black tracking-tight">AUTORIZAÇÃO</h1>
+                                        <p className="text-lg font-bold">Nº {printRequest.numero_autorizacao}/{year}</p>
+                                    </div>
+                                    <img src="/logo_fab.png" alt="FAB" className="h-24 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                                 </div>
-                                <img src="/logo_fab.png" alt="FAB" className="h-24 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                <h2 className="text-center text-lg font-bold border-b-2 border-black pb-2 mb-4">ESTACIONAMENTO DA BASP</h2>
+                                <p className="text-red-600 font-bold text-sm text-center mb-6 leading-snug">
+                                    Informo a V.S.ª que a área coberta do Hotel de Trânsito é destinada aos Residentes, Usuários do Hotel em Trânsito, Of. Superiores da OM e Of. Generais
+                                </p>
+                                <div className="mb-6">
+                                    <h3 className="font-black text-base mb-2 border-b border-black pb-1">DADOS DO SOLICITANTE:</h3>
+                                    <p className="text-sm mb-1">Nome Completo: <strong>{printRequest.nome_completo}</strong></p>
+                                    <p className="text-sm mb-1">Posto/Grad: <strong>{printRequest.posto_graduacao}</strong> ({printRequest.tipo_pessoa} — {printRequest.forca})</p>
+                                    <p className="text-sm mb-1">Veículo: <strong>{(veiculo as any).marca_modelo}</strong></p>
+                                    <p className="text-sm mb-1">Placa: <strong>{(veiculo as any).placa}</strong></p>
+                                    {(veiculo as any).cor && <p className="text-sm mb-1">Cor: <strong>{(veiculo as any).cor}</strong></p>}
+                                </div>
+                                <div className="mb-6 border-t border-black pt-4">
+                                    <div className="flex justify-between text-sm"><span>Início da Autorização:</span><strong>{new Date(printRequest.inicio + 'T00:00:00').toLocaleDateString('pt-BR')}</strong></div>
+                                    <div className="flex justify-between text-sm mt-1"><span>Término da Autorização:</span><strong>{new Date(printRequest.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</strong></div>
+                                </div>
+                                <div className="bg-gray-100 border border-gray-300 p-4 text-xs text-center mt-8 leading-relaxed">
+                                    <strong>Ao chegar ao portão G3 utilize esta autorização em mãos para se identificar. Mantenha este documento visível no para-brisa e estacione o carro de ré no Cassino dos Oficiais.</strong>
+                                </div>
                             </div>
-                            <h2 className="text-center text-lg font-bold border-b-2 border-black pb-2 mb-4">ESTACIONAMENTO DA BASP</h2>
-                            <p className="text-red-600 font-bold text-sm text-center mb-6 leading-snug">
-                                Informo a V.S.ª que a área coberta do Hotel de Trânsito é destinada aos Residentes, Usuários do Hotel em Trânsito, Of. Superiores da OM e Of. Generais
-                            </p>
-                            <div className="mb-6">
-                                <h3 className="font-black text-base mb-2 border-b border-black pb-1">DADOS DO SOLICITANTE:</h3>
-                                <p className="text-sm mb-1">Nome Completo: <strong>{printRequest.nome_completo}</strong></p>
-                                <p className="text-sm mb-1">Posto/Grad: <strong>{printRequest.posto_graduacao}</strong> ({printRequest.tipo_pessoa} — {printRequest.forca})</p>
-                                <p className="text-sm mb-1">Veículo: <strong>{(veiculo as any).marca_modelo}</strong></p>
-                                <p className="text-sm mb-1">Placa: <strong>{(veiculo as any).placa}</strong></p>
-                                {(veiculo as any).cor && <p className="text-sm mb-1">Cor: <strong>{(veiculo as any).cor}</strong></p>}
-                            </div>
-                            <div className="mb-6 border-t border-black pt-4">
-                                <div className="flex justify-between text-sm"><span>Início da Autorização:</span><strong>{new Date(printRequest.inicio + 'T00:00:00').toLocaleDateString('pt-BR')}</strong></div>
-                                <div className="flex justify-between text-sm mt-1"><span>Término da Autorização:</span><strong>{new Date(printRequest.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</strong></div>
-                            </div>
-                            <div className="bg-gray-100 border border-gray-300 p-4 text-xs text-center mt-8 leading-relaxed">
-                                <strong>Ao chegar ao portão G3 utilize esta autorização em mãos para se identificar. Mantenha este documento visível no para-brisa e estacione o carro de ré no Cassino dos Oficiais.</strong>
+
+                            {/* Assinatura Digital Footer */}
+                            <div className="mt-12 text-center border-t border-gray-300 pt-4">
+                                <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Aprovação feita pela Seção de Contrainteligência e Segurança Orgânica, SOP-03 do GSD-SP</p>
+                                <p className="font-black text-sm uppercase">{printRequest.aprovado_por || 'AUTORIDADE COMPETENTE'}</p>
+                                <p className="text-[10px] text-gray-400">Assinado digitalmente</p>
                             </div>
 
                             {/* Floating Action Buttons for Print */}
