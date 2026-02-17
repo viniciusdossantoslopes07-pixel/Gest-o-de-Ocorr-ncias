@@ -12,6 +12,7 @@ interface ParkingRequest {
     om: string;
     tipo_pessoa: string;
     created_at: string;
+    inicio: string;
     termino: string;
 }
 
@@ -27,7 +28,7 @@ export default function ParkingStatistics() {
 
     const fetchStatistics = async () => {
         setLoading(true);
-        const { data } = await supabase.from('parking_requests').select('id, status, om, tipo_pessoa, created_at, termino');
+        const { data } = await supabase.from('parking_requests').select('id, status, om, tipo_pessoa, created_at, inicio, termino');
         if (data) setRequests(data);
         setLoading(false);
     };
@@ -35,7 +36,8 @@ export default function ParkingStatistics() {
     // --- Computed Stats ---
 
     // Ocupação Atual (Simulada/Calculada se baseada em aprovações ativas)
-    const activeRequests = requests.filter(r => r.status === 'Aprovado' && new Date(r.termino) >= new Date());
+    const today = new Date().toISOString().split('T')[0];
+    const activeRequests = requests.filter(r => r.status === 'Aprovado' && r.inicio <= today && r.termino > today);
     const totalVagas = 32;
     const vagasOcupadas = activeRequests.length;
 

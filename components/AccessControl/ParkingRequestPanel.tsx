@@ -73,7 +73,12 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
         if (data) setAllRequests(data);
     };
 
-    const vagasOcupadas = (isAdmin ? allRequests : requests).filter(r => r.status === 'Aprovado' && new Date(r.termino) >= new Date()).length;
+    const vagasOcupadas = (() => {
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        return (isAdmin ? allRequests : requests).filter(r =>
+            r.status === 'Aprovado' && r.inicio <= today && r.termino > today
+        ).length;
+    })();
     const vagasDisponiveis = TOTAL_VAGAS - vagasOcupadas;
 
     // Aprovar / Rejeitar
