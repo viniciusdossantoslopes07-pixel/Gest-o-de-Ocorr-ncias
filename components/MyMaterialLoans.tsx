@@ -3,8 +3,9 @@ import { supabase } from '../services/supabase';
 import {
     Package, Clock, Truck, CornerDownLeft, XCircle, ShieldCheck,
     CheckCircle, BarChart3, FileText, Calendar, Filter, X,
-    ChevronRight, Info
+    ChevronRight, Info, Fingerprint
 } from 'lucide-react';
+import { authenticateBiometrics } from '../services/webauthn';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 
 interface MaterialLoan {
@@ -405,11 +406,11 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                                 className="bg-white group p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:ring-2 hover:ring-blue-100 transition-all relative overflow-hidden cursor-pointer flex flex-col"
                             >
                                 <div className={`absolute top-0 left-0 bottom-0 w-1.5 transition-all group-hover:w-2 ${loan.status === 'Pendente' ? 'bg-yellow-400' :
-                                        loan.status === 'Aprovado' ? 'bg-blue-400' :
-                                            loan.status === 'Em Uso' ? 'bg-emerald-500' :
-                                                loan.status === 'Rejeitado' ? 'bg-red-400' :
-                                                    loan.status === 'Aguardando Confirmação' ? 'bg-orange-400' :
-                                                        'bg-slate-300'
+                                    loan.status === 'Aprovado' ? 'bg-blue-400' :
+                                        loan.status === 'Em Uso' ? 'bg-emerald-500' :
+                                            loan.status === 'Rejeitado' ? 'bg-red-400' :
+                                                loan.status === 'Aguardando Confirmação' ? 'bg-orange-400' :
+                                                    'bg-slate-300'
                                     }`} />
 
                                 {(loan.status === 'Aprovado' || loan.status === 'Em Uso') && (
@@ -428,11 +429,11 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
 
                                 <div className="flex justify-between items-start mb-4 pl-6">
                                     <div className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${loan.status === 'Pendente' ? 'bg-yellow-100 text-yellow-700' :
-                                            loan.status === 'Aprovado' ? 'bg-blue-100 text-blue-700' :
-                                                loan.status === 'Em Uso' ? 'bg-emerald-100 text-emerald-700' :
-                                                    loan.status === 'Rejeitado' ? 'bg-red-100 text-red-700' :
-                                                        loan.status === 'Concluído' ? 'bg-slate-100 text-slate-600' :
-                                                            'bg-slate-50 text-slate-500'
+                                        loan.status === 'Aprovado' ? 'bg-blue-100 text-blue-700' :
+                                            loan.status === 'Em Uso' ? 'bg-emerald-100 text-emerald-700' :
+                                                loan.status === 'Rejeitado' ? 'bg-red-100 text-red-700' :
+                                                    loan.status === 'Concluído' ? 'bg-slate-100 text-slate-600' :
+                                                        'bg-slate-50 text-slate-500'
                                         }`}>
                                         {loan.status}
                                     </div>
@@ -584,12 +585,6 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <button
-                                    onClick={() => { setShowSignatureModal(false); setSignaturePassword(''); setPendingAction(null); }}
-                                    className="bg-slate-100 text-slate-600 py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
                                     onClick={confirmSignature}
                                     disabled={!signaturePassword || !!actionLoading}
                                     className="bg-blue-600 text-white py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 disabled:opacity-50"
@@ -597,6 +592,36 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                                     Confirmar
                                 </button>
                             </div>
+
+                            {localStorage.getItem('gsdsp_biometric_id') && (
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const credentialId = localStorage.getItem('gsdsp_biometric_id');
+                                            if (!credentialId) return;
+                                            const success = await authenticateBiometrics(credentialId);
+                                            if (success) {
+                                                const { data: userData } = await supabase
+                                                    .from('users')
+                                                    .select('password')
+                                                    .filter('webauthn_credential->>id', 'eq', credentialId)
+                                                    .single();
+
+                                                if (userData) {
+                                                    setSignaturePassword(userData.password);
+                                                    setTimeout(() => confirmSignature(), 100);
+                                                }
+                                            }
+                                        } catch (err) {
+                                            console.error(err);
+                                            alert('Falha na autenticação biométrica.');
+                                        }
+                                    }}
+                                    className="w-full mt-4 py-5 bg-emerald-50 text-emerald-600 rounded-[2rem] font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-100 transition-all border border-emerald-200 shadow-sm"
+                                >
+                                    <Fingerprint className="w-5 h-5" /> Assinar com Biometria
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

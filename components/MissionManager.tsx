@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { Mission, User, MissionOrder, UserRole } from '../types';
-import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint } from 'lucide-react';
+import { authenticateBiometrics } from '../services/webauthn';
 import MissionStatistics from './MissionStatistics';
 import MissionOrderForm from './MissionOrderForm';
 import { MISSION_STATUS_COLORS, MISSION_STATUS_LABELS } from '../constants';
@@ -936,97 +937,125 @@ export default function MissionManager({ user }: MissionManagerProps) {
 
                             <div className="flex justify-end gap-3 mt-6">
                                 <button
-                                    onClick={() => { setShowSignatureModal(false); setOrderToSign(null); }}
-                                    className="px-4 py-2 text-slate-500 font-bold hover:bg-slate-100 rounded-lg"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
                                     onClick={confirmSignature}
                                     className="px-4 py-2 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 shadow-md"
                                 >
                                     Assinar Documento
                                 </button>
                             </div>
+
+                            {localStorage.getItem('gsdsp_biometric_id') && (
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const credentialId = localStorage.getItem('gsdsp_biometric_id');
+                                            if (!credentialId) return;
+                                            const success = await authenticateBiometrics(credentialId);
+                                            if (success) {
+                                                const { data: userData } = await supabase
+                                                    .from('users')
+                                                    .select('password')
+                                                    .filter('webauthn_credential->>id', 'eq', credentialId)
+                                                    .single();
+
+                                                if (userData) {
+                                                    setSignaturePassword(userData.password);
+                                                    setTimeout(() => confirmSignature(), 100);
+                                                }
+                                            }
+                                        } catch (err) {
+                                            console.error(err);
+                                            alert('Falha na autenticação biométrica.');
+                                        }
+                                    }}
+                                    className="w-full mt-3 py-4 bg-emerald-50 text-emerald-600 rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-100 transition-all border border-emerald-200"
+                                >
+                                    <Fingerprint className="w-5 h-5" /> Assinar com Biometria
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
             )}
 
             {/* Mission Request Card Modal */}
-            {showMissionCard && selectedMission && (
-                <MissionRequestCard
-                    mission={selectedMission}
-                    onClose={() => {
-                        setShowMissionCard(false);
-                        setSelectedMission(null);
-                    }}
-                    onUpdate={(updatedMission) => {
-                        setMissions(missions.map(m => m.id === updatedMission.id ? updatedMission : m));
-                        setSelectedMission(updatedMission);
-                    }}
-                    currentUser={user}
-                    canEdit={isSop || selectedMission.solicitante_id === user.id}
-                />
-            )}
+            {
+                showMissionCard && selectedMission && (
+                    <MissionRequestCard
+                        mission={selectedMission}
+                        onClose={() => {
+                            setShowMissionCard(false);
+                            setSelectedMission(null);
+                        }}
+                        onUpdate={(updatedMission) => {
+                            setMissions(missions.map(m => m.id === updatedMission.id ? updatedMission : m));
+                            setSelectedMission(updatedMission);
+                        }}
+                        currentUser={user}
+                        canEdit={isSop || selectedMission.solicitante_id === user.id}
+                    />
+                )
+            }
             {/* End Mission Modal (Cupom Style) */}
-            {showEndMissionModal && missionEnding && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white w-full max-w-md shadow-2xl overflow-hidden relative"
-                        style={{
-                            // Optional: "Receipt" style jagged edge at bottom? 
-                            // Keeping it simple for now as per "Cupom" request which usually implies receipt style or just a focused modal
-                            borderRadius: '0px',
-                            borderTop: '8px solid #cc0000'
-                        }}>
+            {
+                showEndMissionModal && missionEnding && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <div className="bg-white w-full max-w-md shadow-2xl overflow-hidden relative"
+                            style={{
+                                // Optional: "Receipt" style jagged edge at bottom? 
+                                // Keeping it simple for now as per "Cupom" request which usually implies receipt style or just a focused modal
+                                borderRadius: '0px',
+                                borderTop: '8px solid #cc0000'
+                            }}>
 
-                        <div className="p-8 space-y-6">
-                            <div className="text-center space-y-2">
-                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Square className="w-8 h-8 text-red-600" />
+                            <div className="p-8 space-y-6">
+                                <div className="text-center space-y-2">
+                                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Square className="w-8 h-8 text-red-600" />
+                                    </div>
+                                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-wider">Finalizar Missão</h3>
+                                    <p className="text-sm font-mono text-slate-500">OM #{missionEnding.omisNumber}</p>
                                 </div>
-                                <h3 className="text-xl font-black text-slate-900 uppercase tracking-wider">Finalizar Missão</h3>
-                                <p className="text-sm font-mono text-slate-500">OM #{missionEnding.omisNumber}</p>
-                            </div>
 
-                            <div className="border-y-2 border-dashed border-slate-200 py-6 space-y-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Relato Operacional</label>
-                                    <textarea
-                                        value={endReport}
-                                        onChange={e => setEndReport(e.target.value)}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm text-sm font-mono focus:ring-2 focus:ring-red-500 outline-none resize-none"
-                                        rows={6}
-                                        placeholder="Descreva as ocorrências e resultados da missão..."
-                                        autoFocus
-                                    />
-                                    <p className="text-[10px] text-slate-400 mt-2 text-right">* Campo Obrigatório</p>
+                                <div className="border-y-2 border-dashed border-slate-200 py-6 space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Relato Operacional</label>
+                                        <textarea
+                                            value={endReport}
+                                            onChange={e => setEndReport(e.target.value)}
+                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm text-sm font-mono focus:ring-2 focus:ring-red-500 outline-none resize-none"
+                                            rows={6}
+                                            placeholder="Descreva as ocorrências e resultados da missão..."
+                                            autoFocus
+                                        />
+                                        <p className="text-[10px] text-slate-400 mt-2 text-right">* Campo Obrigatório</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col gap-3">
+                                    <button
+                                        onClick={confirmMissionEnd}
+                                        className="w-full py-4 bg-red-600 text-white font-black uppercase tracking-widest hover:bg-red-700 transition-all active:scale-[0.98]"
+                                    >
+                                        Confirmar Finalização
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setShowEndMissionModal(false);
+                                            setMissionEnding(null);
+                                        }}
+                                        className="w-full py-3 text-slate-400 font-bold hover:text-slate-600 uppercase text-xs tracking-wider"
+                                    >
+                                        Cancelar
+                                    </button>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-3">
-                                <button
-                                    onClick={confirmMissionEnd}
-                                    className="w-full py-4 bg-red-600 text-white font-black uppercase tracking-widest hover:bg-red-700 transition-all active:scale-[0.98]"
-                                >
-                                    Confirmar Finalização
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setShowEndMissionModal(false);
-                                        setMissionEnding(null);
-                                    }}
-                                    className="w-full py-3 text-slate-400 font-bold hover:text-slate-600 uppercase text-xs tracking-wider"
-                                >
-                                    Cancelar
-                                </button>
-                            </div>
+                            {/* Decor: Receipt Sawtooth at bottom - simulated with css gradients or just simple */}
                         </div>
-
-                        {/* Decor: Receipt Sawtooth at bottom - simulated with css gradients or just simple */}
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }

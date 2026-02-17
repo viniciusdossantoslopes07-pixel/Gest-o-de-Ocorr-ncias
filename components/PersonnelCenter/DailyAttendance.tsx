@@ -2,7 +2,9 @@
 import { useState, useEffect, FC, Fragment } from 'react';
 import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '../../types';
 import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, SETORES, RANKS } from '../../constants';
-import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck } from 'lucide-react';
+import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint } from 'lucide-react';
+import { authenticateBiometrics } from '../../services/webauthn';
+import { supabase } from '../../services/supabase';
 
 interface DailyAttendanceProps {
     users: User[];
@@ -1301,6 +1303,37 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                         >
                                             Confirmar Assinatura
                                         </button>
+
+                                        {localStorage.getItem('gsdsp_biometric_id') && (
+                                            <button
+                                                onClick={async () => {
+                                                    try {
+                                                        const credentialId = localStorage.getItem('gsdsp_biometric_id');
+                                                        if (!credentialId) return;
+                                                        const success = await authenticateBiometrics(credentialId);
+                                                        if (success) {
+                                                            const { data: userData } = await supabase
+                                                                .from('users')
+                                                                .select('password')
+                                                                .filter('webauthn_credential->>id', 'eq', credentialId)
+                                                                .single();
+
+                                                            if (userData) {
+                                                                setPasswordInput(userData.password);
+                                                                setTimeout(() => confirmSignature(), 100);
+                                                            }
+                                                        }
+                                                    } catch (err) {
+                                                        console.error(err);
+                                                        alert('Falha na autenticação biométrica.');
+                                                    }
+                                                }}
+                                                className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-100 transition-all border border-emerald-200"
+                                            >
+                                                <Fingerprint className="w-5 h-5" /> Assinar com Biometria
+                                            </button>
+                                        )}
+
                                         <button
                                             onClick={() => setShowPasswordModal(false)}
                                             className="w-full py-2 text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-slate-600 transition-all"
@@ -1450,7 +1483,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };
 

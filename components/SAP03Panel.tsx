@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
-import { Package, CheckCircle, XCircle, Clock, Truck, ShieldCheck, AlertCircle, Lock, Plus, Trash2, ChevronDown, ChevronUp, BarChart3, PieChart as PieIcon, History } from 'lucide-react';
+import { Package, CheckCircle, XCircle, Clock, Truck, ShieldCheck, AlertCircle, Lock, Plus, Trash2, ChevronDown, ChevronUp, BarChart3, PieChart as PieIcon, History, Fingerprint } from 'lucide-react';
+import { authenticateBiometrics } from '../services/webauthn';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 interface LoanRequest {
@@ -880,14 +881,47 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                                 <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm font-bold text-blue-600">{foundUser?.rank}</div>
                                 <p className="font-bold text-slate-800">{foundUser?.war_name || foundUser?.name}</p>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-400 uppercase flex items-center gap-2"><Lock className="w-3 h-3" /> Senha</label>
-                                <input type="password" value={signaturePassword} onChange={(e) => setSignaturePassword(e.target.value)} className="w-full bg-slate-50 border rounded-xl p-4 font-bold text-lg text-center" autoFocus onKeyDown={(e) => e.key === 'Enter' && confirmSignature()} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-3 pt-2">
-                                <button onClick={() => setShowSignatureModal(false)} className="bg-slate-100 text-slate-600 py-4 rounded-2xl font-bold">Cancelar</button>
-                                <button onClick={confirmSignature} disabled={!signaturePassword || !!actionLoading} className="bg-blue-600 text-white py-4 rounded-2xl font-bold disabled:opacity-50">Confirmar</button>
-                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase flex items-center gap-2"><Lock className="w-3 h-3" /> Senha</label>
+                            <input type="password" value={signaturePassword} onChange={(e) => setSignaturePassword(e.target.value)} className="w-full bg-slate-50 border rounded-xl p-4 font-bold text-lg text-center" autoFocus onKeyDown={(e) => e.key === 'Enter' && confirmSignature()} />
+                        </div>
+
+                        {localStorage.getItem('gsdsp_biometric_id') && (
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        const credentialId = localStorage.getItem('gsdsp_biometric_id');
+                                        if (!credentialId) return;
+                                        const success = await authenticateBiometrics(credentialId);
+                                        if (success) {
+                                            // If biometric succeeds, we bypass manual password but we need the password for the backend update
+                                            // Assuming we store/retrieve it or use a different validation method.
+                                            // For now, let's look up the stored password from the user record associated with this credential
+                                            const { data: userData } = await supabase
+                                                .from('users')
+                                                .select('password')
+                                                .filter('webauthn_credential->>id', 'eq', credentialId)
+                                                .single();
+
+                                            if (userData) {
+                                                setSignaturePassword(userData.password);
+                                                // Trigger confirmation in next tick
+                                                setTimeout(() => confirmSignature(), 100);
+                                            }
+                                        }
+                                    } catch (err) {
+                                        console.error(err);
+                                        alert('Falha na autenticação biométrica.');
+                                    }
+                                }}
+                                className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-100 transition-all border border-emerald-200"
+                            >
+                                <Fingerprint className="w-5 h-5" /> Assinar com Biometria
+                            </button>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-3 pt-2">
                         </div>
                     </div>
                 </div>
