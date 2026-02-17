@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
-import { Car, Plus, Trash2, Send, CheckCircle, XCircle, Clock, Printer, AlertCircle, History, List, Users, UserCheck } from 'lucide-react';
+import { Car, Plus, Trash2, Send, CheckCircle, XCircle, Clock, Printer, AlertCircle, History, List, Users, UserCheck, Eye, FileText } from 'lucide-react';
 
 interface ParkingVehicle {
     id: string;
@@ -35,6 +35,10 @@ interface ParkingRequest {
     ext_placa?: string;
     ext_cor?: string;
     vehicle?: ParkingVehicle;
+    cnh_url?: string;
+    crlv_url?: string;
+    identidade_url?: string;
+    email?: string;
 }
 
 const TOTAL_VAGAS = 32;
@@ -47,6 +51,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
     const [allRequests, setAllRequests] = useState<ParkingRequest[]>([]);
     const [loading, setLoading] = useState(false);
     const [printRequest, setPrintRequest] = useState<ParkingRequest | null>(null);
+    const [analysingRequest, setAnalysingRequest] = useState<ParkingRequest | null>(null);
 
     // Toggle Interno / Externo
     const [publicoTipo, setPublicoTipo] = useState<'interno' | 'externo'>('externo');
@@ -77,6 +82,10 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
     const [extCor, setExtCor] = useState('');
     const [extIdentidade, setExtIdentidade] = useState('');
     const [extEmail, setExtEmail] = useState('');
+    // Arquivos (Externo)
+    const [extIdentityFile, setExtIdentityFile] = useState<File | null>(null);
+    const [extCnhFile, setExtCnhFile] = useState<File | null>(null);
+    const [extCrlvFile, setExtCrlvFile] = useState<File | null>(null);
 
     const isAdmin = user?.role === 'Gestor Master / OSD' || user?.role === 'Comandante OM' || (user?.sector && user.sector.includes('SOP'));
 
@@ -128,8 +137,11 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
         if (!inicio || !termino) return alert('Informe o período.');
 
         if (publicoTipo === 'interno' && !selectedVehicle) return alert('Selecione um veículo.');
-        if (publicoTipo === 'externo' && (!extNome || !extMarcaModelo || !extPlaca || !extEmail)) return alert('Preencha Nome, Marca/Modelo, Placa e Email.');
-        if (publicoTipo === 'externo' && tipoPessoa === 'Civil' && !extIdentidade) return alert('Para civil, o campo Identidade é obrigatório.');
+        if (publicoTipo === 'externo') {
+            if (!extNome || !extMarcaModelo || !extPlaca || !extEmail) return alert('Preencha Nome, Marca/Modelo, Placa e Email.');
+            if (tipoPessoa === 'Civil' && !extIdentidade) return alert('Para civil, o campo Identidade é obrigatório.');
+            if (!extIdentityFile || !extCnhFile || !extCrlvFile) return alert('Anexe a Identidade, CNH e CRLV.');
+        }
 
         setLoading(true);
         const record: any = {
@@ -142,33 +154,55 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
             status: 'Pendente'
         };
 
-        if (publicoTipo === 'interno') {
-            record.nome_completo = user.name;
-            record.posto_graduacao = user.rank;
-            record.om = user.sector || 'BASP';
-            record.telefone = user.phoneNumber || '';
-            record.vehicle_id = selectedVehicle;
-        } else {
-            record.nome_completo = extNome;
-            record.posto_graduacao = extPosto || '—';
-            record.om = extOM || '—';
-            record.telefone = extTelefone;
-            record.vehicle_id = null;
-            record.ext_marca_modelo = extMarcaModelo.toUpperCase();
-            record.ext_placa = extPlaca.toUpperCase();
-            record.ext_cor = extCor;
-            record.identidade = extIdentidade.toUpperCase() || null;
-            record.email = extEmail || null;
-        }
+        try {
+            if (publicoTipo === 'interno') {
+                record.nome_completo = user.name;
+                record.posto_graduacao = user.rank;
+                record.om = user.sector || 'BASP';
+                record.telefone = user.phoneNumber || '';
+                record.vehicle_id = selectedVehicle;
+            } else {
+                record.nome_completo = extNome;
+                record.posto_graduacao = extPosto || '—';
+                record.om = extOM || '—';
+                record.telefone = extTelefone;
+                record.vehicle_id = null;
+                record.ext_marca_modelo = extMarcaModelo.toUpperCase();
+                record.ext_placa = extPlaca.toUpperCase();
+                record.ext_cor = extCor;
+                record.identidade = extIdentidade.toUpperCase() || null;
+                record.email = extEmail || null;
 
-        await supabase.from('parking_requests').insert(record);
-        // Reset
-        setSelectedVehicle(''); setInicio(''); setTermino(''); setObservacao('');
-        setExtNome(''); setExtPosto(''); setExtOM(''); setExtTelefone(''); setExtIdentidade(''); setExtEmail('');
-        setExtMarcaModelo(''); setExtPlaca(''); setExtCor('');
-        await fetchMyRequests();
-        if (isAdmin) await fetchAllRequests();
-        setLoading(false);
+                // Uploads
+                const uploadFile = async (file: File, prefix: string) => {
+                    const ext = file.name.split('.').pop();
+                    const fileName = `${prefix}_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+                    const { error } = await supabase.storage.from('parking-docs').upload(fileName, file);
+                    if (error) throw error;
+                    return supabase.storage.from('parking-docs').getPublicUrl(fileName).data.publicUrl;
+                };
+
+                if (extIdentityFile) record.identidade_url = await uploadFile(extIdentityFile, 'identity');
+                if (extCnhFile) record.cnh_url = await uploadFile(extCnhFile, 'cnh');
+                if (extCrlvFile) record.crlv_url = await uploadFile(extCrlvFile, 'crlv');
+            }
+
+            await supabase.from('parking_requests').insert(record);
+            // Reset
+            setSelectedVehicle(''); setInicio(''); setTermino(''); setObservacao('');
+            setExtNome(''); setExtPosto(''); setExtOM(''); setExtTelefone(''); setExtIdentidade(''); setExtEmail('');
+            setExtMarcaModelo(''); setExtPlaca(''); setExtCor('');
+            setExtIdentityFile(null); setExtCnhFile(null); setExtCrlvFile(null);
+
+            await fetchMyRequests();
+            if (isAdmin) await fetchAllRequests();
+            alert('Solicitação enviada com sucesso!');
+        } catch (error) {
+            console.error(error);
+            alert('Erro ao enviar solicitação.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Aprovar / Rejeitar
@@ -343,9 +377,28 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                                         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Cor</label>
                                     <input value={extCor} onChange={e => setExtCor(e.target.value)} placeholder="PRATA" style={{ textTransform: 'uppercase' }}
                                         className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500" />
+                                </div>
+                            </div>
+
+                            <div className="bg-blue-50 rounded-xl border border-blue-100 p-3 mb-2">
+                                <p className="text-[10px] text-blue-800 font-bold uppercase text-center">Dê preferência a documentos digitais (PDF/JPG)</p>
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Identidade (Militar/Civil) - Frente/Verso *</label>
+                                <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setExtIdentityFile(e.target.files ? e.target.files[0] : null)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">CNH (Frente e Verso) *</label>
+                                    <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setExtCnhFile(e.target.files ? e.target.files[0] : null)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">CRLV (Doc. Carro) *</label>
+                                    <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setExtCrlvFile(e.target.files ? e.target.files[0] : null)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                                 </div>
                             </div>
                         </>
@@ -486,8 +539,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                                         <p className="text-xs text-slate-500">{new Date(req.inicio + 'T00:00:00').toLocaleDateString('pt-BR')} → {new Date(req.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
                                         {req.observacao && <p className="text-[10px] text-slate-400 italic">"{req.observacao}"</p>}
                                         <div className="flex gap-2 pt-1">
-                                            <button onClick={() => handleApprove(req.id)} className="flex-1 py-2 bg-emerald-600 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1 hover:bg-emerald-700 transition-all"><CheckCircle className="w-3.5 h-3.5" /> Aprovar</button>
-                                            <button onClick={() => handleReject(req.id)} className="flex-1 py-2 bg-red-600 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1 hover:bg-red-700 transition-all"><XCircle className="w-3.5 h-3.5" /> Rejeitar</button>
+                                            <button onClick={() => setAnalysingRequest(req)} className="w-full py-2 bg-blue-600 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1 hover:bg-blue-700 transition-all"><Eye className="w-3.5 h-3.5" /> Analisar Solicitação</button>
                                         </div>
                                     </div>
                                 );
@@ -523,6 +575,84 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                             </div>
                         );
                     })}
+                </div>
+            )}
+
+            {/* Modal de Análise */}
+            {analysingRequest && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200">
+                        <div className="bg-slate-900 p-4 flex justify-between items-center shrink-0">
+                            <h2 className="text-white font-bold flex items-center gap-2"><Eye className="w-5 h-5" /> Análise de Solicitação</h2>
+                            <button onClick={() => setAnalysingRequest(null)} className="text-white/50 hover:text-white"><XCircle className="w-6 h-6" /></button>
+                        </div>
+                        <div className="p-6 overflow-y-auto custom-scrollbar space-y-6">
+                            {/* Dados do Solicitante */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Solicitante</p>
+                                    <p className="font-black text-slate-800">{analysingRequest.nome_completo}</p>
+                                    <p className="text-xs text-slate-500">{analysingRequest.posto_graduacao} • {analysingRequest.forca} • {analysingRequest.tipo_pessoa}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Contato</p>
+                                    <p className="font-bold text-slate-700">{analysingRequest.telefone}</p>
+                                    <p className="text-xs text-slate-500">{analysingRequest.email}</p>
+                                </div>
+                            </div>
+
+                            {/* Dados do Veículo */}
+                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Veículo</p>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div><p className="text-xs font-bold text-slate-500">Marca/Modelo</p><p className="font-black text-slate-800">{analysingRequest.vehicle?.marca_modelo || analysingRequest.ext_marca_modelo}</p></div>
+                                    <div><p className="text-xs font-bold text-slate-500">Placa</p><p className="font-black text-slate-800">{analysingRequest.vehicle?.placa || analysingRequest.ext_placa}</p></div>
+                                    <div><p className="text-xs font-bold text-slate-500">Cor</p><p className="font-black text-slate-800">{analysingRequest.vehicle?.cor || analysingRequest.ext_cor}</p></div>
+                                </div>
+                            </div>
+
+                            {/* Período */}
+                            <div>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase">Período Solicitado</p>
+                                <p className="font-bold text-slate-800">{new Date(analysingRequest.inicio + 'T00:00:00').toLocaleDateString('pt-BR')} até {new Date(analysingRequest.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+                            </div>
+
+                            {/* Documentos */}
+                            <div>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Documentos Anexados</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    {analysingRequest.identidade_url ? (
+                                        <a href={analysingRequest.identidade_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 bg-blue-50 text-blue-700 rounded-xl border border-blue-200 hover:bg-blue-100 transition-colors font-bold text-xs">
+                                            <FileText className="w-4 h-4" /> Ver Identidade
+                                        </a>
+                                    ) : <span className="text-xs text-slate-400 italic p-2 border border-slate-100 rounded-xl bg-slate-50 text-center">Identidade não anexada</span>}
+
+                                    {analysingRequest.cnh_url ? (
+                                        <a href={analysingRequest.cnh_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 bg-blue-50 text-blue-700 rounded-xl border border-blue-200 hover:bg-blue-100 transition-colors font-bold text-xs">
+                                            <FileText className="w-4 h-4" /> Ver CNH
+                                        </a>
+                                    ) : <span className="text-xs text-slate-400 italic p-2 border border-slate-100 rounded-xl bg-slate-50 text-center">CNH não anexada</span>}
+
+                                    {analysingRequest.crlv_url ? (
+                                        <a href={analysingRequest.crlv_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 bg-blue-50 text-blue-700 rounded-xl border border-blue-200 hover:bg-blue-100 transition-colors font-bold text-xs">
+                                            <FileText className="w-4 h-4" /> Ver CRLV
+                                        </a>
+                                    ) : <span className="text-xs text-slate-400 italic p-2 border border-slate-100 rounded-xl bg-slate-50 text-center">CRLV não anexado</span>}
+                                </div>
+                            </div>
+
+                            {analysingRequest.observacao && (
+                                <div className="bg-amber-50 p-3 rounded-xl border border-amber-100 text-amber-800 text-xs italic">
+                                    <strong>Observação:</strong> "{analysingRequest.observacao}"
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-4 bg-slate-50 border-t border-slate-200 flex gap-3 justify-end shrink-0">
+                            <button onClick={() => { handleReject(analysingRequest.id); setAnalysingRequest(null); }} className="px-6 py-3 bg-red-100 text-red-700 rounded-xl font-bold hover:bg-red-200 transition-all flex items-center gap-2 outline-none focus:ring-2 focus:ring-red-500"><XCircle className="w-4 h-4" /> Rejeitar</button>
+                            <button onClick={() => { handleApprove(analysingRequest.id); setAnalysingRequest(null); }} className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all flex items-center gap-2 outline-none focus:ring-2 focus:ring-emerald-500"><CheckCircle className="w-4 h-4" /> Aprovar</button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

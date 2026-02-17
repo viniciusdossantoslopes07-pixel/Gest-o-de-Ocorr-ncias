@@ -40,6 +40,11 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
 
   const [forgotSaram, setForgotSaram] = useState('');
 
+  // Arquivos
+  const [cnhFile, setCnhFile] = useState<File | null>(null);
+  const [crlvFile, setCrlvFile] = useState<File | null>(null);
+  const [identityFile, setIdentityFile] = useState<File | null>(null);
+
   // Biometric States
   const [showBiometricPrompt, setShowBiometricPrompt] = useState(false);
   const [lastLoggedInUser, setLastLoggedInUser] = useState<any>(null);
@@ -181,6 +186,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
     }
   };
 
+
   const handleParkingSubmit = async () => {
     if (!parkData.nome || !parkData.marcaModelo || !parkData.placa || !parkData.inicio || !parkData.termino || !parkData.email) {
       setError('Preencha todos os campos obrigatórios.');
@@ -190,28 +196,67 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
       setError('Para civil, o campo Identidade é obrigatório.');
       return;
     }
+
+    // Validate files
+    if (!cnhFile || !crlvFile || !identityFile) {
+      setError('O envio da Identidade, CNH e CRLV é obrigatório para análise.');
+      return;
+    }
+
     setIsLoading(true); setError('');
-    const { data } = await supabase.from('parking_requests').insert({
-      user_id: null,
-      nome_completo: parkData.nome.toUpperCase(),
-      posto_graduacao: parkData.posto.toUpperCase() || '—',
-      forca: parkData.forca,
-      tipo_pessoa: parkData.tipo,
-      om: parkData.om.toUpperCase() || '—',
-      telefone: parkData.telefone,
-      email: parkData.email,
-      identidade: parkData.identidade.toUpperCase() || null,
-      ext_marca_modelo: parkData.marcaModelo.toUpperCase(),
-      ext_placa: parkData.placa.toUpperCase(),
-      ext_cor: parkData.cor.toUpperCase(),
-      inicio: parkData.inicio,
-      termino: parkData.termino,
-      observacao: parkData.obs,
-      status: 'Pendente'
-    }).select('numero_autorizacao').single();
-    setParkProto(data?.numero_autorizacao || '');
-    setParkSuccess(true);
-    setIsLoading(false);
+
+    try {
+      // Upload Identidade
+      const idExt = identityFile.name.split('.').pop();
+      const idFileName = `identity_${Date.now()}_${Math.random().toString(36).substring(7)}.${idExt}`;
+      const { error: idError } = await supabase.storage.from('parking-docs').upload(idFileName, identityFile);
+      if (idError) throw idError;
+      const idUrl = supabase.storage.from('parking-docs').getPublicUrl(idFileName).data.publicUrl;
+
+      // Upload CNH
+      const cnhExt = cnhFile.name.split('.').pop();
+      const cnhFileName = `cnh_${Date.now()}_${Math.random().toString(36).substring(7)}.${cnhExt}`;
+      const { error: cnhError } = await supabase.storage.from('parking-docs').upload(cnhFileName, cnhFile);
+      if (cnhError) throw cnhError;
+      const cnhUrl = supabase.storage.from('parking-docs').getPublicUrl(cnhFileName).data.publicUrl;
+
+      // Upload CRLV
+      const crlvExt = crlvFile.name.split('.').pop();
+      const crlvFileName = `crlv_${Date.now()}_${Math.random().toString(36).substring(7)}.${crlvExt}`;
+      const { error: crlvError } = await supabase.storage.from('parking-docs').upload(crlvFileName, crlvFile);
+      if (crlvError) throw crlvError;
+      const crlvUrl = supabase.storage.from('parking-docs').getPublicUrl(crlvFileName).data.publicUrl;
+
+      const { data } = await supabase.from('parking_requests').insert({
+        user_id: null,
+        nome_completo: parkData.nome.toUpperCase(),
+        posto_graduacao: parkData.posto.toUpperCase() || '—',
+        forca: parkData.forca,
+        tipo_pessoa: parkData.tipo,
+        om: parkData.om.toUpperCase() || '—',
+        telefone: parkData.telefone,
+        email: parkData.email,
+        identidade: parkData.identidade.toUpperCase() || null,
+        ext_marca_modelo: parkData.marcaModelo.toUpperCase(),
+        ext_placa: parkData.placa.toUpperCase(),
+        ext_cor: parkData.cor.toUpperCase(),
+        inicio: parkData.inicio,
+        termino: parkData.termino,
+        observacao: parkData.obs,
+        cnh_url: cnhUrl,
+        crlv_url: crlvUrl,
+        identidade_url: idUrl,
+        status: 'Pendente'
+      }).select('numero_autorizacao').single();
+
+      setParkProto(data?.numero_autorizacao || '');
+      setParkSuccess(true);
+    } catch (error: any) {
+      console.error('Error submitting parking request:', error);
+      setError('Erro ao enviar solicitação. Verifique os arquivos e tente novamente.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -519,6 +564,28 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                       <input required type="date" value={parkData.termino} onChange={e => setParkData({ ...parkData, termino: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" />
                     </div>
                   </div>
+
+                  <div className="grid grid-cols-1 gap-4 pt-2">
+                    <div className="p-3 bg-blue-50 rounded-xl border border-blue-100 mb-2">
+                      <p className="text-[10px] text-blue-800 font-bold uppercase text-center">Dê preferência a anexar documentos digitais baixados por plataformas oficiais (PDF/JPG)</p>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Identidade (Militar ou Civil) - Frente e Verso *</label>
+                      <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setIdentityFile(e.target.files ? e.target.files[0] : null)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest">CNH (Frente e Verso) *</label>
+                        <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setCnhFile(e.target.files ? e.target.files[0] : null)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest">CRLV (Documento do Carro) *</label>
+                        <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setCrlvFile(e.target.files ? e.target.files[0] : null)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                      </div>
+                    </div>
+                  </div>
+
+
 
                   <div className="space-y-1">
                     <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Observações</label>
