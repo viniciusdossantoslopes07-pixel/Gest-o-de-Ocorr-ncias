@@ -450,7 +450,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                 <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto"><CheckCircle className="w-8 h-8 text-emerald-600" /></div>
                 <h3 className="text-lg font-black text-slate-800">Solicitação Enviada!</h3>
                 <p className="text-xs text-slate-500">Protocolo Nº <strong>{parkProto}</strong></p>
-                <p className="text-[10px] text-slate-400">Sua solicitação será analisada pela SOP-03.<br />Aguarde a aprovação.</p>
+                <p className="text-[10px] text-slate-400">Sua solicitação será analisada pela SOP-03.<br />Aguarde a aprovação.<br />O(a) Sr(a) receberá um e-mail com o resultado da análise.</p>
                 <button type="button" onClick={() => { setShowParkingModal(false); setParkSuccess(false); setParkData({ nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', telefone: '', email: '', identidade: '', marcaModelo: '', placa: '', cor: '', inicio: '', termino: '', obs: '' }); }} className="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-700 transition-all">Fechar</button>
               </div>
             ) : (
