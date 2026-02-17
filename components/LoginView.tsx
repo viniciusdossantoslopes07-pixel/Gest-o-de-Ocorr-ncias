@@ -253,7 +253,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
       setParkSuccess(true);
     } catch (error: any) {
       console.error('Error submitting parking request:', error);
-      setError('Erro ao enviar solicitação. Verifique os arquivos e tente novamente.');
+      setError(`Erro ao enviar: ${error.message || 'Verifique os arquivos e tente novamente.'}`);
     } finally {
       setIsLoading(false);
     }
@@ -570,16 +570,16 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                       <p className="text-[10px] text-blue-800 font-bold uppercase text-center">Dê preferência a anexar documentos digitais baixados por plataformas oficiais (PDF/JPG)</p>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Identidade (Militar ou Civil) - Frente e Verso *</label>
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest">IDENTIDADE (MILITAR/CIVIL) *</label>
                       <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setIdentityFile(e.target.files ? e.target.files[0] : null)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest">CNH (Frente e Verso) *</label>
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest">CNH *</label>
                         <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setCnhFile(e.target.files ? e.target.files[0] : null)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest">CRLV (Documento do Carro) *</label>
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest">CRLV *</label>
                         <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setCrlvFile(e.target.files ? e.target.files[0] : null)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                       </div>
                     </div>

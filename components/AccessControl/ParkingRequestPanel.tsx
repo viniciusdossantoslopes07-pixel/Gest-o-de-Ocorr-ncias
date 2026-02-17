@@ -197,9 +197,9 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
             await fetchMyRequests();
             if (isAdmin) await fetchAllRequests();
             alert('Solicitação enviada com sucesso!');
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert('Erro ao enviar solicitação.');
+            alert(`Erro ao enviar: ${error.message || 'Erro desconhecido.'}`);
         } finally {
             setLoading(false);
         }
@@ -387,17 +387,17 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Identidade (Militar/Civil) - Frente/Verso *</label>
+                                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">IDENTIDADE (MILITAR/CIVIL) *</label>
                                 <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setExtIdentityFile(e.target.files ? e.target.files[0] : null)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">CNH (Frente e Verso) *</label>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">CNH *</label>
                                     <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setExtCnhFile(e.target.files ? e.target.files[0] : null)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">CRLV (Doc. Carro) *</label>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">CRLV *</label>
                                     <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setExtCrlvFile(e.target.files ? e.target.files[0] : null)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
                                 </div>
                             </div>
