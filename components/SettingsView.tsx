@@ -158,10 +158,10 @@ export default function SettingsView({ user, onUpdateUser, onUpdatePassword, isD
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
-            <h2 className="text-2xl font-bold text-slate-800 mb-6">Configurações</h2>
+            <h2 className={`text-2xl font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Configurações</h2>
 
             {/* Tabs */}
-            <div className="flex border-b border-slate-200 gap-6">
+            <div className={`flex border-b gap-6 ${isDarkMode ? 'border-slate-700' : 'border-slate-200'}`}>
                 <button
                     onClick={() => setActiveTab('general')}
                     className={`pb-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'general' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
@@ -183,7 +183,7 @@ export default function SettingsView({ user, onUpdateUser, onUpdatePassword, isD
             </div>
 
             {/* Content */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+            <div className={`rounded-2xl shadow-sm border p-8 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
 
                 {/* 1. GENERAL TAB */}
                 {activeTab === 'general' && (
@@ -234,8 +234,8 @@ export default function SettingsView({ user, onUpdateUser, onUpdatePassword, isD
                                 )}
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-slate-900">{user.name}</h3>
-                                <p className="text-slate-500">{user.rank} - {user.sector}</p>
+                                <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{user.name}</h3>
+                                <p className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>{user.rank} - {user.sector}</p>
                                 <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider">SARAM: {user.saram}</p>
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
@@ -250,45 +250,45 @@ export default function SettingsView({ user, onUpdateUser, onUpdatePassword, isD
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Nome de Guerra</label>
+                                <label className={`block text-sm font-bold mb-1 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Nome de Guerra</label>
                                 <input
                                     type="text"
                                     value={warName}
                                     onChange={(e) => setWarName(e.target.value)}
-                                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-400' : 'bg-slate-50 border-slate-200'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">E-mail</label>
+                                <label className={`block text-sm font-bold mb-1 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>E-mail</label>
                                 <input
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-400' : 'bg-slate-50 border-slate-200'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Telefone / Ramal</label>
+                                <label className={`block text-sm font-bold mb-1 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Telefone / Ramal</label>
                                 <input
                                     type="text"
                                     inputMode="numeric"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-400' : 'bg-slate-50 border-slate-200'}`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-400 mb-1">Setor (Apenas Leitura)</label>
+                                <label className={`block text-sm font-bold mb-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Setor (Apenas Leitura)</label>
                                 <input
                                     type="text"
                                     value={user.sector}
                                     disabled
-                                    className="w-full px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 cursor-not-allowed"
+                                    className={`w-full px-4 py-2 border rounded-lg cursor-not-allowed ${isDarkMode ? 'bg-slate-700/50 border-slate-600 text-slate-500' : 'bg-slate-100 border-slate-200 text-slate-500'}`}
                                 />
                             </div>
                         </div>
 
-                        <div className="flex justify-end pt-4 border-t border-slate-100">
+                        <div className={`flex justify-end pt-4 border-t ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
                             <button
                                 onClick={handleSaveGeneral}
                                 disabled={loading}
@@ -304,38 +304,38 @@ export default function SettingsView({ user, onUpdateUser, onUpdatePassword, isD
                 {/* 2. SECURITY TAB */}
                 {activeTab === 'security' && (
                     <div className="space-y-6 max-w-lg">
-                        <div className="p-4 bg-amber-50 border-l-4 border-amber-500 text-amber-700 rounded-r-lg text-sm flex gap-3">
+                        <div className={`p-4 border-l-4 border-amber-500 rounded-r-lg text-sm flex gap-3 ${isDarkMode ? 'bg-amber-900/20 text-amber-300' : 'bg-amber-50 text-amber-700'}`}>
                             <AlertTriangle className="w-5 h-5 shrink-0" />
                             <p>A nova senha deve conter no mínimo 8 caracteres, incluindo letras, números e símbolos.</p>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Senha Atual</label>
+                            <label className={`block text-sm font-bold mb-1 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Senha Atual</label>
                             <input
                                 type="password"
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
-                                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-50 border-slate-200'}`}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Nova Senha</label>
+                            <label className={`block text-sm font-bold mb-1 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Nova Senha</label>
                             <input
                                 type="password"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
-                                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-50 border-slate-200'}`}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Confirmar Nova Senha</label>
+                            <label className={`block text-sm font-bold mb-1 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Confirmar Nova Senha</label>
                             <input
                                 type="password"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-50 border-slate-200'}`}
                             />
                         </div>
 
@@ -355,14 +355,14 @@ export default function SettingsView({ user, onUpdateUser, onUpdatePassword, isD
                 {/* 3. PREFERENCES TAB */}
                 {activeTab === 'preferences' && (
                     <div className="space-y-6">
-                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                        <div className={`flex items-center justify-between p-4 rounded-xl border ${isDarkMode ? 'bg-slate-700 border-slate-600' : 'bg-slate-50 border-slate-100'}`}>
                             <div className="flex items-center gap-4">
                                 <div className={`p-3 rounded-full ${isDarkMode ? 'bg-indigo-900 text-indigo-200' : 'bg-orange-100 text-orange-500'}`}>
-                                    {isDarkMode ? <Moon className="w-6 h-6" /> : <Save className="w-6 h-6" />} {/* Placeholder icon for Sun */}
+                                    {isDarkMode ? <Moon className="w-6 h-6" /> : <Save className="w-6 h-6" />}
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-slate-900">Modo Escuro</h4>
-                                    <p className="text-sm text-slate-500">Ajusta o contraste para ambientes com pouca luz (SOP Noturno).</p>
+                                    <h4 className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Modo Escuro</h4>
+                                    <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Ajusta o contraste para ambientes com pouca luz (SOP Noturno).</p>
                                 </div>
                             </div>
 

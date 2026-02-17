@@ -27,7 +27,8 @@ import MissionOrderForm from './components/MissionOrderForm';
 import { InventoryManager } from './components/InventoryManager'; // Import
 import SideMenu from './components/SideMenu'; // Import SideMenu
 import SettingsView from './components/SettingsView'; // Import SettingsView
-import FAQModal from './components/FAQModal'; // Import FAQModal
+import FAQModal from './components/FAQModal';
+import SuggestionsModal from './components/SuggestionsModal';
 import UserMenu from './components/UserMenu'; // Import UserMenu
 
 import { SAP03Panel } from './components/SAP03Panel';
@@ -101,6 +102,7 @@ const App: FC = () => {
 
   // FAQ Modal State
   const [showFAQ, setShowFAQ] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Theme State
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -933,6 +935,7 @@ const App: FC = () => {
               onToggleTheme={toggleTheme}
               isDarkMode={isDarkMode}
               onOpenFAQ={() => setShowFAQ(true)}
+              onOpenSuggestions={() => setShowSuggestions(true)}
               setActiveTab={setActiveTab}
             />
           </header>
@@ -1399,6 +1402,16 @@ const App: FC = () => {
 
       {/* FAQ Modal */}
       {showFAQ && <FAQModal onClose={() => setShowFAQ(false)} />}
+
+      {/* Suggestions Modal */}
+      {currentUser && (
+        <SuggestionsModal
+          user={currentUser}
+          isOpen={showSuggestions}
+          onClose={() => setShowSuggestions(false)}
+          isAdmin={isAdmin || isOM}
+        />
+      )}
 
     </div>
   );
