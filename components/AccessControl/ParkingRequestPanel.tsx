@@ -170,15 +170,20 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
     return (
         <div className="space-y-4 animate-fade-in relative min-h-screen">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div>
-                    <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
-                        <Car className="w-6 h-6 text-blue-600" /> Estacionamento BASP
-                    </h2>
-                    <p className="text-xs text-slate-400 font-medium">Gestão e Controle de Vagas</p>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 bg-white p-3 rounded-xl shadow-sm border border-slate-100">
+                <div className="flex items-center gap-2">
+                    <div className="bg-blue-50 p-2 rounded-lg">
+                        <Car className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                        <h2 className="text-sm sm:text-lg font-black text-slate-800 leading-tight">
+                            Estacionamento BASP
+                        </h2>
+                        <p className="text-[10px] text-slate-400 font-medium leading-tight">Gestão de Vagas</p>
+                    </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <div className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest ${vagasDisponiveis > 5 ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : vagasDisponiveis > 0 ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className={`flex-1 sm:flex-none text-center px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest ${vagasDisponiveis > 5 ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : vagasDisponiveis > 0 ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>
                         {vagasDisponiveis}/{TOTAL_VAGAS} vagas
                     </div>
                 </div>
@@ -188,7 +193,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
             <div className="flex gap-1 bg-slate-100 p-1 rounded-xl">
                 {tabs.map(t => (
                     <button key={t.id} onClick={() => setActiveTab(t.id)}
-                        className={`flex-1 py-2.5 px-3 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 ${activeTab === t.id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                        className={`flex-1 py-2 px-2 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 ${activeTab === t.id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
                         <t.icon className="w-3.5 h-3.5" /> {t.label}
                     </button>
                 ))}
@@ -210,19 +215,19 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                                 const vName = req.vehicle?.marca_modelo || req.ext_marca_modelo || '—';
                                 const vPlate = req.vehicle?.placa || req.ext_placa || '';
                                 return (
-                                    <div key={req.id} className="bg-amber-50 rounded-xl border border-amber-200 p-4 space-y-2">
+                                    <div key={req.id} className="bg-amber-50 rounded-xl border border-amber-200 p-3 sm:p-4 space-y-2">
                                         <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="font-black text-sm text-slate-800">{req.nome_completo}</p>
-                                                <p className="text-[10px] text-slate-500 font-medium">{req.posto_graduacao} • {req.forca} • {req.tipo_pessoa}</p>
+                                            <div className="min-w-0 flex-1 mr-2">
+                                                <p className="font-black text-xs sm:text-sm text-slate-800 truncate">{req.nome_completo}</p>
+                                                <p className="text-[10px] text-slate-500 font-medium truncate">{req.posto_graduacao} • {req.forca}</p>
                                             </div>
-                                            <span className="px-2 py-1 bg-amber-100 text-amber-700 text-[10px] font-black uppercase rounded-lg">Pendente</span>
+                                            <span className="shrink-0 px-2 py-1 bg-amber-100 text-amber-700 text-[9px] font-black uppercase rounded-lg">Pendente</span>
                                         </div>
-                                        <p className="text-xs text-slate-500">{vName} — {vPlate}</p>
-                                        <p className="text-xs text-slate-500">{new Date(req.inicio + 'T00:00:00').toLocaleDateString('pt-BR')} → {new Date(req.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
-                                        {req.observacao && <p className="text-[10px] text-slate-400 italic">"{req.observacao}"</p>}
+                                        <p className="text-[10px] sm:text-xs text-slate-500 font-bold">{vName} — {vPlate}</p>
+                                        <p className="text-[10px] sm:text-xs text-slate-500">{new Date(req.inicio + 'T00:00:00').toLocaleDateString('pt-BR')} → {new Date(req.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+                                        {req.observacao && <p className="text-[10px] text-slate-400 italic line-clamp-1">"{req.observacao}"</p>}
                                         <div className="flex gap-2 pt-1">
-                                            <button onClick={() => setAnalysingRequest(req)} className="w-full py-2 bg-blue-600 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1 hover:bg-blue-700 transition-all"><Eye className="w-3.5 h-3.5" /> Analisar Solicitação</button>
+                                            <button onClick={() => setAnalysingRequest(req)} className="w-full py-2 bg-blue-600 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1 hover:bg-blue-700 transition-all"><Eye className="w-3.5 h-3.5" /> Analisar</button>
                                         </div>
                                     </div>
                                 );
@@ -242,20 +247,20 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                         const vName = req.vehicle?.marca_modelo || req.ext_marca_modelo || '—';
                         const vPlate = req.vehicle?.placa || req.ext_placa || '';
                         return (
-                            <div key={req.id} className={`bg-white rounded-xl border p-4 space-y-2 ${req.status === 'Aprovado' ? 'border-emerald-200' : req.status === 'Rejeitado' ? 'border-red-200' : 'border-slate-200'}`}>
+                            <div key={req.id} className={`bg-white rounded-xl border p-3 sm:p-4 space-y-2 ${req.status === 'Aprovado' ? 'border-emerald-200' : req.status === 'Rejeitado' ? 'border-red-200' : 'border-slate-200'}`}>
                                 <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="font-black text-sm text-slate-800">{req.nome_completo}</p>
-                                        <p className="text-[10px] text-slate-500 font-medium">{req.posto_graduacao} • {req.forca}</p>
+                                    <div className="min-w-0 flex-1 mr-2">
+                                        <p className="font-black text-xs sm:text-sm text-slate-800 truncate">{req.nome_completo}</p>
+                                        <p className="text-[10px] text-slate-500 font-medium truncate">{req.posto_graduacao} • {req.forca}</p>
                                     </div>
-                                    <span className={`px-2 py-1 text-[10px] font-black uppercase rounded-lg ${req.status === 'Aprovado' ? 'bg-emerald-100 text-emerald-700' : req.status === 'Rejeitado' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>{req.status}</span>
+                                    <span className={`shrink-0 px-2 py-1 text-[9px] font-black uppercase rounded-lg ${req.status === 'Aprovado' ? 'bg-emerald-100 text-emerald-700' : req.status === 'Rejeitado' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>{req.status}</span>
                                 </div>
-                                <p className="text-xs text-slate-500">{vName} — {vPlate}</p>
-                                <p className="text-xs text-slate-500">{new Date(req.inicio + 'T00:00:00').toLocaleDateString('pt-BR')} → {new Date(req.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+                                <p className="text-[10px] sm:text-xs text-slate-500 font-bold">{vName} — {vPlate}</p>
+                                <p className="text-[10px] sm:text-xs text-slate-500">{new Date(req.inicio + 'T00:00:00').toLocaleDateString('pt-BR')} → {new Date(req.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
                                 {req.status === 'Aprovado' && (
                                     <button onClick={() => setPrintRequest(req)}
                                         className="w-full py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-blue-100 transition-all">
-                                        <Download className="w-3.5 h-3.5" /> Baixar Autorização
+                                        <Download className="w-3.5 h-3.5" /> Baixar
                                     </button>
                                 )}
                             </div>

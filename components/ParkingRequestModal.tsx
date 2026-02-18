@@ -126,9 +126,9 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
             <div className="w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-lg bg-white sm:rounded-2xl shadow-2xl flex flex-col sm:border border-slate-200 overflow-hidden">
 
                 {/* Header Fixo */}
-                <div className="bg-slate-900 p-4 sm:p-6 text-white flex justify-between items-center shrink-0 safe-top">
+                <div className="bg-slate-900 p-3 sm:p-6 text-white flex justify-between items-center shrink-0 safe-top">
                     <div className="min-w-0">
-                        <h2 className="text-lg sm:text-xl font-bold truncate flex items-center gap-2">
+                        <h2 className="text-base sm:text-lg sm:text-xl font-bold truncate flex items-center gap-2">
                             <Car className="w-5 h-5" />
                             <span className="truncate">Solicitar Estacionamento</span>
                         </h2>
@@ -180,7 +180,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
 
                             <div className="space-y-4">
                                 {/* Seção Pessoal */}
-                                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 space-y-4">
+                                <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-100 space-y-3 sm:space-y-4">
                                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-2">Dados Pessoais</h3>
 
                                     <div className="space-y-1">
@@ -191,80 +191,80 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                                             value={parkData.nome}
                                             onChange={e => setParkData({ ...parkData, nome: e.target.value })}
                                             style={{ textTransform: 'uppercase' }}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                         <div className="space-y-1">
                                             <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Posto/Grad</label>
-                                            <input placeholder="EX: CAP, SGT" value={parkData.posto} onChange={e => setParkData({ ...parkData, posto: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                            <input placeholder="EX: CAP, SGT" value={parkData.posto} onChange={e => setParkData({ ...parkData, posto: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Tipo</label>
-                                            <select value={parkData.tipo} onChange={e => setParkData({ ...parkData, tipo: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all appearance-none"><option>Militar</option><option>Civil</option></select>
+                                            <select value={parkData.tipo} onChange={e => setParkData({ ...parkData, tipo: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all appearance-none"><option>Militar</option><option>Civil</option></select>
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                         <div className="space-y-1">
                                             <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Força</label>
-                                            <select value={parkData.tipo === 'Civil' ? 'Civil' : parkData.forca} onChange={e => setParkData({ ...parkData, forca: e.target.value })} disabled={parkData.tipo === 'Civil'} className={`w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all ${parkData.tipo === 'Civil' ? 'opacity-50' : ''}`}><option>FAB</option><option>EB</option><option>MB</option><option>PMSP</option><option>PRF</option><option>PF</option><option>Civil</option><option>Outro</option></select>
+                                            <select value={parkData.tipo === 'Civil' ? 'Civil' : parkData.forca} onChange={e => setParkData({ ...parkData, forca: e.target.value })} disabled={parkData.tipo === 'Civil'} className={`w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all ${parkData.tipo === 'Civil' ? 'opacity-50' : ''}`}><option>FAB</option><option>EB</option><option>MB</option><option>PMSP</option><option>PRF</option><option>PF</option><option>Civil</option><option>Outro</option></select>
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-xs font-black text-slate-700 uppercase tracking-wide">OM / Órgão</label>
-                                            <input placeholder="BASP..." value={parkData.om} onChange={e => setParkData({ ...parkData, om: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                            <input placeholder="BASP..." value={parkData.om} onChange={e => setParkData({ ...parkData, om: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
                                         </div>
                                     </div>
 
                                     <div className="space-y-1">
                                         <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Identidade (RG/CPF/SARAM) {parkData.tipo === 'Civil' ? '*' : ''}</label>
-                                        <input required={parkData.tipo === 'Civil'} placeholder="Somente números" inputMode="numeric" value={parkData.identidade} onChange={e => setParkData({ ...parkData, identidade: e.target.value.replace(/\D/g, '') })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                        <input required={parkData.tipo === 'Civil'} placeholder="Somente números" inputMode="numeric" value={parkData.identidade} onChange={e => setParkData({ ...parkData, identidade: e.target.value.replace(/\D/g, '') })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
                                     </div>
 
                                     <div className="space-y-1">
                                         <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Telefone</label>
-                                        <input placeholder="(11) 99999-9999" inputMode="tel" value={parkData.telefone} onChange={e => setParkData({ ...parkData, telefone: e.target.value.replace(/\D/g, '') })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                        <input placeholder="(11) 99999-9999" inputMode="tel" value={parkData.telefone} onChange={e => setParkData({ ...parkData, telefone: e.target.value.replace(/\D/g, '') })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
                                     </div>
 
                                     <div className="space-y-1">
                                         <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Email *</label>
-                                        <input type="email" required placeholder="seu@email.com" value={parkData.email} onChange={e => setParkData({ ...parkData, email: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                        <input type="email" inputMode="email" required placeholder="seu@email.com" value={parkData.email} onChange={e => setParkData({ ...parkData, email: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
                                     </div>
                                 </div>
 
                                 {/* Veículo */}
-                                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 space-y-4">
+                                <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-100 space-y-3 sm:space-y-4">
                                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-2">Dados do Veículo</h3>
 
                                     <div className="space-y-1">
                                         <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Marca/Modelo *</label>
-                                        <input required placeholder="EX: FIAT ARGO" value={parkData.marcaModelo} onChange={e => setParkData({ ...parkData, marcaModelo: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                        <input required placeholder="EX: FIAT ARGO" value={parkData.marcaModelo} onChange={e => setParkData({ ...parkData, marcaModelo: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                         <div className="space-y-1">
                                             <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Placa *</label>
-                                            <input required placeholder="ABC-1234" value={parkData.placa} onChange={e => setParkData({ ...parkData, placa: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                            <input required placeholder="ABC-1234" value={parkData.placa} onChange={e => setParkData({ ...parkData, placa: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Cor</label>
-                                            <input placeholder="EX: PRATA" value={parkData.cor} onChange={e => setParkData({ ...parkData, cor: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                            <input placeholder="EX: PRATA" value={parkData.cor} onChange={e => setParkData({ ...parkData, cor: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Período */}
-                                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 space-y-4">
+                                <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-100 space-y-3 sm:space-y-4">
                                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-2">Período</h3>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                         <div className="space-y-1">
                                             <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Início *</label>
-                                            <input required type="date" value={parkData.inicio} onChange={e => setParkData({ ...parkData, inicio: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                            <input required type="date" value={parkData.inicio} onChange={e => setParkData({ ...parkData, inicio: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Término *</label>
-                                            <input required type="date" value={parkData.termino} onChange={e => setParkData({ ...parkData, termino: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                            <input required type="date" value={parkData.termino} onChange={e => setParkData({ ...parkData, termino: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
                                         </div>
                                     </div>
                                 </div>
