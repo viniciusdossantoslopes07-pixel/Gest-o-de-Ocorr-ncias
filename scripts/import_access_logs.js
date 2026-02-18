@@ -111,7 +111,7 @@ async function importLogs() {
         }
 
         if (!datePart) {
-            console.warn('Skipping invalid date:', dateRaw);
+            console.warn('Skipping invalid date:', dateRaw, 'Values:', values);
             continue;
         }
 
