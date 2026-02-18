@@ -14,6 +14,7 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
     const [filterDateStart, setFilterDateStart] = useState('');
     const [filterDateEnd, setFilterDateEnd] = useState('');
     const [filterType, setFilterType] = useState('');
+    const [period, setPeriod] = useState<'all' | 'today' | 'week' | 'month' | 'year' | 'custom'>('all'); // Smart Period State
 
     // Pre-calculate unique types for filter dropdown
     const missionTypes = useMemo(() => {
@@ -23,33 +24,90 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
         return Array.from(types).sort();
     }, [orders, missions]);
 
-    // Apply Filters
+    // Apply Filters - Smart Period Logic
     const filteredOrders = useMemo(() => {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
         return orders.filter(order => {
-            const matchType = !filterType || order.mission === filterType;
             const orderDate = new Date(order.date);
-            const matchDateStart = !filterDateStart || orderDate >= new Date(filterDateStart);
-            const matchDateEnd = !filterDateEnd || orderDate <= new Date(filterDateEnd);
-            return matchType && matchDateStart && matchDateEnd;
+            const orderDay = new Date(orderDate.getFullYear(), orderDate.getMonth(), orderDate.getDate());
+
+            // Period Filter
+            let matchPeriod = true;
+            if (period === 'today') {
+                matchPeriod = orderDay.getTime() === today.getTime();
+            } else if (period === 'week') {
+                const weekAgo = new Date(today);
+                weekAgo.setDate(today.getDate() - 7);
+                matchPeriod = orderDay >= weekAgo && orderDay <= today;
+            } else if (period === 'month') {
+                const monthAgo = new Date(today);
+                monthAgo.setDate(today.getDate() - 30);
+                matchPeriod = orderDay >= monthAgo && orderDay <= today;
+            } else if (period === 'year') {
+                const yearStart = new Date(today.getFullYear(), 0, 1);
+                matchPeriod = orderDay >= yearStart;
+            } else if (period === 'custom') {
+                const start = filterDateStart ? new Date(filterDateStart) : null;
+                const end = filterDateEnd ? new Date(filterDateEnd) : null;
+                if (start) matchPeriod = matchPeriod && orderDay >= start;
+                if (end) matchPeriod = matchPeriod && orderDay <= end;
+            }
+
+            const matchType = !filterType || order.mission === filterType;
+
+            return matchPeriod && matchType;
         });
-    }, [orders, filterType, filterDateStart, filterDateEnd]);
+    }, [orders, filterType, period, filterDateStart, filterDateEnd]);
 
     const filteredMissions = useMemo(() => {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
         return missions.filter(mission => {
+            const mDate = mission.dados_missao?.data ? new Date(mission.dados_missao.data) : null;
+            const mDay = mDate ? new Date(mDate.getFullYear(), mDate.getMonth(), mDate.getDate()) : null;
+
+            // Period Filter
+            let matchPeriod = true;
+            if (mDay) {
+                if (period === 'today') {
+                    matchPeriod = mDay.getTime() === today.getTime();
+                } else if (period === 'week') {
+                    const weekAgo = new Date(today);
+                    weekAgo.setDate(today.getDate() - 7);
+                    matchPeriod = mDay >= weekAgo && mDay <= today;
+                } else if (period === 'month') {
+                    const monthAgo = new Date(today);
+                    monthAgo.setDate(today.getDate() - 30);
+                    matchPeriod = mDay >= monthAgo && mDay <= today;
+                } else if (period === 'year') {
+                    const yearStart = new Date(today.getFullYear(), 0, 1);
+                    matchPeriod = mDay >= yearStart;
+                } else if (period === 'custom') {
+                    const start = filterDateStart ? new Date(filterDateStart) : null;
+                    const end = filterDateEnd ? new Date(filterDateEnd) : null;
+                    if (start) matchPeriod = matchPeriod && mDay >= start;
+                    if (end) matchPeriod = matchPeriod && mDay <= end;
+                }
+            }
+
             const mType = mission.dados_missao?.tipo_missao;
             const matchType = !filterType || mType === filterType;
-            const mDate = mission.dados_missao?.data ? new Date(mission.dados_missao.data) : null;
-            const matchDateStart = !filterDateStart || (mDate && mDate >= new Date(filterDateStart));
-            const matchDateEnd = !filterDateEnd || (mDate && mDate <= new Date(filterDateEnd));
-            return matchType && matchDateStart && matchDateEnd;
+
+            return matchPeriod && matchType;
         });
-    }, [missions, filterType, filterDateStart, filterDateEnd]);
+    }, [missions, filterType, period, filterDateStart, filterDateEnd]);
 
     // 1. Calculate Totals based on filtered data
     const totalMissions = filteredOrders.length;
     const activeMissions = filteredOrders.filter(o => o.status === 'EM_MISSAO' || o.status === 'PRONTA_PARA_EXECUCAO').length;
     const completedMissions = filteredOrders.filter(o => o.status === 'CONCLUIDA').length;
     const pendingMissions = filteredOrders.filter(o => o.status === 'AGUARDANDO_ASSINATURA').length;
+
+    // New Metric: Total Personnel Employed in filtered missions
+    const personnelCount = filteredOrders.reduce((total, order) => total + (order.personnel?.length || 0), 0);
 
     // 2. Prepare Data for Charts
 
@@ -75,86 +133,103 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
         setFilterDateStart('');
         setFilterDateEnd('');
         setFilterType('');
+        setPeriod('all');
     };
 
     const hasActiveFilters = filterDateStart || filterDateEnd || filterType;
 
     return (
         <div className="space-y-4 sm:space-y-8 animate-fade-in">
-            {/* Filters Header */}
-            <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                <div className="flex items-center gap-2 text-slate-600">
-                    <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-                    <span className="font-bold text-xs sm:text-sm uppercase tracking-wider">Filtros</span>
+            {/* Command Center Header with Smart Filters */}
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-200">
+                        <Target className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-black text-slate-800 tracking-tight">Estatísticas de Missão</h2>
+                        <div className="flex items-center gap-2 mt-0.5">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                                Análise: <span className="text-blue-600">{period === 'all' ? 'Completa' : period === 'custom' ? 'Personalizada' : period === 'today' ? 'Hoje' : period === 'week' ? 'Últimos 7 Dias' : period === 'month' ? 'Últimos 30 Dias' : 'Ano Atual'}</span>
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:flex md:flex-wrap items-center gap-3 sm:gap-4 flex-1">
-                    <div className="flex flex-col xs:flex-row xs:items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 sm:py-1.5 min-w-0">
-                        <div className="flex items-center gap-2">
-                            <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                            <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Período:</span>
-                        </div>
-                        <div className="flex items-center gap-2 flex-1">
-                            <input
-                                type="date"
-                                value={filterDateStart}
-                                onChange={(e) => setFilterDateStart(e.target.value)}
-                                className="bg-transparent text-xs sm:text-sm font-bold text-slate-700 outline-none w-full xs:w-28"
-                            />
-                            <span className="text-slate-300 text-xs">até</span>
-                            <input
-                                type="date"
-                                value={filterDateEnd}
-                                onChange={(e) => setFilterDateEnd(e.target.value)}
-                                className="bg-transparent text-xs sm:text-sm font-bold text-slate-700 outline-none w-full xs:w-28"
-                            />
-                        </div>
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto overflow-x-auto pb-2 xl:pb-0">
+                    <div className="flex bg-slate-100 p-1 rounded-xl">
+                        {[
+                            { id: 'all', label: 'Todas' },
+                            { id: 'today', label: 'Hoje' },
+                            { id: 'week', label: '7 Dias' },
+                            { id: 'month', label: '30 Dias' },
+                            { id: 'year', label: 'Ano' },
+                        ].map((p) => (
+                            <button
+                                key={p.id}
+                                onClick={() => setPeriod(p.id as any)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase transition-all whitespace-nowrap ${period === p.id ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                {p.label}
+                            </button>
+                        ))}
                     </div>
 
-                    <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 sm:py-1.5 flex-1 min-w-0">
-                        <Target className="w-3.5 h-3.5 text-slate-400" />
-                        <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase">Tipo:</span>
-                        <select
-                            value={filterType}
-                            onChange={(e) => setFilterType(e.target.value)}
-                            className="bg-transparent text-xs sm:text-sm font-bold text-slate-700 outline-none flex-1 appearance-none cursor-pointer min-w-0"
-                        >
-                            <option value="">Todos os Tipos</option>
-                            {missionTypes.map(type => (
-                                <option key={type} value={type}>{type}</option>
-                            ))}
-                        </select>
+                    <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase whitespace-nowrap">Personalizado:</span>
+                        <input
+                            type="date"
+                            value={filterDateStart}
+                            onChange={(e) => {
+                                setFilterDateStart(e.target.value);
+                                setPeriod('custom');
+                            }}
+                            className="bg-transparent text-xs font-bold text-slate-700 outline-none w-24"
+                        />
+                        <span className="text-slate-300">/</span>
+                        <input
+                            type="date"
+                            value={filterDateEnd}
+                            onChange={(e) => {
+                                setFilterDateEnd(e.target.value);
+                                setPeriod('custom');
+                            }}
+                            className="bg-transparent text-xs font-bold text-slate-700 outline-none w-24"
+                        />
                     </div>
 
-                    {hasActiveFilters && (
-                        <button
-                            onClick={clearFilters}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold text-[10px] sm:text-xs hover:bg-red-50 hover:text-red-600 transition-all border border-transparent hover:border-red-100"
-                        >
-                            <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                            Limpar Filtros
-                        </button>
-                    )}
+                    <select
+                        value={filterType}
+                        onChange={(e) => setFilterType(e.target.value)}
+                        className="bg-slate-50 border border-slate-200 text-xs sm:text-sm font-bold text-slate-700 rounded-xl px-3 py-1.5 outline-none cursor-pointer hover:bg-slate-100 transition-all h-full"
+                    >
+                        <option value="">Todos os Tipos</option>
+                        {missionTypes.map(type => (
+                            <option key={type} value={type}>{type}</option>
+                        ))}
+                    </select>
                 </div>
             </div>
 
-            {hasActiveFilters && (
-                <div className="bg-blue-50 border border-blue-100 p-2 sm:p-3 rounded-xl flex items-center gap-2 animate-pulse">
-                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full"></div>
-                    <p className="text-[10px] sm:text-xs font-bold text-blue-700 uppercase tracking-widest leading-tight">
-                        Visualizando dados filtrados ({totalMissions} resultados)
-                    </p>
+            {/* KPI Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+                <div className="col-span-2 lg:col-span-1 bg-gradient-to-br from-slate-900 to-slate-800 p-4 sm:p-6 rounded-2xl shadow-lg border border-slate-700 flex flex-col items-center justify-center text-center gap-2">
+                    <div className="p-2 sm:p-3 bg-white/10 text-white rounded-full mb-1">
+                        <Users className="w-6 h-6 sm:w-8 sm:h-8" />
+                    </div>
+                    <div>
+                        <p className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider">Efetivo Empregado</p>
+                        <h3 className="text-2xl sm:text-4xl font-black text-white mt-1">{personnelCount}</h3>
+                    </div>
                 </div>
-            )}
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4">
                     <div className="p-2 sm:p-3 bg-blue-100 text-blue-600 rounded-xl">
                         <Target className="w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
                     <div>
-                        <p className="text-[10px] sm:text-sm text-slate-500 font-medium leading-tight">Total Missões</p>
+                        <p className="text-[10px] sm:text-sm text-slate-500 font-bold uppercase tracking-wider">Missões Totais</p>
                         <h3 className="text-lg sm:text-2xl font-black text-slate-900">{totalMissions}</h3>
                     </div>
                 </div>

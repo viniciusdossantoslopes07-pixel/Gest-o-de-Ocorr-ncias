@@ -25,39 +25,39 @@ const MissionOrderList: FC<MissionOrderListProps> = ({ orders, onCreate, onEdit,
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl font-bold text-slate-900">Ordens de Missão (OMIS)</h2>
-                    <p className="text-slate-500 text-sm mt-1">Gerenciamento de Ordens de Missão do GSD-SP</p>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="w-full md:w-auto">
+                    <h2 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Ordens de Missão</h2>
+                    <p className="text-slate-500 text-xs md:text-sm font-medium">Gerenciamento de Ordens de Missão do GSD-SP</p>
                 </div>
                 <button
                     onClick={onCreate}
-                    className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all shadow-lg"
+                    className="w-full md:w-auto flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 text-white rounded-xl font-black uppercase text-xs tracking-widest hover:bg-slate-800 transition-all shadow-lg active:scale-95"
                 >
-                    <Plus className="w-5 h-5" />
+                    <Plus className="w-4 h-4" />
                     Nova OMIS
                 </button>
             </div>
 
             {/* Filters */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-hide">
                 <button
                     onClick={() => setFilter('all')}
-                    className={`px-4 py-2 rounded-lg font-bold text-xs transition-all ${filter === 'all' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    className={`px-4 py-2 rounded-lg font-bold text-xs whitespace-nowrap transition-all ${filter === 'all' ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
                 >
                     Todas
                 </button>
                 <button
                     onClick={() => setFilter('internal')}
-                    className={`px-4 py-2 rounded-lg font-bold text-xs transition-all ${filter === 'internal' ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                    className={`px-4 py-2 rounded-lg font-bold text-xs whitespace-nowrap transition-all ${filter === 'internal' ? 'bg-blue-600 text-white shadow-md' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
                         }`}
                 >
                     Internas
                 </button>
                 <button
                     onClick={() => setFilter('external')}
-                    className={`px-4 py-2 rounded-lg font-bold text-xs transition-all ${filter === 'external' ? 'bg-orange-600 text-white' : 'bg-orange-50 text-orange-600 hover:bg-orange-100'
+                    className={`px-4 py-2 rounded-lg font-bold text-xs whitespace-nowrap transition-all ${filter === 'external' ? 'bg-orange-600 text-white shadow-md' : 'bg-orange-50 text-orange-600 hover:bg-orange-100'
                         }`}
                 >
                     Externas
@@ -78,54 +78,56 @@ const MissionOrderList: FC<MissionOrderListProps> = ({ orders, onCreate, onEdit,
                             key={order.id}
                             className="bg-white rounded-xl p-6 border border-slate-200 hover:shadow-md transition-all"
                         >
-                            <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <span className="text-2xl font-black text-slate-900">{order.omisNumber}</span>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${order.isInternal
-                                            ? 'bg-blue-100 text-blue-700'
-                                            : 'bg-orange-100 text-orange-700'
-                                            }`}>
-                                            {order.isInternal ? 'Interna' : 'Externa'}
-                                        </span>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${MISSION_STATUS_COLORS[order.status || ''] || 'bg-slate-100 text-slate-700'}`}>
-                                            {MISSION_STATUS_LABELS[order.status || ''] || order.status || 'Rascunho'}
-                                        </span>
+                            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                                        <span className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">{order.omisNumber}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${order.isInternal
+                                                ? 'bg-blue-100 text-blue-700'
+                                                : 'bg-orange-100 text-orange-700'
+                                                }`}>
+                                                {order.isInternal ? 'INT' : 'EXT'}
+                                            </span>
+                                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${MISSION_STATUS_COLORS[order.status || ''] || 'bg-slate-100 text-slate-700'}`}>
+                                                {MISSION_STATUS_LABELS[order.status || ''] || order.status || 'Rascunho'}
+                                            </span>
+                                        </div>
                                     </div>
 
-                                    <h3 className="text-lg font-bold text-slate-900 mb-2">{order.mission}</h3>
-                                    <p className="text-slate-600 text-sm mb-3">{order.description}</p>
+                                    <h3 className="text-base md:text-lg font-bold text-slate-800 mb-2 truncate">{order.mission}</h3>
+                                    <p className="text-slate-500 text-xs md:text-sm mb-4 line-clamp-2">{order.description}</p>
 
-                                    <div className="flex items-center gap-4 text-xs text-slate-500">
-                                        <div className="flex items-center gap-1">
-                                            <Calendar className="w-4 h-4" />
+                                    <div className="flex flex-wrap items-center gap-3 md:gap-6 text-xs font-medium text-slate-500">
+                                        <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
+                                            <Calendar className="w-3.5 h-3.5 text-slate-400" />
                                             {new Date(order.date).toLocaleDateString('pt-BR')}
                                         </div>
-                                        <div className="flex items-center gap-1">
-                                            <MapPin className="w-4 h-4" />
+                                        <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-md border border-slate-100 truncate max-w-[150px]">
+                                            <MapPin className="w-3.5 h-3.5 text-slate-400" />
                                             {order.location}
                                         </div>
-                                        <div className="flex items-center gap-1">
-                                            <FileText className="w-4 h-4" />
+                                        <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
+                                            <FileText className="w-3.5 h-3.5 text-slate-400" />
                                             {order.personnel.length} militares
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-2">
+                                <div className="grid grid-cols-3 md:flex md:flex-col gap-2 mt-2 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-slate-100">
                                     <button
                                         onClick={() => onView(order)}
-                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                        className="h-10 md:h-9 md:w-9 flex items-center justify-center text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all active:scale-95"
                                         title="Visualizar"
                                     >
-                                        <Eye className="w-5 h-5" />
+                                        <Eye className="w-5 h-5 md:w-4 md:h-4" />
                                     </button>
                                     <button
                                         onClick={() => onEdit(order)}
-                                        className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-all"
+                                        className="h-10 md:h-9 md:w-9 flex items-center justify-center text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-all active:scale-95"
                                         title="Editar"
                                     >
-                                        <Edit className="w-5 h-5" />
+                                        <Edit className="w-5 h-5 md:w-4 md:h-4" />
                                     </button>
                                     <button
                                         onClick={() => {
@@ -133,10 +135,10 @@ const MissionOrderList: FC<MissionOrderListProps> = ({ orders, onCreate, onEdit,
                                                 onDelete(order.id);
                                             }
                                         }}
-                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                        className="h-10 md:h-9 md:w-9 flex items-center justify-center text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-all active:scale-95"
                                         title="Excluir"
                                     >
-                                        <Trash2 className="w-5 h-5" />
+                                        <Trash2 className="w-5 h-5 md:w-4 md:h-4" />
                                     </button>
                                 </div>
                             </div>
