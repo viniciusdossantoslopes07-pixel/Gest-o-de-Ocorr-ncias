@@ -40,6 +40,7 @@ type DatePreset = '7D' | '30D' | 'MONTH' | 'YEAR' | 'CUSTOM';
 
 export default function AccessStatistics() {
     const [records, setRecords] = useState<AccessRecord[]>([]); // Current period records
+    const [totalCount, setTotalCount] = useState(0); // Server-side count
     const [prevInfo, setPrevInfo] = useState({ entries: 0, exits: 0, total: 0 }); // Comparison stats
     const [loading, setLoading] = useState(true);
 
@@ -91,15 +92,22 @@ export default function AccessStatistics() {
             // 1. Fetch Current Period
             let query = supabase
                 .from('access_control')
-                .select('*')
+                .select('id, timestamp, guard_gate, name, characteristic, identification, access_mode, access_category, vehicle_model, vehicle_plate, destination', { count: 'exact' })
                 .gte('timestamp', `${dateStart}T00:00:00`)
                 .lte('timestamp', `${dateEnd}T23:59:59`)
                 .order('timestamp', { ascending: false })
-                .limit(10000); // Increased limit slightly
+                .limit(20000); // 1000 -> 20000 to cover full history
 
-            const { data: currentData, error } = await query;
+            const { data: currentData, error, count } = await query;
             if (error) throw error;
+
             setRecords(currentData || []);
+
+            // If we have more count than data, we might want to warn or rely on count for "Total"
+            // For this specific KPI "Total Acessos", let's use the count if available to be accurate
+            // But we need to store it somewhere. Let's use records.length for now, but update the UI card to show real count?
+            // Actually, let's create a state for totalCount to separate "loaded" vs "existing"
+            setTotalCount(count || (currentData || []).length);
 
             // 2. Fetch Comparison Period (Previous equivalent range)
             const startD = new Date(dateStart);
@@ -108,17 +116,17 @@ export default function AccessStatistics() {
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include start day
 
             const prevEndD = subDays(startD, 1);
-            const prevStartD = subDays(prevEndD, diffDays - 1); // e.g. if 7 days, go back 7 days from yesterday
+            const prevStartD = subDays(prevEndD, diffDays - 1);
 
             const prevStartStr = formatDate(prevStartD);
             const prevEndStr = formatDate(prevEndD);
 
-            // Limited fetch for stats logic only (counts) to optimize? 
-            // Or fetch all to be precise. Let's fetch basic counts or minimal fields if possible, 
-            // but for simplicity we fetch all and calculate length.
             const queryPrev = supabase
                 .from('access_control')
-                .select('access_category') // We only need categories for the KPI cards
+                .select('access_category', { count: 'exact', head: true }) // optimized: head:true just gets count if we don't need data? 
+                // Wait, we need entries/exits counts. So we need data or grouped count.
+                // Fetching all might be heavy. Let's fetch data with minimal cols.
+                .select('access_category')
                 .gte('timestamp', `${prevStartStr}T00:00:00`)
                 .lte('timestamp', `${prevEndStr}T23:59:59`);
 
@@ -298,8 +306,8 @@ export default function AccessStatistics() {
                             key={preset}
                             onClick={() => handlePresetChange(preset)}
                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${datePreset === preset
-                                    ? 'bg-blue-100 text-blue-700 shadow-sm'
-                                    : 'text-slate-500 hover:bg-slate-50'
+                                ? 'bg-blue-100 text-blue-700 shadow-sm'
+                                : 'text-slate-500 hover:bg-slate-50'
                                 }`}
                         >
                             {preset === '7D' && '7 Dias'}
@@ -391,7 +399,14 @@ export default function AccessStatistics() {
                         )}
                     </div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Acessos</p>
-                    <p className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">{filteredRecords.length}</p>
+                    <p className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
+                        {hasActiveFilters ? filteredRecords.length : totalCount}
+                    </p>
+                    {!hasActiveFilters && totalCount > records.length && (
+                        <p className="text-[9px] text-amber-600 font-bold mt-1">
+                            Exibindo {records.length} de {totalCount}
+                        </p>
+                    )}
                 </div>
 
                 <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-emerald-100 relative overflow-hidden group">
