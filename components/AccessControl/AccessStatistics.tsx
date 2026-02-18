@@ -188,10 +188,10 @@ export default function AccessStatistics() {
     const filteredRecords = useMemo(() => {
         return records.filter(r => {
             if (filterGate) {
-                const normalize = (s: string) => s.toUpperCase().replace('PORTÃO', '').trim();
-                const gate = normalize(r.guard_gate || '');
-                const filter = normalize(filterGate);
-                if (gate !== filter) return false;
+                const gate = (r.guard_gate || '').toUpperCase();
+                const filter = filterGate.toUpperCase();
+                // Check if gate contains filter (e.g. "PORTÃO G1" contains "G1")
+                if (!gate.includes(filter)) return false;
             }
             if (filterCharacteristic && r.characteristic !== filterCharacteristic) return false;
             if (filterAccessMode && r.access_mode !== filterAccessMode) return false;
@@ -378,10 +378,9 @@ export default function AccessStatistics() {
                         <DoorOpen className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                         <select value={filterGate} onChange={(e) => setFilterGate(e.target.value)} className="bg-transparent text-xs font-bold text-slate-700 outline-none flex-1">
                             <option value="">Todos os Portões</option>
-                            <option value="PORTÃO G1">G1</option>
-                            <option value="PORTÃO G2">G2</option>
-                            <option value="PORTÃO G3">G3</option>
-
+                            <option value="G1">G1</option>
+                            <option value="G2">G2</option>
+                            <option value="G3">G3</option>
                         </select>
                     </div>
 
