@@ -97,22 +97,6 @@ export default function PermissionManagement({ users, onUpdateUser, currentAdmin
             };
 
             // Call parent update (which updates Supabase and local state)
-            // We need to ensure onUpdateUser handles these new fields. 
-            // Based on previous code file view, handleUpdateUser calls supabase.update with specific fields.
-            // We might need to modify handleUpdateUser or call supabase directly here if parent doesn't support generic updates.
-            // Let's call supabase directly for these specific fields for safety, then call parent to update state.
-
-            const { error } = await supabase
-                .from('users')
-                .update({
-                    function_id: selectedFunction,
-                    custom_permissions: userPermissions
-                })
-                .eq('id', selectedUser.id);
-
-            if (error) throw error;
-
-            // Update parent state
             await onUpdateUser(updatedUser);
 
             alert('Permissões atualizadas com sucesso!');
@@ -199,8 +183,8 @@ export default function PermissionManagement({ users, onUpdateUser, currentAdmin
                             key={user.id}
                             onClick={() => setSelectedUser(user)}
                             className={`w-full text-left p-3 rounded-xl transition-all border ${selectedUser?.id === user.id
-                                    ? 'bg-blue-50 border-blue-200 shadow-sm'
-                                    : 'bg-white border-transparent hover:bg-slate-50 hover:border-slate-100'
+                                ? 'bg-blue-50 border-blue-200 shadow-sm'
+                                : 'bg-white border-transparent hover:bg-slate-50 hover:border-slate-100'
                                 }`}
                         >
                             <div className="flex items-center justify-between">
@@ -272,8 +256,8 @@ export default function PermissionManagement({ users, onUpdateUser, currentAdmin
                                             key={func.id}
                                             onClick={() => handleFunctionChange(func.id)}
                                             className={`p-4 rounded-xl border-2 text-left transition-all relative overflow-hidden group ${selectedFunction === func.id
-                                                    ? 'border-blue-500 bg-blue-50/50'
-                                                    : 'border-slate-100 bg-white hover:border-blue-200'
+                                                ? 'border-blue-500 bg-blue-50/50'
+                                                : 'border-slate-100 bg-white hover:border-blue-200'
                                                 }`}
                                         >
                                             <div className="flex items-start justify-between mb-1">
@@ -309,8 +293,8 @@ export default function PermissionManagement({ users, onUpdateUser, currentAdmin
                                                 {perms.map(permKey => (
                                                     <label key={permKey} className="flex items-center gap-3 p-2 hover:bg-white rounded-lg transition-colors cursor-pointer group">
                                                         <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${userPermissions.includes(permKey)
-                                                                ? 'bg-blue-600 border-blue-600'
-                                                                : 'bg-white border-slate-300 group-hover:border-blue-400'
+                                                            ? 'bg-blue-600 border-blue-600'
+                                                            : 'bg-white border-slate-300 group-hover:border-blue-400'
                                                             }`}>
                                                             {userPermissions.includes(permKey) && <Check className="w-3 h-3 text-white" />}
                                                         </div>

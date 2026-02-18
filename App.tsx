@@ -367,6 +367,8 @@ const App: FC = () => {
         reset_password_at_login: data.reset_password_at_login,
         password_status: data.password_status,
         photo_url: data.photo_url,
+        functionId: data.function_id,
+        customPermissions: data.custom_permissions
       };
 
       if (user.approved === false) {
@@ -435,7 +437,9 @@ const App: FC = () => {
         displayOrder: u.display_order,
         menu_order: u.menu_order,
         home_order: u.home_order,
-        photo_url: u.photo_url
+        photo_url: u.photo_url,
+        functionId: u.function_id,
+        customPermissions: u.custom_permissions
       }));
       setUsers(mappedUsers);
     }
@@ -467,7 +471,9 @@ const App: FC = () => {
       approved: true,
       war_name: newUser.warName,
       cpf: newUser.cpf,
-      display_order: newUser.displayOrder || 0
+      display_order: newUser.displayOrder || 0,
+      function_id: newUser.functionId,
+      custom_permissions: newUser.customPermissions
     };
 
     const { data, error } = await supabase
@@ -493,7 +499,9 @@ const App: FC = () => {
         warName: data.war_name,
         militarId: data.militar_id,
         cpf: data.cpf,
-        displayOrder: data.display_order
+        displayOrder: data.display_order,
+        functionId: data.function_id,
+        customPermissions: data.custom_permissions
       };
       setUsers([...users, createdUser]);
       return true;
@@ -552,7 +560,9 @@ const App: FC = () => {
         phone_number: updatedUser.phoneNumber,
         approved: updatedUser.approved,
         display_order: updatedUser.displayOrder,
-        photo_url: updatedUser.photo_url
+        photo_url: updatedUser.photo_url,
+        function_id: updatedUser.functionId,
+        custom_permissions: updatedUser.customPermissions
       })
       .eq('id', updatedUser.id);
 
