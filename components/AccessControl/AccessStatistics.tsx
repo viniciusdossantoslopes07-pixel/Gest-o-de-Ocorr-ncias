@@ -376,7 +376,7 @@ export default function AccessStatistics() {
                             <option value="PORTÃO G1">G1</option>
                             <option value="PORTÃO G2">G2</option>
                             <option value="PORTÃO G3">G3</option>
-                            <option value="PORTÃO PRINCIPAL">Principal</option>
+
                         </select>
                     </div>
 
