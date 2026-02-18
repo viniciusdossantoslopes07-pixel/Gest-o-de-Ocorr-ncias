@@ -147,11 +147,11 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
                         <Target className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                        <h2 className="text-xl font-black text-slate-800 tracking-tight">Estatísticas de Missão</h2>
+                        <h2 className="text-xl font-black text-slate-800 tracking-tight">BI Missão</h2>
                         <div className="flex items-center gap-2 mt-0.5">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                                Análise: <span className="text-blue-600">{period === 'all' ? 'Completa' : period === 'custom' ? 'Personalizada' : period === 'today' ? 'Hoje' : period === 'week' ? 'Últimos 7 Dias' : period === 'month' ? 'Últimos 30 Dias' : 'Ano Atual'}</span>
+                                Ref.: <span className="text-blue-600">{period === 'all' ? 'Geral' : period === 'custom' ? 'Custom' : period === 'today' ? 'Hoje' : period === 'week' ? '7D' : period === 'month' ? '30D' : 'Ano'}</span>
                             </p>
                         </div>
                     </div>
@@ -160,10 +160,10 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto overflow-x-auto pb-2 xl:pb-0">
                     <div className="flex bg-slate-100 p-1 rounded-xl">
                         {[
-                            { id: 'all', label: 'Todas' },
+                            { id: 'all', label: 'Tudo' },
                             { id: 'today', label: 'Hoje' },
-                            { id: 'week', label: '7 Dias' },
-                            { id: 'month', label: '30 Dias' },
+                            { id: 'week', label: '7D' },
+                            { id: 'month', label: '30D' },
                             { id: 'year', label: 'Ano' },
                         ].map((p) => (
                             <button
@@ -177,7 +177,7 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
                     </div>
 
                     <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase whitespace-nowrap">Personalizado:</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase whitespace-nowrap">Período:</span>
                         <input
                             type="date"
                             value={filterDateStart}
@@ -204,7 +204,7 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
                         onChange={(e) => setFilterType(e.target.value)}
                         className="bg-slate-50 border border-slate-200 text-xs sm:text-sm font-bold text-slate-700 rounded-xl px-3 py-1.5 outline-none cursor-pointer hover:bg-slate-100 transition-all h-full"
                     >
-                        <option value="">Todos os Tipos</option>
+                        <option value="">Tipos</option>
                         {missionTypes.map(type => (
                             <option key={type} value={type}>{type}</option>
                         ))}
@@ -219,7 +219,7 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
                         <Users className="w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
                     <div>
-                        <p className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider">Efetivo Empregado</p>
+                        <p className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider">Efetivo</p>
                         <h3 className="text-2xl sm:text-4xl font-black text-white mt-1">{personnelCount}</h3>
                     </div>
                 </div>
@@ -229,7 +229,7 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
                         <Target className="w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
                     <div>
-                        <p className="text-[10px] sm:text-sm text-slate-500 font-bold uppercase tracking-wider">Missões Totais</p>
+                        <p className="text-[10px] sm:text-sm text-slate-500 font-bold uppercase tracking-wider">Total</p>
                         <h3 className="text-lg sm:text-2xl font-black text-slate-900">{totalMissions}</h3>
                     </div>
                 </div>
