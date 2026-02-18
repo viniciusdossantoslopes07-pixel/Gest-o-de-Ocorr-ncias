@@ -13,35 +13,88 @@ interface DashboardProps {
   occurrences: Occurrence[];
 }
 
+type Period = 'all' | 'today' | 'week' | 'month' | 'year' | 'custom';
+
 const Dashboard: FC<DashboardProps> = ({ occurrences }) => {
   const [aiInsights, setAiInsights] = useState<string>('');
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [period, setPeriod] = useState<Period>('all');
+  const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
+    start: new Date().toISOString().split('T')[0],
+    end: new Date().toISOString().split('T')[0]
+  });
+
+  // Filter Logic
+  const filteredOccurrences = useMemo(() => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    return occurrences.filter(occ => {
+      const occDate = new Date(occ.date);
+      const occDay = new Date(occDate.getFullYear(), occDate.getMonth(), occDate.getDate());
+
+      switch (period) {
+        case 'today':
+          return occDay.getTime() === today.getTime();
+        case 'week':
+          const weekAgo = new Date(today);
+          weekAgo.setDate(today.getDate() - 7);
+          return occDay >= weekAgo && occDay <= today;
+        case 'month':
+          const monthAgo = new Date(today);
+          monthAgo.setDate(today.getDate() - 30);
+          return occDay >= monthAgo && occDay <= today;
+        case 'year':
+          const yearStart = new Date(today.getFullYear(), 0, 1);
+          return occDay >= yearStart;
+        case 'custom':
+          const start = new Date(dateRange.start);
+          const end = new Date(dateRange.end);
+          return occDay >= start && occDay <= end;
+        default:
+          return true;
+      }
+    });
+  }, [occurrences, period, dateRange]);
 
   const handleGenerateInsights = async () => {
     setIsAiLoading(true);
-    setAiInsights('Conectando à Inteligência Artificial e analisando dados...');
+    setAiInsights('Conectando à Central de Inteligência e processando dados...');
     try {
-      const insights = await getDashboardInsights(occurrences);
+      const insights = await getDashboardInsights(filteredOccurrences);
       setAiInsights(insights);
     } catch (error) {
-      setAiInsights('Erro ao gerar análise. Tente novamente.');
+      setAiInsights('Erro ao gerar análise de inteligência. Verifique a conexão.');
     } finally {
       setIsAiLoading(false);
     }
   };
 
+  const getPeriodLabel = () => {
+    switch (period) {
+      case 'today': return 'Hoje';
+      case 'week': return 'Últimos 7 Dias';
+      case 'month': return 'Últimos 30 Dias';
+      case 'year': return `Ano de ${new Date().getFullYear()}`;
+      case 'custom': return `${new Date(dateRange.start).toLocaleDateString()} - ${new Date(dateRange.end).toLocaleDateString()}`;
+      default: return 'Todo o Período';
+    }
+  };
+
   const stats = useMemo(() => {
-    const byType = occurrences.reduce((acc: any, curr) => {
+    const dataToAnalyze = filteredOccurrences;
+
+    const byType = dataToAnalyze.reduce((acc: any, curr) => {
       acc[curr.type] = (acc[curr.type] || 0) + 1;
       return acc;
     }, {});
 
-    const byStatus = occurrences.reduce((acc: any, curr) => {
+    const byStatus = dataToAnalyze.reduce((acc: any, curr) => {
       acc[curr.status] = (acc[curr.status] || 0) + 1;
       return acc;
     }, {});
 
-    const byUrgency = occurrences.reduce((acc: any, curr) => {
+    const byUrgency = dataToAnalyze.reduce((acc: any, curr) => {
       acc[curr.urgency] = (acc[curr.urgency] || 0) + 1;
       return acc;
     }, {});
@@ -93,9 +146,9 @@ const Dashboard: FC<DashboardProps> = ({ occurrences }) => {
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
 
-    // BI Logic: Peak Hours
+    // BI Logic: Peak Hours (Dynamic based on filtered data)
     const hours = Array(24).fill(0);
-    occurrences.forEach(o => {
+    dataToAnalyze.forEach(o => {
       const hour = new Date(o.date).getHours();
       hours[hour]++;
     });
@@ -105,11 +158,11 @@ const Dashboard: FC<DashboardProps> = ({ occurrences }) => {
     }));
 
     return {
-      total: occurrences.length,
-      critical: occurrences.filter(o => o.urgency === Urgency.CRITICAL).length,
-      pending: occurrences.filter(o => o.status !== Status.CLOSED && o.status !== Status.RESOLVED).length,
-      pendingStatus: occurrences.filter(o => o.status === Status.PENDING).length,
-      resolved: occurrences.filter(o => o.status === Status.RESOLVED || o.status === Status.CLOSED).length,
+      total: dataToAnalyze.length,
+      critical: dataToAnalyze.filter(o => o.urgency === Urgency.CRITICAL).length,
+      pending: dataToAnalyze.filter(o => o.status !== Status.CLOSED && o.status !== Status.RESOLVED).length,
+      pendingStatus: dataToAnalyze.filter(o => o.status === Status.PENDING).length,
+      resolved: dataToAnalyze.filter(o => o.status === Status.RESOLVED || o.status === Status.CLOSED).length,
       typeData: Object.keys(byType).map(key => ({ name: key, value: byType[key] })),
       statusData: Object.keys(byStatus).map(key => ({ name: key, value: byStatus[key] })),
       urgencyData: Object.keys(byUrgency).map(key => ({ name: key, value: byUrgency[key] })),
@@ -119,12 +172,73 @@ const Dashboard: FC<DashboardProps> = ({ occurrences }) => {
       topSectors,
       peakHours,
     };
-  }, [occurrences]);
+  }, [filteredOccurrences]);
 
   const COLORS = ['#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#10b981', '#6366f1'];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
+      {/* Intelligence Header & Filters */}
+      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          <div className="p-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-200">
+            <Sparkles className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-slate-800 tracking-tight">Painel de Inteligência</h2>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                Analítico: <span className="text-blue-600">{getPeriodLabel()}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+          <div className="flex bg-slate-100 p-1 rounded-xl">
+            {[
+              { id: 'all', label: 'Tudo' },
+              { id: 'today', label: 'Hoje' },
+              { id: 'week', label: '7D' },
+              { id: 'month', label: '30D' },
+              { id: 'year', label: 'Ano' },
+            ].map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setPeriod(p.id as Period)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase transition-all ${period === p.id ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+            <span className="text-[10px] font-bold text-slate-400 uppercase">Personalizado:</span>
+            <input
+              type="date"
+              value={dateRange.start}
+              onChange={(e) => {
+                setDateRange(prev => ({ ...prev, start: e.target.value }));
+                setPeriod('custom');
+              }}
+              className="bg-transparent text-xs font-bold text-slate-700 outline-none w-24"
+            />
+            <span className="text-slate-300">/</span>
+            <input
+              type="date"
+              value={dateRange.end}
+              onChange={(e) => {
+                setDateRange(prev => ({ ...prev, end: e.target.value }));
+                setPeriod('custom');
+              }}
+              className="bg-transparent text-xs font-bold text-slate-700 outline-none w-24"
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
           <div className="flex items-center justify-between mb-2">
