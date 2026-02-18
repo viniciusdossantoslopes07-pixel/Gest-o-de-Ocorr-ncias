@@ -1400,6 +1400,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                             <option value="JS">JS - Justificado</option>
                                             <option value="DPM">DPM - Disp. Missão</option>
                                             <option value="CR">CR - Conv. Retido</option>
+                                            <option value="NU">NU - Núpcias</option>
+                                            <option value="LT">LT - Luto</option>
                                         </select>
                                     </div>
                                 </div>
