@@ -8,7 +8,7 @@ import { Occurrence } from "../types";
 export const analyzeOccurrenceWithAI = async (occurrence: Occurrence): Promise<string> => {
   try {
     // Fallback to hardcoded key if env var fails (EMERGENCY FIX)
-    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY || "AIzaSyBdkPmBFMmcCd5Ga4_H9HT-ZxltGpggnVI";
+    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY || "AIzaSyB3yR-2hzUkS8aAzXrTHxIB1jWoMhtzgK8";
 
     if (!apiKey || apiKey === 'PLACEHOLDER_API_KEY') {
       console.error("AI Error: API Key is missing or invalid.");
@@ -53,7 +53,7 @@ export const analyzeOccurrenceWithAI = async (occurrence: Occurrence): Promise<s
  */
 export const getDashboardInsights = async (occurrences: Occurrence[]): Promise<string> => {
   try {
-    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY || "AIzaSyBdkPmBFMmcCd5Ga4_H9HT-ZxltGpggnVI";
+    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY || "AIzaSyB3yR-2hzUkS8aAzXrTHxIB1jWoMhtzgK8";
     if (!apiKey || apiKey === 'PLACEHOLDER_API_KEY') return "Insights indisponíveis: Chave API não configurada.";
 
     const ai = new GoogleGenAI({ apiKey });
