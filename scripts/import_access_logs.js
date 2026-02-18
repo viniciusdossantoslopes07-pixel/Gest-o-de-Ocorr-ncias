@@ -71,68 +71,88 @@ async function importLogs() {
             return index !== -1 ? values[index] : null;
         };
 
-        // Date and Time
-        // Col 1: Carimbo de (Date + 00:00:00)
-        // Col 2: data/hora (Time)
+        // Date and Time handling
+        // Col 1: "Carimbo de" -> "05/01/2026 00:00:00"
+        // Col 2: "data/hora" -> "09:01:59"
 
-        let dateRaw = getVal(['carimbo']);
-        let timeRaw = getVal(['data/hora', 'hora']);
+        const dateRaw = getVal(['carimbo']);
+        const timeRaw = getVal(['data/hora']);
 
         if (!dateRaw) continue;
 
-        // Parse date: 05/01/2026 00:00:00 -> 2026-01-05
-        let datePart = dateRaw.split(' ')[0];
-        if (datePart.includes('/')) {
-            const [day, month, year] = datePart.split('/');
+        // Parse Date: "05/01/2026 00:00:00" -> "2026-01-05"
+        let datePart = null;
+        if (dateRaw.includes(' ')) {
+            const d = dateRaw.split(' ')[0];
+            if (d.includes('/')) {
+                const [day, month, year] = d.split('/');
+                datePart = `${year}-${month}-${day}`;
+            }
+        } else if (dateRaw.includes('/')) {
+            const [day, month, year] = dateRaw.split('/');
             datePart = `${year}-${month}-${day}`;
         }
 
-        // Parse time
-        let timePart = '12:00:00'; // default
-        if (timeRaw && timeRaw.includes(':')) {
-            timePart = timeRaw;
-        } else if (dateRaw.includes(' ')) {
-            // Fallback to timestamp in column 1 if column 2 is missing valid time
-            // But user said "ignore 00:00", implies column 1 has dummy time.
-            // If col 2 is empty/invalid, we rely on default or check if col 1 has real time?
-            // Assuming col 2 is the source of truth for time as per user diff.
+        // Parse Time: "09:01:59"
+        let timePart = '00:00:00';
+
+        const timeRegex = /\d{1,2}:\d{2}:\d{2}/;
+
+        if (timeRaw && timeRegex.test(timeRaw)) {
+            const match = timeRaw.match(timeRegex);
+            timePart = match ? match[0] : '00:00:00';
+        } else if (dateRaw && timeRegex.test(dateRaw)) {
+            // Fallback: Check if dateRaw has time (e.g. "22/01/2026 14:14:58")
+            const match = dateRaw.match(timeRegex);
+            if (match) {
+                timePart = match[0];
+                // If we found time in dateRaw, we might want to ensure datePart didn't capture it (datePart logic effectively strips it by taking split[0] usually)
+            }
+        }
+
+        if (!datePart) {
+            console.warn('Skipping invalid date:', dateRaw);
+            continue;
         }
 
         const timestamp = `${datePart}T${timePart}`;
 
         const record = {};
         record.timestamp = timestamp;
-        record.guard_gate = getVal(['portao', 'gate', 'local']);
-        if (!record.guard_gate) record.guard_gate = 'PORTÃO PRINCIPAL'; // Default if missing
+        record.date_only = datePart;
+        record.time_only = timePart;
 
-        record.name = getVal(['nome', 'name', 'visitante']);
+        record.guard_gate = getVal(['guarda', 'portao', 'gate']);
+        if (!record.guard_gate) record.guard_gate = 'PORTÃO PRINCIPAL';
 
-        // 'Caracteristica' (no accent in file, but we normalized)
-        record.characteristic = getVal(['caracteristica', 'tipo de visitante']);
+        record.name = getVal(['nome', 'visitante']);
+        record.characteristic = getVal(['caracteristica', 'tipo de visitante']); // MILITAR, Civil, etc.
+        record.identification = getVal(['identificacao', 'cpf', 'doc']); // Matches "Identificação" (col 5)
 
-        record.identification = getVal(['identificacao', 'identidade', 'cpf', 'doc']);
+        record.access_mode = getVal(['forma', 'modo', 'ingresso']); // Pedestre, Veículo
 
-        // 'Forma de Ingresso' -> access_mode
-        record.access_mode = getVal(['forma', 'modo', 'ingresso']);
+        // Category/Type handling
+        const categoryRaw = getVal(['categoria de acesso']);
+        const typeRaw = getVal(['tipo de acesso']);
 
-        // 'Categoria de Acesso' OR 'Tipo de Acesso' -> access_category (Entrada/Saída)
-        // Priority to explicit category, then type
-        let cat = getVal(['categoria de acesso']);
-        if (!cat) cat = getVal(['tipo de acesso']);
+        let category = categoryRaw || typeRaw;
 
-        // Normalize category
-        if (cat) {
-            const cLower = normalize(cat);
+        if (category) {
+            const cLower = normalize(category);
             if (cLower.includes('entrada')) record.access_category = 'Entrada';
             else if (cLower.includes('saida')) record.access_category = 'Saída';
-            else record.access_category = cat; // keep original if unsure
+            else record.access_category = category;
+        } else {
+            record.access_category = 'Entrada'; // Default?
         }
 
         record.vehicle_model = getVal(['modelo', 'veiculo']);
         record.vehicle_plate = getVal(['placa']);
 
-        // Destino
-        record.destination = getVal(['destino', 'setor']);
+        // New columns
+        record.authorizer = getVal(['quem autoriza']);
+        record.authorizer_id = getVal(['identificacao de quem autoriza']);
+        record.destination = getVal(['destino']);
 
         // Clean undefined
         Object.keys(record).forEach(k => {
