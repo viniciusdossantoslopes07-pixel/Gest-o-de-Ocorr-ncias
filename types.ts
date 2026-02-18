@@ -48,7 +48,16 @@ export interface User {
   displayOrder?: number;
   menu_order?: string[];
   home_order?: string[];
+  functionId?: string; // ID da Função (ex: 'SOP_01')
+  customPermissions?: string[]; // Array de keys de permissão (ex: ['view_dashboard'])
   photo_url?: string;
+}
+
+export interface UserFunction {
+  id: string;
+  name: string;
+  description: string;
+  permissions: string[];
 }
 
 export interface Attachment {

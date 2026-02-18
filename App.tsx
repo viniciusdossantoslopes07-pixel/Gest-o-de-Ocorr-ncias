@@ -12,7 +12,8 @@ import {
 } from 'lucide-react';
 import MissionRequestForm from './components/MissionRequestForm';
 import MissionRequestList from './components/MissionRequestList';
-import { Occurrence, User, UserRole, Status, Urgency, MissionOrder, Mission, DailyAttendance, AbsenceJustification } from './types';
+import { Occurrence, User, UserRole, Status, Urgency, MissionOrder, Mission, DailyAttendance, AbsenceJustification, UserFunction } from './types';
+import { USER_FUNCTIONS, PERMISSIONS } from './constants/permissions';
 import Dashboard from './components/Dashboard';
 import OccurrenceForm from './components/OccurrenceForm';
 import OccurrenceDetail from './components/OccurrenceDetail';
@@ -1006,6 +1007,7 @@ const App: FC = () => {
               onUpdateUser={handleUpdateUser}
               onDeleteUser={handleDeleteUser}
               onRefreshUsers={fetchUsers}
+              currentUser={currentUser}
             />
           )}
 
