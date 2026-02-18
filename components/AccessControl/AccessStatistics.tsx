@@ -188,9 +188,10 @@ export default function AccessStatistics() {
     const filteredRecords = useMemo(() => {
         return records.filter(r => {
             if (filterGate) {
-                const gate = r.guard_gate || '';
-                // Check exact match OR match without "PORTÃO " prefix (e.g. database has "G1", filter is "PORTÃO G1")
-                if (gate !== filterGate && gate !== filterGate.replace('PORTÃO ', '')) return false;
+                const normalize = (s: string) => s.toUpperCase().replace('PORTÃO', '').trim();
+                const gate = normalize(r.guard_gate || '');
+                const filter = normalize(filterGate);
+                if (gate !== filter) return false;
             }
             if (filterCharacteristic && r.characteristic !== filterCharacteristic) return false;
             if (filterAccessMode && r.access_mode !== filterAccessMode) return false;
