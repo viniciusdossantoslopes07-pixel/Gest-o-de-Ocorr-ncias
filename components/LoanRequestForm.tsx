@@ -115,56 +115,55 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
     );
 
     return (
-        <div className="bg-slate-50 w-full h-full sm:h-auto sm:rounded-3xl shadow-2xl overflow-hidden sm:max-w-6xl mx-auto border border-white/20 animate-fade-in flex flex-col max-h-[95vh] relative text-slate-900">
+        <div className="bg-slate-50 w-full h-full sm:h-auto sm:rounded-3xl shadow-2xl overflow-hidden sm:max-w-6xl mx-auto border border-white/20 animate-fade-in flex flex-col max-h-[100dvh] sm:max-h-[95vh] relative text-slate-900">
             {/* Header com Gradient Premium */}
-            <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 px-4 py-6 sm:px-10 sm:py-8 flex items-center justify-between shrink-0 shadow-lg relative z-10">
-                <div className="flex items-center gap-4 sm:gap-6">
-                    <div className="bg-white/10 backdrop-blur-md p-3 sm:p-4 rounded-2xl border border-white/20 shadow-inner">
-                        <Package className="w-6 h-6 sm:w-8 sm:h-8 text-white animate-pulse" />
+            <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 px-4 py-4 sm:px-10 sm:py-8 flex items-center justify-between shrink-0 shadow-lg relative z-10">
+                <div className="flex items-center gap-3 sm:gap-6">
+                    <div className="bg-white/10 backdrop-blur-md p-2 sm:p-4 rounded-xl sm:rounded-2xl border border-white/20 shadow-inner">
+                        <Package className="w-5 h-5 sm:w-8 sm:h-8 text-white animate-pulse" />
                     </div>
                     <div className="min-w-0">
-                        <h2 className="text-xl sm:text-3xl font-black text-white tracking-tight">Solicitar Material</h2>
-                        <p className="text-blue-100/80 text-xs sm:text-base font-medium flex items-center gap-2">
-                            <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-300" />
-                            Monte sua cautela com múltiplos itens de uma vez
+                        <h2 className="text-lg sm:text-3xl font-black text-white tracking-tight leading-tight">Solicitar Material</h2>
+                        <p className="text-blue-100/80 text-[10px] sm:text-base font-medium flex items-center gap-1.5 sm:gap-2 truncate">
+                            <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-300 shrink-0" />
+                            Monte sua cautela
                         </p>
                     </div>
                 </div>
                 <button
                     onClick={onCancel}
-                    className="p-2.5 text-white/70 hover:text-white hover:bg-white/10 rounded-2xl transition-all border border-transparent hover:border-white/20"
+                    className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-all border border-transparent hover:border-white/20"
                 >
-                    <X className="w-7 h-7" />
+                    <X className="w-6 h-6 sm:w-7 sm:h-7" />
                 </button>
             </div>
 
             <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
                 {/* Lista de Materiais Disponíveis */}
-                <div className="flex-1 p-4 sm:p-8 overflow-y-auto bg-white/40 backdrop-blur-sm custom-scrollbar">
-                    <div className="sticky top-0 z-20 bg-slate-50/80 backdrop-blur-xl p-1 mb-8 rounded-2xl shadow-sm border border-slate-200/50">
+                <div className="flex-1 p-3 sm:p-8 overflow-y-auto bg-white/40 backdrop-blur-sm custom-scrollbar pb-24 sm:pb-8">
+                    <div className="sticky top-0 z-20 bg-slate-50/90 backdrop-blur-xl p-1 mb-4 rounded-xl shadow-sm border border-slate-200/50">
                         <div className="relative group">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                             <input
                                 type="text"
-                                placeholder="O que você precisa hoje?"
-                                className="w-full pl-12 pr-6 py-4 text-sm sm:text-lg bg-white border-none rounded-xl focus:ring-0 transition-all outline-none font-medium placeholder:text-slate-300"
+                                placeholder="Buscar material..."
+                                className="w-full pl-10 pr-4 py-3 text-sm bg-white border-none rounded-lg focus:ring-0 transition-all outline-none font-medium placeholder:text-slate-300 uppercase"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 pb-20 sm:pb-0">
+                    <div className="grid grid-cols-1 gap-3 sm:gap-4">
                         {loading ? (
                             <div className="flex flex-col items-center justify-center py-20 gap-4">
-                                <div className="w-12 h-12 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
-                                <p className="text-slate-400 font-bold animate-pulse uppercase tracking-widest text-xs">Consultando Estoque Real...</p>
+                                <div className="w-10 h-10 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
+                                <p className="text-slate-400 font-bold animate-pulse uppercase tracking-widest text-[10px]">Carregando...</p>
                             </div>
                         ) : filteredItems.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-20 bg-white/50 rounded-3xl border-2 border-dashed border-slate-200 text-slate-400">
-                                <AlertCircle className="w-12 h-12 mb-4 opacity-20" />
-                                <p className="font-bold">Nenhum material encontrado.</p>
-                                <p className="text-sm">Tente buscar por outro termo ou categoria.</p>
+                            <div className="flex flex-col items-center justify-center py-20 bg-white/50 rounded-2xl border-2 border-dashed border-slate-200 text-slate-400">
+                                <AlertCircle className="w-10 h-10 mb-3 opacity-20" />
+                                <p className="font-bold text-sm">Nenhum material.</p>
                             </div>
                         ) : (
                             filteredItems.map(item => {
@@ -173,50 +172,47 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
                                 const isAdded = selectedBatch.some(i => i.id_material === item.id);
 
                                 return (
-                                    <div key={item.id} className={`group relative flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-white border-2 rounded-2xl transition-all duration-300 gap-6 ${isAdded ? 'border-blue-500 shadow-blue-100 ring-4 ring-blue-50' : 'border-slate-100 hover:border-blue-200 hover:shadow-2xl shadow-sm active:scale-[0.98]'}`}>
+                                    <div key={item.id} className={`group relative flex flex-row items-center justify-between p-3 sm:p-5 bg-white border rounded-xl transition-all duration-300 gap-3 sm:gap-6 ${isAdded ? 'border-blue-500 shadow-blue-50 ring-2 ring-blue-50' : 'border-slate-100 shadow-sm'}`}>
                                         <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className={`w-2 h-2 rounded-full ${hasStock ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`}></span>
-                                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest leading-none">{item.tipo_de_material}</p>
+                                            <div className="flex items-center gap-1.5 mb-1">
+                                                <span className={`w-1.5 h-1.5 rounded-full ${hasStock ? 'bg-emerald-400' : 'bg-red-400'}`}></span>
+                                                <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest leading-none truncate">{item.tipo_de_material}</p>
                                             </div>
-                                            <h3 className="font-black text-slate-800 text-lg group-hover:text-blue-600 transition-colors uppercase truncate">{item.material}</h3>
-                                            <p className="text-xs text-slate-500 font-medium">Cod: {item.id.slice(0, 8)}</p>
-                                        </div>
-
-                                        <div className="flex items-center gap-6 sm:gap-8 justify-between sm:justify-end">
-                                            <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-center min-w-[80px]">
-                                                <span className="block text-[9px] uppercase font-black text-slate-400 mb-0.5">Disponível</span>
-                                                <span className={`text-xl font-black ${hasStock ? 'text-blue-600' : 'text-red-500'}`}>
+                                            <h3 className="font-black text-slate-800 text-sm sm:text-lg group-hover:text-blue-600 transition-colors uppercase truncate leading-tight">{item.material}</h3>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className="text-[10px] text-slate-400 font-medium">Disp:</span>
+                                                <span className={`text-xs font-black ${hasStock ? 'text-blue-600' : 'text-red-500'}`}>
                                                     {available}
                                                 </span>
                                             </div>
+                                        </div>
 
-                                            <div className="flex items-center gap-3">
-                                                <div className="relative">
-                                                    <input
-                                                        type="number"
-                                                        min="1"
-                                                        max={available}
-                                                        defaultValue="1"
-                                                        id={`qtd-${item.id}`}
-                                                        disabled={isAdded || !hasStock}
-                                                        className="w-14 h-12 bg-white border-2 border-slate-100 rounded-xl text-center text-lg font-black text-slate-700 outline-none focus:border-blue-500 transition-all disabled:opacity-50"
-                                                        onChange={(e) => {
-                                                            const val = parseInt(e.target.value);
-                                                            if (val > available) e.target.value = String(available);
-                                                            if (val < 1) e.target.value = "1";
-                                                        }}
-                                                    />
-                                                </div>
-                                                <button
-                                                    onClick={() => addToBatch(item)}
-                                                    disabled={submitting || !hasStock || isAdded}
-                                                    className={`h-12 px-6 rounded-xl font-black uppercase text-xs tracking-widest transition-all shadow-lg flex items-center justify-center gap-3 ${isAdded ? 'bg-emerald-500 text-white shadow-emerald-200' : hasStock ? 'bg-slate-900 text-white hover:bg-blue-600 shadow-slate-200' : 'bg-slate-100 text-slate-300 cursor-not-allowed shadow-none border-dashed'}`}
-                                                >
-                                                    {isAdded ? <CheckCircle className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                                                    {isAdded ? 'OK' : 'Selecionar'}
-                                                </button>
+                                        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                                            <div className="relative">
+                                                <input
+                                                    type="number"
+                                                    inputMode="numeric"
+                                                    min="1"
+                                                    max={available}
+                                                    defaultValue="1"
+                                                    id={`qtd-${item.id}`}
+                                                    disabled={isAdded || !hasStock}
+                                                    className="w-12 h-10 sm:w-14 sm:h-12 bg-slate-50 border border-slate-200 rounded-lg text-center text-sm sm:text-lg font-black text-slate-700 outline-none focus:border-blue-500 transition-all disabled:opacity-50"
+                                                    onChange={(e) => {
+                                                        const val = parseInt(e.target.value);
+                                                        if (val > available) e.target.value = String(available);
+                                                        if (val < 1) e.target.value = "1";
+                                                    }}
+                                                />
                                             </div>
+                                            <button
+                                                onClick={() => addToBatch(item)}
+                                                disabled={submitting || !hasStock || isAdded}
+                                                className={`h-10 sm:h-12 px-3 sm:px-6 rounded-lg sm:rounded-xl font-black uppercase text-[10px] sm:text-xs tracking-widest transition-all shadow-sm flex items-center justify-center gap-2 ${isAdded ? 'bg-emerald-500 text-white' : hasStock ? 'bg-slate-900 text-white hover:bg-blue-600' : 'bg-slate-100 text-slate-300 cursor-not-allowed shadow-none border border-dashed border-slate-200'}`}
+                                            >
+                                                {isAdded ? <CheckCircle className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                                                <span className="hidden sm:inline">{isAdded ? 'OK' : 'Selecionar'}</span>
+                                            </button>
                                         </div>
                                     </div>
                                 );
@@ -295,22 +291,22 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
             </div>
 
             {/* Barra de Ação Mobile (Sticky Bottom) - CORREÇÃO CRÍTICA SOLICITADA */}
-            <div className={`md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-50 transition-transform duration-500 ease-in-out ${selectedBatch.length > 0 ? 'translate-y-0' : 'translate-y-full'}`}>
-                <div className="max-w-md mx-auto flex gap-3">
+            <div className={`md:hidden fixed bottom-0 left-0 right-0 p-3 bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-50 transition-transform duration-300 ease-in-out ${selectedBatch.length > 0 ? 'translate-y-0' : 'translate-y-full'}`}>
+                <div className="flex gap-2">
                     <button
                         onClick={() => setShowCartMobile(!showCartMobile)}
-                        className="relative bg-slate-100 text-slate-700 h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 active:scale-95"
+                        className="relative bg-slate-100 text-slate-700 h-11 w-11 rounded-xl flex items-center justify-center shrink-0 active:scale-95"
                     >
-                        <Package className="w-6 h-6" />
-                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-black h-6 w-6 rounded-full flex items-center justify-center shadow-lg border-2 border-white">{selectedBatch.length}</span>
+                        <Package className="w-5 h-5" />
+                        <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-black h-5 w-5 rounded-full flex items-center justify-center shadow-sm border border-white">{selectedBatch.length}</span>
                     </button>
                     <button
                         onClick={handleSubmitBatch}
                         disabled={submitting || selectedBatch.length === 0}
-                        className="flex-1 bg-blue-600 text-white h-14 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 shadow-lg shadow-blue-500/20 active:scale-[0.98]"
+                        className="flex-1 bg-blue-600 text-white h-11 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 active:scale-[0.98]"
                     >
-                        <Send className="w-4 h-4" />
-                        {submitting ? 'Enviando...' : `Solicitar Solicitação (${selectedBatch.length})`}
+                        <Send className="w-3.5 h-3.5" />
+                        {submitting ? 'Enviando...' : `Confirmar Solicitação (${selectedBatch.length})`}
                     </button>
                 </div>
             </div>
