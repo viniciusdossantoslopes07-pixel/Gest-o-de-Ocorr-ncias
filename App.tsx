@@ -1171,14 +1171,21 @@ const App: FC = () => {
                 if (u.id.startsWith('adhoc-')) {
                   setAdHocUsers(adHocUsers.map(v => v.id === u.id ? v : u));
                 } else {
-                  alert('Usuários do sistema (Supabase) devem ser editados pelo administrador do sistema.');
+                  handleUpdateUser(u).then(() => {
+                    alert('Militar atualizado com sucesso!');
+                    fetchUsers();
+                  }).catch(err => {
+                    console.error(err);
+                  });
                 }
               }}
               onDeletePersonnel={(id) => {
                 if (id.startsWith('adhoc-')) {
                   setAdHocUsers(adHocUsers.filter(u => u.id !== id));
                 } else {
-                  alert('Usuários do sistema (Supabase) não podem ser excluídos por este painel.');
+                  if (confirm('Tem certeza que deseja excluir este usuário do sistema? Esta ação é irreversível.')) {
+                    handleDeleteUser(id);
+                  }
                 }
               }}
             />
