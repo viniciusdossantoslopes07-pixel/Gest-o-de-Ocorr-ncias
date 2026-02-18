@@ -43,8 +43,19 @@ export const URGENCY_COLORS: Record<string, string> = {
 
 
 export const TIPOS_MISSAO = [
-  "Escolta", "Policiamento", "Controle de Trânsito", "Segurança e Proteção de Autoridades",
-  "Transporte de Militares", "Apoio a Formaturas e Eventos", "Apoios de Infraestrutura", "Outro"
+  "POSTO DE SEGURANÇA ESTÁTICO",
+  "CONTROLE DE TRÂNSITO",
+  "SEGURANÇA DE ANV PRESIDENCIAL",
+  "POLICIAMENTO OSTENSIVO",
+  "ESCOLTA DE MATBEL",
+  "ESCOLTA DE PRESO",
+  "ALA DE AUTORIDADE",
+  "PBCV",
+  "BUSCA E APREENSÃO",
+  "APOIOS DE INFRAESTRUTURA",
+  "MOTOPATRULHAMENTO",
+  "PATRULHAMENTO COM ARP",
+  "OUTRO"
 ];
 
 export const RANKS = [

@@ -2,7 +2,7 @@
 import { useState, type FC, type FormEvent } from 'react';
 import { MissionOrder, MissionOrderPersonnel, MissionOrderSchedule } from '../types';
 import { Save, X, Plus, Trash2, Search } from 'lucide-react';
-import { RANKS, ARMAMENT_OPTIONS, MISSION_FUNCTIONS } from '../constants';
+import { RANKS, ARMAMENT_OPTIONS, MISSION_FUNCTIONS, TIPOS_MISSAO } from '../constants';
 
 interface MissionOrderFormProps {
     order?: MissionOrder;
@@ -194,14 +194,17 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label className="block text-xs font-bold text-slate-600 mb-2">Missão *</label>
-                    <input
-                        type="text"
+                    <select
                         value={formData.mission}
                         onChange={e => setFormData({ ...formData, mission: e.target.value })}
-                        placeholder="Ex: Apoio"
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
                         required
-                    />
+                    >
+                        <option value="">Selecione o tipo de missão</option>
+                        {TIPOS_MISSAO.map(tipo => (
+                            <option key={tipo} value={tipo}>{tipo}</option>
+                        ))}
+                    </select>
                 </div>
 
                 <div>
