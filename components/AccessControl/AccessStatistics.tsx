@@ -320,7 +320,7 @@ export default function AccessStatistics() {
                 <div>
                     <h2 className="text-xl sm:text-2xl font-bold text-slate-800 flex items-center gap-2">
                         <Activity className="w-6 h-6 text-blue-600" />
-                        Painel de Controle de Acesso
+                        Controle de Acesso
                     </h2>
                     <p className="text-slate-500 text-sm">Análise detalhada de fluxo de visitantes e militares.</p>
                 </div>
