@@ -402,7 +402,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         // VALIDAÇÃO: Bloquear assinatura se houver status 'N' no setor
         const sectorUsers = users.filter(u => u.sector === selectedSector);
         const hasPending = sectorUsers.some(u => {
-            const status = weeklyGrid[u.id]?.[date]?.[type] || 'N'; // We keep 'N' here only if the user explicitly wants to mark someone as "Not Informed"
+            const status = weeklyGrid[u.id]?.[date]?.[type] || 'P'; // We default to 'P' because the UI defaults to 'P' visually
             return status === 'N';
         });
 
