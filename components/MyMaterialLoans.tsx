@@ -480,69 +480,70 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
             )}
 
             {/* Modal Detalhes */}
+            {/* Modal Detalhes */}
             {selectedLoan && (
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden animate-scale-in">
-                        <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                            <h3 className="font-black text-2xl text-slate-900 flex items-center gap-3 tracking-tighter">
-                                <Package className="w-8 h-8 text-blue-600" />
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-scale-in">
+                        <div className="p-4 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                            <h3 className="font-black text-lg text-slate-900 flex items-center gap-2 tracking-tight">
+                                <Package className="w-5 h-5 text-blue-600" />
                                 Detalhes
                             </h3>
-                            <button onClick={() => setSelectedLoan(null)} className="p-3 hover:bg-white rounded-2xl transition-colors text-slate-400 shadow-sm border border-transparent hover:border-slate-100">
-                                <X className="w-6 h-6" />
+                            <button onClick={() => setSelectedLoan(null)} className="p-2 hover:bg-white rounded-lg transition-colors text-slate-400 shadow-sm border border-transparent hover:border-slate-100">
+                                <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <div className="p-8 space-y-8">
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Material</p>
-                                    <p className="font-black text-lg text-slate-900 leading-tight">{selectedLoan.material?.material}</p>
+                        <div className="p-4 space-y-4">
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-0.5 col-span-2">
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Material</p>
+                                    <p className="font-black text-sm text-slate-900 leading-tight">{selectedLoan.material?.material}</p>
                                 </div>
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status Atual</p>
-                                    <div className="inline-flex px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest">{selectedLoan.status}</div>
+                                <div className="space-y-0.5">
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Status Atual</p>
+                                    <div className="inline-flex px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide bg-blue-50 text-blue-600 border border-blue-100">{selectedLoan.status}</div>
                                 </div>
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Quantidade</p>
-                                    <p className="font-black text-slate-900 text-lg">{selectedLoan.quantidade || 1} <span className="text-xs text-slate-400 uppercase">Unidades</span></p>
+                                <div className="space-y-0.5">
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Quantidade</p>
+                                    <p className="font-bold text-slate-900 text-xs">{selectedLoan.quantidade || 1} <span className="text-[9px] text-slate-400 uppercase">Unidades</span></p>
                                 </div>
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Data do Pedido</p>
-                                    <p className="font-black text-slate-900 text-lg">{new Date(selectedLoan.created_at).toLocaleDateString()}</p>
+                                <div className="space-y-0.5">
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Data do Pedido</p>
+                                    <p className="font-bold text-slate-900 text-xs">{new Date(selectedLoan.created_at).toLocaleDateString()}</p>
                                 </div>
                             </div>
 
                             {/* Endereço / Localização do Material */}
-                            <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-2xl border border-amber-100">
-                                <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-                                    <MapPin className="w-5 h-5 text-amber-600" />
+                            <div className="flex items-center gap-2.5 p-3 bg-amber-50 rounded-lg border border-amber-100">
+                                <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                                    <MapPin className="w-4 h-4 text-amber-600" />
                                 </div>
                                 <div>
-                                    <p className="text-[9px] font-black text-amber-500 uppercase tracking-widest leading-none">Endereço / Localização</p>
-                                    <p className="text-sm font-black text-amber-800 mt-0.5">{selectedLoan.material?.endereco || 'Não informado'}</p>
+                                    <p className="text-[8px] font-black text-amber-500 uppercase tracking-wider leading-none">Endereço / Localização</p>
+                                    <p className="text-xs font-bold text-amber-800 mt-0.5 leading-tight">{selectedLoan.material?.endereco || 'Não informado'}</p>
                                 </div>
                             </div>
 
-                            <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 space-y-6">
-                                <h4 className="text-[10px] font-black text-slate-400 flex items-center gap-2 border-b border-slate-200 pb-3 uppercase tracking-widest">
-                                    <ShieldCheck className="w-4 h-4 text-blue-500" />
+                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-3">
+                                <h4 className="text-[9px] font-black text-slate-400 flex items-center gap-1.5 border-b border-slate-200 pb-2 uppercase tracking-wider">
+                                    <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
                                     Trilha de Segurança
                                 </h4>
 
-                                <div className="space-y-4">
+                                <div className="space-y-2">
                                     {[
                                         { label: 'Autorizado Por', value: selectedLoan.autorizado_por, icon: CheckCircle, color: 'text-blue-500', bg: 'bg-blue-100' },
                                         { label: 'Entregue Por', value: selectedLoan.entregue_por, icon: Truck, color: 'text-amber-500', bg: 'bg-amber-100' },
                                         { label: 'Recebido Por', value: selectedLoan.recebido_por, icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-100' }
                                     ].map((item, i) => (
-                                        <div key={i} className="flex items-center gap-4 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                                            <div className={`w-10 h-10 rounded-xl ${item.bg} flex items-center justify-center shrink-0`}>
-                                                <item.icon className={`w-5 h-5 ${item.color}`} />
+                                        <div key={i} className="flex items-center gap-3 p-2 bg-white rounded-lg border border-slate-100 shadow-sm">
+                                            <div className={`w-8 h-8 rounded-lg ${item.bg} flex items-center justify-center shrink-0`}>
+                                                <item.icon className={`w-4 h-4 ${item.color}`} />
                                             </div>
-                                            <div>
-                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">{item.label}</p>
-                                                <p className="text-sm font-black text-slate-700 mt-0.5">{item.value || '---'}</p>
+                                            <div className="min-w-0">
+                                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-wider leading-none">{item.label}</p>
+                                                <p className="text-xs font-bold text-slate-700 mt-0.5 truncate">{item.value || '---'}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -550,8 +551,8 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user }) => {
                             </div>
                         </div>
 
-                        <div className="p-8 bg-slate-50/50 border-t border-slate-50 flex justify-end">
-                            <button onClick={() => setSelectedLoan(null)} className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all shadow-xl">
+                        <div className="p-4 bg-slate-50/50 border-t border-slate-50 flex justify-end">
+                            <button onClick={() => setSelectedLoan(null)} className="w-full py-2.5 bg-slate-900 text-white rounded-lg font-bold text-xs uppercase tracking-widest hover:bg-black transition-all shadow-md">
                                 Fechar
                             </button>
                         </div>
