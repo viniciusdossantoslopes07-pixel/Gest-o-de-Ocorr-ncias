@@ -86,34 +86,52 @@ export default function AccessStatistics() {
         setDateEnd(formatDate(today));
     };
 
+    const fetchAllRecords = async (start: string, end: string) => {
+        let allData: any[] = [];
+        let page = 0;
+        const pageSize = 1000;
+        let hasMore = true;
+
+        while (hasMore) {
+            const { data, error } = await supabase
+                .from('access_control')
+                .select('id, timestamp, guard_gate, name, characteristic, identification, access_mode, access_category, vehicle_model, vehicle_plate, destination')
+                .gte('timestamp', `${start}T00:00:00`)
+                .lte('timestamp', `${end}T23:59:59`)
+                .order('timestamp', { ascending: false })
+                .range(page * pageSize, (page + 1) * pageSize - 1);
+
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                allData = [...allData, ...data];
+                // If we got fewer than pageSize, we're done
+                if (data.length < pageSize) hasMore = false;
+                else page++;
+            } else {
+                hasMore = false;
+            }
+
+            // Safety break 
+            if (allData.length > 50000) break;
+        }
+        return allData;
+    };
+
     const fetchRecords = async () => {
         setLoading(true);
         try {
-            // 1. Fetch Current Period
-            let query = supabase
-                .from('access_control')
-                .select('id, timestamp, guard_gate, name, characteristic, identification, access_mode, access_category, vehicle_model, vehicle_plate, destination', { count: 'exact' })
-                .gte('timestamp', `${dateStart}T00:00:00`)
-                .lte('timestamp', `${dateEnd}T23:59:59`)
-                .order('timestamp', { ascending: false })
-                .limit(20000); // 1000 -> 20000 to cover full history
-
-            const { data: currentData, error, count } = await query;
-            if (error) throw error;
+            // 1. Fetch Current Period (Full pagination)
+            const currentData = await fetchAllRecords(dateStart, dateEnd);
 
             setRecords(currentData || []);
+            setTotalCount(currentData.length);
 
-            // If we have more count than data, we might want to warn or rely on count for "Total"
-            // For this specific KPI "Total Acessos", let's use the count if available to be accurate
-            // But we need to store it somewhere. Let's use records.length for now, but update the UI card to show real count?
-            // Actually, let's create a state for totalCount to separate "loaded" vs "existing"
-            setTotalCount(count || (currentData || []).length);
-
-            // 2. Fetch Comparison Period (Previous equivalent range)
+            // 2. Fetch Comparison Period (Counts only)
             const startD = new Date(dateStart);
             const endD = new Date(dateEnd);
             const diffTime = Math.abs(endD.getTime() - startD.getTime());
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include start day
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
             const prevEndD = subDays(startD, 1);
             const prevStartD = subDays(prevEndD, diffDays - 1);
@@ -121,25 +139,32 @@ export default function AccessStatistics() {
             const prevStartStr = formatDate(prevStartD);
             const prevEndStr = formatDate(prevEndD);
 
-            const queryPrev = supabase
+            // Fetch summary stats for prev period to avoid massive download
+            const { count: prevTotal } = await supabase
                 .from('access_control')
-                .select('access_category', { count: 'exact', head: true }) // optimized: head:true just gets count if we don't need data? 
-                // Wait, we need entries/exits counts. So we need data or grouped count.
-                // Fetching all might be heavy. Let's fetch data with minimal cols.
-                .select('access_category')
+                .select('id', { count: 'exact', head: true })
                 .gte('timestamp', `${prevStartStr}T00:00:00`)
                 .lte('timestamp', `${prevEndStr}T23:59:59`);
 
-            const { data: prevData } = await queryPrev;
+            const { count: prevEntries } = await supabase
+                .from('access_control')
+                .select('id', { count: 'exact', head: true })
+                .gte('timestamp', `${prevStartStr}T00:00:00`)
+                .lte('timestamp', `${prevEndStr}T23:59:59`)
+                .eq('access_category', 'Entrada');
 
-            if (prevData) {
-                const total = prevData.length;
-                const entries = prevData.filter(r => r.access_category === 'Entrada').length;
-                const exits = prevData.filter(r => r.access_category === 'Saída').length;
-                setPrevInfo({ total, entries, exits });
-            } else {
-                setPrevInfo({ total: 0, entries: 0, exits: 0 });
-            }
+            const { count: prevExits } = await supabase
+                .from('access_control')
+                .select('id', { count: 'exact', head: true })
+                .gte('timestamp', `${prevStartStr}T00:00:00`)
+                .lte('timestamp', `${prevEndStr}T23:59:59`)
+                .eq('access_category', 'Saída');
+
+            setPrevInfo({
+                total: prevTotal || 0,
+                entries: prevEntries || 0,
+                exits: prevExits || 0
+            });
 
         } catch (err) {
             console.error('Erro ao buscar estatísticas:', err);
