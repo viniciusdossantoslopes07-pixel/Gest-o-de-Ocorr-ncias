@@ -61,9 +61,39 @@ async function importLogs() {
 
     const records = [];
 
+    // Helper to parse TSV with quoted fields
+    const parseLine = (str) => {
+        const fields = [];
+        let currentField = '';
+        let inQuote = false;
+
+        for (let i = 0; i < str.length; i++) {
+            const char = str[i];
+            if (char === '"') {
+                inQuote = !inQuote;
+                currentField += char;
+            } else if (char === '\t' && !inQuote) {
+                fields.push(currentField);
+                currentField = '';
+            } else {
+                currentField += char;
+            }
+        }
+        fields.push(currentField);
+
+        return fields.map(f => {
+            f = f.trim();
+            if (f.length >= 2 && f.startsWith('"') && f.endsWith('"')) {
+                f = f.slice(1, -1).replace(/""/g, '"');
+            }
+            return f.trim();
+        });
+    };
+
     for (const line of dataLines) {
-        const values = line.split('\t').map(v => v.trim());
-        if (values.length < 2) continue; // skip empty or malformed lines
+        if (!line.trim()) continue;
+        const values = parseLine(line);
+        if (values.length < 2) continue;
 
         // Helper to find value
         const getVal = (keywords) => {
