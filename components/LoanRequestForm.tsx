@@ -206,9 +206,9 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
                                                 />
                                             </div>
                                             <button
-                                                onClick={() => addToBatch(item)}
-                                                disabled={submitting || !hasStock || isAdded}
-                                                className={`h-10 sm:h-12 px-3 sm:px-6 rounded-lg sm:rounded-xl font-black uppercase text-[10px] sm:text-xs tracking-widest transition-all shadow-sm flex items-center justify-center gap-2 ${isAdded ? 'bg-emerald-500 text-white' : hasStock ? 'bg-slate-900 text-white hover:bg-blue-600' : 'bg-slate-100 text-slate-300 cursor-not-allowed shadow-none border border-dashed border-slate-200'}`}
+                                                onClick={() => isAdded ? removeFromBatch(item.id) : addToBatch(item)}
+                                                disabled={submitting || (!hasStock && !isAdded)}
+                                                className={`h-10 sm:h-12 px-3 sm:px-6 rounded-lg sm:rounded-xl font-black uppercase text-[10px] sm:text-xs tracking-widest transition-all shadow-sm flex items-center justify-center gap-2 ${isAdded ? 'bg-emerald-500 text-white hover:bg-emerald-600' : hasStock ? 'bg-slate-900 text-white hover:bg-blue-600' : 'bg-slate-100 text-slate-300 cursor-not-allowed shadow-none border border-dashed border-slate-200'}`}
                                             >
                                                 {isAdded ? <CheckCircle className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                                                 <span className="hidden sm:inline">{isAdded ? 'OK' : 'Selecionar'}</span>
