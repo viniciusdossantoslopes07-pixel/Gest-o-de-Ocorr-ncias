@@ -186,9 +186,9 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
         <div className="bg-slate-50 px-4 sm:px-8 py-3 border-b border-slate-200 flex items-center justify-start sm:justify-center gap-4 overflow-x-auto no-scrollbar">
           {[
             { label: 'Aberto', s: Status.REGISTERED },
-            { label: 'N1: Triagem', s: Status.TRIAGE },
-            { label: 'N2: Inteligência', s: Status.ESCALATED },
-            { label: 'N3: OSD', s: Status.RESOLVED },
+            { label: 'N1: Adjunto', s: Status.TRIAGE },
+            { label: 'N2: OSD', s: Status.ESCALATED },
+            { label: 'N3: Setor', s: Status.RESOLVED },
             { label: 'OM: Comando', s: Status.COMMAND_REVIEW }
           ].map((step, i, arr) => {
             const isActive = occurrence.timeline.some(t => t.status === step.s) || occurrence.status === step.s;
@@ -356,13 +356,13 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
 
                       <div className="grid grid-cols-1 gap-2">
                         <button onClick={() => onUpdateStatus(occurrence.id, Status.TRIAGE, comment || 'Escalonamento Direto via Comando OM p/ N1.')} className="w-full py-2 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-lg font-bold text-[10px] uppercase hover:bg-blue-600/30 transition-all flex items-center justify-between px-3">
-                          Direto p/ N1 <ArrowUpRight className="w-3 h-3" />
+                          Direto p/ N1 (Adjunto) <ArrowUpRight className="w-3 h-3" />
                         </button>
                         <button onClick={() => onUpdateStatus(occurrence.id, Status.ESCALATED, comment || 'Escalonamento Direto via Comando OM p/ N2.')} className="w-full py-2 bg-purple-600/20 text-purple-400 border border-purple-500/30 rounded-lg font-bold text-[10px] uppercase hover:bg-purple-600/30 transition-all flex items-center justify-between px-3">
-                          Direto p/ N2 <ArrowUpRight className="w-3 h-3" />
+                          Direto p/ N2 (OSD) <ArrowUpRight className="w-3 h-3" />
                         </button>
                         <button onClick={() => onUpdateStatus(occurrence.id, Status.RESOLVED, comment || 'Escalonamento Direto via Comando OM p/ N3.')} className="w-full py-2 bg-orange-600/20 text-orange-400 border border-orange-500/30 rounded-lg font-bold text-[10px] uppercase hover:bg-orange-600/30 transition-all flex items-center justify-between px-3">
-                          Direto p/ N3 <ArrowUpRight className="w-3 h-3" />
+                          Direto p/ N3 (Setor) <ArrowUpRight className="w-3 h-3" />
                         </button>
                         <div className="h-[1px] bg-white/10 my-1" />
                         <button
@@ -384,32 +384,85 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                   {/* FLUXOS PADRÃO POR NÍVEL (N1, N2, N3) */}
                   {!isOM && (
                     <div className="space-y-2">
+                      {/* N1: Adjunto / Oficial de Dia */}
                       {userLevel === 'N1' && (occurrence.status === Status.REGISTERED || occurrence.status === Status.RETURNED) && (
-                        <button onClick={() => onUpdateStatus(occurrence.id, Status.TRIAGE, comment || 'Assumido para triagem pelo N1.')} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-xs">Assumir Triagem N1</button>
+                        <button onClick={() => onUpdateStatus(occurrence.id, Status.TRIAGE, comment || 'Assumido para triagem pelo N1 (Adjunto).')} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-xs">Assumir Triagem N1</button>
                       )}
+
+                      {/* Ações do N1 (Agora envia para N2: OSD) */}
                       {userLevel === 'N1' && occurrence.status === Status.TRIAGE && (
                         <div className="grid grid-cols-1 gap-2">
-                          <button onClick={() => onUpdateStatus(occurrence.id, Status.ESCALATED, comment || 'Triagem N1 concluída. Segue para N2.')} className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2"><SendHorizontal className="w-4 h-4" /> Enviar p/ N2</button>
+                          <button onClick={() => onUpdateStatus(occurrence.id, Status.ESCALATED, comment || 'Triagem N1 concluída. Segue para N2 (OSD).')} className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2"><SendHorizontal className="w-4 h-4" /> Enviar p/ N2 (OSD)</button>
+
+                          {/* Opção de N1 enviar direto para N3 se selecionar setor (mas fluxo pede N2 primeiro, deixaremos opcional se desejado, mas user pediu N1 -> N2) */}
+
                           <button onClick={() => onUpdateStatus(occurrence.id, Status.RETURNED, comment || 'Solicitado ajuste de informações pelo N1.')} className="w-full py-3 bg-red-50 text-red-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2"><Undo2 className="w-4 h-4" /> Devolver p/ Ajuste</button>
                         </div>
                       )}
 
+                      {/* Ações do N2 (OSD) - Envia para N3 (Setor) ou Finaliza */}
                       {userLevel === 'N2' && occurrence.status === Status.ESCALATED && (
                         <div className="grid grid-cols-1 gap-2">
-                          <button onClick={() => onUpdateStatus(occurrence.id, Status.RESOLVED, comment || 'Parecer de inteligência N2 concluído.')} className="w-full py-3 bg-orange-600 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2">Enviar p/ N3 (OSD)</button>
+                          {/* Só pode enviar para N3 se tiver setor atribuído */}
+                          <div className="p-3 bg-orange-50 rounded-xl border border-orange-100 mb-2">
+                            <p className="text-[10px] font-bold text-orange-600 uppercase mb-2">Atribuir Setor (N3)</p>
+                            <select
+                              className="w-full bg-white border border-orange-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-orange-500 outline-none mb-2"
+                              value={occurrence.sector || ''}
+                              onChange={(e) => {
+                                if (onUpdateOccurrence) {
+                                  onUpdateOccurrence(occurrence.id, { sector: e.target.value });
+                                }
+                              }}
+                            >
+                              <option value="">Selecione um Setor...</option>
+                              <option value="SOP">SOP</option>
+                              <option value="SAP">SAP</option>
+                              <option value="GSAU">GSAU</option>
+                              <option value="INTELIGENCIA">INTELIGÊNCIA</option>
+                              <option value="COMUNICACAO">COMUNICAÇÃO</option>
+                              <option value="JURIDICO">JURÍDICO</option>
+                            </select>
+                            <button
+                              disabled={!occurrence.sector}
+                              onClick={() => onUpdateStatus(occurrence.id, Status.RESOLVED, comment || `Encaminhado ao setor ${occurrence.sector} para providências (N3).`)}
+                              className="w-full py-2 bg-orange-600 text-white rounded-lg font-bold text-[10px] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              Enviar p/ Setor (N3)
+                            </button>
+                          </div>
+
                           <button onClick={() => onUpdateStatus(occurrence.id, Status.TRIAGE, comment || 'Retornado ao N1 para complementação.')} className="w-full py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2"><Undo2 className="w-4 h-4" /> Devolver ao N1</button>
                         </div>
                       )}
 
+                      {/* Ações do N3 (Setor) */}
                       {userLevel === 'N3' && occurrence.status === Status.RESOLVED && (
                         <div className="grid grid-cols-1 gap-2">
-                          <button onClick={() => onUpdateStatus(occurrence.id, Status.COMMAND_REVIEW, comment || 'Homologação do OSD concluída.')} className="w-full py-3 bg-slate-900 text-amber-400 rounded-xl font-bold text-xs border border-amber-900/50">Enviar p/ Comando OM</button>
-                          <button onClick={() => onUpdateStatus(occurrence.id, Status.ESCALATED, comment || 'Necessário nova análise técnica N2.')} className="w-full py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2"><Undo2 className="w-4 h-4" /> Devolver ao N2</button>
+                          <div className="p-3 bg-blue-50 rounded-xl border border-blue-100 mb-2">
+                            <p className="text-[10px] font-bold text-blue-600 uppercase mb-1">Setor Responsável: {occurrence.sector || 'Não definido'}</p>
+                            <p className="text-[10px] text-slate-500 italic">Realize as ações necessárias. Você pode finalizar diretamente ou devolver.</p>
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              if (!comment) {
+                                alert('Por favor, descreva a tratativa realizada no campo de despacho antes de finalizar.');
+                                return;
+                              }
+                              onUpdateStatus(occurrence.id, Status.CLOSED, comment);
+                            }}
+                            className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all"
+                          >
+                            <ShieldCheck className="w-4 h-4" /> Finalizar Tratativa (N3)
+                          </button>
+
+                          <button onClick={() => onUpdateStatus(occurrence.id, Status.ESCALATED, comment || 'Ação do setor parcial/concluída. Retornando ao N2 (OSD).')} className="w-full py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2"><Undo2 className="w-4 h-4" /> Devolver p/ N2 (OSD)</button>
                         </div>
                       )}
 
-                      {/* Botão de Finalização Direta (Qualquer Nível Master) */}
-                      {(isOM || isAdmin) && (
+                      {/* Botão de Finalização Direta (Qualquer Nível Master ou N2 OSD se decidir finalizar direto) */}
+                      {(isOM || isAdmin || userLevel === 'N2') && (
                         <div className="pt-2 border-t border-slate-200 mt-2">
                           <button
                             onClick={() => {
