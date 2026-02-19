@@ -104,9 +104,9 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
         const successRes = await onLogin(username, password);
         if (successRes) {
           // After successful login, check if biometrics should be offered
-          const { data: userData } = await supabase.from('users').select('id, name, saram, webauthn_credential').eq('username', username).single();
+          const { data: userData } = await supabase.from('users').select('id, name, saram, biometric_credentials_id').eq('username', username).single();
 
-          if (userData && !userData.webauthn_credential && isWebAuthnSupported()) {
+          if (userData && !userData.biometric_credentials_id && isWebAuthnSupported()) {
             setLastLoggedInUser(userData);
             setShowBiometricPrompt(true);
             return; // Don't navigate yet, wait for prompt
@@ -133,7 +133,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
 
       const { error: updateError } = await supabase
         .from('users')
-        .update({ webauthn_credential: credential })
+        .update({ biometric_credentials_id: credential.id })
         .eq('id', lastLoggedInUser.id);
 
       if (updateError) throw updateError;
@@ -160,11 +160,11 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
 
       const success = await authenticateBiometrics(savedCredentialId);
       if (success) {
-        // Find user by credential ID
+        // Find user by credential ID (using the ID string directly)
         const { data: userData, error } = await supabase
           .from('users')
           .select('username, password')
-          .filter('webauthn_credential->>id', 'eq', savedCredentialId)
+          .eq('biometric_credentials_id', savedCredentialId)
           .single();
 
         if (error || !userData) throw new Error('Credencial não encontrada ou inválida.');

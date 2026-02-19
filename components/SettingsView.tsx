@@ -376,12 +376,18 @@ export default function SettingsView({ user, onUpdateUser, onUpdatePassword, isD
                                             if (user.biometric_credentials_id) {
                                                 if (confirm('Deseja remover a biometria cadastrada?')) {
                                                     await onUpdateUser({ biometric_credentials_id: '' });
+                                                    localStorage.removeItem('gsdsp_biometric_id');
                                                     alert('Biometria removida com sucesso!');
                                                 }
                                             } else {
                                                 try {
                                                     const credential = await registerBiometrics(user.username, user.id);
                                                     await onUpdateUser({ biometric_credentials_id: credential.id });
+
+                                                    // Save to localStorage for LoginView detection
+                                                    localStorage.setItem('gsdsp_biometric_id', credential.id);
+                                                    localStorage.setItem('gsdsp_last_saram', user.username);
+
                                                     alert('Biometria cadastrada com sucesso!');
                                                 } catch (err: any) {
                                                     alert('Erro ao cadastrar biometria: ' + err.message);
@@ -389,8 +395,8 @@ export default function SettingsView({ user, onUpdateUser, onUpdatePassword, isD
                                             }
                                         }}
                                         className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${user.biometric_credentials_id
-                                                ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                                                : 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200'
+                                            ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                                            : 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200'
                                             }`}
                                     >
                                         {user.biometric_credentials_id ? 'Remover' : 'Habilitar'}
