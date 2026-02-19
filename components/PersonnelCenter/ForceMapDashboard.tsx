@@ -13,9 +13,9 @@ interface ForceMapProps {
     attendanceHistory: DailyAttendance[];
 }
 
-const OFICIAIS = ['TB', 'MB', 'BR', 'CEL', 'TEN CEL', 'MAJ', 'CAP', '1T', '2T', 'ASP'];
-const GRADUADOS = ['SO', '1S', '2S', '3S'];
-const PRACAS = ['CB', 'S1', 'S2'];
+const OFICIAIS = ['ASP', '2T', '1T', 'CAP', 'MAJ', 'TEN CEL', 'CEL', 'BR', 'MB', 'TB'];
+const GRADUADOS = ['3S', '2S', '1S', 'SO'];
+const PRACAS = ['S2', 'S1', 'CB'];
 
 // Status grouping for manager view
 const STATUS_GROUPS = {
