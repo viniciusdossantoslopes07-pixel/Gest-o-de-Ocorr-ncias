@@ -111,6 +111,18 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     }, [currentWeek, attendanceHistory, selectedSector]);
 
     const handleWeeklyChange = (userId: string, date: string, callType: string, status: string) => {
+        // Optimistic Update: Update UI immediately
+        setWeeklyGrid(prev => ({
+            ...prev,
+            [userId]: {
+                ...prev[userId],
+                [date]: {
+                    ...prev[userId]?.[date],
+                    [callType]: status
+                }
+            }
+        }));
+
         const existing = attendanceHistory.find(a => a.date === date && a.callType === callType && a.sector === selectedSector);
 
         let newAttendance: DailyAttendance;
