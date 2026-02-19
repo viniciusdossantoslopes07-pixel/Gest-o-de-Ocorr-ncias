@@ -460,13 +460,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                     <Search className="w-4 h-4" />
                     Busca
                 </button>
-                <button
-                    onClick={() => setShowImportModal(true)}
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black uppercase tracking-wider rounded-lg transition-all text-slate-400 hover:text-blue-600 hover:bg-slate-200/50"
-                >
-                    <Database className="w-4 h-4" />
-                    Importar
-                </button>
+
             </div>
 
             {/* TAB CONTENT: REGISTRAR */}
@@ -488,6 +482,12 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                         <span className="text-[9px] font-bold uppercase">{visitorStats.count} acessos</span>
                                     </div>
                                 )}
+                                <button
+                                    onClick={() => setShowImportModal(true)}
+                                    className="ml-2 flex items-center gap-1 px-3 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-bold uppercase text-blue-600 hover:bg-blue-50 transition-colors shadow-sm"
+                                >
+                                    <Database className="w-3 h-3" /> Importar
+                                </button>
                             </div>
 
                             {/* Gate Selectors - Compact & Inline */}
