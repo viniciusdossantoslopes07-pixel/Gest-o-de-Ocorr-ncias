@@ -1,8 +1,9 @@
 
 import React, { useState, useRef } from 'react';
 import { User } from '../types';
-import { User as UserIcon, Lock, Moon, Camera, Save, AlertTriangle, Loader2, Trash2, ImagePlus } from 'lucide-react';
+import { User as UserIcon, Lock, Moon, Camera, Save, AlertTriangle, Loader2, Trash2, ImagePlus, Fingerprint } from 'lucide-react';
 import { supabase } from '../services/supabase';
+import { registerBiometrics, isWebAuthnSupported } from '../services/webauthn';
 
 interface SettingsViewProps {
     user: User;
@@ -348,6 +349,56 @@ export default function SettingsView({ user, onUpdateUser, onUpdatePassword, isD
                                 <Lock className="w-4 h-4" />
                                 {loading ? 'Atualizando...' : 'Alterar Senha'}
                             </button>
+                        </div>
+
+                        {/* Biometrics Section */}
+                        <div className={`mt-8 pt-6 border-t ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
+                            <h3 className={`font-bold mb-4 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                <Fingerprint className="w-5 h-5" />
+                                Biometria / FaceID
+                            </h3>
+
+                            <div className={`p-4 rounded-xl border flex items-center justify-between ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-slate-50 border-slate-100'}`}>
+                                <div>
+                                    <p className={`font-medium ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                                        {user.biometric_credentials_id ? 'Biometria Ativada' : 'Biometria Desativada'}
+                                    </p>
+                                    <p className={`text-sm mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                                        {user.biometric_credentials_id
+                                            ? 'Você pode usar sua digital ou FaceID para entrar.'
+                                            : 'Cadastre sua biometria para login mais rápido.'}
+                                    </p>
+                                </div>
+
+                                {isWebAuthnSupported() ? (
+                                    <button
+                                        onClick={async () => {
+                                            if (user.biometric_credentials_id) {
+                                                if (confirm('Deseja remover a biometria cadastrada?')) {
+                                                    await onUpdateUser({ biometric_credentials_id: '' });
+                                                    alert('Biometria removida com sucesso!');
+                                                }
+                                            } else {
+                                                try {
+                                                    const credential = await registerBiometrics(user.username, user.id);
+                                                    await onUpdateUser({ biometric_credentials_id: credential.id });
+                                                    alert('Biometria cadastrada com sucesso!');
+                                                } catch (err: any) {
+                                                    alert('Erro ao cadastrar biometria: ' + err.message);
+                                                }
+                                            }
+                                        }}
+                                        className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${user.biometric_credentials_id
+                                                ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                                                : 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200'
+                                            }`}
+                                    >
+                                        {user.biometric_credentials_id ? 'Remover' : 'Habilitar'}
+                                    </button>
+                                ) : (
+                                    <span className="text-xs text-slate-400 italic">Não suportado neste dispositivo</span>
+                                )}
+                            </div>
                         </div>
                     </div>
                 )}

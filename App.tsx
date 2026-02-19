@@ -359,7 +359,8 @@ const App: FC = () => {
         password_status: data.password_status,
         photo_url: data.photo_url,
         functionId: data.function_id,
-        customPermissions: data.custom_permissions
+        customPermissions: data.custom_permissions,
+        biometric_credentials_id: data.biometric_credentials_id
       };
 
       if (user.approved === false) {
@@ -430,7 +431,8 @@ const App: FC = () => {
         home_order: u.home_order,
         photo_url: u.photo_url,
         functionId: u.function_id,
-        customPermissions: u.custom_permissions
+        customPermissions: u.custom_permissions,
+        biometric_credentials_id: u.biometric_credentials_id
       }));
       setUsers(mappedUsers);
     }
@@ -464,7 +466,8 @@ const App: FC = () => {
       cpf: newUser.cpf,
       display_order: newUser.displayOrder || 0,
       function_id: newUser.functionId,
-      custom_permissions: newUser.customPermissions
+      custom_permissions: newUser.customPermissions,
+      biometric_credentials_id: newUser.biometric_credentials_id
     };
 
     const { data, error } = await supabase
@@ -492,7 +495,8 @@ const App: FC = () => {
         cpf: data.cpf,
         displayOrder: data.display_order,
         functionId: data.function_id,
-        customPermissions: data.custom_permissions
+        customPermissions: data.custom_permissions,
+        biometric_credentials_id: data.biometric_credentials_id
       };
       setUsers([...users, createdUser]);
       return true;

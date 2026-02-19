@@ -51,6 +51,7 @@ export interface User {
   functionId?: string; // ID da Função (ex: 'SOP_01')
   customPermissions?: string[]; // Array de keys de permissão (ex: ['view_dashboard'])
   photo_url?: string;
+  biometric_credentials_id?: string;
 }
 
 export interface UserFunction {
