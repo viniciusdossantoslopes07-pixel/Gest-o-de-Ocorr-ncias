@@ -8,6 +8,7 @@ import {
   ArrowUpRight, AlertCircle
 } from 'lucide-react';
 import { analyzeOccurrenceWithAI } from '../services/geminiService';
+import { Combobox } from './Combobox';
 
 interface OccurrenceDetailProps {
   occurrence: Occurrence;
@@ -295,21 +296,27 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                   <div className={`bg-slate-100 p-3 rounded-xl border border-slate-200 ${isClosed ? 'opacity-60 grayscale' : ''}`}>
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Atribuir Responsável</label>
                     <div className="flex gap-2">
-                      <select
-                        disabled={isClosed}
-                        className="flex-1 bg-white border border-slate-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 outline-none disabled:cursor-not-allowed"
+                      <Combobox
+                        options={users.map(u => `${u.rank} ${u.warName || u.name} ${u.saram ? `(${u.saram})` : ''}`)}
                         value={occurrence.assigned_to || ''}
-                        onChange={(e) => {
+                        onChange={(val) => {
+                          const selectedUser = users.find(u => `${u.rank} ${u.warName || u.name} ${u.saram ? `(${u.saram})` : ''}` === val);
                           if (onUpdateOccurrence) {
-                            onUpdateOccurrence(occurrence.id, { assigned_to: e.target.value });
+                            // Se encontrou o user exato pela string, salva o nome (ou ID se preferir, mas o sistema usa nome atualm)
+                            // Mantendo compatibilidade com o que era (value={u.name})
+                            if (selectedUser) {
+                              onUpdateOccurrence(occurrence.id, { assigned_to: selectedUser.name });
+                            } else {
+                              // Permite valor customizado se não encontrar? O antigo era select, então não.
+                              // Mas o combobox permite digitação. Vamos tentar achar pelo nome se o value vier so o nome
+                              onUpdateOccurrence(occurrence.id, { assigned_to: val });
+                            }
                           }
                         }}
-                      >
-                        <option value="">Selecione um responsável...</option>
-                        {users.map(u => (
-                          <option key={u.id} value={u.name}>{u.name} ({u.rank})</option>
-                        ))}
-                      </select>
+                        placeholder="Busque por Nome, SARAM ou Posto..."
+                        disabled={isClosed}
+                        className="flex-1"
+                      />
                     </div>
                   </div>
 

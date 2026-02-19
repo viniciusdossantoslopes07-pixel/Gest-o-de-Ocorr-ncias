@@ -2,12 +2,12 @@
 import { useMemo, useState, useEffect, FC } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, LineChart, Line
+  PieChart, Pie, Cell, LineChart, Line, Area
 } from 'recharts';
 import { Occurrence, Status, Urgency } from '../types';
 import { STATUS_COLORS, URGENCY_COLORS } from '../constants';
 import { getDashboardInsights } from '../services/geminiService';
-import { Sparkles, TrendingUp, AlertCircle, Clock } from 'lucide-react';
+import { Sparkles, TrendingUp, AlertCircle, Clock, Crown, ShieldCheck, MapPin, Building2 } from 'lucide-react';
 
 interface DashboardProps {
   occurrences: Occurrence[];
@@ -179,207 +179,257 @@ const Dashboard: FC<DashboardProps> = ({ occurrences }) => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Intelligence Header & Filters */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-4 w-full md:w-auto">
-          <div className="p-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-200">
-            <Sparkles className="w-6 h-6 text-white" />
+      <div className="bg-white p-6 rounded-3xl shadow-lg border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl -z-10 opacity-50 translate-x-1/3 -translate-y-1/3"></div>
+
+        <div className="flex items-center gap-5 w-full md:w-auto">
+          <div className="p-4 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl shadow-xl shadow-blue-200 text-white">
+            <Sparkles className="w-8 h-8" />
           </div>
           <div>
-            <h2 className="text-xl font-black text-slate-800 tracking-tight">Painel de Inteligência</h2>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <h2 className="text-2xl font-black text-slate-800 tracking-tight">Painel de Inteligência</h2>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
               <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                Analítico: <span className="text-blue-600">{getPeriodLabel()}</span>
+                Dados em Tempo Real: <span className="text-blue-600">{getPeriodLabel()}</span>
               </p>
             </div>
           </div>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-          <div className="flex bg-slate-100 p-1 rounded-xl">
+          <div className="flex bg-slate-100 p-1.5 rounded-xl shadow-inner">
             {[
               { id: 'all', label: 'Tudo' },
               { id: 'today', label: 'Hoje' },
-              { id: 'week', label: '7D' },
-              { id: 'month', label: '30D' },
-              { id: 'year', label: 'Ano' },
+              { id: 'week', label: '7 Dias' },
+              { id: 'month', label: '30 Dias' },
+              { id: 'year', label: 'Este Ano' },
             ].map((p) => (
               <button
                 key={p.id}
                 onClick={() => setPeriod(p.id as Period)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase transition-all ${period === p.id ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-4 py-2 rounded-lg text-xs font-black uppercase transition-all duration-300 ${period === p.id ? 'bg-white text-blue-600 shadow-md scale-105' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'}`}
               >
                 {p.label}
               </button>
             ))}
           </div>
 
-          <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
-            <span className="text-[10px] font-bold text-slate-400 uppercase">Personalizado:</span>
-            <input
-              type="date"
-              value={dateRange.start}
-              onChange={(e) => {
-                setDateRange(prev => ({ ...prev, start: e.target.value }));
-                setPeriod('custom');
-              }}
-              className="bg-transparent text-xs font-bold text-slate-700 outline-none w-24"
-            />
-            <span className="text-slate-300">/</span>
-            <input
-              type="date"
-              value={dateRange.end}
-              onChange={(e) => {
-                setDateRange(prev => ({ ...prev, end: e.target.value }));
-                setPeriod('custom');
-              }}
-              className="bg-transparent text-xs font-bold text-slate-700 outline-none w-24"
-            />
+          <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Período:</span>
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={dateRange.start}
+                onChange={(e) => {
+                  setDateRange(prev => ({ ...prev, start: e.target.value }));
+                  setPeriod('custom');
+                }}
+                className="bg-transparent text-xs font-bold text-slate-700 outline-none w-24 cursor-pointer hover:text-blue-600 transition-colors"
+                title="Data Inicial"
+              />
+              <span className="text-slate-300 font-light">/</span>
+              <input
+                type="date"
+                value={dateRange.end}
+                onChange={(e) => {
+                  setDateRange(prev => ({ ...prev, end: e.target.value }));
+                  setPeriod('custom');
+                }}
+                className="bg-transparent text-xs font-bold text-slate-700 outline-none w-24 cursor-pointer hover:text-blue-600 transition-colors"
+                title="Data Final"
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-slate-500 text-sm font-medium">Total Ocorrências</span>
-            <TrendingUp className="w-5 h-5 text-blue-500" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-xl transition-all duration-300 group">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-slate-500 text-xs font-bold uppercase tracking-wider">Total</span>
+            <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
+              <TrendingUp className="w-5 h-5 text-blue-500 group-hover:text-white" />
+            </div>
           </div>
-          <div className="text-3xl font-bold">{stats.total}</div>
+          <div className="text-4xl font-black text-slate-800">{stats.total}</div>
+          <p className="text-[10px] text-slate-400 mt-2 font-medium">ocorrências registradas</p>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-slate-500 text-sm font-medium">Críticas / Urgentes</span>
-            <AlertCircle className="w-5 h-5 text-red-500" />
+
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-xl transition-all duration-300 group relative overflow-hidden">
+          <div className="absolute right-0 top-0 h-full w-1 bg-red-500"></div>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-slate-500 text-xs font-bold uppercase tracking-wider">Críticas</span>
+            <div className="p-2 bg-red-50 rounded-lg group-hover:bg-red-600 group-hover:text-white transition-colors">
+              <AlertCircle className="w-5 h-5 text-red-500 group-hover:text-white" />
+            </div>
           </div>
-          <div className="text-3xl font-bold text-red-600">{stats.critical}</div>
+          <div className="text-4xl font-black text-red-600">{stats.critical}</div>
+          <p className="text-[10px] text-slate-400 mt-2 font-medium">prioridade máxima</p>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-slate-500 text-sm font-medium">Em Aberto</span>
-            <Clock className="w-5 h-5 text-orange-500" />
+
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-xl transition-all duration-300 group">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-slate-500 text-xs font-bold uppercase tracking-wider">Em Aberto</span>
+            <div className="p-2 bg-orange-50 rounded-lg group-hover:bg-orange-500 group-hover:text-white transition-colors">
+              <Clock className="w-5 h-5 text-orange-500 group-hover:text-white" />
+            </div>
           </div>
-          <div className="text-3xl font-bold text-orange-600">{stats.pending}</div>
+          <div className="text-4xl font-black text-orange-500">{stats.pending}</div>
+          <p className="text-[10px] text-slate-400 mt-2 font-medium">aguardando resolução</p>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-yellow-200 bg-yellow-50">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-yellow-700 text-sm font-bold">Pendentes</span>
-            <Clock className="w-5 h-5 text-yellow-600" />
+
+        <div className="bg-gradient-to-br from-amber-50 to-white p-6 rounded-2xl shadow-sm border border-amber-100 hover:shadow-xl transition-all duration-300 group">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-amber-700 text-xs font-bold uppercase tracking-wider">Pendentes</span>
+            <div className="p-2 bg-amber-100 rounded-lg">
+              <Clock className="w-5 h-5 text-amber-600" />
+            </div>
           </div>
-          <div className="text-3xl font-bold text-yellow-600">{stats.pendingStatus}</div>
+          <div className="text-4xl font-black text-amber-600">{stats.pendingStatus}</div>
+          <p className="text-[10px] text-amber-500 mt-2 font-medium">status "pendente"</p>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-slate-500 text-sm font-medium">Resolvidas</span>
-            <Sparkles className="w-5 h-5 text-green-500" />
+
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-xl transition-all duration-300 group border-b-4 border-b-emerald-500">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-slate-500 text-xs font-bold uppercase tracking-wider">Resolvidas</span>
+            <div className="p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+              <Sparkles className="w-5 h-5 text-emerald-500 group-hover:text-white" />
+            </div>
           </div>
-          <div className="text-3xl font-bold text-green-600">{stats.resolved}</div>
+          <div className="text-4xl font-black text-emerald-600">{stats.resolved}</div>
+          <p className="text-[10px] text-slate-400 mt-2 font-medium">finalizadas com sucesso</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <h3 className="text-lg font-semibold mb-6">Ocorrências por Tipo</h3>
-          <div className="h-80">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-white p-8 rounded-3xl shadow-lg border border-slate-100 relative overflow-hidden">
+          <h3 className="text-lg font-black text-slate-800 mb-8 flex items-center gap-2">
+            <span className="w-1.5 h-6 bg-blue-600 rounded-full"></span>
+            Tipologia de Ocorrências
+          </h3>
+          <div className="h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stats.typeData} layout="vertical" margin={{ left: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                <XAxis type="number" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis dataKey="name" type="category" fontSize={12} tickLine={false} axisLine={false} width={100} />
+              <BarChart data={stats.typeData} layout="vertical" margin={{ left: 10, right: 30, top: 10, bottom: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                <XAxis type="number" fontSize={11} tickLine={false} axisLine={false} tick={{ fill: '#94a3b8' }} />
+                <YAxis dataKey="name" type="category" fontSize={11} tickLine={false} axisLine={false} width={110} tick={{ fill: '#475569', fontWeight: 600 }} />
                 <Tooltip
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  cursor={{ fill: '#f1f5f9' }}
+                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
                 />
-                <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />
+                <Bar dataKey="value" fill="#3b82f6" radius={[0, 6, 6, 0]} barSize={24}>
+                  {stats.typeData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <h3 className="text-lg font-semibold mb-6">Urgência</h3>
-          <div className="h-80">
+        <div className="bg-white p-8 rounded-3xl shadow-lg border border-slate-100 relative overflow-hidden">
+          <h3 className="text-lg font-black text-slate-800 mb-8 flex items-center gap-2">
+            <span className="w-1.5 h-6 bg-purple-600 rounded-full"></span>
+            Distribuição por Urgência
+          </h3>
+          <div className="h-[350px] flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={stats.urgencyData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
+                  innerRadius={80}
+                  outerRadius={110}
+                  paddingAngle={6}
                   dataKey="value"
+                  strokeWidth={0}
                 >
                   {stats.urgencyData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="flex flex-wrap justify-center gap-4 mt-4 text-xs">
+          <div className="flex flex-wrap justify-center gap-4 mt-[-40px] relative z-10 px-4">
             {stats.urgencyData.map((item, i) => (
-              <div key={item.name} className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
-                <span className="text-slate-600 truncate">{item.name}: {item.value}</span>
+              <div key={item.name} className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+                <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
+                <span className="text-xs font-bold text-slate-700 truncate max-w-[100px]">{item.name}</span>
+                <span className="text-xs font-black text-slate-900 bg-white px-1.5 rounded-md border border-slate-100 ml-1">{item.value}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Top Relatores */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <h3 className="text-xs font-bold uppercase text-slate-400 mb-4 tracking-wider">Top Relatores</h3>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <h3 className="text-[10px] font-black uppercase text-slate-400 mb-5 tracking-widest flex items-center gap-2">
+            <Crown className="w-3 h-3" /> Principais Relatores
+          </h3>
           <div className="space-y-4">
             {stats.topReporters.map((reporter, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center gap-2 overflow-hidden">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0 ${index === 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-slate-100 text-slate-600'}`}>
+              <div key={index} className="flex items-center justify-between group">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 transition-all ${index === 0 ? 'bg-yellow-100 text-yellow-700 shadow-yellow-100' : 'bg-slate-50 text-slate-500'}`}>
                     {index + 1}
                   </div>
-                  <span className="text-xs font-medium text-slate-700 truncate">{reporter.name}</span>
+                  <span className="text-xs font-bold text-slate-700 truncate group-hover:text-blue-600 transition-colors">{reporter.name}</span>
                 </div>
-                <span className="text-xs font-bold text-slate-900">{reporter.count}</span>
+                <span className="text-xs font-black text-slate-900 bg-slate-50 px-2 py-1 rounded-lg">{reporter.count}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Top Resolvers (Atuantes) */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <h3 className="text-xs font-bold uppercase text-slate-400 mb-4 tracking-wider">Top Atuantes (Resoluções)</h3>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <h3 className="text-[10px] font-black uppercase text-slate-400 mb-5 tracking-widest flex items-center gap-2">
+            <ShieldCheck className="w-3 h-3" /> Mais Atuantes
+          </h3>
           <div className="space-y-4">
             {stats.topResolvers.map((resolver, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center gap-2 overflow-hidden">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0 ${index === 0 ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
+              <div key={index} className="flex items-center justify-between group">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 transition-all ${index === 0 ? 'bg-green-100 text-green-700 shadow-green-100' : 'bg-slate-50 text-slate-500'}`}>
                     {index + 1}
                   </div>
-                  <span className="text-xs font-medium text-slate-700 truncate">{resolver.name}</span>
+                  <span className="text-xs font-bold text-slate-700 truncate group-hover:text-emerald-600 transition-colors">{resolver.name}</span>
                 </div>
-                <span className="text-xs font-bold text-slate-900">{resolver.count}</span>
+                <span className="text-xs font-black text-slate-900 bg-slate-50 px-2 py-1 rounded-lg">{resolver.count}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Top Locais */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <h3 className="text-xs font-bold uppercase text-slate-400 mb-4 tracking-wider">Locais Críticos</h3>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <h3 className="text-[10px] font-black uppercase text-slate-400 mb-5 tracking-widest flex items-center gap-2">
+            <MapPin className="w-3 h-3" /> Locais Críticos
+          </h3>
           <div className="space-y-4">
             {stats.topLocations.map((location, index) => (
               <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center gap-2 overflow-hidden">
-                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></div>
-                  <span className="text-xs font-medium text-slate-700 truncate" title={location.name}>{location.name}</span>
+                <div className="flex items-center gap-3 overflow-hidden flex-1">
+                  <div className="w-2 h-2 rounded-full bg-red-500 shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
+                  <span className="text-xs font-bold text-slate-700 truncate" title={location.name}>{location.name}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-12 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-red-400" style={{ width: `${(location.count / stats.total) * 100}%` }}></div>
+                <div className="flex items-center gap-2 w-16 justify-end">
+                  <div className="h-1.5 flex-1 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-red-500 rounded-full" style={{ width: `${(location.count / stats.total) * 100}%` }}></div>
                   </div>
-                  <span className="text-[10px] font-bold text-slate-600">{location.count}</span>
+                  <span className="text-[10px] font-black text-slate-900">{location.count}</span>
                 </div>
               </div>
             ))}
@@ -387,20 +437,22 @@ const Dashboard: FC<DashboardProps> = ({ occurrences }) => {
         </div>
 
         {/* Top Setores */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <h3 className="text-xs font-bold uppercase text-slate-400 mb-4 tracking-wider">Setores Demandantes</h3>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <h3 className="text-[10px] font-black uppercase text-slate-400 mb-5 tracking-widest flex items-center gap-2">
+            <Building2 className="w-3 h-3" /> Demandas por Setor
+          </h3>
           <div className="space-y-4">
             {stats.topSectors.map((sector, index) => (
               <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center gap-2 overflow-hidden">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></div>
-                  <span className="text-xs font-medium text-slate-700 truncate" title={sector.name}>{sector.name}</span>
+                <div className="flex items-center gap-3 overflow-hidden flex-1">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
+                  <span className="text-xs font-bold text-slate-700 truncate" title={sector.name}>{sector.name}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-12 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-400" style={{ width: `${(sector.count / stats.total) * 100}%` }}></div>
+                <div className="flex items-center gap-2 w-16 justify-end">
+                  <div className="h-1.5 flex-1 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500 rounded-full" style={{ width: `${(sector.count / stats.total) * 100}%` }}></div>
                   </div>
-                  <span className="text-[10px] font-bold text-slate-600">{sector.count}</span>
+                  <span className="text-[10px] font-black text-slate-900">{sector.count}</span>
                 </div>
               </div>
             ))}
@@ -410,67 +462,92 @@ const Dashboard: FC<DashboardProps> = ({ occurrences }) => {
 
       <div className="grid grid-cols-1 gap-6">
         {/* Pico de Horário - Full Width */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <h3 className="text-sm font-bold uppercase text-slate-400 mb-4 tracking-wider">Pico de Horário (24h) - Distribuição Temporal</h3>
-          <div className="h-64">
+        <div className="bg-white p-8 rounded-3xl shadow-lg border border-slate-100">
+          <h3 className="text-lg font-black text-slate-800 mb-6 tracking-tight flex items-center gap-2">
+            <span className="w-1.5 h-6 bg-orange-500 rounded-full"></span>
+            Análise Temporal (24h)
+          </h3>
+          <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={stats.peakHours}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="hour" fontSize={10} tickLine={false} axisLine={false} interval={1} />
+              <LineChart data={stats.peakHours} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="hour" fontSize={11} tickLine={false} axisLine={false} interval={2} tick={{ fill: '#64748b' }} tickFormatter={(v) => `${v}h`} />
+                <YAxis fontSize={11} tickLine={false} axisLine={false} tick={{ fill: '#64748b' }} />
                 <Tooltip
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
                   labelFormatter={(label) => `${label}h`}
                 />
-                <Line type="monotone" dataKey="count" stroke="#f59e0b" strokeWidth={3} dot={false} activeDot={{ r: 6 }} />
+                <Area type="monotone" dataKey="count" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" />
+                <Line type="monotone" dataKey="count" stroke="#f59e0b" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 8, strokeWidth: 0, fill: '#f59e0b' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      <div className="bg-blue-900 text-white p-6 rounded-xl shadow-lg border border-blue-800 relative overflow-hidden transition-all hover:shadow-blue-900/40 hover:shadow-2xl">
-        <div className="absolute top-0 right-0 p-4 opacity-10">
-          <Sparkles className="w-24 h-24" />
-        </div>
-        <div className="flex items-center justify-between mb-4 relative z-10">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-blue-300" />
-            <h3 className="text-lg font-semibold">Análise de Tendências (Gemini AI)</h3>
-          </div>
-          {!aiInsights && !isAiLoading && (
-            <button
-              onClick={handleGenerateInsights}
-              className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-bold backdrop-blur-sm transition-all flex items-center gap-2 border border-white/10"
-            >
-              <Sparkles className="w-4 h-4" />
-              Gerar Análise Inteligente
-            </button>
-          )}
+      <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-8 rounded-3xl shadow-2xl border border-blue-800/50 relative overflow-hidden transition-all hover:scale-[1.005] duration-500 group">
+        <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-30 transition-opacity duration-700">
+          <Sparkles className="w-64 h-64 -translate-y-12 translate-x-12" />
         </div>
 
-        <div className="prose prose-invert max-w-none relative z-10 min-h-[60px]">
-          {isAiLoading ? (
-            <div className="flex items-center gap-3 text-blue-200 animate-pulse">
-              <div className="w-4 h-4 border-2 border-blue-300 border-t-transparent rounded-full animate-spin"></div>
-              <span>Processando dados de segurança com IA...</span>
+        <div className="relative z-10">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md border border-white/10">
+                <Sparkles className="w-6 h-6 text-blue-300" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black tracking-tight">IA Tática (Gemini 2.0)</h3>
+                <p className="text-blue-200 text-xs font-medium uppercase tracking-widest mt-0.5">Análise de Dados & Probabilidade</p>
+              </div>
             </div>
-          ) : aiInsights ? (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <p className="whitespace-pre-line text-blue-50 leading-relaxed mb-4">
-                {aiInsights}
-              </p>
+
+            {!aiInsights && !isAiLoading && (
               <button
                 onClick={handleGenerateInsights}
-                className="text-xs text-blue-300 hover:text-white underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity"
+                className="bg-white text-blue-900 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center gap-2"
               >
-                Atualizar análise
+                <Sparkles className="w-4 h-4" />
+                Gerar Relatório de Inteligência
               </button>
-            </div>
-          ) : (
-            <p className="text-blue-200/60 italic text-sm">
-              Clique no botão acima para solicitar uma análise de inteligência artificial baseada nos dados atuais.
-            </p>
-          )}
+            )}
+          </div>
+
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 min-h-[100px]">
+            {isAiLoading ? (
+              <div className="flex flex-col items-center justify-center py-8 gap-4 text-blue-200 animate-pulse">
+                <div className="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm font-bold tracking-wide uppercase">Processando vetores de dados...</span>
+              </div>
+            ) : aiInsights ? (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-700">
+                <div className="prose prose-invert max-w-none prose-p:leading-relaxed prose-p:text-blue-50 prose-strong:text-white prose-strong:font-black">
+                  <p className="whitespace-pre-line text-sm md:text-base">
+                    {aiInsights}
+                  </p>
+                </div>
+                <div className="mt-6 flex justify-end">
+                  <button
+                    onClick={handleGenerateInsights}
+                    className="text-xs text-blue-300 hover:text-white flex items-center gap-1 opacity-70 hover:opacity-100 transition-opacity font-bold uppercase tracking-wider"
+                  >
+                    <Sparkles className="w-3 h-3" /> Atualizar Análise
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center text-blue-200/60">
+                <p className="italic text-base mb-2">"A inteligência é a capacidade de adaptar-se à mudança."</p>
+                <p className="text-xs font-bold uppercase tracking-widest opacity-50">Solicite uma análise para identificar padrões e tendências ocultas.</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
