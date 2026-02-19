@@ -204,8 +204,8 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
           })}
         </div>
 
-        <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
-          <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 sm:space-y-8">
+        <div className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row">
+          <div className="flex-1 w-full lg:overflow-y-auto p-4 sm:p-8 space-y-6 sm:space-y-8 shrink-0">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow duration-300 space-y-5">
                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><FileText className="w-4 h-4" /> Resumo do Registro</h3>
@@ -277,7 +277,7 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
             </section>
           </div>
 
-          <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-slate-200 bg-slate-50 p-6 pb-12 lg:pb-6 flex flex-col gap-6 overflow-y-auto shrink-0 shadow-[inset_10px_0_20px_-10px_rgba(0,0,0,0.02)]">
+          <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-slate-200 bg-slate-50 p-6 pb-12 lg:pb-6 flex flex-col gap-6 lg:overflow-y-auto shrink-0 shadow-[inset_10px_0_20px_-10px_rgba(0,0,0,0.02)]">
             {isAdmin ? (
               <>
                 <div className="space-y-4">
