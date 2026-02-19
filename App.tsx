@@ -1050,9 +1050,9 @@ const App: FC = () => {
                   .eq('date', a.date)
                   .eq('sector', a.sector)
                   .eq('call_type', a.callType)
-                  .single();
+                  .limit(1);
 
-                let attendanceId = existingAttendance?.id;
+                let attendanceId = existingAttendance?.[0]?.id;
 
                 if (!attendanceId) {
                   // If not found, try to insert. If insert fails (due to race condition/constraint), try select again.
@@ -1077,10 +1077,10 @@ const App: FC = () => {
                       .eq('date', a.date)
                       .eq('sector', a.sector)
                       .eq('call_type', a.callType)
-                      .single();
+                      .limit(1);
 
-                    if (retryAtt) {
-                      attendanceId = retryAtt.id;
+                    if (retryAtt && retryAtt.length > 0) {
+                      attendanceId = retryAtt[0].id;
                     } else {
                       console.error('Error saving attendance header:', attErr);
                       return;
@@ -1090,7 +1090,7 @@ const App: FC = () => {
                   }
                 } else {
                   // Update header if needed (signatures)
-                  await supabase
+                  const { error: updateError } = await supabase
                     .from('daily_attendance')
                     .update({
                       responsible: a.responsible,
@@ -1098,6 +1098,8 @@ const App: FC = () => {
                       signed_by: a.signedBy
                     })
                     .eq('id', attendanceId);
+
+                  if (updateError) console.error('Error updating attendance header:', updateError);
                 }
 
                 // Upsert records
