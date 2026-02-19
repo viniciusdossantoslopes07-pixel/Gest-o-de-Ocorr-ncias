@@ -450,7 +450,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                         }`}
                 >
                     <List className="w-4 h-4" />
-                    Registrar Acesso
+                    Registrar
                 </button>
                 <button
                     onClick={() => setActiveTab('estatisticas')}
@@ -460,7 +460,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                         }`}
                 >
                     <BarChart3 className="w-4 h-4" />
-                    Estatísticas
+                    BI
                 </button>
                 <button
                     onClick={() => setActiveTab('busca')}
