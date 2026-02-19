@@ -1053,6 +1053,7 @@ const App: FC = () => {
               absenceJustifications={absenceJustifications}
               onSaveAttendance={async (a) => {
                 // Determine if we need to insert or update the daily_attendance record
+                // Attempt to find existing efficiently
                 const { data: existingAttendance } = await supabase
                   .from('daily_attendance')
                   .select('id')
@@ -1064,6 +1065,7 @@ const App: FC = () => {
                 let attendanceId = existingAttendance?.id;
 
                 if (!attendanceId) {
+                  // If not found, try to insert. If insert fails (due to race condition/constraint), try select again.
                   const { data: newAtt, error: attErr } = await supabase
                     .from('daily_attendance')
                     .insert([{
@@ -1077,8 +1079,25 @@ const App: FC = () => {
                     .select()
                     .single();
 
-                  if (attErr) return console.error('Error saving attendance header:', attErr);
-                  attendanceId = newAtt.id;
+                  if (attErr) {
+                    // Possible race condition (duplicate key) - try to fetch again
+                    const { data: retryAtt } = await supabase
+                      .from('daily_attendance')
+                      .select('id')
+                      .eq('date', a.date)
+                      .eq('sector', a.sector)
+                      .eq('call_type', a.callType)
+                      .single();
+
+                    if (retryAtt) {
+                      attendanceId = retryAtt.id;
+                    } else {
+                      console.error('Error saving attendance header:', attErr);
+                      return;
+                    }
+                  } else {
+                    attendanceId = newAtt.id;
+                  }
                 } else {
                   // Update header if needed (signatures)
                   await supabase
@@ -1092,7 +1111,11 @@ const App: FC = () => {
                 }
 
                 // Upsert records
+                // Using .upsert is safer for records
                 for (const record of a.records) {
+                  // Ensure we have a valid ID before upserting
+                  if (!attendanceId) continue;
+
                   const { error: recErr } = await supabase
                     .from('attendance_records')
                     .upsert({
@@ -1129,13 +1152,22 @@ const App: FC = () => {
 
                 if (error) console.error('Error saving justification:', error);
               }}
-              onAddAdHoc={(u) => setAdHocUsers([...adHocUsers, u])}
+              onAddAdHoc={(u) => {
+                const exists = [...users, ...adHocUsers].some(
+                  existing => existing.warName === u.warName && existing.rank === u.rank
+                );
+                if (exists) {
+                  alert('Usuário já existe na lista!');
+                  return;
+                }
+                setAdHocUsers([...adHocUsers, u]);
+              }}
               onMoveUser={(userId, newSector) => {
                 if (userId.startsWith('adhoc-')) {
                   setAdHocUsers(prev => prev.map(u => u.id === userId ? { ...u, sector: newSector } : u));
                 } else {
                   // If it's a "permanent" user from Supabase, we still update it locally for the current session
-                  // but alert that it's a persistent change we're simulating.
+                  // but alert that it's a persistent change simulating.
                   setUsers(prev => prev.map(u => u.id === userId ? { ...u, sector: newSector } : u));
                 }
               }}

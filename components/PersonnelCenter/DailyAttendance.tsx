@@ -502,6 +502,18 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     const handleAddAdHoc = () => {
         if (!newAdHoc.rank || !newAdHoc.warName) return;
+
+        // Prevent duplicates locally before even sending to parent
+        const exists = users.some(u =>
+            u.warName.toLowerCase() === newAdHoc.warName.toLowerCase() &&
+            u.rank === newAdHoc.rank
+        );
+
+        if (exists) {
+            alert('Militar já consta na lista deste setor ou em outro.');
+            return;
+        }
+
         const newUser: User = {
             id: `adhoc-${Date.now()}`,
             name: newAdHoc.warName,
@@ -738,11 +750,13 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                             disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
                                                             value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P'}
                                                             onChange={(e) => handleWeeklyChange(user.id, date, 'INICIO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'P' ? 'text-emerald-600' :
-                                                                ['F', 'A', 'DPM', 'DCH', 'JS', 'INSP', 'LP', 'LM'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-600 bg-red-50' :
-                                                                    (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
-                                                                        (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'NIL' ? 'text-blue-400 bg-blue-50/50' :
-                                                                            'text-blue-600 bg-blue-50'
+                                                            className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all 
+                                                            disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-100/50
+                                                            ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'P' ? 'text-emerald-600' :
+                                                                    ['F', 'A', 'DPM', 'DCH', 'JS', 'INSP', 'LP', 'LM'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-600 bg-red-50' :
+                                                                        (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
+                                                                            (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'NIL' ? 'text-blue-400 bg-blue-50/50' :
+                                                                                'text-blue-600 bg-blue-50'
                                                                 }`}
                                                         >
                                                             {Object.keys(PRESENCE_STATUS).map(s => (
@@ -755,11 +769,13 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                             disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
                                                             value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P'}
                                                             onChange={(e) => handleWeeklyChange(user.id, date, 'TERMINO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'P' ? 'text-emerald-600' :
-                                                                ['F', 'A', 'DPM', 'DCH', 'JS', 'INSP', 'LP', 'LM'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-600 bg-red-50' :
-                                                                    (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
-                                                                        (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'NIL' ? 'text-blue-400 bg-blue-50/50' :
-                                                                            'text-blue-600 bg-blue-50'
+                                                            className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all 
+                                                            disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-100/50
+                                                            ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'P' ? 'text-emerald-600' :
+                                                                    ['F', 'A', 'DPM', 'DCH', 'JS', 'INSP', 'LP', 'LM'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-600 bg-red-50' :
+                                                                        (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'N' ? 'text-slate-400 bg-slate-50' :
+                                                                            (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'NIL' ? 'text-blue-400 bg-blue-50/50' :
+                                                                                'text-blue-600 bg-blue-50'
                                                                 }`}
                                                         >
                                                             {Object.keys(PRESENCE_STATUS).map(s => (
