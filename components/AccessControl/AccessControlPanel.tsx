@@ -74,7 +74,12 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
     // Filter state (for the list)
     const [filterGate, setFilterGate] = useState('');
 
-    const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
+    // Default to local date (YYYY-MM-DD) to avoid timezone issues
+    const [filterDate, setFilterDate] = useState(() => {
+        const d = new Date();
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().split('T')[0];
+    });
 
     // Global Search State
     const [searchQuery, setSearchQuery] = useState('');
