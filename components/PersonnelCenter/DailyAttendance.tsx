@@ -503,16 +503,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const handleAddAdHoc = () => {
         if (!newAdHoc.rank || !newAdHoc.warName) return;
 
-        // Prevent duplicates locally before even sending to parent
-        const exists = users.some(u =>
-            u.warName.toLowerCase() === newAdHoc.warName.toLowerCase() &&
-            u.rank === newAdHoc.rank
-        );
 
-        if (exists) {
-            alert('Militar já consta na lista deste setor ou em outro.');
-            return;
-        }
 
         const newUser: User = {
             id: `adhoc-${Date.now()}`,

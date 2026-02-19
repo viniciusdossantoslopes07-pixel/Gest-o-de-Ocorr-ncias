@@ -85,7 +85,7 @@ const App: FC = () => {
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [attendanceHistory, setAttendanceHistory] = useState<DailyAttendance[]>([]);
   const [absenceJustifications, setAbsenceJustifications] = useState<AbsenceJustification[]>([]);
-  const [adHocUsers, setAdHocUsers] = useState<User[]>([]);
+
   const [selectedOccurrence, setSelectedOccurrence] = useState<Occurrence | null>(null);
   const [missionOrders, setMissionOrders] = useState<MissionOrder[]>([]);
   const [selectedMissionOrder, setSelectedMissionOrder] = useState<MissionOrder | null>(null);
@@ -132,15 +132,7 @@ const App: FC = () => {
       console.log('Supabase connection test:', { data, error });
     });
 
-    // Rehydrate adHocUsers from localStorage
-    const savedAdHoc = localStorage.getItem('adHocUsers');
-    if (savedAdHoc) {
-      try {
-        setAdHocUsers(JSON.parse(savedAdHoc));
-      } catch (e) {
-        console.error('Error parsing adHocUsers from localStorage:', e);
-      }
-    }
+
   }, []);
 
   useEffect(() => {
@@ -216,6 +208,7 @@ const App: FC = () => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'daily_attendance' }, () => fetchAttendanceData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_records' }, () => fetchAttendanceData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'absence_justifications' }, () => fetchAttendanceData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => fetchUsers())
       .subscribe();
 
     return () => {
@@ -223,9 +216,7 @@ const App: FC = () => {
     };
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('adHocUsers', JSON.stringify(adHocUsers));
-  }, [adHocUsers]);
+
 
   const toggleTheme = () => {
     const newMode = !isDarkMode;
@@ -587,10 +578,7 @@ const App: FC = () => {
 
   const handleReorderUsers = async (reorderedUsers: User[]) => {
     // Optimistic update
-    setUsers(prev => {
-      const otherUsers = prev.filter(u => !reorderedUsers.find(ru => ru.id === u.id));
-      return [...otherUsers, ...reorderedUsers].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
-    });
+    setUsers(reorderedUsers);
 
     // Update in Supabase
     for (const user of reorderedUsers) {
@@ -602,6 +590,8 @@ const App: FC = () => {
       if (error) console.error('Error updating user order:', error);
     }
   };
+
+
 
   const handleUpdateStatus = async (id: string, newStatus: Status, comment: string) => {
     const occurrence = occurrences.find(o => o.id === id);
@@ -1046,7 +1036,7 @@ const App: FC = () => {
 
           {activeTab === 'daily-attendance' && (
             <DailyAttendanceView
-              users={[...users, ...adHocUsers]}
+              users={users}
               onReorderUsers={handleReorderUsers}
               currentUser={currentUser!}
               attendanceHistory={attendanceHistory}
@@ -1152,44 +1142,89 @@ const App: FC = () => {
 
                 if (error) console.error('Error saving justification:', error);
               }}
-              onAddAdHoc={(u) => {
-                const exists = [...users, ...adHocUsers].some(
-                  existing => existing.warName === u.warName && existing.rank === u.rank
+              onAddAdHoc={async (u) => {
+                // Now persists directly to DB
+                const existingUser = users.find(
+                  existing => existing.warName.toLowerCase() === u.warName.toLowerCase() && existing.rank === u.rank
                 );
-                if (exists) {
-                  alert('Usuário já existe na lista!');
+
+                if (existingUser) {
+                  if (existingUser.sector === u.sector) {
+                    alert('Militar já consta neste setor!');
+                    return;
+                  }
+
+                  // User exists but in another sector
+                  if (confirm(`O militar ${u.rank} ${u.warName} já existe no setor "${existingUser.sector}". Deseja movê-lo para "${u.sector}"?`)) {
+                    const { error } = await supabase
+                      .from('users')
+                      .update({ sector: u.sector })
+                      .eq('id', existingUser.id);
+
+                    if (error) {
+                      alert('Erro ao mover militar: ' + error.message);
+                    } else {
+                      alert('Militar movido com sucesso!');
+                      fetchUsers();
+                    }
+                  }
                   return;
                 }
-                setAdHocUsers([...adHocUsers, u]);
-              }}
-              onMoveUser={(userId, newSector) => {
-                if (userId.startsWith('adhoc-')) {
-                  setAdHocUsers(prev => prev.map(u => u.id === userId ? { ...u, sector: newSector } : u));
+
+                // Create a persisted user record
+                // We need to fill in required fields. 
+                // Since this is an "Ad-Hoc" user added via roster, we generate credentials.
+                const tempUsername = `user_${Date.now()}`;
+
+                const newUserPayload = {
+                  name: u.warName, // Using warName as name for simplicity, or we could ask for full name
+                  war_name: u.warName,
+                  rank: u.rank,
+                  sector: u.sector,
+                  saram: u.saram || '',
+                  role: 'USER', // Default role
+                  username: tempUsername,
+                  password: 'password123', // Default dummy password - they can't login anyway without knowing it or we disabling login
+                  email: `${tempUsername}@system.local`, // Dummy email
+                  approved: true
+                };
+
+                const { data, error } = await supabase
+                  .from('users')
+                  .insert([newUserPayload])
+                  .select()
+                  .single();
+
+                if (error) {
+                  console.error('Error adding personnel:', error);
+                  alert('Erro ao adicionar militar: ' + error.message);
                 } else {
-                  // If it's a "permanent" user from Supabase, we still update it locally for the current session
-                  // but alert that it's a persistent change simulating.
-                  setUsers(prev => prev.map(u => u.id === userId ? { ...u, sector: newSector } : u));
+                  alert('Militar adicionado ao sistema com sucesso! A lista será atualizada.');
+                  fetchUsers(); // Refresh list to show new user
+                }
+              }}
+              onMoveUser={async (userId, newSector) => {
+                // Persist move directly to DB
+                const { error } = await supabase
+                  .from('users')
+                  .update({ sector: newSector })
+                  .eq('id', userId);
+
+                if (error) {
+                  alert('Erro ao mover militar: ' + error.message);
+                } else {
+                  alert('Militar movido com sucesso.');
+                  fetchUsers();
                 }
               }}
               onExcludeUser={async (userId) => {
-                if (userId.startsWith('adhoc-')) {
-                  setAdHocUsers(prev => prev.filter(u => u.id !== userId));
+                if (!confirm('Deseja realmente remover este militar do setor? Ele será excluído do sistema.')) return;
+                const { error } = await supabase.from('users').delete().eq('id', userId);
+                if (error) {
+                  alert('Erro ao remover: ' + error.message);
                 } else {
-                  // Persist exclusion by removing user from the sector
-                  if (confirm('Atenção: Ao excluir este militar da chamada, ele será removido do setor atual e ficará "SEM SETOR". Deseja confirmar?')) {
-                    const { error } = await supabase
-                      .from('users')
-                      .update({ sector: 'SEM SETOR' })
-                      .eq('id', userId);
-
-                    if (error) {
-                      alert('Erro ao excluir militar do setor: ' + error.message);
-                    } else {
-                      // Update local state
-                      setUsers(prev => prev.map(u => u.id === userId ? { ...u, sector: 'SEM SETOR' } : u));
-                      alert('Militar removido do setor com sucesso.');
-                    }
-                  }
+                  alert('Militar removido com sucesso.');
+                  fetchUsers();
                 }
               }}
             />
@@ -1197,27 +1232,28 @@ const App: FC = () => {
 
           {activeTab === 'personnel-management' && (
             <PersonnelManagementView
-              users={[...users, ...adHocUsers]}
-              onAddPersonnel={(u) => setAdHocUsers([...adHocUsers, { ...u, id: `adhoc-${Date.now()}` } as User])}
+              users={users} // Only main users
+              onAddPersonnel={(u) => {
+                handleCreateUser({
+                  ...u,
+                  role: 'USER' as UserRole,
+                  password: 'password123',
+                  username: `user_${Date.now()}`,
+                  email: `user_${Date.now()}@system.local`,
+                  approved: true
+                } as any);
+              }}
               onUpdatePersonnel={(u) => {
-                if (u.id.startsWith('adhoc-')) {
-                  setAdHocUsers(adHocUsers.map(v => v.id === u.id ? v : u));
-                } else {
-                  handleUpdateUser(u).then(() => {
-                    alert('Militar atualizado com sucesso!');
-                    fetchUsers();
-                  }).catch(err => {
-                    console.error(err);
-                  });
-                }
+                handleUpdateUser(u).then(() => {
+                  alert('Militar atualizado com sucesso!');
+                  fetchUsers();
+                }).catch(err => {
+                  console.error(err);
+                });
               }}
               onDeletePersonnel={(id) => {
-                if (id.startsWith('adhoc-')) {
-                  setAdHocUsers(adHocUsers.filter(u => u.id !== id));
-                } else {
-                  if (confirm('Tem certeza que deseja excluir este usuário do sistema? Esta ação é irreversível.')) {
-                    handleDeleteUser(id);
-                  }
+                if (confirm('Tem certeza que deseja excluir este usuário do sistema? Esta ação é irreversível.')) {
+                  handleDeleteUser(id);
                 }
               }}
             />
