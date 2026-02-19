@@ -557,7 +557,8 @@ const App: FC = () => {
         display_order: updatedUser.displayOrder,
         photo_url: updatedUser.photo_url,
         function_id: updatedUser.functionId,
-        custom_permissions: updatedUser.customPermissions
+        custom_permissions: updatedUser.customPermissions,
+        biometric_credentials_id: updatedUser.biometric_credentials_id
       })
       .eq('id', updatedUser.id);
 
