@@ -183,7 +183,7 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
         </div>
 
         {/* Stepper Status */}
-        <div className="bg-slate-50 px-4 sm:px-8 py-3 border-b border-slate-200 flex items-center justify-start sm:justify-center gap-4 overflow-x-auto no-scrollbar">
+        <div className="bg-slate-50/80 backdrop-blur-sm px-4 sm:px-8 py-4 border-b border-slate-200 flex items-center justify-start sm:justify-center gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth">
           {[
             { label: 'Aberto', s: Status.REGISTERED },
             { label: 'N1: Adjunto', s: Status.TRIAGE },
@@ -194,8 +194,8 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
             const isActive = occurrence.timeline.some(t => t.status === step.s) || occurrence.status === step.s;
             return (
               <Fragment key={i}>
-                <div className="flex items-center gap-2 shrink-0">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ${isActive ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'}`}>{i + 1}</div>
+                <div className="flex items-center gap-3 shrink-0 snap-center">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm transition-all duration-300 ${isActive ? 'bg-blue-600 text-white scale-110 ring-2 ring-blue-200' : 'bg-white text-slate-400 border border-slate-200'}`}>{i + 1}</div>
                   <span className={`text-[10px] font-bold uppercase tracking-tighter ${isActive ? 'text-blue-600' : 'text-slate-400'}`}>{step.label}</span>
                 </div>
                 {i < arr.length - 1 && <div className={`w-4 sm:w-12 h-[1px] ${isActive ? 'bg-blue-600' : 'bg-slate-200'}`}></div>}
@@ -206,8 +206,8 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
 
         <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
           <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 sm:space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-              <div className="bg-slate-50 rounded-2xl p-5 sm:p-6 border border-slate-100 space-y-4 text-sm">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow duration-300 space-y-5">
                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><FileText className="w-4 h-4" /> Resumo do Registro</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div><p className="text-[10px] font-bold text-slate-400 uppercase">Local</p><p className="font-bold text-slate-800">{occurrence.location}</p></div>
@@ -218,7 +218,10 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                   <p className="text-slate-600 leading-relaxed italic text-xs sm:text-sm">{occurrence.description}</p>
                 </div>
               </div>
-              <div className="bg-blue-900 rounded-2xl p-5 sm:p-6 text-blue-50 border border-blue-800 shadow-xl overflow-y-auto max-h-[300px]">
+              <div className="bg-gradient-to-br from-blue-900 to-slate-900 rounded-2xl p-6 text-blue-50 border border-blue-800/50 shadow-xl overflow-y-auto max-h-[350px] relative group">
+                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <Sparkles className="w-24 h-24 text-blue-400" />
+                </div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-[10px] font-black text-blue-300 uppercase tracking-widest flex items-center gap-2"><Sparkles className="w-4 h-4" /> Análise IA</h3>
                   {!aiAnalysis && !isAiLoading && (
@@ -274,7 +277,7 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
             </section>
           </div>
 
-          <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-slate-200 bg-slate-50/50 p-4 sm:p-6 flex flex-col gap-6 overflow-y-auto shrink-0">
+          <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-slate-200 bg-slate-50 p-6 pb-12 lg:pb-6 flex flex-col gap-6 overflow-y-auto shrink-0 shadow-[inset_10px_0_20px_-10px_rgba(0,0,0,0.02)]">
             {isAdmin ? (
               <>
                 <div className="space-y-4">
@@ -386,17 +389,15 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                     <div className="space-y-2">
                       {/* N1: Adjunto / Oficial de Dia */}
                       {userLevel === 'N1' && (occurrence.status === Status.REGISTERED || occurrence.status === Status.RETURNED) && (
-                        <button onClick={() => onUpdateStatus(occurrence.id, Status.TRIAGE, comment || 'Assumido para triagem pelo N1 (Adjunto).')} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-xs">Assumir Triagem N1</button>
+                        <button onClick={() => onUpdateStatus(occurrence.id, Status.TRIAGE, comment || 'Assumido para triagem pelo N1 (Adjunto).')} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-xs shadow-blue-200 shadow-lg hover:shadow-blue-300 hover:scale-[1.02] active:scale-95 transition-all">Assumir Triagem N1</button>
                       )}
 
                       {/* Ações do N1 (Agora envia para N2: OSD) */}
                       {userLevel === 'N1' && occurrence.status === Status.TRIAGE && (
                         <div className="grid grid-cols-1 gap-2">
-                          <button onClick={() => onUpdateStatus(occurrence.id, Status.ESCALATED, comment || 'Triagem N1 concluída. Segue para N2 (OSD).')} className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2"><SendHorizontal className="w-4 h-4" /> Enviar p/ N2 (OSD)</button>
+                          <button onClick={() => onUpdateStatus(occurrence.id, Status.ESCALATED, comment || 'Triagem N1 concluída. Segue para N2 (OSD).')} className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-purple-200 shadow-lg hover:shadow-purple-300 hover:scale-[1.02] active:scale-95 transition-all"><SendHorizontal className="w-4 h-4" /> Enviar p/ N2 (OSD)</button>
 
-                          {/* Opção de N1 enviar direto para N3 se selecionar setor (mas fluxo pede N2 primeiro, deixaremos opcional se desejado, mas user pediu N1 -> N2) */}
-
-                          <button onClick={() => onUpdateStatus(occurrence.id, Status.RETURNED, comment || 'Solicitado ajuste de informações pelo N1.')} className="w-full py-3 bg-red-50 text-red-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2"><Undo2 className="w-4 h-4" /> Devolver p/ Ajuste</button>
+                          <button onClick={() => onUpdateStatus(occurrence.id, Status.RETURNED, comment || 'Solicitado ajuste de informações pelo N1.')} className="w-full py-3 bg-red-50 text-red-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transform active:scale-95 transition-transform"><Undo2 className="w-4 h-4" /> Devolver p/ Ajuste</button>
                         </div>
                       )}
 
@@ -426,7 +427,7 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                             <button
                               disabled={!occurrence.sector}
                               onClick={() => onUpdateStatus(occurrence.id, Status.RESOLVED, comment || `Encaminhado ao setor ${occurrence.sector} para providências (N3).`)}
-                              className="w-full py-2 bg-orange-600 text-white rounded-lg font-bold text-[10px] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="w-full py-2 bg-orange-600 text-white rounded-lg font-bold text-[10px] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-orange-200 shadow-md hover:shadow-orange-300 hover:scale-[1.02] active:scale-95 transition-all"
                             >
                               Enviar p/ Setor (N3)
                             </button>
