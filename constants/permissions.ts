@@ -28,6 +28,19 @@ export const PERMISSIONS = {
     // Admin
     MANAGE_USERS: 'manage_users', // Criar usuários, atribuir funções
     MANAGE_PERMISSIONS: 'manage_permissions', // Tela de permissões
+
+    // Ocorrências (Workflow Granular)
+    MANAGE_OCCURRENCES: 'manage_occurrences', // Permissão Geral (Master)
+    TRIAGE_OCCURRENCES: 'triage_occurrences', // Ações de N1 (Assumir, Devolver, Enviar p/ N2)
+    ESCALATE_OCCURRENCES: 'escalate_occurrences', // Ações de N2 (Definir Setor, Enviar p/ N3, Devolver p/ N1)
+    RESOLVE_OCCURRENCES: 'resolve_occurrences', // Ações de N3 (Resolver, Devolver p/ N2)
+    FINALIZE_OCCURRENCES: 'finalize_occurrences', // Ação de Finalizar/Arquivar (Qualquer nível autorizado)
+
+    // Missões (Ações Específicas)
+    APPROVE_MISSION: 'approve_mission', // Analisar e Aprovar solicitação (SOP)
+    SIGN_MISSION: 'sign_mission', // Assinar Digitalmente (Chefe SOP/Cmt)
+    START_MISSION: 'start_mission', // Iniciar execução
+    END_MISSION: 'end_mission', // Finalizar execução
 };
 
 export const USER_FUNCTIONS = {

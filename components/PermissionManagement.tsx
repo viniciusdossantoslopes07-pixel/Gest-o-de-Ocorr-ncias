@@ -11,7 +11,9 @@ import {
     Filter,
     Save,
     AlertCircle,
-    Briefcase
+    Briefcase,
+    Crown,
+    BadgeCheck
 } from 'lucide-react';
 import { SETORES } from '../constants';
 
@@ -274,7 +276,89 @@ export default function PermissionManagement({ users, onUpdateUser, currentAdmin
                                 </div>
                             </div>
 
-                            {/* Permissions Checklist */}
+                            {/* Access Level Selector (Níveis de Atuação) */}
+                            <div className="mb-8 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest block mb-4">
+                                    Nível de Atuação (Ocorrências)
+                                </label>
+
+                                {selectedUser.accessLevel === 'OM' ? (
+                                    <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800">
+                                        <div className="bg-amber-100 p-2 rounded-lg">
+                                            <Crown className="w-5 h-5 text-amber-600" />
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-sm">Nível Superior Atribuído (Comandante OM)</p>
+                                            <p className="text-xs opacity-80">Este usuário possui acesso total de comando.</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        <button
+                                            onClick={() => {
+                                                const updated = { ...selectedUser, accessLevel: 'N1' as const };
+                                                setSelectedUser(updated);
+                                            }}
+                                            className={`p-3 rounded-xl border transition-all text-left relative ${selectedUser.accessLevel === 'N1' || !selectedUser.accessLevel
+                                                ? 'bg-white border-blue-500 shadow-sm ring-1 ring-blue-500'
+                                                : 'bg-white border-slate-200 hover:border-slate-300 opacity-70 hover:opacity-100'
+                                                }`}
+                                        >
+                                            <div className="mb-1">
+                                                <span className={`text-[10px] font-black uppercase tracking-widest ${selectedUser.accessLevel === 'N1' || !selectedUser.accessLevel ? 'text-blue-600' : 'text-slate-400'}`}>
+                                                    Nível 1
+                                                </span>
+                                            </div>
+                                            <div className="font-bold text-slate-700 text-xs">Equipe de Serviço</div>
+                                            {(selectedUser.accessLevel === 'N1' || !selectedUser.accessLevel) && (
+                                                <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-blue-500"></div>
+                                            )}
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                const updated = { ...selectedUser, accessLevel: 'N2' as const };
+                                                setSelectedUser(updated);
+                                            }}
+                                            className={`p-3 rounded-xl border transition-all text-left relative ${selectedUser.accessLevel === 'N2'
+                                                ? 'bg-white border-purple-500 shadow-sm ring-1 ring-purple-500'
+                                                : 'bg-white border-slate-200 hover:border-slate-300 opacity-70 hover:opacity-100'
+                                                }`}
+                                        >
+                                            <div className="mb-1">
+                                                <span className={`text-[10px] font-black uppercase tracking-widest ${selectedUser.accessLevel === 'N2' ? 'text-purple-600' : 'text-slate-400'}`}>
+                                                    Nível 2
+                                                </span>
+                                            </div>
+                                            <div className="font-bold text-slate-700 text-xs">Inteligência</div>
+                                            {selectedUser.accessLevel === 'N2' && (
+                                                <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-purple-500"></div>
+                                            )}
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                const updated = { ...selectedUser, accessLevel: 'N3' as const };
+                                                setSelectedUser(updated);
+                                            }}
+                                            className={`p-3 rounded-xl border transition-all text-left relative ${selectedUser.accessLevel === 'N3'
+                                                ? 'bg-white border-orange-500 shadow-sm ring-1 ring-orange-500'
+                                                : 'bg-white border-slate-200 hover:border-slate-300 opacity-70 hover:opacity-100'
+                                                }`}
+                                        >
+                                            <div className="mb-1">
+                                                <span className={`text-[10px] font-black uppercase tracking-widest ${selectedUser.accessLevel === 'N3' ? 'text-orange-600' : 'text-slate-400'}`}>
+                                                    Nível 3
+                                                </span>
+                                            </div>
+                                            <div className="font-bold text-slate-700 text-xs">Comando OSD</div>
+                                            {selectedUser.accessLevel === 'N3' && (
+                                                <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-orange-500"></div>
+                                            )}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                             <div>
                                 <div className="flex items-center gap-2 mb-4">
                                     <Shield className="w-4 h-4 text-slate-400" />

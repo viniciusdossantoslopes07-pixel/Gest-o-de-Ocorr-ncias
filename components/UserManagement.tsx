@@ -248,45 +248,36 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                 {formData.role === UserRole.ADMIN && (
                   <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 animate-in fade-in slide-in-from-top-2">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-4">Nível de Atuação Hierárquica Militar</label>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-1">
                       <button
                         type="button"
-                        onClick={() => setFormData({ ...formData, accessLevel: 'N1' })}
-                        className={`p-4 rounded-xl border-2 transition-all text-left flex flex-col gap-1 ${formData.accessLevel === 'N1' ? 'border-blue-500 bg-white shadow-sm' : 'border-slate-200 bg-transparent opacity-60 hover:opacity-100'}`}
-                      >
-                        <span className={`text-[10px] font-black uppercase tracking-tighter ${formData.accessLevel === 'N1' ? 'text-blue-600' : 'text-slate-400'}`}>Nível 1</span>
-                        <span className="text-xs font-bold text-slate-800">Equipe de Serviço</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, accessLevel: 'N2' })}
-                        className={`p-4 rounded-xl border-2 transition-all text-left flex flex-col gap-1 ${formData.accessLevel === 'N2' ? 'border-purple-500 bg-white shadow-sm' : 'border-slate-200 bg-transparent opacity-60 hover:opacity-100'}`}
-                      >
-                        <span className={`text-[10px] font-black uppercase tracking-tighter ${formData.accessLevel === 'N2' ? 'text-purple-600' : 'text-slate-400'}`}>Nível 2</span>
-                        <span className="text-xs font-bold text-slate-800">Inteligência</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, accessLevel: 'N3' })}
-                        className={`p-4 rounded-xl border-2 transition-all text-left flex flex-col gap-1 ${formData.accessLevel === 'N3' ? 'border-orange-500 bg-white shadow-sm' : 'border-slate-200 bg-transparent opacity-60 hover:opacity-100'}`}
-                      >
-                        <span className={`text-[10px] font-black uppercase tracking-tighter ${formData.accessLevel === 'N3' ? 'text-orange-600' : 'text-slate-400'}`}>Nível 3</span>
-                        <span className="text-xs font-bold text-slate-800">Comando OSD</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, accessLevel: 'OM' })}
-                        className={`p-4 rounded-xl border-2 transition-all text-left flex flex-col gap-1 ${formData.accessLevel === 'OM' ? 'border-amber-500 bg-slate-900 text-amber-400 shadow-xl' : 'border-slate-200 bg-transparent opacity-60 hover:opacity-100'}`}
+                        onClick={() => setFormData({ ...formData, accessLevel: formData.accessLevel === 'OM' ? 'N1' : 'OM' })}
+                        className={`p-4 rounded-xl border-2 transition-all text-left flex flex-col gap-1 ${formData.accessLevel === 'OM' ? 'border-amber-500 bg-slate-900 text-amber-400 shadow-xl' : 'border-slate-200 bg-white opacity-60 hover:opacity-100'}`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className={`text-[10px] font-black uppercase tracking-tighter ${formData.accessLevel === 'OM' ? 'text-amber-400' : 'text-slate-400'}`}>Nível Superior</span>
-                          {formData.accessLevel === 'OM' && <Crown className="w-3 h-3" />}
+                          <span className={`text-[10px] font-black uppercase tracking-tighter ${formData.accessLevel === 'OM' ? 'text-amber-400' : 'text-slate-400'}`}>
+                            {formData.accessLevel === 'OM' ? 'Nível Superior Atribuído' : 'Atribuir Nível Superior'}
+                          </span>
+                          {formData.accessLevel === 'OM' && <Crown className="w-4 h-4" />}
                         </div>
                         <span className={`text-xs font-bold ${formData.accessLevel === 'OM' ? 'text-white' : 'text-slate-800'}`}>Comandante OM</span>
+                        <p className="text-[10px] opacity-70 mt-1 font-normal">
+                          {formData.accessLevel === 'OM'
+                            ? 'Acesso total de comando habilitado.'
+                            : 'Clique para conceder privilégios de Comandante OM.'}
+                        </p>
                       </button>
+
+                      {formData.accessLevel !== 'OM' && (
+                        <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                          <p className="text-[10px] text-blue-600 font-bold flex items-center gap-2">
+                            <BadgeCheck className="w-3 h-3" /> Nível Padrão (N1) - Equipe de Serviço
+                          </p>
+                          <p className="text-[9px] text-slate-500 mt-1 pl-5">
+                            O usuário será criado com nível operacional padrão. Para alterar para N2 (Inteligência) ou N3 (Comando OSD), utilize a aba "Gerir Permissões".
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

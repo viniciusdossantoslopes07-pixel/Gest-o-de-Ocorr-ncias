@@ -40,8 +40,16 @@ export default function MissionManager({ user }: MissionManagerProps) {
     const [endReport, setEndReport] = useState('');
 
     // Permission checks
-    const isSop = user.accessLevel === 'N3' || user.sector?.includes('SOP') || user.role === UserRole.ADMIN;
-    const isChSop = user.sector === 'CH-SOP' || user.role === UserRole.ADMIN;
+    // Refactored to use granular permissions instead of AccessLevel
+    const canApprove = user.customPermissions?.includes('approve_mission') || user.role === UserRole.ADMIN;
+    const canSign = user.customPermissions?.includes('sign_mission') || user.role === UserRole.ADMIN;
+    const canManage = user.customPermissions?.includes('manage_missions') || user.role === UserRole.ADMIN;
+
+    // Legacy mapping for existing logic compatibility (to be gradually replaced)
+    // isSop used to mean "Can Analyze/Approve"
+    const isSop = canApprove;
+    // isChSop used to mean "Can Sign"
+    const isChSop = canSign;
 
     useEffect(() => {
         fetchData();

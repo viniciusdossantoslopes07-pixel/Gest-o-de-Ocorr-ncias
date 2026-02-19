@@ -46,8 +46,18 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
   };
 
   const isAdmin = user.role === UserRole.ADMIN;
-  const userLevel = user.accessLevel || 'N1';
-  const isOM = userLevel === 'OM';
+  // Refactored to use Granular Permissions
+  // Default legacy behavior: if no custom permissions, map from accessLevel (fallback)
+  // But ideally we want permissions to be the source of truth.
+
+  const hasPermission = (perm: string) => user.customPermissions?.includes(perm) ?? false;
+
+  const canTriage = hasPermission('triage_occurrences') || user.accessLevel === 'N1' || isAdmin;
+  const canEscalate = hasPermission('escalate_occurrences') || user.accessLevel === 'N2' || isAdmin;
+  const canResolve = hasPermission('resolve_occurrences') || user.accessLevel === 'N3' || isAdmin;
+
+  // OM is special, has all + command console
+  const isOM = user.accessLevel === 'OM' || isAdmin;
   const isClosed = occurrence.status === Status.CLOSED || occurrence.status === Status.FINALIZED;
 
   // Encontrar Posto/Grad e Nome de Guerra do relator
@@ -391,16 +401,16 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                     </div>
                   )}
 
-                  {/* FLUXOS PADRÃO POR NÍVEL (N1, N2, N3) */}
+                  {/* FLUXOS PADRÃO POR PERMISSÃO (N1, N2, N3) */}
                   {!isOM && (
                     <div className="space-y-2">
                       {/* N1: Adjunto / Oficial de Dia */}
-                      {userLevel === 'N1' && (occurrence.status === Status.REGISTERED || occurrence.status === Status.RETURNED) && (
+                      {canTriage && (occurrence.status === Status.REGISTERED || occurrence.status === Status.RETURNED) && (
                         <button onClick={() => onUpdateStatus(occurrence.id, Status.TRIAGE, comment || 'Assumido para triagem pelo N1 (Adjunto).')} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-xs shadow-blue-200 shadow-lg hover:shadow-blue-300 hover:scale-[1.02] active:scale-95 transition-all">Assumir Triagem N1</button>
                       )}
 
                       {/* Ações do N1 (Agora envia para N2: OSD) */}
-                      {userLevel === 'N1' && occurrence.status === Status.TRIAGE && (
+                      {canTriage && occurrence.status === Status.TRIAGE && (
                         <div className="grid grid-cols-1 gap-2">
                           <button onClick={() => onUpdateStatus(occurrence.id, Status.ESCALATED, comment || 'Triagem N1 concluída. Segue para N2 (OSD).')} className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-purple-200 shadow-lg hover:shadow-purple-300 hover:scale-[1.02] active:scale-95 transition-all"><SendHorizontal className="w-4 h-4" /> Enviar p/ N2 (OSD)</button>
 
@@ -409,7 +419,7 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                       )}
 
                       {/* Ações do N2 (OSD) - Envia para N3 (Setor) ou Finaliza */}
-                      {userLevel === 'N2' && occurrence.status === Status.ESCALATED && (
+                      {canEscalate && occurrence.status === Status.ESCALATED && (
                         <div className="grid grid-cols-1 gap-2">
                           {/* Só pode enviar para N3 se tiver setor atribuído */}
                           <div className="p-3 bg-orange-50 rounded-xl border border-orange-100 mb-2">
@@ -445,7 +455,7 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                       )}
 
                       {/* Ações do N3 (Setor) */}
-                      {userLevel === 'N3' && occurrence.status === Status.RESOLVED && (
+                      {canResolve && occurrence.status === Status.RESOLVED && (
                         <div className="grid grid-cols-1 gap-2">
                           <div className="p-3 bg-blue-50 rounded-xl border border-blue-100 mb-2">
                             <p className="text-[10px] font-bold text-blue-600 uppercase mb-1">Setor Responsável: {occurrence.sector || 'Não definido'}</p>
@@ -470,7 +480,7 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                       )}
 
                       {/* Botão de Finalização Direta (Qualquer Nível Master ou N2 OSD se decidir finalizar direto) */}
-                      {(isOM || isAdmin || userLevel === 'N2') && (
+                      {(isOM || isAdmin || canEscalate) && (
                         <div className="pt-2 border-t border-slate-200 mt-2">
                           <button
                             onClick={() => {
