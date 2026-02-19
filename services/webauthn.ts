@@ -11,7 +11,8 @@ const bufferToBase64 = (buffer: ArrayBuffer): string => {
 
 // Helper to convert Base64 to Uint8Array
 const base64ToBuffer = (base64: string): Uint8Array => {
-    const binary = atob(base64);
+    const standardBase64 = base64.replace(/-/g, '+').replace(/_/g, '/');
+    const binary = atob(standardBase64);
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) {
         bytes[i] = binary.charCodeAt(i);

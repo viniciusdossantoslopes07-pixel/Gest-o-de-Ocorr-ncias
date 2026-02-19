@@ -115,7 +115,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
     );
 
     return (
-        <div className="bg-slate-50 w-full h-full sm:h-auto sm:rounded-3xl shadow-2xl overflow-hidden sm:max-w-6xl mx-auto border border-white/20 animate-fade-in flex flex-col max-h-[100dvh] sm:max-h-[95vh] relative text-slate-900">
+        <div className="bg-slate-50 w-full h-full sm:h-auto sm:rounded-3xl shadow-2xl overflow-hidden sm:max-w-[90vw] 2xl:max-w-[1800px] mx-auto border border-white/20 animate-fade-in flex flex-col max-h-[100dvh] sm:max-h-[85vh] relative text-slate-900">
             {/* Header com Gradient Premium */}
             <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 px-4 py-4 sm:px-10 sm:py-8 flex items-center justify-between shrink-0 shadow-lg relative z-10">
                 <div className="flex items-center gap-3 sm:gap-6">
@@ -154,7 +154,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-3 sm:gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4">
                         {loading ? (
                             <div className="flex flex-col items-center justify-center py-20 gap-4">
                                 <div className="w-10 h-10 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
