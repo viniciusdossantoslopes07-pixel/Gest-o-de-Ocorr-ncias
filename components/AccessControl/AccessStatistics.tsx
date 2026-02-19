@@ -366,11 +366,6 @@ export default function AccessStatistics() {
             </div>
 
             {/* Filter Bar */}
-            {/* DEBUG INFO - REMOVE AFTER FIX */}
-            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-xs font-mono text-yellow-800 break-all">
-                <p><strong>DEBUG - VALORES NO BANCO:</strong> {JSON.stringify(Array.from(new Set(records.map(r => r.guard_gate))))}</p>
-                <p><strong>FILTRO ATUAL:</strong> "{filterGate}"</p>
-            </div>
 
             <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-3">
                 <div className="flex items-center gap-2 text-slate-600">
