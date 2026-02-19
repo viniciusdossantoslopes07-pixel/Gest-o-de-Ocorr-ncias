@@ -233,22 +233,20 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     const existing = attendanceHistory.find(a => a.date === date && a.callType === type && a.sector === sector);
 
                     if (existing) {
-                        // Only update if it was marked as a special day
-                        if (existing.observacao === 'Feriado' || existing.observacao === 'Expediente Cancelado') {
-                            const attendanceToSave: DailyAttendance = {
-                                ...existing,
-                                observacao: undefined, // Clear observation
-                                signedBy: undefined,   // Clear signature as it was for the holiday
-                                signedAt: undefined,
-                                responsible: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
-                                records: existing.records.map(r => ({
-                                    ...r,
-                                    status: 'P', // Reset to default 'P' so they can be edited
-                                    timestamp: new Date().toISOString()
-                                }))
-                            };
-                            onSaveAttendance(attendanceToSave);
-                        }
+                        // Force reset regardless of observation, as requested
+                        const attendanceToSave: DailyAttendance = {
+                            ...existing,
+                            observacao: undefined, // Clear observation
+                            signedBy: null,        // Clear signature
+                            signedAt: null,
+                            responsible: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
+                            records: existing.records.map(r => ({
+                                ...r,
+                                status: 'P', // Reset to default 'P' so they can be edited
+                                timestamp: new Date().toISOString()
+                            }))
+                        };
+                        onSaveAttendance(attendanceToSave);
                     }
                     // If it doesn't exist, we don't need to do anything as it's already "restored" (empty)
                 }
