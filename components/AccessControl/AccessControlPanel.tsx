@@ -4,7 +4,7 @@ import { User } from '../../types';
 import {
     DoorOpen, Car, Footprints, ArrowDownToLine, ArrowUpFromLine,
     Shield, UserCheck, Search, Calendar, RefreshCw, Plus, X,
-    ChevronDown, Clock, Filter, Truck, Building2, BadgeCheck,
+    ChevronDown, Clock, Filter, Truck, Building2, BadgeCheck, Database, Info, Check,
     History, Sparkles, ChevronUp, AlertCircle, BarChart3, List
 } from 'lucide-react';
 import AccessStatistics from './AccessStatistics';
@@ -65,6 +65,11 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
     const [records, setRecords] = useState<AccessRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+
+    // Import Logic
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [importText, setImportText] = useState('');
+    const [importing, setImporting] = useState(false);
 
     // Filter state (for the list)
     const [filterGate, setFilterGate] = useState('');
@@ -291,6 +296,123 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
         }
     };
 
+    const processImport = async () => {
+        if (!importText.trim()) return;
+        setImporting(true);
+
+        try {
+            const lines = importText.split('\n').filter(l => l.trim());
+
+            // Basic headers parsing or assuming default structure if copied from Excel
+            // We'll try to map flexibly based on user provided structure
+            // Provided: Carimbo de | data/hora | GUARDA | Nome ...
+            const headers = lines[0].split('\t').map(h => h.trim().toUpperCase());
+            const dataLines = lines.slice(1);
+
+            const recordsToInsert: any[] = [];
+
+            const idxGuard = headers.findIndex(h => h.includes('GUARDA') || h.includes('PORTÃO'));
+            const idxName = headers.findIndex(h => h.includes('NOME'));
+            const idxChar = headers.findIndex(h => h.includes('CARACTERISTICA') || h.includes('CARACTERÍSTICA'));
+            const idxIdent = headers.findIndex(h => h.includes('IDENTIDADE') || h.includes('IDENTIFICAÇÃO') || h.includes('DOCUMENTO'));
+            const idxMode = headers.findIndex(h => h.includes('FORMA') || h.includes('MODO') || h.includes('INGRESSO'));
+            const idxCat1 = headers.findIndex(h => h.includes('CATEGORIA'));
+            const idxCat2 = headers.findIndex(h => h.includes('TIPO') && (h.includes('ACESSO') || h.includes('TIPO')));
+            const idxVehicle = headers.findIndex(h => h.includes('MODELO') || h.includes('VEÍCULO') || h.includes('VEICULO'));
+            const idxPlate = headers.findIndex(h => h.includes('PLACA'));
+            const idxDest = headers.findIndex(h => h.includes('DESTINO'));
+            const idxAuth = headers.findIndex(h => h.includes('AUTORIZA'));
+
+            // Date & Time
+            const idxDate = headers.findIndex(h => h.includes('CARIMBO') || h.includes('DATA'));
+            const idxTime = headers.findIndex(h => h.includes('HORA'));
+
+            for (const line of dataLines) {
+                const cols = line.split('\t').map(c => c.trim());
+                if (cols.length < 2) continue;
+
+                let timestamp = new Date().toISOString();
+                try {
+                    let dateStr = '';
+                    let timeStr = '';
+
+                    if (idxDate >= 0) dateStr = cols[idxDate].replace(/-/g, '').trim(); // Remove trailing dash from user format
+                    if (idxTime >= 0) timeStr = cols[idxTime];
+
+                    // Fallback heuristics
+                    if (!dateStr || !dateStr.includes('/')) {
+                        const d = cols.find(c => c.match(/\d{2}\/\d{2}\/\d{4}/));
+                        if (d) dateStr = d.replace(/-/g, '').trim();
+                    }
+                    if (!timeStr || !timeStr.includes(':')) {
+                        const t = cols.find(c => c.match(/\d{2}:\d{2}/));
+                        if (t) timeStr = t;
+                    }
+
+                    if (dateStr && timeStr) {
+                        const [day, month, year] = dateStr.split('/');
+                        const [hour, minute, second] = timeStr.split(':');
+                        if (day && month && year && hour && minute) {
+                            const dt = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(minute), second ? parseInt(second) : 0);
+                            if (!isNaN(dt.getTime())) timestamp = dt.toISOString();
+                        }
+                    }
+                } catch (e) { console.error('Date parse error', e); }
+
+                let guard = idxGuard >= 0 ? cols[idxGuard] : 'PORTÃO G1';
+                // Normalize Gate
+                const G = guard.toUpperCase();
+                if (G.includes('G1')) guard = 'PORTÃO G1';
+                else if (G.includes('G2')) guard = 'PORTÃO G2';
+                else if (G.includes('G3')) guard = 'PORTÃO G3';
+                else guard = 'PORTÃO G1';
+
+                let category = 'Entrada';
+                const c1 = idxCat1 >= 0 ? cols[idxCat1]?.toUpperCase() : '';
+                const c2 = idxCat2 >= 0 ? cols[idxCat2]?.toUpperCase() : '';
+                if (c1.includes('SAÍDA') || c1.includes('SAIDA') || c2.includes('SAÍDA') || c2.includes('SAIDA')) category = 'Saída';
+
+                recordsToInsert.push({
+                    guard_gate: guard,
+                    name: (idxName >= 0 ? cols[idxName] : 'NÃO INFORMADO') || 'NÃO INFORMADO',
+                    characteristic: (idxChar >= 0 ? cols[idxChar] : 'MILITAR') || 'MILITAR',
+                    identification: idxIdent >= 0 ? cols[idxIdent] : '',
+                    access_mode: (idxMode >= 0 ? cols[idxMode] : 'Pedestre') || 'Pedestre',
+                    access_category: category,
+                    vehicle_model: idxVehicle >= 0 ? cols[idxVehicle] : '',
+                    vehicle_plate: idxPlate >= 0 ? cols[idxPlate] : '',
+                    destination: idxDest >= 0 ? cols[idxDest] : '',
+                    authorizer: idxAuth >= 0 ? cols[idxAuth] : '',
+                    timestamp: timestamp,
+                    created_at: new Date().toISOString(),
+                    registered_by: user.id
+                });
+            }
+
+            if (recordsToInsert.length > 0) {
+                const chunkSize = 100;
+                let inserted = 0;
+                for (let i = 0; i < recordsToInsert.length; i += chunkSize) {
+                    const chunk = recordsToInsert.slice(i, i + chunkSize);
+                    await supabase.from('access_control').insert(chunk);
+                    inserted += chunk.length;
+                }
+                alert(`${inserted} registros importados com sucesso!`);
+                setImportText('');
+                setShowImportModal(false);
+                fetchRecords();
+            } else {
+                alert('Nenhum registro encontrado. Verifique se copiou o cabeçalho.');
+            }
+
+        } catch (err: any) {
+            console.error(err);
+            alert('Erro na importação: ' + err.message);
+        } finally {
+            setImporting(false);
+        }
+    };
+
 
 
     // Simple today stats for the card (retained but simplified)
@@ -337,6 +459,13 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                 >
                     <Search className="w-4 h-4" />
                     Busca
+                </button>
+                <button
+                    onClick={() => setShowImportModal(true)}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black uppercase tracking-wider rounded-lg transition-all text-slate-400 hover:text-blue-600 hover:bg-slate-200/50"
+                >
+                    <Database className="w-4 h-4" />
+                    Importar
                 </button>
             </div>
 
@@ -672,192 +801,226 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                         <div className="flex flex-col md:flex-row gap-4 pt-2">
                             {/* Date Range */}
                             <div className="flex gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200">
-                                <span className="text-[10px] font-black uppercase text-slate-400 pl-2">Período:</span>
-                                <input
-                                    type="date"
-                                    value={searchStartDate}
-                                    onChange={(e) => setSearchStartDate(e.target.value)}
-                                    className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-blue-500"
-                                />
-                                <span className="text-slate-300 font-bold">-</span>
-                                <input
-                                    type="date"
-                                    value={searchEndDate}
-                                    onChange={(e) => setSearchEndDate(e.target.value)}
-                                    className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:border-blue-500"
-                                />
-                                {(searchStartDate || searchEndDate) && (
-                                    <button
-                                        onClick={() => { setSearchStartDate(''); setSearchEndDate(''); }}
-                                        className="p-1 hover:bg-slate-200 rounded-full text-slate-400 hover:text-red-500 transition-colors"
-                                        title="Limpar datas"
-                                    >
-                                        <X className="w-3 h-3" />
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Type Filters */}
-                            <div className="flex gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200 overflow-x-auto">
                                 <span className="text-[10px] font-black uppercase text-slate-400 pl-2 whitespace-nowrap">Tipo:</span>
-                                <div className="flex gap-1">
-                                    {(['all', 'Pedestre', 'Veículo'] as const).map(type => (
-                                        <button
-                                            key={type}
-                                            onClick={() => setSearchFilterType(type)}
-                                            className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${searchFilterType === type
-                                                ? 'bg-blue-600 text-white shadow-sm'
-                                                : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-200'
-                                                }`}
-                                        >
-                                            {type === 'all' ? 'Todos' : type}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Category Filters */}
-                            <div className="flex gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200 overflow-x-auto">
-                                <span className="text-[10px] font-black uppercase text-slate-400 pl-2 whitespace-nowrap">Sentido:</span>
-                                <div className="flex gap-1">
-                                    {(['all', 'Entrada', 'Saída'] as const).map(cat => (
-                                        <button
-                                            key={cat}
-                                            onClick={() => setSearchFilterCategory(cat)}
-                                            className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${searchFilterCategory === cat
-                                                ? (cat === 'Entrada' ? 'bg-emerald-600' : cat === 'Saída' ? 'bg-red-600' : 'bg-slate-800') + ' text-white shadow-sm'
-                                                : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-200'
-                                                }`}
-                                        >
-                                            {cat === 'all' ? 'Todos' : cat}
-                                        </button>
-                                    ))}
-                                </div>
+                                {(['all', 'Pedestre', 'Veículo'] as const).map(type => (
+                                    <button
+                                        key={type}
+                                        onClick={() => setSearchFilterType(type)}
+                                        className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${searchFilterType === type
+                                            ? 'bg-blue-600 text-white shadow-sm'
+                                            : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-200'
+                                            }`}
+                                    >
+                                        {type === 'all' ? 'Todos' : type}
+                                    </button>
+                                ))}
                             </div>
                         </div>
 
-                        {!searchQuery && !searchStartDate && !searchEndDate ? (
-                            <p className="text-xs text-slate-400 font-medium px-1 text-center py-2">
-                                Digite para buscar ou use os filtros de data para ver o histórico.
-                            </p>
-                        ) : (
-                            <div className="flex items-center justify-between px-1">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                    {loadingSearch ? 'Buscando...' : `${searchResults.length} Resultados encontrados`}
-                                </p>
+                        {/* Category Filters */}
+                        <div className="flex gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200 overflow-x-auto">
+                            <span className="text-[10px] font-black uppercase text-slate-400 pl-2 whitespace-nowrap">Sentido:</span>
+                            <div className="flex gap-1">
+                                {(['all', 'Entrada', 'Saída'] as const).map(cat => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setSearchFilterCategory(cat)}
+                                        className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${searchFilterCategory === cat
+                                            ? (cat === 'Entrada' ? 'bg-emerald-600' : cat === 'Saída' ? 'bg-red-600' : 'bg-slate-800') + ' text-white shadow-sm'
+                                            : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-200'
+                                            }`}
+                                    >
+                                        {cat === 'all' ? 'Todos' : cat}
+                                    </button>
+                                ))}
                             </div>
-                        )}
+                        </div>
                     </div>
 
-                    {/* Search Results */}
-                    {hasSearched && (
-                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-bottom-4">
-                            <div className="p-3 border-b border-slate-100 flex items-center justify-between">
-                                <span className="text-xs font-black uppercase text-slate-600 flex items-center gap-2">
-                                    <List className="w-3.5 h-3.5" /> Resultados Encontrados
-                                </span>
-                                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
-                                    {searchResults.length} Registros
-                                </span>
-                            </div>
-
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left">
-                                    <thead className="bg-slate-50 border-b border-slate-100">
-                                        <tr>
-                                            <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase">Data / Hora</th>
-                                            <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase">Local / Tipo</th>
-                                            <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase">Solicitante / Veículo</th>
-                                            <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase text-right">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-50">
-                                        {searchResults.length === 0 ? (
-                                            <tr>
-                                                <td colSpan={4} className="text-center py-8">
-                                                    <div className="flex flex-col items-center justify-center gap-2 text-slate-400">
-                                                        <Search className="w-8 h-8 opacity-20" />
-                                                        <p className="text-sm font-bold">Nenhum registro encontrado para "{searchQuery}"</p>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ) : (
-                                            searchResults.map((record) => (
-                                                <tr key={record.id} className="hover:bg-blue-50/30 transition-colors">
-                                                    <td className="px-4 py-3 align-top">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-xs font-bold text-slate-900">
-                                                                {new Date(record.timestamp).toLocaleDateString('pt-BR')}
-                                                            </span>
-                                                            <span className="text-[10px] font-medium text-slate-500 flex items-center gap-1">
-                                                                <Clock className="w-3 h-3" />
-                                                                {new Date(record.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-3 align-top">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-[10px] font-black text-slate-700 uppercase">
-                                                                {record.guard_gate.replace('PORTÃO ', 'G')}
-                                                            </span>
-                                                            <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">
-                                                                {record.access_mode} • {record.characteristic}
-                                                            </span>
-                                                            {record.destination && (
-                                                                <span className="text-[9px] font-bold text-blue-600 uppercase mt-0.5">
-                                                                    Dest: {record.destination}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-3 align-top">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-xs font-black text-slate-800 uppercase">
-                                                                {record.name}
-                                                            </span>
-                                                            {record.access_mode === 'Veículo' && (
-                                                                <div className="flex items-center gap-1.5 mt-1 bg-slate-100 w-fit px-1.5 py-0.5 rounded">
-                                                                    <Car className="w-3 h-3 text-slate-500" />
-                                                                    <span className="text-[10px] font-bold text-slate-600 uppercase">
-                                                                        {record.vehicle_model} • <span className="text-slate-900">{record.vehicle_plate}</span>
-                                                                    </span>
-                                                                </div>
-                                                            )}
-                                                            {record.identification && (
-                                                                <span className="text-[9px] font-medium text-slate-400 mt-0.5">
-                                                                    Doc: {record.identification}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-3 text-right align-top">
-                                                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-black uppercase ${record.access_category === 'Entrada'
-                                                            ? 'bg-emerald-100 text-emerald-700'
-                                                            : 'bg-red-100 text-red-700'
-                                                            }`}>
-                                                            {record.access_category === 'Entrada' ? (
-                                                                <ArrowDownToLine className="w-3 h-3" />
-                                                            ) : (
-                                                                <ArrowUpFromLine className="w-3 h-3" />
-                                                            )}
-                                                            {record.access_category}
-                                                        </span>
-                                                        {record.authorizer && (
-                                                            <div className="mt-1 text-[9px] text-slate-400 font-medium">
-                                                                Aut: {record.authorizer}
-                                                            </div>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                    {!searchQuery && !searchStartDate && !searchEndDate ? (
+                        <p className="text-xs text-slate-400 font-medium px-1 text-center py-2">
+                            Digite para buscar ou use os filtros de data para ver o histórico.
+                        </p>
+                    ) : (
+                        <div className="flex items-center justify-between px-1">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                {loadingSearch ? 'Buscando...' : `${searchResults.length} Resultados encontrados`}
+                            </p>
                         </div>
                     )}
+
+
+                    {/* Search Results */}
+                    {
+                        hasSearched && (
+                            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-bottom-4">
+                                <div className="p-3 border-b border-slate-100 flex items-center justify-between">
+                                    <span className="text-xs font-black uppercase text-slate-600 flex items-center gap-2">
+                                        <List className="w-3.5 h-3.5" /> Resultados Encontrados
+                                    </span>
+                                    <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
+                                        {searchResults.length} Registros
+                                    </span>
+                                </div>
+
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left">
+                                        <thead className="bg-slate-50 border-b border-slate-100">
+                                            <tr>
+                                                <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase">Data / Hora</th>
+                                                <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase">Local / Tipo</th>
+                                                <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase">Solicitante / Veículo</th>
+                                                <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase text-right">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-50">
+                                            {searchResults.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={4} className="text-center py-8">
+                                                        <div className="flex flex-col items-center justify-center gap-2 text-slate-400">
+                                                            <Search className="w-8 h-8 opacity-20" />
+                                                            <p className="text-sm font-bold">Nenhum registro encontrado para "{searchQuery}"</p>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                searchResults.map((record) => (
+                                                    <tr key={record.id} className="hover:bg-blue-50/30 transition-colors">
+                                                        <td className="px-4 py-3 align-top">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-xs font-bold text-slate-900">
+                                                                    {new Date(record.timestamp).toLocaleDateString('pt-BR')}
+                                                                </span>
+                                                                <span className="text-[10px] font-medium text-slate-500 flex items-center gap-1">
+                                                                    <Clock className="w-3 h-3" />
+                                                                    {new Date(record.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                                                </span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-4 py-3 align-top">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[10px] font-black text-slate-700 uppercase">
+                                                                    {record.guard_gate.replace('PORTÃO ', 'G')}
+                                                                </span>
+                                                                <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">
+                                                                    {record.access_mode} • {record.characteristic}
+                                                                </span>
+                                                                {record.destination && (
+                                                                    <span className="text-[9px] font-bold text-blue-600 uppercase mt-0.5">
+                                                                        Dest: {record.destination}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-4 py-3 align-top">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-xs font-black text-slate-800 uppercase">
+                                                                    {record.name}
+                                                                </span>
+                                                                {record.access_mode === 'Veículo' && (
+                                                                    <div className="flex items-center gap-1.5 mt-1 bg-slate-100 w-fit px-1.5 py-0.5 rounded">
+                                                                        <Car className="w-3 h-3 text-slate-500" />
+                                                                        <span className="text-[10px] font-bold text-slate-600 uppercase">
+                                                                            {record.vehicle_model} • <span className="text-slate-900">{record.vehicle_plate}</span>
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                                {record.identification && (
+                                                                    <span className="text-[9px] font-medium text-slate-400 mt-0.5">
+                                                                        Doc: {record.identification}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-4 py-3 text-right align-top">
+                                                            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-black uppercase ${record.access_category === 'Entrada'
+                                                                ? 'bg-emerald-100 text-emerald-700'
+                                                                : 'bg-red-100 text-red-700'
+                                                                }`}>
+                                                                {record.access_category === 'Entrada' ? (
+                                                                    <ArrowDownToLine className="w-3 h-3" />
+                                                                ) : (
+                                                                    <ArrowUpFromLine className="w-3 h-3" />
+                                                                )}
+                                                                {record.access_category}
+                                                            </span>
+                                                            {record.authorizer && (
+                                                                <div className="mt-1 text-[9px] text-slate-400 font-medium">
+                                                                    Aut: {record.authorizer}
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )
+                    }
                 </div>
             )}
+
+
+            {/* IMPORT MODAL */}
+            {
+                showImportModal && (
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                        <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                                <h3 className="font-black text-lg uppercase tracking-tight text-slate-800 flex items-center gap-2">
+                                    <Database className="w-5 h-5 text-blue-600" />
+                                    Importação de Dados
+                                </h3>
+                                <button
+                                    onClick={() => setShowImportModal(false)}
+                                    className="p-2 hover:bg-slate-200 rounded-full transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-slate-400" />
+                                </button>
+                            </div>
+
+                            <div className="p-6 flex-1 overflow-y-auto space-y-4">
+                                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800 space-y-2">
+                                    <p className="font-bold flex items-center gap-2">
+                                        <Info className="w-4 h-4" /> Instruções:
+                                    </p>
+                                    <ul className="list-disc pl-5 space-y-1">
+                                        <li>Copie os dados da planilha (com cabeçalho) e cole abaixo.</li>
+                                        <li>O sistema identifica automaticamente cabeçalhos como "GUARDA", "NOME", etc.</li>
+                                        <li>Aguarde a mensagem de confirmação após clicar em Importar.</li>
+                                    </ul>
+                                </div>
+
+                                <textarea
+                                    value={importText}
+                                    onChange={(e) => setImportText(e.target.value)}
+                                    placeholder="Cole seus dados aqui..."
+                                    className="w-full h-96 p-4 font-mono text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none resize-none"
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+                                <button
+                                    onClick={() => setShowImportModal(false)}
+                                    className="px-6 py-3 rounded-xl font-bold uppercase text-xs text-slate-500 hover:bg-slate-200 transition-all"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={processImport}
+                                    disabled={importing || !importText.trim()}
+                                    className="px-8 py-3 rounded-xl font-bold uppercase text-xs text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all"
+                                >
+                                    {importing ? 'Processando...' : 'Importar Dados'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
         </div>
     );
 }
