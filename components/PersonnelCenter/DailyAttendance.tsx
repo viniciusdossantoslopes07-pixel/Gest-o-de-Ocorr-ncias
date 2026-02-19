@@ -222,6 +222,44 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         alert(`${dates.length} dias marcados como ${reason} para TODOS os setores!`);
     };
 
+    const handleRestoreWorkDay = async (dates: string[]) => {
+        const calls: CallTypeCode[] = ['INICIO', 'TERMINO'];
+
+        for (const date of dates) {
+            for (const sector of SETORES) {
+                const sectorUsers = users.filter(u => u.sector === sector);
+
+                for (const type of calls) {
+                    const existing = attendanceHistory.find(a => a.date === date && a.callType === type && a.sector === sector);
+
+                    if (existing) {
+                        // Only update if it was marked as a special day
+                        if (existing.observacao === 'Feriado' || existing.observacao === 'Expediente Cancelado') {
+                            const attendanceToSave: DailyAttendance = {
+                                ...existing,
+                                observacao: undefined, // Clear observation
+                                signedBy: undefined,   // Clear signature as it was for the holiday
+                                signedAt: undefined,
+                                responsible: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
+                                records: existing.records.map(r => ({
+                                    ...r,
+                                    status: 'P', // Reset to default 'P' so they can be edited
+                                    timestamp: new Date().toISOString()
+                                }))
+                            };
+                            onSaveAttendance(attendanceToSave);
+                        }
+                    }
+                    // If it doesn't exist, we don't need to do anything as it's already "restored" (empty)
+                }
+            }
+        }
+
+        setShowManageWeekModal(false);
+        setSelectedDaysForNoWork([]);
+        alert(`${dates.length} dias restaurados para expediente normal!`);
+    };
+
     const handleOpenJustification = (userId: string, date: string, callType: string, currentStatus: string) => {
         const user = users.find(u => u.id === userId);
         if (!user) return;
@@ -1031,6 +1069,15 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     >
                                         <span className="text-2xl group-hover:scale-110 transition-transform">🚫</span>
                                         <span className="text-[10px] font-black uppercase text-slate-900">Exp. Cancelado</span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleRestoreWorkDay(selectedDaysForNoWork)}
+                                        disabled={selectedDaysForNoWork.length === 0}
+                                        className="col-span-2 flex flex-col items-center gap-2 p-4 bg-white border-2 border-slate-100 rounded-2xl hover:border-emerald-600 hover:bg-emerald-50 transition-all group disabled:opacity-50 mt-2"
+                                    >
+                                        <span className="text-2xl group-hover:scale-110 transition-transform">🔄</span>
+                                        <span className="text-[10px] font-black uppercase text-slate-900">Restaurar Expediente Normal</span>
+                                        <span className="text-[8px] font-bold text-slate-400">Remove status de Feriado/Cancelado</span>
                                     </button>
                                 </div>
                             </div>
