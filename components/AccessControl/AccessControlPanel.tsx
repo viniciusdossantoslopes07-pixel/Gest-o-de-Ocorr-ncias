@@ -380,7 +380,14 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                 recordsToInsert.push({
                     guard_gate: guard,
                     name: (idxName >= 0 ? cols[idxName] : 'NÃO INFORMADO') || 'NÃO INFORMADO',
-                    characteristic: (idxChar >= 0 ? cols[idxChar] : 'MILITAR') || 'MILITAR',
+                    characteristic: (() => {
+                        const raw = (idxChar >= 0 ? cols[idxChar] : 'MILITAR')?.toUpperCase() || 'MILITAR';
+                        if (CHARACTERISTICS.includes(raw)) return raw;
+                        // Fallback mapping or default
+                        if (raw.includes('MILITAR')) return 'MILITAR';
+                        if (raw.includes('CIVIL')) return 'CIVIL';
+                        return 'CIVIL'; // Safe default
+                    })(),
                     identification: idxIdent >= 0 ? cols[idxIdent] : '',
                     access_mode: (idxMode >= 0 ? cols[idxMode] : 'Pedestre') || 'Pedestre',
                     access_category: category,
