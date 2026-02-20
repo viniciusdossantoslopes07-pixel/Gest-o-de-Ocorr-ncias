@@ -208,7 +208,7 @@ export default function SideMenu({
 
 
                             {/* Admin Section */}
-                            {(isAdmin || canManageUsers || canManageOccurrences) && (
+                            {(canManageUsers || canManageOccurrences) && (
                                 <div className="space-y-1">
                                     {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Administração</h3>}
                                     <button

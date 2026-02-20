@@ -1,5 +1,4 @@
-
-import { User } from '../types';
+import { User, UserRole } from '../types';
 
 export const PERMISSIONS = {
     // Visualização
@@ -137,11 +136,16 @@ export const USER_FUNCTIONS = {
 /**
  * Centralized Permission Helper
  * Checks if a user has a specific permission via:
- * 1. Explicit Custom Permissions (custom_permissions col in DB)
- * 2. Function-based Permissions (function_id col mapping to USER_FUNCTIONS)
+ * 1. Role-based Level (ADMIN or OM access level gets everything)
+ * 2. Explicit Custom Permissions (custom_permissions col in DB)
+ * 3. Function-based Permissions (function_id col mapping to USER_FUNCTIONS)
  */
 export const hasPermission = (user: User | null | undefined, permission: string): boolean => {
     if (!user) return false;
+
+    // 0. Super Admin / Command Logic
+    // If user is ADMIN role or has OM (Command) access level, they have full permissions
+    if (user.role === UserRole.ADMIN || user.accessLevel === 'OM') return true;
 
     // 1. Check Custom Permissions
     if (user.customPermissions?.includes(permission)) return true;

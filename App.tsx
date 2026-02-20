@@ -114,35 +114,36 @@ const App: FC = () => {
   // RBAC para Missões
   const rankIndex = currentUser ? RANKS.indexOf(currentUser.rank) : -1;
   const minRankIndex = RANKS.indexOf("3S");
-  const canRequestMission = !!currentUser && (isOM || (rankIndex >= 0 && rankIndex <= minRankIndex) || hasPermission(currentUser, PERMISSIONS.REQUEST_MISSION));
+  const canRequestMission = !!currentUser && ((rankIndex >= 0 && rankIndex <= minRankIndex) || hasPermission(currentUser, PERMISSIONS.REQUEST_MISSION));
 
   // RBAC para Gestão de Missões (SOP-01 e CH-SOP)
   const isSOP = currentUser ? ["CH-SOP", "SOP-01"].includes(currentUser.sector) : false;
-  const canManageMissions = !!currentUser && (isOM || isSOP || hasPermission(currentUser, PERMISSIONS.MANAGE_MISSIONS) || hasPermission(currentUser, PERMISSIONS.APPROVE_MISSION));
+  const canManageMissions = !!currentUser && (isSOP || hasPermission(currentUser, PERMISSIONS.MANAGE_MISSIONS) || hasPermission(currentUser, PERMISSIONS.APPROVE_MISSION));
 
   // RBAC para Gestão de Usuários (SOP-01, CH-SOP e OM)
-  const canManageUsers = !!currentUser && (isOM || ["CH-SOP", "SOP-01"].includes(currentUser.sector) || hasPermission(currentUser, PERMISSIONS.MANAGE_USERS));
+  const canManageUsers = !!currentUser && (["CH-SOP", "SOP-01"].includes(currentUser.sector) || hasPermission(currentUser, PERMISSIONS.MANAGE_USERS));
 
   // ROLE Material Manager (SAP-03, CH-SOP, Comandante OM)
-  const isMaterialManager = !!currentUser && (isOM || isAdmin || ["SAP-03", "CH-SAP"].includes(currentUser.sector) || hasPermission(currentUser, PERMISSIONS.MANAGE_MATERIAL));
+  const isMaterialManager = !!currentUser && (["SAP-03", "CH-SAP"].includes(currentUser.sector) || hasPermission(currentUser, PERMISSIONS.MANAGE_MATERIAL));
 
+  // Material
   const canRequestMaterial = hasPermission(currentUser, PERMISSIONS.REQUEST_MATERIAL);
   const canManageMaterial = hasPermission(currentUser, PERMISSIONS.MANAGE_MATERIAL);
-  const canViewMaterialPanel = canManageMaterial || canRequestMaterial || hasPermission(currentUser, PERMISSIONS.VIEW_MATERIAL_PANEL);
+  const canViewMaterialPanel = hasPermission(currentUser, PERMISSIONS.VIEW_MATERIAL_PANEL);
 
   // Pessoal
   const canManagePersonnel = hasPermission(currentUser, PERMISSIONS.MANAGE_PERSONNEL);
   const canViewAttendance = hasPermission(currentUser, PERMISSIONS.VIEW_DAILY_ATTENDANCE);
-  const canViewPersonnel = canManagePersonnel || canViewAttendance || hasPermission(currentUser, PERMISSIONS.VIEW_PERSONNEL);
+  const canViewPersonnel = hasPermission(currentUser, PERMISSIONS.VIEW_PERSONNEL);
 
   // Controle de Acesso
-  const canViewAccessControl = hasPermission(currentUser, PERMISSIONS.VIEW_ACCESS_CONTROL) || hasPermission(currentUser, PERMISSIONS.MANAGE_ACCESS_CONTROL);
+  const canViewAccessControl = hasPermission(currentUser, PERMISSIONS.VIEW_ACCESS_CONTROL);
 
   // Ocorrências
   const canManageOccurrences = hasPermission(currentUser, PERMISSIONS.MANAGE_OCCURRENCES);
 
-  const canViewServiceQueue = isAdmin || hasPermission(currentUser, PERMISSIONS.VIEW_SERVICE_QUEUE);
-  const canViewDashboard = isAdmin || hasPermission(currentUser, PERMISSIONS.VIEW_DASHBOARD);
+  const canViewServiceQueue = hasPermission(currentUser, PERMISSIONS.VIEW_SERVICE_QUEUE);
+  const canViewDashboard = hasPermission(currentUser, PERMISSIONS.VIEW_DASHBOARD);
 
 
   useEffect(() => {
