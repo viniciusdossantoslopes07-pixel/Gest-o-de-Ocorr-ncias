@@ -8,6 +8,7 @@ import {
     ChevronUp, ChevronDown, Check, Settings2, DoorOpen, Car
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
+import { USER_FUNCTIONS, PERMISSIONS } from '../constants/permissions';
 
 interface SideMenuProps {
     isOpen: boolean;
@@ -31,18 +32,51 @@ export default function SideMenu({
     const [isPersonnelOpen, setIsPersonnelOpen] = useState(false);
     const [isAccessControlOpen, setIsAccessControlOpen] = useState(false);
 
-    // Permission Checks
-    const isPublic = currentUser.role === UserRole.PUBLIC;
-    const isOM = currentUser.accessLevel === 'OM';
-    const isAdmin = currentUser.role === UserRole.ADMIN;
+    // Permission Helper
+    const hasPermission = (permission: string) => {
+        if (!currentUser) return false;
+        if (currentUser.role === UserRole.ADMIN) return true; // Admin suprema
 
-    // RBAC Logic (matching App.tsx)
-    const canRequestMission = !!currentUser && (isOM || currentUser.rank !== 'Civil');
-    const isSOP = currentUser ? ["CH-SOP", "SOP-01"].includes(currentUser.sector) : false;
-    const canManageMissions = !!currentUser && (isOM || isSOP);
-    const isMaterialManager = !!currentUser && (isOM || isAdmin || ["SAP-03", "CH-SAP"].includes(currentUser.sector));
-    const canManageUsers = !!currentUser && (isOM || ["CH-SOP", "SOP-01"].includes(currentUser.sector));
-    const canManagePersonnel = !!currentUser && (isOM || ["CH-SAP", "SAP-01", "SOP-01"].includes(currentUser.sector));
+        // 1. Check Custom Permissions (assigned via PermissionManagement)
+        if (currentUser.customPermissions?.includes(permission)) return true;
+
+        // 2. Check Function Permissions (assigned via UserManagement/Profile)
+        if (currentUser.functionId && USER_FUNCTIONS[currentUser.functionId as keyof typeof USER_FUNCTIONS]) {
+            const func = USER_FUNCTIONS[currentUser.functionId as keyof typeof USER_FUNCTIONS];
+            if (func.permissions.includes(permission)) return true;
+        }
+
+        return false;
+    };
+
+    // Permission-based Logic
+    // Public is handled separately
+    const isPublic = currentUser.role === UserRole.PUBLIC;
+
+    // Menu Visibility Checks
+    const canViewDashboard = hasPermission(PERMISSIONS.VIEW_DASHBOARD);
+
+    // Missions
+    const canRequestMission = hasPermission(PERMISSIONS.REQUEST_MISSION);
+    const canManageMissions = hasPermission(PERMISSIONS.MANAGE_MISSIONS) || hasPermission(PERMISSIONS.APPROVE_MISSION);
+
+    // Material
+    const canViewMaterialPanel = hasPermission(PERMISSIONS.VIEW_MATERIAL_PANEL) || hasPermission(PERMISSIONS.REQUEST_MATERIAL) || hasPermission(PERMISSIONS.MANAGE_MATERIAL);
+    const canRequestMaterial = hasPermission(PERMISSIONS.REQUEST_MATERIAL);
+    const canManageMaterial = hasPermission(PERMISSIONS.MANAGE_MATERIAL);
+
+    // Personnel
+    const canViewPersonnel = hasPermission(PERMISSIONS.VIEW_PERSONNEL) || hasPermission(PERMISSIONS.MANAGE_PERSONNEL) || hasPermission(PERMISSIONS.VIEW_DAILY_ATTENDANCE);
+    const canManagePersonnel = hasPermission(PERMISSIONS.MANAGE_PERSONNEL);
+    const canViewAttendance = hasPermission(PERMISSIONS.VIEW_DAILY_ATTENDANCE);
+
+    // Access Control
+    const canViewAccessControl = hasPermission(PERMISSIONS.VIEW_ACCESS_CONTROL) || hasPermission(PERMISSIONS.MANAGE_ACCESS_CONTROL);
+
+    // Admin / Occurrences
+    const canManageUsers = hasPermission(PERMISSIONS.MANAGE_USERS);
+    const canManageOccurrences = hasPermission(PERMISSIONS.MANAGE_OCCURRENCES);
+    const isAdmin = currentUser.role === UserRole.ADMIN;
 
     const MenuItem = ({ id, label, icon: Icon, onClick }: any) => (
         <button
@@ -99,7 +133,7 @@ export default function SideMenu({
                             {/* Operacional Section */}
                             <div className="space-y-1">
                                 {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2">Operacional</h3>}
-                                <MenuItem id="home" label="Painel Geral" icon={Home} />
+                                {canViewDashboard && <MenuItem id="home" label="Painel Geral" icon={Home} />}
                                 {(canManageMissions || canRequestMission) && (
                                     <MenuItem id="mission-center" label="Central de Missões" icon={ShieldAlert} />
                                 )}
@@ -107,37 +141,39 @@ export default function SideMenu({
                             </div>
 
                             {/* Material Section */}
-                            <div className="space-y-1">
-                                {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Central de Material</h3>}
-                                <button
-                                    onClick={() => !isCollapsed && setIsMaterialMenuOpen(!isMaterialMenuOpen)}
-                                    className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <Package className="w-5 h-5 shrink-0" />
-                                        {!isCollapsed && <span className="text-sm font-bold">Painel de Material</span>}
-                                    </div>
-                                    {!isCollapsed && (
-                                        <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isMaterialMenuOpen ? 'rotate-90' : ''}`} />
-                                    )}
-                                </button>
-                                {(!isCollapsed && isMaterialMenuOpen) && (
-                                    <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
-                                        <MenuItem id="my-material-loans" label="Minhas Cautelas" icon={Package} />
-                                        <MenuItem id="request-material" label="Solicitar Material" icon={PlusCircle} />
-                                        {isMaterialManager && (
-                                            <>
-                                                <div className="my-2 border-t border-slate-800" />
-                                                <MenuItem id="material-approvals" label="Material e Cautela" icon={ShieldCheck} />
-                                                <MenuItem id="inventory-management" label="Gestão de Estoque" icon={LayoutDashboard} />
-                                            </>
+                            {canViewMaterialPanel && (
+                                <div className="space-y-1">
+                                    {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Central de Material</h3>}
+                                    <button
+                                        onClick={() => !isCollapsed && setIsMaterialMenuOpen(!isMaterialMenuOpen)}
+                                        className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <Package className="w-5 h-5 shrink-0" />
+                                            {!isCollapsed && <span className="text-sm font-bold">Painel de Material</span>}
+                                        </div>
+                                        {!isCollapsed && (
+                                            <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isMaterialMenuOpen ? 'rotate-90' : ''}`} />
                                         )}
-                                    </div>
-                                )}
-                            </div>
+                                    </button>
+                                    {(!isCollapsed && isMaterialMenuOpen) && (
+                                        <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
+                                            <MenuItem id="my-material-loans" label="Minhas Cautelas" icon={Package} />
+                                            {canRequestMaterial && <MenuItem id="request-material" label="Solicitar Material" icon={PlusCircle} />}
+                                            {canManageMaterial && (
+                                                <>
+                                                    <div className="my-2 border-t border-slate-800" />
+                                                    <MenuItem id="material-approvals" label="Material e Cautela" icon={ShieldCheck} />
+                                                    <MenuItem id="inventory-management" label="Gestão de Estoque" icon={LayoutDashboard} />
+                                                </>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Personnel Section */}
-                            {canManagePersonnel && (
+                            {canViewPersonnel && (
                                 <div className="space-y-1">
                                     {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Gestão de Pessoal</h3>}
                                     <button
@@ -154,39 +190,42 @@ export default function SideMenu({
                                     </button>
                                     {(!isCollapsed && isPersonnelOpen) && (
                                         <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
-                                            <MenuItem id="daily-attendance" label="Chamada Diária" icon={ShieldCheck} />
-                                            <MenuItem id="personnel-management" label="Gestão de Efetivo" icon={UserIcon} />
+                                            {canViewAttendance && <MenuItem id="daily-attendance" label="Chamada Diária" icon={ShieldCheck} />}
+                                            {canManagePersonnel && <MenuItem id="personnel-management" label="Gestão de Efetivo" icon={UserIcon} />}
                                         </div>
                                     )}
                                 </div>
                             )}
 
                             {/* Access Control Section */}
-                            <div className="space-y-1">
-                                {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Controle de Acesso</h3>}
-                                <button
-                                    onClick={() => !isCollapsed && setIsAccessControlOpen(!isAccessControlOpen)}
-                                    className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <DoorOpen className="w-5 h-5 shrink-0" />
-                                        {!isCollapsed && <span className="text-sm font-bold">Controle de Acesso</span>}
-                                    </div>
-                                    {!isCollapsed && (
-                                        <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isAccessControlOpen ? 'rotate-90' : ''}`} />
-                                    )}
-                                </button>
-                                {(!isCollapsed && isAccessControlOpen) && (
-                                    <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
-                                        <MenuItem id="access-control" label="Acesso Visitantes" icon={DoorOpen} />
+                            {canViewAccessControl && (
+                                <div className="space-y-1">
+                                    {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Controle de Acesso</h3>}
+                                    <button
+                                        onClick={() => !isCollapsed && setIsAccessControlOpen(!isAccessControlOpen)}
+                                        className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <DoorOpen className="w-5 h-5 shrink-0" />
+                                            {!isCollapsed && <span className="text-sm font-bold">Controle de Acesso</span>}
+                                        </div>
+                                        {!isCollapsed && (
+                                            <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isAccessControlOpen ? 'rotate-90' : ''}`} />
+                                        )}
+                                    </button>
+                                    {(!isCollapsed && isAccessControlOpen) && (
+                                        <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
+                                            <MenuItem id="access-control" label="Acesso Visitantes" icon={DoorOpen} />
 
-                                        <MenuItem id="parking-request" label="Estacionamento" icon={Car} />
-                                    </div>
-                                )}
-                            </div>
+                                            <MenuItem id="parking-request" label="Estacionamento" icon={Car} />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
 
                             {/* Admin Section */}
-                            {(isAdmin || canManageUsers) && (
+                            {(isAdmin || canManageUsers || canManageOccurrences) && (
                                 <div className="space-y-1">
                                     {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Administração</h3>}
                                     <button
@@ -229,9 +268,9 @@ export default function SideMenu({
                             </div>
                         )}
                     </div>
-                </nav>
+                </nav >
 
-            </aside>
+            </aside >
         </>
     );
 }

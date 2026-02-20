@@ -125,9 +125,8 @@ export const USER_FUNCTIONS = {
         description: 'Meu Plano, Missões (Solicitar/Minhas), Material (Cautelas/Solicitar), Chamada Diária',
         permissions: [
             PERMISSIONS.VIEW_DASHBOARD,
-            PERMISSIONS.REQUEST_MISSION,
-            PERMISSIONS.REQUEST_MATERIAL,
-            PERMISSIONS.VIEW_DAILY_ATTENDANCE
+            // Permissões "básicas" removidas para garantir que o padrão seja "Apenas Painel e Meu Plano".
+            // Para solicitar missões/material, o usuário deve receber a permissão explicitamente no Painel.
         ]
     }
 };
