@@ -126,14 +126,15 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         const activeLoans = loans.filter((l: any) => l.status === 'Em Uso').reduce((acc: number, curr: any) => acc + (curr.quantidade || 1), 0);
 
         // Process Attendance
-        const totalAttendance = attendance.length;
-        const presenceCount = attendance.filter((a: any) =>
+        const validAttendance = attendance.filter((a: any) => !['NIL', 'N'].includes(a.status));
+        const totalAttendance = validAttendance.length;
+        const presenceCount = validAttendance.filter((a: any) =>
             ['P', 'ESV', 'MIS', 'SV'].includes(a.status)
         ).length;
         const attendanceRate = totalAttendance > 0 ? (presenceCount / totalAttendance) * 100 : 0;
 
         const statusCount: Record<string, number> = {};
-        attendance.forEach((a: any) => {
+        validAttendance.forEach((a: any) => {
             const status = a.status || 'Outros';
             statusCount[status] = (statusCount[status] || 0) + 1;
         });
@@ -147,7 +148,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             recentMissions,
             loanHistory,
             activeLoans,
-            attendanceHistory: attendance,
+            attendanceHistory: validAttendance,
             attendanceRate,
             attendanceByStatus
         });
@@ -177,7 +178,9 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             const aDate = new Date(a.daily_attendance?.date || a.timestamp);
             const matchDateStart = !filterDateStart || aDate >= new Date(filterDateStart);
             const matchDateEnd = !filterDateEnd || aDate <= new Date(filterDateEnd);
-            return matchDateStart && matchDateEnd;
+            // Attendance history is already filtered for valid records in state, but let's be safe
+            const isValid = !['NIL', 'N'].includes(a.status);
+            return matchDateStart && matchDateEnd && isValid;
         });
 
         const fPresenceCount = filteredAttendance.filter((a: any) =>
