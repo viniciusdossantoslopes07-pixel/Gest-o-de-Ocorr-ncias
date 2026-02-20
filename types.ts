@@ -35,7 +35,7 @@ export interface User {
   rank: string;
   saram: string;
   sector: string;
-  accessLevel?: 'N1' | 'N2' | 'N3' | 'OM';
+  accessLevel?: 'N0' | 'N1' | 'N2' | 'N3' | 'OM';
   phoneNumber?: string;
   approved?: boolean;
   cpf?: string;

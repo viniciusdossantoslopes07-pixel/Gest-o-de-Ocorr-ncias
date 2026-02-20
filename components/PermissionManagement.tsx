@@ -414,14 +414,16 @@ export default function PermissionManagement({ users, onUpdateUser, currentAdmin
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                                {['N1', 'N2', 'N3'].map(level => (
+                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                                {['N0', 'N1', 'N2', 'N3'].map(level => (
                                                     <button
                                                         key={level}
                                                         onClick={() => setSelectedUser({ ...selectedUser, accessLevel: level as any })}
                                                         className={`p-3 rounded-xl border transition-all text-left ${selectedUser.accessLevel === level ? 'bg-white border-blue-500 ring-1 ring-blue-500 text-blue-700' : 'bg-white border-slate-200 opacity-70'}`}
                                                     >
-                                                        <div className="font-black text-xs uppercase">{level}</div>
+                                                        <div className="font-black text-xs uppercase">
+                                                            {level === 'N0' ? 'N0 (Usuario)' : level}
+                                                        </div>
                                                     </button>
                                                 ))}
                                             </div>

@@ -27,7 +27,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     warName: '',
     email: '',
     role: UserRole.OPERATIONAL,
-    accessLevel: 'N1' as 'N1' | 'N2' | 'N3' | 'OM',
+    accessLevel: 'N0' as 'N0' | 'N1' | 'N2' | 'N3' | 'OM',
     phoneNumber: ''
   };
 
