@@ -1016,6 +1016,7 @@ const App: FC = () => {
               onDeleteUser={handleDeleteUser}
               onRefreshUsers={fetchUsers}
               currentUser={currentUser}
+              isDarkMode={isDarkMode}
             />
           )}
 

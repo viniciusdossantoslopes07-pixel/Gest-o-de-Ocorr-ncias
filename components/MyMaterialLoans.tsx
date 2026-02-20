@@ -422,11 +422,11 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user, isDarkMo
                             <div
                                 key={loan.id}
                                 onClick={() => setSelectedLoan(loan)}
-                                className={`group p-5 rounded-2xl border transition-all duration-300 flex items-center gap-5 cursor-pointer hover:shadow-2xl active:scale-[0.98] ${loan.status === 'Pendente' ? (isDarkMode ? 'border-amber-500/30 bg-amber-500/5' : 'border-amber-100 bg-amber-50/10') :
-                                        loan.status === 'Aprovado' ? (isDarkMode ? 'border-blue-500/30 bg-blue-500/5' : 'border-blue-100 bg-blue-50/10') :
-                                            loan.status === 'Em Uso' ? (isDarkMode ? 'border-emerald-500/30 bg-emerald-500/5 shadow-emerald-500/5' : 'border-emerald-100 bg-emerald-50/10') :
-                                                loan.status === 'Rejeitado' ? (isDarkMode ? 'border-red-500/30 bg-red-500/5' : 'border-red-100 bg-red-50/10') :
-                                                    (isDarkMode ? 'bg-slate-800 border-slate-700 hover:border-blue-500/30 shadow-sm' : 'bg-white border-slate-100 hover:border-blue-200 shadow-sm')
+                                className={`group p-3.5 rounded-2xl border transition-all duration-300 flex items-center gap-4 cursor-pointer hover:shadow-2xl active:scale-[0.98] ${loan.status === 'Pendente' ? (isDarkMode ? 'border-amber-500/30 bg-amber-500/5' : 'border-amber-100 bg-amber-50/10') :
+                                    loan.status === 'Aprovado' ? (isDarkMode ? 'border-blue-500/30 bg-blue-500/5' : 'border-blue-100 bg-blue-50/10') :
+                                        loan.status === 'Em Uso' ? (isDarkMode ? 'border-emerald-500/30 bg-emerald-500/5 shadow-emerald-500/5' : 'border-emerald-100 bg-emerald-50/10') :
+                                            loan.status === 'Rejeitado' ? (isDarkMode ? 'border-red-500/30 bg-red-500/5' : 'border-red-100 bg-red-50/10') :
+                                                (isDarkMode ? 'bg-slate-800 border-slate-700 hover:border-blue-500/30 shadow-sm' : 'bg-white border-slate-100 hover:border-blue-200 shadow-sm')
                                     }`}
                             >
                                 {/* Checkbox for Batch Actions */}
@@ -445,15 +445,15 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user, isDarkMo
                                 )}
 
                                 {/* Icon / Status Indicator */}
-                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-lg transform group-hover:scale-110 transition-transform ${loan.status === 'Pendente' ? 'bg-amber-500 text-white shadow-amber-500/20' :
-                                        loan.status === 'Aprovado' ? 'bg-blue-600 text-white shadow-blue-500/20' :
-                                            loan.status === 'Em Uso' ? 'bg-emerald-600 text-white shadow-emerald-500/20' :
-                                                loan.status === 'Rejeitado' ? 'bg-red-500 text-white shadow-red-500/20' :
-                                                    'bg-slate-500 text-white shadow-slate-500/20'
+                                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-lg transform group-hover:scale-110 transition-transform ${loan.status === 'Pendente' ? 'bg-amber-500 text-white shadow-amber-500/20' :
+                                    loan.status === 'Aprovado' ? 'bg-blue-600 text-white shadow-blue-500/20' :
+                                        loan.status === 'Em Uso' ? 'bg-emerald-600 text-white shadow-emerald-500/20' :
+                                            loan.status === 'Rejeitado' ? 'bg-red-500 text-white shadow-red-500/20' :
+                                                'bg-slate-500 text-white shadow-slate-500/20'
                                     }`}>
-                                    {loan.status === 'Em Uso' ? <Truck className="w-7 h-7" /> :
-                                        loan.status === 'Aprovado' ? <CheckCircle className="w-7 h-7" /> :
-                                            <Package className="w-7 h-7" />}
+                                    {loan.status === 'Em Uso' ? <Truck className="w-5 h-5" /> :
+                                        loan.status === 'Aprovado' ? <CheckCircle className="w-5 h-5" /> :
+                                            <Package className="w-5 h-5" />}
                                 </div>
 
                                 {/* Content */}
@@ -463,10 +463,10 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user, isDarkMo
                                             {loan.material?.material || 'Material'}
                                         </h3>
                                         <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg shrink-0 ${loan.status === 'Pendente' ? 'bg-amber-500/20 text-amber-500' :
-                                                loan.status === 'Aprovado' ? 'bg-blue-600/20 text-blue-500' :
-                                                    loan.status === 'Em Uso' ? 'bg-emerald-600/20 text-emerald-500' :
-                                                        loan.status === 'Rejeitado' ? 'bg-red-500/20 text-red-500' :
-                                                            'bg-slate-500/20 text-slate-500'
+                                            loan.status === 'Aprovado' ? 'bg-blue-600/20 text-blue-500' :
+                                                loan.status === 'Em Uso' ? 'bg-emerald-600/20 text-emerald-500' :
+                                                    loan.status === 'Rejeitado' ? 'bg-red-500/20 text-red-500' :
+                                                        'bg-slate-500/20 text-slate-500'
                                             }`}>
                                             {loan.status}
                                         </span>
@@ -507,7 +507,7 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user, isDarkMo
                             </button>
                         </div>
 
-                        <div className="p-8 space-y-8">
+                        <div className="p-6 space-y-6">
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-1 col-span-2">
                                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Material</p>
@@ -524,9 +524,9 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user, isDarkMo
                             </div>
 
                             {/* Endereço / Localização do Material */}
-                            <div className={`flex items-center gap-4 p-5 rounded-[1.5rem] border transition-all ${isDarkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-100 shadow-sm'}`}>
-                                <div className="w-12 h-12 rounded-2xl bg-amber-500 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/20">
-                                    <MapPin className="w-6 h-6 text-white" />
+                            <div className={`flex items-center gap-3.5 p-4 rounded-2xl border transition-all ${isDarkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-100 shadow-sm'}`}>
+                                <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/20">
+                                    <MapPin className="w-5 h-5 text-white" />
                                 </div>
                                 <div>
                                     <p className="text-[9px] font-black text-amber-500 uppercase tracking-widest leading-none mb-1.5">Localização de Retirada</p>
@@ -560,8 +560,8 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user, isDarkMo
                             </div>
                         </div>
 
-                        <div className={`p-8 pt-0 flex justify-end`}>
-                            <button onClick={() => setSelectedLoan(null)} className={`w-full py-4 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isDarkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-slate-900 text-white hover:bg-black shadow-slate-900/20'}`}>
+                        <div className={`p-6 pt-0 flex justify-end`}>
+                            <button onClick={() => setSelectedLoan(null)} className={`w-full py-3.5 rounded-xl font-black uppercase text-[10px] tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isDarkMode ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-slate-900 text-white hover:bg-black shadow-slate-900/20'}`}>
                                 Encerrar Visualização
                             </button>
                         </div>

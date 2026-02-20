@@ -150,7 +150,7 @@ const HomeView: React.FC<HomeViewProps> = ({
       {/* Quick Launch Grid */}
       <section className="space-y-6">
         <div className="flex items-center justify-between">
-          <h3 className={`text-xs font-black uppercase tracking-[0.2em] flex items-center gap-3 ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
+          <h3 className={`text-xs font-black uppercase tracking-[0.2em] flex items-center gap-3 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
             <span className="w-8 h-[2px] bg-blue-600"></span>
             Abertura Rápida de Chamado
           </h3>
@@ -208,7 +208,7 @@ const HomeView: React.FC<HomeViewProps> = ({
       {/* Recent Activity */}
       <section className="space-y-6">
         <div className="flex justify-between items-center">
-          <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-3">
+          <h3 className={`text-xs font-black uppercase tracking-[0.2em] flex items-center gap-3 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
             <span className="w-8 h-[2px] bg-orange-500"></span>
             Atividade Recente na Unidade
           </h3>
@@ -235,9 +235,9 @@ const HomeView: React.FC<HomeViewProps> = ({
                     <div>
                       <p className={`text-sm lg:text-base font-bold group-hover:text-blue-400 transition-colors line-clamp-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{occ.title}</p>
                       <div className="flex flex-wrap items-center gap-2 lg:gap-3 mt-1.5">
-                        <span className={`text-[9px] lg:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${isDarkMode ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{occ.category}</span>
-                        <span className="hidden sm:inline text-[10px] text-slate-300 dark:text-slate-600">•</span>
-                        <span className="text-[10px] lg:text-xs font-medium text-slate-500">{occ.location}</span>
+                        <span className={`text-[9px] lg:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${isDarkMode ? 'bg-slate-900/50 text-slate-500' : 'bg-slate-100 text-slate-500'}`}>{occ.category}</span>
+                        <span className="hidden sm:inline text-[10px] text-slate-300 dark:text-slate-700">•</span>
+                        <span className={`text-[10px] lg:text-xs font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>{occ.location}</span>
                       </div>
                     </div>
                   </div>

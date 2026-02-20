@@ -202,7 +202,7 @@ const Dashboard: FC<DashboardProps> = ({ occurrences, isDarkMode }) => {
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-          <div className="flex bg-slate-100 p-1.5 rounded-xl shadow-inner">
+          <div className={`flex p-1.5 rounded-xl shadow-inner ${isDarkMode ? 'bg-slate-900' : 'bg-slate-100'}`}>
             {[
               { id: 'all', label: 'Tudo' },
               { id: 'today', label: 'Hoje' },
@@ -232,7 +232,7 @@ const Dashboard: FC<DashboardProps> = ({ occurrences, isDarkMode }) => {
                   setDateRange(prev => ({ ...prev, start: e.target.value }));
                   setPeriod('custom');
                 }}
-                className="bg-transparent text-xs font-bold text-slate-700 outline-none w-24 cursor-pointer hover:text-blue-600 transition-colors"
+                className={`bg-transparent text-xs font-bold outline-none w-24 cursor-pointer hover:text-blue-600 transition-colors ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}
                 title="Data Inicial"
               />
               <span className="text-slate-300 font-light">/</span>
@@ -243,7 +243,7 @@ const Dashboard: FC<DashboardProps> = ({ occurrences, isDarkMode }) => {
                   setDateRange(prev => ({ ...prev, end: e.target.value }));
                   setPeriod('custom');
                 }}
-                className="bg-transparent text-xs font-bold text-slate-700 outline-none w-24 cursor-pointer hover:text-blue-600 transition-colors"
+                className={`bg-transparent text-xs font-bold outline-none w-24 cursor-pointer hover:text-blue-600 transition-colors ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}
                 title="Data Final"
               />
             </div>
@@ -286,7 +286,7 @@ const Dashboard: FC<DashboardProps> = ({ occurrences, isDarkMode }) => {
           <p className="text-[10px] text-slate-400 mt-2 font-medium">aguardando resolução</p>
         </div>
 
-        <div className="bg-gradient-to-br from-amber-50 to-white p-6 rounded-2xl shadow-sm border border-amber-100 hover:shadow-xl transition-all duration-300 group">
+        <div className={`p-6 rounded-2xl shadow-sm border hover:shadow-xl transition-all duration-300 group ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-br from-amber-50 to-white border-amber-100'}`}>
           <div className="flex items-center justify-between mb-4">
             <span className="text-amber-700 text-xs font-bold uppercase tracking-wider">Pendentes</span>
             <div className="p-2 bg-amber-100 rounded-lg">
@@ -413,20 +413,20 @@ const Dashboard: FC<DashboardProps> = ({ occurrences, isDarkMode }) => {
             {stats.topResolvers.map((resolver, index) => (
               <div key={index} className="flex items-center justify-between group">
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 transition-all ${index === 0 ? 'bg-green-100 text-green-700 shadow-green-100' : 'bg-slate-50 text-slate-500'}`}>
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 transition-all ${index === 0 ? (isDarkMode ? 'bg-green-900/30 text-green-500' : 'bg-green-100 text-green-700 shadow-green-100') : (isDarkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-50 text-slate-500')}`}>
                     {index + 1}
                   </div>
-                  <span className="text-xs font-bold text-slate-700 truncate group-hover:text-emerald-600 transition-colors">{resolver.name}</span>
+                  <span className={`text-xs font-bold truncate transition-colors ${isDarkMode ? 'text-slate-300 group-hover:text-emerald-400' : 'text-slate-700 group-hover:text-emerald-600'}`}>{resolver.name}</span>
                 </div>
-                <span className="text-xs font-black text-slate-900 bg-slate-50 px-2 py-1 rounded-lg">{resolver.count}</span>
+                <span className={`text-xs font-black px-2 py-1 rounded-lg ${isDarkMode ? 'bg-slate-900/50 text-white' : 'bg-slate-50 text-slate-900'}`}>{resolver.count}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Top Locais */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <h3 className="text-[10px] font-black uppercase text-slate-400 mb-5 tracking-widest flex items-center gap-2">
+        <div className={`p-6 rounded-2xl border transition-all duration-300 ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-none' : 'bg-white border-slate-100 shadow-sm'}`}>
+          <h3 className={`text-[10px] font-black uppercase mb-5 tracking-widest flex items-center gap-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>
             <MapPin className="w-3 h-3" /> Locais Críticos
           </h3>
           <div className="space-y-4">
@@ -434,7 +434,7 @@ const Dashboard: FC<DashboardProps> = ({ occurrences, isDarkMode }) => {
               <div key={index} className="flex items-center justify-between">
                 <div className="flex items-center gap-3 overflow-hidden flex-1">
                   <div className="w-2 h-2 rounded-full bg-red-500 shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
-                  <span className="text-xs font-bold text-slate-700 truncate" title={location.name}>{location.name}</span>
+                  <span className={`text-xs font-bold truncate ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`} title={location.name}>{location.name}</span>
                 </div>
                 <div className="flex items-center gap-2 w-16 justify-end">
                   <div className={`h-1.5 flex-1 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
@@ -473,8 +473,8 @@ const Dashboard: FC<DashboardProps> = ({ occurrences, isDarkMode }) => {
 
       <div className="grid grid-cols-1 gap-6">
         {/* Pico de Horário - Full Width */}
-        <div className="bg-white p-8 rounded-3xl shadow-lg border border-slate-100">
-          <h3 className="text-lg font-black text-slate-800 mb-6 tracking-tight flex items-center gap-2">
+        <div className={`p-8 rounded-3xl border transition-all duration-300 ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-none' : 'bg-white border-slate-100 shadow-lg'}`}>
+          <h3 className={`text-lg font-black mb-6 tracking-tight flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
             <span className="w-1.5 h-6 bg-orange-500 rounded-full"></span>
             Análise Temporal (24h)
           </h3>
