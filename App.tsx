@@ -111,21 +111,6 @@ const App: FC = () => {
   const isOM = currentUser?.accessLevel === 'OM';
   const isPublic = currentUser?.role === UserRole.PUBLIC;
 
-  // RBAC para Missões
-  const rankIndex = currentUser ? RANKS.indexOf(currentUser.rank) : -1;
-  const minRankIndex = RANKS.indexOf("3S");
-  const canRequestMission = !!currentUser && (isOM || (rankIndex >= 0 && rankIndex <= minRankIndex));
-
-  // RBAC para Gestão de Missões (SOP-01 e CH-SOP)
-  const isSOP = currentUser ? ["CH-SOP", "SOP-01"].includes(currentUser.sector) : false;
-  const canManageMissions = !!currentUser && (isOM || isSOP);
-
-  // RBAC para Gestão de Usuários (SOP-01, CH-SOP e OM)
-  const canManageUsers = !!currentUser && (isOM || ["CH-SOP", "SOP-01"].includes(currentUser.sector));
-
-  // ROLE Material Manager (SAP-03, CH-SOP, Comandante OM)
-  const isMaterialManager = !!currentUser && (isOM || isAdmin || ["SAP-03", "CH-SAP"].includes(currentUser.sector));
-
   const hasPermission = (permission: string) => {
     if (!currentUser) return false;
     if (currentUser.customPermissions?.includes(permission)) return true;
@@ -135,6 +120,21 @@ const App: FC = () => {
     }
     return false;
   };
+
+  // RBAC para Missões
+  const rankIndex = currentUser ? RANKS.indexOf(currentUser.rank) : -1;
+  const minRankIndex = RANKS.indexOf("3S");
+  const canRequestMission = !!currentUser && (isOM || (rankIndex >= 0 && rankIndex <= minRankIndex));
+
+  // RBAC para Gestão de Missões (SOP-01 e CH-SOP)
+  const isSOP = currentUser ? ["CH-SOP", "SOP-01"].includes(currentUser.sector) : false;
+  const canManageMissions = !!currentUser && (isOM || isSOP || hasPermission(PERMISSIONS.MANAGE_MISSIONS));
+
+  // RBAC para Gestão de Usuários (SOP-01, CH-SOP e OM)
+  const canManageUsers = !!currentUser && (isOM || ["CH-SOP", "SOP-01"].includes(currentUser.sector) || hasPermission(PERMISSIONS.MANAGE_USERS));
+
+  // ROLE Material Manager (SAP-03, CH-SOP, Comandante OM)
+  const isMaterialManager = !!currentUser && (isOM || isAdmin || ["SAP-03", "CH-SAP"].includes(currentUser.sector));
 
   const canViewServiceQueue = isAdmin || hasPermission(PERMISSIONS.VIEW_SERVICE_QUEUE);
   const canViewDashboard = isAdmin || hasPermission(PERMISSIONS.VIEW_DASHBOARD);
