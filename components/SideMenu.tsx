@@ -35,7 +35,8 @@ export default function SideMenu({
     // Permission Helper
     const hasPermission = (permission: string) => {
         if (!currentUser) return false;
-        if (currentUser.role === UserRole.ADMIN) return true; // Admin suprema
+        // Admin explicit check removed to allow "Admin" users to be restricted by their assigned Function/Permissions if desired.
+        // if (currentUser.role === UserRole.ADMIN) return true; 
 
         // 1. Check Custom Permissions (assigned via PermissionManagement)
         if (currentUser.customPermissions?.includes(permission)) return true;
