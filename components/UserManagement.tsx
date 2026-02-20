@@ -1,8 +1,8 @@
 
-import { useState, useEffect, type FC, type FormEvent } from 'react';
+import { useState, useEffect, useMemo, type FC, type FormEvent } from 'react';
 import { User, UserRole } from '../types';
 import { RANKS, SETORES } from '../constants';
-import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown, ShieldCheck, Settings } from 'lucide-react';
+import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown, ShieldCheck, Settings, Search, X } from 'lucide-react';
 import PermissionManagement from './PermissionManagement';
 
 interface UserManagementProps {
@@ -33,6 +33,27 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
 
   const [formData, setFormData] = useState(initialFormState);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Optimized Filtering with useMemo
+  const filteredUsers = useMemo(() => {
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return users;
+
+    return users.filter(user => {
+      return (
+        user.name.toLowerCase().includes(term) ||
+        (user.warName || '').toLowerCase().includes(term) ||
+        (user.username || '').toLowerCase().includes(term) ||
+        (user.saram || '').toLowerCase().includes(term) ||
+        (user.sector || '').toLowerCase().includes(term)
+      );
+    });
+  }, [users, searchTerm]);
+
+  const pendingUsers = useMemo(() => filteredUsers.filter(u => u.approved === false), [filteredUsers]);
+  const approvedUsers = useMemo(() => filteredUsers.filter(u => u.approved !== false), [filteredUsers]);
+  const resetPasswordUsers = useMemo(() => filteredUsers.filter(u => u.pending_password_reset === true), [filteredUsers]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -76,18 +97,13 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     setFormData(initialFormState);
   };
 
-  // Refresh users when component mounts to ensure we have latest data with approved field
+  // Refresh users when component mounts to ensure we have latest data
   useEffect(() => {
     if (onRefreshUsers) {
-      console.log('🔄 UserManagement mounted - refreshing users data');
       onRefreshUsers();
     }
   }, [onRefreshUsers]);
 
-  // Debug logging
-  console.log('🔍 DEBUG UserManagement - All users received:', users);
-  console.log('🔍 DEBUG UserManagement - Pending users (approved === false):', users.filter(u => u.approved === false));
-  console.log('🔍 DEBUG UserManagement - Users with approved field:', users.map(u => ({ name: u.name, approved: u.approved })));
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 pb-20">
@@ -262,14 +278,39 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
           </div>
 
           <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
-            {(users.filter(u => u.approved === false).length > 0 || users.filter(u => u.pending_password_reset === true).length > 0) && (
-              <div className="mb-8 border-b-4 border-slate-100 pb-8">
+            {/* Search Bar */}
+            <div className="p-6 bg-slate-50 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Buscar por nome, guerra, saram ou setor..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-11 pr-11 py-3 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                <span>Resultados: <span className="text-blue-600">{filteredUsers.length}</span></span>
+              </div>
+            </div>
+
+            {(pendingUsers.length > 0 || resetPasswordUsers.length > 0) && (
+              <div className="mb-0 border-b-4 border-slate-100 pb-0">
                 {/* Seção de Cadastro Pendente */}
                 {users.filter(u => u.approved === false).length > 0 && (
                   <>
                     <div className="p-6 bg-amber-50/50 border-b border-amber-100 flex items-center gap-3">
                       <ShieldCheck className="w-5 h-5 text-amber-600" />
-                      <h3 className="text-sm font-black text-amber-700 uppercase tracking-widest">Pendências de Aprovação de Cadastro</h3>
+                      <h3 className="text-sm font-black text-amber-700 uppercase tracking-widest">Pendências de Aprovação de Cadastro ({pendingUsers.length})</h3>
                     </div>
                     <table className="w-full text-left text-sm mb-6">
                       <thead className="bg-amber-50/20">
@@ -280,7 +321,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-amber-50">
-                        {users.filter(u => u.approved === false).map(u => (
+                        {pendingUsers.map(u => (
                           <tr key={u.id}>
                             <td className="px-6 py-4">
                               <div className="font-bold text-slate-900">{u.name}</div>
@@ -318,7 +359,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                   <>
                     <div className="p-6 bg-blue-50/50 border-b border-blue-100 flex items-center gap-3">
                       <Key className="w-5 h-5 text-blue-600" />
-                      <h3 className="text-sm font-black text-blue-700 uppercase tracking-widest">Solicitações de Redefinição de Senha</h3>
+                      <h3 className="text-sm font-black text-blue-700 uppercase tracking-widest">Solicitações de Redefinição de Senha ({resetPasswordUsers.length})</h3>
                     </div>
                     <table className="w-full text-left text-sm">
                       <thead className="bg-blue-50/20">
@@ -329,7 +370,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-blue-50">
-                        {users.filter(u => u.pending_password_reset === true).map(u => (
+                        {resetPasswordUsers.map(u => (
                           <tr key={u.id}>
                             <td className="px-6 py-4">
                               <div className="font-bold text-slate-900">{u.name}</div>
@@ -374,7 +415,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
             )}
 
             <div className="p-6 border-b border-slate-100 bg-slate-50/50">
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Usuários com Acesso ao Sistema</h3>
+              <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Usuários com Acesso ao Sistema ({approvedUsers.length})</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
@@ -388,7 +429,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {users.filter(u => u.approved !== false).map(u => (
+                  {approvedUsers.map(u => (
                     <tr key={u.id} className={`hover:bg-slate-50/50 transition-colors ${editingUserId === u.id ? 'bg-amber-50/50' : ''}`}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
