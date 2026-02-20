@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
-import { BarChart3, Package, ArrowUpRight, ArrowDownRight, AlertTriangle, X, User as UserIcon, Trophy } from 'lucide-react';
+import { BarChart3, Package, ArrowUpRight, ArrowDownRight, AlertTriangle, X, User as UserIcon, Trophy, Calendar, Search } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 
 export const MaterialStatistics = () => {
@@ -24,11 +24,18 @@ export const MaterialStatistics = () => {
     // View State
     const [selectedView, setSelectedView] = useState<'none' | 'low-stock' | 'active-loans'>('none');
 
+    // Filters State
+    const [filters, setFilters] = useState({
+        period: '30', // days
+        dateStart: '',
+        dateEnd: ''
+    });
+
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
     useEffect(() => {
         fetchStats();
-    }, []);
+    }, [filters.period, filters.dateStart, filters.dateEnd]);
 
     const fetchStats = async () => {
         setLoading(true);
@@ -56,14 +63,27 @@ export const MaterialStatistics = () => {
             const lowStock = lowStockList.length;
             setLowStockItems(lowStockList);
 
-            // 3. Loan Stats
-            const { data: loans, error: loanError } = await supabase
+            // 3. Loan Stats with Period Filter
+            let loanQuery = supabase
                 .from('movimentacao_cautela')
                 .select(`
                     id, id_material, id_usuario, status, quantidade, created_at,
                     material:gestao_estoque(material, tipo_de_material)
-                `)
-                .order('created_at', { ascending: false });
+                `);
+
+            // Apply Period Filter
+            if (filters.period !== 'all') {
+                const now = new Date();
+                const periodLimit = new Date();
+                periodLimit.setDate(now.getDate() - parseInt(filters.period));
+                loanQuery = loanQuery.gte('created_at', periodLimit.toISOString());
+            } else if (filters.dateStart && filters.dateEnd) {
+                loanQuery = loanQuery
+                    .gte('created_at', new Date(filters.dateStart).toISOString())
+                    .lte('created_at', new Date(filters.dateEnd).toISOString());
+            }
+
+            const { data: loans, error: loanError } = await loanQuery.order('created_at', { ascending: false });
 
             if (loanError) throw loanError;
 
@@ -131,13 +151,59 @@ export const MaterialStatistics = () => {
 
     return (
         <div className="space-y-6 animate-fade-in relative pb-12">
-            <div className="flex items-center gap-3 mb-6">
-                <div className="bg-blue-600 p-2 rounded-lg">
-                    <BarChart3 className="w-6 h-6 text-white" />
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div className="flex items-center gap-3">
+                    <div className="bg-blue-600 p-2.5 rounded-xl shadow-lg shadow-blue-200">
+                        <BarChart3 className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-black text-slate-800 tracking-tight">Estatísticas de Material</h2>
+                        <p className="text-slate-500 font-medium text-sm">Visão geral do estoque e cautelas.</p>
+                    </div>
                 </div>
-                <div>
-                    <h2 className="text-2xl font-bold text-slate-800">Estatísticas de Material</h2>
-                    <p className="text-slate-500">Visão geral do estoque e cautelas.</p>
+
+                {/* Date Filters UI */}
+                <div className="flex items-center flex-wrap gap-2">
+                    <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-slate-200 shadow-sm">
+                        <Calendar className="w-4 h-4 text-slate-400" />
+                        <select
+                            value={filters.period}
+                            onChange={(e) => setFilters({ ...filters, period: e.target.value, dateStart: '', dateEnd: '' })}
+                            className="bg-transparent border-none text-xs font-bold text-slate-700 focus:ring-0 cursor-pointer"
+                        >
+                            <option value="7">Últimos 7 dias</option>
+                            <option value="30">Últimos 30 dias</option>
+                            <option value="90">Últimos 90 dias</option>
+                            <option value="all">Período Personalizado</option>
+                        </select>
+                    </div>
+
+                    {filters.period === 'all' && (
+                        <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
+                            <input
+                                type="date"
+                                value={filters.dateStart}
+                                onChange={(e) => setFilters({ ...filters, dateStart: e.target.value })}
+                                className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                            />
+                            <span className="text-slate-400 font-bold text-xs">até</span>
+                            <input
+                                type="date"
+                                value={filters.dateEnd}
+                                onChange={(e) => setFilters({ ...filters, dateEnd: e.target.value })}
+                                className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                            />
+                        </div>
+                    )}
+
+                    <button
+                        onClick={fetchStats}
+                        className="p-2.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-all font-bold text-xs flex items-center gap-2"
+                        title="Atualizar Dados"
+                    >
+                        <Search className="w-4 h-4" />
+                        Filtrar
+                    </button>
                 </div>
             </div>
 
