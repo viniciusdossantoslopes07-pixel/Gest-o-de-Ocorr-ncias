@@ -26,7 +26,7 @@ export const MaterialStatistics = () => {
 
     // Filters State
     const [filters, setFilters] = useState({
-        period: '30', // days
+        period: 'all', // default to all time
         dateStart: '',
         dateEnd: ''
     });
@@ -72,12 +72,12 @@ export const MaterialStatistics = () => {
                 `);
 
             // Apply Period Filter
-            if (filters.period !== 'all') {
+            if (filters.period !== 'all' && filters.period !== 'custom') {
                 const now = new Date();
                 const periodLimit = new Date();
                 periodLimit.setDate(now.getDate() - parseInt(filters.period));
                 loanQuery = loanQuery.gte('created_at', periodLimit.toISOString());
-            } else if (filters.dateStart && filters.dateEnd) {
+            } else if (filters.period === 'custom' && filters.dateStart && filters.dateEnd) {
                 loanQuery = loanQuery
                     .gte('created_at', new Date(filters.dateStart).toISOString())
                     .lte('created_at', new Date(filters.dateEnd).toISOString());
@@ -171,14 +171,15 @@ export const MaterialStatistics = () => {
                             onChange={(e) => setFilters({ ...filters, period: e.target.value, dateStart: '', dateEnd: '' })}
                             className="bg-transparent border-none text-xs font-bold text-slate-700 focus:ring-0 cursor-pointer"
                         >
+                            <option value="all">Todo o Período</option>
                             <option value="7">Últimos 7 dias</option>
                             <option value="30">Últimos 30 dias</option>
                             <option value="90">Últimos 90 dias</option>
-                            <option value="all">Período Personalizado</option>
+                            <option value="custom">Período Personalizado</option>
                         </select>
                     </div>
 
-                    {filters.period === 'all' && (
+                    {filters.period === 'custom' && (
                         <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
                             <input
                                 type="date"
