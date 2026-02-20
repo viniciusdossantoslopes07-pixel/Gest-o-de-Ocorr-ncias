@@ -40,7 +40,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
       ...formData,
       id: editingUserId || Math.random().toString(36).substr(2, 9),
       email: formData.email || `${formData.username}@secureguard.mil.br`,
-      accessLevel: formData.role === UserRole.ADMIN ? formData.accessLevel : undefined
+      accessLevel: formData.accessLevel // Always save accessLevel (N0 default)
     };
 
     if (editingUserId) {
