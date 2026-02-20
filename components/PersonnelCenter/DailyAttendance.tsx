@@ -2,6 +2,7 @@
 import { useState, useEffect, FC, Fragment } from 'react';
 import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '../../types';
 import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, SETORES, RANKS } from '../../constants';
+import { hasPermission, PERMISSIONS } from '../../constants/permissions';
 import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint, BarChart3 } from 'lucide-react';
 import ForceMapDashboard from './ForceMapDashboard';
 import { authenticateBiometrics } from '../../services/webauthn';
@@ -50,6 +51,10 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [callType, setCallType] = useState<CallTypeCode>('INICIO');
     const [searchTerm, setSearchTerm] = useState('');
     const [signedDates, setSignedDates] = useState<Record<string, { signedBy: string, signedAt: string }>>({});
+
+    // Permission Flags
+    const canSign = hasPermission(currentUser, PERMISSIONS.SIGN_DAILY_ATTENDANCE);
+    const canManage = hasPermission(currentUser, PERMISSIONS.MANAGE_PERSONNEL);
     const [callToSign, setCallToSign] = useState<CallTypeCode | null>(null);
     const [currentWeek, setCurrentWeek] = useState(() => {
         const d = new Date();
@@ -664,19 +669,23 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 </button>
                             </div>
 
-                            <button
-                                onClick={() => setShowManageWeekModal(true)}
-                                className="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-wider transition-all border border-slate-200"
-                            >
-                                Gerir Semana
-                            </button>
+                            {canManage && (
+                                <button
+                                    onClick={() => setShowManageWeekModal(true)}
+                                    className="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-wider transition-all border border-slate-200"
+                                >
+                                    Gerir Semana
+                                </button>
+                            )}
 
-                            <button
-                                onClick={() => setShowAdHocModal(true)}
-                                className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-700 transition-all shadow-sm"
-                            >
-                                <UserPlus className="w-3 h-3" /> Incluir
-                            </button>
+                            {canManage && (
+                                <button
+                                    onClick={() => setShowAdHocModal(true)}
+                                    className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-700 transition-all shadow-sm"
+                                >
+                                    <UserPlus className="w-3 h-3" /> Incluir
+                                </button>
+                            )}
                             <button
                                 onClick={() => window.print()}
                                 className="flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-slate-800 transition-all shadow-sm"
@@ -768,17 +777,19 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                             <div className="font-bold text-slate-900 text-[10px] lg:text-xs uppercase truncate">{user.warName || user.name}</div>
                                                             <div className="text-[8px] lg:text-[9px] text-slate-400 font-bold uppercase">{user.rank}</div>
                                                         </div>
-                                                        <button
-                                                            onClick={() => {
-                                                                if (confirm(`Deseja remover ${user.rank} ${user.warName || user.name} desta lista?`)) {
-                                                                    onExcludeUser(user.id);
-                                                                }
-                                                            }}
-                                                            className="p-1.5 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-all ml-1"
-                                                            title="Excluir militar desta chamada"
-                                                        >
-                                                            <Trash2 className="w-3.5 h-3.5" />
-                                                        </button>
+                                                        {canManage && (
+                                                            <button
+                                                                onClick={() => {
+                                                                    if (confirm(`Deseja remover ${user.rank} ${user.warName || user.name} desta lista?`)) {
+                                                                        onExcludeUser(user.id);
+                                                                    }
+                                                                }}
+                                                                className="p-1.5 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-all ml-1"
+                                                                title="Excluir militar desta chamada"
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </td>
@@ -867,10 +878,10 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                     ) : (
                                                         <button
                                                             onClick={() => handleSignDate(date, type)}
-                                                            disabled={isFutureDate(date)}
+                                                            disabled={isFutureDate(date) || !canSign}
                                                             className="w-full py-1.5 bg-slate-900 text-white rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-md shadow-slate-200"
                                                         >
-                                                            Assinar
+                                                            {canSign ? 'Assinar' : 'Bloqueado'}
                                                         </button>
                                                     )}
                                                 </div>

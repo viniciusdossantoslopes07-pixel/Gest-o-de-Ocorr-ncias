@@ -116,32 +116,17 @@ const App: FC = () => {
   const minRankIndex = RANKS.indexOf("3S");
   const canRequestMission = !!currentUser && ((rankIndex >= 0 && rankIndex <= minRankIndex) || hasPermission(currentUser, PERMISSIONS.REQUEST_MISSION));
 
-  // RBAC para Gestão de Missões (SOP-01 e CH-SOP)
-  const isSOP = currentUser ? ["CH-SOP", "SOP-01"].includes(currentUser.sector) : false;
-  const canManageMissions = !!currentUser && (isSOP || hasPermission(currentUser, PERMISSIONS.MANAGE_MISSIONS) || hasPermission(currentUser, PERMISSIONS.APPROVE_MISSION));
-
-  // RBAC para Gestão de Usuários (SOP-01, CH-SOP e OM)
-  const canManageUsers = !!currentUser && (["CH-SOP", "SOP-01"].includes(currentUser.sector) || hasPermission(currentUser, PERMISSIONS.MANAGE_USERS));
-
-  // ROLE Material Manager (SAP-03, CH-SOP, Comandante OM)
-  const isMaterialManager = !!currentUser && (["SAP-03", "CH-SAP"].includes(currentUser.sector) || hasPermission(currentUser, PERMISSIONS.MANAGE_MATERIAL));
-
-  // Material
-  const canRequestMaterial = hasPermission(currentUser, PERMISSIONS.REQUEST_MATERIAL);
+  // RBAC unificado via Permissões (Independente de Setor)
+  const canManageMissions = hasPermission(currentUser, PERMISSIONS.MANAGE_MISSIONS) || hasPermission(currentUser, PERMISSIONS.APPROVE_MISSION);
+  const canManageUsers = hasPermission(currentUser, PERMISSIONS.MANAGE_USERS);
   const canManageMaterial = hasPermission(currentUser, PERMISSIONS.MANAGE_MATERIAL);
+  const canRequestMaterial = hasPermission(currentUser, PERMISSIONS.REQUEST_MATERIAL);
   const canViewMaterialPanel = hasPermission(currentUser, PERMISSIONS.VIEW_MATERIAL_PANEL);
-
-  // Pessoal
   const canManagePersonnel = hasPermission(currentUser, PERMISSIONS.MANAGE_PERSONNEL);
   const canViewAttendance = hasPermission(currentUser, PERMISSIONS.VIEW_DAILY_ATTENDANCE);
   const canViewPersonnel = hasPermission(currentUser, PERMISSIONS.VIEW_PERSONNEL);
-
-  // Controle de Acesso
   const canViewAccessControl = hasPermission(currentUser, PERMISSIONS.VIEW_ACCESS_CONTROL);
-
-  // Ocorrências
   const canManageOccurrences = hasPermission(currentUser, PERMISSIONS.MANAGE_OCCURRENCES);
-
   const canViewServiceQueue = hasPermission(currentUser, PERMISSIONS.VIEW_SERVICE_QUEUE);
   const canViewDashboard = hasPermission(currentUser, PERMISSIONS.VIEW_DASHBOARD);
 
@@ -415,7 +400,10 @@ const App: FC = () => {
       setCurrentUser(user);
       setActiveTab('home');
 
-      if (user.role === UserRole.ADMIN || ["CH-SOP", "SOP-01"].includes(user.sector)) {
+      if (hasPermission(user, PERMISSIONS.MANAGE_USERS) ||
+        hasPermission(user, PERMISSIONS.MANAGE_PERSONNEL) ||
+        hasPermission(user, PERMISSIONS.VIEW_PERSONNEL) ||
+        hasPermission(user, PERMISSIONS.VIEW_DAILY_ATTENDANCE)) {
         fetchUsers();
       }
 
