@@ -126,6 +126,19 @@ const App: FC = () => {
   // ROLE Material Manager (SAP-03, CH-SOP, Comandante OM)
   const isMaterialManager = !!currentUser && (isOM || isAdmin || ["SAP-03", "CH-SAP"].includes(currentUser.sector));
 
+  const hasPermission = (permission: string) => {
+    if (!currentUser) return false;
+    if (currentUser.customPermissions?.includes(permission)) return true;
+    if (currentUser.functionId && USER_FUNCTIONS[currentUser.functionId as keyof typeof USER_FUNCTIONS]) {
+      const func = USER_FUNCTIONS[currentUser.functionId as keyof typeof USER_FUNCTIONS];
+      if (func.permissions.includes(permission)) return true;
+    }
+    return false;
+  };
+
+  const canViewServiceQueue = isAdmin || hasPermission(PERMISSIONS.VIEW_SERVICE_QUEUE);
+  const canViewDashboard = isAdmin || hasPermission(PERMISSIONS.VIEW_DASHBOARD);
+
 
   useEffect(() => {
     supabase.from('test').select('*').then(({ data, error }) => {
@@ -991,8 +1004,8 @@ const App: FC = () => {
             </div>
           )}
 
-          {activeTab === 'kanban' && isAdmin && <KanbanBoard occurrences={occurrences} onSelect={setSelectedOccurrence} />}
-          {activeTab === 'dashboard' && isAdmin && <Dashboard occurrences={occurrences} />}
+          {activeTab === 'kanban' && canViewServiceQueue && <KanbanBoard occurrences={occurrences} onSelect={setSelectedOccurrence} />}
+          {activeTab === 'dashboard' && canViewDashboard && <Dashboard occurrences={occurrences} />}
 
           {activeTab === 'mission-request' && canRequestMission && (
             <div className="max-w-4xl mx-auto">
