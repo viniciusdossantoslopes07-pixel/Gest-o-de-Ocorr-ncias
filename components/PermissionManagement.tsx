@@ -254,7 +254,8 @@ export default function PermissionManagement({ users, onUpdateUser, currentAdmin
         if (key.includes('personnel') || key.includes('attendance')) return 'Pessoal';
         if (key.includes('access')) return 'Controle de Acesso';
         if (key.includes('manage_users') || key.includes('manage_permissions')) return 'Administração';
-        if (key.startsWith('view_')) return 'Painéis e Visualização';
+        if (key.startsWith('view_') && !key.includes('service_queue')) return 'Painéis e Visualização'; // Exclude service queue from generic view
+        if (key.includes('occurrence') || key.includes('service_queue')) return 'Central Ocorrência';
         return 'Outros';
     };
 

@@ -35,6 +35,7 @@ export const PERMISSIONS = {
     ESCALATE_OCCURRENCES: 'escalate_occurrences', // Ações de N2 (Definir Setor, Enviar p/ N3, Devolver p/ N1)
     RESOLVE_OCCURRENCES: 'resolve_occurrences', // Ações de N3 (Resolver, Devolver p/ N2)
     FINALIZE_OCCURRENCES: 'finalize_occurrences', // Ação de Finalizar/Arquivar (Qualquer nível autorizado)
+    VIEW_SERVICE_QUEUE: 'view_service_queue', // Visualizar Fila de Serviço (Kanban)
 
     // Missões (Ações Específicas)
     APPROVE_MISSION: 'approve_mission', // Analisar e Aprovar solicitação (SOP)
