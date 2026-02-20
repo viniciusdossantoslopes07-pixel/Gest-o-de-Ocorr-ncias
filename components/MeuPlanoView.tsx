@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { User, MissionOrder } from '../types';
-import { FileText, BarChart3, Download, Calendar, Shield, MapPin, Package, Filter, X } from 'lucide-react';
+import { FileText, BarChart3, Download, Calendar, Shield, MapPin, Package, Filter, X, CheckCircle2 } from 'lucide-react';
 import MissionRequestList from './MissionRequestList';
 import { supabase } from '../services/supabase';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
@@ -20,7 +20,10 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         loansByCategory: [] as any[],
         recentMissions: [] as any[],
         loanHistory: 0,
-        activeLoans: 0
+        activeLoans: 0,
+        attendanceHistory: [] as any[],
+        attendanceRate: 0,
+        attendanceByStatus: [] as any[]
     });
     const [loading, setLoading] = useState(false);
     const [allMissions, setAllMissions] = useState<any[]>([]);
@@ -70,8 +73,25 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
 
             if (lError) throw lError;
 
+            // 3. Fetch Attendance Records for this militar (using SARAM)
+            const { data: attendance, error: aError } = await supabase
+                .from('attendance_records')
+                .select(`
+                    id,
+                    status,
+                    timestamp,
+                    daily_attendance (
+                        date,
+                        call_type
+                    )
+                `)
+                .eq('saram', user.saram)
+                .order('timestamp', { ascending: false });
+
+            if (aError) throw aError;
+
             // Process Initial Data (Full)
-            processAndSetStats(missions || [], loans || []);
+            processAndSetStats(missions || [], loans || [], attendance || []);
 
         } catch (error) {
             console.error('Error fetching personal stats:', error);
@@ -80,7 +100,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         }
     };
 
-    const processAndSetStats = (missions: any[], loans: any[]) => {
+    const processAndSetStats = (missions: any[], loans: any[], attendance: any[]) => {
         const totalMissions = missions.length;
         const recentMissions = missions.slice(0, 5);
 
@@ -105,6 +125,20 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         const loanHistory = loans.length;
         const activeLoans = loans.filter((l: any) => l.status === 'Em Uso').reduce((acc: number, curr: any) => acc + (curr.quantidade || 1), 0);
 
+        // Process Attendance
+        const totalAttendance = attendance.length;
+        const presenceCount = attendance.filter((a: any) =>
+            ['P', 'ESV', 'MIS', 'SV'].includes(a.status)
+        ).length;
+        const attendanceRate = totalAttendance > 0 ? (presenceCount / totalAttendance) * 100 : 0;
+
+        const statusCount: Record<string, number> = {};
+        attendance.forEach((a: any) => {
+            const status = a.status || 'Outros';
+            statusCount[status] = (statusCount[status] || 0) + 1;
+        });
+        const attendanceByStatus = Object.entries(statusCount).map(([name, value]) => ({ name, value }));
+
         setStats({
             totalMissions,
             totalHours: 0,
@@ -112,7 +146,10 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             loansByCategory,
             recentMissions,
             loanHistory,
-            activeLoans
+            activeLoans,
+            attendanceHistory: attendance,
+            attendanceRate,
+            attendanceByStatus
         });
     };
 
@@ -135,13 +172,36 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         const missionsByType = Object.entries(typeCount).map(([name, value]) => ({ name, value }));
         const recentMissions = filtered.slice(0, 5);
 
+        // Filter Attendance
+        const filteredAttendance = stats.attendanceHistory.filter(a => {
+            const aDate = new Date(a.daily_attendance?.date || a.timestamp);
+            const matchDateStart = !filterDateStart || aDate >= new Date(filterDateStart);
+            const matchDateEnd = !filterDateEnd || aDate <= new Date(filterDateEnd);
+            return matchDateStart && matchDateEnd;
+        });
+
+        const fPresenceCount = filteredAttendance.filter((a: any) =>
+            ['P', 'ESV', 'MIS', 'SV'].includes(a.status)
+        ).length;
+        const fAttendanceRate = filteredAttendance.length > 0 ? (fPresenceCount / filteredAttendance.length) * 100 : 0;
+
+        const fStatusCount: Record<string, number> = {};
+        filteredAttendance.forEach((a: any) => {
+            const status = a.status || 'Outros';
+            fStatusCount[status] = (fStatusCount[status] || 0) + 1;
+        });
+        const fAttendanceByStatus = Object.entries(fStatusCount).map(([name, value]) => ({ name, value }));
+
         return {
             totalMissions: filtered.length,
             missionsByType,
             recentMissions,
+            attendanceRate: fAttendanceRate,
+            attendanceByStatus: fAttendanceByStatus,
+            attendanceHistory: filteredAttendance,
             allFiltered: filtered
         };
-    }, [allMissions, filterType, filterDateStart, filterDateEnd]);
+    }, [allMissions, filterType, filterDateStart, filterDateEnd, stats.attendanceHistory]);
 
     const missionTypes = useMemo(() => {
         const types = new Set<string>();
@@ -198,8 +258,9 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
 
         doc.setFontSize(12);
         doc.text(`Total de Missões: ${hasActiveFilters ? filteredStats.totalMissions : stats.totalMissions}`, 20, 75);
-        doc.text(`Cautelas Ativas: ${stats.activeLoans} itens`, 20, 83);
-        doc.text(`Histórico de Cautelas: ${stats.loanHistory} registros`, 20, 91);
+        doc.text(`Assiduidade: ${(hasActiveFilters ? filteredStats.attendanceRate : stats.attendanceRate).toFixed(1)}%`, 20, 83);
+        doc.text(`Cautelas Ativas: ${stats.activeLoans} itens`, 20, 91);
+        doc.text(`Histórico de Cautelas: ${stats.loanHistory} registros`, 20, 99);
 
         // Recent Missions
         doc.setFontSize(14);
@@ -365,13 +426,15 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
 
                                 <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
                                     <div className="flex items-center gap-3 mb-2">
-                                        <div className="p-2 bg-amber-100 text-amber-600 rounded-lg">
-                                            <FileText className="w-5 h-5" />
+                                        <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
+                                            <CheckCircle2 className="w-5 h-5" />
                                         </div>
-                                        <h3 className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>Total de Cautelas</h3>
+                                        <h3 className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>Assiduidade</h3>
                                     </div>
-                                    <p className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{stats.loanHistory}</p>
-                                    <p className="text-xs text-slate-500 mt-1">Histórico completo</p>
+                                    <p className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                        {(hasActiveFilters ? filteredStats.attendanceRate : stats.attendanceRate).toFixed(1)}%
+                                    </p>
+                                    <p className="text-xs text-slate-500 mt-1">Percentual de presença efetiva</p>
                                 </div>
                             </div>
 
@@ -457,6 +520,65 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                                                 <Legend />
                                             </PieChart>
                                         </ResponsiveContainer>
+                                    </div>
+                                </div>
+
+                                {/* Attendance Status Chart */}
+                                <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-white border-slate-200'}`}>
+                                    <h3 className={`font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Distribuição de Frequência</h3>
+                                    <div className="h-64 w-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={hasActiveFilters ? filteredStats.attendanceByStatus : stats.attendanceByStatus}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={60}
+                                                    outerRadius={80}
+                                                    fill="#8884d8"
+                                                    paddingAngle={5}
+                                                    dataKey="value"
+                                                >
+                                                    {(hasActiveFilters ? filteredStats.attendanceByStatus : stats.attendanceByStatus).map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={COLORS[(index + 4) % COLORS.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <RechartsTooltip />
+                                                <Legend />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+
+                                {/* Attendance List */}
+                                <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-white border-slate-200'}`}>
+                                    <h3 className={`font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                        Últimas Chamadas
+                                    </h3>
+                                    <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin">
+                                        {(hasActiveFilters ? filteredStats.attendanceHistory : stats.attendanceHistory).slice(0, 10).map((record: any) => (
+                                            <div key={record.id} className={`flex items-center justify-between p-3 rounded-lg ${isDarkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-2 h-8 rounded-full ${['P', 'ESV', 'MIS', 'SV'].includes(record.status) ? 'bg-emerald-500' : 'bg-red-500'
+                                                        }`} />
+                                                    <div>
+                                                        <p className={`font-bold text-sm ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                                                            {new Date(record.daily_attendance?.date || record.timestamp).toLocaleDateString()}
+                                                        </p>
+                                                        <p className="text-xs text-slate-500">{record.daily_attendance?.call_type || 'Chamada'}</p>
+                                                    </div>
+                                                </div>
+                                                <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${['P', 'ESV', 'MIS', 'SV'].includes(record.status)
+                                                    ? 'bg-emerald-100 text-emerald-700'
+                                                    : 'bg-red-100 text-red-700'
+                                                    }`}>
+                                                    {record.status}
+                                                </span>
+                                            </div>
+                                        ))}
+                                        {(hasActiveFilters ? filteredStats.attendanceHistory : stats.attendanceHistory).length === 0 && (
+                                            <p className="text-slate-500 text-sm italic py-4 text-center">Nenhum registro de frequência encontrado.</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
