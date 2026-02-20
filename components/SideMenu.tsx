@@ -8,7 +8,7 @@ import {
     ChevronUp, ChevronDown, Check, Settings2, DoorOpen, Car
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
-import { USER_FUNCTIONS, PERMISSIONS } from '../constants/permissions';
+import { USER_FUNCTIONS, PERMISSIONS, hasPermission } from '../constants/permissions';
 
 interface SideMenuProps {
     isOpen: boolean;
@@ -32,51 +32,33 @@ export default function SideMenu({
     const [isPersonnelOpen, setIsPersonnelOpen] = useState(false);
     const [isAccessControlOpen, setIsAccessControlOpen] = useState(false);
 
-    // Permission Helper
-    const hasPermission = (permission: string) => {
-        if (!currentUser) return false;
-        // Admin explicit check removed to allow "Admin" users to be restricted by their assigned Function/Permissions if desired.
-        // if (currentUser.role === UserRole.ADMIN) return true; 
-
-        // 1. Check Custom Permissions (assigned via PermissionManagement)
-        if (currentUser.customPermissions?.includes(permission)) return true;
-
-        // 2. Check Function Permissions (assigned via UserManagement/Profile)
-        if (currentUser.functionId && USER_FUNCTIONS[currentUser.functionId as keyof typeof USER_FUNCTIONS]) {
-            const func = USER_FUNCTIONS[currentUser.functionId as keyof typeof USER_FUNCTIONS];
-            if (func.permissions.includes(permission)) return true;
-        }
-
-        return false;
-    };
-
     // Permission-based Logic
     // Public is handled separately
     const isPublic = currentUser.role === UserRole.PUBLIC;
 
     // Menu Visibility Checks
-    const canViewDashboard = hasPermission(PERMISSIONS.VIEW_DASHBOARD);
+    const canViewDashboard = hasPermission(currentUser, PERMISSIONS.VIEW_DASHBOARD);
 
     // Missions
-    const canRequestMission = hasPermission(PERMISSIONS.REQUEST_MISSION);
-    const canManageMissions = hasPermission(PERMISSIONS.MANAGE_MISSIONS) || hasPermission(PERMISSIONS.APPROVE_MISSION);
+    const canRequestMission = hasPermission(currentUser, PERMISSIONS.REQUEST_MISSION);
+    const canManageMissions = hasPermission(currentUser, PERMISSIONS.MANAGE_MISSIONS) || hasPermission(currentUser, PERMISSIONS.APPROVE_MISSION);
 
     // Material
-    const canViewMaterialPanel = hasPermission(PERMISSIONS.VIEW_MATERIAL_PANEL) || hasPermission(PERMISSIONS.REQUEST_MATERIAL) || hasPermission(PERMISSIONS.MANAGE_MATERIAL);
-    const canRequestMaterial = hasPermission(PERMISSIONS.REQUEST_MATERIAL);
-    const canManageMaterial = hasPermission(PERMISSIONS.MANAGE_MATERIAL);
+    const canViewMaterialPanel = hasPermission(currentUser, PERMISSIONS.VIEW_MATERIAL_PANEL) || hasPermission(currentUser, PERMISSIONS.REQUEST_MATERIAL) || hasPermission(currentUser, PERMISSIONS.MANAGE_MATERIAL);
+    const canRequestMaterial = hasPermission(currentUser, PERMISSIONS.REQUEST_MATERIAL);
+    const canManageMaterial = hasPermission(currentUser, PERMISSIONS.MANAGE_MATERIAL);
 
     // Personnel
-    const canViewPersonnel = hasPermission(PERMISSIONS.VIEW_PERSONNEL) || hasPermission(PERMISSIONS.MANAGE_PERSONNEL) || hasPermission(PERMISSIONS.VIEW_DAILY_ATTENDANCE);
-    const canManagePersonnel = hasPermission(PERMISSIONS.MANAGE_PERSONNEL);
-    const canViewAttendance = hasPermission(PERMISSIONS.VIEW_DAILY_ATTENDANCE);
+    const canViewPersonnel = hasPermission(currentUser, PERMISSIONS.VIEW_PERSONNEL) || hasPermission(currentUser, PERMISSIONS.MANAGE_PERSONNEL) || hasPermission(currentUser, PERMISSIONS.VIEW_DAILY_ATTENDANCE);
+    const canManagePersonnel = hasPermission(currentUser, PERMISSIONS.MANAGE_PERSONNEL);
+    const canViewAttendance = hasPermission(currentUser, PERMISSIONS.VIEW_DAILY_ATTENDANCE);
 
     // Access Control
-    const canViewAccessControl = hasPermission(PERMISSIONS.VIEW_ACCESS_CONTROL) || hasPermission(PERMISSIONS.MANAGE_ACCESS_CONTROL);
+    const canViewAccessControl = hasPermission(currentUser, PERMISSIONS.VIEW_ACCESS_CONTROL) || hasPermission(currentUser, PERMISSIONS.MANAGE_ACCESS_CONTROL);
 
     // Admin / Occurrences
-    const canManageUsers = hasPermission(PERMISSIONS.MANAGE_USERS);
-    const canManageOccurrences = hasPermission(PERMISSIONS.MANAGE_OCCURRENCES);
+    const canManageUsers = hasPermission(currentUser, PERMISSIONS.MANAGE_USERS);
+    const canManageOccurrences = hasPermission(currentUser, PERMISSIONS.MANAGE_OCCURRENCES);
     const isAdmin = currentUser.role === UserRole.ADMIN;
 
     const MenuItem = ({ id, label, icon: Icon, onClick }: any) => (
@@ -243,7 +225,7 @@ export default function SideMenu({
                                     </button>
                                     {(!isCollapsed && isOccurrencesOpen) && (
                                         <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
-                                            {hasPermission(PERMISSIONS.VIEW_SERVICE_QUEUE) && <MenuItem id="kanban" label="Fila de Serviço" icon={LayoutDashboard} />}
+                                            {hasPermission(currentUser, PERMISSIONS.VIEW_SERVICE_QUEUE) && <MenuItem id="kanban" label="Fila de Serviço" icon={LayoutDashboard} />}
                                             <MenuItem id="dashboard" label="Estatísticas BI" icon={BarChart3} />
                                             <MenuItem id="list" label="Arquivo Geral" icon={FileText} />
                                         </div>

@@ -8,6 +8,7 @@ import MissionOrderForm from './MissionOrderForm';
 import { MISSION_STATUS_COLORS, MISSION_STATUS_LABELS } from '../constants';
 import MissionRequestForm from './MissionRequestForm';
 import MissionRequestCard from './MissionRequestCard';
+import { PERMISSIONS, hasPermission } from '../constants/permissions';
 
 import MissionOrderPrintView from './MissionOrderPrintView';
 import { notificationService } from '../services/notificationService';
@@ -41,9 +42,9 @@ export default function MissionManager({ user }: MissionManagerProps) {
 
     // Permission checks
     // Refactored to use granular permissions instead of AccessLevel
-    const canApprove = user.customPermissions?.includes('approve_mission') || user.role === UserRole.ADMIN;
-    const canSign = user.customPermissions?.includes('sign_mission') || user.role === UserRole.ADMIN;
-    const canManage = user.customPermissions?.includes('manage_missions') || user.role === UserRole.ADMIN;
+    const canApprove = hasPermission(user, PERMISSIONS.APPROVE_MISSION) || user.role === UserRole.ADMIN;
+    const canSign = hasPermission(user, PERMISSIONS.SIGN_MISSION) || user.role === UserRole.ADMIN;
+    const canManage = hasPermission(user, PERMISSIONS.MANAGE_MISSIONS) || user.role === UserRole.ADMIN;
 
     // Legacy mapping for existing logic compatibility (to be gradually replaced)
     // isSop used to mean "Can Analyze/Approve"

@@ -13,7 +13,7 @@ import {
 import MissionRequestForm from './components/MissionRequestForm';
 import MissionRequestList from './components/MissionRequestList';
 import { Occurrence, User, UserRole, Status, Urgency, MissionOrder, Mission, DailyAttendance, AbsenceJustification, UserFunction } from './types';
-import { USER_FUNCTIONS, PERMISSIONS } from './constants/permissions';
+import { USER_FUNCTIONS, PERMISSIONS, hasPermission } from './constants/permissions';
 import Dashboard from './components/Dashboard';
 import OccurrenceForm from './components/OccurrenceForm';
 import OccurrenceDetail from './components/OccurrenceDetail';
@@ -111,33 +111,38 @@ const App: FC = () => {
   const isOM = currentUser?.accessLevel === 'OM';
   const isPublic = currentUser?.role === UserRole.PUBLIC;
 
-  const hasPermission = (permission: string) => {
-    if (!currentUser) return false;
-    if (currentUser.customPermissions?.includes(permission)) return true;
-    if (currentUser.functionId && USER_FUNCTIONS[currentUser.functionId as keyof typeof USER_FUNCTIONS]) {
-      const func = USER_FUNCTIONS[currentUser.functionId as keyof typeof USER_FUNCTIONS];
-      if (func.permissions.includes(permission)) return true;
-    }
-    return false;
-  };
-
   // RBAC para Missões
   const rankIndex = currentUser ? RANKS.indexOf(currentUser.rank) : -1;
   const minRankIndex = RANKS.indexOf("3S");
-  const canRequestMission = !!currentUser && (isOM || (rankIndex >= 0 && rankIndex <= minRankIndex));
+  const canRequestMission = !!currentUser && (isOM || (rankIndex >= 0 && rankIndex <= minRankIndex) || hasPermission(currentUser, PERMISSIONS.REQUEST_MISSION));
 
   // RBAC para Gestão de Missões (SOP-01 e CH-SOP)
   const isSOP = currentUser ? ["CH-SOP", "SOP-01"].includes(currentUser.sector) : false;
-  const canManageMissions = !!currentUser && (isOM || isSOP || hasPermission(PERMISSIONS.MANAGE_MISSIONS));
+  const canManageMissions = !!currentUser && (isOM || isSOP || hasPermission(currentUser, PERMISSIONS.MANAGE_MISSIONS) || hasPermission(currentUser, PERMISSIONS.APPROVE_MISSION));
 
   // RBAC para Gestão de Usuários (SOP-01, CH-SOP e OM)
-  const canManageUsers = !!currentUser && (isOM || ["CH-SOP", "SOP-01"].includes(currentUser.sector) || hasPermission(PERMISSIONS.MANAGE_USERS));
+  const canManageUsers = !!currentUser && (isOM || ["CH-SOP", "SOP-01"].includes(currentUser.sector) || hasPermission(currentUser, PERMISSIONS.MANAGE_USERS));
 
   // ROLE Material Manager (SAP-03, CH-SOP, Comandante OM)
-  const isMaterialManager = !!currentUser && (isOM || isAdmin || ["SAP-03", "CH-SAP"].includes(currentUser.sector));
+  const isMaterialManager = !!currentUser && (isOM || isAdmin || ["SAP-03", "CH-SAP"].includes(currentUser.sector) || hasPermission(currentUser, PERMISSIONS.MANAGE_MATERIAL));
 
-  const canViewServiceQueue = isAdmin || hasPermission(PERMISSIONS.VIEW_SERVICE_QUEUE);
-  const canViewDashboard = isAdmin || hasPermission(PERMISSIONS.VIEW_DASHBOARD);
+  const canRequestMaterial = hasPermission(currentUser, PERMISSIONS.REQUEST_MATERIAL);
+  const canManageMaterial = hasPermission(currentUser, PERMISSIONS.MANAGE_MATERIAL);
+  const canViewMaterialPanel = canManageMaterial || canRequestMaterial || hasPermission(currentUser, PERMISSIONS.VIEW_MATERIAL_PANEL);
+
+  // Pessoal
+  const canManagePersonnel = hasPermission(currentUser, PERMISSIONS.MANAGE_PERSONNEL);
+  const canViewAttendance = hasPermission(currentUser, PERMISSIONS.VIEW_DAILY_ATTENDANCE);
+  const canViewPersonnel = canManagePersonnel || canViewAttendance || hasPermission(currentUser, PERMISSIONS.VIEW_PERSONNEL);
+
+  // Controle de Acesso
+  const canViewAccessControl = hasPermission(currentUser, PERMISSIONS.VIEW_ACCESS_CONTROL) || hasPermission(currentUser, PERMISSIONS.MANAGE_ACCESS_CONTROL);
+
+  // Ocorrências
+  const canManageOccurrences = hasPermission(currentUser, PERMISSIONS.MANAGE_OCCURRENCES);
+
+  const canViewServiceQueue = isAdmin || hasPermission(currentUser, PERMISSIONS.VIEW_SERVICE_QUEUE);
+  const canViewDashboard = isAdmin || hasPermission(currentUser, PERMISSIONS.VIEW_DASHBOARD);
 
 
   useEffect(() => {
@@ -1030,7 +1035,7 @@ const App: FC = () => {
           )}
 
           {/* MISSION CENTER (Unified) */}
-          {activeTab === 'mission-center' && (
+          {activeTab === 'mission-center' && (canManageMissions || canRequestMission) && (
             <div className="flex-1 overflow-auto p-4">
               <MissionManager user={currentUser} />
             </div>
@@ -1052,7 +1057,7 @@ const App: FC = () => {
             <MeuPlanoView user={currentUser} isDarkMode={isDarkMode} />
           )}
 
-          {activeTab === 'daily-attendance' && (
+          {activeTab === 'daily-attendance' && canViewAttendance && (
             <DailyAttendanceView
               users={users}
               onReorderUsers={handleReorderUsers}
@@ -1250,7 +1255,7 @@ const App: FC = () => {
             />
           )}
 
-          {activeTab === 'personnel-management' && (
+          {activeTab === 'personnel-management' && canManagePersonnel && (
             <PersonnelManagementView
               users={users} // Only main users
               onAddPersonnel={(u) => {
@@ -1281,15 +1286,15 @@ const App: FC = () => {
 
 
           {/* Access Control Module */}
-          {activeTab === 'access-control' && currentUser && (
+          {activeTab === 'access-control' && canViewAccessControl && currentUser && (
             <AccessControlPanel user={currentUser} />
           )}
 
-          {activeTab === 'access-statistics' && (
+          {activeTab === 'access-statistics' && canViewAccessControl && (
             <AccessStatistics />
           )}
 
-          {activeTab === 'parking-request' && (
+          {activeTab === 'parking-request' && canViewAccessControl && (
             <ParkingRequestPanel user={currentUser} />
           )}
 
@@ -1369,7 +1374,7 @@ const App: FC = () => {
             </>
           )}
 
-          {activeTab === 'inventory-management' && (
+          {activeTab === 'inventory-management' && canManageMaterial && (
             <InventoryManager user={currentUser} />
           )}
 
@@ -1377,11 +1382,11 @@ const App: FC = () => {
             <MyMaterialLoans user={currentUser} />
           )}
 
-          {activeTab === 'material-approvals' && (
+          {activeTab === 'material-approvals' && canManageMaterial && (
             <SAP03Panel user={currentUser} />
           )}
 
-          {activeTab === 'request-material' && (
+          {activeTab === 'request-material' && canRequestMaterial && (
             <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 md:space-y-8">
               <LoanRequestForm
                 user={currentUser}

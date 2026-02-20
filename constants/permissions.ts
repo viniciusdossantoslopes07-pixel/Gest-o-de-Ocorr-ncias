@@ -1,4 +1,6 @@
 
+import { User } from '../types';
+
 export const PERMISSIONS = {
     // Visualização
     VIEW_DASHBOARD: 'view_dashboard',
@@ -130,4 +132,25 @@ export const USER_FUNCTIONS = {
             // Para solicitar missões/material, o usuário deve receber a permissão explicitamente no Painel.
         ]
     }
+};
+
+/**
+ * Centralized Permission Helper
+ * Checks if a user has a specific permission via:
+ * 1. Explicit Custom Permissions (custom_permissions col in DB)
+ * 2. Function-based Permissions (function_id col mapping to USER_FUNCTIONS)
+ */
+export const hasPermission = (user: User | null | undefined, permission: string): boolean => {
+    if (!user) return false;
+
+    // 1. Check Custom Permissions
+    if (user.customPermissions?.includes(permission)) return true;
+
+    // 2. Check Function Permissions
+    if (user.functionId && USER_FUNCTIONS[user.functionId as keyof typeof USER_FUNCTIONS]) {
+        const func = USER_FUNCTIONS[user.functionId as keyof typeof USER_FUNCTIONS];
+        if (func.permissions.includes(permission)) return true;
+    }
+
+    return false;
 };

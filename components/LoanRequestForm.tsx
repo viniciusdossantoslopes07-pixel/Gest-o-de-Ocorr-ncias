@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
-import { Package, Search, CheckCircle, AlertCircle, X, Plus, Trash2, Send } from 'lucide-react';
+import { Package, Search, CheckCircle, AlertCircle, X, Plus, Minus, Trash2, Send } from 'lucide-react';
 
 interface StockItem {
     id: string;
@@ -33,6 +33,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
     const [error, setError] = useState('');
     const [selectedBatch, setSelectedBatch] = useState<SelectedItem[]>([]);
     const [showCartMobile, setShowCartMobile] = useState(false);
+    const [quantities, setQuantities] = useState<Record<string, number>>({});
 
     useEffect(() => {
         fetchAvailableItems();
@@ -48,7 +49,15 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
 
             if (error) throw error;
 
-            setItems(data || []);
+            const fetchedItems = data || [];
+            setItems(fetchedItems);
+
+            // Initialize quantities for all items
+            const initialQuantities: Record<string, number> = {};
+            fetchedItems.forEach((item: StockItem) => {
+                initialQuantities[item.id] = 1;
+            });
+            setQuantities(initialQuantities);
         } catch (err) {
             console.error('Error fetching inventory:', err);
             setError('Erro ao carregar itens do estoque.');
@@ -57,10 +66,17 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
         }
     };
 
+    const updateQuantity = (id: string, delta: number, max: number) => {
+        setQuantities(prev => {
+            const current = prev[id] || 1;
+            const next = Math.max(1, Math.min(max, current + delta));
+            return { ...prev, [id]: next };
+        });
+    };
+
     const addToBatch = (item: StockItem) => {
         const available = item.entrada - item.saida;
-        const qtdInput = document.getElementById(`qtd-${item.id}`) as HTMLInputElement;
-        const qtd = qtdInput ? parseInt(qtdInput.value) : 1;
+        const qtd = quantities[item.id] || 1;
 
         if (selectedBatch.some(i => i.id_material === item.id)) {
             alert('Item já adicionado na lista!');
@@ -172,46 +188,65 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
                                 const isAdded = selectedBatch.some(i => i.id_material === item.id);
 
                                 return (
-                                    <div key={item.id} className={`group relative flex flex-row items-center justify-between p-3 sm:p-5 bg-white border rounded-xl transition-all duration-300 gap-3 sm:gap-6 ${isAdded ? 'border-blue-500 shadow-blue-50 ring-2 ring-blue-50' : 'border-slate-100 shadow-sm'}`}>
-                                        <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-1.5 mb-1">
-                                                <span className={`w-1.5 h-1.5 rounded-full ${hasStock ? 'bg-emerald-400' : 'bg-red-400'}`}></span>
-                                                <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest leading-none truncate">{item.tipo_de_material}</p>
+                                    <div key={item.id} className={`group relative flex flex-col p-5 bg-white border-2 rounded-2xl transition-all duration-300 ${isAdded ? 'border-blue-500 shadow-xl shadow-blue-500/10' : 'border-slate-100 hover:border-blue-200'}`}>
+                                        {/* Status Badge */}
+                                        <div className="flex items-center justify-between mb-4">
+                                            <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${hasStock ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                                                {hasStock ? 'Disponível' : 'Esgotado'}
+                                            </span>
+                                            <div className="flex items-center gap-1.5 min-w-0">
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight truncate max-w-[100px]">{item.tipo_de_material}</p>
                                             </div>
-                                            <h3 className="font-black text-slate-800 text-sm sm:text-lg group-hover:text-blue-600 transition-colors uppercase truncate leading-tight">{item.material}</h3>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <span className="text-[10px] text-slate-400 font-medium">Disp:</span>
+                                        </div>
+
+                                        {/* Icon & Title */}
+                                        <div className="flex flex-col items-center text-center mb-6">
+                                            <div className={`p-4 rounded-2xl mb-4 transition-transform group-hover:scale-110 duration-500 ${isAdded ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'bg-slate-50 text-slate-400'}`}>
+                                                <Package className="w-8 h-8" />
+                                            </div>
+                                            <h3 className="font-black text-slate-800 text-sm sm:text-base uppercase leading-tight px-2 min-h-[2.5rem] flex items-center justify-center">
+                                                {item.material}
+                                            </h3>
+                                            <div className="mt-2 flex items-center gap-2">
+                                                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Estoque:</span>
                                                 <span className={`text-xs font-black ${hasStock ? 'text-blue-600' : 'text-red-500'}`}>
                                                     {available}
                                                 </span>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                                            <div className="relative">
-                                                <input
-                                                    type="number"
-                                                    inputMode="numeric"
-                                                    min="1"
-                                                    max={available}
-                                                    defaultValue="1"
-                                                    id={`qtd-${item.id}`}
-                                                    disabled={isAdded || !hasStock}
-                                                    className="w-12 h-10 sm:w-14 sm:h-12 bg-slate-50 border border-slate-200 rounded-lg text-center text-sm sm:text-lg font-black text-slate-700 outline-none focus:border-blue-500 transition-all disabled:opacity-50"
-                                                    onChange={(e) => {
-                                                        const val = parseInt(e.target.value);
-                                                        if (val > available) e.target.value = String(available);
-                                                        if (val < 1) e.target.value = "1";
-                                                    }}
-                                                />
-                                            </div>
+                                        {/* Controls */}
+                                        <div className="mt-auto space-y-3">
+                                            {!isAdded && hasStock && (
+                                                <div className="flex items-center justify-center gap-4 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                                                    <button
+                                                        onClick={() => updateQuantity(item.id, -1, available)}
+                                                        className="w-10 h-10 flex items-center justify-center rounded-lg bg-white shadow-sm border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-200 active:scale-90 transition-all"
+                                                    >
+                                                        <Minus className="w-4 h-4" />
+                                                    </button>
+                                                    <span className="w-8 text-center text-sm font-black text-slate-700">
+                                                        {quantities[item.id] || 1}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => updateQuantity(item.id, 1, available)}
+                                                        className="w-10 h-10 flex items-center justify-center rounded-lg bg-white shadow-sm border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-200 active:scale-90 transition-all"
+                                                    >
+                                                        <Plus className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            )}
+
                                             <button
                                                 onClick={() => isAdded ? removeFromBatch(item.id) : addToBatch(item)}
                                                 disabled={submitting || (!hasStock && !isAdded)}
-                                                className={`h-10 sm:h-12 px-3 sm:px-6 rounded-lg sm:rounded-xl font-black uppercase text-[10px] sm:text-xs tracking-widest transition-all shadow-sm flex items-center justify-center gap-2 ${isAdded ? 'bg-emerald-500 text-white hover:bg-emerald-600' : hasStock ? 'bg-slate-900 text-white hover:bg-blue-600' : 'bg-slate-100 text-slate-300 cursor-not-allowed shadow-none border border-dashed border-slate-200'}`}
+                                                className={`w-full h-14 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all shadow-md flex items-center justify-center gap-3 ${isAdded ? 'bg-emerald-500 text-white hover:bg-emerald-600 hover:shadow-emerald-500/20' : hasStock ? 'bg-slate-900 text-white hover:bg-blue-600 hover:shadow-blue-600/20' : 'bg-slate-50 text-slate-200 cursor-not-allowed border border-dashed border-slate-200 shadow-none'}`}
                                             >
-                                                {isAdded ? <CheckCircle className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                                                <span className="hidden sm:inline">{isAdded ? 'OK' : 'Selecionar'}</span>
+                                                {isAdded ? (
+                                                    <><CheckCircle className="w-4 h-4" /> Item Selecionado</>
+                                                ) : (
+                                                    <><Plus className="w-4 h-4" /> Adicionar à Lista</>
+                                                )}
                                             </button>
                                         </div>
                                     </div>
@@ -224,13 +259,23 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
                 {/* Painel Lateral - Carrinho de Itens (Desktop) */}
                 <div className={`hidden md:flex w-80 lg:w-96 bg-white p-6 h-full flex-col shadow-[-15px_0_40px_rgba(0,0,0,0.03)] border-l border-slate-100 relative z-20`}>
                     <div className="flex items-center justify-between mb-8 shrink-0">
-                        <h3 className="font-black text-slate-900 uppercase text-sm tracking-widest flex items-center gap-3">
-                            <div className="bg-blue-600 p-2 rounded-lg">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-600/20">
                                 <Send className="w-4 h-4 text-white" />
                             </div>
-                            Sua Lista
-                            <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[10px]">{selectedBatch.length}</span>
-                        </h3>
+                            <div>
+                                <h3 className="font-black text-slate-900 uppercase text-xs tracking-widest leading-none mb-1">Sua Lista</h3>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase">{selectedBatch.length} {selectedBatch.length === 1 ? 'item' : 'itens'}</p>
+                            </div>
+                        </div>
+                        {selectedBatch.length > 0 && (
+                            <button
+                                onClick={() => setSelectedBatch([])}
+                                className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-red-500 transition-colors"
+                            >
+                                Limpar Tudo
+                            </button>
+                        )}
                     </div>
 
                     <div className="flex-1 space-y-4 overflow-y-auto custom-scrollbar px-1">

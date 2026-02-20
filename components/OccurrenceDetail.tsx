@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { analyzeOccurrenceWithAI } from '../services/geminiService';
 import { Combobox } from './Combobox';
+import { PERMISSIONS, hasPermission } from '../constants/permissions';
 
 interface OccurrenceDetailProps {
   occurrence: Occurrence;
@@ -46,15 +47,11 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
   };
 
   const isAdmin = user.role === UserRole.ADMIN;
-  // Refactored to use Granular Permissions
-  // Default legacy behavior: if no custom permissions, map from accessLevel (fallback)
-  // But ideally we want permissions to be the source of truth.
+  // Refactored to use Granular Permissions (Centralized)
 
-  const hasPermission = (perm: string) => user.customPermissions?.includes(perm) ?? false;
-
-  const canTriage = hasPermission('triage_occurrences') || user.accessLevel === 'N1' || isAdmin;
-  const canEscalate = hasPermission('escalate_occurrences') || user.accessLevel === 'N2' || isAdmin;
-  const canResolve = hasPermission('resolve_occurrences') || user.accessLevel === 'N3' || isAdmin;
+  const canTriage = hasPermission(user, PERMISSIONS.TRIAGE_OCCURRENCES) || user.accessLevel === 'N1' || isAdmin;
+  const canEscalate = hasPermission(user, PERMISSIONS.ESCALATE_OCCURRENCES) || user.accessLevel === 'N2' || isAdmin;
+  const canResolve = hasPermission(user, PERMISSIONS.RESOLVE_OCCURRENCES) || user.accessLevel === 'N3' || isAdmin;
 
   // OM is special, has all + command console
   const isOM = user.accessLevel === 'OM' || isAdmin;
@@ -137,7 +134,7 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
     printWindow.document.close();
   };
 
-  const canManage = isAdmin || isOM || canTriage || canEscalate || canResolve || hasPermission('manage_occurrences') || hasPermission('finalize_occurrences');
+  const canManage = isAdmin || isOM || canTriage || canEscalate || canResolve || hasPermission(user, PERMISSIONS.MANAGE_OCCURRENCES) || hasPermission(user, PERMISSIONS.FINALIZE_OCCURRENCES);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-sm">
@@ -482,7 +479,7 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                       )}
 
                       {/* Botão de Finalização Direta (Qualquer Nível Master ou N2 OSD se decidir finalizar direto) */}
-                      {(isOM || isAdmin || canEscalate || hasPermission('finalize_occurrences')) && (
+                      {(isOM || isAdmin || canEscalate || hasPermission(user, PERMISSIONS.FINALIZE_OCCURRENCES)) && (
                         <div className="pt-2 border-t border-slate-200 mt-2">
                           <button
                             onClick={() => {
