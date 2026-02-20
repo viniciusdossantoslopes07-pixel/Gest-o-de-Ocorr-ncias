@@ -17,9 +17,10 @@ interface StockItem {
 
 interface InventoryManagerProps {
     user: any;
+    isDarkMode: boolean;
 }
 
-export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
+export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDarkMode }) => {
     const [activeSubTab, setActiveSubTab] = useState<'estoque' | 'estatisticas'>('estoque');
     const [items, setItems] = useState<StockItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -148,16 +149,16 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
     return (
         <div className="space-y-3 animate-fade-in">
             {/* Tabs */}
-            <div className="flex gap-1 p-1 bg-slate-100 rounded-xl w-fit">
+            <div className={`flex gap-1 p-1 rounded-xl w-fit ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                 <button
                     onClick={() => setActiveSubTab('estoque')}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${activeSubTab === 'estoque' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${activeSubTab === 'estoque' ? (isDarkMode ? 'bg-slate-700 text-white shadow-lg' : 'bg-white text-slate-900 shadow-sm') : 'text-slate-500 hover:text-slate-400'}`}
                 >
                     <Package className="w-3.5 h-3.5" /> Gestão de Estoque
                 </button>
                 <button
                     onClick={() => setActiveSubTab('estatisticas')}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${activeSubTab === 'estatisticas' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${activeSubTab === 'estatisticas' ? (isDarkMode ? 'bg-slate-700 text-white shadow-lg' : 'bg-white text-slate-900 shadow-sm') : 'text-slate-500 hover:text-slate-400'}`}
                 >
                     <BarChart3 className="w-3.5 h-3.5" /> Estatísticas
                 </button>
@@ -165,18 +166,20 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
 
             {activeSubTab === 'estatisticas' && (
                 <div className="animate-in fade-in slide-in-from-bottom-4">
-                    <MaterialStatistics />
+                    <MaterialStatistics isDarkMode={isDarkMode} />
                 </div>
             )}
 
             {activeSubTab === 'estoque' && (<>
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                            <Package className="w-8 h-8 text-blue-600" />
+                        <h2 className={`text-2xl font-black flex items-center gap-3 tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                            <div className={`p-2 rounded-xl ${isDarkMode ? 'bg-blue-600/20 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
+                                <Package className="w-6 h-6" />
+                            </div>
                             Gestão de Estoque (SAP-03)
                         </h2>
-                        <p className="text-slate-500">Gerencie o inventário e controle de materiais.</p>
+                        <p className="text-slate-500 text-sm font-medium mt-1">Controle técnico e operacional de materiais da Unidade.</p>
                     </div>
                     <button
                         onClick={() => handleOpenModal()}
@@ -195,7 +198,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
                             placeholder="Buscar material..."
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none shadow-sm"
+                            className={`w-full pl-10 pr-4 py-3 border rounded-xl outline-none shadow-sm transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
                         />
                     </div>
 
@@ -203,7 +206,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
                         <select
                             value={filterCategory}
                             onChange={e => setFilterCategory(e.target.value)}
-                            className="px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium shadow-sm transition-all min-w-[150px]"
+                            className={`px-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold shadow-sm transition-all min-w-[200px] ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
                         >
                             <option value="">Todas as Categorias</option>
                             {MATERIAL_TYPES.map(type => (
@@ -214,7 +217,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
                         <select
                             value={filterSector}
                             onChange={e => setFilterSector(e.target.value)}
-                            className="px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium shadow-sm transition-all min-w-[150px]"
+                            className={`px-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold shadow-sm transition-all min-w-[200px] ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
                         >
                             <option value="">Todos os Setores</option>
                             {GESTAO_MATERIAL_SETORES.map(sector => (
@@ -238,36 +241,36 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
                 </div>
 
                 {/* Table View */}
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className={`rounded-2xl border shadow-sm overflow-hidden transition-colors duration-300 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-slate-50 text-slate-600 font-bold uppercase text-xs">
+                            <thead className={`font-black uppercase text-[10px] tracking-widest ${isDarkMode ? 'bg-slate-900/50 text-slate-400 border-b border-slate-700' : 'bg-slate-50 text-slate-500 border-b border-slate-100'}`}>
                                 <tr>
-                                    <th className="px-4 py-3">Material</th>
-                                    <th className="px-4 py-3">Tipo de Material</th>
-                                    <th className="px-4 py-3">Setor</th>
-                                    <th className="px-4 py-3">Endereço</th>
-                                    <th className="px-4 py-3 text-center">Entrada</th>
-                                    <th className="px-4 py-3 text-center">Saída</th>
-                                    <th className="px-4 py-3 text-center bg-blue-50 text-blue-700">Qtd Disponível</th>
-                                    <th className="px-4 py-3 text-right">Ações</th>
+                                    <th className="px-6 py-4">Material</th>
+                                    <th className="px-6 py-4">Tipo</th>
+                                    <th className="px-6 py-4">Setor</th>
+                                    <th className="px-6 py-4">Endereço</th>
+                                    <th className="px-6 py-4 text-center">Entrada</th>
+                                    <th className="px-6 py-4 text-center">Saída</th>
+                                    <th className={`px-6 py-4 text-center ${isDarkMode ? 'bg-blue-900/20 text-blue-400' : 'bg-blue-50 text-blue-700'}`}>Qtd Disp.</th>
+                                    <th className="px-6 py-4 text-right">Ações</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className={`divide-y ${isDarkMode ? 'divide-slate-700' : 'divide-slate-50'}`}>
                                 {filteredItems.map(item => {
                                     const available = item.entrada - item.saida; // Client-side calc for display
                                     return (
-                                        <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                                            <td className="px-4 py-3 font-semibold text-slate-900">{item.material}</td>
-                                            <td className="px-4 py-3 text-slate-600">{item.tipo_de_material}</td>
-                                            <td className="px-4 py-3 text-slate-600">{item.setor}</td>
-                                            <td className="px-4 py-3 text-slate-600">{item.endereco}</td>
-                                            <td className="px-4 py-3 text-center font-mono text-slate-700">{item.entrada}</td>
-                                            <td className="px-4 py-3 text-center font-mono text-red-600">{item.saida}</td>
-                                            <td className="px-4 py-3 text-center font-mono font-bold bg-blue-50 text-blue-700">
+                                        <tr key={item.id} className={`transition-colors ${isDarkMode ? 'hover:bg-slate-700/50 text-slate-300' : 'hover:bg-slate-50 text-slate-600'}`}>
+                                            <td className={`px-6 py-4 font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.material}</td>
+                                            <td className="px-6 py-4">{item.tipo_de_material}</td>
+                                            <td className="px-6 py-4">{item.setor}</td>
+                                            <td className="px-6 py-4 font-mono text-xs">{item.endereco}</td>
+                                            <td className="px-6 py-4 text-center font-mono">{item.entrada}</td>
+                                            <td className="px-6 py-4 text-center font-mono text-red-500">{item.saida}</td>
+                                            <td className={`px-6 py-4 text-center font-mono font-black ${isDarkMode ? 'bg-blue-900/10 text-blue-400' : 'bg-blue-50/50 text-blue-700'}`}>
                                                 {available}
                                             </td>
-                                            <td className="px-4 py-3 text-right">
+                                            <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <button
                                                         onClick={() => handleOpenModal(item)}
@@ -305,14 +308,14 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
 
                 {/* Modal */}
                 {isModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                        <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-200">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+                        <div className={`rounded-2xl w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-white'}`}>
                             <form onSubmit={handleSubmit}>
-                                <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center">
-                                    <h3 className="font-bold text-lg text-slate-800">
+                                <div className={`px-6 py-4 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
+                                    <h3 className={`font-black uppercase tracking-widest text-sm ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                                         {editingItem ? 'Editar Material' : 'Novo Material'}
                                     </h3>
-                                    <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                                    <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors">
                                         <Trash2 className="w-6 h-6 rotate-45" />
                                     </button>
                                 </div>
@@ -392,19 +395,19 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user }) => {
                                     </div>
                                 </div>
 
-                                <div className="px-6 py-4 bg-slate-50 rounded-b-2xl flex justify-end gap-2">
+                                <div className={`px-6 py-4 rounded-b-2xl flex justify-end gap-3 ${isDarkMode ? 'bg-slate-900/50' : 'bg-slate-50'}`}>
                                     <button
                                         type="button"
                                         onClick={() => setIsModalOpen(false)}
-                                        className="px-4 py-2 text-slate-600 font-bold text-sm hover:bg-slate-200 rounded-lg transition-colors"
+                                        className={`px-5 py-2 font-bold text-sm rounded-xl transition-all ${isDarkMode ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}`}
                                     >
                                         Cancelar
                                     </button>
                                     <button
                                         type="submit"
-                                        className="px-4 py-2 bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 rounded-lg transition-colors"
+                                        className="px-6 py-2 bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95"
                                     >
-                                        Salvar
+                                        Salvar Registro
                                     </button>
                                 </div>
                             </form>

@@ -104,7 +104,10 @@ const App: FC = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Theme State
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  });
 
   // Access Control
   const isAdmin = currentUser?.role === UserRole.ADMIN;
@@ -143,15 +146,19 @@ const App: FC = () => {
     fetchOccurrences();
   }, []);
 
-  // Theme Persistence
+  // Theme Persistence & Class Toggling
   useEffect(() => {
-    // Check local storage or user preference
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
+    const root = window.document.documentElement;
+    if (isDarkMode) {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     }
-  }, []);
+  }, [isDarkMode]);
+
+
 
   useEffect(() => {
     // Fetch initial data for attendance and justifications
@@ -222,19 +229,7 @@ const App: FC = () => {
 
 
 
-  const toggleTheme = () => {
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
-    if (newMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-
-    // Optional: Save to User Profile in DB if needed (already in types.ts, implementation depends on requirement)
-  };
+  const toggleTheme = () => setIsDarkMode(prev => !prev);
 
   const fetchOccurrences = async () => {
     const { data, error } = await supabase
@@ -964,6 +959,7 @@ const App: FC = () => {
               onSelectOccurrence={setSelectedOccurrence}
               onRefresh={fetchOccurrences}
               onRequestMission={canRequestMission ? () => setActiveTab('mission-request') : undefined}
+              isDarkMode={isDarkMode}
             />
           )}
 
@@ -999,7 +995,7 @@ const App: FC = () => {
           )}
 
           {activeTab === 'kanban' && canViewServiceQueue && <KanbanBoard occurrences={occurrences} onSelect={setSelectedOccurrence} />}
-          {activeTab === 'dashboard' && canViewDashboard && <Dashboard occurrences={occurrences} />}
+          {activeTab === 'dashboard' && canViewDashboard && <Dashboard occurrences={occurrences} isDarkMode={isDarkMode} />}
 
           {activeTab === 'mission-request' && canRequestMission && (
             <div className="max-w-4xl mx-auto">
@@ -1364,21 +1360,22 @@ const App: FC = () => {
           )}
 
           {activeTab === 'inventory-management' && canManageMaterial && (
-            <InventoryManager user={currentUser} />
+            <InventoryManager user={currentUser} isDarkMode={isDarkMode} />
           )}
 
           {activeTab === 'my-material-loans' && (
-            <MyMaterialLoans user={currentUser} />
+            <MyMaterialLoans user={currentUser} isDarkMode={isDarkMode} />
           )}
 
           {activeTab === 'material-approvals' && canManageMaterial && (
-            <SAP03Panel user={currentUser} />
+            <SAP03Panel user={currentUser} isDarkMode={isDarkMode} />
           )}
 
           {activeTab === 'request-material' && canRequestMaterial && (
             <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 md:space-y-8">
               <LoanRequestForm
                 user={currentUser}
+                isDarkMode={isDarkMode}
                 onSuccess={() => setActiveTab('my-material-loans')}
                 onCancel={() => setActiveTab('home')}
               />

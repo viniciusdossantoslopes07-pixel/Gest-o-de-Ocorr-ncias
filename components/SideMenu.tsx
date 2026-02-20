@@ -68,10 +68,13 @@ export default function SideMenu({
                 if (id) setActiveTab(id);
                 if (window.innerWidth < 1024) onClose();
             }}
-            className={`w-full flex items-center rounded-xl transition-all ${activeTab === id ? 'bg-blue-600 shadow-xl text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'} ${isCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}
+            className={`w-full flex items-center rounded-xl transition-all duration-200 group ${activeTab === id
+                ? 'bg-blue-600 shadow-lg shadow-blue-500/20 text-white'
+                : `${isDarkMode ? 'text-slate-400 hover:text-white hover:bg-slate-800/80' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'}`
+                } ${isCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}
             title={isCollapsed ? label : ''}
         >
-            <Icon className="w-5 h-5 shrink-0" />
+            <Icon className={`w-5 h-5 shrink-0 transition-transform duration-200 ${activeTab === id ? 'scale-110' : 'group-hover:scale-110'}`} />
             {!isCollapsed && <span className="text-sm font-bold">{label}</span>}
         </button>
     );
@@ -82,11 +85,11 @@ export default function SideMenu({
             {isOpen && <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-40 lg:hidden transition-opacity duration-300" onClick={onClose} />}
 
             {/* Sidebar */}
-            <aside className={`fixed inset-y-0 left-0 z-50 bg-slate-900 text-white transform transition-all duration-300 ease-in-out lg:relative lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} ${isCollapsed ? 'w-20' : 'w-64 sm:w-72'} flex flex-col shadow-2xl lg:shadow-none`}>
+            <aside className={`fixed inset-y-0 left-0 z-50 transform transition-all duration-300 ease-in-out lg:relative lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} ${isCollapsed ? 'w-20' : 'w-64 sm:w-72'} flex flex-col shadow-2xl lg:shadow-none border-r ${isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
 
                 {/* Toggle Collapse (Desktop) */}
-                <button onClick={() => setIsCollapsed(!isCollapsed)} className="hidden lg:flex absolute -right-3 top-20 bg-blue-600 w-6 h-6 rounded-full items-center justify-center border-2 border-slate-900 hover:bg-blue-500 z-[60]">
-                    {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+                <button onClick={() => setIsCollapsed(!isCollapsed)} className="hidden lg:flex absolute -right-3 top-20 bg-blue-600 w-6 h-6 rounded-full items-center justify-center border-2 border-white dark:border-slate-900 hover:bg-blue-500 z-[60] shadow-md transition-transform hover:scale-110">
+                    {isCollapsed ? <ChevronRight className="w-4 h-4 text-white" /> : <ChevronLeft className="w-4 h-4 text-white" />}
                 </button>
 
                 {/* Header / Brand */}
@@ -129,7 +132,7 @@ export default function SideMenu({
                                     {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Central de Material</h3>}
                                     <button
                                         onClick={() => !isCollapsed && setIsMaterialMenuOpen(!isMaterialMenuOpen)}
-                                        className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                        className={`w-full flex items-center justify-between rounded-xl transition-all ${isDarkMode ? 'text-slate-400 hover:text-white hover:bg-slate-800/80' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'} ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <Package className="w-5 h-5 shrink-0" />
@@ -161,7 +164,7 @@ export default function SideMenu({
                                     {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Gestão de Pessoal</h3>}
                                     <button
                                         onClick={() => !isCollapsed && setIsPersonnelOpen(!isPersonnelOpen)}
-                                        className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                        className={`w-full flex items-center justify-between rounded-xl transition-all ${isDarkMode ? 'text-slate-400 hover:text-white hover:bg-slate-800/80' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'} ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <UserIcon className="w-5 h-5 shrink-0" />
@@ -186,7 +189,7 @@ export default function SideMenu({
                                     {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Controle de Acesso</h3>}
                                     <button
                                         onClick={() => !isCollapsed && setIsAccessControlOpen(!isAccessControlOpen)}
-                                        className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                        className={`w-full flex items-center justify-between rounded-xl transition-all ${isDarkMode ? 'text-slate-400 hover:text-white hover:bg-slate-800/80' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'} ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <DoorOpen className="w-5 h-5 shrink-0" />
@@ -213,7 +216,7 @@ export default function SideMenu({
                                     {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Administração</h3>}
                                     <button
                                         onClick={() => !isCollapsed && setIsOccurrencesOpen(!isOccurrencesOpen)}
-                                        className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                        className={`w-full flex items-center justify-between rounded-xl transition-all ${isDarkMode ? 'text-slate-400 hover:text-white hover:bg-slate-800/80' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'} ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <Siren className="w-5 h-5 shrink-0" />
@@ -235,19 +238,30 @@ export default function SideMenu({
                         </>
                     )}
 
-                    {/* Logout Section */}
-                    <div className="mt-auto border-t border-slate-800 p-4">
+                    {/* Footer Section */}
+                    <div className={`mt-auto border-t p-4 space-y-2 ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
+                        {/* Theme Toggle (Inline) */}
+                        <button
+                            onClick={onToggleTheme}
+                            className={`w-full flex items-center rounded-xl transition-all ${isDarkMode ? 'text-amber-400 hover:bg-amber-400/10' : 'text-slate-600 hover:bg-slate-100'} ${isCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}
+                            title={isCollapsed ? (isDarkMode ? "Modo Claro" : "Modo Escuro") : ""}
+                        >
+                            {isDarkMode ? <Sun className="w-5 h-5 shrink-0" /> : <Moon className="w-5 h-5 shrink-0" />}
+                            {!isCollapsed && <span className="text-sm font-bold">{isDarkMode ? 'Modo Claro' : 'Modo Escuro'}</span>}
+                        </button>
+
                         <button
                             onClick={onLogout}
-                            className={`w-full flex items-center rounded-xl transition-all text-red-400 hover:text-white hover:bg-red-500/20 ${isCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}
+                            className={`w-full flex items-center rounded-xl transition-all text-red-500 hover:text-white hover:bg-red-500 ${isCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}
                             title={isCollapsed ? "Sair" : ''}
                         >
                             <LogOut className="w-5 h-5 shrink-0" />
                             {!isCollapsed && <span className="text-sm font-bold">Sair</span>}
                         </button>
+
                         {!isCollapsed && (
-                            <div className="mt-4 px-2 text-[10px] text-slate-600 font-medium text-center">
-                                v1.0.0 © 2026
+                            <div className="mt-4 px-2 text-[10px] text-slate-500 font-medium text-center">
+                                v1.1.0 © 2026 Guardião
                             </div>
                         )}
                     </div>

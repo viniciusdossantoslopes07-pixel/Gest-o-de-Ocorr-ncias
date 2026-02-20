@@ -3,7 +3,7 @@ import { supabase } from '../services/supabase';
 import { BarChart3, Package, ArrowUpRight, ArrowDownRight, AlertTriangle, X, User as UserIcon, Trophy, Calendar, Search } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 
-export const MaterialStatistics = () => {
+export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
     const [stats, setStats] = useState({
         totalItems: 0,
         lowStock: 0,
@@ -136,15 +136,15 @@ export const MaterialStatistics = () => {
     const StatCard = ({ title, value, icon: Icon, color, subtext, onClick, clickable }: any) => (
         <div
             onClick={clickable ? onClick : undefined}
-            className={`bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 transition-all ${clickable ? 'cursor-pointer hover:shadow-md hover:scale-[1.02] active:scale-[0.98]' : ''}`}
+            className={`p-6 rounded-2xl border flex items-center gap-4 transition-all duration-300 ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-none' : 'bg-white border-slate-100 shadow-sm'} ${clickable ? 'cursor-pointer hover:shadow-xl hover:-translate-y-1 active:scale-[0.98]' : ''}`}
         >
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color}`}>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${color}`}>
                 <Icon className="w-6 h-6 text-white" />
             </div>
             <div>
-                <p className="text-sm text-slate-500 font-bold uppercase">{title}</p>
-                <h3 className="text-2xl font-black text-slate-800">{loading ? '...' : value}</h3>
-                {subtext && <p className="text-xs text-slate-400 mt-1">{subtext}</p>}
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{title}</p>
+                <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{loading ? '...' : value}</h3>
+                {subtext && <p className="text-xs text-slate-500 font-medium mt-1">{subtext}</p>}
             </div>
         </div>
     );
@@ -152,30 +152,30 @@ export const MaterialStatistics = () => {
     return (
         <div className="space-y-6 animate-fade-in relative pb-12">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                <div className="flex items-center gap-3">
-                    <div className="bg-blue-600 p-2.5 rounded-xl shadow-lg shadow-blue-200">
-                        <BarChart3 className="w-6 h-6 text-white" />
+                <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-2xl shadow-xl ${isDarkMode ? 'bg-blue-600/20 text-blue-400' : 'bg-blue-600 text-white shadow-blue-500/20'}`}>
+                        <BarChart3 className="w-7 h-7" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-black text-slate-800 tracking-tight">Estatísticas de Material</h2>
-                        <p className="text-slate-500 font-medium text-sm">Visão geral do estoque e cautelas.</p>
+                        <h2 className={`text-2xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Insights de Logística</h2>
+                        <p className="text-slate-500 font-medium text-sm">Análise estratégica de estoque e movimentações.</p>
                     </div>
                 </div>
 
                 {/* Date Filters UI */}
                 <div className="flex items-center flex-wrap gap-2">
-                    <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
                         <Calendar className="w-4 h-4 text-slate-400" />
                         <select
                             value={filters.period}
                             onChange={(e) => setFilters({ ...filters, period: e.target.value, dateStart: '', dateEnd: '' })}
-                            className="bg-transparent border-none text-xs font-bold text-slate-700 focus:ring-0 cursor-pointer"
+                            className={`bg-transparent border-none text-xs font-black uppercase tracking-widest outline-none cursor-pointer ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}
                         >
                             <option value="all">Todo o Período</option>
                             <option value="7">Últimos 7 dias</option>
                             <option value="30">Últimos 30 dias</option>
                             <option value="90">Últimos 90 dias</option>
-                            <option value="custom">Período Personalizado</option>
+                            <option value="custom">Personalizado</option>
                         </select>
                     </div>
 
@@ -199,7 +199,7 @@ export const MaterialStatistics = () => {
 
                     <button
                         onClick={fetchStats}
-                        className="p-2.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-all font-bold text-xs flex items-center gap-2"
+                        className={`px-5 py-2.5 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-lg active:scale-95 ${isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-900/40' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20'}`}
                         title="Atualizar Dados"
                     >
                         <Search className="w-4 h-4" />
@@ -245,65 +245,65 @@ export const MaterialStatistics = () => {
 
             {/* Modal / Details View */}
             {selectedView !== 'none' && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[80vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
+                    <div className={`rounded-[2rem] w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-white'}`}>
 
                         {/* Header */}
-                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-2xl">
+                        <div className={`p-8 border-b flex justify-between items-center rounded-t-[2rem] ${isDarkMode ? 'border-slate-700 bg-slate-900/30' : 'border-slate-100 bg-slate-50'}`}>
                             <div>
-                                <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                                <h3 className={`text-xl font-black uppercase tracking-tight flex items-center gap-3 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                                     {selectedView === 'low-stock' ? (
                                         <>
-                                            <AlertTriangle className="w-6 h-6 text-amber-500" />
-                                            Itens com Estoque Baixo
+                                            <div className="p-2 bg-amber-500/20 rounded-xl"><AlertTriangle className="w-6 h-6 text-amber-500" /></div>
+                                            Alerta de Reposição
                                         </>
                                     ) : (
                                         <>
-                                            <ArrowDownRight className="w-6 h-6 text-indigo-500" />
-                                            Materiais em Uso (Cautelados)
+                                            <div className="p-2 bg-indigo-500/20 rounded-xl"><ArrowDownRight className="w-6 h-6 text-indigo-500" /></div>
+                                            Materiais em Cautela
                                         </>
                                     )}
                                 </h3>
-                                <p className="text-sm text-slate-500">
+                                <p className="text-sm text-slate-500 font-medium mt-1">
                                     {selectedView === 'low-stock'
-                                        ? 'Lista de materiais que precisam de reposição.'
-                                        : 'Lista de usuários com material sob sua responsabilidade.'}
+                                        ? 'Listagem de itens que atingiram o limite crítico de segurança.'
+                                        : 'Relação detalhada de materiais atualmente sob responsabilidade de terceiros.'}
                                 </p>
                             </div>
                             <button
                                 onClick={() => setSelectedView('none')}
-                                className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400 hover:text-slate-600"
+                                className={`p-2 rounded-full transition-all ${isDarkMode ? 'hover:bg-slate-700 text-slate-400 hover:text-white' : 'hover:bg-slate-200 text-slate-400 hover:text-slate-600'}`}
                             >
-                                <X className="w-6 h-6" />
+                                <X className="w-7 h-7" />
                             </button>
                         </div>
 
                         {/* Content */}
-                        <div className="p-6 overflow-y-auto">
+                        <div className="p-8 overflow-y-auto">
                             {selectedView === 'low-stock' ? (
-                                <div className="space-y-2">
+                                <div className="space-y-4">
                                     <table className="w-full text-sm text-left">
-                                        <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-xs">
+                                        <thead className={`font-black uppercase text-[10px] tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                             <tr>
-                                                <th className="px-4 py-3 rounded-l-lg">Material</th>
-                                                <th className="px-4 py-3">Setor</th>
-                                                <th className="px-4 py-3 text-center">Disponível</th>
-                                                <th className="px-4 py-3 text-center rounded-r-lg">Status</th>
+                                                <th className="px-6 py-4">Material</th>
+                                                <th className="px-6 py-4">Setor</th>
+                                                <th className="px-6 py-4 text-center">Disponível</th>
+                                                <th className="px-6 py-4 text-center">Status</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-slate-100">
+                                        <tbody className={`divide-y ${isDarkMode ? 'divide-slate-700' : 'divide-slate-100'}`}>
                                             {lowStockItems.map(item => {
                                                 const qtd = item.entrada - item.saida;
                                                 return (
-                                                    <tr key={item.id} className="hover:bg-slate-50">
-                                                        <td className="px-4 py-3 font-bold text-slate-700">{item.material}</td>
-                                                        <td className="px-4 py-3 text-slate-500">{item.setor}</td>
-                                                        <td className="px-4 py-3 text-center font-mono font-bold text-red-600">{qtd}</td>
-                                                        <td className="px-4 py-3 text-center">
+                                                    <tr key={item.id} className={isDarkMode ? 'hover:bg-slate-900/30' : 'hover:bg-slate-50'}>
+                                                        <td className={`px-6 py-4 font-bold ${isDarkMode ? 'text-white' : 'text-slate-700'}`}>{item.material}</td>
+                                                        <td className={`px-6 py-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{item.setor}</td>
+                                                        <td className="px-6 py-4 text-center font-mono font-black text-red-500">{qtd}</td>
+                                                        <td className="px-6 py-4 text-center">
                                                             {qtd === 0 ? (
-                                                                <span className="px-2 py-1 bg-red-100 text-red-600 rounded text-[10px] font-bold uppercase">Zerado</span>
+                                                                <span className="px-3 py-1 bg-red-500/10 text-red-500 rounded-lg text-[10px] font-black uppercase tracking-widest">Esgotado</span>
                                                             ) : (
-                                                                <span className="px-2 py-1 bg-amber-100 text-amber-600 rounded text-[10px] font-bold uppercase">Baixo</span>
+                                                                <span className="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-lg text-[10px] font-black uppercase tracking-widest">Baixo</span>
                                                             )}
                                                         </td>
                                                     </tr>
@@ -316,22 +316,22 @@ export const MaterialStatistics = () => {
                             ) : (
                                 <div className="space-y-4">
                                     {activeLoanItems.map(loan => (
-                                        <div key={loan.id} className="flex items-center p-4 bg-white border border-slate-100 rounded-xl hover:shadow-md transition-all">
-                                            <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center shrink-0">
-                                                <UserIcon className="w-5 h-5 text-slate-500" />
+                                        <div key={loan.id} className={`flex items-center p-5 border rounded-2xl transition-all hover:scale-[1.01] ${isDarkMode ? 'bg-slate-900/50 border-slate-700 hover:bg-slate-900' : 'bg-white border-slate-100 hover:shadow-lg'}`}>
+                                            <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                                                <UserIcon className={`w-6 h-6 ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`} />
                                             </div>
-                                            <div className="ml-4 flex-1">
-                                                <h4 className="font-bold text-slate-800">{userMap[loan.id_usuario] || 'Usuário Desconhecido'}</h4>
-                                                <p className="text-xs text-slate-500 uppercase font-bold tracking-wide">
+                                            <div className="ml-5 flex-1 min-w-0">
+                                                <h4 className={`font-bold truncate ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{userMap[loan.id_usuario] || 'Usuário Desconhecido'}</h4>
+                                                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-0.5">
                                                     {loan.status} • {new Date(loan.created_at).toLocaleDateString()}
                                                 </p>
                                             </div>
                                             <div className="text-right">
-                                                <div className="font-bold text-blue-600">
-                                                    {loan.quantidade && loan.quantidade > 1 && <span className="mr-1">{loan.quantidade}x</span>}
+                                                <div className="font-black text-blue-500">
+                                                    {loan.quantidade && loan.quantidade > 1 && <span className="mr-1.5 px-1.5 py-0.5 bg-blue-500/10 rounded-md text-[10px]">{loan.quantidade}x</span>}
                                                     {loan.material?.material || 'Material Indefinido'}
                                                 </div>
-                                                <div className="text-xs text-slate-400">ID: {loan.id.slice(0, 8)}</div>
+                                                <div className="text-[10px] text-slate-500 font-mono mt-1">REF: {loan.id.slice(0, 8)}</div>
                                             </div>
                                         </div>
                                     ))}
@@ -341,12 +341,12 @@ export const MaterialStatistics = () => {
                         </div>
 
                         {/* Footer */}
-                        <div className="p-4 bg-slate-50 border-t border-slate-100 rounded-b-2xl flex justify-end">
+                        <div className={`p-6 border-t rounded-b-[2rem] flex justify-end ${isDarkMode ? 'border-slate-700 bg-slate-900/50' : 'border-slate-100 bg-slate-50'}`}>
                             <button
                                 onClick={() => setSelectedView('none')}
-                                className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg hover:bg-slate-300 transition-colors"
+                                className={`px-6 py-2.5 font-black uppercase tracking-widest text-[10px] rounded-xl transition-all active:scale-95 ${isDarkMode ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
                             >
-                                Fechar
+                                Fechar Detalhes
                             </button>
                         </div>
                     </div>
@@ -357,11 +357,11 @@ export const MaterialStatistics = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* Top Users List */}
-                <div className="lg:col-span-1 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-2">
-                            <Trophy className="w-5 h-5 text-amber-500" />
-                            <h3 className="font-bold text-slate-800">Top Solicitantes</h3>
+                <div className={`lg:col-span-1 p-6 rounded-3xl border transition-all duration-300 ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-none' : 'bg-white border-slate-100 shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-amber-500/10 rounded-xl"><Trophy className="w-5 h-5 text-amber-500" /></div>
+                            <h3 className={`font-black uppercase tracking-tight text-sm ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Top Solicitantes</h3>
                         </div>
                     </div>
 
@@ -370,18 +370,17 @@ export const MaterialStatistics = () => {
                             <div className="text-center py-8 text-slate-400">Sem dados ainda.</div>
                         ) : (
                             topUsers.map((user, index) => (
-                                <div key={user.id} className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        {/* Avatar / Initials based on rank if possible or just generic */}
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${index === 0 ? 'bg-amber-100 text-amber-600 ring-2 ring-amber-100' : 'bg-slate-100 text-slate-500'}`}>
+                                <div key={user.id} className="flex items-center justify-between group">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-black text-sm transition-all shadow-md group-hover:scale-110 ${index === 0 ? (isDarkMode ? 'bg-amber-500/20 text-amber-500 ring-2 ring-amber-500/30' : 'bg-amber-100 text-amber-600 ring-2 ring-amber-200') : (isDarkMode ? 'bg-slate-900 text-slate-500' : 'bg-slate-50 text-slate-400')}`}>
                                             {index + 1}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-bold text-slate-700">{user.name}</p>
-                                            <p className="text-[10px] text-slate-400 uppercase font-black">Total de Cautelas</p>
+                                            <p className={`text-sm font-bold transition-colors ${isDarkMode ? 'text-slate-200 group-hover:text-amber-500' : 'text-slate-700 group-hover:text-blue-600'}`}>{user.name}</p>
+                                            <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-0.5">Cautelas Totais</p>
                                         </div>
                                     </div>
-                                    <div className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold">
+                                    <div className={`px-4 py-1.5 rounded-xl text-xs font-black shadow-inner ${isDarkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'}`}>
                                         {user.count}
                                     </div>
                                 </div>
@@ -391,9 +390,9 @@ export const MaterialStatistics = () => {
                 </div>
 
                 {/* Pie Chart */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
-                    <h3 className="font-bold text-slate-800 mb-2">Tipos de Material Cautelados</h3>
-                    <p className="text-sm text-slate-500 mb-6">Distribuição por categoria de material.</p>
+                <div className={`lg:col-span-2 p-8 rounded-3xl border transition-all duration-300 flex flex-col ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-none' : 'bg-white border-slate-100 shadow-sm'}`}>
+                    <h3 className={`font-black uppercase tracking-tight text-sm ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Distribuição por Categoria</h3>
+                    <p className="text-sm text-slate-500 font-medium mt-1 mb-8">Análise de utilização proporcional de recursos por tipo.</p>
 
                     <div className="flex-1 w-full min-h-[300px]">
                         {materialTypeData.length === 0 ? (
@@ -415,8 +414,27 @@ export const MaterialStatistics = () => {
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <RechartsTooltip />
-                                    <Legend />
+                                    <RechartsTooltip
+                                        contentStyle={{
+                                            borderRadius: '16px',
+                                            border: 'none',
+                                            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                                            padding: '12px',
+                                            backgroundColor: isDarkMode ? '#0f172a' : '#ffffff',
+                                            color: isDarkMode ? '#f8fafc' : '#0f172a'
+                                        }}
+                                    />
+                                    <Legend
+                                        verticalAlign="bottom"
+                                        height={36}
+                                        wrapperStyle={{
+                                            paddingTop: '20px',
+                                            fontSize: '11px',
+                                            fontWeight: 'bold',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.05em'
+                                        }}
+                                    />
                                 </PieChart>
                             </ResponsiveContainer>
                         )}

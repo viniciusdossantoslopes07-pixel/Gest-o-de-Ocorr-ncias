@@ -5,7 +5,11 @@ import { MaterialLoan } from '../types';
 import { Package, Search, Filter, CheckCircle, XCircle, Clock, Calendar, User, Truck, AlertTriangle, AlertCircle } from 'lucide-react';
 import { LOAN_STATUS_COLORS } from '../constants';
 
-const MaterialDashboard: React.FC = () => {
+interface MaterialDashboardProps {
+    isDarkMode?: boolean;
+}
+
+const MaterialDashboard: React.FC<MaterialDashboardProps> = ({ isDarkMode = false }) => {
     const [loans, setLoans] = useState<MaterialLoan[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState<string>('ALL');
@@ -125,136 +129,146 @@ const MaterialDashboard: React.FC = () => {
     });
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                    <Package className="w-6 h-6 text-blue-600" />
-                    Gestão de Cautelas
-                </h2>
-                <div className="flex gap-2">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
+            <div className={`p-4 rounded-[1.5rem] border shadow-sm flex flex-col md:flex-row justify-between items-center gap-4 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className={`p-2.5 rounded-xl shrink-0 ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
+                        <Package className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h2 className={`text-lg font-black leading-tight uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                            Gestão de Cautelas
+                        </h2>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Controle Administrativo de Materiais</p>
+                    </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    <div className="relative group flex-1 sm:flex-none sm:w-64">
+                        <Search className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isDarkMode ? 'text-slate-500 group-focus-within:text-blue-400' : 'text-slate-400 group-focus-within:text-blue-500'}`} />
                         <input
                             type="text"
-                            placeholder="Buscar solicitante ou item..."
-                            className="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                            placeholder="Pesquisar..."
+                            className={`w-full rounded-xl pl-10 pr-4 py-2.5 text-xs font-black uppercase tracking-wider transition-all outline-none ${isDarkMode ? 'bg-slate-900 text-white placeholder:text-slate-700 focus:ring-2 focus:ring-blue-500/50' : 'bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500'}`}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                     <select
-                        className="pl-3 pr-8 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 font-bold text-slate-600"
+                        className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all outline-none border-none cursor-pointer ${isDarkMode ? 'bg-slate-900 text-slate-300 focus:ring-2 focus:ring-blue-500/50' : 'bg-slate-50 text-slate-600 focus:ring-2 focus:ring-blue-500'}`}
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value)}
                     >
-                        <option value="ALL">Todos os Status</option>
-                        <option value="PENDENTE">Pendentes</option>
-                        <option value="APROVADA">Aprovadas</option>
-                        <option value="RETIRADO">Em Uso (Retirado)</option>
-                        <option value="DEVOLVIDO">Concluídas (Devolvido)</option>
-                        <option value="REJEITADA">Rejeitadas</option>
+                        <option value="ALL">TODOS OS STATUS</option>
+                        <option value="PENDENTE">PENDENTES</option>
+                        <option value="APROVADA">APROVADAS</option>
+                        <option value="RETIRADO">EM USO</option>
+                        <option value="DEVOLVIDO">CONCLUÍDAS</option>
+                        <option value="REJEITADA">REJEITADAS</option>
                     </select>
                 </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <table className="w-full text-left text-sm">
-                    <thead className="bg-slate-50 border-b border-slate-200">
-                        <tr>
-                            <th className="px-6 py-4 font-bold text-slate-500">Solicitante</th>
-                            <th className="px-6 py-4 font-bold text-slate-500">Material</th>
-                            <th className="px-6 py-4 font-bold text-slate-500">Datas</th>
-                            <th className="px-6 py-4 font-bold text-slate-500">Status</th>
-                            <th className="px-6 py-4 font-bold text-slate-500 text-right">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                        {loading ? (
-                            <tr><td colSpan={5} className="p-8 text-center text-slate-400">Carregando...</td></tr>
-                        ) : sortedLoans.length === 0 ? (
-                            <tr><td colSpan={5} className="p-8 text-center text-slate-400">Nenhuma solicitação encontrada.</td></tr>
-                        ) : (
-                            sortedLoans.map(loan => {
-                                const isOverdue = loan.expectedReturnDate && new Date(loan.expectedReturnDate) < new Date() && (loan.status === 'RETIRADO' || loan.status === 'APROVADA');
-                                return (
-                                    <tr key={loan.id} className={`hover:bg-slate-50 transition-colors ${isOverdue ? 'bg-red-50' : ''}`}>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-xs text-slate-600">
-                                                    {loan.requester?.name?.[0]}
+            <div className={`rounded-[2rem] border overflow-hidden shadow-2xl transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 shadow-black/20' : 'bg-white border-slate-100'}`}>
+                <div className="overflow-x-auto scrollbar-hide">
+                    <table className="w-full text-left text-xs">
+                        <thead className={`${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
+                            <tr>
+                                <th className="px-8 py-5 font-black text-slate-500 uppercase tracking-widest">Solicitante</th>
+                                <th className="px-8 py-5 font-black text-slate-500 uppercase tracking-widest">Ativo / Material</th>
+                                <th className="px-8 py-5 font-black text-slate-500 uppercase tracking-widest">Datas de Fluxo</th>
+                                <th className="px-8 py-5 font-black text-slate-500 uppercase tracking-widest">Status</th>
+                                <th className="px-8 py-5 font-black text-slate-500 uppercase tracking-widest text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody className={`divide-y ${isDarkMode ? 'divide-slate-800' : 'divide-slate-100'}`}>
+                            {loading ? (
+                                <tr><td colSpan={5} className="p-20 text-center text-slate-500 font-black uppercase tracking-widest text-[10px]">Sincronizando Banco de Dados...</td></tr>
+                            ) : sortedLoans.length === 0 ? (
+                                <tr><td colSpan={5} className="p-20 text-center text-slate-500 font-black uppercase tracking-widest text-[10px]">Nenhum registro encontrado</td></tr>
+                            ) : (
+                                sortedLoans.map(loan => {
+                                    const isOverdue = loan.expectedReturnDate && new Date(loan.expectedReturnDate) < new Date() && (loan.status === 'RETIRADO' || loan.status === 'APROVADA');
+                                    return (
+                                        <tr key={loan.id} className={`transition-colors group ${isOverdue ? (isDarkMode ? 'bg-red-500/10' : 'bg-red-50') : (isDarkMode ? 'hover:bg-slate-800/40' : 'hover:bg-slate-50/80')}`}>
+                                            <td className="px-8 py-5">
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shadow-sm transition-transform group-hover:scale-110 ${isDarkMode ? 'bg-slate-800 text-blue-400' : 'bg-white border border-slate-100 text-blue-600'}`}>
+                                                        {loan.requester?.name?.[0]}
+                                                    </div>
+                                                    <div>
+                                                        <div className={`font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{loan.requester?.rank} {loan.requester?.name}</div>
+                                                        <div className="text-[10px] font-black text-blue-500 uppercase tracking-widest opacity-80">{loan.requester?.saram}</div>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <div className="font-bold text-slate-900">{loan.requester?.rank} {loan.requester?.name}</div>
-                                                    <div className="text-xs text-slate-400">{loan.requester?.saram}</div>
+                                            </td>
+                                            <td className="px-8 py-5">
+                                                <div className={`font-black uppercase tracking-tight text-sm ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{loan.item?.name}</div>
+                                                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Volume: {loan.quantity} unidades</div>
+                                            </td>
+                                            <td className="px-8 py-5">
+                                                <div className="flex flex-col gap-2">
+                                                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                                        <Calendar className="w-3.5 h-3.5 text-blue-500" /> <span className="opacity-60">Pedido:</span> {new Date(loan.requestDate).toLocaleDateString()}
+                                                    </div>
+                                                    <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${isOverdue ? 'text-red-500' : 'text-emerald-500'}`}>
+                                                        <Clock className="w-3.5 h-3.5" />
+                                                        <span className="opacity-60">{isOverdue ? 'ATRASADO:' : 'LIMITE:'}</span>
+                                                        {new Date(loan.expectedReturnDate).toLocaleDateString()}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="font-bold text-slate-800">{loan.item?.name}</div>
-                                            <div className="text-xs text-slate-500">Qtd: {loan.quantity}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col gap-1 text-xs">
-                                                <div className="flex items-center gap-1 text-slate-500">
-                                                    <Calendar className="w-3 h-3" /> Solicitado: {new Date(loan.requestDate).toLocaleDateString()}
-                                                </div>
-                                                <div className={`flex items-center gap-1 font-medium ${isOverdue ? 'text-red-700 font-bold' : 'text-blue-600'}`}>
-                                                    <Clock className="w-3 h-3" />
-                                                    {isOverdue ? 'ATRASADO ' : 'Prev. Dev: '}
-                                                    {new Date(loan.expectedReturnDate).toLocaleDateString()}
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${LOAN_STATUS_COLORS[loan.status] || 'bg-slate-100 text-slate-600'}`}>
-                                                {getStatusIcon(loan.status)}
-                                                {loan.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                {loan.status === 'PENDENTE' && (
-                                                    <>
+                                            </td>
+                                            <td className="px-8 py-5">
+                                                <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm ${LOAN_STATUS_COLORS[loan.status] || 'bg-slate-100 text-slate-600'}`}>
+                                                    {getStatusIcon(loan.status)}
+                                                    {loan.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-5 text-right">
+                                                <div className="flex items-center justify-end gap-3">
+                                                    {loan.status === 'PENDENTE' && (
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleUpdateStatus(loan.id, 'APROVADA')}
+                                                                className={`p-2.5 rounded-xl transition-all shadow-lg active:scale-90 ${isDarkMode ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
+                                                                title="Autorizar"
+                                                            >
+                                                                <CheckCircle className="w-4.5 h-4.5" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleUpdateStatus(loan.id, 'REJEITADA')}
+                                                                className={`p-2.5 rounded-xl transition-all shadow-lg active:scale-90 ${isDarkMode ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : 'bg-red-50 text-red-600 hover:bg-red-100'}`}
+                                                                title="Indeferir"
+                                                            >
+                                                                <XCircle className="w-4.5 h-4.5" />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    {loan.status === 'APROVADA' && (
                                                         <button
-                                                            onClick={() => handleUpdateStatus(loan.id, 'APROVADA')}
-                                                            className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg"
-                                                            title="Aprovar"
+                                                            onClick={() => handleUpdateStatus(loan.id, 'RETIRADO')}
+                                                            className="px-5 py-2.5 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-700 shadow-xl shadow-blue-600/20 transition-all active:scale-95"
                                                         >
-                                                            <CheckCircle className="w-4 h-4" />
+                                                            Protocolar Retirada
                                                         </button>
+                                                    )}
+                                                    {loan.status === 'RETIRADO' && (
                                                         <button
-                                                            onClick={() => handleUpdateStatus(loan.id, 'REJEITADA')}
-                                                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
-                                                            title="Rejeitar"
+                                                            onClick={() => handleUpdateStatus(loan.id, 'DEVOLVIDO')}
+                                                            className="px-5 py-2.5 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 shadow-xl shadow-emerald-600/20 transition-all active:scale-95"
                                                         >
-                                                            <XCircle className="w-4 h-4" />
+                                                            Protocolar Devolução
                                                         </button>
-                                                    </>
-                                                )}
-                                                {loan.status === 'APROVADA' && (
-                                                    <button
-                                                        onClick={() => handleUpdateStatus(loan.id, 'RETIRADO')}
-                                                        className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700"
-                                                    >
-                                                        Registrar Retirada
-                                                    </button>
-                                                )}
-                                                {loan.status === 'RETIRADO' && (
-                                                    <button
-                                                        onClick={() => handleUpdateStatus(loan.id, 'DEVOLVIDO')}
-                                                        className="px-3 py-1 bg-green-600 text-white text-xs font-bold rounded-lg hover:bg-green-700"
-                                                    >
-                                                        Registrar Devolução
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })
-                        )}
-                    </tbody>
-                </table>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

@@ -1,23 +1,68 @@
 @import "tailwindcss";
 
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+@theme {
+  --color-brand-primary: #2563eb;
+  --color-brand-secondary: #4f46e5;
+
+  --bg-app: var(--app-bg);
+  --bg-card: var(--card-bg);
+  --text-main: var(--main-text);
+  --text-muted: var(--muted-text);
+  --border-subtle: var(--subtle-border);
 }
 
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+  /* Light Mode Tokens */
+  --app-bg: #f8fafc;
+  --card-bg: #ffffff;
+  --main-text: #0f172a;
+  --muted-text: #64748b;
+  --subtle-border: #e2e8f0;
+}
+
+.dark {
+  /* Dark Mode Tokens */
+  --app-bg: #030712;
+  --card-bg: #111827;
+  --main-text: #f8fafc;
+  --muted-text: #94a3b8;
+  --subtle-border: #1f2937;
+}
+
+body {
+  background-color: var(--app-bg);
+  color: var(--main-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  @apply backdrop-blur-md bg-white/70 border border-white/20;
+}
+
+.dark .glass {
+  @apply bg-slate-900/70 border-white/10;
+}
+
+/* Premium Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
+    transform: translateY(4px);
   }
 
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
 @keyframes scaleIn {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.98);
   }
 
   to {
@@ -27,9 +72,27 @@
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.2s ease-out;
+  animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  @apply bg-slate-800 hover:bg-slate-700;
 }

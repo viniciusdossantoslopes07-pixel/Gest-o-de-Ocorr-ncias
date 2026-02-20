@@ -30,9 +30,10 @@ interface LoanRequest {
 
 interface LoanApprovalsProps {
     user: any;
+    isDarkMode: boolean;
 }
 
-export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
+export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) => {
     const [requests, setRequests] = useState<LoanRequest[]>([]);
     const [inventory, setInventory] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -491,32 +492,32 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
     return (
         <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-8 animate-fade-in">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-4 text-slate-800">
-                    <div className="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-200">
-                        <ShieldCheck className="w-8 h-8 text-white" />
+                <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-2xl shadow-xl ${isDarkMode ? 'bg-blue-600/20 text-blue-400' : 'bg-blue-600 text-white shadow-blue-500/20'}`}>
+                        <ShieldCheck className="w-8 h-8" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-black tracking-tight">Material e Cautela (SAP-03)</h1>
-                        <p className="text-slate-500 text-sm font-medium">Gerencie o fluxo de materiais da seção.</p>
+                        <h1 className={`text-2xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Material e Cautela (SAP-03)</h1>
+                        <p className="text-slate-500 text-sm font-medium">Controle técnico e operacional de ativos da Unidade.</p>
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                <div className="flex flex-wrap gap-3 w-full md:w-auto">
                     <button
                         onClick={() => { setShowDirectRelease(!showDirectRelease); setShowReceiveMaterial(false); }}
-                        className={`flex-1 md:flex-none px-3 md:px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 text-xs md:text-sm ${showDirectRelease ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2 text-[10px] active:scale-95 ${showDirectRelease ? 'bg-red-500 text-white shadow-red-500/20' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20'}`}
                     >
-                        <Package className="w-4 h-4 shrink-0" />
-                        <span className="truncate">{showDirectRelease ? 'Cancelar' : 'Cautelar'}</span>
+                        <Package className="w-4 h-4" />
+                        <span>{showDirectRelease ? 'Cancelar' : 'Nova Cautela'}</span>
                     </button>
                     <button
                         onClick={() => { setShowReceiveMaterial(!showReceiveMaterial); setShowDirectRelease(false); }}
-                        className={`flex-1 md:flex-none px-3 md:px-4 py-2 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 text-xs md:text-sm ${showReceiveMaterial ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
+                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2 text-[10px] active:scale-95 ${showReceiveMaterial ? 'bg-red-500 text-white shadow-red-500/20' : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-500/20'}`}
                     >
-                        <Plus className="w-4 h-4 shrink-0" />
-                        <span className="truncate">{showReceiveMaterial ? 'Cancelar' : 'Receber'}</span>
+                        <Plus className="w-4 h-4" />
+                        <span>{showReceiveMaterial ? 'Cancelar' : 'Receber Material'}</span>
                     </button>
-                    <button onClick={fetchRequests} className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 shadow-sm shrink-0">
+                    <button onClick={fetchRequests} className={`p-2.5 rounded-xl transition-all shadow-sm shrink-0 border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
                         <Clock className="w-5 h-5" />
                     </button>
                 </div>
@@ -524,10 +525,10 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
 
             {/* Direct forms */}
             {(showDirectRelease || showReceiveMaterial) && (
-                <div className="bg-white p-6 rounded-2xl border-2 border-blue-100 shadow-xl shadow-blue-50 space-y-4 animate-scale-in">
-                    <h2 className="font-black text-slate-800 flex items-center gap-2 uppercase text-xs tracking-widest">
-                        <div className={`w-2 h-2 rounded-full ${showDirectRelease ? 'bg-blue-600' : 'bg-emerald-600'}`}></div>
-                        {showDirectRelease ? 'Cautelar Material (Saída do Estoque)' : 'Receber Material (Entrada no Estoque)'}
+                <div className={`p-8 rounded-[2rem] border-2 shadow-2xl space-y-6 animate-scale-in ${isDarkMode ? 'bg-slate-800 border-blue-500/30' : 'bg-white border-blue-100 shadow-blue-100/50'}`}>
+                    <h2 className={`font-black flex items-center gap-3 uppercase text-[10px] tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                        <div className={`w-2.5 h-2.5 rounded-full shadow-lg ${showDirectRelease ? 'bg-blue-500 shadow-blue-500/50 animate-pulse' : 'bg-emerald-500 shadow-emerald-500/50 animate-pulse'}`}></div>
+                        {showDirectRelease ? 'Nova Movimentação de Cautela (Saída)' : 'Registro de Recebimento de Material (Entrada)'}
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div className="space-y-1">
@@ -641,7 +642,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
             )}
 
             {/* Tabs */}
-            <div className="flex bg-slate-100 p-1 rounded-2xl w-full md:w-fit self-start border border-slate-200 overflow-x-auto scrollbar-hide">
+            <div className={`flex p-1 rounded-2xl w-full md:w-fit self-start border overflow-x-auto scrollbar-hide mb-8 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
                 {(['Solicitações', 'Devoluções', 'Em Uso', 'Histórico'] as const).map(tab => (
                     <button
                         key={tab}
@@ -649,10 +650,10 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                             setActiveTab(tab);
                             setSelectedBatchIds([]);
                         }}
-                        className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab ? 'bg-white text-blue-600 shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === tab ? (isDarkMode ? 'bg-slate-700 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md') : 'text-slate-500 hover:text-slate-400'}`}
                     >
                         {tab}
-                        <span className="ml-2 px-1.5 py-0.5 bg-slate-200 text-slate-600 rounded-md text-[10px]">
+                        <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black border ${activeTab === tab ? (isDarkMode ? 'bg-blue-600/20 border-blue-500 text-blue-400' : 'bg-blue-50 border-blue-100 text-blue-600') : (isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-500' : 'bg-slate-200 border-slate-300 text-slate-500')}`}>
                             {requests.filter(req => {
                                 if (tab === 'Solicitações') return ['Pendente', 'Aprovado'].includes(req.status);
                                 if (tab === 'Devoluções') return req.status === 'Pendente Devolução';
@@ -667,16 +668,16 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
 
             {/* Search and Batch Actions */}
             {(activeTab === 'Em Uso' || activeTab === 'Histórico' || activeTab === 'Solicitações') && (
-                <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-blue-50/50 p-4 rounded-2xl border border-blue-100 animate-scale-in">
-                    <div className="relative w-full md:w-80">
+                <div className={`flex flex-col md:flex-row gap-6 items-center justify-between p-6 rounded-[2rem] border animate-scale-in mb-6 ${isDarkMode ? 'bg-slate-800/40 border-slate-700 shadow-none' : 'bg-blue-50/50 border-blue-100 shadow-sm shadow-blue-100/20'}`}>
+                    <div className="relative w-full md:w-96">
                         <input
                             type="text"
-                            placeholder="Buscar por SARAM, Militar ou Material..."
+                            placeholder="SARAM, Militar ou Material..."
                             value={inUseSearch}
                             onChange={(e) => setInUseSearch(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none text-sm"
+                            className={`w-full pl-10 pr-4 py-3 border rounded-xl outline-none text-sm font-bold transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
                         />
-                        <Package className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Package className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     </div>
 
                     {(activeTab === 'Em Uso' || (activeTab === 'Solicitações' && filteredRequests.some(r => r.status === 'Pendente'))) && (
@@ -806,14 +807,16 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
 
             <div className="space-y-4">
                 {filteredRequests.length === 0 ? (
-                    <div className="text-center p-12 bg-white rounded-2xl border-dashed border-2 border-slate-200 text-slate-400 space-y-3">
-                        <AlertCircle className="w-12 h-12 text-slate-200 mx-auto" />
-                        <p className="font-bold">Nenhuma cautela em "{activeTab}"</p>
+                    <div className={`text-center p-16 rounded-[2rem] border-dashed border-2 flex flex-col items-center justify-center gap-4 ${isDarkMode ? 'bg-slate-800/40 border-slate-700 text-slate-500' : 'bg-white border-slate-200 text-slate-400'}`}>
+                        <div className={`p-6 rounded-full ${isDarkMode ? 'bg-slate-800 shadow-inner' : 'bg-slate-50'}`}>
+                            <AlertCircle className={`w-12 h-12 ${isDarkMode ? 'text-slate-600' : 'text-slate-200'}`} />
+                        </div>
+                        <p className="font-black uppercase tracking-widest text-[10px]">Nenhum registro encontrado em "{activeTab}"</p>
                     </div>
                 ) : (
                     filteredRequests.map(req => (
-                        <div key={req.id} className={`bg-white rounded-xl border transition-all ${expandedRequestId === req.id ? 'border-blue-300 ring-2 ring-blue-50' : 'border-slate-200'}`}>
-                            <div className="p-6 flex flex-col md:flex-row gap-6 items-start md:items-center cursor-pointer hover:bg-slate-50/50" onClick={() => setExpandedRequestId(expandedRequestId === req.id ? null : req.id)}>
+                        <div key={req.id} className={`rounded-2xl border transition-all duration-300 ${expandedRequestId === req.id ? (isDarkMode ? 'border-blue-500 bg-slate-800 shadow-2xl shadow-blue-500/10' : 'border-blue-300 ring-4 ring-blue-50 bg-white shadow-xl') : (isDarkMode ? 'bg-slate-800/60 border-slate-700 hover:border-slate-600' : 'bg-white border-slate-100 shadow-sm hover:border-blue-100')}`}>
+                            <div className="p-6 flex flex-col md:flex-row gap-6 items-start md:items-center cursor-pointer" onClick={() => setExpandedRequestId(expandedRequestId === req.id ? null : req.id)}>
                                 {(activeTab === 'Em Uso' || (activeTab === 'Solicitações' && req.status === 'Pendente')) && (
                                     <div className="shrink-0" onClick={e => e.stopPropagation()}>
                                         <input
@@ -828,24 +831,24 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                                     </div>
                                 )}
                                 <div className="flex-1 flex flex-col md:flex-row gap-6 items-start md:items-center">
-                                    <div className={`p-4 rounded-full shrink-0 ${req.status === 'Pendente' ? 'bg-yellow-100 text-yellow-600' : req.status === 'Aprovado' ? 'bg-blue-100 text-blue-600' : req.status === 'Pendente Devolução' ? 'bg-purple-100 text-purple-600' : req.status === 'Concluído' ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-600'}`}>
+                                    <div className={`p-4 rounded-2xl shrink-0 transition-transform ${expandedRequestId === req.id ? 'scale-110' : ''} ${req.status === 'Pendente' ? 'bg-amber-500/10 text-amber-500' : req.status === 'Aprovado' ? 'bg-blue-500/10 text-blue-500' : req.status === 'Pendente Devolução' ? 'bg-purple-500/10 text-purple-500' : req.status === 'Concluído' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-500/10 text-slate-500'}`}>
                                         <Package className="w-6 h-6" />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                                            <h3 className="font-bold text-base md:text-lg text-slate-900 truncate">
-                                                {req.quantidade && req.quantidade > 1 && <span className="text-blue-600 mr-1">{req.quantidade}x</span>}
+                                        <div className="flex flex-wrap items-center gap-3 mb-1">
+                                            <h3 className={`font-black text-base md:text-lg uppercase tracking-tight truncate ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                                                {req.quantidade && req.quantidade > 1 && <span className="text-blue-500 mr-2">{req.quantidade}x</span>}
                                                 {req.material?.material || 'Material'}
                                             </h3>
-                                            <span className={`text-[8px] md:text-[10px] px-2 py-0.5 md:py-1 rounded-full font-black uppercase ${req.status === 'Em Uso' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                                            <span className={`text-[9px] px-2.5 py-1 rounded-lg font-black uppercase tracking-widest ${req.status === 'Em Uso' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : (isDarkMode ? 'bg-slate-700 text-slate-400 border border-slate-600' : 'bg-slate-100 text-slate-500 border border-slate-200')}`}>
                                                 {req.status}
                                             </span>
                                         </div>
-                                        <p className="text-xs text-slate-500 truncate">
-                                            Solicitante: <span className="font-bold text-slate-700">{req.solicitante ? `${req.solicitante.rank} ${req.solicitante.war_name}` : `ID: ${req.id_usuario}`}</span>
+                                        <p className="text-xs text-slate-500 font-medium">
+                                            Solicitante: <span className={`font-black uppercase ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{req.solicitante ? `${req.solicitante.rank} ${req.solicitante.war_name}` : `ID: ${req.id_usuario}`}</span>
                                         </p>
                                         {req.material?.endereco && (
-                                            <p className="text-[10px] text-amber-500 font-medium flex items-center gap-1 mt-0.5">
+                                            <p className="text-[10px] text-amber-500 font-black flex items-center gap-1.5 mt-1.5 uppercase tracking-wide">
                                                 <MapPin className="w-3 h-3" /> {req.material.endereco}
                                             </p>
                                         )}
@@ -870,41 +873,41 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                             </div>
 
                             {expandedRequestId === req.id && (
-                                <div className="px-6 pb-6 pt-0 border-t border-slate-50 animate-fade-in">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
-                                        <div className="col-span-2 space-y-4">
-                                            <div className="p-4 bg-slate-50 rounded-xl border space-y-4">
-                                                <h4 className="text-[10px] font-black text-slate-400 flex items-center gap-2 border-b pb-2 uppercase tracking-widest">
+                                <div className={`px-6 pb-8 pt-0 border-t animate-fade-in ${isDarkMode ? 'border-slate-700' : 'border-slate-50'}`}>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8">
+                                        <div className="col-span-2 space-y-6">
+                                            <div className={`p-6 rounded-2xl border space-y-6 ${isDarkMode ? 'bg-slate-900/50 border-slate-700 shadow-inner' : 'bg-slate-50 border-slate-100 shadow-sm'}`}>
+                                                <h4 className="text-[10px] font-black text-slate-400 flex items-center gap-2 border-b border-slate-200 pb-3 uppercase tracking-widest pl-1">
                                                     <ShieldCheck className="w-4 h-4 text-blue-500" />
-                                                    Histórico
+                                                    Cadeia de Responsabilidade
                                                 </h4>
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-2 gap-6 pl-1">
                                                     <div>
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Autorizado Por</p>
-                                                        <p className="text-sm font-semibold text-slate-700">{req.autorizado_por || '---'}</p>
+                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Autorizado Por</p>
+                                                        <p className={`text-sm font-black uppercase ${isDarkMode ? 'text-white' : 'text-slate-700'}`}>{req.autorizado_por || '---'}</p>
                                                     </div>
                                                     <div>
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Entregue Por</p>
-                                                        <p className="text-sm font-semibold text-slate-700">{req.entregue_por || '---'}</p>
+                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Entregue Por</p>
+                                                        <p className={`text-sm font-black uppercase ${isDarkMode ? 'text-white' : 'text-slate-700'}`}>{req.entregue_por || '---'}</p>
                                                     </div>
                                                 </div>
                                             </div>
                                             {req.observacao && (
-                                                <div className="space-y-1">
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Observações</p>
-                                                    <div className="text-sm text-slate-600 bg-blue-50/50 p-4 rounded-xl border italic">"{req.observacao}"</div>
+                                                <div className="space-y-2">
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Observações Técnicas</p>
+                                                    <div className={`text-sm p-5 rounded-2xl border italic font-medium leading-relaxed ${isDarkMode ? 'bg-blue-500/10 border-blue-500/30 text-blue-200' : 'bg-blue-50/50 border-blue-100 text-blue-700'}`}>"{req.observacao}"</div>
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="space-y-3">
-                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Ações</h4>
+                                        <div className="space-y-4">
+                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Ações Operacionais</h4>
                                             {req.status === 'Pendente Devolução' && (
-                                                <button onClick={(e) => { e.stopPropagation(); handleRejectReturn(req); }} className="w-full px-4 py-3 bg-red-50 text-red-600 rounded-xl font-bold text-xs">Rejeitar Devolução</button>
+                                                <button onClick={(e) => { e.stopPropagation(); handleRejectReturn(req); }} className="w-full px-5 py-4 bg-red-500 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-red-500/20 active:scale-95 transition-all">Rejeitar Devolução</button>
                                             )}
-                                            {req.status === 'Em Uso' && (
-                                                <button onClick={(e) => { e.stopPropagation(); startSignatureFlow(req.id, req.id_usuario, 'update_return'); }} className="w-full px-4 py-3 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-xs">Receber Material</button>
+                                            {(req.status === 'Em Uso' || req.status === 'Pendente Devolução') && (
+                                                <button onClick={(e) => { e.stopPropagation(); startSignatureFlow(req.id, req.id_usuario, 'update_return'); }} className="w-full px-5 py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">Confirmar Recebimento</button>
                                             )}
-                                            <button onClick={(e) => { e.stopPropagation(); setSelectedRequest(req); }} className="w-full px-4 py-3 bg-slate-800 text-white rounded-xl font-bold text-xs">Visualizar Cupom</button>
+                                            <button onClick={(e) => { e.stopPropagation(); setSelectedRequest(req); }} className={`w-full px-5 py-4 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg active:scale-95 transition-all ${isDarkMode ? 'bg-slate-700 text-white shadow-none border border-slate-600' : 'bg-slate-800 text-white shadow-slate-900/20'}`}>Visualizar Cupom Digital</button>
                                         </div>
                                     </div>
                                 </div>
@@ -917,18 +920,18 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
             {/* Modal Cupom Compacto */}
             {selectedRequest && (
                 <div
-                    className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in"
                     onClick={() => setSelectedRequest(null)}
                 >
                     <div
-                        className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in"
+                        className={`rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-white'}`}
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header compacto */}
-                        <div className={`px-4 py-3 flex items-center gap-3 relative ${selectedRequest.status === 'Concluído' ? 'bg-emerald-500' :
-                            selectedRequest.status === 'Em Uso' ? 'bg-blue-500' :
-                                selectedRequest.status === 'Rejeitado' ? 'bg-red-500' :
-                                    'bg-amber-500'
+                        <div className={`px-6 py-5 flex items-center gap-4 relative ${selectedRequest.status === 'Concluído' ? 'bg-emerald-600 shadow-lg shadow-emerald-500/20' :
+                            selectedRequest.status === 'Em Uso' ? 'bg-blue-600 shadow-lg shadow-blue-500/20' :
+                                selectedRequest.status === 'Rejeitado' ? 'bg-red-600 shadow-lg shadow-red-500/20' :
+                                    'bg-amber-500 shadow-lg shadow-amber-500/20'
                             }`}>
                             <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                                 {selectedRequest.status === 'Concluído' ? <CheckCircle className="w-4 h-4 text-white" /> :
@@ -1040,14 +1043,14 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
             {/* Signature Modal */}
             {showSignatureModal && foundUser && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm animate-fade-in"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/90 backdrop-blur-md animate-fade-in p-4"
                     onClick={() => {
                         setShowSignatureModal(false);
                         setSignaturePassword('');
                     }}
                 >
                     <div
-                        className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md space-y-6 animate-scale-in relative"
+                        className={`p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md space-y-8 animate-scale-in relative border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-white'}`}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button
@@ -1055,32 +1058,32 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                                 setShowSignatureModal(false);
                                 setSignaturePassword('');
                             }}
-                            className="absolute top-4 right-4 p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-100 rounded-full transition-all"
+                            className={`absolute top-6 right-6 p-2 rounded-full transition-all ${isDarkMode ? 'bg-slate-700 text-slate-400 hover:text-white' : 'bg-slate-50 text-slate-300 hover:text-slate-500'}`}
                         >
-                            <XCircle className="w-5 h-5" />
+                            <XCircle className="w-6 h-6" />
                         </button>
 
-                        <div className="text-center space-y-2">
-                            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <ShieldCheck className="w-8 h-8 text-blue-600" />
+                        <div className="text-center space-y-4">
+                            <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl transform -rotate-3 ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-600 text-white'}`}>
+                                <ShieldCheck className="w-10 h-10" />
                             </div>
-                            <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">Assinar Cautela</h2>
-                            <p className="text-slate-500 font-medium text-sm">Insira sua senha para confirmar.</p>
+                            <h2 className={`text-2xl font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Assinatura Digital</h2>
+                            <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Validação de Identidade Criptográfica</p>
                         </div>
 
-                        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center font-bold text-blue-600 shadow-sm border border-blue-100">
+                        <div className={`p-6 rounded-2xl border flex items-center gap-5 transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-700 shadow-inner' : 'bg-slate-50 border-slate-100 shadow-sm'}`}>
+                            <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center font-black text-white shadow-lg border-2 border-white/20">
                                 {foundUser.rank}
                             </div>
                             <div>
-                                <p className="font-black text-slate-800 uppercase">{foundUser.war_name || foundUser.name}</p>
-                                <p className="text-xs font-bold text-slate-400">Militar Responsável</p>
+                                <p className={`font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{foundUser.war_name || foundUser.name}</p>
+                                <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Militar Responsável</p>
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-2">
-                                <Lock className="w-3 h-3" /> Senha
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-slate-500 uppercase flex items-center gap-2 mb-1 tracking-widest pl-1">
+                                <Lock className="w-3 h-3 text-blue-500" /> Senha do Sistema
                             </label>
                             <input
                                 autoFocus
@@ -1094,7 +1097,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                                         setSignaturePassword('');
                                     }
                                 }}
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none text-center tracking-widest text-lg"
+                                className={`w-full px-6 py-5 border rounded-2xl font-black outline-none text-center tracking-[1em] text-xl transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:ring-blue-500/50 focus:ring-4' : 'bg-slate-50 border-slate-200 text-slate-900 focus:ring-blue-500/20 focus:ring-4'}`}
                             />
                         </div>
 

@@ -21,11 +21,12 @@ interface SelectedItem {
 
 interface LoanRequestFormProps {
     user: any;
+    isDarkMode: boolean;
     onSuccess: () => void;
     onCancel: () => void;
 }
 
-const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCancel }) => {
+const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, isDarkMode, onSuccess, onCancel }) => {
     const [items, setItems] = useState<StockItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -131,7 +132,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
     );
 
     return (
-        <div className="bg-slate-50 w-full h-full sm:h-auto sm:rounded-3xl shadow-2xl overflow-hidden sm:max-w-[90vw] 2xl:max-w-[1800px] mx-auto border border-white/20 animate-fade-in flex flex-col max-h-[100dvh] sm:max-h-[85vh] relative text-slate-900">
+        <div className={`w-full h-full sm:h-auto sm:rounded-3xl shadow-2xl overflow-hidden sm:max-w-[90vw] 2xl:max-w-[1800px] mx-auto border animate-fade-in flex flex-col max-h-[100dvh] sm:max-h-[85vh] relative ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-white/20 text-slate-900'}`}>
             {/* Header com Gradient Premium */}
             <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 px-4 py-4 sm:px-10 sm:py-8 flex items-center justify-between shrink-0 shadow-lg relative z-10">
                 <div className="flex items-center gap-3 sm:gap-6">
@@ -156,14 +157,14 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
 
             <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
                 {/* Lista de Materiais Disponíveis */}
-                <div className="flex-1 p-3 sm:p-8 overflow-y-auto bg-white/40 backdrop-blur-sm custom-scrollbar pb-24 sm:pb-8">
-                    <div className="sticky top-0 z-20 bg-slate-50/90 backdrop-blur-xl p-1 mb-4 rounded-xl shadow-sm border border-slate-200/50">
+                <div className={`flex-1 p-3 sm:p-8 overflow-y-auto backdrop-blur-sm custom-scrollbar pb-24 sm:pb-8 ${isDarkMode ? 'bg-slate-900/40' : 'bg-white/40'}`}>
+                    <div className={`sticky top-0 z-20 backdrop-blur-xl p-1 mb-4 rounded-xl shadow-sm border ${isDarkMode ? 'bg-slate-800/90 border-slate-700' : 'bg-slate-50/90 border-slate-200/50'}`}>
                         <div className="relative group">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                             <input
                                 type="text"
                                 placeholder="Buscar material..."
-                                className="w-full pl-10 pr-4 py-3 text-sm bg-white border-none rounded-lg focus:ring-0 transition-all outline-none font-medium placeholder:text-slate-300 uppercase"
+                                className={`w-full pl-10 pr-4 py-3 text-sm border-none rounded-lg focus:ring-0 transition-all outline-none font-medium placeholder:text-slate-500 uppercase ${isDarkMode ? 'bg-slate-800 text-white' : 'bg-white text-slate-900'}`}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -188,7 +189,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
                                 const isAdded = selectedBatch.some(i => i.id_material === item.id);
 
                                 return (
-                                    <div key={item.id} className={`group relative flex flex-col p-5 bg-white border-2 rounded-2xl transition-all duration-300 ${isAdded ? 'border-blue-500 shadow-xl shadow-blue-500/10' : 'border-slate-100 hover:border-blue-200'}`}>
+                                    <div key={item.id} className={`group relative flex flex-col p-5 border-2 rounded-2xl transition-all duration-300 ${isAdded ? 'border-blue-500 shadow-xl shadow-blue-500/10' : (isDarkMode ? 'bg-slate-800 border-slate-700 hover:border-blue-500/50' : 'bg-white border-slate-100 hover:border-blue-200 shadow-sm')}`}>
                                         {/* Status Badge */}
                                         <div className="flex items-center justify-between mb-4">
                                             <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${hasStock ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
@@ -201,15 +202,15 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
 
                                         {/* Icon & Title */}
                                         <div className="flex flex-col items-center text-center mb-6">
-                                            <div className={`p-4 rounded-2xl mb-4 transition-transform group-hover:scale-110 duration-500 ${isAdded ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'bg-slate-50 text-slate-400'}`}>
+                                            <div className={`p-4 rounded-2xl mb-4 transition-transform group-hover:scale-110 duration-500 ${isAdded ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : (isDarkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-50 text-slate-400')}`}>
                                                 <Package className="w-8 h-8" />
                                             </div>
-                                            <h3 className="font-black text-slate-800 text-sm sm:text-base uppercase leading-tight px-2 min-h-[2.5rem] flex items-center justify-center">
+                                            <h3 className={`font-black text-sm sm:text-base uppercase leading-tight px-2 min-h-[2.5rem] flex items-center justify-center ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                                                 {item.material}
                                             </h3>
                                             <div className="mt-2 flex items-center gap-2">
                                                 <span className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Estoque:</span>
-                                                <span className={`text-xs font-black ${hasStock ? 'text-blue-600' : 'text-red-500'}`}>
+                                                <span className={`text-xs font-black ${hasStock ? 'text-blue-500' : 'text-red-500'}`}>
                                                     {available}
                                                 </span>
                                             </div>
@@ -257,7 +258,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
                 </div>
 
                 {/* Painel Lateral - Carrinho de Itens (Desktop) */}
-                <div className={`hidden md:flex w-80 lg:w-96 bg-white p-6 h-full flex-col shadow-[-15px_0_40px_rgba(0,0,0,0.03)] border-l border-slate-100 relative z-20`}>
+                <div className={`hidden md:flex w-80 lg:w-96 p-6 h-full flex-col shadow-[-15px_0_40px_rgba(0,0,0,0.03)] border-l relative z-20 ${isDarkMode ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-100'}`}>
                     <div className="flex items-center justify-between mb-8 shrink-0">
                         <div className="flex items-center gap-3">
                             <div className="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-600/20">
@@ -288,17 +289,17 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
                             </div>
                         ) : (
                             selectedBatch.map(item => (
-                                <div key={item.id_material} className="p-4 bg-slate-50/80 border-2 border-slate-100 rounded-2xl flex items-center justify-between group hover:border-blue-200 transition-all animate-scale-in">
+                                <div key={item.id_material} className={`p-4 border-2 rounded-2xl flex items-center justify-between group transition-all animate-scale-in ${isDarkMode ? 'bg-slate-700/50 border-slate-700 hover:border-blue-500/50' : 'bg-slate-50/80 border-slate-100 hover:border-blue-200'}`}>
                                     <div className="min-w-0">
-                                        <p className="font-black text-slate-800 text-xs uppercase truncate leading-tight">{item.material}</p>
+                                        <p className={`font-black text-xs uppercase truncate leading-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{item.material}</p>
                                         <div className="flex items-center gap-2 mt-1">
                                             <span className="text-[10px] text-slate-400 font-bold uppercase">Quantidade:</span>
-                                            <span className="font-black text-blue-600 text-sm">{item.quantidade}</span>
+                                            <span className="font-black text-blue-500 text-sm">{item.quantidade}</span>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => removeFromBatch(item.id_material)}
-                                        className="p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                        className={`p-3 rounded-xl transition-all ${isDarkMode ? 'text-slate-500 hover:text-red-400 hover:bg-red-400/10' : 'text-slate-300 hover:text-red-500 hover:bg-red-50'}`}
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -327,7 +328,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
                         </button>
                         <button
                             onClick={onCancel}
-                            className="w-full bg-slate-100 text-slate-500 py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-200 transition-all"
+                            className={`w-full py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${isDarkMode ? 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                         >
                             Cancelar
                         </button>
@@ -335,8 +336,8 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
                 </div>
             </div>
 
-            {/* Barra de Ação Mobile (Sticky Bottom) - CORREÇÃO CRÍTICA SOLICITADA */}
-            <div className={`md:hidden fixed bottom-0 left-0 right-0 p-3 bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-50 transition-transform duration-300 ease-in-out ${selectedBatch.length > 0 ? 'translate-y-0' : 'translate-y-full'}`}>
+            {/* Barra de Ação Mobile (Sticky Bottom) */}
+            <div className={`md:hidden fixed bottom-0 left-0 right-0 p-3 border-t shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-50 transition-transform duration-300 ease-in-out ${selectedBatch.length > 0 ? 'translate-y-0' : 'translate-y-full'} ${isDarkMode ? 'bg-slate-900/95 backdrop-blur-xl border-slate-800' : 'bg-white/95 backdrop-blur-xl border-slate-100'}`}>
                 <div className="flex gap-2">
                     <button
                         onClick={() => setShowCartMobile(!showCartMobile)}
@@ -359,10 +360,10 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
             {/* Modal de Carrinho Mobile */}
             {showCartMobile && (
                 <div className="md:hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] animate-fade-in flex items-end p-4" onClick={() => setShowCartMobile(false)}>
-                    <div className="bg-white w-full max-h-[70vh] rounded-3xl p-6 flex flex-col animate-slide-up" onClick={e => e.stopPropagation()}>
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="font-black text-slate-900 uppercase text-xs">Itens Selecionados</h3>
-                            <button onClick={() => setShowCartMobile(false)} className="p-2 bg-slate-100 rounded-full"><X className="w-4 h-4" /></button>
+                    <div className={`w-full max-h-[70vh] rounded-[2rem] p-8 flex flex-col animate-slide-up ${isDarkMode ? 'bg-slate-800' : 'bg-white'}`} onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between mb-8">
+                            <h3 className={`font-black uppercase text-xs tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Itens da Cautela</h3>
+                            <button onClick={() => setShowCartMobile(false)} className={`p-2 rounded-full ${isDarkMode ? 'bg-slate-700 text-white' : 'bg-slate-100'}`}><X className="w-4 h-4" /></button>
                         </div>
                         <div className="flex-1 overflow-y-auto space-y-3 mb-6">
                             {selectedBatch.map(item => (
