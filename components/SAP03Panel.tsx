@@ -598,7 +598,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user }) => {
                                 disabled={!directMaterialId || !foundUser}
                                 className="px-6 h-[50px] bg-slate-800 text-white rounded-xl font-black hover:bg-slate-900 transition-all flex items-center justify-center gap-2 uppercase text-xs tracking-widest disabled:opacity-50"
                             >
-                                <Plus className="w-5 h-5" /> Adicionar Item
+                                <Plus className="w-5 h-5" /> Adicionar
                             </button>
                             <div className="flex-1"></div>
                             <button

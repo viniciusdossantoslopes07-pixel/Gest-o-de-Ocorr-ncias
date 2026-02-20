@@ -245,7 +245,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, onSuccess, onCa
                                                 {isAdded ? (
                                                     <><CheckCircle className="w-4 h-4" /> Item Selecionado</>
                                                 ) : (
-                                                    <><Plus className="w-4 h-4" /> Adicionar à Lista</>
+                                                    <><Plus className="w-4 h-4" /> Adicionar</>
                                                 )}
                                             </button>
                                         </div>
