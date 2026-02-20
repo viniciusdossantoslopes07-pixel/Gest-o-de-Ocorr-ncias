@@ -61,6 +61,14 @@ export interface UserFunction {
   permissions: string[];
 }
 
+export interface PermissionGroup {
+  id: string;
+  name: string;
+  description: string;
+  permissions: string[];
+  created_at?: string;
+}
+
 export interface Attachment {
   id: string;
   name: string;

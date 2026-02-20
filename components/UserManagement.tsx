@@ -234,53 +234,17 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                 <input required type="password" placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
               </div>
 
-              <div className="md:col-span-3 pt-4 border-t border-slate-100">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Perfil de Acesso</label>
-                <div className="flex gap-4 mb-6">
-                  <button type="button" onClick={() => setFormData({ ...formData, role: UserRole.OPERATIONAL })} className={`flex-1 py-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-3 transition-all ${formData.role === UserRole.OPERATIONAL ? 'bg-blue-50 text-blue-600 border-2 border-blue-500' : 'bg-slate-50 text-slate-400 border-2 border-transparent hover:bg-slate-100'}`}>
-                    <UserIcon className="w-4 h-4" /> Perfil Operador (Lançador)
-                  </button>
-                  <button type="button" onClick={() => setFormData({ ...formData, role: UserRole.ADMIN })} className={`flex-1 py-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-3 transition-all ${formData.role === UserRole.ADMIN ? 'bg-blue-50 text-blue-600 border-2 border-blue-500' : 'bg-slate-50 text-slate-400 border-2 border-transparent hover:bg-slate-100'}`}>
-                    <Shield className="w-4 h-4" /> Perfil Administrador (Gestor)
-                  </button>
-                </div>
-
-                {formData.role === UserRole.ADMIN && (
-                  <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 animate-in fade-in slide-in-from-top-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-4">Nível de Atuação Hierárquica Militar</label>
-                    <div className="grid grid-cols-1">
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, accessLevel: formData.accessLevel === 'OM' ? 'N1' : 'OM' })}
-                        className={`p-4 rounded-xl border-2 transition-all text-left flex flex-col gap-1 ${formData.accessLevel === 'OM' ? 'border-amber-500 bg-slate-900 text-amber-400 shadow-xl' : 'border-slate-200 bg-white opacity-60 hover:opacity-100'}`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className={`text-[10px] font-black uppercase tracking-tighter ${formData.accessLevel === 'OM' ? 'text-amber-400' : 'text-slate-400'}`}>
-                            {formData.accessLevel === 'OM' ? 'Nível Superior Atribuído' : 'Atribuir Nível Superior'}
-                          </span>
-                          {formData.accessLevel === 'OM' && <Crown className="w-4 h-4" />}
-                        </div>
-                        <span className={`text-xs font-bold ${formData.accessLevel === 'OM' ? 'text-white' : 'text-slate-800'}`}>Comandante OM</span>
-                        <p className="text-[10px] opacity-70 mt-1 font-normal">
-                          {formData.accessLevel === 'OM'
-                            ? 'Acesso total de comando habilitado.'
-                            : 'Clique para conceder privilégios de Comandante OM.'}
-                        </p>
-                      </button>
-
-                      {formData.accessLevel !== 'OM' && (
-                        <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-                          <p className="text-[10px] text-blue-600 font-bold flex items-center gap-2">
-                            <BadgeCheck className="w-3 h-3" /> Nível Padrão (N1) - Equipe de Serviço
-                          </p>
-                          <p className="text-[9px] text-slate-500 mt-1 pl-5">
-                            O usuário será criado com nível operacional padrão. Para alterar para N2 (Inteligência) ou N3 (Comando OSD), utilize a aba "Gerir Permissões".
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+              {/* Removed Profile and Access Level Selection - Defaults to OPERATIONAL / N1 */
+                /* Access control is now managed exclusively in PermissionManagement */
+              }
+              <div className="md:col-span-3 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                <p className="text-xs text-blue-800 flex items-center gap-2 font-medium">
+                  <Shield className="w-4 h-4" />
+                  O usuário será criado com perfil <strong>Operacional Padrão (N1)</strong>.
+                </p>
+                <p className="text-[10px] text-blue-600 mt-1 pl-6">
+                  Para conceder permissões administrativas, níveis superiores ou funções específicas, utilize a aba <strong>"Gerir Permissões"</strong> após o cadastro.
+                </p>
               </div>
 
               <div className="md:col-span-3">
