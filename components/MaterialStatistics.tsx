@@ -104,7 +104,7 @@ export const MaterialStatistics = () => {
         });
 
         // Metrics
-        const totalItems = filteredInv.reduce((acc, item) => acc + (item.entrada - item.saida), 0);
+        const totalItems = filteredInv.length;
         const lowStockItems = filteredInv.filter(item => (item.entrada - item.saida) > 0 && (item.entrada - item.saida) < 5);
         const criticalItems = filteredInv.filter(item => (item.entrada - item.saida) <= 0);
         const activeLoansList = filteredLoans.filter(l => l.status === 'Em Uso');
@@ -264,11 +264,11 @@ export const MaterialStatistics = () => {
             {/* KPI Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard
-                    title="Volume em Estoque"
+                    title="Quantidade de Itens"
                     value={filteredContent.totalItems}
                     icon={Package}
                     color="bg-blue-600"
-                    subtext="Unidades físicas disponíveis"
+                    subtext="Tipos de materiais cadastrados"
                 />
                 <StatCard
                     title="Alerta de Reposição"
@@ -288,152 +288,9 @@ export const MaterialStatistics = () => {
                     clickable
                     onClick={() => setSelectedView('low-stock')}
                 />
-                <StatCard
-                    title="Material em Trânsito"
-                    value={filteredContent.activeLoansQtd}
-                    icon={ArrowDownRight}
-                    color="bg-indigo-600"
-                    subtext="Unidades fora do depósito"
-                    clickable
-                    onClick={() => setSelectedView('active-loans')}
-                />
+                <div className="hidden lg:block bg-slate-50/50 rounded-2xl border border-dashed border-slate-200"></div>
             </div>
 
-            {/* Detailed Analytics */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                {/* Sector Consumption Bar Chart */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
-                    <div className="flex items-center justify-between mb-6">
-                        <div>
-                            <h3 className="font-bold text-slate-800">Consumo por Setor</h3>
-                            <p className="text-xs text-slate-500 uppercase font-black tracking-wider mt-1">Requisições no período selecionado</p>
-                        </div>
-                        <Filter className="w-5 h-5 text-slate-300" />
-                    </div>
-                    <div className="flex-1 w-full min-h-[300px]">
-                        {filteredContent.barData.length === 0 ? (
-                            <div className="h-full flex items-center justify-center text-slate-400 font-medium">Sem dados no período.</div>
-                        ) : (
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={filteredContent.barData}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis
-                                        dataKey="name"
-                                        axisLine={false}
-                                        tickLine={false}
-                                        tick={{ fontSize: 10, fontWeight: 700, fill: '#64748b' }}
-                                    />
-                                    <YAxis
-                                        axisLine={false}
-                                        tickLine={false}
-                                        tick={{ fontSize: 10, fontWeight: 700, fill: '#64748b' }}
-                                    />
-                                    <RechartsTooltip
-                                        cursor={{ fill: '#f8fafc' }}
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                                    />
-                                    <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={40} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        )}
-                    </div>
-                </div>
-
-                {/* Top Requesters List */}
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-2">
-                            <Trophy className="w-5 h-5 text-amber-500" />
-                            <h3 className="font-bold text-slate-800">Top Movimentadores</h3>
-                        </div>
-                    </div>
-                    <div className="space-y-4">
-                        {filteredContent.topUsers.length === 0 ? (
-                            <div className="text-center py-12 text-slate-400 font-medium italic">Inicie uma pesquisa para ver dados.</div>
-                        ) : (
-                            filteredContent.topUsers.map((user, index) => (
-                                <div key={user.id} className="flex items-center justify-between p-3 bg-slate-50/50 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs ${index === 0 ? 'bg-amber-100 text-amber-600 ring-2 ring-amber-200' : 'bg-white text-slate-500 border border-slate-200'}`}>
-                                            {index + 1}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-slate-700 leading-tight">{user.name}</p>
-                                            <p className="text-[10px] text-slate-400 uppercase font-black">Cautelas Realizadas</p>
-                                        </div>
-                                    </div>
-                                    <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-black">
-                                        {user.count}
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Categories Distribution */}
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <h3 className="font-bold text-slate-800 mb-2">Composição do Movimento</h3>
-                    <p className="text-xs text-slate-500 font-medium mb-6 uppercase tracking-widest">Distribuição por Categoria</p>
-                    <div className="h-[250px] w-full">
-                        {filteredContent.pieData.length === 0 ? (
-                            <div className="h-full flex items-center justify-center text-slate-400">Sem dados.</div>
-                        ) : (
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={filteredContent.pieData}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={80}
-                                        paddingAngle={5}
-                                        dataKey="value"
-                                    >
-                                        {filteredContent.pieData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))}
-                                    </Pie>
-                                    <RechartsTooltip />
-                                    <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', fontWeight: 600 }} />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        )}
-                    </div>
-                </div>
-
-                {/* Logistics Health */}
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center">
-                    <h3 className="font-bold text-slate-800 mb-3">Resumo Executivo</h3>
-                    <div className="space-y-4 text-sm font-medium">
-                        <div className="flex items-center gap-3 p-4 bg-blue-50/50 rounded-2xl">
-                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-blue-600 shadow-sm">
-                                <ArrowUpRight className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <p className="text-slate-700">O volume de movimentação {filteredContent.totalLoansCount > 50 ? 'está alto' : 'está estável'} no período selecionado.</p>
-                                <p className="text-[10px] text-slate-500 uppercase font-black">Fluxo de Logística</p>
-                            </div>
-                        </div>
-                        <div className={`flex items-center gap-3 p-4 rounded-2xl ${filteredContent.criticalCount > 0 ? 'bg-red-50/50' : 'bg-emerald-50/50'}`}>
-                            <div className={`w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm ${filteredContent.criticalCount > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                                <ShieldAlert className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <p className="text-slate-700">
-                                    {filteredContent.criticalCount > 0
-                                        ? `Atenção: Existem ${filteredContent.criticalCount} itens sem estoque.`
-                                        : 'A integridade do estoque está mantida para as categorias filtradas.'}
-                                </p>
-                                <p className="text-[10px] text-slate-500 uppercase font-black">Status de Ruptura</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             {/* Modals for details */}
             {selectedView !== 'none' && (
