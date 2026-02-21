@@ -8,9 +8,10 @@ interface PersonnelManagementProps {
     onAddPersonnel: (user: Partial<User>) => void;
     onUpdatePersonnel: (user: User) => void;
     onDeletePersonnel: (id: string) => void;
+    isDarkMode?: boolean;
 }
 
-const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPersonnel, onUpdatePersonnel, onDeletePersonnel }) => {
+const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPersonnel, onUpdatePersonnel, onDeletePersonnel, isDarkMode = false }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -64,21 +65,21 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 pb-20">
             {/* Header & Search */}
-            <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm">
+            <div className={`rounded-[2rem] p-8 border shadow-sm ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
                     <div className="flex items-center gap-4">
-                        <div className="bg-blue-600 p-2.5 lg:p-3 rounded-2xl shadow-lg shadow-blue-200">
-                            <Users className="w-5 h-5 lg:w-6 h-6 text-white" />
+                        <div className={`p-2.5 lg:p-3 rounded-2xl shadow-lg ${isDarkMode ? 'bg-blue-500/20 shadow-blue-900/20' : 'bg-blue-600 shadow-blue-200'}`}>
+                            <Users className={`w-5 h-5 lg:w-6 h-6 ${isDarkMode ? 'text-blue-400' : 'text-white'}`} />
                         </div>
                         <div>
-                            <h2 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">Gestão de Efetivo</h2>
-                            <p className="text-slate-500 text-xs lg:sm font-medium">Cadastro e vinculação de militares</p>
+                            <h2 className={`text-xl lg:text-2xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Gestão de Efetivo</h2>
+                            <p className={`${isDarkMode ? 'text-slate-500' : 'text-slate-500'} text-xs lg:sm font-medium`}>Cadastro e vinculação de militares</p>
                         </div>
                     </div>
 
                     <button
                         onClick={() => { setIsAdding(!isAdding); setEditingId(null); }}
-                        className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl text-sm lg:text-base w-full lg:w-auto"
+                        className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-xl text-sm lg:text-base w-full lg:w-auto ${isDarkMode ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
                     >
                         {isAdding ? <Users className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
                         {isAdding ? 'Ver Lista' : 'Cadastrar Militar'}
@@ -94,14 +95,14 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                 placeholder="Buscar por nome, nome de guerra ou SARAM..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                className={`w-full border rounded-2xl py-4 pl-12 pr-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
                             />
                         </div>
                         <div className="md:w-64">
                             <select
                                 value={filterSector}
                                 onChange={(e) => setFilterSector(e.target.value)}
-                                className={`w-full h-full bg-slate-50 border border-slate-200 rounded-2xl px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all ${filterSector === 'SEM SETOR' ? 'text-red-500 border-red-200 bg-red-50' : 'text-slate-700'}`}
+                                className={`w-full h-full border rounded-2xl px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'} ${filterSector === 'SEM SETOR' ? (isDarkMode ? 'text-red-400 border-red-900/50 bg-red-400/10' : 'text-red-500 border-red-200 bg-red-50') : ''}`}
                             >
                                 <option value="TODOS">Todos os Setores</option>
                                 <option value="SEM SETOR">⚠ SEM SETOR (Não Alocados)</option>

@@ -1051,9 +1051,9 @@ const App: FC = () => {
               currentUser={currentUser!}
               attendanceHistory={attendanceHistory}
               absenceJustifications={absenceJustifications}
+              isDarkMode={isDarkMode}
               onSaveAttendance={async (a) => {
                 // Determine if we need to insert or update the daily_attendance record
-                // Attempt to find existing efficiently
                 const { data: existingAttendance } = await supabase
                   .from('daily_attendance')
                   .select('id')
@@ -1064,23 +1064,25 @@ const App: FC = () => {
 
                 let attendanceId = existingAttendance?.[0]?.id;
 
+                const headerData = {
+                  date: a.date,
+                  sector: a.sector,
+                  call_type: a.callType,
+                  responsible: a.responsible,
+                  signed_at: a.signedAt,
+                  signed_by: a.signedBy,
+                  observacao: a.observacao // New field
+                };
+
                 if (!attendanceId) {
-                  // If not found, try to insert. If insert fails (due to race condition/constraint), try select again.
                   const { data: newAtt, error: attErr } = await supabase
                     .from('daily_attendance')
-                    .insert([{
-                      date: a.date,
-                      sector: a.sector,
-                      call_type: a.callType,
-                      responsible: a.responsible,
-                      signed_at: a.signedAt,
-                      signed_by: a.signedBy
-                    }])
+                    .insert([headerData])
                     .select()
                     .single();
 
                   if (attErr) {
-                    // Possible race condition (duplicate key) - try to fetch again
+                    // Possible race condition
                     const { data: retryAtt } = await supabase
                       .from('daily_attendance')
                       .select('id')
@@ -1099,39 +1101,32 @@ const App: FC = () => {
                     attendanceId = newAtt.id;
                   }
                 } else {
-                  // Update header if needed (signatures)
                   const { error: updateError } = await supabase
                     .from('daily_attendance')
-                    .update({
-                      responsible: a.responsible,
-                      signed_at: a.signedAt,
-                      signed_by: a.signedBy
-                    })
+                    .update(headerData)
                     .eq('id', attendanceId);
 
                   if (updateError) console.error('Error updating attendance header:', updateError);
                 }
 
-                // Upsert records
-                // Using .upsert is safer for records
-                for (const record of a.records) {
-                  // Ensure we have a valid ID before upserting
-                  if (!attendanceId) continue;
+                if (!attendanceId) return;
 
-                  const { error: recErr } = await supabase
-                    .from('attendance_records')
-                    .upsert({
-                      attendance_id: attendanceId,
-                      militar_id: record.militarId,
-                      militar_name: record.militarName,
-                      militar_rank: record.militarRank,
-                      saram: record.saram,
-                      status: record.status,
-                      timestamp: record.timestamp
-                    }, { onConflict: 'attendance_id, militar_id' });
+                // BATCH UPSERT for records - much more efficient
+                const recordsToUpsert = a.records.map(record => ({
+                  attendance_id: attendanceId,
+                  militar_id: record.militarId,
+                  militar_name: record.militarName,
+                  militar_rank: record.militarRank,
+                  saram: record.saram,
+                  status: record.status,
+                  timestamp: record.timestamp
+                }));
 
-                  if (recErr) console.error('Error saving attendance record:', recErr);
-                }
+                const { error: batchErr } = await supabase
+                  .from('attendance_records')
+                  .upsert(recordsToUpsert, { onConflict: 'attendance_id, militar_id' });
+
+                if (batchErr) console.error('Error batch saving attendance records:', batchErr);
               }}
               onSaveJustification={async (j) => {
                 const { error } = await supabase
@@ -1242,9 +1237,11 @@ const App: FC = () => {
             />
           )}
 
+
           {activeTab === 'personnel-management' && canManagePersonnel && (
             <PersonnelManagementView
-              users={users} // Only main users
+              users={users}
+              isDarkMode={isDarkMode}
               onAddPersonnel={(u) => {
                 handleCreateUser({
                   ...u,
