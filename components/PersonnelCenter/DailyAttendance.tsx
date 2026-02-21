@@ -3,7 +3,7 @@ import { useState, useEffect, FC, Fragment } from 'react';
 import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '../../types';
 import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, SETORES, RANKS } from '../../constants';
 import { hasPermission, PERMISSIONS } from '../../constants/permissions';
-import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint, BarChart3 } from 'lucide-react';
+import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint, BarChart3, MoveHorizontal } from 'lucide-react';
 import ForceMapDashboard from './ForceMapDashboard';
 import { authenticateBiometrics } from '../../services/webauthn';
 import { supabase } from '../../services/supabase';
@@ -58,6 +58,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const canSign = hasPermission(currentUser, PERMISSIONS.SIGN_DAILY_ATTENDANCE);
     const canManage = hasPermission(currentUser, PERMISSIONS.MANAGE_PERSONNEL);
     const [callToSign, setCallToSign] = useState<CallTypeCode | null>(null);
+    const [movingUserId, setMovingUserId] = useState<string | null>(null);
     const [currentWeek, setCurrentWeek] = useState(() => {
         const d = new Date();
         d.setHours(0, 0, 0, 0);
@@ -781,18 +782,54 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                             <div className={`font-bold text-[10px] lg:text-xs uppercase truncate ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{user.warName || user.name}</div>
                                                             <div className="text-[8px] lg:text-[9px] text-slate-500 font-bold uppercase">{user.rank}</div>
                                                         </div>
-                                                        {canManage && (
-                                                            <button
-                                                                onClick={() => {
-                                                                    if (confirm(`Deseja remover ${user.rank} ${user.warName || user.name} desta lista?`)) {
-                                                                        onExcludeUser(user.id);
-                                                                    }
-                                                                }}
-                                                                className="p-1.5 hover:bg-red-500/10 text-slate-500 hover:text-red-500 rounded-lg transition-all ml-1"
-                                                            >
-                                                                <Trash2 className="w-3.5 h-3.5" />
-                                                            </button>
-                                                        )}
+                                                        <div className="flex items-center gap-1">
+                                                            {canManage && (
+                                                                <div className="relative">
+                                                                    <button
+                                                                        onClick={() => setMovingUserId(movingUserId === user.id ? null : user.id)}
+                                                                        className={`p-1.5 rounded-lg transition-all ${movingUserId === user.id ? 'bg-indigo-500 text-white' : 'hover:bg-indigo-500/10 text-slate-500 hover:text-indigo-500'}`}
+                                                                        title="Mover para outro setor"
+                                                                    >
+                                                                        <MoveHorizontal className="w-3.5 h-3.5" />
+                                                                    </button>
+
+                                                                    {movingUserId === user.id && (
+                                                                        <div className={`absolute left-0 top-full mt-1 z-[50] w-48 rounded-xl border shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
+                                                                            <div className="text-[9px] font-black uppercase text-slate-500 mb-2 px-2">Mover para:</div>
+                                                                            <div className="flex flex-col gap-1 max-h-48 overflow-y-auto custom-scrollbar">
+                                                                                {SETORES.filter(s => s !== selectedSector).map(s => (
+                                                                                    <button
+                                                                                        key={s}
+                                                                                        onClick={() => {
+                                                                                            if (confirm(`Mover ${user.rank} ${user.warName || user.name} para o setor ${s}?`)) {
+                                                                                                onMoveUser(user.id, s);
+                                                                                                setMovingUserId(null);
+                                                                                            }
+                                                                                        }}
+                                                                                        className={`text-left px-3 py-2 rounded-lg text-[10px] font-bold transition-all ${isDarkMode ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-slate-50 text-slate-700'}`}
+                                                                                    >
+                                                                                        {s}
+                                                                                    </button>
+                                                                                ))}
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                            {canManage && (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        if (confirm(`Deseja remover ${user.rank} ${user.warName || user.name} desta lista?`)) {
+                                                                            onExcludeUser(user.id);
+                                                                        }
+                                                                    }}
+                                                                    className="p-1.5 hover:bg-red-500/10 text-slate-500 hover:text-red-500 rounded-lg transition-all"
+                                                                    title="Remover militar"
+                                                                >
+                                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
