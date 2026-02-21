@@ -52,7 +52,7 @@ const MissionReportView: FC<MissionReportViewProps> = ({ orders, onBack }) => {
     };
 
     return (
-        <div className="space-y-4 sm:space-y-6 animate-fade-in bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
+        <div className="space-y-4 sm:space-y-6 animate-fade-in bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 force-light">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 sm:pb-6 border-b border-slate-100">
                 <div className="flex items-center gap-3 sm:gap-4">
                     <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors shrink-0">

@@ -46,6 +46,67 @@ body {
   @apply bg-slate-900/70 border-white/10;
 }
 
+/* Force Light Theme Utility */
+.force-light {
+  --app-bg: #ffffff !important;
+  --card-bg: #ffffff !important;
+  --main-text: #0f172a !important;
+  --muted-text: #64748b !important;
+  --subtle-border: #e2e8f0 !important;
+  background-color: white !important;
+  color: #0f172a !important;
+}
+
+.force-light * {
+  color: inherit !important;
+  border-color: inherit !important;
+}
+
+.force-light .bg-white {
+  background-color: white !important;
+}
+
+.force-light .bg-slate-50 {
+  background-color: #f8fafc !important;
+}
+
+.force-light .bg-slate-100 {
+  background-color: #f1f5f9 !important;
+}
+
+.force-light .bg-blue-600 {
+  background-color: #2563eb !important;
+}
+
+.force-light .text-white {
+  color: white !important;
+}
+
+.force-light .text-slate-900 {
+  color: #0f172a !important;
+}
+
+.force-light .text-slate-500 {
+  color: #64748b !important;
+}
+
+.force-light .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+.force-light .border-slate-900 {
+  border-color: #0f172a !important;
+}
+
+.force-light .border-slate-200 {
+  border-color: #e2e8f0 !important;
+}
+
+.force-light .border-slate-300 {
+  border-color: #cbd5e1 !important;
+}
+
+
 /* Premium Animations */
 @keyframes fadeIn {
   from {

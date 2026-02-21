@@ -14,8 +14,9 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 print:p-0 print:bg-white">
-            <div className="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-auto print:max-h-none print:rounded-none print:max-w-none">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 print:p-0 print:bg-white force-light">
+            <div className="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-auto print:max-h-none print:rounded-none print:max-w-none shadow-2xl">
+
                 {/* Header - Hidden on print */}
                 <div className="sticky top-0 bg-white border-b border-slate-200 p-4 flex items-center justify-between print:hidden z-10">
                     <h2 className="text-lg font-bold text-slate-900">Visualização da OMIS {order.omisNumber}</h2>
