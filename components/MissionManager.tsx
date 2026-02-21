@@ -15,9 +15,10 @@ import { notificationService } from '../services/notificationService';
 
 interface MissionManagerProps {
     user: User;
+    isDarkMode?: boolean;
 }
 
-export default function MissionManager({ user }: MissionManagerProps) {
+export default function MissionManager({ user, isDarkMode }: MissionManagerProps) {
     const [missions, setMissions] = useState<Mission[]>([]);
     const [orders, setOrders] = useState<MissionOrder[]>([]);
     const [users, setUsers] = useState<User[]>([]);
@@ -592,6 +593,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
             <div className="max-w-4xl mx-auto">
                 <MissionOrderForm
                     currentUser={user.name}
+                    isDarkMode={isDarkMode}
                     onCancel={() => { setShowOrderForm(false); setSelectedMission(null); }}
                     onSubmit={handleOrderSubmit}
                     order={initialOrderData as any}
@@ -613,50 +615,50 @@ export default function MissionManager({ user }: MissionManagerProps) {
         <div className="max-w-7xl mx-auto space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Central de Missões</h2>
-                    <p className="text-xs sm:text-sm text-slate-500">Gestão unificada de solicitações e ordens de serviço</p>
+                    <h2 className={`text-xl sm:text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Central de Missões</h2>
+                    <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Gestão unificada de solicitações e ordens de serviço</p>
                 </div>
             </div>
 
             {/* Unified Tabs - Responsive with horizontal scroll */}
             <div className="overflow-x-auto pb-2 -mx-1 sm:mx-0 scrollbar-hide">
-                <div className="flex p-1 bg-slate-100 rounded-xl w-max sm:w-fit min-w-full sm:min-w-0">
+                <div className={`flex p-1 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} rounded-xl w-max sm:w-fit min-w-full sm:min-w-0`}>
                     <button
                         onClick={() => setActiveTab('solicitar_missao')}
-                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'solicitar_missao' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'solicitar_missao' ? (isDarkMode ? 'bg-slate-700 text-blue-400' : 'bg-white text-blue-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
                     >
                         <PlusCircle className="w-3.5 h-3.5 sm:w-4 h-4" /> <span className="hidden xs:inline">Solicitar Missão</span><span className="xs:hidden">Solicitar</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('minhas_solicitacoes')}
-                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'minhas_solicitacoes' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'minhas_solicitacoes' ? (isDarkMode ? 'bg-slate-700 text-blue-400' : 'bg-white text-blue-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
                     >
                         <List className="w-3.5 h-3.5 sm:w-4 h-4" /> <span className="hidden xs:inline">Minhas Solicitações</span><span className="xs:hidden">Minhas</span>
                     </button>
                     {(isSop || isChSop) && (
                         <button
                             onClick={() => setActiveTab('painel_gestao')}
-                            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'painel_gestao' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'painel_gestao' ? (isDarkMode ? 'bg-slate-700 text-orange-400' : 'bg-white text-orange-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
                         >
                             <Shield className="w-3.5 h-3.5 sm:w-4 h-4" /> Gestão
                         </button>
                     )}
                     <button
                         onClick={() => setActiveTab('missoes_ativas')}
-                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'missoes_ativas' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'missoes_ativas' ? (isDarkMode ? 'bg-slate-700 text-emerald-400' : 'bg-white text-emerald-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
                     >
                         <Play className="w-3.5 h-3.5 sm:w-4 h-4" /> Ativas
                     </button>
                     <button
                         onClick={() => setActiveTab('missoes_finalizadas')}
-                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'missoes_finalizadas' ? 'bg-white text-slate-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'missoes_finalizadas' ? (isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-white text-slate-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
                     >
                         <CheckCircle className="w-3.5 h-3.5 sm:w-4 h-4" /> Finalizadas
                     </button>
                     {(isSop || isChSop) && (
                         <button
                             onClick={() => setActiveTab('estatisticas')}
-                            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'estatisticas' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'estatisticas' ? (isDarkMode ? 'bg-slate-700 text-purple-400' : 'bg-white text-purple-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
                         >
                             <LayoutDashboard className="w-3.5 h-3.5 sm:w-4 h-4" /> Estatísticas
                         </button>
@@ -665,7 +667,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
             </div>
 
             {/* Content Area */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 sm:p-4 md:p-6 min-h-[400px]">
+            <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} rounded-2xl shadow-sm border p-2 sm:p-4 md:p-6 min-h-[400px]`}>
 
                 {/* 1. Minhas Solicitações Tab */}
                 {activeTab === 'minhas_solicitacoes' && (
@@ -680,7 +682,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
                                         setSelectedMission(m);
                                         setShowMissionCard(true);
                                     }}
-                                    className="p-4 rounded-2xl border border-slate-100 bg-white hover:bg-slate-50 transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center cursor-pointer hover:shadow-lg group relative overflow-hidden"
+                                    className={`p-4 rounded-2xl border ${isDarkMode ? 'border-slate-800 bg-slate-800/50 hover:bg-slate-800' : 'border-slate-100 bg-white hover:bg-slate-50'} transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center cursor-pointer hover:shadow-lg group relative overflow-hidden`}
                                 >
                                     <div className="flex-1 min-w-0 w-full">
                                         <div className="flex items-center justify-between sm:justify-start gap-2 mb-1">
@@ -690,7 +692,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
                                             <span className="text-[10px] text-slate-400 font-mono">#{m.id.slice(0, 8)}</span>
                                         </div>
 
-                                        <h4 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">
+                                        <h4 className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} group-hover:text-blue-600 transition-colors truncate`}>
                                             {m.dados_missao.local}
                                         </h4>
 
@@ -813,7 +815,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
 
                 {/* 4. Estatísticas */}
                 {activeTab === 'estatisticas' && (
-                    <MissionStatistics orders={orders} missions={missions} users={users} />
+                    <MissionStatistics orders={orders} missions={missions} users={users} isDarkMode={isDarkMode} />
                 )}
 
                 {/* 5. Solicitar Missão */}
@@ -822,6 +824,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
                         <MissionRequestForm
                             user={user}
                             initialData={editingDraft || undefined}
+                            isDarkMode={isDarkMode}
                             onCancel={() => {
                                 setActiveTab('minhas_solicitacoes');
                                 setEditingDraft(null);
@@ -913,32 +916,32 @@ export default function MissionManager({ user }: MissionManagerProps) {
 
             {/* Signature Modal */}
             {showSignatureModal && orderToSign && (
-                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50">
-                    <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md m-4">
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} rounded-2xl shadow-xl p-6 w-full max-w-md m-4 border`}>
                         <div className="flex items-center gap-3 mb-6 text-orange-600">
-                            <div className="p-3 bg-orange-100 rounded-xl">
+                            <div className={`${isDarkMode ? 'bg-orange-900/30' : 'bg-orange-100'} p-3 rounded-xl`}>
                                 <FileSignature className="w-8 h-8" />
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-slate-900">Assinatura Digital</h3>
-                                <p className="text-sm text-slate-500">Confirme sua identidade para assinar</p>
+                                <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Assinatura Digital</h3>
+                                <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Confirme sua identidade para assinar</p>
                             </div>
                         </div>
 
                         <div className="space-y-4">
-                            <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-sm">
-                                <span className="font-bold text-slate-700">Documento:</span> OM #{orderToSign.omisNumber}<br />
-                                <span className="font-bold text-slate-700">Assinante:</span> {user.name}<br />
-                                <span className="font-bold text-slate-700">Função:</span> {user.rank} - {user.sector}
+                            <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-slate-50'} p-3 rounded-lg border ${isDarkMode ? 'border-slate-700' : 'border-slate-200'} text-sm`}>
+                                <span className={`font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Documento:</span> <span className={isDarkMode ? 'text-slate-400' : 'text-slate-600'}>OM #{orderToSign.omisNumber}</span><br />
+                                <span className={`font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Assinante:</span> <span className={isDarkMode ? 'text-slate-400' : 'text-slate-600'}>{user.name}</span><br />
+                                <span className={`font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Função:</span> <span className={isDarkMode ? 'text-slate-400' : 'text-slate-600'}>{user.rank} - {user.sector}</span>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Senha de Confirmação</label>
+                                <label className={`block text-sm font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-700'} mb-1`}>Senha de Confirmação</label>
                                 <input
                                     type="password"
                                     value={signaturePassword}
                                     onChange={(e) => setSignaturePassword(e.target.value)}
-                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                                    className={`w-full px-4 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-300 bg-white text-slate-900'} rounded-lg focus:ring-2 focus:ring-orange-500 outline-none`}
                                     placeholder="Digite sua senha de login..."
                                     autoFocus
                                 />
@@ -947,7 +950,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
                             <div className="flex justify-end gap-3 mt-6">
                                 <button
                                     onClick={confirmSignature}
-                                    className="px-4 py-2 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 shadow-md"
+                                    className="px-4 py-2 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 shadow-md transition-colors"
                                 >
                                     Assinar Documento
                                 </button>
@@ -977,7 +980,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
                                             alert('Falha na autenticação biométrica.');
                                         }
                                     }}
-                                    className="w-full mt-3 py-4 bg-emerald-50 text-emerald-600 rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-100 transition-all border border-emerald-200"
+                                    className={`w-full mt-3 py-4 ${isDarkMode ? 'bg-emerald-900/20 text-emerald-400 border-emerald-800 hover:bg-emerald-900/30' : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'} rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 transition-all border`}
                                 >
                                     <Fingerprint className="w-5 h-5" /> Assinar com Biometria
                                 </button>
@@ -1002,6 +1005,7 @@ export default function MissionManager({ user }: MissionManagerProps) {
                         }}
                         currentUser={user}
                         canEdit={isSop || selectedMission.solicitante_id === user.id}
+                        isDarkMode={isDarkMode}
                     />
                 )
             }
@@ -1009,35 +1013,33 @@ export default function MissionManager({ user }: MissionManagerProps) {
             {
                 showEndMissionModal && missionEnding && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                        <div className="bg-white w-full max-w-md shadow-2xl overflow-hidden relative"
+                        <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} w-full max-w-md shadow-2xl overflow-hidden relative border`}
                             style={{
-                                // Optional: "Receipt" style jagged edge at bottom? 
-                                // Keeping it simple for now as per "Cupom" request which usually implies receipt style or just a focused modal
                                 borderRadius: '0px',
                                 borderTop: '8px solid #cc0000'
                             }}>
 
                             <div className="p-8 space-y-6">
                                 <div className="text-center space-y-2">
-                                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <div className={`${isDarkMode ? 'bg-red-900/20' : 'bg-red-100'} w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4`}>
                                         <Square className="w-8 h-8 text-red-600" />
                                     </div>
-                                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-wider">Finalizar Missão</h3>
-                                    <p className="text-sm font-mono text-slate-500">OM #{missionEnding.omisNumber}</p>
+                                    <h3 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} uppercase tracking-wider`}>Finalizar Missão</h3>
+                                    <p className={`text-sm font-mono ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>OM #{missionEnding.omisNumber}</p>
                                 </div>
 
-                                <div className="border-y-2 border-dashed border-slate-200 py-6 space-y-4">
+                                <div className={`border-y-2 border-dashed ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} py-6 space-y-4`}>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Relato Operacional</label>
+                                        <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-500'} uppercase tracking-wide mb-2`}>Relato Operacional</label>
                                         <textarea
                                             value={endReport}
                                             onChange={e => setEndReport(e.target.value)}
-                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-sm text-sm font-mono focus:ring-2 focus:ring-red-500 outline-none resize-none"
+                                            className={`w-full px-4 py-3 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'} rounded-sm text-sm font-mono focus:ring-2 focus:ring-red-500 outline-none resize-none`}
                                             rows={6}
                                             placeholder="Descreva as ocorrências e resultados da missão..."
                                             autoFocus
                                         />
-                                        <p className="text-[10px] text-slate-400 mt-2 text-right">* Campo Obrigatório</p>
+                                        <p className={`text-[10px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} mt-2 text-right`}>* Campo Obrigatório</p>
                                     </div>
                                 </div>
 
@@ -1053,14 +1055,12 @@ export default function MissionManager({ user }: MissionManagerProps) {
                                             setShowEndMissionModal(false);
                                             setMissionEnding(null);
                                         }}
-                                        className="w-full py-3 text-slate-400 font-bold hover:text-slate-600 uppercase text-xs tracking-wider"
+                                        className={`w-full py-3 ${isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'} font-bold uppercase text-xs tracking-wider transition-colors`}
                                     >
                                         Cancelar
                                     </button>
                                 </div>
                             </div>
-
-                            {/* Decor: Receipt Sawtooth at bottom - simulated with css gradients or just simple */}
                         </div>
                     </div>
                 )

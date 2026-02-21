@@ -890,6 +890,7 @@ const App: FC = () => {
         onRegister={handleRegister}
         onPublicAccess={handlePublicAccess}
         onRequestPasswordReset={onRequestPasswordReset}
+        isDarkMode={isDarkMode}
       />
     );
   }

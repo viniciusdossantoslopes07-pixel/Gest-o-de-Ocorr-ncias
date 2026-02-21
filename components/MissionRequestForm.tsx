@@ -11,9 +11,10 @@ interface MissionRequestFormProps {
     onSubmit: (data: any, isDraft?: boolean) => void;
     onCancel: () => void;
     initialData?: Mission;
+    isDarkMode?: boolean;
 }
 
-const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCancel, initialData }) => {
+const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCancel, initialData, isDarkMode }) => {
     const [requesterId, setRequesterId] = useState(initialData?.solicitante_id || user.id);
 
     const [formData, setFormData] = useState({
@@ -118,8 +119,8 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
     };
 
     return (
-        <form onSubmit={(e) => handleSubmit(e, false)} className="bg-white w-full h-full sm:h-auto sm:rounded-2xl shadow-xl border border-slate-200 overflow-hidden sm:max-h-[90vh] flex flex-col">
-            <div className="bg-slate-900 p-4 sm:p-6 text-white flex justify-between items-center shrink-0">
+        <form onSubmit={(e) => handleSubmit(e, false)} className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} w-full h-full sm:h-auto sm:rounded-2xl shadow-xl border overflow-hidden sm:max-h-[90vh] flex flex-col`}>
+            <div className={`${isDarkMode ? 'bg-slate-800 border-b border-slate-700' : 'bg-slate-900'} p-4 sm:p-6 text-white flex justify-between items-center shrink-0`}>
                 <div className="min-w-0">
                     <h2 className="text-lg sm:text-xl font-bold truncate">{initialData ? 'Editar Solicitação' : 'Solicitação de Missão'}</h2>
                     <p className="text-slate-400 text-[10px] sm:text-xs mt-0.5 sm:mt-1 truncate">GSD-SP - Gestão de Operações</p>
@@ -132,19 +133,19 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
             <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 overflow-y-auto flex-1 custom-scrollbar">
                 {/* 1. Identificação */}
                 <section className="space-y-4">
-                    <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
+                    <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest flex items-center gap-2`}>
                         <Users className="w-4 h-4 text-blue-600" /> Identificação
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-slate-600 mb-2">SARAM</label>
+                            <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>SARAM</label>
                             <div className="relative">
                                 <input
                                     type="text"
                                     value={formData.saram}
                                     onChange={e => setFormData({ ...formData, saram: e.target.value })}
                                     onBlur={handleSaramBlur}
-                                    className="w-full pl-3 pr-10 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className={`w-full pl-3 pr-10 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                     placeholder="Digite..."
                                 />
                                 <button
@@ -157,11 +158,11 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-600 mb-2">Posto/Graduação</label>
+                            <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Posto/Graduação</label>
                             <select
                                 value={formData.posto}
                                 onChange={e => setFormData({ ...formData, posto: e.target.value })}
-                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 required
                             >
                                 <option value="">Selecione</option>
@@ -169,21 +170,21 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-600 mb-2">Nome de Guerra</label>
+                            <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Nome de Guerra</label>
                             <input
                                 type="text"
                                 value={formData.nome_guerra}
                                 onChange={e => setFormData({ ...formData, nome_guerra: e.target.value })}
-                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 required
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-600 mb-2">Setor</label>
+                            <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Setor</label>
                             <select
                                 value={formData.setor}
                                 onChange={e => setFormData({ ...formData, setor: e.target.value })}
-                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 required
                             >
                                 <option value="">Selecione</option>
@@ -193,20 +194,20 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                     </div>
                 </section>
 
-                <hr className="border-slate-100" />
+                <hr className={isDarkMode ? 'border-slate-800' : 'border-slate-100'} />
 
                 {/* 2. Logística */}
                 <section className="space-y-4">
-                    <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
+                    <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest flex items-center gap-2`}>
                         <MapPin className="w-4 h-4 text-blue-600" /> Logística da Missão
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="col-span-1 md:col-span-2">
-                            <label className="block text-xs font-bold text-slate-600 mb-2">Tipo de Missão</label>
+                            <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Tipo de Missão</label>
                             <select
                                 value={formData.tipo_missao}
                                 onChange={e => setFormData({ ...formData, tipo_missao: e.target.value })}
-                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 required
                             >
                                 {TIPOS_MISSAO.map(t => <option key={t} value={t}>{t}</option>)}
@@ -214,65 +215,65 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-slate-600 mb-2 flex items-center gap-1">
+                            <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2 flex items-center gap-1`}>
                                 <Calendar className="w-3 h-3" /> Data
                             </label>
                             <input
                                 type="date"
                                 value={formData.data}
                                 onChange={e => setFormData({ ...formData, data: e.target.value })}
-                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 required
                             />
                         </div>
 
                         <div className="flex gap-4">
                             <div className="flex-1">
-                                <label className="block text-xs font-bold text-slate-600 mb-2 flex items-center gap-1">
+                                <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2 flex items-center gap-1`}>
                                     <Clock className="w-3 h-3" /> Início
                                 </label>
                                 <input
                                     type="time"
                                     value={formData.inicio}
                                     onChange={e => setFormData({ ...formData, inicio: e.target.value })}
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                     required
                                 />
                             </div>
                             <div className="flex-1">
-                                <label className="block text-xs font-bold text-slate-600 mb-2 flex items-center gap-1">
+                                <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2 flex items-center gap-1`}>
                                     <Clock className="w-3 h-3" /> Término
                                 </label>
                                 <input
                                     type="time"
                                     value={formData.termino}
                                     onChange={e => setFormData({ ...formData, termino: e.target.value })}
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                     required
                                 />
                             </div>
                         </div>
 
                         <div className="col-span-1 md:col-span-2">
-                            <label className="block text-xs font-bold text-slate-600 mb-2">Local</label>
+                            <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Local</label>
                             <input
                                 type="text"
                                 value={formData.local}
                                 onChange={e => setFormData({ ...formData, local: e.target.value })}
                                 placeholder="Ex: Pátio de Aeronaves / Ala 13"
-                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none"
+                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 required
                             />
                         </div>
                     </div>
                 </section>
 
-                <hr className="border-slate-100" />
+                <hr className={isDarkMode ? 'border-slate-800' : 'border-slate-100'} />
 
                 {/* 3. Responsável */}
                 <section className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
+                        <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest flex items-center gap-2`}>
                             <Users className="w-4 h-4 text-blue-600" /> Responsável Pela Missão
                         </h3>
                         <label className="flex items-center gap-2 cursor-pointer">
@@ -282,63 +283,63 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                 onChange={e => setIsExternalCmd(e.target.checked)}
                                 className="w-4 h-4 rounded text-blue-600"
                             />
-                            <span className="text-xs font-bold text-slate-500">Externo ao GSD-SP?</span>
+                            <span className={`text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Externo ao GSD-SP?</span>
                         </label>
                     </div>
 
                     {isExternalCmd && (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-yellow-50 p-4 rounded-xl border border-yellow-100">
+                        <div className={`grid grid-cols-1 md:grid-cols-3 gap-4 ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-yellow-50 border-yellow-100'} p-4 rounded-xl border`}>
                             <div>
-                                <label className="block text-xs font-bold text-slate-600 mb-2">Nome Completo</label>
+                                <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Nome Completo</label>
                                 <input
                                     type="text"
                                     value={formData.responsavel.nome}
                                     onChange={e => setFormData({ ...formData, responsavel: { ...formData.responsavel, nome: e.target.value } })}
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-600 bg-slate-700 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-slate-600 mb-2">OM</label>
+                                <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>OM</label>
                                 <input
                                     type="text"
                                     value={formData.responsavel.om}
                                     onChange={e => setFormData({ ...formData, responsavel: { ...formData.responsavel, om: e.target.value } })}
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-600 bg-slate-700 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-slate-600 mb-2">Telefone/Ramal</label>
+                                <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Telefone/Ramal</label>
                                 <input
                                     type="text"
                                     inputMode="numeric"
                                     value={formData.responsavel.telefone}
                                     onChange={e => setFormData({ ...formData, responsavel: { ...formData.responsavel, telefone: e.target.value.replace(/\D/g, '') } })}
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-600 bg-slate-700 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 />
                             </div>
                         </div>
                     )}
                     {!isExternalCmd && (
-                        <p className="text-xs text-slate-400 italic">O responsável será o próprio solicitante ({formData.posto} {formData.nome_guerra}).</p>
+                        <p className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} italic`}>O responsável será o próprio solicitante ({formData.posto} {formData.nome_guerra}).</p>
                     )}
                 </section>
 
-                <hr className="border-slate-100" />
+                <hr className={isDarkMode ? 'border-slate-800' : 'border-slate-100'} />
 
                 {/* 4. Recursos e Alimentação */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <section className="space-y-4">
-                        <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
+                        <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest flex items-center gap-2`}>
                             <Truck className="w-4 h-4 text-blue-600" /> Recursos Necessários
                         </h3>
                         <div>
-                            <label className="block text-xs font-bold text-slate-600 mb-2">Efetivo</label>
+                            <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Efetivo</label>
                             <textarea
                                 value={formData.efetivo}
                                 onChange={e => setFormData({ ...formData, efetivo: e.target.value })}
                                 placeholder="Ex: 1 Sgt, 2 Cabos e 4 Soldados para isolamento..."
                                 rows={3}
-                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none`}
                                 required
                             />
                         </div>
@@ -348,7 +349,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                 { id: 'descaracterizada', label: 'VTR DESCARACTERIZADA' },
                                 { id: 'caminhao_tropa', label: 'CAMINHÃO TROPA' }
                             ].map(vtr => (
-                                <div key={vtr.id} className="flex items-center gap-3 p-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
+                                <div key={vtr.id} className={`flex items-center gap-3 p-3 border ${isDarkMode ? 'border-slate-700 hover:bg-slate-800' : 'border-slate-200 hover:bg-slate-50'} rounded-xl transition-colors`}>
                                     <label className="flex flex-1 items-center gap-2 cursor-pointer">
                                         <input
                                             type="checkbox"
@@ -362,7 +363,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                             }}
                                             className="w-4 h-4 rounded text-blue-600"
                                         />
-                                        <span className="text-sm font-medium text-slate-700">{vtr.label}</span>
+                                        <span className={`text-sm font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{vtr.label}</span>
                                     </label>
                                     {(formData.viaturas as any)[vtr.id] > 0 && (
                                         <div className="flex items-center gap-2 animate-fade-in">
@@ -378,7 +379,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                                         viaturas: { ...formData.viaturas as any, [vtr.id]: val }
                                                     });
                                                 }}
-                                                className="w-16 px-2 py-1 border border-slate-300 rounded text-center text-sm font-bold text-slate-700"
+                                                className={`w-16 px-2 py-1 border ${isDarkMode ? 'border-slate-600 bg-slate-700 text-white' : 'border-slate-300 bg-white text-slate-900'} rounded text-center text-sm font-bold`}
                                             />
                                         </div>
                                     )}
@@ -388,61 +389,33 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                     </section>
 
                     <section className="space-y-4">
-                        <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
+                        <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest flex items-center gap-2`}>
                             <Coffee className="w-4 h-4 text-blue-600" /> Alimentação
                         </h3>
                         <div className="grid grid-cols-2 gap-3">
-                            <label className="flex items-center gap-2 p-3 border border-slate-200 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.alimentacao.cafe}
-                                    onChange={e => setFormData({ ...formData, alimentacao: { ...formData.alimentacao, cafe: e.target.checked } })}
-                                    className="w-4 h-4 rounded text-blue-600"
-                                />
-                                <span className="text-sm font-medium text-slate-700">Café</span>
-                            </label>
-                            <label className="flex items-center gap-2 p-3 border border-slate-200 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.alimentacao.almoco}
-                                    onChange={e => setFormData({ ...formData, alimentacao: { ...formData.alimentacao, almoco: e.target.checked } })}
-                                    className="w-4 h-4 rounded text-blue-600"
-                                />
-                                <span className="text-sm font-medium text-slate-700">Almoço</span>
-                            </label>
-                            <label className="flex items-center gap-2 p-3 border border-slate-200 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.alimentacao.janta}
-                                    onChange={e => setFormData({ ...formData, alimentacao: { ...formData.alimentacao, janta: e.target.checked } })}
-                                    className="w-4 h-4 rounded text-blue-600"
-                                />
-                                <span className="text-sm font-medium text-slate-700">Jantar</span>
-                            </label>
-                            <label className="flex items-center gap-2 p-3 border border-slate-200 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.alimentacao.ceia}
-                                    onChange={e => setFormData({ ...formData, alimentacao: { ...formData.alimentacao, ceia: e.target.checked } })}
-                                    className="w-4 h-4 rounded text-blue-600"
-                                />
-                                <span className="text-sm font-medium text-slate-700">Ceia</span>
-                            </label>
-                            <label className="flex items-center gap-2 p-3 border border-slate-200 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.alimentacao.lanche}
-                                    onChange={e => setFormData({ ...formData, alimentacao: { ...formData.alimentacao, lanche: e.target.checked } })}
-                                    className="w-4 h-4 rounded text-blue-600"
-                                />
-                                <span className="text-sm font-medium text-slate-700">Lanche de Voo</span>
-                            </label>
+                            {[
+                                { id: 'cafe', label: 'Café' },
+                                { id: 'almoco', label: 'Almoço' },
+                                { id: 'janta', label: 'Jantar' },
+                                { id: 'ceia', label: 'Ceia' },
+                                { id: 'lanche', label: 'Lanche de Voo' }
+                            ].map(item => (
+                                <label key={item.id} className={`flex items-center gap-2 p-3 border ${isDarkMode ? 'border-slate-700 hover:bg-slate-800' : 'border-slate-200 hover:bg-slate-50'} rounded-xl cursor-pointer transition-colors col-span-1 ${item.id === 'lanche' ? 'col-span-2' : ''}`}>
+                                    <input
+                                        type="checkbox"
+                                        checked={(formData.alimentacao as any)[item.id]}
+                                        onChange={e => setFormData({ ...formData, alimentacao: { ...formData.alimentacao, [item.id]: e.target.checked } })}
+                                        className="w-4 h-4 rounded text-blue-600"
+                                    />
+                                    <span className={`text-sm font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{item.label}</span>
+                                </label>
+                            ))}
                         </div>
                     </section>
                 </div>
             </div>
 
-            <div className="bg-slate-50 p-4 sm:p-6 border-t border-slate-200 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 shrink-0">
+            <div className={`p-4 sm:p-6 border-t ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'} flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 shrink-0`}>
                 <button
                     type="submit"
                     className="w-full sm:w-auto bg-blue-600 px-8 py-3 rounded-xl font-bold text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 transition-all active:scale-95 order-1 sm:order-3"
@@ -453,7 +426,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                 <button
                     type="button"
                     onClick={(e) => handleSubmit(e as any, true)}
-                    className="w-full sm:w-auto bg-amber-100 px-6 py-3 rounded-xl font-bold text-amber-700 hover:bg-amber-200 transition-colors flex items-center justify-center gap-2 order-2 sm:order-2"
+                    className={`w-full sm:w-auto ${isDarkMode ? 'bg-amber-900/30 text-amber-500 hover:bg-amber-900/50' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'} px-6 py-3 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 order-2 sm:order-2`}
                 >
                     <Save className="w-4 h-4" />
                     Salvar Rascunho
@@ -461,7 +434,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-200 transition-colors order-3 sm:order-1"
+                    className={`w-full sm:w-auto px-6 py-3 rounded-xl font-bold ${isDarkMode ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-200'} transition-colors order-3 sm:order-1`}
                 >
                     Cancelar
                 </button>

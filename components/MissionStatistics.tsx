@@ -7,9 +7,10 @@ interface MissionStatisticsProps {
     orders: MissionOrder[];
     missions?: any[]; // Mission requests
     users?: User[];
+    isDarkMode?: boolean;
 }
 
-export default function MissionStatistics({ orders, missions = [], users = [] }: MissionStatisticsProps) {
+export default function MissionStatistics({ orders, missions = [], users = [], isDarkMode }: MissionStatisticsProps) {
     // Filter States
     const [filterDateStart, setFilterDateStart] = useState('');
     const [filterDateEnd, setFilterDateEnd] = useState('');
@@ -141,13 +142,13 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
     return (
         <div className="space-y-4 sm:space-y-8 animate-fade-in">
             {/* Command Center Header with Smart Filters */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
+            <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} p-4 rounded-2xl shadow-sm border flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4`}>
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-200">
                         <Target className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                        <h2 className="text-xl font-black text-slate-800 tracking-tight">BI Missão</h2>
+                        <h2 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-800'} tracking-tight`}>BI Missão</h2>
                         <div className="flex items-center gap-2 mt-0.5">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
@@ -158,7 +159,7 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto overflow-x-auto pb-2 xl:pb-0">
-                    <div className="flex bg-slate-100 p-1 rounded-xl">
+                    <div className={`flex ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} p-1 rounded-xl`}>
                         {[
                             { id: 'all', label: 'Tudo' },
                             { id: 'today', label: 'Hoje' },
@@ -169,14 +170,14 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
                             <button
                                 key={p.id}
                                 onClick={() => setPeriod(p.id as any)}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase transition-all whitespace-nowrap ${period === p.id ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase transition-all whitespace-nowrap ${period === p.id ? (isDarkMode ? 'bg-slate-700 text-blue-400' : 'bg-white text-blue-600 shadow-sm') : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 {p.label}
                             </button>
                         ))}
                     </div>
 
-                    <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+                    <div className={`flex items-center gap-2 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'} px-3 py-1.5 rounded-xl border`}>
                         <span className="text-[10px] font-bold text-slate-400 uppercase whitespace-nowrap">Período:</span>
                         <input
                             type="date"
@@ -185,7 +186,7 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
                                 setFilterDateStart(e.target.value);
                                 setPeriod('custom');
                             }}
-                            className="bg-transparent text-xs font-bold text-slate-700 outline-none w-24"
+                            className={`bg-transparent text-xs font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'} outline-none w-24`}
                         />
                         <span className="text-slate-300">/</span>
                         <input
@@ -195,14 +196,14 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
                                 setFilterDateEnd(e.target.value);
                                 setPeriod('custom');
                             }}
-                            className="bg-transparent text-xs font-bold text-slate-700 outline-none w-24"
+                            className={`bg-transparent text-xs font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'} outline-none w-24`}
                         />
                     </div>
 
                     <select
                         value={filterType}
                         onChange={(e) => setFilterType(e.target.value)}
-                        className="bg-slate-50 border border-slate-200 text-xs sm:text-sm font-bold text-slate-700 rounded-xl px-3 py-1.5 outline-none cursor-pointer hover:bg-slate-100 transition-all h-full"
+                        className={`${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-700'} text-xs sm:text-sm font-bold rounded-xl px-3 py-1.5 outline-none cursor-pointer hover:opacity-80 transition-all h-full`}
                     >
                         <option value="">Tipos</option>
                         {missionTypes.map(type => (
@@ -214,53 +215,53 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
 
             {/* KPI Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-                <div className="col-span-2 lg:col-span-1 bg-gradient-to-br from-slate-900 to-slate-800 p-4 sm:p-6 rounded-2xl shadow-lg border border-slate-700 flex flex-col items-center justify-center text-center gap-2">
+                <div className={`col-span-2 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'lg:col-span-1 bg-gradient-to-br from-slate-900 to-slate-800 p-4 sm:p-6 rounded-2xl shadow-lg border border-slate-700'} flex flex-col items-center justify-center text-center gap-2 transition-all`}>
                     <div className="p-2 sm:p-3 bg-white/10 text-white rounded-full mb-1">
                         <Users className="w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
                     <div>
-                        <p className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider">Efetivo</p>
+                        <p className={`text-[10px] sm:text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-300'} font-bold uppercase tracking-wider`}>Efetivo</p>
                         <h3 className="text-2xl sm:text-4xl font-black text-white mt-1">{personnelCount}</h3>
                     </div>
                 </div>
 
-                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4">
+                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-4 sm:p-6 rounded-2xl shadow-sm border flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4`}>
                     <div className="p-2 sm:p-3 bg-blue-100 text-blue-600 rounded-xl">
                         <Target className="w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
                     <div>
-                        <p className="text-[10px] sm:text-sm text-slate-500 font-bold uppercase tracking-wider">Total</p>
-                        <h3 className="text-lg sm:text-2xl font-black text-slate-900">{totalMissions}</h3>
+                        <p className={`text-[10px] sm:text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} font-bold uppercase tracking-wider`}>Total</p>
+                        <h3 className={`text-lg sm:text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{totalMissions}</h3>
                     </div>
                 </div>
 
-                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4">
+                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-4 sm:p-6 rounded-2xl shadow-sm border flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4`}>
                     <div className="p-2 sm:p-3 bg-emerald-100 text-emerald-600 rounded-xl">
                         <Play className="w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
                     <div>
-                        <p className="text-[10px] sm:text-sm text-slate-500 font-medium leading-tight">Em Andamento</p>
-                        <h3 className="text-lg sm:text-2xl font-black text-slate-900">{activeMissions}</h3>
+                        <p className={`text-[10px] sm:text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} font-medium leading-tight`}>Em Andamento</p>
+                        <h3 className={`text-lg sm:text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{activeMissions}</h3>
                     </div>
                 </div>
 
-                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4">
+                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-4 sm:p-6 rounded-2xl shadow-sm border flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4`}>
                     <div className="p-2 sm:p-3 bg-indigo-100 text-indigo-600 rounded-xl">
                         <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
                     <div>
-                        <p className="text-[10px] sm:text-sm text-slate-500 font-medium leading-tight">Concluídas</p>
-                        <h3 className="text-lg sm:text-2xl font-black text-slate-900">{completedMissions}</h3>
+                        <p className={`text-[10px] sm:text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} font-medium leading-tight`}>Concluídas</p>
+                        <h3 className={`text-lg sm:text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{completedMissions}</h3>
                     </div>
                 </div>
 
-                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4">
+                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-4 sm:p-6 rounded-2xl shadow-sm border flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4`}>
                     <div className="p-2 sm:p-3 bg-amber-100 text-amber-600 rounded-xl">
                         <Clock className="w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
                     <div>
-                        <p className="text-[10px] sm:text-sm text-slate-500 font-medium leading-tight">Pendentes</p>
-                        <h3 className="text-lg sm:text-2xl font-black text-slate-900">{pendingMissions}</h3>
+                        <p className={`text-[10px] sm:text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} font-medium leading-tight`}>Pendentes</p>
+                        <h3 className={`text-lg sm:text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{pendingMissions}</h3>
                     </div>
                 </div>
             </div>
@@ -268,12 +269,12 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
             {/* Top Military Personnel Statistics */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
                 {/* Top Mission Requesters */}
-                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-4 sm:p-6 rounded-2xl shadow-sm border`}>
                     <div className="flex items-center gap-3 mb-4 sm:mb-6">
                         <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
                             <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
-                        <h3 className="text-base sm:text-lg font-bold text-slate-800">Solicitantes</h3>
+                        <h3 className={`text-base sm:text-lg font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>Solicitantes</h3>
                     </div>
                     <div className="space-y-4">
                         {(() => {
@@ -305,15 +306,15 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
                                         {index + 1}º
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">{name}</p>
-                                        <div className="w-full bg-slate-100 rounded-full h-1.5 sm:h-2 mt-1">
+                                        <p className={`text-xs sm:text-sm font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-900'} truncate`}>{name}</p>
+                                        <div className={`w-full ${isDarkMode ? 'bg-slate-900' : 'bg-slate-100'} rounded-full h-1.5 sm:h-2 mt-1`}>
                                             <div
                                                 className="bg-blue-500 h-full rounded-full transition-all"
                                                 style={{ width: `${((count as number) / (maxCount as number)) * 100}%` }}
                                             />
                                         </div>
                                     </div>
-                                    <span className="text-xs sm:text-sm font-bold text-slate-600">{count as number}</span>
+                                    <span className={`text-xs sm:text-sm font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{count as number}</span>
                                 </div>
                             ));
                         })()}
@@ -321,12 +322,12 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
                 </div>
 
                 {/* Top Mission Commanders */}
-                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-4 sm:p-6 rounded-2xl shadow-sm border`}>
                     <div className="flex items-center gap-3 mb-4 sm:mb-6">
                         <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
                             <Target className="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
-                        <h3 className="text-base sm:text-lg font-bold text-slate-800">Responsáveis</h3>
+                        <h3 className={`text-base sm:text-lg font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>Responsáveis</h3>
                     </div>
                     <div className="space-y-4">
                         {(() => {
@@ -365,15 +366,15 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
                                         {index + 1}º
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">{name}</p>
-                                        <div className="w-full bg-slate-100 rounded-full h-1.5 sm:h-2 mt-1">
+                                        <p className={`text-xs sm:text-sm font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-900'} truncate`}>{name}</p>
+                                        <div className={`w-full ${isDarkMode ? 'bg-slate-900' : 'bg-slate-100'} rounded-full h-1.5 sm:h-2 mt-1`}>
                                             <div
                                                 className="bg-emerald-500 h-full rounded-full transition-all"
                                                 style={{ width: `${((count as number) / (maxCount as number)) * 100}%` }}
                                             />
                                         </div>
                                     </div>
-                                    <span className="text-xs sm:text-sm font-bold text-slate-600">{count as number}</span>
+                                    <span className={`text-xs sm:text-sm font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{count as number}</span>
                                 </div>
                             ));
                         })()}
@@ -384,15 +385,25 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
                 {/* Status Breakdown Bar Chart */}
-                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <h3 className="text-base sm:text-lg font-bold text-slate-800 mb-4 sm:mb-6">Status das Missões</h3>
+                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-4 sm:p-6 rounded-2xl shadow-sm border`}>
+                    <h3 className={`text-base sm:text-lg font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'} mb-4 sm:mb-6`}>Status das Missões</h3>
                     <div className="h-64 sm:h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={statusData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+                                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke={isDarkMode ? '#334155' : '#f1f5f9'} />
                                 <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" width={90} tick={{ fontSize: 10, fontWeight: 'bold' }} />
-                                <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }} />
+                                <YAxis dataKey="name" type="category" width={90} tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 10, fontWeight: 'bold' }} />
+                                <Tooltip
+                                    cursor={{ fill: isDarkMode ? '#1e293b' : 'transparent' }}
+                                    contentStyle={{
+                                        backgroundColor: isDarkMode ? '#0f172a' : '#fff',
+                                        borderRadius: '12px',
+                                        border: 'none',
+                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                                        fontSize: '12px',
+                                        color: isDarkMode ? '#f8fafc' : '#1e293b'
+                                    }}
+                                />
                                 <Bar dataKey="value" radius={[0, 10, 10, 0]} barSize={30}>
                                     {statusData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -404,8 +415,8 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
                 </div>
 
                 {/* Category Pie Chart */}
-                <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <h3 className="text-base sm:text-lg font-bold text-slate-800 mb-4 sm:mb-6">Missões por Categoria</h3>
+                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-4 sm:p-6 rounded-2xl shadow-sm border`}>
+                    <h3 className={`text-base sm:text-lg font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'} mb-4 sm:mb-6`}>Missões por Categoria</h3>
                     <div className="h-64 sm:h-80 w-full flex justify-center">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -424,7 +435,16 @@ export default function MissionStatistics({ orders, missions = [], users = [] }:
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }} />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: isDarkMode ? '#0f172a' : '#fff',
+                                        borderRadius: '12px',
+                                        border: 'none',
+                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                                        fontSize: '12px',
+                                        color: isDarkMode ? '#f8fafc' : '#1e293b'
+                                    }}
+                                />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>

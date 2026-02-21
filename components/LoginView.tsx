@@ -12,9 +12,10 @@ interface LoginViewProps {
   onRegister: (user: User) => Promise<boolean> | boolean;
   onPublicAccess: () => void;
   onRequestPasswordReset?: (saram: string) => Promise<boolean>;
+  isDarkMode?: boolean;
 }
 
-const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, onRequestPasswordReset }) => {
+const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, onRequestPasswordReset, isDarkMode }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -190,25 +191,25 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
       </div>
 
       <div className="w-full max-w-md relative z-10">
-        <div className="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden">
-          <div className="p-10 pb-6 border-b border-slate-50 text-center">
+        <div className={`${isDarkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white'} rounded-[2.5rem] shadow-2xl overflow-hidden transition-colors duration-300`}>
+          <div className={`p-10 pb-6 border-b ${isDarkMode ? 'border-slate-800' : 'border-slate-50'} text-center`}>
             <div className="flex justify-center mb-6">
-              <div className="w-32 h-32 rounded-full overflow-hidden shadow-xl ring-4 ring-white relative z-10 bg-white">
+              <div className={`w-32 h-32 rounded-full overflow-hidden shadow-xl ring-4 ${isDarkMode ? 'ring-slate-800' : 'ring-white'} relative z-10 bg-white`}>
                 <img src="/logo_gsd.jpg" alt="Logo GSD-SP" className="w-full h-full object-cover" />
               </div>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tighter mb-1">Guardião GSD-SP</h1>
-            <p className="text-slate-500 font-medium text-sm">Sistema de Segurança e Defesa</p>
+            <h1 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} tracking-tighter mb-1`}>Guardião GSD-SP</h1>
+            <p className={`${isDarkMode ? 'text-slate-400' : 'text-slate-500'} font-medium text-sm`}>Sistema de Segurança e Defesa</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-10 pt-8 bg-slate-50/50">
+          <form onSubmit={handleSubmit} className={`p-10 pt-8 ${isDarkMode ? 'bg-slate-900/50' : 'bg-slate-50/50'}`}>
             {error && (
-              <div className="mb-6 p-4 bg-red-50 text-red-600 text-[10px] font-black rounded-xl border border-red-100 text-center uppercase tracking-widest">
+              <div className={`mb-6 p-4 ${isDarkMode ? 'bg-red-900/20 text-red-400 border-red-900/30' : 'bg-red-50 text-red-600 border-red-100'} text-[10px] font-black rounded-xl border text-center uppercase tracking-widest`}>
                 {error}
               </div>
             )}
             {success && (
-              <div className="mb-6 p-4 bg-emerald-50 text-emerald-600 text-[10px] font-black rounded-xl border border-emerald-100 text-center uppercase tracking-widest">
+              <div className={`mb-6 p-4 ${isDarkMode ? 'bg-emerald-900/20 text-emerald-400 border-emerald-900/30' : 'bg-emerald-50 text-emerald-600 border-emerald-100'} text-[10px] font-black rounded-xl border text-center uppercase tracking-widest`}>
                 {success}
               </div>
             )}
@@ -221,7 +222,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">1. Posto/Grad</label>
-                  <select required className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold" value={regData.rank} onChange={e => setRegData({ ...regData, rank: e.target.value })}>
+                  <select required className={`w-full ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'} rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} value={regData.rank} onChange={e => setRegData({ ...regData, rank: e.target.value })}>
                     <option value="">Selecione...</option>
                     {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
                   </select>
@@ -229,28 +230,28 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">2. Nome Completo</label>
-                  <input required type="text" className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold" placeholder="Nome Completo" value={regData.name} onChange={e => setRegData({ ...regData, name: e.target.value.toUpperCase() })} />
+                  <input required type="text" className={`w-full ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'} rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} placeholder="Nome Completo" value={regData.name} onChange={e => setRegData({ ...regData, name: e.target.value.toUpperCase() })} />
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">3. Nome de Guerra (LOPES)</label>
-                  <input required type="text" className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold" placeholder="SILVA" value={regData.warName} onChange={e => setRegData({ ...regData, warName: e.target.value.toUpperCase() })} />
+                  <input required type="text" className={`w-full ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'} rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} placeholder="SILVA" value={regData.warName} onChange={e => setRegData({ ...regData, warName: e.target.value.toUpperCase() })} />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">4. SARAM</label>
-                    <input required type="text" className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold" placeholder="0000000" value={regData.saram} onChange={e => setRegData({ ...regData, saram: maskSaram(e.target.value) })} />
+                    <input required type="text" className={`w-full ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'} rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} placeholder="0000000" value={regData.saram} onChange={e => setRegData({ ...regData, saram: maskSaram(e.target.value) })} />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">5. CPF</label>
-                    <input required type="text" className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold" placeholder="000.000.000-00" value={regData.cpf} onChange={e => setRegData({ ...regData, cpf: maskCPF(e.target.value) })} />
+                    <input required type="text" className={`w-full ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'} rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} placeholder="000.000.000-00" value={regData.cpf} onChange={e => setRegData({ ...regData, cpf: maskCPF(e.target.value) })} />
                   </div>
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">6. Setor</label>
-                  <select required className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold" value={regData.sector} onChange={e => setRegData({ ...regData, sector: e.target.value })}>
+                  <select required className={`w-full ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'} rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} value={regData.sector} onChange={e => setRegData({ ...regData, sector: e.target.value })}>
                     <option value="">Selecione...</option>
                     {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
@@ -258,17 +259,17 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">7. Email Institucional</label>
-                  <input required type="email" className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold" placeholder="usuario@fab.mil.br" value={regData.email} onChange={e => setRegData({ ...regData, email: e.target.value.toLowerCase() })} />
+                  <input required type="email" className={`w-full ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'} rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} placeholder="usuario@fab.mil.br" value={regData.email} onChange={e => setRegData({ ...regData, email: e.target.value.toLowerCase() })} />
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">8. Contato Cel (DDD)</label>
-                  <input required type="tel" className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold" placeholder="(11) 99999-9999" value={regData.phoneNumber} onChange={e => setRegData({ ...regData, phoneNumber: maskPhone(e.target.value) })} />
+                  <input required type="tel" className={`w-full ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'} rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} placeholder="(11) 99999-9999" value={regData.phoneNumber} onChange={e => setRegData({ ...regData, phoneNumber: maskPhone(e.target.value) })} />
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">9. Senha (Mín. 8 caracteres)</label>
-                  <input required type="password" minLength={8} className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-bold" placeholder="********" value={password} onChange={e => setPassword(e.target.value)} />
+                  <input required type="password" minLength={8} className={`w-full ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'} rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} placeholder="********" value={password} onChange={e => setPassword(e.target.value)} />
                 </div>
 
                 <button type="submit" disabled={isLoading} className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-blue-700 transition-all shadow-lg mt-4">
@@ -285,11 +286,11 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                 </p>
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Informe seu SARAM</label>
-                  <input required type="text" className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm font-bold" placeholder="0000000" value={forgotSaram} onChange={e => setForgotSaram(maskSaram(e.target.value))} />
-                  <p className="text-[9px] text-slate-400 font-bold uppercase mt-2">A redefinição será avaliada pelo administrador da BASP.</p>
+                  <input required type="text" className={`w-full ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'} rounded-xl p-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} placeholder="0000000" value={forgotSaram} onChange={e => setForgotSaram(maskSaram(e.target.value))} />
+                  <p className={`text-[9px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} font-bold uppercase mt-2`}>A redefinição será avaliada pelo administrador da BASP.</p>
                 </div>
 
-                <button type="submit" disabled={isLoading} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-slate-800 transition-all shadow-lg">
+                <button type="submit" disabled={isLoading} className={`w-full ${isDarkMode ? 'bg-slate-800 hover:bg-slate-700 border border-slate-700' : 'bg-slate-900 hover:bg-slate-800'} text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-lg`}>
                   {isLoading ? 'Enviando...' : 'Solicitar Redefinição'}
                 </button>
                 <button type="button" onClick={() => setView('login')} className="w-full text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-slate-600">
@@ -310,17 +311,17 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                 <button
                   type="button"
                   onClick={() => { setShowParkingModal(true); setError(''); }}
-                  className="w-full bg-slate-100 text-slate-500 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:bg-slate-200 transition-all"
+                  className={`w-full ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'} py-3 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 transition-all`}
                 >
                   <Car className="w-4 h-4" /> Solicitar Estacionamento
                 </button>
 
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div className="w-full border-t border-slate-200"></div>
+                    <div className={`w-full border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}></div>
                   </div>
                   <div className="relative flex justify-center text-[10px] uppercase font-black tracking-widest">
-                    <span className="bg-[#f8fafc] px-4 text-slate-400">Ou use Acesso Militar</span>
+                    <span className={`${isDarkMode ? 'bg-slate-900 text-slate-500' : 'bg-[#f8fafc] text-slate-400'} px-4 transition-colors`}>Ou use Acesso Militar</span>
                   </div>
                 </div>
 
@@ -330,7 +331,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                   </label>
                   <div className="relative">
                     <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl pl-12 pr-4 py-4 font-bold text-sm outline-none focus:border-blue-500 transition-all" placeholder="SARAM" required />
+                    <input type="text" value={username} onChange={e => setUsername(e.target.value)} className={`w-full ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'} rounded-xl pl-12 pr-4 py-4 font-bold text-sm outline-none focus:border-blue-500 transition-all`} placeholder="SARAM" required />
                   </div>
                 </div>
 
@@ -338,7 +339,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <Lock className="w-3 h-3" /> Senha
                   </label>
-                  <input required type="password" className="w-full bg-white border border-slate-200 rounded-xl p-4 font-bold text-sm outline-none focus:border-blue-500 transition-all" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
+                  <input required type="password" className={`w-full ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-100 text-slate-900'} rounded-xl p-4 font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all`} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
                   <div className="flex justify-end">
                     <button type="button" onClick={() => setView('forgot-password')} className="text-[9px] font-black text-blue-600 uppercase tracking-widest hover:underline">Esqueci a Senha</button>
                   </div>
@@ -360,7 +361,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                 )}
 
                 <div className="flex flex-col gap-2 pt-2">
-                  <button type="button" onClick={() => setView('register')} className="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-200 transition-all">
+                  <button type="button" onClick={() => setView('register')} className={`w-full ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'} py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all`}>
                     Criar Conta Militar
                   </button>
                 </div>
@@ -374,12 +375,12 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
       {/* Biometric Prompt Modal */}
       {showBiometricPrompt && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-10 shadow-2xl relative animate-in zoom-in-95 duration-200 text-center">
-            <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className={`${isDarkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white'} rounded-[2.5rem] w-full max-w-sm p-10 shadow-2xl relative animate-in zoom-in-95 duration-200 text-center`}>
+            <div className={`${isDarkMode ? 'bg-emerald-900/30' : 'bg-emerald-100'} w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6`}>
               <Fingerprint className="w-10 h-10 text-emerald-600" />
             </div>
-            <h3 className="text-xl font-black text-slate-900 tracking-tight uppercase mb-2">Acesso Rápido</h3>
-            <p className="text-slate-500 text-sm mb-8">Deseja ativar a digital ou reconhecimento facial para facilitar seus próximos acessos?</p>
+            <h3 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} tracking-tight uppercase mb-2`}>Acesso Rápido</h3>
+            <p className={`${isDarkMode ? 'text-slate-400' : 'text-slate-500'} text-sm mb-8`}>Deseja ativar a digital ou reconhecimento facial para facilitar seus próximos acessos?</p>
 
             <div className="space-y-3">
               <button
@@ -390,7 +391,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
               </button>
               <button
                 onClick={() => setShowBiometricPrompt(false)}
-                className="w-full text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-slate-600"
+                className={`w-full ${isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'} text-[10px] font-black uppercase tracking-widest transition-colors`}
               >
                 Agora não
               </button>
