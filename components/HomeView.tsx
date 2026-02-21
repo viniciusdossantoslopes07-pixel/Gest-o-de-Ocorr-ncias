@@ -135,7 +135,7 @@ const HomeView: React.FC<HomeViewProps> = ({
           </div>
           <div className="max-w-2xl">
             <h2 className="text-3xl lg:text-5xl font-black mb-4 tracking-tight leading-tight">
-              Bem-vindo à Central de Comando, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{user.name.split(' ')[0]}</span>
+              Bem-vindo à Central de Comando, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{user.rank} {user.warName || user.name.split(' ')[0]}</span>
             </h2>
             <p className="text-slate-400 text-sm lg:text-lg leading-relaxed font-medium">
               Identificamos o seu acesso como <span className="text-white">{user.role}</span>. O sistema está operando em <span className="text-emerald-400 font-bold">Nível Normal</span> com redundância ativa.
