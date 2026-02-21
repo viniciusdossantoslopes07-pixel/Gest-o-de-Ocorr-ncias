@@ -794,25 +794,49 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                                     </button>
 
                                                                     {movingUserId === user.id && (
-                                                                        <div className={`absolute left-0 top-full mt-1 z-[50] w-48 rounded-xl border shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
-                                                                            <div className="text-[9px] font-black uppercase text-slate-500 mb-2 px-2">Mover para:</div>
-                                                                            <div className="flex flex-col gap-1 max-h-48 overflow-y-auto custom-scrollbar">
-                                                                                {SETORES.filter(s => s !== selectedSector).map(s => (
-                                                                                    <button
-                                                                                        key={s}
-                                                                                        onClick={() => {
-                                                                                            if (confirm(`Mover ${user.rank} ${user.warName || user.name} para o setor ${s}?`)) {
-                                                                                                onMoveUser(user.id, s);
-                                                                                                setMovingUserId(null);
-                                                                                            }
-                                                                                        }}
-                                                                                        className={`text-left px-3 py-2 rounded-lg text-[10px] font-bold transition-all ${isDarkMode ? 'hover:bg-slate-800 text-slate-300' : 'hover:bg-slate-50 text-slate-700'}`}
-                                                                                    >
-                                                                                        {s}
-                                                                                    </button>
-                                                                                ))}
+                                                                        <>
+                                                                            {/* Overlay invisível para fechar ao clicar fora */}
+                                                                            <div
+                                                                                className="fixed inset-0 z-[40] bg-transparent cursor-default"
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    setMovingUserId(null);
+                                                                                }}
+                                                                            />
+                                                                            <div
+                                                                                className={`absolute left-0 top-full mt-1 z-[50] w-48 rounded-xl border shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-900 border-slate-700 shadow-slate-950/50' : 'bg-white border-slate-200 shadow-slate-200/50'
+                                                                                    }`}
+                                                                                onClick={(e) => e.stopPropagation()}
+                                                                            >
+                                                                                <div className={`text-[9px] font-black uppercase mb-2 px-2 pb-1 border-b ${isDarkMode ? 'text-slate-500 border-slate-800' : 'text-slate-400 border-slate-100'
+                                                                                    }`}>
+                                                                                    Mover para:
+                                                                                </div>
+                                                                                <div className="flex flex-col gap-1 max-h-48 overflow-y-auto custom-scrollbar">
+                                                                                    {SETORES.filter(s => s !== selectedSector).length === 0 && (
+                                                                                        <div className="text-[10px] p-2 text-slate-500 italic">Nenhum outro setor</div>
+                                                                                    )}
+                                                                                    {SETORES.filter(s => s !== selectedSector).map(s => (
+                                                                                        <button
+                                                                                            key={s}
+                                                                                            type="button"
+                                                                                            onClick={() => {
+                                                                                                if (confirm(`Mover ${user.rank} ${user.warName || user.name} para o setor ${s}?`)) {
+                                                                                                    onMoveUser(user.id, s);
+                                                                                                    setMovingUserId(null);
+                                                                                                }
+                                                                                            }}
+                                                                                            className={`text-left px-3 py-2 rounded-lg text-[10px] font-bold transition-all ${isDarkMode
+                                                                                                    ? 'hover:bg-slate-800 text-slate-300 hover:text-white'
+                                                                                                    : 'hover:bg-slate-50 text-slate-700 hover:text-slate-900'
+                                                                                                }`}
+                                                                                        >
+                                                                                            {s}
+                                                                                        </button>
+                                                                                    ))}
+                                                                                </div>
                                                                             </div>
-                                                                        </div>
+                                                                        </>
                                                                     )}
                                                                 </div>
                                                             )}
