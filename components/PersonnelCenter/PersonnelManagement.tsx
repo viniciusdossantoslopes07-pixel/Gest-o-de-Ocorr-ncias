@@ -115,57 +115,92 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
 
             {isAdding ? (
                 /* Registration Form */
-                <div className="bg-white rounded-[2rem] p-8 border border-slate-200 shadow-sm animate-in zoom-in-95 duration-200">
-                    <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                        {editingId ? <Edit2 className="w-5 h-5 text-blue-500" /> : <UserPlus className="w-5 h-5 text-blue-500" />}
+                <div className={`rounded-[2rem] p-8 border shadow-sm animate-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                    <h3 className={`text-lg font-bold mb-6 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                        {editingId ? <Edit2 className="w-5 h-5 text-indigo-400" /> : <UserPlus className="w-5 h-5 text-indigo-400" />}
                         {editingId ? 'Editar Dados do Militar' : 'Novo Cadastro Militar'}
                     </h3>
 
                     <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                         <div className="space-y-1.5 lg:space-y-2">
-                            <label className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 <UserIcon className="w-3 h-3" /> Nome Completo
                             </label>
-                            <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                            <input
+                                required
+                                type="text"
+                                value={formData.name}
+                                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            />
                         </div>
 
                         <div className="space-y-1.5 lg:space-y-2">
-                            <label className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 <UserIcon className="w-3 h-3" /> Nome de Guerra
                             </label>
-                            <input required type="text" value={formData.warName} onChange={e => setFormData({ ...formData, warName: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                            <input
+                                required
+                                type="text"
+                                value={formData.warName}
+                                onChange={e => setFormData({ ...formData, warName: e.target.value })}
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            />
                         </div>
 
                         <div className="space-y-1.5 lg:space-y-2">
-                            <label className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 <Shield className="w-3 h-3" /> Posto / Graduação
                             </label>
-                            <select required value={formData.rank} onChange={e => setFormData({ ...formData, rank: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                                <option value="">Selecione...</option>
-                                {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
+                            <select
+                                required
+                                value={formData.rank}
+                                onChange={e => setFormData({ ...formData, rank: e.target.value })}
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            >
+                                <option value="" className={isDarkMode ? 'bg-slate-900' : ''}>Selecione...</option>
+                                {RANKS.map(r => <option key={r} value={r} className={isDarkMode ? 'bg-slate-900' : ''}>{r}</option>)}
                             </select>
                         </div>
 
                         <div className="space-y-1.5 lg:space-y-2">
-                            <label className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 <Hash className="w-3 h-3" /> SARAM
                             </label>
-                            <input required type="text" value={formData.saram} onChange={e => setFormData({ ...formData, saram: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                            <input
+                                required
+                                type="text"
+                                value={formData.saram}
+                                onChange={e => setFormData({ ...formData, saram: e.target.value })}
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            />
                         </div>
 
                         <div className="space-y-1.5 lg:space-y-2">
-                            <label className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 <Hash className="w-3 h-3" /> CPF
                             </label>
-                            <input required type="text" value={formData.cpf} onChange={e => setFormData({ ...formData, cpf: e.target.value })} placeholder="000.000.000-00" className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                            <input
+                                required
+                                type="text"
+                                value={formData.cpf}
+                                onChange={e => setFormData({ ...formData, cpf: e.target.value })}
+                                placeholder="000.000.000-00"
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            />
                         </div>
 
                         <div className="space-y-1.5 lg:space-y-2">
-                            <label className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 px-1">
+                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 <Building2 className="w-3 h-3" /> Setor de Lotação
                             </label>
-                            <select required value={formData.sector} onChange={e => setFormData({ ...formData, sector: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                                {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
+                            <select
+                                required
+                                value={formData.sector}
+                                onChange={e => setFormData({ ...formData, sector: e.target.value })}
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            >
+                                {SETORES.map(s => <option key={s} value={s} className={isDarkMode ? 'bg-slate-900' : ''}>{s}</option>)}
                             </select>
                         </div>
 
@@ -173,13 +208,13 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             <button
                                 type="button"
                                 onClick={() => { setIsAdding(false); setEditingId(null); }}
-                                className="w-full sm:w-auto px-6 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all font-bold"
+                                className={`w-full sm:w-auto px-6 py-3 rounded-xl font-bold transition-all ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                             >
                                 Cancelar
                             </button>
                             <button
                                 type="submit"
-                                className="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
+                                className={`w-full sm:w-auto px-8 py-3 rounded-xl font-bold transition-all shadow-xl ${isDarkMode ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-900/20' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-100'}`}
                             >
                                 {editingId ? 'Salvar Alterações' : 'Confirmar Cadastro'}
                             </button>
@@ -188,33 +223,35 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                 </div>
             ) : (
                 /* Personnel List */
-                <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
+                /* Personnel List */
+                <div className={`rounded-[2rem] border overflow-hidden shadow-sm ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                     {/* Desktop View (Table) */}
                     <div className="hidden lg:block overflow-x-auto">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-slate-50/50">
+                            <thead className={`${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-50/50'}`}>
                                 <tr>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Militar</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Identificação</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Setor</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Ações</th>
+                                    <th className={`px-6 py-4 text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Militar</th>
+                                    <th className={`px-6 py-4 text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Identificação</th>
+                                    <th className={`px-6 py-4 text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Setor</th>
+                                    <th className={`px-6 py-4 text-[10px] font-black uppercase tracking-widest text-right ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Ações</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className={`divide-y ${isDarkMode ? 'divide-slate-800' : 'divide-slate-100'}`}>
                                 {filteredUsers.map(user => (
-                                    <tr key={user.id} className="hover:bg-slate-50/30 transition-colors">
+                                    <tr key={user.id} className={`transition-colors ${isDarkMode ? 'hover:bg-slate-800/30' : 'hover:bg-slate-50/30'}`}>
                                         <td className="px-6 py-4">
-                                            <div className="font-bold text-slate-900">{user.name}</div>
-                                            <div className="text-[10px] text-blue-500 font-bold uppercase tracking-tight">
+                                            <div className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{user.name}</div>
+                                            <div className={`text-[10px] font-bold uppercase tracking-tight ${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`}>
                                                 {user.rank} {user.warName}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="text-xs font-bold text-slate-600">SARAM: {user.saram}</div>
-                                            <div className="text-[10px] text-slate-400 font-medium">CPF: {user.cpf || '---'}</div>
+                                            <div className={`text-xs font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>SARAM: {user.saram}</div>
+                                            <div className={`text-[10px] font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>CPF: {user.cpf || '---'}</div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded-md text-[10px] font-black border border-slate-200">
+                                            <span className={`px-2 py-1 rounded-md text-[10px] font-black border ${isDarkMode ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-600 border-slate-200'
+                                                }`}>
                                                 {user.sector}
                                             </span>
                                         </td>
@@ -223,15 +260,16 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                                 {user.sector === 'SEM SETOR' && (
                                                     <button
                                                         onClick={() => handleEdit(user)}
-                                                        className="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-[10px] font-black uppercase hover:bg-red-200 transition-colors mr-auto"
+                                                        className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-colors mr-auto ${isDarkMode ? 'bg-red-400/10 text-red-400 hover:bg-red-400/20' : 'bg-red-100 text-red-600 hover:bg-red-200'
+                                                            }`}
                                                     >
                                                         Atribuir Setor
                                                     </button>
                                                 )}
-                                                <button onClick={() => handleEdit(user)} className="p-2 text-slate-400 hover:text-blue-600 transition-colors">
+                                                <button onClick={() => handleEdit(user)} className={`p-2 transition-colors ${isDarkMode ? 'text-slate-500 hover:text-indigo-400' : 'text-slate-400 hover:text-blue-600'}`}>
                                                     <Edit2 className="w-4 h-4" />
                                                 </button>
-                                                <button onClick={() => { if (confirm('Excluir militar?')) onDeletePersonnel(user.id); }} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
+                                                <button onClick={() => { if (confirm('Excluir militar?')) onDeletePersonnel(user.id); }} className={`p-2 transition-colors ${isDarkMode ? 'text-slate-500 hover:text-red-400' : 'text-slate-400 hover:text-red-500'}`}>
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </div>
@@ -243,39 +281,40 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                     </div>
 
                     {/* Mobile View (Cards) */}
-                    <div className="lg:hidden divide-y divide-slate-100">
+                    {/* Mobile View (Cards) */}
+                    <div className={`lg:hidden divide-y ${isDarkMode ? 'divide-slate-800' : 'divide-slate-100'}`}>
                         {filteredUsers.map(user => (
-                            <div key={user.id} className="p-6 flex flex-col gap-5 hover:bg-slate-50 transition-colors">
+                            <div key={user.id} className={`p-6 flex flex-col gap-5 transition-colors ${isDarkMode ? 'hover:bg-slate-800/30' : 'hover:bg-slate-50'}`}>
                                 <div className="flex justify-between items-start gap-4">
                                     <div className="flex gap-4">
-                                        <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center shrink-0 border border-slate-200/50">
-                                            <UserIcon className="w-6 h-6 text-slate-400" />
+                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-200/50'}`}>
+                                            <UserIcon className={`w-6 h-6 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
                                         </div>
                                         <div className="min-w-0">
-                                            <div className="font-bold text-slate-900 text-sm leading-tight mb-1 truncate">{user.name}</div>
+                                            <div className={`font-bold text-sm leading-tight mb-1 truncate ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{user.name}</div>
                                             <div className="flex items-center gap-2">
-                                                <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[9px] font-black uppercase tracking-tight">
+                                                <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tight ${isDarkMode ? 'bg-blue-400/10 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
                                                     {user.rank}
                                                 </span>
-                                                <span className="text-[10px] text-slate-500 font-bold uppercase truncate">
+                                                <span className={`text-[10px] font-bold uppercase truncate ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>
                                                     {user.warName}
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
-                                    <span className="px-2.5 py-1 bg-slate-900 text-white rounded-lg text-[9px] font-black tracking-widest uppercase shrink-0">
+                                    <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black tracking-widest uppercase shrink-0 ${isDarkMode ? 'bg-white text-slate-900' : 'bg-slate-900 text-white'}`}>
                                         {user.sector}
                                     </span>
                                 </div>
 
-                                <div className="bg-slate-50 rounded-2xl p-4 grid grid-cols-2 gap-4 border border-slate-100">
+                                <div className={`rounded-2xl p-4 grid grid-cols-2 gap-4 border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
                                     <div className="space-y-1">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">SARAM</p>
-                                        <p className="text-xs font-bold text-slate-700">{user.saram}</p>
+                                        <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>SARAM</p>
+                                        <p className={`text-xs font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{user.saram}</p>
                                     </div>
                                     <div className="space-y-1">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">CPF</p>
-                                        <p className="text-xs font-bold text-slate-700">{user.cpf || '---'}</p>
+                                        <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>CPF</p>
+                                        <p className={`text-xs font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{user.cpf || '---'}</p>
                                     </div>
                                 </div>
 
@@ -283,21 +322,24 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                     {user.sector === 'SEM SETOR' ? (
                                         <button
                                             onClick={() => handleEdit(user)}
-                                            className="flex-1 py-3 bg-red-50 border border-red-100 text-red-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2 active:bg-red-100 transition-all shadow-sm animate-pulse"
+                                            className={`flex-1 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm animate-pulse border ${isDarkMode ? 'bg-red-400/10 border-red-400/20 text-red-400 active:bg-red-400/20' : 'bg-red-50 border-red-100 text-red-600 active:bg-red-100'
+                                                }`}
                                         >
                                             <AlertTriangle className="w-4 h-4" /> Atribuir Setor
                                         </button>
                                     ) : (
                                         <button
                                             onClick={() => handleEdit(user)}
-                                            className="flex-1 py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2 active:bg-slate-50 transition-all shadow-sm"
+                                            className={`flex-1 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 active:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 active:bg-slate-50'
+                                                }`}
                                         >
                                             <Edit2 className="w-4 h-4 text-blue-500" /> Editar Dados
                                         </button>
                                     )}
                                     <button
                                         onClick={() => { if (confirm('Excluir militar?')) onDeletePersonnel(user.id); }}
-                                        className="py-3 px-4 border border-red-100 text-red-500 rounded-xl font-bold text-xs flex items-center justify-center gap-2 active:bg-red-50 transition-all shadow-sm bg-red-50/30"
+                                        className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-red-400/5 border-red-400/10 text-red-400 active:bg-red-400/10' : 'bg-red-50/30 border-red-100 text-red-500 active:bg-red-50'
+                                            }`}
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -308,7 +350,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
 
                     {filteredUsers.length === 0 && (
                         <div className="px-6 py-12 text-center opacity-40">
-                            <p className="text-sm font-bold">Nenhum militar encontrado</p>
+                            <p className={`text-sm font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Nenhum militar encontrado</p>
                         </div>
                     )}
                 </div>
