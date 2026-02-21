@@ -772,7 +772,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                             onDragOver={(e) => handleDragOver(e, index)}
                                             onDrop={() => handleDrop(index)}
                                         >
-                                            <td className={`px-4 lg:px-6 py-2 lg:py-3 sticky left-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.02)] ${isDarkMode ? 'bg-slate-900 border-r border-slate-800' : 'bg-white'}`}>
+                                            <td className={`px-4 lg:px-6 py-2 lg:py-3 sticky left-0 shadow-[2px_0_5px_rgba(0,0,0,0.02)] ${isDarkMode ? 'bg-slate-900 border-r border-slate-800' : 'bg-white'} ${movingUserId === user.id ? 'z-[60]' : 'z-10'}`}>
                                                 <div className="flex items-center gap-2 lg:gap-3">
                                                     <div className="cursor-grab active:cursor-grabbing text-slate-500 hover:text-slate-300 transition-colors hidden lg:block">
                                                         <GripVertical className="w-4 h-4" />
@@ -805,8 +805,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                                             />
                                                                             <div
                                                                                 className={`absolute left-0 top-full mt-2 z-[100] w-64 rounded-2xl border shadow-2xl p-3 animate-in fade-in zoom-in-95 duration-200 ${isDarkMode
-                                                                                        ? 'bg-slate-800 border-slate-700 shadow-black'
-                                                                                        : 'bg-white border-slate-200 shadow-slate-200/50'
+                                                                                    ? 'bg-slate-800 border-slate-700 shadow-black'
+                                                                                    : 'bg-white border-slate-200 shadow-slate-200/50'
                                                                                     }`}
                                                                                 onClick={(e) => e.stopPropagation()}
                                                                             >
@@ -829,8 +829,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                                                                     }
                                                                                                 }}
                                                                                                 className={`text-left px-4 py-3 rounded-xl text-[11px] font-bold transition-all border border-transparent ${isDarkMode
-                                                                                                        ? 'hover:bg-slate-700 text-white hover:border-slate-600'
-                                                                                                        : 'hover:bg-indigo-50 text-indigo-900 hover:text-indigo-600 hover:border-indigo-100'
+                                                                                                    ? 'hover:bg-slate-700 text-white hover:border-slate-600'
+                                                                                                    : 'hover:bg-indigo-50 text-indigo-900 hover:text-indigo-600 hover:border-indigo-100'
                                                                                                     }`}
                                                                                             >
                                                                                                 {s}
