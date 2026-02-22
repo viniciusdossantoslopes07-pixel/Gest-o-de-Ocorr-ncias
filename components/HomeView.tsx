@@ -120,46 +120,44 @@ const HomeView: React.FC<HomeViewProps> = ({
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4 lg:gap-6">
-              <div className="bg-white p-2 rounded-[1.5rem] lg:rounded-[2rem] w-16 h-16 lg:w-28 lg:h-28 flex items-center justify-center overflow-hidden shadow-2xl ring-4 lg:ring-8 ring-white/5 group-hover:ring-white/10 transition-all duration-700">
+              <div className="bg-white p-1.5 rounded-[1.2rem] lg:rounded-[2rem] w-12 h-12 lg:w-28 lg:h-28 flex items-center justify-center overflow-hidden shadow-2xl ring-2 lg:ring-8 ring-white/5 group-hover:ring-white/10 transition-all duration-700">
                 <img src="/logo_gsd.jpg" alt="Logo GSD-SP" className="w-full h-full object-cover scale-110" />
               </div>
               <div>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="bg-white/10 px-3 py-1 rounded-full border border-white/20 flex items-center gap-2">
-                    <span className="text-white font-black italic tracking-tighter text-[14px]">GUARDIÃO <span className="not-italic ml-1 opacity-90 text-[12px]">GSD-SP</span></span>
+                <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 mb-1">
+                  <span className="bg-white/10 px-2 lg:px-3 py-0.5 lg:py-1 rounded-full border border-white/20 flex items-center w-fit">
+                    <span className="text-white font-black italic tracking-tighter text-[10px] lg:text-[14px]">GUARDIÃO <span className="not-italic ml-0.5 opacity-90 text-[8px] lg:text-[12px]">GSD-SP</span></span>
                   </span>
-                  <span className="text-white/40 font-bold text-[10px] uppercase tracking-widest ml-1">• Operacional</span>
+                  <p className="text-white/60 text-[9px] lg:text-[11px] font-bold uppercase tracking-wider">Sistema v1.1</p>
                 </div>
-                <p className="text-white/60 text-[11px] font-bold uppercase tracking-wider">Sistema Guardião v1.1</p>
               </div>
             </div>
             {onRefresh && (
-              <div className="flex flex-col items-end gap-1.5">
-                <span className="text-[10px] font-black uppercase text-white/40 tracking-widest mr-1">
+              <div className="flex flex-col items-end gap-1 lg:gap-1.5">
+                <span className="hidden sm:block text-[10px] font-black uppercase text-white/40 tracking-widest mr-1">
                   Acesso: <span className="text-white/70">{user.role}</span>
                 </span>
                 <button
                   onClick={handleRefresh}
                   disabled={isRefreshing}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-white font-bold text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-white/10 backdrop-blur-md group"
+                  className="flex items-center gap-1.5 px-3 lg:px-4 py-1.5 lg:py-2 bg-white/5 hover:bg-white/10 rounded-xl text-white font-bold text-[10px] lg:text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-white/10 backdrop-blur-md group"
                 >
-                  <RefreshCw className={`w-4 h-4 transition-transform ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180 duration-500'}`} />
-                  <span>{isRefreshing ? 'Atualizando...' : 'Sincronizar'}</span>
+                  <RefreshCw className={`w-3.5 h-3.5 lg:w-4 h-4 transition-transform ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180 duration-500'}`} />
+                  <span className="hidden lg:inline">{isRefreshing ? 'Atualizando...' : 'Sincronizar'}</span>
+                  <span className="lg:hidden">{isRefreshing ? '...' : 'Sinc.'}</span>
                 </button>
               </div>
             )}
           </div>
           <div className="max-w-2xl">
-            <h2 className="text-xl lg:text-4xl font-black mb-2 lg:mb-3 tracking-tight leading-tight">
-              Bem-vindo à Central de Comando, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{user.rank} {user.warName || user.name.split(' ')[0]}</span>
+            <h2 className="text-lg lg:text-4xl font-black mb-1.5 lg:mb-3 tracking-tight leading-tight">
+              Bem-vindo à Central de Comando, <br className="lg:hidden" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{user.rank} {user.warName || user.name.split(' ')[0]}</span>
             </h2>
-            <div className={`mt-3 lg:mt-4 p-3 rounded-2xl border ${isDarkMode ? 'bg-slate-900/40 border-white/5' : 'bg-black/5 border-black/5'} backdrop-blur-sm relative group/quote`}>
-              <div className="absolute -left-1 top-4 w-1 h-8 bg-blue-500 rounded-full"></div>
-              <p className="text-slate-200 text-xs lg:text-base italic font-serif leading-relaxed line-clamp-2">
+            <div className={`mt-2 lg:mt-4 p-2.5 lg:p-3 rounded-2xl border ${isDarkMode ? 'bg-slate-900/40 border-white/5' : 'bg-black/5 border-black/5'} backdrop-blur-sm relative group/quote`}>
+              <div className="absolute -left-1 top-3 w-1 h-6 lg:h-8 bg-blue-500 rounded-full"></div>
+              <p className="text-slate-200 text-[10px] lg:text-base italic font-serif leading-relaxed line-clamp-2">
                 "{quote.text}"
-              </p>
-              <p className="text-blue-400 text-[9px] lg:text-[10px] font-black uppercase tracking-[0.2em] mt-2 ml-1">
-                — {quote.author}
               </p>
             </div>
           </div>
@@ -183,7 +181,7 @@ const HomeView: React.FC<HomeViewProps> = ({
             {isEditMode ? <><Check className="w-4 h-4" /> Salvar Ordem</> : <><Settings2 className="w-4 h-4" /> Personalizar</>}
           </button>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 lg:gap-4">
           {customOrder.map((categoryId, idx) => {
             const action = [
               { title: 'Missão', icon: <ShieldAlert className="w-8 h-8" />, color: 'bg-slate-900', category: 'MISSION_REQUEST' },
@@ -203,12 +201,12 @@ const HomeView: React.FC<HomeViewProps> = ({
               <div key={categoryId} className="relative group">
                 <button
                   onClick={() => !isEditMode && (action.category === 'MISSION_REQUEST' && onRequestMission ? onRequestMission() : onNewOccurrence(action.category))}
-                  className={`w-full h-full flex flex-col items-center justify-center p-3 lg:p-6 rounded-2xl lg:rounded-3xl shadow-sm border transition-all relative overflow-hidden active:scale-95 ${isEditMode ? 'cursor-default opacity-80' : 'group hover:shadow-xl hover:-translate-y-1'} ${isDarkMode ? 'bg-slate-800 border-slate-700 hover:border-blue-500' : 'bg-white border-slate-200 hover:border-blue-500'}`}
+                  className={`w-full h-full flex flex-col items-center justify-center p-2.5 lg:p-6 rounded-2xl lg:rounded-3xl shadow-sm border transition-all relative overflow-hidden active:scale-95 ${isEditMode ? 'cursor-default opacity-80' : 'group hover:shadow-xl hover:-translate-y-1'} ${isDarkMode ? 'bg-slate-800 border-slate-700 hover:border-blue-500' : 'bg-white border-slate-200 hover:border-blue-500'}`}
                 >
-                  <div className={`${action.color} p-3 lg:p-4 rounded-xl lg:rounded-2xl text-white mb-2 lg:mb-4 transition-transform shadow-lg ${!isEditMode && 'group-hover:scale-110 group-hover:rotate-3'}`}>
-                    {React.cloneElement(action.icon as React.ReactElement<any>, { className: 'w-5 h-5 lg:w-8 h-8' })}
+                  <div className={`${action.color} p-2.5 lg:p-4 rounded-xl lg:rounded-2xl text-white mb-2 lg:mb-4 transition-transform shadow-lg ${!isEditMode && 'group-hover:scale-110 group-hover:rotate-3'}`}>
+                    {React.cloneElement(action.icon as React.ReactElement<any>, { className: 'w-4 h-4 lg:w-8 h-8' })}
                   </div>
-                  <span className={`text-[9px] lg:text-[11px] font-black text-center uppercase tracking-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{action.title}</span>
+                  <span className={`text-[8px] lg:text-[11px] font-black text-center uppercase tracking-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{action.title}</span>
                 </button>
 
                 {isEditMode && (
