@@ -32,8 +32,8 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 print:p-0 print:bg-white force-light backdrop-blur-sm">
-            <div className="bg-white rounded-2xl max-w-5xl w-full h-[90vh] print:h-auto overflow-hidden flex flex-col print:rounded-none print:max-w-none shadow-2xl">
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light backdrop-blur-sm">
+            <div className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full h-[100vh] sm:h-[90vh] print:h-auto overflow-hidden flex flex-col print:rounded-none print:max-w-none shadow-2xl">
 
                 {/* Control Header - Hidden on print */}
                 <div className="bg-white border-b border-slate-200 p-4 flex items-center justify-between print:hidden z-20 shrink-0">
@@ -104,7 +104,7 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
                             <div className="flex-1 text-center">
                                 <h1 className="text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-0.5">Ministério da Defesa</h1>
                                 <h1 className="text-base font-black uppercase tracking-tight">Comando da Aeronáutica</h1>
-                                <h2 className="text-sm font-bold uppercase tracking-wide">BASP — Base Aérea de São Paulo</h2>
+                                <h2 className="text-sm font-bold uppercase tracking-wide">Base Aérea de São Paulo</h2>
                                 <h3 className="text-xs font-bold uppercase text-slate-700">Grupo de Segurança e Defesa de São Paulo</h3>
                                 <div className="mt-2 inline-block px-3 py-0.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded">
                                     Mapa de Força Consolidado
@@ -125,22 +125,22 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
                         </div>
 
                         {/* KPI Dashboard */}
-                        <div className="grid grid-cols-4 gap-3 mb-6 print-section">
-                            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-center">
-                                <p className="text-xl font-black text-slate-900 tabular-nums">{efetivoTotal}</p>
-                                <p className="text-[7px] font-black uppercase text-slate-500 tracking-widest">Efetivo Total</p>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-6 print-section">
+                            <div className="bg-slate-50 border border-slate-200 rounded-lg p-2.5 sm:p-3 text-center">
+                                <p className="text-lg sm:text-xl font-black text-slate-900 tabular-nums">{efetivoTotal}</p>
+                                <p className="text-[6.5px] sm:text-[7px] font-black uppercase text-slate-500 tracking-widest">Efetivo Total</p>
                             </div>
-                            <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3 text-center">
-                                <p className="text-xl font-black text-emerald-700 tabular-nums">{presentes}</p>
-                                <p className="text-[7px] font-black uppercase text-emerald-600 tracking-widest">Presentes</p>
+                            <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-2.5 sm:p-3 text-center">
+                                <p className="text-lg sm:text-xl font-black text-emerald-700 tabular-nums">{presentes}</p>
+                                <p className="text-[6.5px] sm:text-[7px] font-black uppercase text-emerald-600 tracking-widest">Presentes</p>
                             </div>
-                            <div className="bg-red-50 border border-red-100 rounded-lg p-3 text-center">
-                                <p className="text-xl font-black text-red-700 tabular-nums">{ausentes}</p>
-                                <p className="text-[7px] font-black uppercase text-red-600 tracking-widest">Ausentes</p>
+                            <div className="bg-red-50 border border-red-100 rounded-lg p-2.5 sm:p-3 text-center">
+                                <p className="text-lg sm:text-xl font-black text-red-700 tabular-nums">{ausentes}</p>
+                                <p className="text-[6.5px] sm:text-[7px] font-black uppercase text-red-600 tracking-widest">Ausentes</p>
                             </div>
-                            <div className="bg-slate-900 rounded-lg p-3 text-center text-white">
-                                <p className="text-xl font-black tabular-nums">{prontidao}%</p>
-                                <p className="text-[7px] font-black uppercase text-white/60 tracking-widest">Prontidão</p>
+                            <div className="bg-slate-900 rounded-lg p-2.5 sm:p-3 text-center text-white">
+                                <p className="text-lg sm:text-xl font-black tabular-nums">{prontidao}%</p>
+                                <p className="text-[6.5px] sm:text-[7px] font-black uppercase text-white/60 tracking-widest">Prontidão</p>
                             </div>
                         </div>
 
@@ -150,13 +150,13 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
                                 <BarChart3 className="w-3.5 h-3.5 text-slate-600" />
                                 <h3 className="font-black uppercase tracking-widest text-slate-900 text-[9px]">Distribuição por Situação</h3>
                             </div>
-                            <div className="grid grid-cols-5 gap-3">
+                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3">
                                 {statusBreakdown.map(s => (
-                                    <div key={s.key} className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
-                                        <p className="text-[7px] font-black text-slate-500 uppercase truncate mb-0.5">{s.label}</p>
-                                        <div className="flex items-baseline gap-1.5">
-                                            <span className="text-sm font-black text-slate-900">{s.count}</span>
-                                            <span className="text-[7px] font-bold text-slate-400">{s.pct}%</span>
+                                    <div key={s.key} className="p-2 sm:p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                                        <p className="text-[6.5px] sm:text-[7px] font-black text-slate-500 uppercase truncate mb-0.5">{s.label}</p>
+                                        <div className="flex items-baseline gap-1 sm:gap-1.5">
+                                            <span className="text-xs sm:text-sm font-black text-slate-900">{s.count}</span>
+                                            <span className="text-[6.5px] sm:text-[7px] font-bold text-slate-400">{s.pct}%</span>
                                         </div>
                                     </div>
                                 ))}
