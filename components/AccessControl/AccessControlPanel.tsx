@@ -47,9 +47,9 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
     // Form state
     const [selectedGate, setSelectedGate] = useState('PORTÃO G1');
     const [name, setName] = useState('');
-    const [characteristic, setCharacteristic] = useState('MILITAR');
+    const [characteristic, setCharacteristic] = useState('CIVIL');
     const [identification, setIdentification] = useState('');
-    const [accessMode, setAccessMode] = useState<'Pedestre' | 'Veículo'>('Pedestre');
+    const [accessMode, setAccessMode] = useState<'Pedestre' | 'Veículo'>('Veículo');
     const [accessCategory, setAccessCategory] = useState<'Entrada' | 'Saída'>('Entrada');
     const [vehicleModel, setVehicleModel] = useState('');
     const [vehiclePlate, setVehiclePlate] = useState('');
@@ -483,43 +483,54 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                         selectedGate === 'PORTÃO G2' ? 'border-t-emerald-500' : 'border-t-amber-500'
                         }`}>
                         {/* Header: Title + Gate Selectors */}
-                        <div className="p-2 sm:p-3 bg-slate-50 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
-                                <h3 className="font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2 text-slate-700">
-                                    <Shield className="w-4 h-4" /> Novo Registro
-                                </h3>
+                        <div className="p-3 bg-slate-50 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-lg ${selectedGate === 'PORTÃO G1' ? 'bg-blue-100 text-blue-600' :
+                                    selectedGate === 'PORTÃO G2' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
+                                    }`}>
+                                    <DoorOpen className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="font-black text-sm uppercase tracking-wider text-slate-800">
+                                        Novo Registro
+                                    </h3>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">Registro de Entrada/Saída</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
                                 {isFrequentVisitor && (
-                                    <div className="flex items-center gap-1.5 bg-amber-50 text-amber-800 px-2 py-0.5 rounded-lg border border-amber-100 animate-fade-in">
-                                        <Sparkles className="w-3 h-3 text-amber-500" />
-                                        <span className="text-[9px] font-bold uppercase">{visitorStats.count} acessos</span>
+                                    <div className="flex items-center gap-1.5 bg-amber-100 text-amber-700 px-3 py-1 rounded-full border border-amber-200 shadow-sm animate-pulse">
+                                        <Sparkles className="w-3.5 h-3.5" />
+                                        <span className="text-[10px] font-black uppercase tracking-tight">{visitorStats.count} ACESSOS</span>
                                     </div>
                                 )}
                                 <button
                                     onClick={() => setShowImportModal(true)}
-                                    className="ml-2 flex items-center gap-1 px-3 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-bold uppercase text-blue-600 hover:bg-blue-50 transition-colors shadow-sm"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase text-blue-600 hover:bg-blue-50 transition-all shadow-sm active:scale-95"
                                 >
-                                    <Database className="w-3 h-3" /> Importar
+                                    <Database className="w-3.5 h-3.5" /> Importar
                                 </button>
                             </div>
 
                             {/* Gate Selectors - Compact & Inline */}
-                            <div className="flex bg-slate-100 p-0.5 rounded-lg w-full sm:max-w-md ml-auto">
+                            <div className="flex bg-slate-200/50 p-1 rounded-xl w-full">
                                 {GATES.map(gate => {
                                     const isSelected = selectedGate === gate;
                                     let activeClass = '';
                                     if (isSelected) {
-                                        if (gate === 'PORTÃO G1') activeClass = 'bg-blue-600 text-white shadow-md ring-1 ring-blue-200';
-                                        else if (gate === 'PORTÃO G2') activeClass = 'bg-emerald-600 text-white shadow-md ring-1 ring-emerald-200';
-                                        else if (gate === 'PORTÃO G3') activeClass = 'bg-amber-600 text-white shadow-md ring-1 ring-amber-200';
+                                        if (gate === 'PORTÃO G1') activeClass = 'bg-blue-600 text-white shadow-lg ring-2 ring-blue-100 scale-[1.02]';
+                                        else if (gate === 'PORTÃO G2') activeClass = 'bg-emerald-600 text-white shadow-lg ring-2 ring-emerald-100 scale-[1.02]';
+                                        else if (gate === 'PORTÃO G3') activeClass = 'bg-amber-600 text-white shadow-lg ring-2 ring-amber-100 scale-[1.02]';
                                     } else {
-                                        activeClass = 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50';
+                                        activeClass = 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/80';
                                     }
 
                                     return (
                                         <button
                                             key={gate}
                                             onClick={() => setSelectedGate(gate)}
-                                            className={`flex-1 px-2 py-1.5 rounded-md text-[10px] sm:text-xs font-black uppercase transition-all whitespace-nowrap ${activeClass}`}
+                                            className={`flex-1 px-3 py-2 rounded-lg text-xs font-black uppercase transition-all whitespace-nowrap z-10 ${activeClass}`}
                                         >
                                             {gate.replace('PORTÃO ', '')}
                                         </button>
@@ -532,46 +543,46 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                             {/* Row 1: Access Type & Mode (Compact) */}
                             <div className="grid grid-cols-2 gap-2">
                                 {/* Access Category Toggle */}
-                                <div className="bg-slate-100 p-0.5 rounded-xl flex">
+                                <div className="bg-slate-200 p-1 rounded-2xl flex">
                                     <button
                                         onClick={() => setAccessCategory('Entrada')}
-                                        className={`flex-1 py-1.5 sm:py-2 rounded-lg font-bold text-[10px] sm:text-xs uppercase flex items-center justify-center gap-1 transition-all ${accessCategory === 'Entrada'
-                                            ? 'bg-emerald-500 text-white shadow-sm'
-                                            : 'text-slate-500 hover:text-slate-700'
+                                        className={`flex-1 py-2 sm:py-2.5 rounded-xl font-black text-[10px] sm:text-xs uppercase flex items-center justify-center gap-2 transition-all ${accessCategory === 'Entrada'
+                                            ? 'bg-emerald-500 text-white shadow-lg scale-[1.02]'
+                                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-300/30'
                                             }`}
                                     >
-                                        <ArrowDownToLine className="w-3.5 h-3.5" /> Entrada
+                                        <ArrowDownToLine className="w-4 h-4" /> Entrada
                                     </button>
                                     <button
                                         onClick={() => setAccessCategory('Saída')}
-                                        className={`flex-1 py-1.5 sm:py-2 rounded-lg font-bold text-[10px] sm:text-xs uppercase flex items-center justify-center gap-1 transition-all ${accessCategory === 'Saída'
-                                            ? 'bg-red-500 text-white shadow-sm'
-                                            : 'text-slate-500 hover:text-slate-700'
+                                        className={`flex-1 py-2 sm:py-2.5 rounded-xl font-black text-[10px] sm:text-xs uppercase flex items-center justify-center gap-2 transition-all ${accessCategory === 'Saída'
+                                            ? 'bg-red-500 text-white shadow-lg scale-[1.02]'
+                                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-300/30'
                                             }`}
                                     >
-                                        <ArrowUpFromLine className="w-3.5 h-3.5" /> Saída
+                                        <ArrowUpFromLine className="w-4 h-4" /> Saída
                                     </button>
                                 </div>
 
                                 {/* Access Mode Toggle */}
-                                <div className="bg-slate-100 p-0.5 rounded-xl flex">
+                                <div className="bg-slate-200 p-1 rounded-2xl flex">
                                     <button
                                         onClick={() => setAccessMode('Pedestre')}
-                                        className={`flex-1 py-1.5 sm:py-2 rounded-lg font-bold text-[10px] sm:text-xs uppercase flex items-center justify-center gap-1 transition-all ${accessMode === 'Pedestre'
-                                            ? 'bg-blue-500 text-white shadow-sm'
-                                            : 'text-slate-500 hover:text-slate-700'
+                                        className={`flex-1 py-2 sm:py-2.5 rounded-xl font-black text-[10px] sm:text-xs uppercase flex items-center justify-center gap-2 transition-all ${accessMode === 'Pedestre'
+                                            ? 'bg-slate-800 text-white shadow-lg scale-[1.02]'
+                                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-300/30'
                                             }`}
                                     >
-                                        <Footprints className="w-3.5 h-3.5" /> Pedestre
+                                        <Footprints className="w-4 h-4" /> Pedestre
                                     </button>
                                     <button
                                         onClick={() => setAccessMode('Veículo')}
-                                        className={`flex-1 py-1.5 sm:py-2 rounded-lg font-bold text-[10px] sm:text-xs uppercase flex items-center justify-center gap-1 transition-all ${accessMode === 'Veículo'
-                                            ? 'bg-violet-500 text-white shadow-sm'
-                                            : 'text-slate-500 hover:text-slate-700'
+                                        className={`flex-1 py-2 sm:py-2.5 rounded-xl font-black text-[10px] sm:text-xs uppercase flex items-center justify-center gap-2 transition-all ${accessMode === 'Veículo'
+                                            ? 'bg-violet-600 text-white shadow-lg scale-[1.02]'
+                                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-300/30'
                                             }`}
                                     >
-                                        <Car className="w-3.5 h-3.5" /> Veículo
+                                        <Car className="w-4 h-4" /> Veículo
                                     </button>
                                 </div>
                             </div>
@@ -600,8 +611,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    placeholder="NOME (Ex: CB SILVA)"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 sm:p-3 font-bold text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none uppercase"
+                                    placeholder="NOME COMPLETO"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 sm:p-3.5 font-black text-sm text-slate-900 placeholder:text-slate-400 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none uppercase transition-all"
                                     autoFocus
                                 />
                                 <div className="relative">
@@ -610,8 +621,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                         inputMode="numeric"
                                         value={identification}
                                         onChange={(e) => setIdentification(e.target.value.replace(/\D/g, ''))}
-                                        placeholder="SARAM / CPF / RG"
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 sm:p-3 font-bold text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none uppercase"
+                                        placeholder="IDENTIFICAÇÃO (SARAM / CPF / RG)"
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 sm:p-3.5 font-black text-sm text-slate-900 placeholder:text-slate-400 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none uppercase transition-all"
                                     />
                                     {identification && isFrequentVisitor && (
                                         <History className="absolute right-3 top-3.5 w-4 h-4 text-amber-500 animate-pulse" />

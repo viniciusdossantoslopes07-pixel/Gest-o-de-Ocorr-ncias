@@ -142,7 +142,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
 
             {/* Dropdown Menu */}
             {isOpen && !disabled && (
-                <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-100 origin-top">
+                <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-80 overflow-y-auto animate-in fade-in zoom-in-95 duration-100 origin-top scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
                     {filteredOptions.length === 0 ? (
                         <div className="p-3 text-center text-xs text-slate-400 font-bold uppercase italic">
                             Nenhum resultado
@@ -152,15 +152,15 @@ export const Combobox: React.FC<ComboboxProps> = ({
                             <button
                                 key={option}
                                 onClick={() => selectOption(option)}
-                                className={`w-full text-left px-4 py-3 text-xs font-bold uppercase tracking-wide flex items-center justify-between transition-colors ${index === highlightedIndex
-                                        ? 'bg-blue-50 text-blue-700'
-                                        : 'text-slate-600 hover:bg-slate-50'
+                                className={`w-full text-left px-4 py-2.5 text-xs font-bold uppercase tracking-wide flex items-center justify-between transition-all ${index === highlightedIndex
+                                    ? 'bg-blue-600 text-white'
+                                    : 'text-slate-600 hover:bg-slate-50'
                                     }`}
                                 onMouseEnter={() => setHighlightedIndex(index)}
                             >
                                 <span>{option}</span>
                                 {option === value && (
-                                    <Check className="w-3.5 h-3.5 text-blue-600" />
+                                    <Check className={`w-3.5 h-3.5 ${index === highlightedIndex ? 'text-white' : 'text-blue-600'}`} />
                                 )}
                             </button>
                         ))
