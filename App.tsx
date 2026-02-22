@@ -78,7 +78,18 @@ const PUBLIC_USER: User = {
 };
 
 const App: FC = () => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('gsdsp_user_session');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing saved session:', e);
+        return null;
+      }
+    }
+    return null;
+  });
   const [users, setUsers] = useState<User[]>([]);
   // Added 'settings' to activeTab type
   const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'access-control' | 'access-statistics' | 'parking-request'>('home');
@@ -394,6 +405,8 @@ const App: FC = () => {
       }
 
       setCurrentUser(user);
+      localStorage.setItem('gsdsp_user_session', JSON.stringify(user));
+      localStorage.setItem('gsdsp_last_saram', username);
       setActiveTab('home');
 
       if (hasPermission(user, PERMISSIONS.MANAGE_USERS) ||
@@ -444,11 +457,13 @@ const App: FC = () => {
 
   const handlePublicAccess = () => {
     setCurrentUser(PUBLIC_USER);
+    localStorage.setItem('gsdsp_user_session', JSON.stringify(PUBLIC_USER));
     setActiveTab('new');
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
+    localStorage.removeItem('gsdsp_user_session');
     setActiveTab('home');
     setIsSidebarOpen(false);
   };
@@ -572,7 +587,10 @@ const App: FC = () => {
 
     if (!error) {
       setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u));
-      if (currentUser?.id === updatedUser.id) setCurrentUser(updatedUser);
+      if (currentUser?.id === updatedUser.id) {
+        setCurrentUser(updatedUser);
+        localStorage.setItem('gsdsp_user_session', JSON.stringify(updatedUser));
+      }
       // If called from SettingsView (partial update), we might need to rely on currentUser update
     } else {
       alert('Erro ao atualizar usuário: ' + error.message);
@@ -886,7 +904,9 @@ const App: FC = () => {
     }
 
     // Update local state
-    setCurrentUser({ ...currentUser, password: newPass });
+    const updatedUser = { ...currentUser, password: newPass };
+    setCurrentUser(updatedUser);
+    localStorage.setItem('gsdsp_user_session', JSON.stringify(updatedUser));
     return true;
   }
 
