@@ -28,7 +28,21 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
     onClose
 }) => {
     const handlePrint = () => {
+        const originalTitle = document.title;
+        try {
+            const [year, month, day] = date.split('-');
+            const shortYear = year.slice(-2);
+            document.title = `mapa de força ${day}-${month}-${shortYear}`;
+        } catch (e) {
+            document.title = `mapa de força ${date}`;
+        }
+
         window.print();
+
+        // Restaurar o título original após um pequeno delay
+        setTimeout(() => {
+            document.title = originalTitle;
+        }, 1000);
     };
 
     return (
