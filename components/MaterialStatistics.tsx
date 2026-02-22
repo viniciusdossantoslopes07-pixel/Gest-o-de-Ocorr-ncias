@@ -136,7 +136,7 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
     const StatCard = ({ title, value, icon: Icon, color, subtext, onClick, clickable }: any) => (
         <div
             onClick={clickable ? onClick : undefined}
-            className={`p-6 rounded-2xl border flex items-center gap-4 transition-all duration-300 ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-none' : 'bg-white border-slate-100 shadow-sm'} ${clickable ? 'cursor-pointer hover:shadow-xl hover:-translate-y-1 active:scale-[0.98]' : ''}`}
+            className={`p-6 rounded-2xl border flex items-center gap-4 transition-all duration-300 ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-xl shadow-none' : 'bg-white border-slate-100 shadow-sm'} ${clickable ? 'cursor-pointer hover:shadow-xl hover:-translate-y-1 active:scale-[0.98]' : ''}`}
         >
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${color}`}>
                 <Icon className="w-6 h-6 text-white" />
@@ -164,7 +164,7 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
 
                 {/* Date Filters UI */}
                 <div className="flex items-center flex-wrap gap-2">
-                    <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white border-slate-200 shadow-sm'}`}>
                         <Calendar className="w-4 h-4 text-slate-400" />
                         <select
                             value={filters.period}
@@ -245,8 +245,8 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
 
             {/* Modal / Details View */}
             {selectedView !== 'none' && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-                    <div className={`rounded-[2rem] w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-white'}`}>
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
+                    <div className={`rounded-[2rem] w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700/50' : 'bg-white border-white'}`}>
 
                         {/* Header */}
                         <div className={`p-8 border-b flex justify-between items-center rounded-t-[2rem] ${isDarkMode ? 'border-slate-700 bg-slate-900/30' : 'border-slate-100 bg-slate-50'}`}>
@@ -357,7 +357,7 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* Top Users List */}
-                <div className={`lg:col-span-1 p-6 rounded-3xl border transition-all duration-300 ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-none' : 'bg-white border-slate-100 shadow-sm'}`}>
+                <div className={`lg:col-span-1 p-6 rounded-3xl border transition-all duration-300 ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-xl shadow-none' : 'bg-white border-slate-100 shadow-sm'}`}>
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-amber-500/10 rounded-xl"><Trophy className="w-5 h-5 text-amber-500" /></div>
@@ -390,7 +390,7 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
                 </div>
 
                 {/* Pie Chart */}
-                <div className={`lg:col-span-2 p-8 rounded-3xl border transition-all duration-300 flex flex-col ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-none' : 'bg-white border-slate-100 shadow-sm'}`}>
+                <div className={`lg:col-span-2 p-8 rounded-3xl border transition-all duration-300 flex flex-col ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-xl shadow-none' : 'bg-white border-slate-100 shadow-sm'}`}>
                     <h3 className={`font-black uppercase tracking-tight text-sm ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Distribuição por Categoria</h3>
                     <p className="text-sm text-slate-500 font-medium mt-1 mb-8">Análise de utilização proporcional de recursos por tipo.</p>
 

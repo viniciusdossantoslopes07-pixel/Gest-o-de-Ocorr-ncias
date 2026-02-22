@@ -130,7 +130,7 @@ const MaterialDashboard: React.FC<MaterialDashboardProps> = ({ isDarkMode = fals
 
     return (
         <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
-            <div className={`p-4 rounded-[1.5rem] border shadow-sm flex flex-col md:flex-row justify-between items-center gap-4 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'}`}>
+            <div className={`p-4 rounded-[1.5rem] border shadow-sm flex flex-col md:flex-row justify-between items-center gap-4 transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-xl' : 'bg-white border-slate-100'}`}>
                 <div className="flex items-center gap-3 w-full md:w-auto">
                     <div className={`p-2.5 rounded-xl shrink-0 ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
                         <Package className="w-6 h-6" />
@@ -149,13 +149,13 @@ const MaterialDashboard: React.FC<MaterialDashboardProps> = ({ isDarkMode = fals
                         <input
                             type="text"
                             placeholder="Pesquisar..."
-                            className={`w-full rounded-xl pl-10 pr-4 py-2.5 text-xs font-black uppercase tracking-wider transition-all outline-none ${isDarkMode ? 'bg-slate-900 text-white placeholder:text-slate-700 focus:ring-2 focus:ring-blue-500/50' : 'bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500'}`}
+                            className={`w-full rounded-xl pl-10 pr-4 py-2.5 text-xs font-black uppercase tracking-wider transition-all outline-none ${isDarkMode ? 'bg-slate-900/50 text-white placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500/50 border border-slate-800/50' : 'bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500'}`}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                     <select
-                        className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all outline-none border-none cursor-pointer ${isDarkMode ? 'bg-slate-900 text-slate-300 focus:ring-2 focus:ring-blue-500/50' : 'bg-slate-50 text-slate-600 focus:ring-2 focus:ring-blue-500'}`}
+                        className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all outline-none border-none cursor-pointer ${isDarkMode ? 'bg-slate-900/50 text-slate-300 focus:ring-2 focus:ring-blue-500/50 border border-slate-800/50' : 'bg-slate-50 text-slate-600 focus:ring-2 focus:ring-blue-500'}`}
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value)}
                     >
@@ -169,10 +169,10 @@ const MaterialDashboard: React.FC<MaterialDashboardProps> = ({ isDarkMode = fals
                 </div>
             </div>
 
-            <div className={`rounded-[2rem] border overflow-hidden shadow-2xl transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 shadow-black/20' : 'bg-white border-slate-100'}`}>
+            <div className={`rounded-[2rem] border overflow-hidden shadow-2xl transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-xl' : 'bg-white border-slate-100'}`}>
                 <div className="overflow-x-auto scrollbar-hide">
                     <table className="w-full text-left text-xs">
-                        <thead className={`${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
+                        <thead className={`${isDarkMode ? 'bg-slate-900/60' : 'bg-slate-50'}`}>
                             <tr>
                                 <th className="px-8 py-5 font-black text-slate-500 uppercase tracking-widest">Solicitante</th>
                                 <th className="px-8 py-5 font-black text-slate-500 uppercase tracking-widest">Ativo / Material</th>
@@ -183,7 +183,12 @@ const MaterialDashboard: React.FC<MaterialDashboardProps> = ({ isDarkMode = fals
                         </thead>
                         <tbody className={`divide-y ${isDarkMode ? 'divide-slate-800' : 'divide-slate-100'}`}>
                             {loading ? (
-                                <tr><td colSpan={5} className="p-20 text-center text-slate-500 font-black uppercase tracking-widest text-[10px]">Sincronizando Banco de Dados...</td></tr>
+                                <tr><td colSpan={5} className="p-20 text-center text-slate-500 font-black uppercase tracking-widest text-[10px]">
+                                    <div className="flex flex-col items-center gap-4 animate-pulse">
+                                        <div className="w-8 h-8 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+                                        Sincronizando Banco de Dados...
+                                    </div>
+                                </td></tr>
                             ) : sortedLoans.length === 0 ? (
                                 <tr><td colSpan={5} className="p-20 text-center text-slate-500 font-black uppercase tracking-widest text-[10px]">Nenhum registro encontrado</td></tr>
                             ) : (
