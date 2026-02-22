@@ -172,3 +172,13 @@ body {
 .dark ::-webkit-scrollbar-thumb {
   @apply bg-slate-800 hover:bg-slate-700;
 }
+
+/* Utilitários Extras */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

@@ -22,6 +22,37 @@ interface DailyAttendanceProps {
     isDarkMode?: boolean;
 }
 
+const StatusWheel: FC<{
+    value: string;
+    onChange: (val: string) => void;
+    disabled?: boolean;
+    isDarkMode?: boolean;
+}> = ({ value, onChange, disabled, isDarkMode }) => {
+    const statuses = Object.keys(PRESENCE_STATUS);
+
+    return (
+        <div className={`relative h-10 w-full min-w-[50px] overflow-y-auto snap-y snap-mandatory scrollbar-hide rounded-xl border transition-all ${disabled ? 'opacity-30 cursor-not-allowed' : 'hover:scale-[1.02] active:scale-95'
+            } ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-indigo-100'}`}>
+            <div className="flex flex-col">
+                {statuses.map(s => (
+                    <button
+                        key={s}
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => onChange(s)}
+                        className={`h-10 shrink-0 w-full flex items-center justify-center snap-center text-[11px] font-black transition-all ${value === s
+                            ? (isDarkMode ? 'text-emerald-400 bg-emerald-500/10' : 'text-emerald-700 bg-emerald-50')
+                            : (isDarkMode ? 'text-slate-600 hover:text-white' : 'text-slate-400 hover:text-slate-900')
+                            }`}
+                    >
+                        {s}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 // Helper functions for local date handling
 const formatDateToISO = (date: Date) => {
     const year = date.getFullYear();
@@ -457,17 +488,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             }
         }
 
-        // VALIDAÇÃO: Bloquear assinatura se houver status 'N' no setor
-        const sectorUsers = users.filter(u => u.sector === selectedSector);
-        const hasPending = sectorUsers.some(u => {
-            const status = weeklyGrid[u.id]?.[date]?.[type] || 'P'; // We default to 'P' because the UI defaults to 'P' visually
-            return status === 'N';
-        });
-
-        if (hasPending) {
-            alert(`Não é possível assinar: existem militares com status "NÃO INFORMADO" (N) na ${type === 'INICIO' ? '1ª Chamada' : '2ª Chamada'} deste setor.`);
-            return;
-        }
+        // REMOVIDO: Validação de status 'N' (Não informado) pois foi retirado do sistema.
 
         setDateToSign(date);
         setCallToSign(type);
@@ -589,15 +610,11 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             militarId: u.id,
             militarName: u.warName || u.name,
             militarRank: u.rank,
-            status: attendanceRecords[u.id] || 'N',
+            status: attendanceRecords[u.id] || 'P',
             timestamp: new Date().toISOString()
         }));
 
-        if (records.some(r => r.status === 'N')) {
-            if (!confirm('Existem militares com status "NÃO INFORMADO". Deseja prosseguir mesmo assim?')) {
-                return;
-            }
-        }
+        // Validação removida (status 'N' não existe mais)
 
         const daily: DailyAttendance = {
             id: Math.random().toString(36).substr(2, 9),
@@ -863,42 +880,20 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                             {currentWeek.map(date => (
                                                 <Fragment key={`${user.id}-${date}`}>
                                                     <td key={`${user.id}-${date}-INICIO`} className={`p-1 lg:p-1.5 border-l transition-all ${isDarkMode ? 'border-slate-800/50 bg-slate-900/20' : 'border-indigo-100/30 bg-white'}`}>
-                                                        <select
+                                                        <StatusWheel
                                                             disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
                                                             value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P'}
-                                                            onChange={(e) => handleWeeklyChange(user.id, date, 'INICIO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[10px] lg:text-[11px] font-black text-center outline-none cursor-pointer p-2 rounded-xl transition-all duration-300
-                                                            disabled:opacity-30 disabled:cursor-not-allowed hover:scale-105 active:scale-95
-                                                            ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'P' ? (isDarkMode ? 'text-emerald-400' : 'text-emerald-600') :
-                                                                    ['F', 'A', 'DPM', 'DCH', 'JS', 'INSP', 'LP', 'LM'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? (isDarkMode ? 'text-rose-400 bg-rose-500/10' : 'text-red-600 bg-red-50') :
-                                                                        (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'N' ? (isDarkMode ? 'text-slate-400 bg-slate-800' : 'text-slate-500 bg-slate-100') :
-                                                                            (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'NIL' ? (isDarkMode ? 'text-blue-400/60 bg-blue-900/10' : 'text-blue-400 bg-blue-50/50') :
-                                                                                (isDarkMode ? 'text-blue-400 bg-blue-500/10' : 'text-blue-600 bg-blue-50')
-                                                                }`}
-                                                        >
-                                                            {Object.keys(PRESENCE_STATUS).map(s => (
-                                                                <option key={s} value={s} className={isDarkMode ? 'bg-slate-900 text-slate-200' : 'bg-white text-slate-800'}>{s}</option>
-                                                            ))}
-                                                        </select>
+                                                            onChange={(status) => handleWeeklyChange(user.id, date, 'INICIO', status)}
+                                                            isDarkMode={isDarkMode}
+                                                        />
                                                     </td>
                                                     <td key={`${user.id}-${date}-TERMINO`} className={`p-1 lg:p-1.5 border-l transition-all ${isDarkMode ? 'border-slate-800/50 bg-slate-900/20' : 'border-indigo-100/30 bg-white'}`}>
-                                                        <select
+                                                        <StatusWheel
                                                             disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
                                                             value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P'}
-                                                            onChange={(e) => handleWeeklyChange(user.id, date, 'TERMINO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[10px] lg:text-[11px] font-black text-center outline-none cursor-pointer p-2 rounded-xl transition-all duration-300
-                                                            disabled:opacity-30 disabled:cursor-not-allowed hover:scale-105 active:scale-95
-                                                            ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'P' ? (isDarkMode ? 'text-emerald-400' : 'text-emerald-600') :
-                                                                    ['F', 'A', 'DPM', 'DCH', 'JS', 'INSP', 'LP', 'LM'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? (isDarkMode ? 'text-rose-400 bg-rose-500/10' : 'text-red-600 bg-red-50') :
-                                                                        (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'N' ? (isDarkMode ? 'text-slate-400 bg-slate-800' : 'text-slate-500 bg-slate-100') :
-                                                                            (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'NIL' ? (isDarkMode ? 'text-blue-400/60 bg-blue-900/10' : 'text-blue-400 bg-blue-50/50') :
-                                                                                (isDarkMode ? 'text-blue-400 bg-blue-500/10' : 'text-blue-600 bg-blue-50')
-                                                                }`}
-                                                        >
-                                                            {Object.keys(PRESENCE_STATUS).map(s => (
-                                                                <option key={s} value={s} className={isDarkMode ? 'bg-slate-900 text-slate-200' : 'bg-white text-slate-800'}>{s}</option>
-                                                            ))}
-                                                        </select>
+                                                            onChange={(status) => handleWeeklyChange(user.id, date, 'TERMINO', status)}
+                                                            isDarkMode={isDarkMode}
+                                                        />
                                                     </td>
                                                 </Fragment>
                                             ))}
