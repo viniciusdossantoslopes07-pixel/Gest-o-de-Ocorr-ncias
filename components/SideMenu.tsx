@@ -100,8 +100,8 @@ export default function SideMenu({
                         </div>
                         {!isCollapsed && (
                             <div className="flex flex-col leading-none">
-                                <span className="text-xl font-black tracking-tighter">Guardião</span>
-                                <span className="text-[10px] font-black tracking-[0.2em] text-blue-500 uppercase mt-0.5">GSD-SP</span>
+                                <span className="text-xl font-black tracking-tighter text-white">Guardião</span>
+                                <span className="text-[10px] font-black tracking-[0.3em] text-blue-500 uppercase mt-1">GSD-SP</span>
                             </div>
                         )}
                     </div>
