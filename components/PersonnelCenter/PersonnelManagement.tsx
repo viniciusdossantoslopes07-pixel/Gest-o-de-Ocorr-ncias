@@ -17,6 +17,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     const [searchTerm, setSearchTerm] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [showInactive, setShowInactive] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -31,13 +32,15 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     // Sector Filter State
     const [filterSector, setFilterSector] = useState('TODOS');
 
-    const filteredUsers = users.filter(u =>
-        (u.active !== false) && // Filtro de integridade: apenas ativos nesta gestão
-        (filterSector === 'TODOS' ? true : u.sector === filterSector) &&
-        (u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const filteredUsers = users.filter(u => {
+        const statusMatch = showInactive ? (u.active === false) : (u.active !== false);
+        const sectorMatch = (filterSector === 'TODOS' ? true : u.sector === filterSector);
+        const searchMatch = (u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             u.warName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            u.saram.includes(searchTerm))
-    ).sort((a, b) => a.name.localeCompare(b.name));
+            u.saram.includes(searchTerm));
+
+        return statusMatch && sectorMatch && searchMatch;
+    }).sort((a, b) => a.name.localeCompare(b.name));
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -114,6 +117,20 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                         </div>
                     </div>
                 )}
+            </div>
+
+            {/* Inactive Toggle Filter */}
+            <div className="flex justify-end px-4">
+                <button
+                    onClick={() => setShowInactive(!showInactive)}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 border-2 ${showInactive
+                        ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-900/40'
+                        : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700 shadow-sm')
+                        }`}
+                >
+                    {showInactive ? <Shield className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                    {showInactive ? 'Visualizando Desativados' : 'Ver Militares Desativados'}
+                </button>
             </div>
 
             {isAdding ? (
@@ -269,12 +286,25 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                                         Atribuir Setor
                                                     </button>
                                                 )}
-                                                <button onClick={() => handleEdit(user)} className={`p-2 transition-colors ${isDarkMode ? 'text-slate-500 hover:text-indigo-400' : 'text-slate-400 hover:text-blue-600'}`}>
-                                                    <Edit2 className="w-4 h-4" />
-                                                </button>
-                                                <button onClick={() => { if (confirm('Desativar militar do sistema?')) onDeletePersonnel(user.id); }} className={`p-2 transition-colors ${isDarkMode ? 'text-slate-500 hover:text-amber-400' : 'text-slate-400 hover:text-amber-500'}`} title="Desativar (Soft Delete)">
-                                                    <XCircle className="w-4 h-4" />
-                                                </button>
+                                                {user.active === false ? (
+                                                    <button
+                                                        onClick={() => { if (confirm('Deseja reativar este militar?')) onUpdatePersonnel({ ...user, active: true }); }}
+                                                        className={`p-2 transition-colors ${isDarkMode ? 'text-green-500 hover:text-green-400' : 'text-green-600 hover:text-green-700'}`}
+                                                        title="Reativar militar"
+                                                    >
+                                                        <Shield className="w-4 h-4" />
+                                                    </button>
+                                                ) : (
+                                                    <button onClick={() => handleEdit(user)} className={`p-2 transition-colors ${isDarkMode ? 'text-slate-500 hover:text-indigo-400' : 'text-slate-400 hover:text-blue-600'}`}>
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
+
+                                                {user.active !== false ? (
+                                                    <button onClick={() => { if (confirm('Desativar militar do sistema?')) onDeletePersonnel(user.id); }} className={`p-2 transition-colors ${isDarkMode ? 'text-slate-500 hover:text-amber-400' : 'text-slate-400 hover:text-amber-500'}`} title="Desativar (Soft Delete)">
+                                                        <XCircle className="w-4 h-4" />
+                                                    </button>
+                                                ) : null}
                                                 {currentUserRole === UserRole.ADMIN && onPermanentDeletePersonnel && (
                                                     <button onClick={() => onPermanentDeletePersonnel(user.id)} className={`p-2 transition-colors ${isDarkMode ? 'text-slate-500 hover:text-red-400' : 'text-slate-400 hover:text-red-500'}`} title="Excluir Definitivamente (Hard Delete)">
                                                         <Trash2 className="w-4 h-4" />
@@ -327,30 +357,42 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                 </div>
 
                                 <div className="flex gap-3 mt-1">
-                                    {user.sector === 'SEM SETOR' ? (
+                                    {user.active === false ? (
                                         <button
-                                            onClick={() => handleEdit(user)}
-                                            className={`flex-1 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm animate-pulse border ${isDarkMode ? 'bg-red-400/10 border-red-400/20 text-red-400 active:bg-red-400/20' : 'bg-red-50 border-red-100 text-red-600 active:bg-red-100'
-                                                }`}
+                                            onClick={() => { if (confirm('Deseja reativar este militar?')) onUpdatePersonnel({ ...user, active: true }); }}
+                                            className={`flex-1 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-green-400/10 border-green-400/20 text-green-400 active:bg-green-400/20' : 'bg-green-50 border-green-100 text-green-600 active:bg-green-100'}`}
                                         >
-                                            <AlertTriangle className="w-4 h-4" /> Atribuir Setor
+                                            <Shield className="w-4 h-4" /> Reativar Militar
                                         </button>
                                     ) : (
+                                        user.sector === 'SEM SETOR' ? (
+                                            <button
+                                                onClick={() => handleEdit(user)}
+                                                className={`flex-1 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm animate-pulse border ${isDarkMode ? 'bg-red-400/10 border-red-400/20 text-red-400 active:bg-red-400/20' : 'bg-red-50 border-red-100 text-red-600 active:bg-red-100'
+                                                    }`}
+                                            >
+                                                <AlertTriangle className="w-4 h-4" /> Atribuir Setor
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleEdit(user)}
+                                                className={`flex-1 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 active:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 active:bg-slate-50'
+                                                    }`}
+                                            >
+                                                <Edit2 className="w-4 h-4 text-blue-500" /> Editar Dados
+                                            </button>
+                                        )
+                                    )}
+
+                                    {user.active !== false ? (
                                         <button
-                                            onClick={() => handleEdit(user)}
-                                            className={`flex-1 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 active:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 active:bg-slate-50'
+                                            onClick={() => { if (confirm('Desativar militar?')) onDeletePersonnel(user.id); }}
+                                            className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-amber-400/5 border-amber-400/10 text-amber-400 active:bg-amber-400/10' : 'bg-amber-50/30 border-amber-100 text-amber-500 active:bg-amber-50'
                                                 }`}
                                         >
-                                            <Edit2 className="w-4 h-4 text-blue-500" /> Editar Dados
+                                            <XCircle className="w-4 h-4" />
                                         </button>
-                                    )}
-                                    <button
-                                        onClick={() => { if (confirm('Desativar militar?')) onDeletePersonnel(user.id); }}
-                                        className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-amber-400/5 border-amber-400/10 text-amber-400 active:bg-amber-400/10' : 'bg-amber-50/30 border-amber-100 text-amber-500 active:bg-amber-50'
-                                            }`}
-                                    >
-                                        <XCircle className="w-4 h-4" />
-                                    </button>
+                                    ) : null}
                                     {currentUserRole === UserRole.ADMIN && onPermanentDeletePersonnel && (
                                         <button
                                             onClick={() => onPermanentDeletePersonnel(user.id)}
