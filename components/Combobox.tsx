@@ -29,20 +29,35 @@ export const Combobox: React.FC<ComboboxProps> = ({
         setSearchTerm(value);
     }, [value]);
 
-    // Filter options
+    // Helper to normalize string for search
+    const normalize = (str: string) => {
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    };
+
+    // Filter and Sort options
     const filteredOptions = useMemo(() => {
-        if (!searchTerm) return options;
-        const lowerTerm = searchTerm.toLowerCase();
-        // Prioritize startsWith, then includes
-        return options.sort((a, b) => {
-            const aLower = a.toLowerCase();
-            const bLower = b.toLowerCase();
-            const aStarts = aLower.startsWith(lowerTerm);
-            const bStarts = bLower.startsWith(lowerTerm);
+        if (!searchTerm) {
+            // If empty, return first 50 options or all if small
+            return options.slice(0, 50);
+        }
+
+        const normalizedTerm = normalize(searchTerm);
+        const searchTerms = normalizedTerm.split(/\s+/).filter(t => t.length > 0);
+
+        const filtered = options.filter(opt => {
+            const normalizedOpt = normalize(opt);
+            // Must contain ALL terms typed (in any order)
+            return searchTerms.every(term => normalizedOpt.includes(term));
+        });
+
+        // Sort: Priority to strings that start with the search term
+        return [...filtered].sort((a, b) => {
+            const aStarts = normalize(a).startsWith(normalizedTerm);
+            const bStarts = normalize(b).startsWith(normalizedTerm);
             if (aStarts && !bStarts) return -1;
             if (!aStarts && bStarts) return 1;
-            return 0;
-        }).filter(opt => opt.toLowerCase().includes(lowerTerm));
+            return a.localeCompare(b);
+        });
     }, [options, searchTerm]);
 
     // Close on click outside
@@ -107,7 +122,10 @@ export const Combobox: React.FC<ComboboxProps> = ({
                         setIsOpen(true);
                         setHighlightedIndex(0);
                     }}
-                    onFocus={() => setIsOpen(true)}
+                    onFocus={(e) => {
+                        setIsOpen(true);
+                        e.target.select();
+                    }}
                     onClick={() => {
                         if (!disabled) setIsOpen(true);
                     }}

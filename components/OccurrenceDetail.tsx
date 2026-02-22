@@ -305,7 +305,12 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                     <div className="flex gap-2">
                       <Combobox
                         options={users.map(u => `${u.rank} ${u.warName || u.name} ${u.saram ? `(${u.saram})` : ''}`)}
-                        value={occurrence.assigned_to || ''}
+                        value={(() => {
+                          const assignedUser = users.find(u => u.name === occurrence.assigned_to);
+                          return assignedUser
+                            ? `${assignedUser.rank} ${assignedUser.warName || assignedUser.name} ${assignedUser.saram ? `(${assignedUser.saram})` : ''}`
+                            : (occurrence.assigned_to || '');
+                        })()}
                         onChange={(val) => {
                           const selectedUser = users.find(u => `${u.rank} ${u.warName || u.name} ${u.saram ? `(${u.saram})` : ''}` === val);
                           if (onUpdateOccurrence) {
