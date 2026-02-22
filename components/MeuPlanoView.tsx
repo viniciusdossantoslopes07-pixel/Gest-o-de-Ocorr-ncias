@@ -535,8 +535,10 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                         <div>
                             <MissionRequestList
                                 missions={requests}
-                                onProcess={async () => { }}
-                                onGenerateOrder={async () => { }}
+                                currentUser={user}
+                                onMissionUpdated={fetchMyRequests}
+                                onMissionDeleted={fetchMyRequests}
+                                isDarkMode={isDarkMode}
                             />
                         </div>
                     )}

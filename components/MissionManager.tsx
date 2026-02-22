@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { Mission, User, MissionOrder, UserRole } from '../types';
-import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint, Filter, MapPin, User as UserIcon } from 'lucide-react';
 import { authenticateBiometrics } from '../services/webauthn';
 import MissionStatistics from './MissionStatistics';
 import MissionOrderForm from './MissionOrderForm';
@@ -11,6 +11,7 @@ import MissionRequestCard from './MissionRequestCard';
 import { PERMISSIONS, hasPermission } from '../constants/permissions';
 
 import MissionOrderPrintView from './MissionOrderPrintView';
+import MissionRequestList from './MissionRequestList';
 import { notificationService } from '../services/notificationService';
 
 interface MissionManagerProps {
@@ -503,40 +504,66 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
         }
     };
 
-    // Render helpers
     const renderPendingRequests = () => {
         const pending = missions.filter(m => m.status === 'PENDENTE' || m.status === 'ESCALONADA');
-        if (pending.length === 0) return <div className={`text-center py-12 rounded-2xl border ${isDarkMode ? 'text-slate-500 bg-slate-900/40 border-slate-800/50 backdrop-blur-md' : 'text-slate-400 bg-slate-50 border-slate-200'} text-xs font-bold uppercase tracking-widest`}>Nenhuma solicitação pendente de análise.</div>;
+        if (pending.length === 0) return <div className={`text-center py-12 rounded-2xl border border-dashed ${isDarkMode ? 'text-slate-500 bg-slate-900/20 border-slate-800/50' : 'text-slate-400 bg-slate-50 border-slate-200'} text-[10px] font-black uppercase tracking-[0.2em]`}>Nenhuma solicitação pendente de análise.</div>;
 
         return (
             <div className="space-y-4">
-                <h3 className={`text-sm font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-500'} uppercase tracking-wider mb-2`}>1. Solicitações Pendentes (SOP-01)</h3>
-                {pending.map(m => (
-                    <div
-                        key={m.id}
-                        onClick={() => {
-                            setSelectedMission(m);
-                            setShowMissionCard(true);
-                        }}
-                        className={`p-4 rounded-2xl border border-l-4 border-l-yellow-400 transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800 hover:bg-slate-900/60 backdrop-blur-md' : 'bg-white border-slate-200 hover:bg-slate-50'} shadow-sm flex justify-between items-center cursor-pointer hover:shadow-lg`}
-                    >
-                        <div className="flex-1 min-w-0">
-                            <div className={`font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} truncate uppercase tracking-tight`}>{m.dados_missao.tipo_missao}</div>
-                            <div className={`text-[11px] sm:text-sm mt-0.5 truncate ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                                {m.dados_missao.local} - {m.dados_missao.data ? new Date(m.dados_missao.data).toLocaleDateString() : 'Data não informada'}
+                <h3 className={`text-[10px] font-black ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase tracking-[0.2em] mb-4 flex items-center gap-2`}>
+                    <Filter className="w-3.5 h-3.5" /> 1. Solicitações Pendentes de Análise (SOP-01)
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {pending.map(m => (
+                        <div
+                            key={m.id}
+                            onClick={() => {
+                                setSelectedMission(m);
+                                setShowMissionCard(true);
+                            }}
+                            className={`p-5 rounded-3xl border transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800 hover:border-blue-500/30' : 'bg-white border-slate-100 hover:border-blue-200'} shadow-sm flex flex-col justify-between cursor-pointer hover:shadow-xl group relative overflow-hidden`}
+                        >
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg uppercase tracking-widest ${m.status === 'PENDENTE' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
+                                            {m.status}
+                                        </span>
+                                        <span className="text-[10px] text-slate-500 font-mono">#{m.id.slice(0, 8)}</span>
+                                    </div>
+                                    <h4 className={`text-base font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} truncate group-hover:text-blue-500 transition-colors`}>{m.dados_missao.tipo_missao}</h4>
+                                </div>
                             </div>
-                            <div className={`text-[10px] mt-1 truncate ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} font-bold`}>Solicitante: {m.dados_missao.posto} {m.dados_missao.nome_guerra}</div>
+
+                            <div className="space-y-3">
+                                <div className={`flex items-center gap-2 text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                                    <MapPin className="w-3.5 h-3.5 text-blue-500" />
+                                    <span className="truncate">{m.dados_missao.local}</span>
+                                </div>
+                                <div className={`flex items-center gap-4 text-[11px] font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                                    <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-blue-500" /> {m.dados_missao.data ? new Date(m.dados_missao.data).toLocaleDateString() : 'N/A'}</span>
+                                    <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-blue-500" /> {m.dados_missao.inicio} - {m.dados_missao.termino}</span>
+                                </div>
+                            </div>
+
+                            <div className={`mt-5 pt-4 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-50'} flex items-center justify-between`}>
+                                <div className={`flex items-center gap-2 text-[10px] font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                                    <UserIcon className="w-3.5 h-3.5 text-blue-500" />
+                                    <span className="truncate uppercase">{m.dados_missao.nome_guerra}</span>
+                                </div>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAnalyzeRequest(m);
+                                    }}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-500 shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]"
+                                >
+                                    Analisar
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex flex-wrap justify-end gap-1.5 sm:gap-2 ml-2" onClick={(e) => e.stopPropagation()}>
-                            <button onClick={() => handleAnalyzeRequest(m)} className="px-3 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-blue-500 shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]">
-                                Analisar
-                            </button>
-                            <button onClick={() => handleRejectRequest(m)} className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-[0.98] ${isDarkMode ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}>
-                                Rejeitar
-                            </button>
-                        </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
         );
     };
@@ -667,78 +694,13 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 {/* 1. Minhas Solicitações Tab */}
                 {activeTab === 'minhas_solicitacoes' && (
                     <div className="space-y-4">
-                        {myMissions.length === 0 ? (
-                            <div className="text-center py-12 text-slate-400">Você não possui solicitações de missão recentes.</div>
-                        ) : (
-                            myMissions.map(m => (
-                                <div
-                                    key={m.id}
-                                    onClick={() => {
-                                        setSelectedMission(m);
-                                        setShowMissionCard(true);
-                                    }}
-                                    className={`p-4 rounded-2xl border ${isDarkMode ? 'border-slate-800 bg-slate-900/40 hover:bg-slate-800/60 backdrop-blur-md shadow-lg shadow-black/20' : 'border-slate-100 bg-white hover:bg-slate-50'} transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center cursor-pointer hover:shadow-xl group relative overflow-hidden`}
-                                >
-                                    <div className="flex-1 min-w-0 w-full">
-                                        <div className="flex items-center justify-between sm:justify-start gap-2 mb-1">
-                                            <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded">
-                                                {m.dados_missao.tipo_missao}
-                                            </span>
-                                            <span className="text-[10px] text-slate-400 font-mono">#{m.id.slice(0, 8)}</span>
-                                        </div>
-
-                                        <h4 className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} group-hover:text-blue-600 transition-colors truncate`}>
-                                            {m.dados_missao.local}
-                                        </h4>
-
-                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-[11px] text-slate-500">
-                                            <span className="flex items-center gap-1.5">
-                                                <Calendar className="w-3.5 h-3.5" />
-                                                {m.dados_missao.data ? new Date(m.dados_missao.data).toLocaleDateString() : 'Data não informada'}
-                                            </span>
-                                            <span className="flex items-center gap-1.5">
-                                                <Clock className="w-3.5 h-3.5" />
-                                                {m.dados_missao.inicio}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto mt-4 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-slate-100">
-                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${m.status === 'PENDENTE' ? (isDarkMode ? 'bg-yellow-500/10 text-yellow-500' : 'bg-yellow-100 text-yellow-700') :
-                                            m.status === 'APROVADA' || m.status === 'ATRIBUIDA' ? (isDarkMode ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-100 text-emerald-700') :
-                                                m.status === 'RASCUNHO' ? (isDarkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-200 text-slate-600') : (isDarkMode ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-500')
-                                            }`}>
-                                            {m.status}
-                                        </span>
-
-                                        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                                            {m.status === 'RASCUNHO' && (
-                                                <>
-                                                    <button
-                                                        onClick={() => {
-                                                            setEditingDraft(m);
-                                                            setActiveTab('solicitar_missao');
-                                                        }}
-                                                        className={`p-2 sm:px-3 sm:py-1.5 rounded-xl transition-colors ${isDarkMode ? 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}
-                                                        title="Editar"
-                                                    >
-                                                        <FileSignature className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleSendDraft(m)}
-                                                        className="p-2 sm:px-3 sm:py-1.5 bg-green-50 text-green-700 rounded-xl hover:bg-green-100 transition-colors"
-                                                        title="Enviar"
-                                                    >
-                                                        <FileText className="w-4 h-4" />
-                                                    </button>
-                                                </>
-                                            )}
-                                            <ChevronDown className="w-4 h-4 text-slate-300 sm:hidden" />
-                                        </div>
-                                    </div>
-                                </div>
-                            ))
-                        )}
+                        <MissionRequestList
+                            missions={myMissions}
+                            currentUser={user}
+                            onMissionUpdated={fetchMissions}
+                            onMissionDeleted={fetchMissions}
+                            isDarkMode={isDarkMode}
+                        />
 
                         {/* Display processed Mission Orders associated with the user */}
                         {renderMyOrders()}
