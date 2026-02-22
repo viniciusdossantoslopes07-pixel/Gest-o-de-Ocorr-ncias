@@ -142,24 +142,24 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     return (
         <div className="space-y-4 sm:space-y-8 animate-fade-in">
             {/* Command Center Header with Smart Filters */}
-            <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} p-4 rounded-2xl shadow-sm border flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4`}>
+            <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl' : 'bg-white border-slate-200'} p-4 rounded-[2.5rem] shadow-xl border flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 transition-all shadow-black/20`}>
                 <div className="flex items-center gap-4">
-                    <div className="p-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-200">
-                        <Target className="w-6 h-6 text-white" />
+                    <div className={`p-4 ${isDarkMode ? 'bg-blue-500/10' : 'bg-blue-600'} rounded-2xl shadow-lg ${isDarkMode ? 'shadow-blue-500/20' : 'shadow-blue-200'}`}>
+                        <Target className={`w-8 h-8 ${isDarkMode ? 'text-blue-400' : 'text-white'}`} />
                     </div>
                     <div>
-                        <h2 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-800'} tracking-tight`}>BI Missão</h2>
+                        <h2 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-800'} tracking-tight`}>BI Missão</h2>
                         <div className="flex items-center gap-2 mt-0.5">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                                Ref.: <span className="text-blue-600">{period === 'all' ? 'Geral' : period === 'custom' ? 'Custom' : period === 'today' ? 'Hoje' : period === 'week' ? '7D' : period === 'month' ? '30D' : 'Ano'}</span>
+                            <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">
+                                Ref.: <span className={`${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>{period === 'all' ? 'Geral' : period === 'custom' ? 'Custom' : period === 'today' ? 'Hoje' : period === 'week' ? '7D' : period === 'month' ? '30D' : 'Ano'}</span>
                             </p>
                         </div>
                     </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto overflow-x-auto pb-2 xl:pb-0">
-                    <div className={`flex ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} p-1 rounded-xl`}>
+                    <div className={`flex p-1 ${isDarkMode ? 'bg-slate-950/50 border border-slate-800/50' : 'bg-slate-100'} rounded-2xl`}>
                         {[
                             { id: 'all', label: 'Tudo' },
                             { id: 'today', label: 'Hoje' },
@@ -170,15 +170,15 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                             <button
                                 key={p.id}
                                 onClick={() => setPeriod(p.id as any)}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase transition-all whitespace-nowrap ${period === p.id ? (isDarkMode ? 'bg-slate-700 text-blue-400' : 'bg-white text-blue-600 shadow-sm') : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`px-4 py-2 rounded-xl text-xs font-black uppercase transition-all whitespace-nowrap ${period === p.id ? (isDarkMode ? 'bg-slate-800 text-blue-400 shadow-lg shadow-black/20' : 'bg-white text-blue-600 shadow-sm') : 'text-slate-500 hover:text-slate-700'}`}
                             >
                                 {p.label}
                             </button>
                         ))}
                     </div>
 
-                    <div className={`flex items-center gap-2 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'} px-3 py-1.5 rounded-xl border`}>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase whitespace-nowrap">Período:</span>
+                    <div className={`flex items-center gap-2 ${isDarkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-slate-50 border-slate-200'} px-4 py-2 rounded-2xl border transition-all`}>
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Período:</span>
                         <input
                             type="date"
                             value={filterDateStart}
@@ -186,9 +186,9 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                 setFilterDateStart(e.target.value);
                                 setPeriod('custom');
                             }}
-                            className={`bg-transparent text-xs font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'} outline-none w-24`}
+                            className={`bg-transparent text-xs font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-700'} outline-none w-24 cursor-pointer`}
                         />
-                        <span className="text-slate-300">/</span>
+                        <span className="text-slate-800">/</span>
                         <input
                             type="date"
                             value={filterDateEnd}
@@ -196,14 +196,14 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                 setFilterDateEnd(e.target.value);
                                 setPeriod('custom');
                             }}
-                            className={`bg-transparent text-xs font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'} outline-none w-24`}
+                            className={`bg-transparent text-xs font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-700'} outline-none w-24 cursor-pointer`}
                         />
                     </div>
 
                     <select
                         value={filterType}
                         onChange={(e) => setFilterType(e.target.value)}
-                        className={`${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-700'} text-xs sm:text-sm font-bold rounded-xl px-3 py-1.5 outline-none cursor-pointer hover:opacity-80 transition-all h-full`}
+                        className={`${isDarkMode ? 'bg-slate-950/50 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-700'} text-xs sm:text-sm font-black rounded-2xl px-4 py-2.5 outline-none cursor-pointer hover:opacity-80 transition-all h-full border`}
                     >
                         <option value="">Tipos</option>
                         {missionTypes.map(type => (
@@ -215,53 +215,53 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
 
             {/* KPI Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-                <div className={`col-span-2 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'lg:col-span-1 bg-gradient-to-br from-slate-900 to-slate-800 p-4 sm:p-6 rounded-2xl shadow-lg border border-slate-700'} flex flex-col items-center justify-center text-center gap-2 transition-all`}>
-                    <div className="p-2 sm:p-3 bg-white/10 text-white rounded-full mb-1">
-                        <Users className="w-6 h-6 sm:w-8 sm:h-8" />
+                <div className={`col-span-2 lg:col-span-1 p-5 sm:p-6 rounded-3xl shadow-xl flex flex-col items-center justify-center text-center gap-2 transition-all border ${isDarkMode ? 'bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50 shadow-black/40' : 'bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 shadow-slate-200'}`}>
+                    <div className="p-3 sm:p-4 bg-white/10 text-white rounded-2xl mb-1 backdrop-blur-md">
+                        <Users className="w-8 h-8 sm:w-10 sm:h-10" />
                     </div>
                     <div>
-                        <p className={`text-[10px] sm:text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-300'} font-bold uppercase tracking-wider`}>Efetivo</p>
-                        <h3 className="text-2xl sm:text-4xl font-black text-white mt-1">{personnelCount}</h3>
+                        <p className={`text-[10px] sm:text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-300'} font-black uppercase tracking-widest`}>Efetivo</p>
+                        <h3 className="text-3xl sm:text-5xl font-black text-white mt-1">{personnelCount}</h3>
                     </div>
                 </div>
 
-                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-4 sm:p-6 rounded-2xl shadow-sm border flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4`}>
-                    <div className="p-2 sm:p-3 bg-blue-100 text-blue-600 rounded-xl">
-                        <Target className="w-6 h-6 sm:w-8 sm:h-8" />
+                <div className={`${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-md shadow-xl' : 'bg-white border-slate-100 shadow-sm'} p-5 sm:p-6 rounded-[2rem] border flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4 transition-all`}>
+                    <div className={`p-3 sm:p-4 rounded-2xl ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
+                        <Target className="w-8 h-8 sm:w-10 sm:h-10" />
                     </div>
                     <div>
-                        <p className={`text-[10px] sm:text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} font-bold uppercase tracking-wider`}>Total</p>
-                        <h3 className={`text-lg sm:text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{totalMissions}</h3>
+                        <p className={`text-[10px] sm:text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-500'} font-black uppercase tracking-tighter`}>Total</p>
+                        <h3 className={`text-2xl sm:text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{totalMissions}</h3>
                     </div>
                 </div>
 
-                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-4 sm:p-6 rounded-2xl shadow-sm border flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4`}>
-                    <div className="p-2 sm:p-3 bg-emerald-100 text-emerald-600 rounded-xl">
-                        <Play className="w-6 h-6 sm:w-8 sm:h-8" />
+                <div className={`${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-md shadow-xl' : 'bg-white border-slate-100 shadow-sm'} p-5 sm:p-6 rounded-[2rem] border flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4 transition-all`}>
+                    <div className={`p-3 sm:p-4 rounded-2xl ${isDarkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-100 text-emerald-600'}`}>
+                        <Play className="w-8 h-8 sm:w-10 sm:h-10" />
                     </div>
                     <div>
-                        <p className={`text-[10px] sm:text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} font-medium leading-tight`}>Em Andamento</p>
-                        <h3 className={`text-lg sm:text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{activeMissions}</h3>
+                        <p className={`text-[10px] sm:text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-500'} font-black uppercase tracking-tighter`}>Em Andamento</p>
+                        <h3 className={`text-2xl sm:text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{activeMissions}</h3>
                     </div>
                 </div>
 
-                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-4 sm:p-6 rounded-2xl shadow-sm border flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4`}>
-                    <div className="p-2 sm:p-3 bg-indigo-100 text-indigo-600 rounded-xl">
-                        <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8" />
+                <div className={`${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-md shadow-xl' : 'bg-white border-slate-100 shadow-sm'} p-5 sm:p-6 rounded-[2rem] border flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4 transition-all`}>
+                    <div className={`p-3 sm:p-4 rounded-2xl ${isDarkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-100 text-indigo-600'}`}>
+                        <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10" />
                     </div>
                     <div>
-                        <p className={`text-[10px] sm:text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} font-medium leading-tight`}>Concluídas</p>
-                        <h3 className={`text-lg sm:text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{completedMissions}</h3>
+                        <p className={`text-[10px] sm:text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-500'} font-black uppercase tracking-tighter`}>Concluídas</p>
+                        <h3 className={`text-2xl sm:text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{completedMissions}</h3>
                     </div>
                 </div>
 
-                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-4 sm:p-6 rounded-2xl shadow-sm border flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4`}>
-                    <div className="p-2 sm:p-3 bg-amber-100 text-amber-600 rounded-xl">
-                        <Clock className="w-6 h-6 sm:w-8 sm:h-8" />
+                <div className={`${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-md shadow-xl' : 'bg-white border-slate-100 shadow-sm'} p-5 sm:p-6 rounded-[2rem] border flex flex-col xs:flex-row items-center xs:items-start text-center xs:text-left gap-3 sm:gap-4 transition-all`}>
+                    <div className={`p-3 sm:p-4 rounded-2xl ${isDarkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-100 text-amber-600'}`}>
+                        <Clock className="w-8 h-8 sm:w-10 sm:h-10" />
                     </div>
                     <div>
-                        <p className={`text-[10px] sm:text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} font-medium leading-tight`}>Pendentes</p>
-                        <h3 className={`text-lg sm:text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{pendingMissions}</h3>
+                        <p className={`text-[10px] sm:text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-500'} font-black uppercase tracking-tighter`}>Pendentes</p>
+                        <h3 className={`text-2xl sm:text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{pendingMissions}</h3>
                     </div>
                 </div>
             </div>
@@ -269,14 +269,14 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             {/* Top Military Personnel Statistics */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
                 {/* Top Mission Requesters */}
-                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-4 sm:p-6 rounded-2xl shadow-sm border`}>
-                    <div className="flex items-center gap-3 mb-4 sm:mb-6">
-                        <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
-                            <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+                <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl shadow-xl shadow-black/20' : 'bg-white border-slate-100 shadow-sm'} p-6 rounded-[2.5rem] border transition-all`}>
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className={`p-3 ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-100 text-blue-600'} rounded-[1rem]`}>
+                            <Users className="w-6 h-6" />
                         </div>
-                        <h3 className={`text-base sm:text-lg font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>Solicitantes</h3>
+                        <h3 className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>Solicitantes</h3>
                     </div>
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         {(() => {
                             const requesterCounts = filteredMissions.reduce((acc, mission) => {
                                 const name = mission.dados_missao?.nome_guerra || 'Desconhecido';
@@ -291,30 +291,32 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                 .slice(0, 5);
 
                             if (topRequesters.length === 0) {
-                                return <p className="text-xs sm:text-sm text-slate-400 text-center py-4 italic">Sem dados disponíveis</p>;
+                                return <p className="text-xs sm:text-sm text-slate-500 text-center py-8 font-bold uppercase tracking-widest italic opacity-50">Sem dados disponíveis</p>;
                             }
 
                             const maxCount = topRequesters[0][1];
 
                             return topRequesters.map(([name, count], index) => (
-                                <div key={name} className="flex items-center gap-3">
-                                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold flex-shrink-0 ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                                        index === 1 ? 'bg-slate-200 text-slate-700' :
-                                            index === 2 ? 'bg-orange-100 text-orange-700' :
-                                                'bg-slate-100 text-slate-600'
+                                <div key={name} className="flex items-center gap-4 group">
+                                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xs font-black flex-shrink-0 transition-transform group-hover:scale-110 ${index === 0 ? (isDarkMode ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'bg-yellow-100 text-yellow-700') :
+                                        index === 1 ? (isDarkMode ? 'bg-slate-700/50 text-slate-300 border border-slate-600' : 'bg-slate-200 text-slate-700') :
+                                            index === 2 ? (isDarkMode ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 'bg-orange-100 text-orange-700') :
+                                                (isDarkMode ? 'bg-slate-800/50 text-slate-500 border border-slate-700' : 'bg-slate-100 text-slate-600')
                                         }`}>
                                         {index + 1}º
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className={`text-xs sm:text-sm font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-900'} truncate`}>{name}</p>
-                                        <div className={`w-full ${isDarkMode ? 'bg-slate-900' : 'bg-slate-100'} rounded-full h-1.5 sm:h-2 mt-1`}>
+                                        <div className="flex justify-between items-end mb-1.5">
+                                            <p className={`text-sm font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} truncate`}>{name}</p>
+                                            <span className={`text-sm font-black ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>{count as number}</span>
+                                        </div>
+                                        <div className={`w-full ${isDarkMode ? 'bg-slate-950 border border-slate-800' : 'bg-slate-100'} rounded-full h-2`}>
                                             <div
-                                                className="bg-blue-500 h-full rounded-full transition-all"
+                                                className="bg-blue-500 h-full rounded-full transition-all duration-1000 shadow-lg shadow-blue-500/20"
                                                 style={{ width: `${((count as number) / (maxCount as number)) * 100}%` }}
                                             />
                                         </div>
                                     </div>
-                                    <span className={`text-xs sm:text-sm font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{count as number}</span>
                                 </div>
                             ));
                         })()}
@@ -322,14 +324,14 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 </div>
 
                 {/* Top Mission Commanders */}
-                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-4 sm:p-6 rounded-2xl shadow-sm border`}>
-                    <div className="flex items-center gap-3 mb-4 sm:mb-6">
-                        <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
-                            <Target className="w-4 h-4 sm:w-5 sm:h-5" />
+                <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl shadow-xl shadow-black/20' : 'bg-white border-slate-100 shadow-sm'} p-6 rounded-[2.5rem] border transition-all`}>
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className={`p-3 ${isDarkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-100 text-emerald-600'} rounded-[1rem]`}>
+                            <Target className="w-6 h-6" />
                         </div>
-                        <h3 className={`text-base sm:text-lg font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>Responsáveis</h3>
+                        <h3 className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>Responsáveis</h3>
                     </div>
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         {(() => {
                             const commanderCounts = filteredOrders.reduce((acc, order) => {
                                 let commanderName = 'Não Atribuído';
@@ -351,30 +353,32 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                 .slice(0, 5);
 
                             if (topCommanders.length === 0) {
-                                return <p className="text-xs sm:text-sm text-slate-400 text-center py-4 italic">Sem dados disponíveis</p>;
+                                return <p className="text-xs sm:text-sm text-slate-500 text-center py-8 font-bold uppercase tracking-widest italic opacity-50">Sem dados disponíveis</p>;
                             }
 
                             const maxCount = topCommanders[0][1];
 
                             return topCommanders.map(([name, count], index) => (
-                                <div key={name} className="flex items-center gap-3">
-                                    <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold flex-shrink-0 ${index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                                        index === 1 ? 'bg-slate-200 text-slate-700' :
-                                            index === 2 ? 'bg-orange-100 text-orange-700' :
-                                                'bg-slate-100 text-slate-600'
+                                <div key={name} className="flex items-center gap-4 group">
+                                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xs font-black flex-shrink-0 transition-transform group-hover:scale-110 ${index === 0 ? (isDarkMode ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'bg-yellow-100 text-yellow-700') :
+                                        index === 1 ? (isDarkMode ? 'bg-slate-700/50 text-slate-300 border border-slate-600' : 'bg-slate-200 text-slate-700') :
+                                            index === 2 ? (isDarkMode ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 'bg-orange-100 text-orange-700') :
+                                                (isDarkMode ? 'bg-slate-800/50 text-slate-500 border border-slate-700' : 'bg-slate-100 text-slate-600')
                                         }`}>
                                         {index + 1}º
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className={`text-xs sm:text-sm font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-900'} truncate`}>{name}</p>
-                                        <div className={`w-full ${isDarkMode ? 'bg-slate-900' : 'bg-slate-100'} rounded-full h-1.5 sm:h-2 mt-1`}>
+                                        <div className="flex justify-between items-end mb-1.5">
+                                            <p className={`text-sm font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} truncate`}>{name}</p>
+                                            <span className={`text-sm font-black ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{count as number}</span>
+                                        </div>
+                                        <div className={`w-full ${isDarkMode ? 'bg-slate-950 border border-slate-800' : 'bg-slate-100'} rounded-full h-2`}>
                                             <div
-                                                className="bg-emerald-500 h-full rounded-full transition-all"
+                                                className="bg-emerald-500 h-full rounded-full transition-all duration-1000 shadow-lg shadow-emerald-500/20"
                                                 style={{ width: `${((count as number) / (maxCount as number)) * 100}%` }}
                                             />
                                         </div>
                                     </div>
-                                    <span className={`text-xs sm:text-sm font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{count as number}</span>
                                 </div>
                             ));
                         })()}
@@ -385,26 +389,27 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
                 {/* Status Breakdown Bar Chart */}
-                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-4 sm:p-6 rounded-2xl shadow-sm border`}>
-                    <h3 className={`text-base sm:text-lg font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'} mb-4 sm:mb-6`}>Status das Missões</h3>
+                <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl shadow-xl shadow-black/20' : 'bg-white border-slate-100 shadow-sm'} p-6 rounded-[2.5rem] border transition-all`}>
+                    <h3 className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'} mb-8`}>Status das Missões</h3>
                     <div className="h-64 sm:h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={statusData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke={isDarkMode ? '#334155' : '#f1f5f9'} />
+                                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke={isDarkMode ? '#1e293b' : '#f1f5f9'} />
                                 <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" width={90} tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 10, fontWeight: 'bold' }} />
+                                <YAxis dataKey="name" type="category" width={90} tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 10, fontWeight: '900' }} />
                                 <Tooltip
-                                    cursor={{ fill: isDarkMode ? '#1e293b' : 'transparent' }}
+                                    cursor={{ fill: isDarkMode ? '#1e293b50' : '#f8fafc50' }}
                                     contentStyle={{
                                         backgroundColor: isDarkMode ? '#0f172a' : '#fff',
-                                        borderRadius: '12px',
-                                        border: 'none',
-                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                                        borderRadius: '16px',
+                                        border: isDarkMode ? '1px solid #334155' : '1px solid #f1f5f9',
+                                        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
                                         fontSize: '12px',
+                                        fontWeight: 'bold',
                                         color: isDarkMode ? '#f8fafc' : '#1e293b'
                                     }}
                                 />
-                                <Bar dataKey="value" radius={[0, 10, 10, 0]} barSize={30}>
+                                <Bar dataKey="value" radius={[0, 10, 10, 0]} barSize={32}>
                                     {statusData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.fill} />
                                     ))}
@@ -415,8 +420,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 </div>
 
                 {/* Category Pie Chart */}
-                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-4 sm:p-6 rounded-2xl shadow-sm border`}>
-                    <h3 className={`text-base sm:text-lg font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'} mb-4 sm:mb-6`}>Missões por Categoria</h3>
+                <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl shadow-xl shadow-black/20' : 'bg-white border-slate-100 shadow-sm'} p-6 rounded-[2.5rem] border transition-all`}>
+                    <h3 className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'} mb-8`}>Missões por Categoria</h3>
                     <div className="h-64 sm:h-80 w-full flex justify-center">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -424,11 +429,12 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                     data={categoryData}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={window.innerWidth < 640 ? 40 : 60}
-                                    outerRadius={window.innerWidth < 640 ? 70 : 100}
+                                    innerRadius={window.innerWidth < 640 ? 45 : 70}
+                                    outerRadius={window.innerWidth < 640 ? 75 : 110}
                                     fill="#8884d8"
                                     paddingAngle={5}
                                     dataKey="value"
+                                    stroke="none"
                                     label={({ name, percent }) => window.innerWidth < 640 ? `${(percent * 100).toFixed(0)}%` : `${name} ${(percent * 100).toFixed(0)}%`}
                                 >
                                     {categoryData.map((entry, index) => (
@@ -438,10 +444,11 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                 <Tooltip
                                     contentStyle={{
                                         backgroundColor: isDarkMode ? '#0f172a' : '#fff',
-                                        borderRadius: '12px',
-                                        border: 'none',
-                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                                        borderRadius: '16px',
+                                        border: isDarkMode ? '1px solid #334155' : '1px solid #f1f5f9',
+                                        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
                                         fontSize: '12px',
+                                        fontWeight: 'bold',
                                         color: isDarkMode ? '#f8fafc' : '#1e293b'
                                     }}
                                 />

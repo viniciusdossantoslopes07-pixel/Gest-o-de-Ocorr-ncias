@@ -434,9 +434,9 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
 
         return (
             <div className="space-y-4 mt-8">
-                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Ordens de Missão (Envolvendo Você)</h3>
+                <h3 className={`text-sm font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-500'} uppercase tracking-wider mb-2`}>Ordens de Missão (Envolvendo Você)</h3>
                 {myOrders.map(order => (
-                    <div key={order.id} className="p-4 sm:p-5 rounded-xl border border-l-4 border-l-emerald-500 border-slate-200 bg-white hover:shadow-md transition-all">
+                    <div key={order.id} className={`p-4 sm:p-5 rounded-2xl border border-l-4 border-l-emerald-500 transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-md hover:bg-slate-900/60 shadow-lg shadow-black/20' : 'bg-white border-slate-200 hover:shadow-md'}`}>
                         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                             <div className="flex-1 min-w-0">
                                 <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -445,17 +445,17 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                         {MISSION_STATUS_LABELS[order.status || ''] || order.status}
                                     </span>
                                 </div>
-                                <p className="text-slate-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">{order.description}</p>
-                                <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-[11px] sm:text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}">
-                                    <span className="flex items-center gap-1.5 whitespace-nowrap"><Clock className="w-3.5 h-3.5" /> {new Date(order.date).toLocaleDateString()}</span>
-                                    <span className={`flex items-center gap-1.5 rounded ${isDarkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'} px-2 py-0.5 whitespace-nowrap font-medium`}><Shield className="w-3 h-3" /> OM #{order.omisNumber}</span>
+                                <p className={`text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{order.description}</p>
+                                <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-[11px] sm:text-sm">
+                                    <span className={`flex items-center gap-1.5 whitespace-nowrap ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}><Clock className="w-3.5 h-3.5" /> {new Date(order.date).toLocaleDateString()}</span>
+                                    <span className={`flex items-center gap-1.5 rounded ${isDarkMode ? 'bg-slate-950 text-slate-400 border border-slate-800' : 'bg-slate-100 text-slate-500'} px-2 py-0.5 whitespace-nowrap font-medium`}><Shield className="w-3 h-3" /> OM #{order.omisNumber}</span>
                                 </div>
                             </div>
                             <div className="flex sm:flex-col gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                                 {order.status === 'PRONTA_PARA_EXECUCAO' && canManageMission(order) && (
                                     <button
                                         onClick={() => handleMissionStart(order)}
-                                        className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
+                                        className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-emerald-600/20"
                                     >
                                         <Play className="w-3.5 h-3.5" /> Iniciar
                                     </button>
@@ -463,7 +463,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 {order.status === 'EM_MISSAO' && canManageMission(order) && (
                                     <button
                                         onClick={() => handleMissionEnd(order)}
-                                        className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
+                                        className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-red-600/20"
                                     >
                                         <Square className="w-3.5 h-3.5" /> Finalizar
                                     </button>
@@ -506,11 +506,11 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
     // Render helpers
     const renderPendingRequests = () => {
         const pending = missions.filter(m => m.status === 'PENDENTE' || m.status === 'ESCALONADA');
-        if (pending.length === 0) return <div className={`text-center py-8 rounded-xl ${isDarkMode ? 'text-slate-500 bg-slate-800/10 border border-slate-800/50' : 'text-slate-400 bg-slate-50'}`}>Nenhuma solicitação pendente de análise.</div>;
+        if (pending.length === 0) return <div className={`text-center py-12 rounded-2xl border ${isDarkMode ? 'text-slate-500 bg-slate-900/40 border-slate-800/50 backdrop-blur-md' : 'text-slate-400 bg-slate-50 border-slate-200'} text-xs font-bold uppercase tracking-widest`}>Nenhuma solicitação pendente de análise.</div>;
 
         return (
             <div className="space-y-4">
-                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">1. Solicitações Pendentes (SOP-01)</h3>
+                <h3 className={`text-sm font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-500'} uppercase tracking-wider mb-2`}>1. Solicitações Pendentes (SOP-01)</h3>
                 {pending.map(m => (
                     <div
                         key={m.id}
@@ -518,20 +518,20 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                             setSelectedMission(m);
                             setShowMissionCard(true);
                         }}
-                        className={`p-4 rounded-xl border border-l-4 border-l-yellow-400 ${isDarkMode ? 'bg-slate-900/50 border-slate-800 hover:bg-slate-800/50' : 'bg-white border-slate-200'} shadow-sm flex justify-between items-center cursor-pointer hover:shadow-md transition-shadow`}
+                        className={`p-4 rounded-2xl border border-l-4 border-l-yellow-400 transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800 hover:bg-slate-900/60 backdrop-blur-md' : 'bg-white border-slate-200 hover:bg-slate-50'} shadow-sm flex justify-between items-center cursor-pointer hover:shadow-lg`}
                     >
                         <div className="flex-1 min-w-0">
-                            <div className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} truncate`}>{m.dados_missao.tipo_missao}</div>
-                            <div className="text-[11px] sm:text-sm text-slate-500 mt-0.5 truncate">
+                            <div className={`font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} truncate uppercase tracking-tight`}>{m.dados_missao.tipo_missao}</div>
+                            <div className={`text-[11px] sm:text-sm mt-0.5 truncate ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                                 {m.dados_missao.local} - {m.dados_missao.data ? new Date(m.dados_missao.data).toLocaleDateString() : 'Data não informada'}
                             </div>
-                            <div className="text-[10px] text-slate-400 mt-1 truncate">Solicitante: {m.dados_missao.posto} {m.dados_missao.nome_guerra}</div>
+                            <div className={`text-[10px] mt-1 truncate ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} font-bold`}>Solicitante: {m.dados_missao.posto} {m.dados_missao.nome_guerra}</div>
                         </div>
                         <div className="flex flex-wrap justify-end gap-1.5 sm:gap-2 ml-2" onClick={(e) => e.stopPropagation()}>
-                            <button onClick={() => handleAnalyzeRequest(m)} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-600 text-white rounded-lg text-[10px] sm:text-xs font-bold hover:bg-blue-700 shadow-sm transition-colors whitespace-nowrap">
+                            <button onClick={() => handleAnalyzeRequest(m)} className="px-3 py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-blue-500 shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]">
                                 Analisar
                             </button>
-                            <button onClick={() => handleRejectRequest(m)} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-red-100 text-red-700 rounded-lg text-[10px] sm:text-xs font-bold hover:bg-red-200 transition-colors whitespace-nowrap">
+                            <button onClick={() => handleRejectRequest(m)} className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-[0.98] ${isDarkMode ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}>
                                 Rejeitar
                             </button>
                         </div>
@@ -546,28 +546,23 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
         if (waiting.length === 0) return null;
 
         // Permissions: Only CH-SOP, CMT-GSD-SP or ADMIN can sign
-        // Strict blocked for other sectors (including SOP-01/02/03)
         const canSign = user.role === UserRole.ADMIN || user.sector === 'CH-SOP' || user.sector === 'CMT-GSD-SP';
-
-        // If user cannot sign and is not in the management flow, they shouldn't even see this block?
-        // User requested: "Bloqueio total para qualquer outro setor... o botão desaparecerá"
-        // If canSign is false, the button writes nothing.
 
         return (
             <div className="space-y-4 mt-8">
                 <h3 className={`text-sm font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-500'} uppercase tracking-wider mb-2`}>2. Aguardando Assinatura (Chefia)</h3>
                 {waiting.map(o => (
-                    <div key={o.id} className={`p-4 rounded-xl border border-l-4 border-l-orange-500 ${isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200'} shadow-sm flex justify-between items-center`}>
-                        <div>
-                            <div className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} flex items-center gap-2`}>
-                                OM #{o.omisNumber}
-                                <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-[10px] rounded-full uppercase">Aguardando assinatura</span>
+                    <div key={o.id} className={`p-4 sm:p-5 rounded-2xl border border-l-4 border-l-orange-500 transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-md hover:bg-slate-900/60' : 'bg-white border-slate-200 hover:bg-slate-50'} shadow-sm flex justify-between items-center`}>
+                        <div className="flex-1 min-w-0 pr-4">
+                            <div className={`font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} flex items-center gap-3 flex-wrap`}>
+                                <span className={`flex items-center gap-1.5 rounded px-2 py-0.5 text-xs ${isDarkMode ? 'bg-slate-950 text-blue-400 border border-slate-800' : 'bg-blue-50 text-blue-700'}`}>OM #{o.omisNumber}</span>
+                                <span className={`px-2 py-0.5 text-[10px] rounded-full uppercase tracking-widest font-black ${isDarkMode ? 'bg-orange-950 text-orange-400 border border-orange-800/30' : 'bg-orange-100 text-orange-700'}`}>Aguardando assinatura</span>
                             </div>
-                            <div className="text-sm text-slate-500">{o.mission}</div>
-                            <div className="text-xs text-slate-400 mt-1">Gerada por: {o.createdBy}</div>
+                            <div className={`text-sm font-bold mt-2 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{o.mission}</div>
+                            <div className={`text-[10px] mt-1 uppercase font-black tracking-tighter ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Gerada por: {o.createdBy}</div>
                         </div>
                         {canSign && (
-                            <button onClick={() => handleChSopSign(o)} className="px-3 py-1.5 bg-orange-600 text-white rounded-lg text-xs font-bold hover:bg-orange-700 transition-colors flex items-center gap-2">
+                            <button onClick={() => handleChSopSign(o)} className="px-4 py-3 bg-orange-600 text-white rounded-xl text-xs font-black uppercase tracking-[0.1em] hover:bg-orange-500 transition-all shadow-lg shadow-orange-600/20 active:scale-[0.98] flex items-center gap-2 whitespace-nowrap">
                                 <FileSignature className="w-4 h-4" /> Assinar Digitalmente
                             </button>
                         )}
@@ -764,46 +759,46 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 {activeTab === 'missoes_ativas' && (
                     <div className="space-y-4">
                         {getFilteredItems().length === 0 ? (
-                            <div className={`text-center py-12 rounded-xl border ${isDarkMode ? 'text-slate-500 bg-slate-900/50 border-slate-800' : 'text-slate-400 bg-slate-50 border-slate-200'} text-sm`}>Nenhuma missão ativa ou pronta para execução no momento.</div>
+                            <div className={`text-center py-12 rounded-2xl border ${isDarkMode ? 'text-slate-500 bg-slate-900/40 border-slate-800/50 backdrop-blur-md' : 'text-slate-400 bg-slate-50 border-slate-200'} text-xs font-bold uppercase tracking-widest`}>Nenhuma missão ativa ou pronta para execução no momento.</div>
                         ) : (
                             getFilteredItems().map(order => (
-                                <div key={order.id} className={`p-4 sm:p-5 rounded-xl border border-l-4 border-l-emerald-500 shadow-sm transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-800 hover:shadow-emerald-500/5' : 'bg-white border-slate-200 hover:shadow-md'}`}>
+                                <div key={order.id} className={`p-4 sm:p-6 rounded-2xl border border-l-4 border-l-emerald-500 transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-md hover:bg-slate-900/60 shadow-lg shadow-black/20' : 'bg-white border-slate-200 hover:shadow-md'}`}>
                                     <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                                         <div className="flex-1 min-w-0">
-                                            <div className="flex flex-wrap items-center gap-2 mb-2">
-                                                <h3 className={`text-base sm:text-lg font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} truncate`}>{order.mission}</h3>
-                                                <span className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase whitespace-nowrap ${MISSION_STATUS_COLORS[order.status || ''] || 'bg-slate-100'}`}>
+                                            <div className="flex flex-wrap items-center gap-3 mb-3">
+                                                <h3 className={`text-base sm:text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-900'} truncate`}>{order.mission}</h3>
+                                                <span className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${MISSION_STATUS_COLORS[order.status || ''] || 'bg-slate-100'}`}>
                                                     {MISSION_STATUS_LABELS[order.status || ''] || order.status}
                                                 </span>
                                             </div>
-                                            <p className="text-slate-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 md:line-clamp-none">{order.description}</p>
-                                            <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-[11px] sm:text-sm text-slate-500">
-                                                <span className="flex items-center gap-1.5 whitespace-nowrap"><Clock className="w-3.5 h-3.5" /> {new Date(order.date).toLocaleDateString()}</span>
-                                                <span className="flex items-center gap-1.5 rounded bg-slate-100 px-2 py-0.5 whitespace-nowrap font-medium"><Shield className="w-3 h-3" /> OM #{order.omisNumber}</span>
+                                            <p className={`text-xs sm:text-sm mb-4 line-clamp-2 md:line-clamp-none ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{order.description}</p>
+                                            <div className="flex flex-wrap items-center gap-4 sm:gap-8 text-[11px] sm:text-sm">
+                                                <span className={`flex items-center gap-1.5 whitespace-nowrap ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}><Clock className="w-3.5 h-3.5" /> {new Date(order.date).toLocaleDateString()}</span>
+                                                <span className={`flex items-center gap-1.5 rounded px-2 py-0.5 whitespace-nowrap font-black uppercase tracking-tighter ${isDarkMode ? 'bg-slate-950 text-blue-400 border border-slate-800' : 'bg-slate-100 text-slate-600'}`}><Shield className="w-3 h-3" /> OM #{order.omisNumber}</span>
                                             </div>
                                         </div>
-                                        <div className="flex sm:flex-col gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                                        <div className="flex sm:flex-col gap-2 w-full sm:w-auto mt-4 sm:mt-0">
                                             {order.status === 'PRONTA_PARA_EXECUCAO' && canManageMission(order) && (
                                                 <button
                                                     onClick={() => handleMissionStart(order)}
-                                                    className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
+                                                    className="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-600/20 active:scale-[0.98] flex items-center justify-center gap-2"
                                                 >
-                                                    <Play className="w-3.5 h-3.5" /> Iniciar
+                                                    <Play className="w-4 h-4 fill-current" /> Iniciar
                                                 </button>
                                             )}
                                             {order.status === 'EM_MISSAO' && canManageMission(order) && (
                                                 <button
                                                     onClick={() => handleMissionEnd(order)}
-                                                    className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
+                                                    className="flex-1 sm:flex-none px-4 py-2.5 bg-red-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-red-500 transition-all shadow-lg shadow-red-600/20 active:scale-[0.98] flex items-center justify-center gap-2"
                                                 >
-                                                    <Square className="w-3.5 h-3.5" /> Finalizar
+                                                    <Square className="w-4 h-4 fill-current" /> Finalizar
                                                 </button>
                                             )}
                                             <button
                                                 onClick={() => handlePrintOrder(order)}
-                                                className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-xs sm:text-sm font-bold hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
+                                                className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
                                             >
-                                                <FileText className="w-3.5 h-3.5" /> Imprimir
+                                                <FileText className="w-4 h-4" /> Detalhes
                                             </button>
                                         </div>
                                     </div>
@@ -870,29 +865,29 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 {activeTab === 'missoes_finalizadas' && (
                     <div className="space-y-4">
                         {orders.filter(o => o.status === 'CONCLUIDA' || o.status === 'CANCELADA').length === 0 ? (
-                            <div className="text-center py-12 text-slate-400 text-sm">Nenhuma missão finalizada.</div>
+                            <div className={`text-center py-12 rounded-2xl border ${isDarkMode ? 'text-slate-500 bg-slate-900/40 border-slate-800/50 backdrop-blur-md' : 'text-slate-400 bg-slate-50 border-slate-200'} text-xs font-bold uppercase tracking-widest`}>Nenhuma missão finalizada encontrada.</div>
                         ) : (
                             orders.filter(o => o.status === 'CONCLUIDA' || o.status === 'CANCELADA').map(order => (
-                                <div key={order.id} className={`p-4 sm:p-5 rounded-xl border border-l-4 ${order.status === 'CONCLUIDA' ? 'border-l-green-500' : 'border-l-red-500'} border-slate-200 bg-slate-50 hover:shadow-md transition-all`}>
+                                <div key={order.id} className={`p-4 sm:p-5 rounded-2xl border border-l-4 transition-all ${order.status === 'CONCLUIDA' ? 'border-l-emerald-500 shadow-emerald-500/5' : 'border-l-red-500 shadow-red-500/5'} ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-md hover:bg-slate-900/60 shadow-lg' : 'bg-slate-50 border-slate-200 hover:bg-white hover:shadow-md'}`}>
                                     <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                                         <div className="flex-1 min-w-0">
-                                            <div className="flex flex-wrap items-center gap-2 mb-2">
-                                                <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">{order.mission}</h3>
-                                                <span className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase whitespace-nowrap ${order.status === 'CONCLUIDA' ? (isDarkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-green-100 text-green-700') : (isDarkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-700')}`}>
+                                            <div className="flex flex-wrap items-center gap-3 mb-3">
+                                                <h3 className={`text-base sm:text-lg font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} truncate`}>{order.mission}</h3>
+                                                <span className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${order.status === 'CONCLUIDA' ? (isDarkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-green-100 text-green-700') : (isDarkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-700')}`}>
                                                     {order.status === 'CONCLUIDA' ? 'Concluída' : 'Cancelada'}
                                                 </span>
                                             </div>
-                                            <p className={`text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 md:line-clamp-none ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{order.description}</p>
-                                            <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-[11px] sm:text-sm text-slate-500">
-                                                <span className="flex items-center gap-1.5 whitespace-nowrap"><Clock className="w-3.5 h-3.5" /> {new Date(order.date).toLocaleDateString()}</span>
-                                                <span className={`flex items-center gap-1.5 rounded ${isDarkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'} px-2 py-0.5 whitespace-nowrap font-medium`}><Shield className="w-3 h-3" /> OM #{order.omisNumber}</span>
+                                            <p className={`text-xs sm:text-sm mb-4 line-clamp-2 md:line-clamp-none ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{order.description}</p>
+                                            <div className="flex flex-wrap items-center gap-4 sm:gap-8 text-[11px] sm:text-sm border-t border-slate-800/30 pt-3 mt-1">
+                                                <span className="flex items-center gap-1.5 whitespace-nowrap text-slate-500 font-medium"><Clock className="w-3.5 h-3.5" /> Finalizada em: {new Date(order.date).toLocaleDateString()}</span>
+                                                <span className={`flex items-center gap-1.5 rounded px-2 py-0.5 whitespace-nowrap font-black uppercase tracking-tighter ${isDarkMode ? 'bg-slate-950 text-blue-400 border border-slate-800' : 'bg-slate-100 text-slate-500'}`}><Shield className="w-3 h-3" /> OM #{order.omisNumber}</span>
                                             </div>
                                         </div>
                                         <button
                                             onClick={() => handlePrintOrder(order)}
-                                            className={`w-full sm:w-auto px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-colors flex items-center justify-center gap-2 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                                            className={`w-full sm:w-auto px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg flex items-center justify-center gap-2 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 shadow-black/20' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'}`}
                                         >
-                                            <FileText className="w-3.5 h-3.5" /> Ver Detalhes
+                                            <FileText className="w-4 h-4" /> Detalhes
                                         </button>
                                     </div>
                                 </div>
