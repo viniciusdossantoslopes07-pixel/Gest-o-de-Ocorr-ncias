@@ -143,7 +143,7 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
         <div className="p-4 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between bg-white shrink-0 gap-4">
           <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
             <div className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl shrink-0 ${STATUS_COLORS[occurrence.status]}`}>
-              {occurrence.status === Status.COMMAND_REVIEW || isOM ? <Crown className="w-5 h-5 sm:w-6 sm:h-6" /> : <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />}
+              {isOM ? <Crown className="w-5 h-5 sm:w-6 sm:h-6" /> : <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -195,11 +195,9 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
         {/* Stepper Status */}
         <div className="bg-slate-50/80 backdrop-blur-sm px-4 sm:px-8 py-4 border-b border-slate-200 flex items-center justify-start sm:justify-center gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth">
           {[
-            { label: 'Aberto', s: Status.REGISTERED },
             { label: 'N1: Adjunto', s: Status.TRIAGE },
             { label: 'N2: OSD', s: Status.ESCALATED },
-            { label: 'N3: Setor', s: Status.RESOLVED },
-            { label: 'OM: Comando', s: Status.COMMAND_REVIEW }
+            { label: 'N3: Setor', s: Status.RESOLVED }
           ].map((step, i, arr) => {
             const isActive = occurrence.timeline.some(t => t.status === step.s) || occurrence.status === step.s;
             return (
@@ -403,8 +401,8 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
                   {/* FLUXOS PADRÃO POR PERMISSÃO (N1, N2, N3) */}
                   {!isOM && (
                     <div className="space-y-2">
-                      {/* N1: Adjunto / Oficial de Dia */}
-                      {canTriage && (occurrence.status === Status.REGISTERED || occurrence.status === Status.RETURNED) && (
+                      {/* Ações do N1 (Agora envia para N2: OSD) */}
+                      {canTriage && (occurrence.status === Status.RETURNED) && (
                         <button onClick={() => onUpdateStatus(occurrence.id, Status.TRIAGE, comment || 'Assumido para triagem pelo N1 (Adjunto).')} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-xs shadow-blue-200 shadow-lg hover:shadow-blue-300 hover:scale-[1.02] active:scale-95 transition-all">Assumir Triagem N1</button>
                       )}
 

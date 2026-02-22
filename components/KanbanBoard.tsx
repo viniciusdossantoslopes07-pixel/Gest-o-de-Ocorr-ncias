@@ -11,11 +11,9 @@ interface KanbanBoardProps {
 
 const KanbanBoard: React.FC<KanbanBoardProps> = ({ occurrences, onSelect }) => {
   const columns = [
-    { title: 'Aguardando', status: Status.REGISTERED },
     { title: 'N1: Adjunto', status: Status.TRIAGE },
     { title: 'N2: OSD', status: Status.ESCALATED },
-    { title: 'N3: Setor', status: Status.RESOLVED },
-    { title: 'OM: Comando', status: Status.COMMAND_REVIEW }
+    { title: 'N3: Setor', status: Status.RESOLVED }
   ];
 
   const getSLAColor = (deadline?: string) => {
