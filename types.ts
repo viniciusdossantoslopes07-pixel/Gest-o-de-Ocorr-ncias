@@ -119,10 +119,9 @@ export interface MissionOrderPersonnel {
 
 export interface MissionOrderSchedule {
   id: string;
-  activity: string;
-  location: string;
-  date: string;
-  time: string;
+  startTime: string;
+  endTime: string;
+  event: string;
 }
 
 export interface MissionOrder {

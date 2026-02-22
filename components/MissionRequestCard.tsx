@@ -146,17 +146,22 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-0 sm:p-4 transition-all">
-            <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-2xl w-full h-full sm:h-auto sm:max-w-4xl sm:max-h-[90vh] sm:rounded-2xl flex flex-col overflow-hidden border`}>
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-50 p-0 sm:p-4 animate-in fade-in duration-200">
+            <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-2xl w-full h-full sm:h-auto sm:max-w-4xl sm:max-h-[90vh] sm:rounded-2xl flex flex-col overflow-hidden border animate-in slide-in-from-bottom-4 duration-300`}>
                 {/* Header */}
-                <div className={`${isDarkMode ? 'bg-slate-800 border-b border-slate-700' : 'bg-gradient-to-r from-blue-600 to-blue-700'} p-4 sm:p-6 text-white flex justify-between items-center shrink-0`}>
+                <div className={`${isDarkMode ? 'bg-slate-800/50 border-b border-slate-700' : 'bg-gradient-to-r from-indigo-600 to-blue-700'} p-4 sm:p-6 text-white flex justify-between items-center shrink-0`}>
                     <div className="min-w-0">
                         <h2 className="text-lg sm:text-xl font-bold truncate">Solicitação de Missão</h2>
-                        <p className="text-blue-100 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">
-                            {mission.dados_missao.tipo_missao} • {mission.status}
-                        </p>
+                        <div className="flex items-center gap-2 mt-0.5 sm:mt-1">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-white/20 text-white'}`}>
+                                {mission.dados_missao.tipo_missao}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${mission.status === 'PENDENTE' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-emerald-500/20 text-emerald-500'}`}>
+                                {mission.status}
+                            </span>
+                        </div>
                     </div>
-                    <button onClick={onClose} className="hover:bg-blue-800 p-2 rounded-full transition-colors shrink-0">
+                    <button onClick={onClose} className={`${isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-blue-800'} p-2 rounded-xl transition-colors shrink-0`}>
                         <X className="w-5 h-5 sm:w-6 sm:h-6" />
                     </button>
                 </div>
@@ -198,12 +203,12 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                 <div className="flex justify-end">
                                     <button
                                         onClick={() => setIsEditing(!isEditing)}
-                                        className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors ${isEditing
-                                            ? (isDarkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-200 text-slate-700')
-                                            : (isDarkMode ? 'bg-blue-900/40 text-blue-400 hover:bg-blue-900/60' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
+                                        className={`px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${isEditing
+                                            ? (isDarkMode ? 'bg-slate-800 text-slate-400 border border-slate-700' : 'bg-slate-100 text-slate-500')
+                                            : (isDarkMode ? 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 shadow-lg shadow-blue-500/5' : 'bg-blue-50 text-blue-700 hover:bg-blue-100')
                                             }`}
                                     >
-                                        {isEditing ? 'Cancelar Edição' : 'Editar'}
+                                        {isEditing ? 'Cancelar Edição' : 'Habilitar Edição'}
                                     </button>
                                 </div>
                             )}
@@ -220,12 +225,12 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                             <select
                                                 value={formData.posto}
                                                 onChange={e => setFormData({ ...formData, posto: e.target.value })}
-                                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                             >
                                                 {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
                                             </select>
                                         ) : (
-                                            <p className={`text-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{formData.posto}</p>
+                                            <p className={`text-sm font-medium ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} p-2 ${isDarkMode ? 'bg-slate-800/30' : 'bg-slate-50'} rounded-lg`}>{formData.posto}</p>
                                         )}
                                     </div>
                                     <div>
@@ -235,10 +240,10 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                                 type="text"
                                                 value={formData.nome_guerra}
                                                 onChange={e => setFormData({ ...formData, nome_guerra: e.target.value })}
-                                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm`}
+                                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                             />
                                         ) : (
-                                            <p className={`text-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{formData.nome_guerra}</p>
+                                            <p className={`text-sm font-medium ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} p-2 ${isDarkMode ? 'bg-slate-800/30' : 'bg-slate-50'} rounded-lg`}>{formData.nome_guerra}</p>
                                         )}
                                     </div>
                                     <div>
@@ -247,12 +252,12 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                             <select
                                                 value={formData.setor}
                                                 onChange={e => setFormData({ ...formData, setor: e.target.value })}
-                                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                             >
                                                 {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
                                             </select>
                                         ) : (
-                                            <p className={`text-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{formData.setor}</p>
+                                            <p className={`text-sm font-medium ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} p-2 ${isDarkMode ? 'bg-slate-800/30' : 'bg-slate-50'} rounded-lg`}>{formData.setor}</p>
                                         )}
                                     </div>
                                 </div>
@@ -270,12 +275,12 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                             <select
                                                 value={formData.tipo_missao}
                                                 onChange={e => setFormData({ ...formData, tipo_missao: e.target.value })}
-                                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                             >
                                                 {TIPOS_MISSAO.map(t => <option key={t} value={t}>{t}</option>)}
                                             </select>
                                         ) : (
-                                            <p className={`text-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{formData.tipo_missao}</p>
+                                            <p className={`text-sm font-medium ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} p-2 ${isDarkMode ? 'bg-slate-800/30' : 'bg-slate-50'} rounded-lg`}>{formData.tipo_missao}</p>
                                         )}
                                     </div>
                                     <div>
@@ -287,10 +292,10 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                                 type="date"
                                                 value={formData.data}
                                                 onChange={e => setFormData({ ...formData, data: e.target.value })}
-                                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm`}
+                                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                             />
                                         ) : (
-                                            <p className={`text-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                            <p className={`text-sm font-medium ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} p-2 ${isDarkMode ? 'bg-slate-800/30' : 'bg-slate-50'} rounded-lg`}>
                                                 {formData.data ? new Date(formData.data).toLocaleDateString() : 'Não informada'}
                                             </p>
                                         )}
@@ -305,10 +310,10 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                                     type="time"
                                                     value={formData.inicio}
                                                     onChange={e => setFormData({ ...formData, inicio: e.target.value })}
-                                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm`}
+                                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                                 />
                                             ) : (
-                                                <p className={`text-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{formData.inicio}</p>
+                                                <p className={`text-sm font-medium ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} p-2 ${isDarkMode ? 'bg-slate-800/30' : 'bg-slate-50'} rounded-lg`}>{formData.inicio}</p>
                                             )}
                                         </div>
                                         <div className="flex-1">
@@ -320,10 +325,10 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                                     type="time"
                                                     value={formData.termino}
                                                     onChange={e => setFormData({ ...formData, termino: e.target.value })}
-                                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm`}
+                                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                                 />
                                             ) : (
-                                                <p className={`text-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{formData.termino}</p>
+                                                <p className={`text-sm font-medium ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} p-2 ${isDarkMode ? 'bg-slate-800/30' : 'bg-slate-50'} rounded-lg`}>{formData.termino}</p>
                                             )}
                                         </div>
                                     </div>
@@ -334,10 +339,10 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                                 type="text"
                                                 value={formData.local}
                                                 onChange={e => setFormData({ ...formData, local: e.target.value })}
-                                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm`}
+                                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                             />
                                         ) : (
-                                            <p className={`text-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{formData.local}</p>
+                                            <p className={`text-sm font-medium ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} p-2 ${isDarkMode ? 'bg-slate-800/30' : 'bg-slate-50'} rounded-lg`}>{formData.local}</p>
                                         )}
                                     </div>
                                 </div>
@@ -356,10 +361,12 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                                 value={formData.efetivo}
                                                 onChange={e => setFormData({ ...formData, efetivo: e.target.value })}
                                                 rows={3}
-                                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm resize-none`}
+                                                className={`w-full px-4 py-3 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm resize-none focus:ring-2 focus:ring-blue-500 outline-none transition-all`}
                                             />
                                         ) : (
-                                            <p className={`text-sm ${isDarkMode ? 'text-white' : 'text-slate-900'} whitespace-pre-wrap`}>{formData.efetivo}</p>
+                                            <div className={`${isDarkMode ? 'bg-slate-800/30 text-slate-200' : 'bg-slate-50 text-slate-800'} p-4 rounded-xl text-sm leading-relaxed whitespace-pre-wrap`}>
+                                                {formData.efetivo}
+                                            </div>
                                         )}
                                     </div>
                                     <div>
@@ -371,42 +378,49 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                                     { id: 'descaracterizada', label: 'VTR DESCARACTERIZADA' },
                                                     { id: 'caminhao_tropa', label: 'CAMINHÃO TROPA' }
                                                 ].map(vtr => (
-                                                    <div key={vtr.id} className={`flex items-center gap-2 p-2 border ${isDarkMode ? 'border-slate-800 bg-slate-800/50' : 'border-slate-100 bg-slate-50'} rounded-lg`}>
-                                                        <label className="flex flex-1 items-center gap-2 cursor-pointer">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={(formData.viaturas as any)[vtr.id] > 0}
-                                                                onChange={e => {
-                                                                    const newVal = e.target.checked ? 1 : 0;
-                                                                    setFormData({
-                                                                        ...formData,
-                                                                        viaturas: { ...formData.viaturas as any, [vtr.id]: newVal }
-                                                                    });
-                                                                }}
-                                                                className="w-4 h-4 rounded text-blue-600"
-                                                            />
-                                                            <span className={`text-xs font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{vtr.label}</span>
+                                                    <div key={vtr.id} className={`flex items-center gap-2 p-3 border ${isDarkMode ? 'border-slate-800 bg-slate-800/40' : 'border-slate-100 bg-slate-100/50'} rounded-xl transition-colors hover:border-blue-500/20`}>
+                                                        <label className="flex flex-1 items-center gap-3 cursor-pointer group">
+                                                            <div className="relative flex items-center">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={(formData.viaturas as any)[vtr.id] > 0}
+                                                                    onChange={e => {
+                                                                        const newVal = e.target.checked ? 1 : 0;
+                                                                        setFormData({
+                                                                            ...formData,
+                                                                            viaturas: { ...formData.viaturas as any, [vtr.id]: newVal }
+                                                                        });
+                                                                    }}
+                                                                    className="w-5 h-5 rounded-lg border-2 border-slate-700 text-blue-600 focus:ring-offset-0 focus:ring-blue-500/50"
+                                                                />
+                                                            </div>
+                                                            <span className={`text-xs font-black uppercase tracking-wider ${isDarkMode ? 'text-slate-400 group-hover:text-slate-200' : 'text-slate-600 group-hover:text-slate-900'}`}>{vtr.label}</span>
                                                         </label>
                                                         {(formData.viaturas as any)[vtr.id] > 0 && (
-                                                            <input
-                                                                type="number"
-                                                                min="1"
-                                                                value={(formData.viaturas as any)[vtr.id]}
-                                                                onChange={e => {
-                                                                    const val = Math.max(1, parseInt(e.target.value) || 1);
-                                                                    setFormData({
-                                                                        ...formData,
-                                                                        viaturas: { ...formData.viaturas as any, [vtr.id]: val }
-                                                                    });
-                                                                }}
-                                                                className={`w-12 px-1 py-0.5 border ${isDarkMode ? 'border-slate-600 bg-slate-700' : 'border-slate-300 bg-white'} rounded text-center text-xs font-bold ${isDarkMode ? 'text-white' : 'text-slate-700'}`}
-                                                            />
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[10px] font-bold text-slate-500">QTD:</span>
+                                                                <input
+                                                                    type="number"
+                                                                    min="1"
+                                                                    value={(formData.viaturas as any)[vtr.id]}
+                                                                    onChange={e => {
+                                                                        const val = Math.max(1, parseInt(e.target.value) || 1);
+                                                                        setFormData({
+                                                                            ...formData,
+                                                                            viaturas: { ...formData.viaturas as any, [vtr.id]: val }
+                                                                        });
+                                                                    }}
+                                                                    className={`w-14 px-2 py-1.5 border ${isDarkMode ? 'border-slate-600 bg-slate-700 text-white' : 'border-slate-300 bg-white text-slate-700'} rounded-lg text-center text-xs font-black focus:ring-2 focus:ring-blue-500 outline-none`}
+                                                                />
+                                                            </div>
                                                         )}
                                                     </div>
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p className={`text-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{formatViaturas(formData.viaturas)}</p>
+                                            <div className={`${isDarkMode ? 'bg-slate-800/30 text-slate-200' : 'bg-slate-50 text-slate-800'} p-4 rounded-xl text-sm font-medium`}>
+                                                {formatViaturas(formData.viaturas)}
+                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -441,9 +455,9 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                                 </div>
                                                 {item.tipo === 'edicao' && (
                                                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                                                        Alterou <span className={`font-semibold ${isDarkMode ? 'text-slate-300' : 'text-slate-900'}`}>{formatFieldName(item.campo!)}</span>
-                                                        {' de '}<span className={`${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>"{formatValue(item.valor_anterior)}"</span>
-                                                        {' para '}<span className={`${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>"{formatValue(item.valor_novo)}"</span>
+                                                        Alterou <span className={`font-bold ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>{formatFieldName(item.campo!)}</span>
+                                                        {' de '}<span className={`px-1.5 py-0.5 rounded ${isDarkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'} text-xs font-mono mx-1`}>"{formatValue(item.valor_anterior)}"</span>
+                                                        {' para '}<span className={`px-1.5 py-0.5 rounded ${isDarkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'} text-xs font-mono mx-1`}>"{formatValue(item.valor_novo)}"</span>
                                                     </p>
                                                 )}
                                                 {item.tipo === 'comentario' && (
@@ -453,7 +467,7 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                                 )}
                                                 {item.tipo === 'status' && (
                                                     <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                                                        Alterou status para <span className={`font-semibold ${isDarkMode ? 'text-slate-300' : 'text-slate-900'}`}>{item.valor_novo}</span>
+                                                        Alterou status para <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${isDarkMode ? 'bg-orange-500/10 text-orange-400' : 'bg-orange-50 text-orange-700'}`}>{item.valor_novo}</span>
                                                     </p>
                                                 )}
                                             </div>
@@ -472,25 +486,27 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                     onChange={e => setNewComment(e.target.value)}
                                     placeholder="Digite seu comentário..."
                                     rows={3}
-                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500 outline-none`}
+                                    className={`w-full px-4 py-3 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm resize-none focus:ring-2 focus:ring-blue-500 outline-none transition-all`}
                                 />
-                                <button
-                                    onClick={handleAddComment}
-                                    disabled={!newComment.trim() || isSaving}
-                                    className={`mt-2 px-4 py-2 ${isDarkMode ? 'bg-green-700 hover:bg-green-600' : 'bg-green-600 hover:bg-green-700'} text-white rounded-lg font-bold text-sm disabled:bg-slate-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all`}
-                                >
-                                    Adicionar Comentário
-                                </button>
+                                <div className="flex justify-end">
+                                    <button
+                                        onClick={handleAddComment}
+                                        disabled={!newComment.trim() || isSaving}
+                                        className={`mt-4 px-6 py-2.5 ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-xl font-bold text-xs uppercase tracking-widest disabled:bg-slate-700 disabled:text-slate-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-600/10`}
+                                    >
+                                        Enviar Comentário
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}
                 </div>
 
                 {/* Footer */}
-                <div className={`${isDarkMode ? 'bg-slate-800/80 border-slate-700' : 'bg-slate-50 border-slate-200'} p-4 sm:p-6 border-t flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 shrink-0 rounded-b-2xl`}>
+                <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800/80' : 'bg-slate-50 border-slate-200'} p-4 sm:p-6 border-t flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 shrink-0 rounded-b-2xl`}>
                     <button
                         onClick={onClose}
-                        className={`w-full sm:w-auto px-6 py-3 rounded-xl font-bold ${isDarkMode ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-500 hover:bg-slate-200'} transition-colors text-sm sm:text-base order-2 sm:order-1`}
+                        className={`w-full sm:w-auto px-6 py-3 rounded-xl font-bold ${isDarkMode ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-200'} transition-colors text-sm uppercase tracking-widest order-2 sm:order-1`}
                     >
                         Fechar
                     </button>
@@ -498,9 +514,9 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                         <button
                             onClick={handleSave}
                             disabled={isSaving}
-                            className={`w-full sm:w-auto ${isDarkMode ? 'bg-blue-500 hover:bg-blue-400 shadow-blue-500/10' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20'} px-8 py-3 rounded-xl font-bold text-white shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-sm sm:text-base order-1 sm:order-2`}
+                            className={`w-full sm:w-auto ${isDarkMode ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/20' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20'} px-8 py-3 rounded-xl font-black text-white shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-sm uppercase tracking-widest order-1 sm:order-2`}
                         >
-                            <Save className="w-4 h-4" />
+                            <Save className="w-5 h-5" />
                             {isSaving ? 'Salvando...' : 'Salvar Alterações'}
                         </button>
                     )}
