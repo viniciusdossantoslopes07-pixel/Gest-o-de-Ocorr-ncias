@@ -931,9 +931,8 @@ const App: FC = () => {
       />
 
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        {/* HEADER (Simplified) */}
         {!isPublic && (
-          <header className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} border-b px-4 lg:px-8 py-4 lg:py-5 flex items-center justify-between z-40`}>
+          <header className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} border-b px-3 lg:px-6 py-2.5 lg:py-3.5 flex items-center justify-between z-40`}>
             <div className="flex items-center gap-4">
               <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors"><Menu className="w-5 h-5" /></button>
               <h2 className={`text-lg lg:text-xl font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'} truncate max-w-[200px] sm:max-w-none`}>
@@ -967,7 +966,7 @@ const App: FC = () => {
           </header>
         )}
 
-        <div className={`p-4 lg:p-8 flex-1 overflow-y-auto ${isDarkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
+        <div className={`p-3 lg:p-6 flex-1 overflow-y-auto ${isDarkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
           {/* --- CONTENT AREA START --- */}
 
           {activeTab === 'home' && !isPublic && (
@@ -1331,8 +1330,11 @@ const App: FC = () => {
                 {/* ... */}
                 <MissionRequestList
                   missions={missionRequests.filter(r => r.status !== 'FINALIZADA')}
+                  currentUser={currentUser}
+                  onMissionUpdated={fetchMissionRequests}
                   onProcess={handleProcessMissionRequest}
                   onGenerateOrder={handleGenerateOrderFromRequest}
+                  isDarkMode={isDarkMode}
                 />
               </div>
             </div>

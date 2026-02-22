@@ -204,12 +204,21 @@ const HomeView: React.FC<HomeViewProps> = ({
               <div key={categoryId} className="relative group">
                 <button
                   onClick={() => !isEditMode && (action.category === 'MISSION_REQUEST' && onRequestMission ? onRequestMission() : onNewOccurrence(action.category))}
-                  className={`w-full h-full flex flex-col items-center justify-center p-2.5 lg:p-6 rounded-2xl lg:rounded-3xl shadow-sm border transition-all relative overflow-hidden active:scale-95 ${isEditMode ? 'cursor-default opacity-80' : 'group hover:shadow-xl hover:-translate-y-1'} ${isDarkMode ? 'bg-slate-800 border-slate-700 hover:border-blue-500' : 'bg-white border-slate-200 hover:border-blue-500'}`}
+                  className={`w-full h-full flex flex-col items-center justify-center p-4 lg:p-7 rounded-[1.5rem] lg:rounded-[2.5rem] shadow-xl border transition-all relative overflow-hidden active:scale-95 ${isEditMode ? 'cursor-default opacity-80' : 'group hover:shadow-2xl hover:-translate-y-1.5'} ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 backdrop-blur-md hover:border-blue-500/50' : 'bg-white border-slate-100 hover:border-blue-400 shadow-slate-200/50 hover:shadow-blue-500/10'}`}
                 >
-                  <div className={`${action.color} p-2.5 lg:p-4 rounded-xl lg:rounded-2xl text-white mb-2 lg:mb-4 transition-transform shadow-lg ${!isEditMode && 'group-hover:scale-110 group-hover:rotate-3'}`}>
-                    {React.cloneElement(action.icon as React.ReactElement<any>, { className: 'w-4 h-4 lg:w-8 h-8' })}
+                  {/* Subtle Gradient Glow behind icon */}
+                  <div className={`absolute top-0 left-0 w-full h-1 opacity-20 ${action.color}`}></div>
+
+                  <div className={`${action.color} p-3.5 lg:p-5 rounded-2xl lg:rounded-3xl text-white mb-3 lg:mb-5 transition-transform shadow-lg ${!isEditMode && 'group-hover:scale-110 group-hover:rotate-3'} shadow-xl ${action.color}/20`}>
+                    {React.cloneElement(action.icon as React.ReactElement<any>, { className: 'w-6 h-6 lg:w-9 lg:h-9' })}
                   </div>
-                  <span className={`text-[8px] lg:text-[11px] font-black text-center uppercase tracking-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{action.title}</span>
+                  <span className={`text-[10px] lg:text-[13px] font-black text-center uppercase tracking-wider leading-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{action.title}</span>
+
+                  {!isEditMode && (
+                    <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-20 transition-opacity">
+                      <PlusCircle className="w-4 h-4" />
+                    </div>
+                  )}
                 </button>
 
                 {isEditMode && (
