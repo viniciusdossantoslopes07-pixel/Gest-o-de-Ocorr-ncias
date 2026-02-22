@@ -112,15 +112,15 @@ const HomeView: React.FC<HomeViewProps> = ({
   return (
     <div className="space-y-8 max-w-6xl mx-auto pb-12">
       {/* Welcome Section */}
-      <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-900 border-transparent'} rounded-[2rem] lg:rounded-[2.5rem] p-5 lg:p-8 text-white shadow-2xl relative overflow-hidden transition-all duration-500 border`}>
+      <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-900 border-transparent'} rounded-[2rem] lg:rounded-[2.5rem] p-4 lg:p-8 text-white shadow-2xl relative overflow-hidden transition-all duration-500 border`}>
         {/* Glow Effects */}
         <div className="absolute -top-24 -left-24 w-64 h-64 bg-blue-600/20 rounded-full blur-[80px]"></div>
         <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-indigo-600/20 rounded-full blur-[80px]"></div>
 
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-6">
-              <div className="bg-white p-2 rounded-[2rem] w-20 h-20 lg:w-28 lg:h-28 flex items-center justify-center overflow-hidden shadow-2xl ring-8 ring-white/5 group-hover:ring-white/10 transition-all duration-700">
+            <div className="flex items-center gap-4 lg:gap-6">
+              <div className="bg-white p-2 rounded-[1.5rem] lg:rounded-[2rem] w-16 h-16 lg:w-28 lg:h-28 flex items-center justify-center overflow-hidden shadow-2xl ring-4 lg:ring-8 ring-white/5 group-hover:ring-white/10 transition-all duration-700">
                 <img src="/logo_gsd.jpg" alt="Logo GSD-SP" className="w-full h-full object-cover scale-110" />
               </div>
               <div>
@@ -150,15 +150,15 @@ const HomeView: React.FC<HomeViewProps> = ({
             )}
           </div>
           <div className="max-w-2xl">
-            <h2 className="text-2xl lg:text-4xl font-black mb-3 tracking-tight leading-tight">
+            <h2 className="text-xl lg:text-4xl font-black mb-2 lg:mb-3 tracking-tight leading-tight">
               Bem-vindo à Central de Comando, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{user.rank} {user.warName || user.name.split(' ')[0]}</span>
             </h2>
-            <div className={`mt-4 p-3 rounded-2xl border ${isDarkMode ? 'bg-slate-900/40 border-white/5' : 'bg-black/5 border-black/5'} backdrop-blur-sm relative group/quote`}>
+            <div className={`mt-3 lg:mt-4 p-3 rounded-2xl border ${isDarkMode ? 'bg-slate-900/40 border-white/5' : 'bg-black/5 border-black/5'} backdrop-blur-sm relative group/quote`}>
               <div className="absolute -left-1 top-4 w-1 h-8 bg-blue-500 rounded-full"></div>
-              <p className="text-slate-200 text-sm lg:text-base italic font-serif leading-relaxed line-clamp-2">
+              <p className="text-slate-200 text-xs lg:text-base italic font-serif leading-relaxed line-clamp-2">
                 "{quote.text}"
               </p>
-              <p className="text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2 ml-1">
+              <p className="text-blue-400 text-[9px] lg:text-[10px] font-black uppercase tracking-[0.2em] mt-2 ml-1">
                 — {quote.author}
               </p>
             </div>
@@ -203,12 +203,12 @@ const HomeView: React.FC<HomeViewProps> = ({
               <div key={categoryId} className="relative group">
                 <button
                   onClick={() => !isEditMode && (action.category === 'MISSION_REQUEST' && onRequestMission ? onRequestMission() : onNewOccurrence(action.category))}
-                  className={`w-full h-full flex flex-col items-center justify-center p-4 lg:p-6 rounded-2xl lg:rounded-3xl shadow-sm border transition-all relative overflow-hidden active:scale-95 ${isEditMode ? 'cursor-default opacity-80' : 'group hover:shadow-xl hover:-translate-y-1'} ${isDarkMode ? 'bg-slate-800 border-slate-700 hover:border-blue-500' : 'bg-white border-slate-200 hover:border-blue-500'}`}
+                  className={`w-full h-full flex flex-col items-center justify-center p-3 lg:p-6 rounded-2xl lg:rounded-3xl shadow-sm border transition-all relative overflow-hidden active:scale-95 ${isEditMode ? 'cursor-default opacity-80' : 'group hover:shadow-xl hover:-translate-y-1'} ${isDarkMode ? 'bg-slate-800 border-slate-700 hover:border-blue-500' : 'bg-white border-slate-200 hover:border-blue-500'}`}
                 >
                   <div className={`${action.color} p-3 lg:p-4 rounded-xl lg:rounded-2xl text-white mb-2 lg:mb-4 transition-transform shadow-lg ${!isEditMode && 'group-hover:scale-110 group-hover:rotate-3'}`}>
-                    {React.cloneElement(action.icon as React.ReactElement<any>, { className: 'w-6 h-6 lg:w-8 h-8' })}
+                    {React.cloneElement(action.icon as React.ReactElement<any>, { className: 'w-5 h-5 lg:w-8 h-8' })}
                   </div>
-                  <span className={`text-[10px] lg:text-[11px] font-black text-center uppercase tracking-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{action.title}</span>
+                  <span className={`text-[9px] lg:text-[11px] font-black text-center uppercase tracking-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{action.title}</span>
                 </button>
 
                 {isEditMode && (
@@ -248,16 +248,16 @@ const HomeView: React.FC<HomeViewProps> = ({
             recentOccurrences.map((occ) => (
               <div
                 key={occ.id}
-                className={`p-6 cursor-pointer flex items-center justify-between group transition-all ${isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-50'}`}
+                className={`p-4 lg:p-6 cursor-pointer flex items-center justify-between group transition-all ${isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-50'}`}
                 onClick={() => onSelectOccurrence(occ)}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
                   <div className="flex items-start gap-4 lg:gap-5">
-                    <div className={`mt-1.5 w-2.5 h-2.5 shrink-0 rounded-full ${occ.urgency === 'Crítica' ? 'bg-red-500 animate-pulse shadow-lg shadow-red-500/50' : isDarkMode ? 'bg-slate-600' : 'bg-slate-200'}`}></div>
+                    <div className={`mt-1.5 w-2 h-2 shrink-0 rounded-full ${occ.urgency === 'Crítica' ? 'bg-red-500 animate-pulse shadow-lg shadow-red-500/50' : isDarkMode ? 'bg-slate-600' : 'bg-slate-200'}`}></div>
                     <div>
-                      <p className={`text-sm lg:text-base font-bold group-hover:text-blue-400 transition-colors line-clamp-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{occ.title}</p>
-                      <div className="flex flex-wrap items-center gap-2 lg:gap-3 mt-1.5">
-                        <span className={`text-[9px] lg:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${isDarkMode ? 'bg-slate-900/50 text-slate-500' : 'bg-slate-100 text-slate-500'}`}>{occ.category}</span>
+                      <p className={`text-xs lg:text-base font-bold group-hover:text-blue-400 transition-colors line-clamp-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{occ.title}</p>
+                      <div className="flex flex-wrap items-center gap-2 lg:gap-3 mt-1">
+                        <span className={`text-[8px] lg:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${isDarkMode ? 'bg-slate-900/50 text-slate-500' : 'bg-slate-100 text-slate-500'}`}>{occ.category}</span>
                         <span className="hidden sm:inline text-[10px] text-slate-300 dark:text-slate-700">•</span>
                         <span className={`text-[10px] lg:text-xs font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>{occ.location}</span>
                       </div>
