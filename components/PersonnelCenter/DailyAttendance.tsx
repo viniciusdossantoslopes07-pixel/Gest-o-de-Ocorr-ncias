@@ -984,114 +984,119 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         </div>
                     </div>
                 </div>
-            )}
+            )
+            }
 
-            {activeSubTab === 'cupons' && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
-                    <div className={`rounded-[2.5rem] border overflow-hidden shadow-2xl p-6 lg:p-10 transition-all ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
-                        {/* Institutional Header within Tab */}
-                        <div className="flex flex-col items-center mb-10 text-center px-4">
-                            <img
-                                src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Coat_of_arms_of_Brazil.svg"
-                                alt="Brasão da República"
-                                className={`w-14 h-14 lg:w-20 lg:h-20 mb-5 object-contain ${isDarkMode ? 'brightness-125 saturate-0' : ''}`}
-                            />
-                            <div className="space-y-1.5">
-                                <h1 className={`text-xs font-black uppercase tracking-[0.25em] ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>Ministério da Defesa</h1>
-                                <h2 className={`text-[10px] font-bold uppercase tracking-[0.2em] ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Comando da Aeronáutica</h2>
-                                <h3 className={`text-[10px] font-bold uppercase tracking-[0.2em] ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Base Aérea de São Paulo</h3>
-                                <div className="w-16 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 mx-auto my-4 rounded-full" />
-                                <h4 className={`text-base font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{selectedSector}</h4>
+            {
+                activeSubTab === 'cupons' && (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
+                        <div className={`rounded-[2.5rem] border overflow-hidden shadow-2xl p-6 lg:p-10 transition-all ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                            {/* Institutional Header within Tab */}
+                            <div className="flex flex-col items-center mb-10 text-center px-4">
+                                <img
+                                    src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Coat_of_arms_of_Brazil.svg"
+                                    alt="Brasão da República"
+                                    className={`w-14 h-14 lg:w-20 lg:h-20 mb-5 object-contain ${isDarkMode ? 'brightness-125 saturate-0' : ''}`}
+                                />
+                                <div className="space-y-1.5">
+                                    <h1 className={`text-xs font-black uppercase tracking-[0.25em] ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>Ministério da Defesa</h1>
+                                    <h2 className={`text-[10px] font-bold uppercase tracking-[0.2em] ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Comando da Aeronáutica</h2>
+                                    <h3 className={`text-[10px] font-bold uppercase tracking-[0.2em] ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Base Aérea de São Paulo</h3>
+                                    <div className="w-16 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 mx-auto my-4 rounded-full" />
+                                    <h4 className={`text-base font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{selectedSector}</h4>
+                                </div>
+                            </div>
+
+                            {/* Weekly Grid (Image Style) */}
+                            <div className="overflow-x-auto scrollbar-hide lg:scrollbar-default">
+                                <table className={`w-full border-collapse border ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
+                                    <thead className={isDarkMode ? 'bg-slate-900' : 'bg-slate-50'}>
+                                        <tr>
+                                            <th className={`border-0 ${isDarkMode ? 'bg-slate-950' : 'bg-white'}`}></th>
+                                            <th colSpan={10} className={`border py-3 text-xs font-black uppercase tracking-[0.4em] ${isDarkMode ? 'border-slate-800 bg-slate-800/50 text-blue-400' : 'border-slate-300 bg-slate-100/50 text-slate-900'}`}>
+                                                {selectedSector}
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th rowSpan={3} className={`border px-5 py-4 text-left text-[11px] font-black uppercase italic min-w-[220px] ${isDarkMode ? 'border-slate-800 text-slate-200 bg-slate-950' : 'border-slate-300 text-slate-800 bg-white'}`}>
+                                                SETOR / GRAD / NOME
+                                            </th>
+                                            {currentWeek.map(date => (
+                                                <th key={date} colSpan={2} className={`border px-3 py-2 text-center text-[10px] font-black uppercase ${isDarkMode ? 'border-slate-800 text-slate-400 bg-slate-950' : 'border-slate-300 text-slate-700 bg-white'}`}>
+                                                    {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long' }).split('-')[0].toUpperCase()}
+                                                </th>
+                                            ))}
+                                        </tr>
+                                        <tr>
+                                            {currentWeek.map(date => (
+                                                <th key={`${date}-date`} colSpan={2} className={`border px-3 py-1.5 text-center text-[9px] font-bold ${isDarkMode ? 'border-slate-800 text-slate-500 bg-slate-950' : 'border-slate-300 text-slate-500 bg-white'}`}>
+                                                    {parseISOToDate(date).toLocaleDateString('pt-BR')}
+                                                </th>
+                                            ))}
+                                        </tr>
+                                        <tr className={isDarkMode ? 'bg-slate-900' : 'bg-slate-200/50'}>
+                                            {currentWeek.map(date => (
+                                                <Fragment key={`${date}-sub`}>
+                                                    <th className={`border py-1.5 text-[9px] font-black w-14 ${isDarkMode ? 'border-slate-800 text-slate-400' : 'border-slate-300 text-slate-600'}`}>1ª</th>
+                                                    <th className={`border py-1.5 text-[9px] font-black w-14 ${isDarkMode ? 'border-slate-800 text-slate-400' : 'border-slate-300 text-slate-600'}`}>2ª</th>
+                                                </Fragment>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredUsers.map(user => (
+                                            <tr key={user.id} className={`transition-colors h-12 ${isDarkMode ? 'hover:bg-blue-500/5' : 'hover:bg-blue-50/30'}`}>
+                                                <td className={`border px-5 py-3 font-black text-[11px] uppercase truncate ${isDarkMode ? 'border-slate-800 text-white bg-slate-950' : 'border-slate-300 text-slate-900 bg-white'}`}>
+                                                    {user.rank} {user.warName || user.name}
+                                                </td>
+                                                {currentWeek.map(date => {
+                                                    const sigInicio = !!signedDates[`${date}-INICIO-${selectedSector}`];
+                                                    const sigTermino = !!signedDates[`${date}-TERMINO-${selectedSector}`];
+                                                    return (
+                                                        <Fragment key={`${user.id}-${date}`}>
+                                                            <td className={`border text-center text-[11px] font-black ${isDarkMode ? 'border-slate-800' : 'border-slate-300'} ${!sigInicio ? (isDarkMode ? 'text-slate-700 bg-slate-900 italic font-medium' : 'text-slate-300 bg-slate-50/50 italic font-medium') :
+                                                                (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'P' ? (isDarkMode ? 'text-emerald-400' : 'text-slate-900') :
+                                                                    (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'NIL' ? (isDarkMode ? 'text-blue-400/50 bg-slate-800/30' : 'text-slate-400 bg-slate-50/30') :
+                                                                        (isDarkMode ? 'text-blue-400 font-black italic' : 'text-blue-600 font-black italic')
+                                                                }`}>
+                                                                {!sigInicio ? (isFutureDate(date) ? '' : 'PEN.') : (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P')}
+                                                            </td>
+                                                            <td className={`border text-center text-[11px] font-black ${isDarkMode ? 'border-slate-800' : 'border-slate-300'} ${!sigTermino ? (isDarkMode ? 'text-slate-700 bg-slate-900 italic font-medium' : 'text-slate-300 bg-slate-50/50 italic font-medium') :
+                                                                (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'P' ? (isDarkMode ? 'text-emerald-400' : 'text-slate-900') :
+                                                                    (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'NIL' ? (isDarkMode ? 'text-blue-400/50 bg-slate-800/30' : 'text-slate-400 bg-slate-50/30') :
+                                                                        (isDarkMode ? 'text-blue-400 font-black italic' : 'text-blue-600 font-black italic')
+                                                                }`}>
+                                                                {!sigTermino ? (isFutureDate(date) ? '' : 'PEN.') : (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P')}
+                                                            </td>
+                                                        </Fragment>
+                                                    );
+                                                })}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div className="mt-10 flex justify-end gap-3 no-print">
+                                <button
+                                    onClick={() => window.print()}
+                                    className={`flex items-center gap-2 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-900/40' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
+                                >
+                                    <Printer className="w-4 h-4" /> Gerar Impressão
+                                </button>
                             </div>
                         </div>
-
-                        {/* Weekly Grid (Image Style) */}
-                        <div className="overflow-x-auto scrollbar-hide lg:scrollbar-default">
-                            <table className={`w-full border-collapse border ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
-                                <thead className={isDarkMode ? 'bg-slate-900' : 'bg-slate-50'}>
-                                    <tr>
-                                        <th className={`border-0 ${isDarkMode ? 'bg-slate-950' : 'bg-white'}`}></th>
-                                        <th colSpan={10} className={`border py-3 text-xs font-black uppercase tracking-[0.4em] ${isDarkMode ? 'border-slate-800 bg-slate-800/50 text-blue-400' : 'border-slate-300 bg-slate-100/50 text-slate-900'}`}>
-                                            {selectedSector}
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <th rowSpan={3} className={`border px-5 py-4 text-left text-[11px] font-black uppercase italic min-w-[220px] ${isDarkMode ? 'border-slate-800 text-slate-200 bg-slate-950' : 'border-slate-300 text-slate-800 bg-white'}`}>
-                                            SETOR / GRAD / NOME
-                                        </th>
-                                        {currentWeek.map(date => (
-                                            <th key={date} colSpan={2} className={`border px-3 py-2 text-center text-[10px] font-black uppercase ${isDarkMode ? 'border-slate-800 text-slate-400 bg-slate-950' : 'border-slate-300 text-slate-700 bg-white'}`}>
-                                                {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long' }).split('-')[0].toUpperCase()}
-                                            </th>
-                                        ))}
-                                    </tr>
-                                    <tr>
-                                        {currentWeek.map(date => (
-                                            <th key={`${date}-date`} colSpan={2} className={`border px-3 py-1.5 text-center text-[9px] font-bold ${isDarkMode ? 'border-slate-800 text-slate-500 bg-slate-950' : 'border-slate-300 text-slate-500 bg-white'}`}>
-                                                {parseISOToDate(date).toLocaleDateString('pt-BR')}
-                                            </th>
-                                        ))}
-                                    </tr>
-                                    <tr className={isDarkMode ? 'bg-slate-900' : 'bg-slate-200/50'}>
-                                        {currentWeek.map(date => (
-                                            <Fragment key={`${date}-sub`}>
-                                                <th className={`border py-1.5 text-[9px] font-black w-14 ${isDarkMode ? 'border-slate-800 text-slate-400' : 'border-slate-300 text-slate-600'}`}>1ª</th>
-                                                <th className={`border py-1.5 text-[9px] font-black w-14 ${isDarkMode ? 'border-slate-800 text-slate-400' : 'border-slate-300 text-slate-600'}`}>2ª</th>
-                                            </Fragment>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredUsers.map(user => (
-                                        <tr key={user.id} className={`transition-colors h-12 ${isDarkMode ? 'hover:bg-blue-500/5' : 'hover:bg-blue-50/30'}`}>
-                                            <td className={`border px-5 py-3 font-black text-[11px] uppercase truncate ${isDarkMode ? 'border-slate-800 text-white bg-slate-950' : 'border-slate-300 text-slate-900 bg-white'}`}>
-                                                {user.rank} {user.warName || user.name}
-                                            </td>
-                                            {currentWeek.map(date => {
-                                                const sigInicio = !!signedDates[`${date}-INICIO-${selectedSector}`];
-                                                const sigTermino = !!signedDates[`${date}-TERMINO-${selectedSector}`];
-                                                return (
-                                                    <Fragment key={`${user.id}-${date}`}>
-                                                        <td className={`border text-center text-[11px] font-black ${isDarkMode ? 'border-slate-800' : 'border-slate-300'} ${!sigInicio ? (isDarkMode ? 'text-slate-700 bg-slate-900 italic font-medium' : 'text-slate-300 bg-slate-50/50 italic font-medium') :
-                                                            (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'P' ? (isDarkMode ? 'text-emerald-400' : 'text-slate-900') :
-                                                                (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'NIL' ? (isDarkMode ? 'text-blue-400/50 bg-slate-800/30' : 'text-slate-400 bg-slate-50/30') :
-                                                                    (isDarkMode ? 'text-blue-400 font-black italic' : 'text-blue-600 font-black italic')
-                                                            }`}>
-                                                            {!sigInicio ? (isFutureDate(date) ? '' : 'PEN.') : (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P')}
-                                                        </td>
-                                                        <td className={`border text-center text-[11px] font-black ${isDarkMode ? 'border-slate-800' : 'border-slate-300'} ${!sigTermino ? (isDarkMode ? 'text-slate-700 bg-slate-900 italic font-medium' : 'text-slate-300 bg-slate-50/50 italic font-medium') :
-                                                            (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'P' ? (isDarkMode ? 'text-emerald-400' : 'text-slate-900') :
-                                                                (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'NIL' ? (isDarkMode ? 'text-blue-400/50 bg-slate-800/30' : 'text-slate-400 bg-slate-50/30') :
-                                                                    (isDarkMode ? 'text-blue-400 font-black italic' : 'text-blue-600 font-black italic')
-                                                            }`}>
-                                                            {!sigTermino ? (isFutureDate(date) ? '' : 'PEN.') : (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P')}
-                                                        </td>
-                                                    </Fragment>
-                                                );
-                                            })}
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div className="mt-10 flex justify-end gap-3 no-print">
-                            <button
-                                onClick={() => window.print()}
-                                className={`flex items-center gap-2 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-900/40' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
-                            >
-                                <Printer className="w-4 h-4" /> Gerar Impressão OMISS
-                            </button>
-                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
-            {activeSubTab === 'mapa_forca' && (
-                <div className="animate-in fade-in slide-in-from-bottom-4">
-                    <ForceMapDashboard users={users} attendanceHistory={attendanceHistory} />
-                </div>
-            )}
+            {
+                activeSubTab === 'mapa_forca' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-4">
+                        <ForceMapDashboard users={users} attendanceHistory={attendanceHistory} />
+                    </div>
+                )
+            }
 
             {/* Modals & Printable Areas */}
             <div className="modals-container">
@@ -1615,7 +1620,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };
 

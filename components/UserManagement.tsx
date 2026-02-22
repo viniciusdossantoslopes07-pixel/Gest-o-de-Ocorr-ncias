@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo, type FC, type FormEvent } from 'react';
 import { User, UserRole } from '../types';
 import { RANKS, SETORES } from '../constants';
-import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown, ShieldCheck, Settings, Search, X } from 'lucide-react';
+import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown, ShieldCheck, Settings, Search, X, Users } from 'lucide-react';
 import PermissionManagement from './PermissionManagement';
 
 interface UserManagementProps {
@@ -35,22 +35,47 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
   const [formData, setFormData] = useState(initialFormState);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // Rank Categories for Filtering (Consistent with PermissionManagement)
+  const RANK_CATEGORIES = {
+    OFICIAIS: ['TB', 'MB', 'BR', 'CEL', 'TEN CEL', 'MAJ', 'CAP', '1T', '2T', 'ASP'],
+    GRADUADOS: ['SO', '1S', '2S', '3S'],
+    PRACAS: ['CB', 'S1', 'S2']
+  };
 
   // Optimized Filtering with useMemo
   const filteredUsers = useMemo(() => {
     const term = searchTerm.toLowerCase().trim();
-    if (!term) return users;
 
     return users.filter(user => {
-      return (
+      // Category logic
+      const isOfficial = RANK_CATEGORIES.OFICIAIS.includes(user.rank);
+      const isGraduated = RANK_CATEGORIES.GRADUADOS.includes(user.rank);
+      const isSoldier = RANK_CATEGORIES.PRACAS.includes(user.rank);
+
+      // Search match
+      const matchesSearch = !term || (
         user.name.toLowerCase().includes(term) ||
         (user.warName || '').toLowerCase().includes(term) ||
         (user.username || '').toLowerCase().includes(term) ||
         (user.saram || '').toLowerCase().includes(term) ||
-        (user.sector || '').toLowerCase().includes(term)
+        (user.sector || '').toLowerCase().includes(term) ||
+        (term === 'oficiais' && isOfficial) ||
+        (term === 'graduados' && isGraduated) ||
+        (term === 'praças' && isSoldier) ||
+        (term === 'pracas' && isSoldier)
       );
+
+      // Category match
+      let matchesCategory = true;
+      if (selectedCategory === 'OFICIAIS') matchesCategory = isOfficial;
+      if (selectedCategory === 'GRADUADOS') matchesCategory = isGraduated;
+      if (selectedCategory === 'PRACAS') matchesCategory = isSoldier;
+
+      return matchesSearch && matchesCategory;
     });
-  }, [users, searchTerm]);
+  }, [users, searchTerm, selectedCategory]);
 
   const pendingUsers = useMemo(() => filteredUsers.filter(u => u.approved === false), [filteredUsers]);
   const approvedUsers = useMemo(() => filteredUsers.filter(u => u.approved !== false), [filteredUsers]);
@@ -296,8 +321,32 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                   </button>
                 )}
               </div>
+
+              {/* Category Filter Chips */}
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { id: 'OFICIAIS', label: 'Oficiais', icon: Crown },
+                  { id: 'GRADUADOS', label: 'Graduados', icon: BadgeCheck },
+                  { id: 'PRACAS', label: 'Praças', icon: Users }
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border-2 transition-all ${selectedCategory === cat.id
+                      ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20'
+                      : isDarkMode
+                        ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-200'
+                        : 'bg-white border-slate-100 text-slate-500 hover:border-slate-200 shadow-sm'
+                      }`}
+                  >
+                    <cat.icon className="w-3 h-3" />
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+
               <div className="flex items-center gap-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                <span>Resultados: <span className="text-blue-600">{filteredUsers.length}</span></span>
+                <span>Resultados: <span className="text-blue-600 font-black">{filteredUsers.length}</span></span>
               </div>
             </div>
 
