@@ -3,8 +3,8 @@ import { supabase } from '../../services/supabase';
 import {
     Car, Clock, Shield, Users, TrendingUp, Building2, UserCircle, Calendar,
     Filter, ChevronDown, ChevronUp, AlertTriangle, Search, Info, CheckCircle2,
-    XCircle, Printer, Download, Plus, FileText, Send, Mail, MailCheck, Ticket, QrCode,
-    List, BarChart3, Eye, CheckCircle, History, ChevronRight, Loader2, Lock
+    XCircle, Printer, Download, Plus, FileText, Send, Mail, MailCheck, Ticket,
+    List, BarChart3, Eye, CheckCircle, History, ChevronRight, Loader2, Lock, ShieldCheck
 } from 'lucide-react';
 import { notificationService } from '../../services/notificationService';
 import ParkingStatistics from './ParkingStatistics';
@@ -573,15 +573,17 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                                     </div>
                                 </div>
 
-                                {/* QR Code Simulado */}
+                                {/* Responsável pela Aprovação */}
                                 <div className="mt-4 pt-4 border-t border-slate-100 border-dashed flex flex-col items-center gap-2">
-                                    <div className="w-24 h-24 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 relative group">
-                                        <QrCode className="w-16 h-16 text-slate-800 opacity-80" />
-                                        <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Search className="w-6 h-6 text-slate-800" />
-                                        </div>
+                                    <div className="w-full bg-slate-50 rounded-xl p-3 border border-slate-100 flex flex-col items-center gap-1">
+                                        <ShieldCheck className="w-5 h-5 text-emerald-600 mb-1" />
+                                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Aprovado por</p>
+                                        <p className="text-[11px] font-black text-slate-800 uppercase text-center leading-tight">
+                                            {showingCoupon.aprovado_por || 'AUTORIDADE COMPETENTE'}
+                                        </p>
+                                        <p className="text-[7px] text-slate-400 uppercase font-bold mt-1">SOP-03 • GSD-SP</p>
                                     </div>
-                                    <p className="text-[9px] font-mono text-slate-400 tracking-widest uppercase">
+                                    <p className="text-[9px] font-mono text-slate-300 tracking-[0.2em] uppercase mt-1">
                                         AUTH-{showingCoupon.id.slice(0, 8).toUpperCase()}
                                     </p>
                                 </div>
