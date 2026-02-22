@@ -624,60 +624,60 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     return (
         <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 pb-20">
             {/* Sub-Tabs Navigation — FIRST */}
-            <div className="flex gap-1 p-1 bg-slate-100 rounded-xl w-fit">
+            <div className={`flex gap-1 p-1 rounded-2xl w-fit border transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-slate-100 border-slate-200'}`}>
                 <button
                     onClick={() => setActiveSubTab('chamada')}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${activeSubTab === 'chamada' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.15em] transition-all duration-300 ${activeSubTab === 'chamada' ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-white text-slate-900 shadow-md') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
                 >
-                    <Users className="w-3.5 h-3.5" /> Chamada Diária
+                    <Users className="w-4 h-4" /> Chamada Diária
                 </button>
                 <button
                     onClick={() => setActiveSubTab('cupons')}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${activeSubTab === 'cupons' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.15em] transition-all duration-300 ${activeSubTab === 'cupons' ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-white text-slate-900 shadow-md') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
                 >
-                    <FileText className="w-3.5 h-3.5" /> Cupons Gerados
+                    <FileText className="w-4 h-4" /> Cupons Gerados
                 </button>
                 <button
                     onClick={() => setActiveSubTab('mapa_forca')}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${activeSubTab === 'mapa_forca' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.15em] transition-all duration-300 ${activeSubTab === 'mapa_forca' ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-white text-slate-900 shadow-md') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
                 >
-                    <BarChart3 className="w-3.5 h-3.5" /> Mapa de Força
+                    <BarChart3 className="w-4 h-4" /> Mapa de Força
                 </button>
             </div>
 
             {/* Compact Header — only for chamada/cupons */}
             {(activeSubTab === 'chamada' || activeSubTab === 'cupons') && (
-                <div className="bg-white rounded-2xl p-3 lg:p-4 border border-slate-200 shadow-sm">
+                <div className={`rounded-3xl p-5 lg:p-6 border shadow-xl transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-xl' : 'bg-white border-slate-200'}`}>
                     {/* Top row: Title + Navigation + Actions */}
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-blue-600 p-2 rounded-xl shadow-md shadow-blue-200">
-                                <FileSignature className="w-4 h-4 text-white" />
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-3 rounded-2xl shadow-lg shadow-blue-900/20">
+                                <FileSignature className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-sm lg:text-base font-black text-slate-900 tracking-tight leading-tight">Retirada de Faltas</h2>
-                                <p className="text-slate-400 text-[10px] font-bold">{selectedSector}</p>
+                                <h2 className={`text-base lg:text-lg font-black tracking-tight leading-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Retirada de Faltas</h2>
+                                <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-400/80' : 'text-blue-600'}`}>{selectedSector}</p>
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-3">
                             {/* Week Nav */}
-                            <div className={`flex items-center gap-1 p-1 rounded-xl border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
-                                <button onClick={() => changeWeek(-1)} className={`p-1.5 rounded-lg transition-all ${isDarkMode ? 'hover:bg-slate-700 text-slate-400 hover:text-white' : 'hover:bg-white text-slate-400 hover:text-slate-900'}`}>
-                                    <Filter className="w-3 h-3 rotate-180" />
+                            <div className={`flex items-center gap-2 p-1.5 rounded-2xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                                <button onClick={() => changeWeek(-1)} className={`p-2 rounded-xl transition-all ${isDarkMode ? 'hover:bg-slate-700 text-slate-400 hover:text-white' : 'hover:bg-white text-slate-400 hover:text-slate-900 shadow-sm'}`}>
+                                    <Filter className="w-3.5 h-3.5 rotate-180" />
                                 </button>
-                                <span className={`text-[10px] font-black px-1.5 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                                <span className={`text-[11px] font-black px-2 tracking-tighter ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
                                     {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} — {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                                 </span>
-                                <button onClick={() => changeWeek(1)} className={`p-1.5 rounded-lg transition-all ${isDarkMode ? 'hover:bg-slate-700 text-slate-400 hover:text-white' : 'hover:bg-white text-slate-400 hover:text-slate-900'}`}>
-                                    <Filter className="w-3 h-3" />
+                                <button onClick={() => changeWeek(1)} className={`p-2 rounded-xl transition-all ${isDarkMode ? 'hover:bg-slate-700 text-slate-400 hover:text-white' : 'hover:bg-white text-slate-400 hover:text-slate-900 shadow-sm'}`}>
+                                    <Filter className="w-3.5 h-3.5" />
                                 </button>
                             </div>
 
                             {canManage && (
                                 <button
                                     onClick={() => setShowManageWeekModal(true)}
-                                    className="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-wider transition-all border border-slate-200"
+                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'}`}
                                 >
                                     Gerir Semana
                                 </button>
@@ -686,42 +686,43 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             {canManage && (
                                 <button
                                     onClick={() => setShowAdHocModal(true)}
-                                    className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-700 transition-all shadow-sm"
+                                    className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20 active:scale-95"
                                 >
-                                    <UserPlus className="w-3 h-3" /> Incluir
+                                    <UserPlus className="w-4 h-4" /> Incluir militar
                                 </button>
                             )}
                             <button
                                 onClick={() => window.print()}
-                                className="flex items-center gap-1.5 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-slate-800 transition-all shadow-sm"
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all shadow-lg active:scale-95 ${isDarkMode ? 'bg-slate-800 text-white hover:bg-slate-700 shadow-black/20' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
                             >
-                                <Plus className="w-3 h-3" /> PDF
+                                <Plus className="w-4 h-4" /> Gerar PDF
                             </button>
                         </div>
                     </div>
 
                     {/* Bottom row: Sector + Search inline */}
-                    <div className="flex flex-col md:flex-row items-stretch gap-2 mt-3">
+                    <div className="flex flex-col md:flex-row items-stretch gap-3 mt-5">
                         <select
                             value={selectedSector}
                             onChange={(e) => setSelectedSector(e.target.value)}
-                            className={`border rounded-lg px-3 py-2 text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-all md:w-[180px] ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'}`}
+                            className={`border-2 rounded-xl px-4 py-2.5 text-xs font-black focus:ring-4 focus:ring-blue-500/10 outline-none transition-all md:w-[220px] cursor-pointer ${isDarkMode ? 'bg-slate-800 border-slate-700/50 text-slate-200' : 'bg-slate-50 border-slate-100/50 text-slate-700'}`}
                         >
                             {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                        <div className="relative flex-1 group">
+                            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isDarkMode ? 'text-slate-500 group-focus-within:text-blue-400' : 'text-slate-400'}`} />
                             <input
                                 type="text"
-                                placeholder="Buscar militar..."
+                                placeholder="Buscar militar por nome ou graduação..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className={`w-full border rounded-lg py-2 pl-9 pr-3 text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
+                                className={`w-full border-2 rounded-xl py-2.5 pl-11 pr-4 text-xs font-bold focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:font-medium ${isDarkMode ? 'bg-slate-800 border-slate-700/50 text-white placeholder:text-slate-500' : 'bg-white border-slate-100 text-slate-900'}`}
                             />
                         </div>
                     </div>
                 </div>
             )}
+
 
             {activeSubTab === 'chamada' && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
@@ -737,27 +738,27 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         <div className="overflow-x-auto scrollbar-hide lg:scrollbar-default relative group">
                             <table className="w-full border-collapse">
                                 <thead>
-                                    <tr className={`${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-50/50'}`}>
-                                        <th rowSpan={2} className={`px-4 lg:px-6 py-4 border-b text-[10px] font-black uppercase tracking-widest text-left min-w-[150px] lg:min-w-[200px] sticky left-0 z-20 shadow-[2px_0_5px_rgba(0,0,0,0.05)] ${isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-500' : 'bg-slate-50 border-slate-100 text-slate-400'}`}>
-                                            <div className="flex items-center gap-2">
-                                                <GripVertical className="w-3.5 h-3.5 opacity-0" />
-                                                <span>Militar</span>
+                                    <tr className={`${isDarkMode ? 'bg-slate-900/80' : 'bg-slate-50/50'} premium-table-header`}>
+                                        <th rowSpan={2} className={`px-4 lg:px-7 py-5 border-b text-[10px] font-black uppercase tracking-[0.2em] text-left min-w-[150px] lg:min-w-[220px] sticky left-0 z-30 shadow-[4px_0_10px_rgba(0,0,0,0.1)] ${isDarkMode ? 'bg-slate-900 border-slate-800 text-blue-400' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
+                                            <div className="flex items-center gap-3">
+                                                <Users className="w-4 h-4 opacity-50" />
+                                                <span>Efetivo Militar</span>
                                             </div>
                                         </th>
                                         {currentWeek.map(date => (
-                                            <th key={date} colSpan={2} className={`px-2 py-4 border-b border-l text-[10px] font-black uppercase tracking-widest text-center min-w-[120px] relative ${isDarkMode ? 'bg-slate-800/30 border-slate-800 text-white' : 'bg-slate-50/30 border-slate-100 text-slate-900'}`}>
+                                            <th key={date} colSpan={2} className={`px-2 py-4 border-b border-l text-[10px] font-black uppercase tracking-widest text-center min-w-[130px] relative ${isDarkMode ? 'bg-slate-900/40 border-slate-800 text-white' : 'bg-slate-50/30 border-slate-200 text-slate-900'}`}>
                                                 <div className="flex flex-col items-center">
-                                                    <span>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
-                                                    <span className={`text-[8px] font-bold mt-0.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{parseISOToDate(date).toLocaleDateString('pt-BR')}</span>
+                                                    <span className={`transition-colors ${isDarkMode ? 'text-blue-100' : 'text-slate-800'}`}>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
+                                                    <span className={`text-[9px] font-bold mt-1 px-2 py-0.5 rounded-full ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>{parseISOToDate(date).toLocaleDateString('pt-BR')}</span>
                                                 </div>
                                             </th>
                                         ))}
                                     </tr>
-                                    <tr className={`${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-50/50'}`}>
+                                    <tr className={`${isDarkMode ? 'bg-slate-900/60' : 'bg-slate-50/50'}`}>
                                         {currentWeek.map(date => (
                                             <Fragment key={date}>
-                                                <th className={`px-1 py-1 lg:py-2 border-b border-l text-[8px] lg:text-[9px] font-black uppercase text-center ${isDarkMode ? 'border-slate-800 text-slate-500' : 'border-slate-100 text-slate-400'}`}>1ª Chamada</th>
-                                                <th className={`px-1 py-1 lg:py-2 border-b text-[8px] lg:text-[9px] font-black uppercase text-center ${isDarkMode ? 'border-slate-800 text-slate-500' : 'border-slate-100 text-slate-400'}`}>2ª Chamada</th>
+                                                <th className={`px-1 py-2 lg:py-3 border-b border-l text-[8px] lg:text-[9px] font-black uppercase text-center tracking-tighter ${isDarkMode ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-400'}`}>1ª Chamada</th>
+                                                <th className={`px-1 py-2 lg:py-3 border-b text-[8px] lg:text-[9px] font-black uppercase text-center tracking-tighter ${isDarkMode ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-400'}`}>2ª Chamada</th>
                                             </Fragment>
                                         ))}
                                     </tr>
@@ -862,41 +863,41 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                             </td>
                                             {currentWeek.map(date => (
                                                 <Fragment key={`${user.id}-${date}`}>
-                                                    <td key={`${user.id}-${date}-INICIO`} className={`p-0.5 lg:p-1 border-l ${isDarkMode ? 'border-slate-800' : 'border-slate-50'}`}>
+                                                    <td key={`${user.id}-${date}-INICIO`} className={`p-1 lg:p-1.5 border-l transition-all ${isDarkMode ? 'border-slate-800/50 bg-slate-900/20' : 'border-slate-100 bg-slate-50/10'}`}>
                                                         <select
                                                             disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
                                                             value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P'}
                                                             onChange={(e) => handleWeeklyChange(user.id, date, 'INICIO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all 
-                                                            disabled:opacity-50 disabled:cursor-not-allowed
-                                                            ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'P' ? 'text-emerald-500' :
-                                                                    ['F', 'A', 'DPM', 'DCH', 'JS', 'INSP', 'LP', 'LM'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? 'text-red-500 bg-red-500/10' :
-                                                                        (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'N' ? 'text-slate-500 bg-slate-500/10' :
-                                                                            (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'NIL' ? 'text-blue-400 bg-blue-500/10' :
-                                                                                'text-blue-500 bg-blue-500/10'
+                                                            className={`w-full bg-transparent text-[10px] lg:text-[11px] font-black text-center outline-none cursor-pointer p-2 rounded-xl transition-all duration-300
+                                                            disabled:opacity-30 disabled:cursor-not-allowed hover:scale-105 active:scale-95
+                                                            ${(weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'P' ? (isDarkMode ? 'text-emerald-400' : 'text-emerald-600') :
+                                                                    ['F', 'A', 'DPM', 'DCH', 'JS', 'INSP', 'LP', 'LM'].includes(weeklyGrid[user.id]?.[date]?.['INICIO'] || '') ? (isDarkMode ? 'text-rose-400 bg-rose-500/10' : 'text-red-600 bg-red-50') :
+                                                                        (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'N' ? (isDarkMode ? 'text-slate-400 bg-slate-800' : 'text-slate-500 bg-slate-100') :
+                                                                            (weeklyGrid[user.id]?.[date]?.['INICIO'] || '') === 'NIL' ? (isDarkMode ? 'text-blue-400/60 bg-blue-900/10' : 'text-blue-400 bg-blue-50/50') :
+                                                                                (isDarkMode ? 'text-blue-400 bg-blue-500/10' : 'text-blue-600 bg-blue-50')
                                                                 }`}
                                                         >
                                                             {Object.keys(PRESENCE_STATUS).map(s => (
-                                                                <option key={s} value={s} className={isDarkMode ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'}>{s}</option>
+                                                                <option key={s} value={s} className={isDarkMode ? 'bg-slate-900 text-slate-200' : 'bg-white text-slate-800'}>{s}</option>
                                                             ))}
                                                         </select>
                                                     </td>
-                                                    <td key={`${user.id}-${date}-TERMINO`} className={`p-0.5 lg:p-1 border-l ${isDarkMode ? 'border-slate-800' : 'border-slate-50'}`}>
+                                                    <td key={`${user.id}-${date}-TERMINO`} className={`p-1 lg:p-1.5 border-l transition-all ${isDarkMode ? 'border-slate-800/50 bg-slate-900/20' : 'border-slate-100 bg-slate-50/10'}`}>
                                                         <select
                                                             disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
                                                             value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P'}
                                                             onChange={(e) => handleWeeklyChange(user.id, date, 'TERMINO', e.target.value)}
-                                                            className={`w-full bg-transparent text-[9px] lg:text-[10px] font-black text-center outline-none cursor-pointer p-1 rounded-lg transition-all 
-                                                            disabled:opacity-50 disabled:cursor-not-allowed
-                                                            ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'P' ? 'text-emerald-500' :
-                                                                    ['F', 'A', 'DPM', 'DCH', 'JS', 'INSP', 'LP', 'LM'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? 'text-red-500 bg-red-500/10' :
-                                                                        (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'N' ? 'text-slate-500 bg-slate-500/10' :
-                                                                            (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'NIL' ? 'text-blue-400 bg-blue-500/10' :
-                                                                                'text-blue-500 bg-blue-500/10'
+                                                            className={`w-full bg-transparent text-[10px] lg:text-[11px] font-black text-center outline-none cursor-pointer p-2 rounded-xl transition-all duration-300
+                                                            disabled:opacity-30 disabled:cursor-not-allowed hover:scale-105 active:scale-95
+                                                            ${(weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'P' ? (isDarkMode ? 'text-emerald-400' : 'text-emerald-600') :
+                                                                    ['F', 'A', 'DPM', 'DCH', 'JS', 'INSP', 'LP', 'LM'].includes(weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') ? (isDarkMode ? 'text-rose-400 bg-rose-500/10' : 'text-red-600 bg-red-50') :
+                                                                        (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'N' ? (isDarkMode ? 'text-slate-400 bg-slate-800' : 'text-slate-500 bg-slate-100') :
+                                                                            (weeklyGrid[user.id]?.[date]?.['TERMINO'] || '') === 'NIL' ? (isDarkMode ? 'text-blue-400/60 bg-blue-900/10' : 'text-blue-400 bg-blue-50/50') :
+                                                                                (isDarkMode ? 'text-blue-400 bg-blue-500/10' : 'text-blue-600 bg-blue-50')
                                                                 }`}
                                                         >
                                                             {Object.keys(PRESENCE_STATUS).map(s => (
-                                                                <option key={s} value={s} className={isDarkMode ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'}>{s}</option>
+                                                                <option key={s} value={s} className={isDarkMode ? 'bg-slate-900 text-slate-200' : 'bg-white text-slate-800'}>{s}</option>
                                                             ))}
                                                         </select>
                                                     </td>
@@ -910,43 +911,49 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
                     </div>
 
-                    <div className={`rounded-[2rem] p-8 border shadow-sm mt-8 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
-                        <div className="flex items-center gap-4">
-                            <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-indigo-500/20' : 'bg-indigo-100'}`}>
-                                <Plus className={`w-6 h-6 ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`} />
+                    <div className={`rounded-[2.5rem] p-7 lg:p-10 border shadow-2xl mt-10 transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-xl' : 'bg-white border-slate-200'}`}>
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div className="flex items-center gap-5">
+                                <div className={`p-4 rounded-[1.5rem] shadow-lg ${isDarkMode ? 'bg-indigo-500/10 text-indigo-400 shadow-indigo-900/20' : 'bg-indigo-50 text-indigo-600 shadow-indigo-100'}`}>
+                                    <FileSignature className="w-7 h-7" />
+                                </div>
+                                <div>
+                                    <h3 className={`text-xl lg:text-2xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Status das Assinaturas</h3>
+                                    <p className={`${isDarkMode ? 'text-slate-500' : 'text-slate-400'} text-xs font-bold uppercase tracking-widest mt-1`}>Controle de autenticidade da semana</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className={`text-xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Status das Assinaturas</h3>
-                                <p className={`${isDarkMode ? 'text-slate-500' : 'text-slate-500'} text-sm italic`}>Cada dia deve ser assinado individualmente pelo responsável</p>
+                            <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest italic ${isDarkMode ? 'bg-slate-800/50 text-slate-400 border border-slate-700' : 'bg-slate-50 text-slate-500 border border-slate-100'}`}>
+                                Cada dia exige assinatura individual
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-10">
                             {currentWeek.map(date => (
-                                <div key={date} className={`flex flex-col gap-3 p-4 lg:p-5 rounded-3xl border-2 shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700/50' : 'bg-slate-50 border-slate-100'}`}>
-                                    <div className={`text-[10px] font-black uppercase tracking-widest border-b pb-2 ${isDarkMode ? 'text-slate-300 border-slate-700' : 'text-slate-900 border-slate-200'}`}>
-                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })}
+                                <div key={date} className={`flex flex-col gap-4 p-5 lg:p-6 rounded-[2rem] border-2 transition-all duration-300 group hover:scale-[1.02] ${isDarkMode ? 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50 hover:border-blue-500/30' : 'bg-slate-50 border-slate-100 hover:bg-white hover:border-blue-200 hover:shadow-xl'}`}>
+                                    <div className={`text-[11px] font-black uppercase tracking-[0.1em] border-b pb-3 flex justify-between items-center ${isDarkMode ? 'text-slate-200 border-slate-700' : 'text-slate-900 border-slate-200'}`}>
+                                        <span>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
+                                        <span className="opacity-40">{parseISOToDate(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
                                     </div>
-                                    <div className="grid grid-cols-2 lg:flex lg:flex-col gap-3">
+                                    <div className="flex flex-col gap-3">
                                         {(['INICIO', 'TERMINO'] as CallTypeCode[]).map(type => {
                                             const key = `${date}-${type}-${selectedSector}`;
                                             const sig = signedDates[key];
                                             return (
-                                                <div key={type} className={`p-2 lg:p-3 rounded-2xl border transition-all ${sig ? (isDarkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100') : (isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200')}`}>
-                                                    <div className="text-[8px] lg:text-[9px] font-black text-slate-500 uppercase mb-1 flex justify-between">
-                                                        <span>{type === 'INICIO' ? '1ª Ch.' : '2ª Ch.'}</span>
-                                                        {sig && <CheckCircle className="w-3 h-3 text-emerald-500" />}
+                                                <div key={type} className={`p-3 rounded-2xl border transition-all duration-300 ${sig ? (isDarkMode ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-emerald-50 border-emerald-200') : (isDarkMode ? 'bg-slate-900/50 border-slate-700 hover:border-blue-500/50' : 'bg-white border-slate-200 hover:border-blue-200')}`}>
+                                                    <div className="text-[9px] font-black text-slate-500 uppercase mb-2 flex justify-between items-center">
+                                                        <span>{type === 'INICIO' ? '1ª Chamada' : '2ª Chamada'}</span>
+                                                        {sig && <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />}
                                                     </div>
                                                     {sig ? (
                                                         <div className="flex flex-col">
-                                                            <div className="text-[8px] lg:text-[9px] font-black text-emerald-500 leading-tight uppercase">OK</div>
-                                                            <div className="text-[8px] font-bold text-slate-500 truncate mt-0.5">{sig.signedBy.split(' ').pop()}</div>
+                                                            <div className="text-[10px] font-black text-emerald-500 leading-tight uppercase tracking-widest">Autenticado</div>
+                                                            <div className={`text-[9px] font-bold truncate mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{sig.signedBy.split(' ').pop()}</div>
                                                         </div>
                                                     ) : (
                                                         <button
                                                             onClick={() => handleSignDate(date, type)}
                                                             disabled={isFutureDate(date) || !canSign}
-                                                            className={`w-full py-1.5 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-md ${isDarkMode ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-900/20' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'}`}
+                                                            className={`w-full py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-lg active:scale-95 ${isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-900/40' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'}`}
                                                         >
                                                             {canSign ? 'Assinar' : 'Bloqueado'}
                                                         </button>
@@ -960,16 +967,18 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         </div>
                     </div>
 
-                    <div className={`rounded-[2rem] p-8 border mt-8 ${isDarkMode ? 'bg-slate-800/20 border-slate-800 text-slate-300' : 'bg-slate-50 border-slate-100'}`}>
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
-                            <h3 className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Legenda de Situações</h3>
+                    <div className={`rounded-[2.5rem] p-8 lg:p-10 border mt-10 transition-all ${isDarkMode ? 'bg-slate-900/20 border-slate-800/50 backdrop-blur-sm' : 'bg-slate-50 border-slate-200'}`}>
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="w-2 h-8 bg-blue-600 rounded-full shadow-lg shadow-blue-900/20" />
+                            <h3 className={`text-base font-black uppercase tracking-[0.2em] ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Legenda de Situações</h3>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-y-4 gap-x-6">
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-y-5 gap-x-8">
                             {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
-                                <div key={code} className="flex items-baseline gap-2">
-                                    <span className="text-[10px] font-black text-blue-500 min-w-[30px]">{code}</span>
-                                    <span className={`text-[10px] font-bold uppercase tracking-tight ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>{label}</span>
+                                <div key={code} className="flex items-center gap-3 group transition-transform hover:translate-x-1">
+                                    <div className={`text-[11px] font-black min-w-[35px] h-7 flex items-center justify-center rounded-lg shadow-sm ${isDarkMode ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
+                                        {code}
+                                    </div>
+                                    <span className={`text-[10px] font-bold uppercase tracking-tight transition-colors ${isDarkMode ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-900'}`}>{label}</span>
                                 </div>
                             ))}
                         </div>
@@ -979,63 +988,63 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
             {activeSubTab === 'cupons' && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
-                    <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm p-8">
+                    <div className={`rounded-[2.5rem] border overflow-hidden shadow-2xl p-6 lg:p-10 transition-all ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                         {/* Institutional Header within Tab */}
-                        <div className="flex flex-col items-center mb-6 lg:mb-8 text-center px-4">
+                        <div className="flex flex-col items-center mb-10 text-center px-4">
                             <img
                                 src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Coat_of_arms_of_Brazil.svg"
                                 alt="Brasão da República"
-                                className="w-12 h-12 lg:w-16 lg:h-16 mb-4 object-contain"
+                                className={`w-14 h-14 lg:w-20 lg:h-20 mb-5 object-contain ${isDarkMode ? 'brightness-125 saturate-0' : ''}`}
                             />
-                            <div className="space-y-1">
-                                <h1 className="text-xs font-black uppercase tracking-[0.2em] text-slate-800">Ministério da Defesa</h1>
-                                <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-600">Comando da Aeronáutica</h2>
-                                <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-600">Base Aérea de São Paulo</h3>
-                                <div className="w-12 h-0.5 bg-blue-600 mx-auto my-3 rounded-full" />
-                                <h4 className="text-sm font-black text-slate-900 uppercase">{selectedSector}</h4>
+                            <div className="space-y-1.5">
+                                <h1 className={`text-xs font-black uppercase tracking-[0.25em] ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>Ministério da Defesa</h1>
+                                <h2 className={`text-[10px] font-bold uppercase tracking-[0.2em] ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Comando da Aeronáutica</h2>
+                                <h3 className={`text-[10px] font-bold uppercase tracking-[0.2em] ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Base Aérea de São Paulo</h3>
+                                <div className="w-16 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 mx-auto my-4 rounded-full" />
+                                <h4 className={`text-base font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{selectedSector}</h4>
                             </div>
                         </div>
 
                         {/* Weekly Grid (Image Style) */}
-                        <div className="overflow-x-auto">
-                            <table className="w-full border-collapse border border-slate-300">
-                                <thead className="bg-slate-50">
+                        <div className="overflow-x-auto scrollbar-hide lg:scrollbar-default">
+                            <table className={`w-full border-collapse border ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}>
+                                <thead className={isDarkMode ? 'bg-slate-900' : 'bg-slate-50'}>
                                     <tr>
-                                        <th className="border-0 bg-white"></th>
-                                        <th colSpan={10} className="border border-slate-300 py-2 text-xs font-black text-slate-900 uppercase tracking-[0.3em] bg-slate-100/50">
+                                        <th className={`border-0 ${isDarkMode ? 'bg-slate-950' : 'bg-white'}`}></th>
+                                        <th colSpan={10} className={`border py-3 text-xs font-black uppercase tracking-[0.4em] ${isDarkMode ? 'border-slate-800 bg-slate-800/50 text-blue-400' : 'border-slate-300 bg-slate-100/50 text-slate-900'}`}>
                                             {selectedSector}
                                         </th>
                                     </tr>
                                     <tr>
-                                        <th rowSpan={3} className="border border-slate-300 px-4 py-3 text-left text-[10px] font-black text-slate-800 uppercase italic min-w-[200px]">
-                                            SETOR/GRAD/NOME
+                                        <th rowSpan={3} className={`border px-5 py-4 text-left text-[11px] font-black uppercase italic min-w-[220px] ${isDarkMode ? 'border-slate-800 text-slate-200 bg-slate-950' : 'border-slate-300 text-slate-800 bg-white'}`}>
+                                            SETOR / GRAD / NOME
                                         </th>
                                         {currentWeek.map(date => (
-                                            <th key={date} colSpan={2} className="border border-slate-300 px-2 py-1.5 text-center text-[10px] font-black text-slate-700 uppercase bg-white">
+                                            <th key={date} colSpan={2} className={`border px-3 py-2 text-center text-[10px] font-black uppercase ${isDarkMode ? 'border-slate-800 text-slate-400 bg-slate-950' : 'border-slate-300 text-slate-700 bg-white'}`}>
                                                 {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long' }).split('-')[0].toUpperCase()}
                                             </th>
                                         ))}
                                     </tr>
                                     <tr>
                                         {currentWeek.map(date => (
-                                            <th key={`${date}-date`} colSpan={2} className="border border-slate-300 px-2 py-1 text-center text-[9px] font-bold text-slate-500 bg-white">
+                                            <th key={`${date}-date`} colSpan={2} className={`border px-3 py-1.5 text-center text-[9px] font-bold ${isDarkMode ? 'border-slate-800 text-slate-500 bg-slate-950' : 'border-slate-300 text-slate-500 bg-white'}`}>
                                                 {parseISOToDate(date).toLocaleDateString('pt-BR')}
                                             </th>
                                         ))}
                                     </tr>
-                                    <tr className="bg-slate-200/50">
+                                    <tr className={isDarkMode ? 'bg-slate-900' : 'bg-slate-200/50'}>
                                         {currentWeek.map(date => (
                                             <Fragment key={`${date}-sub`}>
-                                                <th className="border border-slate-300 py-1 text-[9px] font-black text-slate-600 w-12">1ª</th>
-                                                <th className="border border-slate-300 py-1 text-[9px] font-black text-slate-600 w-12">2ª</th>
+                                                <th className={`border py-1.5 text-[9px] font-black w-14 ${isDarkMode ? 'border-slate-800 text-slate-400' : 'border-slate-300 text-slate-600'}`}>1ª</th>
+                                                <th className={`border py-1.5 text-[9px] font-black w-14 ${isDarkMode ? 'border-slate-800 text-slate-400' : 'border-slate-300 text-slate-600'}`}>2ª</th>
                                             </Fragment>
                                         ))}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredUsers.map(user => (
-                                        <tr key={user.id} className="hover:bg-blue-50/30 transition-colors h-10">
-                                            <td className="border border-slate-300 px-4 py-2 font-black text-slate-900 text-[10px] uppercase truncate bg-white">
+                                        <tr key={user.id} className={`transition-colors h-12 ${isDarkMode ? 'hover:bg-blue-500/5' : 'hover:bg-blue-50/30'}`}>
+                                            <td className={`border px-5 py-3 font-black text-[11px] uppercase truncate ${isDarkMode ? 'border-slate-800 text-white bg-slate-950' : 'border-slate-300 text-slate-900 bg-white'}`}>
                                                 {user.rank} {user.warName || user.name}
                                             </td>
                                             {currentWeek.map(date => {
@@ -1043,17 +1052,17 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                 const sigTermino = !!signedDates[`${date}-TERMINO-${selectedSector}`];
                                                 return (
                                                     <Fragment key={`${user.id}-${date}`}>
-                                                        <td className={`border border-slate-300 text-center text-[10px] font-black ${!sigInicio ? 'text-slate-300 bg-slate-50/50 italic font-medium' :
-                                                            (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'P' ? 'text-slate-900' :
-                                                                (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'NIL' ? 'text-slate-400 bg-slate-50/30' :
-                                                                    'text-blue-600 font-black italic'
+                                                        <td className={`border text-center text-[11px] font-black ${isDarkMode ? 'border-slate-800' : 'border-slate-300'} ${!sigInicio ? (isDarkMode ? 'text-slate-700 bg-slate-900 italic font-medium' : 'text-slate-300 bg-slate-50/50 italic font-medium') :
+                                                            (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'P' ? (isDarkMode ? 'text-emerald-400' : 'text-slate-900') :
+                                                                (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') === 'NIL' ? (isDarkMode ? 'text-blue-400/50 bg-slate-800/30' : 'text-slate-400 bg-slate-50/30') :
+                                                                    (isDarkMode ? 'text-blue-400 font-black italic' : 'text-blue-600 font-black italic')
                                                             }`}>
                                                             {!sigInicio ? (isFutureDate(date) ? '' : 'PEN.') : (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P')}
                                                         </td>
-                                                        <td className={`border border-slate-300 text-center text-[10px] font-black ${!sigTermino ? 'text-slate-300 bg-slate-50/50 italic font-medium' :
-                                                            (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'P' ? 'text-slate-900' :
-                                                                (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'NIL' ? 'text-slate-400 bg-slate-50/30' :
-                                                                    'text-blue-600 font-black italic'
+                                                        <td className={`border text-center text-[11px] font-black ${isDarkMode ? 'border-slate-800' : 'border-slate-300'} ${!sigTermino ? (isDarkMode ? 'text-slate-700 bg-slate-900 italic font-medium' : 'text-slate-300 bg-slate-50/50 italic font-medium') :
+                                                            (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'P' ? (isDarkMode ? 'text-emerald-400' : 'text-slate-900') :
+                                                                (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') === 'NIL' ? (isDarkMode ? 'text-blue-400/50 bg-slate-800/30' : 'text-slate-400 bg-slate-50/30') :
+                                                                    (isDarkMode ? 'text-blue-400 font-black italic' : 'text-blue-600 font-black italic')
                                                             }`}>
                                                             {!sigTermino ? (isFutureDate(date) ? '' : 'PEN.') : (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P')}
                                                         </td>
@@ -1066,12 +1075,12 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             </table>
                         </div>
 
-                        <div className="mt-8 flex justify-end gap-3 no-print">
+                        <div className="mt-10 flex justify-end gap-3 no-print">
                             <button
                                 onClick={() => window.print()}
-                                className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg"
+                                className={`flex items-center gap-2 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-900/40' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
                             >
-                                <Printer className="w-4 h-4" /> Imprimir Relatório
+                                <Printer className="w-4 h-4" /> Gerar Impressão OMISS
                             </button>
                         </div>
                     </div>
@@ -1087,26 +1096,26 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             {/* Modals & Printable Areas */}
             <div className="modals-container">
                 {showManageWeekModal && (
-                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[150] flex items-center justify-center p-4">
-                        <div className="bg-white rounded-[2.5rem] w-full max-w-lg p-10 shadow-2xl relative animate-in zoom-in-95 duration-200">
-                            <button onClick={() => setShowManageWeekModal(false)} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-all text-slate-400">
+                    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[150] flex items-center justify-center p-4">
+                        <div className={`rounded-[2.5rem] w-full max-w-lg p-10 shadow-2xl relative animate-in zoom-in-95 duration-200 border-2 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                            <button onClick={() => setShowManageWeekModal(false)} className={`absolute top-8 right-8 p-3 rounded-2xl transition-all ${isDarkMode ? 'hover:bg-slate-800 text-slate-500 hover:text-white' : 'hover:bg-slate-100 text-slate-400 hover:text-slate-900'}`}>
                                 <X className="w-6 h-6" />
                             </button>
 
-                            <div className="flex items-center gap-4 mb-8">
-                                <div className="bg-amber-600 p-4 rounded-3xl shadow-lg shadow-amber-200">
+                            <div className="flex items-center gap-5 mb-10">
+                                <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-3xl shadow-xl shadow-amber-900/20">
                                     <Calendar className="w-8 h-8 text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Gerir Sem Expediente</h3>
-                                    <p className="text-slate-500 text-sm">Marcar dias da semana para TODOS os setores</p>
+                                    <h3 className={`text-2xl font-black tracking-tighter uppercase ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Gerir Sem Expediente</h3>
+                                    <p className={`${isDarkMode ? 'text-slate-500' : 'text-slate-400'} text-xs font-bold uppercase tracking-widest mt-1`}>Controle global da semana</p>
                                 </div>
                             </div>
 
-                            <div className="space-y-6">
+                            <div className="space-y-8">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Selecione os Dias</label>
-                                    <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                    <label className={`text-[10px] font-black uppercase tracking-widest px-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Selecione os Dias</label>
+                                    <div className="grid grid-cols-1 gap-2.5 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                                         {currentWeek.map(date => {
                                             const isSelected = selectedDaysForNoWork.includes(date);
                                             return (
@@ -1117,9 +1126,9 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                             prev.includes(date) ? prev.filter(d => d !== date) : [...prev, date]
                                                         );
                                                     }}
-                                                    className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all ${isSelected ? 'bg-blue-50 border-blue-600 text-blue-700' : 'bg-slate-50 border-slate-100 text-slate-600'}`}
+                                                    className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all duration-300 ${isSelected ? (isDarkMode ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/20' : 'bg-blue-50 border-blue-600 text-blue-700 shadow-lg shadow-blue-100') : (isDarkMode ? 'bg-slate-800/50 border-slate-800 text-slate-400 hover:border-slate-700' : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-slate-200')}`}
                                                 >
-                                                    <span className="font-bold uppercase text-xs">
+                                                    <span className="font-black uppercase text-[11px] tracking-widest">
                                                         {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })}
                                                     </span>
                                                     {isSelected && <CheckCircle className="w-5 h-5" />}
@@ -1133,27 +1142,29 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     <button
                                         onClick={() => handleNoWorkDay(selectedDaysForNoWork, 'Feriado')}
                                         disabled={selectedDaysForNoWork.length === 0}
-                                        className="flex flex-col items-center gap-2 p-4 bg-white border-2 border-slate-100 rounded-2xl hover:border-blue-600 hover:bg-blue-50 transition-all group disabled:opacity-50"
+                                        className={`flex flex-col items-center gap-3 p-5 rounded-3xl border-2 transition-all group disabled:opacity-30 disabled:grayscale ${isDarkMode ? 'bg-slate-800/50 border-slate-800 hover:bg-slate-800 hover:border-amber-500/50' : 'bg-white border-slate-100 hover:border-amber-600 hover:bg-amber-50 shadow-sm'}`}
                                     >
-                                        <span className="text-2xl group-hover:scale-110 transition-transform">🏝️</span>
-                                        <span className="text-[10px] font-black uppercase text-slate-900">Feriado</span>
+                                        <span className={`text-2xl group-hover:scale-125 transition-transform duration-300 ${isDarkMode ? 'grayscale-[0.5]' : ''}`}>🏝️</span>
+                                        <span className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>Feriado</span>
                                     </button>
                                     <button
                                         onClick={() => handleNoWorkDay(selectedDaysForNoWork, 'Expediente Cancelado')}
                                         disabled={selectedDaysForNoWork.length === 0}
-                                        className="flex flex-col items-center gap-2 p-4 bg-white border-2 border-slate-100 rounded-2xl hover:border-amber-600 hover:bg-amber-50 transition-all group disabled:opacity-50"
+                                        className={`flex flex-col items-center gap-3 p-5 rounded-3xl border-2 transition-all group disabled:opacity-30 disabled:grayscale ${isDarkMode ? 'bg-slate-800/50 border-slate-800 hover:bg-slate-800 hover:border-orange-500/50' : 'bg-white border-slate-100 hover:border-amber-600 hover:bg-amber-50 shadow-sm'}`}
                                     >
-                                        <span className="text-2xl group-hover:scale-110 transition-transform">🚫</span>
-                                        <span className="text-[10px] font-black uppercase text-slate-900">Exp. Cancelado</span>
+                                        <span className={`text-2xl group-hover:scale-125 transition-transform duration-300 ${isDarkMode ? 'grayscale-[0.5]' : ''}`}>🚫</span>
+                                        <span className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>Exp. Cancelado</span>
                                     </button>
                                     <button
                                         onClick={() => handleRestoreWorkDay(selectedDaysForNoWork)}
                                         disabled={selectedDaysForNoWork.length === 0}
-                                        className="col-span-2 flex flex-col items-center gap-2 p-4 bg-white border-2 border-slate-100 rounded-2xl hover:border-emerald-600 hover:bg-emerald-50 transition-all group disabled:opacity-50 mt-2"
+                                        className={`col-span-2 flex flex-col items-center gap-2 p-5 rounded-3xl border-2 transition-all group disabled:opacity-30 disabled:grayscale mt-2 ${isDarkMode ? 'bg-slate-800/80 border-slate-800 hover:bg-slate-800 hover:border-emerald-500/50' : 'bg-white border-slate-100 hover:border-emerald-600 hover:bg-emerald-50 shadow-sm'}`}
                                     >
-                                        <span className="text-2xl group-hover:scale-110 transition-transform">🔄</span>
-                                        <span className="text-[10px] font-black uppercase text-slate-900">Restaurar Expediente Normal</span>
-                                        <span className="text-[8px] font-bold text-slate-400">Remove status de Feriado/Cancelado</span>
+                                        <span className="text-2xl group-hover:rotate-180 transition-transform duration-500">🔄</span>
+                                        <div className="text-center">
+                                            <span className={`text-[10px] font-black uppercase tracking-widest block ${isDarkMode ? 'text-slate-200' : 'text-slate-900'}`}>Restaurar Expediente</span>
+                                            <span className="text-[9px] font-bold text-slate-500">Remove bloqueios e feriados</span>
+                                        </div>
                                     </button>
                                 </div>
                             </div>
@@ -1409,21 +1420,21 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 </div>
                 {/* Signature Password Modal */}
                 {showPasswordModal && (
-                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-                        <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl relative animate-in zoom-in-95 duration-200">
+                    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[200] flex items-center justify-center p-4">
+                        <div className={`rounded-[3rem] w-full max-w-sm p-10 shadow-2xl relative animate-in zoom-in-95 duration-300 border-2 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
                             <div className="flex flex-col items-center text-center">
-                                <div className="bg-blue-600 p-4 rounded-3xl shadow-lg shadow-blue-200 mb-6">
-                                    <FileSignature className="w-8 h-8 text-white" />
+                                <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-5 rounded-[2rem] shadow-[0_10px_30px_rgba(37,99,235,0.3)] mb-8">
+                                    <FileSignature className="w-10 h-10 text-white" />
                                 </div>
 
-                                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">Assinatura Digital</h3>
-                                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-8">
-                                    Confirmar chamada de {dateToSign ? parseISOToDate(dateToSign).toLocaleDateString('pt-BR') : ''}
+                                <h3 className={`text-2xl font-black uppercase tracking-tighter mb-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Assinatura Digital</h3>
+                                <p className={`text-[10px] font-black uppercase tracking-[0.2em] mb-10 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                                    Chamada de {dateToSign ? parseISOToDate(dateToSign).toLocaleDateString('pt-BR') : ''}
                                 </p>
 
-                                <div className="w-full space-y-4">
-                                    <div className="space-y-2 text-left">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Senha Individual</label>
+                                <div className="w-full space-y-6">
+                                    <div className="space-y-3 text-left">
+                                        <label className={`text-[10px] font-black uppercase tracking-widest px-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Senha de Identidade</label>
                                         <input
                                             type="password"
                                             autoFocus
@@ -1433,57 +1444,31 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                 setPasswordError(false);
                                             }}
                                             onKeyDown={e => e.key === 'Enter' && confirmSignature()}
-                                            className={`w-full bg-slate-50 border-2 rounded-2xl p-4 text-center font-black tracking-[0.5em] outline-none transition-all ${passwordError ? 'border-red-500 bg-red-50' : 'border-slate-100 focus:border-blue-600'}`}
+                                            className={`w-full text-center font-black tracking-[0.5em] outline-none transition-all duration-300 border-2 rounded-2xl py-5 text-lg ${passwordError
+                                                ? 'border-red-500 bg-red-500/10 text-red-500'
+                                                : isDarkMode
+                                                    ? 'bg-slate-800 border-slate-700 text-white focus:border-blue-500'
+                                                    : 'bg-slate-50 border-slate-100 text-slate-900 focus:border-blue-600 shadow-inner'
+                                                }`}
                                             placeholder="••••••"
                                         />
                                         {passwordError && (
-                                            <p className="text-[10px] font-black text-red-500 text-center uppercase mt-2">Senha Incorreta</p>
+                                            <p className="text-[10px] font-black text-red-500 text-center uppercase tracking-widest mt-3 animate-bounce">Acesso Negado: Senha Incorreta</p>
                                         )}
                                     </div>
 
-                                    <div className="flex flex-col gap-3 mt-4">
-                                        <button
-                                            onClick={confirmSignature}
-                                            className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-slate-800 transition-all shadow-xl"
-                                        >
-                                            Confirmar Assinatura
-                                        </button>
-
-                                        {localStorage.getItem('gsdsp_biometric_id') && (
-                                            <button
-                                                onClick={async () => {
-                                                    try {
-                                                        const credentialId = localStorage.getItem('gsdsp_biometric_id');
-                                                        if (!credentialId) return;
-                                                        const success = await authenticateBiometrics(credentialId);
-                                                        if (success) {
-                                                            const { data: userData } = await supabase
-                                                                .from('users')
-                                                                .select('password')
-                                                                .filter('webauthn_credential->>id', 'eq', credentialId)
-                                                                .single();
-
-                                                            if (userData) {
-                                                                setPasswordInput(userData.password);
-                                                                setTimeout(() => confirmSignature(), 100);
-                                                            }
-                                                        }
-                                                    } catch (err) {
-                                                        console.error(err);
-                                                        alert('Falha na autenticação biométrica.');
-                                                    }
-                                                }}
-                                                className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-100 transition-all border border-emerald-200"
-                                            >
-                                                <Fingerprint className="w-5 h-5" /> Assinar com Biometria
-                                            </button>
-                                        )}
-
+                                    <div className="grid grid-cols-2 gap-3 pt-4">
                                         <button
                                             onClick={() => setShowPasswordModal(false)}
-                                            className="w-full py-2 text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-slate-600 transition-all"
+                                            className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                                         >
                                             Cancelar
+                                        </button>
+                                        <button
+                                            onClick={confirmSignature}
+                                            className="py-4 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/30 active:scale-95"
+                                        >
+                                            Confirmar
                                         </button>
                                     </div>
                                 </div>
@@ -1494,65 +1479,65 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
                 {/* Justification Modal */}
                 {showJustificationModal && justifyingSoldier && (
-                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-                        <div className="bg-white rounded-[2.5rem] w-full max-w-lg p-8 shadow-2xl relative animate-in zoom-in-95 duration-200">
-                            <button onClick={() => setShowJustificationModal(false)} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-all text-slate-400">
+                    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[200] flex items-center justify-center p-4">
+                        <div className={`rounded-[2.5rem] w-full max-w-lg p-10 shadow-2xl relative animate-in zoom-in-95 duration-300 border-2 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                            <button onClick={() => setShowJustificationModal(false)} className={`absolute top-8 right-8 p-3 rounded-2xl transition-all ${isDarkMode ? 'hover:bg-slate-800 text-slate-500 hover:text-white' : 'hover:bg-slate-100 text-slate-400 hover:text-slate-900'}`}>
                                 <X className="w-6 h-6" />
                             </button>
 
-                            <div className="flex items-center gap-4 mb-8">
-                                <div className="bg-emerald-600 p-4 rounded-3xl shadow-lg shadow-emerald-200">
+                            <div className="flex items-center gap-5 mb-10">
+                                <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-4 rounded-3xl shadow-xl shadow-emerald-900/20">
                                     <FileCheck className="w-8 h-8 text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Retirada de Falta</h3>
-                                    <p className="text-slate-500 text-sm font-bold uppercase tracking-widest">Gerar Cupom de Justificativa</p>
+                                    <h3 className={`text-2xl font-black tracking-tighter uppercase ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Retirada de Falta</h3>
+                                    <p className={`${isDarkMode ? 'text-slate-500' : 'text-slate-400'} text-xs font-bold uppercase tracking-widest mt-1`}>Gerar Cupom de Justificativa</p>
                                 </div>
                             </div>
 
-                            <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100 mb-8">
-                                <div className="grid grid-cols-2 gap-4">
+                            <div className={`rounded-3xl p-6 border mb-8 ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50' : 'bg-slate-50 border-slate-100'}`}>
+                                <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-1">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Militar</span>
-                                        <p className="font-black text-slate-900 uppercase text-sm">{justifyingSoldier.userRank} {justifyingSoldier.userName}</p>
+                                        <span className={`text-[10px] font-black uppercase tracking-widest block ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Militar</span>
+                                        <p className={`font-black uppercase text-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{justifyingSoldier.userRank} {justifyingSoldier.userName}</p>
                                     </div>
                                     <div className="space-y-1">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Data/Chamada</span>
-                                        <p className="font-bold text-slate-700 text-sm">{new Date(justifyingSoldier.date).toLocaleDateString('pt-BR')} - {justifyingSoldier.callType === 'INICIO' ? '1ª' : '2ª'}</p>
+                                        <span className={`text-[10px] font-black uppercase tracking-widest block ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Data / Chamada</span>
+                                        <p className={`font-bold text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{new Date(justifyingSoldier.date).toLocaleDateString('pt-BR')} — {justifyingSoldier.callType === 'INICIO' ? '1ª' : '2ª'}</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="space-y-6">
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 block">Status Original</label>
-                                        <div className="bg-red-50 border-2 border-red-100 rounded-2xl p-4 text-center font-black text-red-600">
-                                            {justifyingSoldier.originalStatus} - {PRESENCE_STATUS[justifyingSoldier.originalStatus as keyof typeof PRESENCE_STATUS] || 'AUSENTE'}
+                                    <div className="space-y-3">
+                                        <label className={`text-[10px] font-black uppercase tracking-widest px-2 block ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Status Original</label>
+                                        <div className={`border-2 rounded-2xl p-4 text-center font-black transition-all ${isDarkMode ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' : 'bg-red-50 border-red-100 text-red-600'}`}>
+                                            {justifyingSoldier.originalStatus} — {PRESENCE_STATUS[justifyingSoldier.originalStatus as keyof typeof PRESENCE_STATUS] || 'AUSENTE'}
                                         </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 block">Novo Status</label>
+                                    <div className="space-y-3">
+                                        <label className={`text-[10px] font-black uppercase tracking-widest px-2 block ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Novo Status</label>
                                         <select
-                                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-emerald-600 transition-all"
+                                            className={`w-full border-2 rounded-2xl p-4 text-sm font-black outline-none transition-all cursor-pointer ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white focus:border-emerald-500' : 'bg-slate-50 border-slate-100 text-slate-700 focus:border-emerald-600'}`}
                                             value={justificationForm.newStatus}
                                             onChange={e => setJustificationForm(prev => ({ ...prev, newStatus: e.target.value }))}
                                         >
-                                            <option value="P">P - Presente</option>
-                                            <option value="JS">JS - Justificado</option>
-                                            <option value="DPM">DPM - Disp. Missão</option>
-                                            <option value="CR">CR - Conv. Retido</option>
-                                            <option value="NU">NU - Núpcias</option>
-                                            <option value="LT">LT - Luto</option>
+                                            <option value="P">P — Presente</option>
+                                            <option value="JS">JS — Justificado</option>
+                                            <option value="DPM">DPM — Disp. Missão</option>
+                                            <option value="CR">CR — Conv. Retido</option>
+                                            <option value="NU">NU — Núpcias</option>
+                                            <option value="LT">LT — Luto</option>
                                         </select>
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 block">Motivo / Justificativa</label>
+                                <div className="space-y-3">
+                                    <label className={`text-[10px] font-black uppercase tracking-widest px-2 block ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Motivo / Justificativa</label>
                                     <textarea
-                                        className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-medium text-slate-700 outline-none focus:border-emerald-600 transition-all min-h-[120px]"
-                                        placeholder="Descreva o motivo da retirada da falta..."
+                                        className={`w-full border-2 rounded-2xl p-5 text-sm font-medium outline-none transition-all min-h-[140px] resize-none ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white focus:border-emerald-500 placeholder:text-slate-600' : 'bg-slate-50 border-slate-100 text-slate-700 focus:border-emerald-600 placeholder:text-slate-400'}`}
+                                        placeholder="Descreva detalhadamente o motivo da retirada da falta..."
                                         value={justificationForm.text}
                                         onChange={e => setJustificationForm(prev => ({ ...prev, text: e.target.value }))}
                                     />
@@ -1561,7 +1546,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 <button
                                     onClick={confirmJustification}
                                     disabled={!justificationForm.text}
-                                    className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-emerald-700 transition-all shadow-xl disabled:opacity-50 shadow-emerald-100"
+                                    className="w-full py-5 bg-emerald-600 text-white rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-900/40 disabled:opacity-30 disabled:grayscale active:scale-95"
                                 >
                                     Confirmar e Gerar Cupom
                                 </button>
@@ -1630,7 +1615,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
                 )}
             </div>
-        </div >
+        </div>
     );
 };
 

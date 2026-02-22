@@ -23,12 +23,17 @@
 }
 
 .dark {
-  /* Dark Mode Tokens */
-  --app-bg: #030712;
-  --card-bg: #111827;
-  --main-text: #f8fafc;
-  --muted-text: #94a3b8;
-  --subtle-border: #1f2937;
+  /* Dark Mode Tokens - Deep Slate/Zinc */
+  --app-bg: #020617;
+  /* Slate 950 for deeper blacks */
+  --card-bg: #0f172a;
+  /* Slate 900 */
+  --main-text: #f1f5f9;
+  /* Slate 100 */
+  --muted-text: #64748b;
+  /* Slate 500 */
+  --subtle-border: #1e293b;
+  /* Slate 800 */
 }
 
 body {
@@ -39,12 +44,22 @@ body {
 
 /* Glassmorphism Utilities */
 .glass {
-  @apply backdrop-blur-md bg-white/70 border border-white/20;
+  @apply backdrop-blur-xl bg-white/40 border border-white/20 shadow-xl shadow-slate-200/20;
 }
 
 .dark .glass {
-  @apply bg-slate-900/70 border-white/10;
+  @apply bg-slate-900/40 border-white/5 shadow-none;
 }
+
+/* Premium Card & Table Styles */
+.premium-table-header {
+  @apply sticky top-0 z-20 backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800;
+}
+
+.premium-row-hover {
+  @apply hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200;
+}
+
 
 /* Force Light Theme Utility */
 .force-light {

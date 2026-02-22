@@ -13,7 +13,8 @@ import {
     AlertCircle,
     Briefcase,
     Crown,
-    BadgeCheck
+    BadgeCheck,
+    X
 } from 'lucide-react';
 import { SETORES } from '../constants';
 
@@ -39,6 +40,14 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
     const [editingGroup, setEditingGroup] = useState<any | null>(null); // For creating/editing a group
     const [groupForm, setGroupForm] = useState({ name: '', description: '', permissions: [] as string[] });
     const [isLoadingGroups, setIsLoadingGroups] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+    // Rank Categories for Filtering
+    const RANK_CATEGORIES = {
+        OFICIAIS: ['TB', 'MB', 'BR', 'CEL', 'TEN CEL', 'MAJ', 'CAP', '1T', '2T', 'ASP'],
+        GRADUADOS: ['SO', '1S', '2S', '3S'],
+        PRACAS: ['CB', 'S1', 'S2']
+    };
 
     // Fetch custom groups on mount
     useEffect(() => {
@@ -81,14 +90,30 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
 
     // Filter users
     const filteredUsers = users.filter(user => {
+        const searchTermLower = searchTerm.toLowerCase();
+
+        // Logical search including categories
+        const isOfficial = RANK_CATEGORIES.OFICIAIS.includes(user.rank);
+        const isGraduated = RANK_CATEGORIES.GRADUADOS.includes(user.rank);
+        const isSoldier = RANK_CATEGORIES.PRACAS.includes(user.rank);
+
         const matchesSearch =
-            user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (user.username && user.username.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            (user.saram && user.saram.includes(searchTerm));
+            user.name.toLowerCase().includes(searchTermLower) ||
+            (user.username && user.username.toLowerCase().includes(searchTermLower)) ||
+            (user.saram && user.saram.includes(searchTerm)) ||
+            (searchTermLower === 'oficiais' && isOfficial) ||
+            (searchTermLower === 'graduados' && isGraduated) ||
+            (searchTermLower === 'praças' && isSoldier) ||
+            (searchTermLower === 'pracas' && isSoldier);
 
         const matchesSector = !filterSector || user.sector === filterSector;
 
-        return matchesSearch && matchesSector;
+        let matchesCategory = true;
+        if (selectedCategory === 'OFICIAIS') matchesCategory = isOfficial;
+        if (selectedCategory === 'GRADUADOS') matchesCategory = isGraduated;
+        if (selectedCategory === 'PRACAS') matchesCategory = isSoldier;
+
+        return matchesSearch && matchesSector && matchesCategory;
     });
 
     useEffect(() => {
@@ -305,18 +330,60 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
                     {/* User Selection Sidebar */}
                     <div className="lg:col-span-4 space-y-6">
                         <div className={`p-6 rounded-3xl border transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
-                            <div className="relative mb-6">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <div className="relative mb-4">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 font-bold" />
                                 <input
                                     type="text"
-                                    placeholder="Buscar militar..."
+                                    placeholder="Buscar por nome, saram ou tipo..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className={`w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
+                                    className={`w-full pl-10 pr-10 py-3 border-2 rounded-2xl text-sm font-bold outline-none transition-all focus:ring-4 focus:ring-blue-500/10 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600 focus:border-blue-500' : 'bg-white border-slate-200 text-slate-900 focus:border-blue-600'}`}
                                 />
+                                {searchTerm && (
+                                    <button
+                                        onClick={() => setSearchTerm('')}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-200 rounded-lg transition-all"
+                                    >
+                                        <X className="w-3.5 h-3.5 text-slate-400" />
+                                    </button>
+                                )}
                             </div>
 
-                            <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                            {/* Category Filter Chips */}
+                            <div className="flex flex-wrap gap-2 mb-6">
+                                {[
+                                    { id: 'OFICIAIS', label: 'Oficiais', icon: Crown },
+                                    { id: 'GRADUADOS', label: 'Graduados', icon: BadgeCheck },
+                                    { id: 'PRACAS', label: 'Praças', icon: Users }
+                                ].map((cat) => (
+                                    <button
+                                        key={cat.id}
+                                        onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
+                                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border-2 transition-all ${selectedCategory === cat.id
+                                            ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20'
+                                            : isDarkMode
+                                                ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-200'
+                                                : 'bg-white border-slate-100 text-slate-500 hover:border-slate-200 shadow-sm'
+                                            }`}
+                                    >
+                                        <cat.icon className="w-3 h-3" />
+                                        {cat.label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="flex items-center justify-between mb-2 px-1">
+                                <span className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                    {filteredUsers.length} militares encontrados
+                                </span>
+                            </div>
+
+                            <div className="space-y-2 max-h-[420px] overflow-y-auto pr-2 custom-scrollbar">
+                                {filteredUsers.length === 0 && (
+                                    <div className="py-10 text-center">
+                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Nenhum militar encontrado</p>
+                                    </div>
+                                )}
                                 {filteredUsers.map(user => (
                                     <button
                                         key={user.id}
