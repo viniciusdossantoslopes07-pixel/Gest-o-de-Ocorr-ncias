@@ -121,7 +121,7 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
                                 <h2 className="text-sm font-bold uppercase tracking-wide">Base Aérea de São Paulo</h2>
                                 <h3 className="text-xs font-bold uppercase text-slate-700">Grupo de Segurança e Defesa de São Paulo</h3>
                                 <div className="mt-2 inline-block px-3 py-0.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded">
-                                    Mapa de Força Consolidado
+                                    Mapa de Força
                                 </div>
                             </div>
                             <img src="/logo_gsd_sp.png" alt="Logo GSD-SP" className="w-16 h-16 object-contain" />

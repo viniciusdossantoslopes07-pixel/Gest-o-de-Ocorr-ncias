@@ -221,7 +221,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                                 <BarChart3 className="w-6 h-6 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">Mapa de Força Consolidado</h2>
+                                <h2 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">Mapa de Força</h2>
                                 <p className="text-slate-500 text-sm font-medium">Análise em tempo real do efetivo GSD-SP</p>
                             </div>
                         </div>
@@ -233,7 +233,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                                 title="Gerar Mapa Oficial (BASP/GSD-SP)"
                             >
                                 <Printer className="w-4 h-4" />
-                                <span className="hidden sm:inline">Gerar Mapa Oficial</span>
+                                <span className="hidden sm:inline">Gerar Mapa</span>
                             </button>
                             {allRecords.length > 0 && (
                                 <div className="flex items-center gap-2 text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-4 py-2.5 rounded-xl border border-emerald-100">
