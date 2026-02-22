@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
-import { Car, Clock, Printer, History, List, Eye, FileText, BarChart3, ChevronRight, CheckCircle, XCircle, Download, Loader2, Lock } from 'lucide-react';
+import {
+    Car, Clock, Shield, Users, TrendingUp, Building2, UserCircle, Calendar,
+    Filter, ChevronDown, ChevronUp, AlertTriangle, Search, Info, CheckCircle2,
+    XCircle, Printer, Download, Plus, FileText, Send, Mail, MailCheck, Ticket, QrCode,
+    List, BarChart3, Eye, CheckCircle, History, ChevronRight, Loader2, Lock
+} from 'lucide-react';
+import { notificationService } from '../../services/notificationService';
 import ParkingStatistics from './ParkingStatistics';
 
 interface ParkingVehicle {
@@ -50,17 +56,26 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
     const [requests, setRequests] = useState<ParkingRequest[]>([]);
     const [allRequests, setAllRequests] = useState<ParkingRequest[]>([]);
     const [printRequest, setPrintRequest] = useState<ParkingRequest | null>(null);
+    const [showingCoupon, setShowingCoupon] = useState<ParkingRequest | null>(null);
+    const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
+    const [showFilters, setShowFilters] = useState(false);
     const [analysingRequest, setAnalysingRequest] = useState<ParkingRequest | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [passwordConfirm, setPasswordConfirm] = useState('');
     const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
 
     const isAdmin = user?.role === 'Gestor Master / OSD' || user?.role === 'Comandante OM' || (user?.sector && user.sector.includes('SOP'));
 
     useEffect(() => {
-        fetchMyRequests();
-        if (isAdmin) fetchAllRequests();
+        const fetchData = async () => {
+            setLoading(true);
+            await fetchMyRequests();
+            if (isAdmin) await fetchAllRequests();
+            setLoading(false);
+        };
+        fetchData();
     }, []);
 
     const fetchMyRequests = async () => {
@@ -161,10 +176,37 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
         }
     };
 
+    const handleSendEmail = async (req: ParkingRequest) => {
+        if (!req.email) {
+            alert('E-mail do solicitante não encontrado');
+            return;
+        }
+
+        setSendingEmailId(req.id);
+        try {
+            await notificationService.sendParkingAuthorizationNotification({
+                militarEmail: req.email,
+                militarName: req.nome_completo,
+                vehicleModel: req.vehicle?.marca_modelo || req.ext_marca_modelo || '—',
+                plate: req.vehicle?.placa || req.ext_placa || '—',
+                startDate: req.inicio,
+                endDate: req.termino,
+                authNumber: req.id.slice(0, 8).toUpperCase()
+            });
+            alert('E-mail enviado com sucesso!');
+        } catch (error) {
+            alert('Falha ao enviar e-mail');
+        } finally {
+            setSendingEmailId(null);
+        }
+    };
+
     const tabs = [
         { id: 'gerenciar' as const, label: 'Gerenciar Solicitações', icon: List },
         { id: 'estatisticas' as const, label: 'Estatísticas', icon: BarChart3 },
     ];
+
+    if (loading) return <div className="text-center py-12 text-slate-400">Carregando solicitações...</div>;
 
     // ========== MAIN VIEW ==========
     return (
@@ -246,8 +288,14 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                     {(isAdmin ? allRequests.filter(r => r.status !== 'Pendente') : requests).map(req => {
                         const vName = req.vehicle?.marca_modelo || req.ext_marca_modelo || '—';
                         const vPlate = req.vehicle?.placa || req.ext_placa || '';
+                        const isSending = sendingEmailId === req.id;
+
                         return (
-                            <div key={req.id} className={`bg-white rounded-xl border p-3 sm:p-4 space-y-2 ${req.status === 'Aprovado' ? 'border-emerald-200' : req.status === 'Rejeitado' ? 'border-red-200' : 'border-slate-200'}`}>
+                            <div
+                                key={req.id}
+                                className={`group relative bg-white rounded-xl border p-3 sm:p-4 space-y-2 cursor-pointer transition-all hover:shadow-md active:scale-[0.98] ${req.status === 'Aprovado' ? 'border-emerald-200 hover:border-emerald-300' : req.status === 'Rejeitado' ? 'border-red-200 hover:border-red-300' : 'border-slate-200 hover:border-slate-300'}`}
+                                onClick={() => setShowingCoupon(req)}
+                            >
                                 <div className="flex items-center justify-between">
                                     <div className="min-w-0 flex-1 mr-2">
                                         <p className="font-black text-xs sm:text-sm text-slate-800 truncate">{req.nome_completo}</p>
@@ -257,12 +305,26 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                                 </div>
                                 <p className="text-[10px] sm:text-xs text-slate-500 font-bold">{vName} — {vPlate}</p>
                                 <p className="text-[10px] sm:text-xs text-slate-500">{new Date(req.inicio + 'T00:00:00').toLocaleDateString('pt-BR')} → {new Date(req.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
-                                {req.status === 'Aprovado' && (
-                                    <button onClick={() => setPrintRequest(req)}
-                                        className="w-full py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-blue-100 transition-all">
+
+                                <div className="flex gap-2 pt-1 border-t border-slate-50 mt-2" onClick={(e) => e.stopPropagation()}>
+                                    <button
+                                        onClick={() => setPrintRequest(req)}
+                                        className="flex-1 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-blue-100 transition-all"
+                                    >
                                         <Download className="w-3.5 h-3.5" /> Baixar
                                     </button>
-                                )}
+
+                                    {req.status === 'Aprovado' && (
+                                        <button
+                                            onClick={() => handleSendEmail(req)}
+                                            disabled={isSending}
+                                            className={`px-3 py-1.5 rounded-lg border font-bold text-xs flex items-center justify-center transition-all ${isSending ? 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed' : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'}`}
+                                            title="Enviar por e-mail"
+                                        >
+                                            {isSending ? <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-500 rounded-full animate-spin" /> : <Mail className="w-3.5 h-3.5" />}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         );
                     })}
@@ -450,6 +512,110 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                     </div>
                 );
             })()}
+
+            {/* Modal de Cupom Digital */}
+            {showingCoupon && (
+                <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setShowingCoupon(null)}></div>
+                    <div className="relative w-full max-w-[320px] bg-white rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        {/* Header do Cupom */}
+                        <div className="bg-slate-900 p-6 text-center text-white relative">
+                            <div className="absolute top-4 right-4 cursor-pointer text-slate-400 hover:text-white" onClick={() => setShowingCoupon(null)}>
+                                <XCircle className="w-6 h-6" />
+                            </div>
+                            <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-blue-600/20">
+                                <Car className="w-6 h-6 text-white" />
+                            </div>
+                            <h4 className="text-sm font-black uppercase tracking-widest">Autorização Digital</h4>
+                            <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tight">Base Aérea de São Paulo</p>
+                        </div>
+
+                        {/* Corpo do Cupom (Estilo Ticket) */}
+                        <div className="p-6 space-y-6 relative">
+                            {/* Pontilhados laterais estilo cupom */}
+                            <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-900 rounded-full"></div>
+                            <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-900 rounded-full"></div>
+
+                            <div className="text-center space-y-1">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase">Solicitante</p>
+                                <p className="text-base font-black text-slate-800">{showingCoupon.nome_completo}</p>
+                                <p className="text-[11px] font-bold text-blue-600 uppercase">{showingCoupon.posto_graduacao} • {showingCoupon.om}</p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-dashed border-slate-200">
+                                <div className="text-center border-r border-slate-200 pr-4">
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Veículo</p>
+                                    <p className="text-xs font-black text-slate-800 uppercase">{showingCoupon.vehicle?.marca_modelo || showingCoupon.ext_marca_modelo || '—'}</p>
+                                    <p className="text-[10px] font-bold text-slate-500 mt-0.5">{showingCoupon.vehicle?.placa || showingCoupon.ext_placa || '—'}</p>
+                                </div>
+                                <div className="text-center pl-4">
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Status</p>
+                                    <div className={`text-[10px] font-black uppercase inline-flex px-2 py-0.5 rounded-full ${showingCoupon.status === 'Aprovado' ? 'bg-emerald-100 text-emerald-600' : showingCoupon.status === 'Rejeitado' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>
+                                        {showingCoupon.status}
+                                    </div>
+                                    <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase">Validado</p>
+                                </div>
+                            </div>
+
+                            <div className="text-center space-y-3">
+                                <div className="flex flex-col items-center gap-1.5">
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase">Período de Validade</p>
+                                    <div className="flex items-center gap-3">
+                                        <div className="text-center">
+                                            <p className="text-[11px] font-black text-slate-800">{new Date(showingCoupon.inicio + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</p>
+                                            <p className="text-[8px] font-bold text-slate-400 uppercase">Início</p>
+                                        </div>
+                                        <TrendingUp className="w-3 h-3 text-slate-300" />
+                                        <div className="text-center">
+                                            <p className="text-[11px] font-black text-slate-800">{new Date(showingCoupon.termino + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</p>
+                                            <p className="text-[8px] font-bold text-slate-400 uppercase">Fim</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* QR Code Simulado */}
+                                <div className="mt-4 pt-4 border-t border-slate-100 border-dashed flex flex-col items-center gap-2">
+                                    <div className="w-24 h-24 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 relative group">
+                                        <QrCode className="w-16 h-16 text-slate-800 opacity-80" />
+                                        <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Search className="w-6 h-6 text-slate-800" />
+                                        </div>
+                                    </div>
+                                    <p className="text-[9px] font-mono text-slate-400 tracking-widest uppercase">
+                                        AUTH-{showingCoupon.id.slice(0, 8).toUpperCase()}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer do Cupom */}
+                        <div className="bg-slate-50 p-4 border-t border-dashed border-slate-200 flex gap-2">
+                            <button
+                                onClick={() => {
+                                    setPrintRequest(showingCoupon);
+                                    setShowingCoupon(null);
+                                }}
+                                className="flex-1 bg-white border border-slate-200 py-2.5 rounded-xl font-bold text-xs text-slate-600 hover:bg-slate-100 transition-all flex items-center justify-center gap-2"
+                            >
+                                <Printer className="w-4 h-4" /> Imprimir
+                            </button>
+                            <button
+                                onClick={() => handleSendEmail(showingCoupon)}
+                                disabled={sendingEmailId === showingCoupon.id}
+                                className="flex-1 bg-blue-600 py-2.5 rounded-xl font-bold text-xs text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+                            >
+                                {sendingEmailId === showingCoupon.id ? (
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <>
+                                        <Send className="w-4 h-4" /> Enviar
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
