@@ -99,9 +99,9 @@ export default function SideMenu({
                             <img src="/logo_gsd.jpg" alt="Logo" className="w-full h-full object-cover scale-125" />
                         </div>
                         {!isCollapsed && (
-                            <h1 className="text-xl font-black tracking-tighter whitespace-nowrap">
+                            <h1 className="text-lg font-black tracking-tighter whitespace-nowrap">
                                 <span className="text-white">GUARDIÃO</span>
-                                <span className="text-blue-500 ml-1.5 font-bold tracking-[0.1em]">GSD-SP</span>
+                                <span className="text-white/60 ml-1.5 font-bold tracking-[0.1em]">GSD-SP</span>
                             </h1>
                         )}
                     </div>

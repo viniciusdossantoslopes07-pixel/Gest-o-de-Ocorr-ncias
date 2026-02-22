@@ -125,11 +125,11 @@ const HomeView: React.FC<HomeViewProps> = ({
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="bg-white/5 px-3 py-1 rounded-full border border-white/10 flex items-center gap-2">
-                    <span className="text-white font-black tracking-tighter text-[13px]">GUARDIÃO</span>
-                    <span className="text-blue-400 font-bold tracking-widest text-[11px]">GSD-SP</span>
+                  <span className="bg-white/5 px-2.5 py-0.5 rounded-full border border-white/10 flex items-center gap-2">
+                    <span className="text-white font-black tracking-tighter text-[11px]">GUARDIÃO</span>
+                    <span className="text-white/50 font-bold tracking-widest text-[9px]">GSD-SP</span>
                   </span>
-                  <span className="text-white/40 font-bold text-[11px] uppercase tracking-widest ml-1">• Operacional</span>
+                  <span className="text-white/40 font-bold text-[9px] uppercase tracking-widest ml-1">• Operacional</span>
                 </div>
                 <p className="text-white/60 text-[11px] font-bold uppercase tracking-wider">Sistema Guardião v1.1</p>
               </div>

@@ -198,9 +198,9 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                 <img src="/logo_gsd.jpg" alt="Logo GSD-SP" className="w-full h-full object-cover" />
               </div>
             </div>
-            <h1 className={`text-3xl sm:text-4xl font-black tracking-tighter mb-2 whitespace-nowrap`}>
+            <h1 className={`text-2xl sm:text-3xl font-black tracking-tighter mb-2 whitespace-nowrap`}>
               <span className={isDarkMode ? 'text-white' : 'text-slate-900'}>GUARDIÃO</span>
-              <span className="text-blue-500 ml-2 font-bold tracking-[0.15em]">GSD-SP</span>
+              <span className={`${isDarkMode ? 'text-slate-400' : 'text-slate-500'} ml-2 font-bold tracking-[0.15em]`}>GSD-SP</span>
             </h1>
             <p className={`${isDarkMode ? 'text-slate-400' : 'text-slate-500'} font-medium text-sm`}>Sistema de Segurança e Defesa</p>
           </div>
