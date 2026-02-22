@@ -415,6 +415,7 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
                     <div className="lg:col-span-8">
                         {selectedUser ? (
                             <div className={`rounded-3xl border overflow-hidden transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-100 shadow-sm'}`}>
+                                <div className={`p-4 md:p-6 border-b transition-all ${isDarkMode ? 'bg-slate-900/60 border-slate-700' : 'bg-slate-50/50 border-slate-100'}`}>
                                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                         <div className="flex items-center gap-3 md:gap-4">
                                             <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center text-lg md:text-xl font-bold ${isDarkMode ? 'bg-slate-800 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
@@ -442,7 +443,7 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
                                         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                                             <Briefcase className="w-3 h-3" /> Função no Sistema
                                         </h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 md:gap-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 md:gap-3">
                                             {Object.values(availableFunctions).map((func) => (
                                                 <button
                                                     key={func.id}
@@ -529,144 +530,143 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
                                     </section>
                                 </div>
                             </div>
-                    ) : (
-                    <div className={`h-full flex flex-col items-center justify-center p-12 rounded-3xl border-2 border-dashed ${isDarkMode ? 'border-slate-800 bg-slate-800/20' : 'border-slate-100 bg-slate-50/50'}`}>
-                        <Users className="w-10 h-10 text-slate-300 mb-4" />
-                        <h3 className={`font-black uppercase tracking-widest text-sm ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Aguardando Seleção</h3>
-                        <p className="text-xs text-slate-400 mt-2 text-center">Escolha um militar na lista lateral para ajustar os acessos</p>
-                    </div>
+                        ) : (
+                            <div className={`h-full flex flex-col items-center justify-center p-12 rounded-3xl border-2 border-dashed ${isDarkMode ? 'border-slate-800 bg-slate-800/20' : 'border-slate-100 bg-slate-50/50'}`}>
+                                <Users className="w-10 h-10 text-slate-300 mb-4" />
+                                <h3 className={`font-black uppercase tracking-widest text-sm ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Aguardando Seleção</h3>
+                                <p className="text-xs text-slate-400 mt-2 text-center">Escolha um militar na lista lateral para ajustar os acessos</p>
+                            </div>
                         )}
-                </div>
-                </div>
-    ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-            <div className="lg:col-span-4 space-y-6">
-                <div className={`p-6 rounded-3xl border transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Grupos Customizados</h3>
-                        <button onClick={handleCreateGroup} className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg shadow-blue-600/20 transition-all">
-                            <Users className="w-4 h-4" />
-                        </button>
                     </div>
-                    <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                        {customGroups.length === 0 && (
-                            <p className="text-xs text-slate-400 font-bold uppercase text-center py-10">Nenhum grupo</p>
-                        )}
-                        {customGroups.map(group => (
-                            <div
-                                key={group.id}
-                                onClick={() => handleEditGroup(group)}
-                                className={`p-4 rounded-2xl border-2 transition-all cursor-pointer group ${editingGroup?.id === group.id
-                                    ? 'border-blue-600 bg-blue-600 text-white'
-                                    : (isDarkMode ? 'bg-slate-800 border-slate-800 hover:border-slate-700 text-slate-300' : 'bg-white border-white hover:border-slate-100 shadow-sm')
-                                    }`}
-                            >
-                                <div className="flex justify-between items-start mb-2">
-                                    <h4 className="text-xs font-black uppercase tracking-tight">{group.name}</h4>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleDeleteGroup(group.id); }}
-                                        className={`p-1.5 rounded-lg transition-colors ${editingGroup?.id === group.id ? 'hover:bg-white/20 text-white' : 'hover:bg-red-50 text-slate-300 hover:text-red-500'}`}
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                    <div className="lg:col-span-4 space-y-6">
+                        <div className={`p-6 rounded-3xl border transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Grupos Customizados</h3>
+                                <button onClick={handleCreateGroup} className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg shadow-blue-600/20 transition-all">
+                                    <Users className="w-4 h-4" />
+                                </button>
+                            </div>
+                            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                                {customGroups.length === 0 && (
+                                    <p className="text-xs text-slate-400 font-bold uppercase text-center py-10">Nenhum grupo</p>
+                                )}
+                                {customGroups.map(group => (
+                                    <div
+                                        key={group.id}
+                                        onClick={() => handleEditGroup(group)}
+                                        className={`p-4 rounded-2xl border-2 transition-all cursor-pointer group ${editingGroup?.id === group.id
+                                            ? 'border-blue-600 bg-blue-600 text-white'
+                                            : (isDarkMode ? 'bg-slate-800 border-slate-800 hover:border-slate-700 text-slate-300' : 'bg-white border-white hover:border-slate-100 shadow-sm')
+                                            }`}
                                     >
-                                        <Trash2 className="w-3.5 h-3.5" />
+                                        <div className="flex justify-between items-start mb-2">
+                                            <h4 className="text-xs font-black uppercase tracking-tight">{group.name}</h4>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleDeleteGroup(group.id); }}
+                                                className={`p-1.5 rounded-lg transition-colors ${editingGroup?.id === group.id ? 'hover:bg-white/20 text-white' : 'hover:bg-red-50 text-slate-300 hover:text-red-500'}`}
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                        <p className={`text-[10px] font-bold opacity-70 line-clamp-2 ${editingGroup?.id === group.id ? 'text-white' : 'text-slate-500'}`}>
+                                            {group.description || 'Sem descrição.'}
+                                        </p>
+                                        <div className={`mt-3 pt-3 border-t text-[9px] font-black uppercase tracking-widest flex items-center gap-2 ${editingGroup?.id === group.id ? 'border-white/20 text-white' : 'border-slate-100 text-slate-400'}`}>
+                                            <Shield className="w-3 h-3" /> {group.permissions?.length || 0} Permissões
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="lg:col-span-8">
+                        {editingGroup ? (
+                            <div className={`rounded-3xl border overflow-hidden transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-100 shadow-sm'}`}>
+                                <div className={`p-6 border-b flex items-center justify-between ${isDarkMode ? 'bg-slate-900/60 border-slate-700' : 'bg-slate-50/50 border-slate-100'}`}>
+                                    <h3 className={`font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                        {editingGroup.id === 'new' ? 'Novo Perfil de Acesso' : 'Refinar Perfil'}
+                                    </h3>
+                                    <button
+                                        onClick={handleSaveGroup}
+                                        disabled={isSaving}
+                                        className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-green-600/20 disabled:opacity-50"
+                                    >
+                                        {isSaving ? 'Salvando...' : <><Save className="w-4 h-4" /> Registrar</>}
                                     </button>
                                 </div>
-                                <p className={`text-[10px] font-bold opacity-70 line-clamp-2 ${editingGroup?.id === group.id ? 'text-white' : 'text-slate-500'}`}>
-                                    {group.description || 'Sem descrição.'}
-                                </p>
-                                <div className={`mt-3 pt-3 border-t text-[9px] font-black uppercase tracking-widest flex items-center gap-2 ${editingGroup?.id === group.id ? 'border-white/20 text-white' : 'border-slate-100 text-slate-400'}`}>
-                                    <Shield className="w-3 h-3" /> {group.permissions?.length || 0} Permissões
+                                <div className="p-8 space-y-10 max-h-[600px] overflow-y-auto custom-scrollbar">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome Identificador</label>
+                                            <input
+                                                type="text"
+                                                className={`w-full p-3 border rounded-xl text-sm font-bold focus:ring-2 focus:ring-green-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                                                placeholder="Ex: Auxiliar de Setor"
+                                                value={groupForm.name}
+                                                onChange={e => setGroupForm({ ...groupForm, name: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descrição</label>
+                                            <input
+                                                type="text"
+                                                className={`w-full p-3 border rounded-xl text-sm font-bold focus:ring-2 focus:ring-green-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                                                placeholder="Descrição das responsabilidades..."
+                                                value={groupForm.description}
+                                                onChange={e => setGroupForm({ ...groupForm, description: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <section>
+                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                                            <Check className="w-3 h-3" /> Privilégios do Perfil
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            {Object.entries(groupedPermissions).map(([category, perms]) => (
+                                                <div key={category} className="space-y-3">
+                                                    <h5 className={`text-[10px] font-black uppercase tracking-widest pb-2 border-b ${isDarkMode ? 'text-slate-300 border-slate-800' : 'text-slate-600 border-slate-100'}`}>
+                                                        {category}
+                                                    </h5>
+                                                    <div className="space-y-1.5">
+                                                        {perms.map(permKey => (
+                                                            <div
+                                                                key={permKey}
+                                                                onClick={() => toggleGroupPermission(permKey)}
+                                                                className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all ${groupForm.permissions.includes(permKey)
+                                                                    ? (isDarkMode ? 'bg-green-600/10' : 'bg-green-50')
+                                                                    : (isDarkMode ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50')
+                                                                    }`}
+                                                            >
+                                                                <span className={`text-[11px] font-bold ${groupForm.permissions.includes(permKey) ? 'text-green-600' : 'text-slate-500'}`}>
+                                                                    {formatPermissionName(permKey)}
+                                                                </span>
+                                                                <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${groupForm.permissions.includes(permKey) ? 'bg-green-600 border-green-600' : 'border-slate-300'}`}>
+                                                                    {groupForm.permissions.includes(permKey) && <Check className="w-3 h-3 text-white" />}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </section>
                                 </div>
                             </div>
-                        ))}
+                        ) : (
+                            <div className={`h-full flex flex-col items-center justify-center p-12 rounded-3xl border-2 border-dashed ${isDarkMode ? 'border-slate-800 bg-slate-800/20' : 'border-slate-100 bg-slate-50/50'}`}>
+                                <Shield className="w-10 h-10 text-slate-300 mb-4 animate-pulse" />
+                                <h3 className={`font-black uppercase tracking-widest text-sm ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Editor de Grupos</h3>
+                                <p className="text-xs text-slate-400 mt-2">Selecione ou crie um grupo para gerenciar privilégios</p>
+                            </div>
+                        )}
                     </div>
                 </div>
-            </div>
-
-            <div className="lg:col-span-8">
-                {editingGroup ? (
-                    <div className={`rounded-3xl border overflow-hidden transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-100 shadow-sm'}`}>
-                        <div className={`p-6 border-b flex items-center justify-between ${isDarkMode ? 'bg-slate-900/60 border-slate-700' : 'bg-slate-50/50 border-slate-100'}`}>
-                            <h3 className={`font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                                {editingGroup.id === 'new' ? 'Novo Perfil de Acesso' : 'Refinar Perfil'}
-                            </h3>
-                            <button
-                                onClick={handleSaveGroup}
-                                disabled={isSaving}
-                                className="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-green-600/20 disabled:opacity-50"
-                            >
-                                {isSaving ? 'Salvando...' : <><Save className="w-4 h-4" /> Registrar</>}
-                            </button>
-                        </div>
-                        <div className="p-8 space-y-10 max-h-[600px] overflow-y-auto custom-scrollbar">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome Identificador</label>
-                                    <input
-                                        type="text"
-                                        className={`w-full p-3 border rounded-xl text-sm font-bold focus:ring-2 focus:ring-green-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
-                                        placeholder="Ex: Auxiliar de Setor"
-                                        value={groupForm.name}
-                                        onChange={e => setGroupForm({ ...groupForm, name: e.target.value })}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descrição</label>
-                                    <input
-                                        type="text"
-                                        className={`w-full p-3 border rounded-xl text-sm font-bold focus:ring-2 focus:ring-green-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
-                                        placeholder="Descrição das responsabilidades..."
-                                        value={groupForm.description}
-                                        onChange={e => setGroupForm({ ...groupForm, description: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                            <section>
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                    <Check className="w-3 h-3" /> Privilégios do Perfil
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    {Object.entries(groupedPermissions).map(([category, perms]) => (
-                                        <div key={category} className="space-y-3">
-                                            <h5 className={`text-[10px] font-black uppercase tracking-widest pb-2 border-b ${isDarkMode ? 'text-slate-300 border-slate-800' : 'text-slate-600 border-slate-100'}`}>
-                                                {category}
-                                            </h5>
-                                            <div className="space-y-1.5">
-                                                {perms.map(permKey => (
-                                                    <div
-                                                        key={permKey}
-                                                        onClick={() => toggleGroupPermission(permKey)}
-                                                        className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all ${groupForm.permissions.includes(permKey)
-                                                            ? (isDarkMode ? 'bg-green-600/10' : 'bg-green-50')
-                                                            : (isDarkMode ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50')
-                                                            }`}
-                                                    >
-                                                        <span className={`text-[11px] font-bold ${groupForm.permissions.includes(permKey) ? 'text-green-600' : 'text-slate-500'}`}>
-                                                            {formatPermissionName(permKey)}
-                                                        </span>
-                                                        <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${groupForm.permissions.includes(permKey) ? 'bg-green-600 border-green-600' : 'border-slate-300'}`}>
-                                                            {groupForm.permissions.includes(permKey) && <Check className="w-3 h-3 text-white" />}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </section>
-                        </div>
-                    </div>
-                ) : (
-                    <div className={`h-full flex flex-col items-center justify-center p-12 rounded-3xl border-2 border-dashed ${isDarkMode ? 'border-slate-800 bg-slate-800/20' : 'border-slate-100 bg-slate-50/50'}`}>
-                        <Shield className="w-10 h-10 text-slate-300 mb-4 animate-pulse" />
-                        <h3 className={`font-black uppercase tracking-widest text-sm ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Editor de Grupos</h3>
-                        <p className="text-xs text-slate-400 mt-2">Selecione ou crie um grupo para gerenciar privilégios</p>
-                    </div>
-                )}
-            </div>
+            )}
         </div>
-    )
-}
-        </div >
     );
 }
 
