@@ -241,12 +241,12 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, isDarkMode, onS
                                             <button
                                                 onClick={() => isAdded ? removeFromBatch(item.id) : addToBatch(item)}
                                                 disabled={submitting || (!hasStock && !isAdded)}
-                                                className={`w-full h-14 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all shadow-md flex items-center justify-center gap-3 ${isAdded ? 'bg-emerald-500 text-white hover:bg-emerald-600 hover:shadow-emerald-500/20' : hasStock ? 'bg-slate-900 text-white hover:bg-blue-600 hover:shadow-blue-600/20' : 'bg-slate-50 text-slate-200 cursor-not-allowed border border-dashed border-slate-200 shadow-none'}`}
+                                                className={`w-full h-10 lg:h-14 rounded-xl font-black uppercase text-[8px] lg:text-[10px] tracking-widest transition-all shadow-md flex items-center justify-center gap-2 lg:gap-3 ${isAdded ? 'bg-emerald-500 text-white hover:bg-emerald-600 hover:shadow-emerald-500/20' : hasStock ? 'bg-slate-900 text-white hover:bg-blue-600 hover:shadow-blue-600/20' : 'bg-slate-50 text-slate-200 cursor-not-allowed border border-dashed border-slate-200 shadow-none'}`}
                                             >
                                                 {isAdded ? (
-                                                    <><CheckCircle className="w-4 h-4" /> Item Selecionado</>
+                                                    <><CheckCircle className="w-3.5 h-3.5 lg:w-4 lg:h-4" /> Selecionado</>
                                                 ) : (
-                                                    <><Plus className="w-4 h-4" /> Adicionar</>
+                                                    <><Plus className="w-3.5 h-3.5 lg:w-4 lg:h-4" /> Adicionar</>
                                                 )}
                                             </button>
                                         </div>
@@ -337,7 +337,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, isDarkMode, onS
             </div>
 
             {/* Barra de Ação Mobile (Sticky Bottom) */}
-            <div className={`md:hidden fixed bottom-0 left-0 right-0 p-3 border-t shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-50 transition-transform duration-300 ease-in-out ${selectedBatch.length > 0 ? 'translate-y-0' : 'translate-y-full'} ${isDarkMode ? 'bg-slate-900/95 backdrop-blur-xl border-slate-800' : 'bg-white/95 backdrop-blur-xl border-slate-100'}`}>
+            <div className={`md:hidden fixed bottom-0 left-0 right-0 p-3 border-t shadow-[0_-8px_30px_rgba(0,0,0,0.2)] z-[100] transition-transform duration-300 ease-in-out ${selectedBatch.length > 0 ? 'translate-y-0' : 'translate-y-full'} ${isDarkMode ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-100'}`}>
                 <div className="flex gap-2">
                     <button
                         onClick={() => setShowCartMobile(!showCartMobile)}
@@ -359,8 +359,8 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, isDarkMode, onS
 
             {/* Modal de Carrinho Mobile */}
             {showCartMobile && (
-                <div className="md:hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] animate-fade-in flex items-end p-4" onClick={() => setShowCartMobile(false)}>
-                    <div className={`w-full max-h-[70vh] rounded-[2rem] p-8 flex flex-col animate-slide-up ${isDarkMode ? 'bg-slate-800' : 'bg-white'}`} onClick={e => e.stopPropagation()}>
+                <div className="md:hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[110] animate-fade-in flex items-end p-4" onClick={() => setShowCartMobile(false)}>
+                    <div className={`w-full max-h-[70vh] rounded-[2rem] p-6 lg:p-8 flex flex-col animate-slide-up shadow-2xl border ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`} onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-8">
                             <h3 className={`font-black uppercase text-xs tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Itens da Cautela</h3>
                             <button onClick={() => setShowCartMobile(false)} className={`p-2 rounded-full ${isDarkMode ? 'bg-slate-700 text-white' : 'bg-slate-100'}`}><X className="w-4 h-4" /></button>

@@ -130,13 +130,13 @@ const MaterialDashboard: React.FC<MaterialDashboardProps> = ({ isDarkMode = fals
 
     return (
         <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
-            <div className={`p-4 rounded-[1.5rem] border shadow-sm flex flex-col md:flex-row justify-between items-center gap-4 transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-xl' : 'bg-white border-slate-100'}`}>
+            <div className={`p-4 rounded-[1.5rem] border shadow-lg flex flex-col md:flex-row justify-between items-center gap-4 transition-all ${isDarkMode ? 'bg-slate-900/60 border-slate-800/50 backdrop-blur-xl shadow-blue-500/5' : 'bg-white border-slate-100'}`}>
                 <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className={`p-2.5 rounded-xl shrink-0 ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
+                    <div className={`p-2.5 rounded-xl shrink-0 ${isDarkMode ? 'bg-blue-500/20 text-blue-400 shadow-inner' : 'bg-blue-50 text-blue-600'}`}>
                         <Package className="w-6 h-6" />
                     </div>
                     <div>
-                        <h2 className={`text-lg font-black leading-tight uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                        <h2 className={`text-lg font-black leading-tight uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-900'}`}>
                             Gestão de Cautelas
                         </h2>
                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Controle Administrativo de Materiais</p>
@@ -202,8 +202,8 @@ const MaterialDashboard: React.FC<MaterialDashboardProps> = ({ isDarkMode = fals
                                                         {loan.requester?.name?.[0]}
                                                     </div>
                                                     <div>
-                                                        <div className={`font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{loan.requester?.rank} {loan.requester?.name}</div>
-                                                        <div className="text-[10px] font-black text-blue-500 uppercase tracking-widest opacity-80">{loan.requester?.saram}</div>
+                                                        <div className={`font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-900'}`}>{loan.requester?.rank} {loan.requester?.name}</div>
+                                                        <div className={`text-[10px] font-black uppercase tracking-widest opacity-80 ${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`}>{loan.requester?.saram}</div>
                                                     </div>
                                                 </div>
                                             </td>

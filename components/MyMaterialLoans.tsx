@@ -422,7 +422,7 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user, isDarkMo
                             <div
                                 key={loan.id}
                                 onClick={() => setSelectedLoan(loan)}
-                                className={`group p-3.5 rounded-2xl border transition-all duration-300 flex items-center gap-4 cursor-pointer hover:shadow-2xl active:scale-[0.98] ${loan.status === 'Pendente' ? (isDarkMode ? 'border-amber-500/30 bg-amber-500/5' : 'border-amber-100 bg-amber-50/10') :
+                                className={`group p-2.5 lg:p-3.5 rounded-2xl border transition-all duration-300 flex items-center gap-3 lg:gap-4 cursor-pointer hover:shadow-2xl active:scale-[0.98] ${loan.status === 'Pendente' ? (isDarkMode ? 'border-amber-500/30 bg-amber-500/5' : 'border-amber-100 bg-amber-50/10') :
                                     loan.status === 'Aprovado' ? (isDarkMode ? 'border-blue-500/30 bg-blue-500/5' : 'border-blue-100 bg-blue-50/10') :
                                         loan.status === 'Em Uso' ? (isDarkMode ? 'border-emerald-500/30 bg-emerald-500/5 shadow-emerald-500/5' : 'border-emerald-100 bg-emerald-50/10') :
                                             loan.status === 'Rejeitado' ? (isDarkMode ? 'border-red-500/30 bg-red-500/5' : 'border-red-100 bg-red-50/10') :
@@ -445,24 +445,24 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user, isDarkMo
                                 )}
 
                                 {/* Icon / Status Indicator */}
-                                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-lg transform group-hover:scale-110 transition-transform ${loan.status === 'Pendente' ? 'bg-amber-500 text-white shadow-amber-500/20' :
+                                <div className={`w-9 h-9 lg:w-11 lg:h-11 rounded-xl flex items-center justify-center shrink-0 shadow-lg transform group-hover:scale-110 transition-transform ${loan.status === 'Pendente' ? 'bg-amber-500 text-white shadow-amber-500/20' :
                                     loan.status === 'Aprovado' ? 'bg-blue-600 text-white shadow-blue-500/20' :
                                         loan.status === 'Em Uso' ? 'bg-emerald-600 text-white shadow-emerald-500/20' :
                                             loan.status === 'Rejeitado' ? 'bg-red-500 text-white shadow-red-500/20' :
                                                 'bg-slate-500 text-white shadow-slate-500/20'
                                     }`}>
-                                    {loan.status === 'Em Uso' ? <Truck className="w-5 h-5" /> :
-                                        loan.status === 'Aprovado' ? <CheckCircle className="w-5 h-5" /> :
-                                            <Package className="w-5 h-5" />}
+                                    {loan.status === 'Em Uso' ? <Truck className="w-4 h-4 lg:w-5 lg:h-5" /> :
+                                        loan.status === 'Aprovado' ? <CheckCircle className="w-4 h-4 lg:w-5 lg:h-5" /> :
+                                            <Package className="w-4 h-4 lg:w-5 lg:h-5" />}
                                 </div>
 
                                 {/* Content */}
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-start mb-1.5">
-                                        <h3 className={`font-black text-sm uppercase tracking-tight truncate pr-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                        <h3 className={`font-black text-[11px] lg:text-sm uppercase tracking-tight truncate pr-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                                             {loan.material?.material || 'Material'}
                                         </h3>
-                                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg shrink-0 ${loan.status === 'Pendente' ? 'bg-amber-500/20 text-amber-500' :
+                                        <span className={`text-[8px] lg:text-[9px] font-black uppercase tracking-widest px-1.5 lg:px-2 py-0.5 lg:py-1 rounded-lg shrink-0 ${loan.status === 'Pendente' ? 'bg-amber-500/20 text-amber-500' :
                                             loan.status === 'Aprovado' ? 'bg-blue-600/20 text-blue-500' :
                                                 loan.status === 'Em Uso' ? 'bg-emerald-600/20 text-emerald-500' :
                                                     loan.status === 'Rejeitado' ? 'bg-red-500/20 text-red-500' :
@@ -472,13 +472,13 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user, isDarkMo
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <p className="text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 lg:gap-2">
                                             {loan.quantidade && loan.quantidade > 1 && <span className="text-blue-500">{loan.quantidade} UN</span>}
                                             <span className="opacity-50">•</span>
-                                            <span className="truncate max-w-[120px]">{loan.material?.tipo_de_material}</span>
+                                            <span className="truncate max-w-[80px] lg:max-w-[120px]">{loan.material?.tipo_de_material}</span>
                                         </p>
-                                        <div className="text-[9px] font-black text-slate-400 flex items-center gap-1.5 shrink-0 uppercase tracking-widest">
-                                            <Calendar className="w-3 h-3 text-blue-500" />
+                                        <div className="text-[8px] lg:text-[9px] font-black text-slate-400 flex items-center gap-1 shrink-0 uppercase tracking-widest">
+                                            <Calendar className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-blue-500" />
                                             {new Date(loan.created_at).toLocaleDateString()}
                                         </div>
                                     </div>
