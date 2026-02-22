@@ -916,8 +916,8 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
 
             {/* Signature Modal */}
             {showSignatureModal && orderToSign && (
-                <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-50">
-                    <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} rounded-2xl shadow-xl p-6 w-full max-w-md m-4 border animate-in fade-in zoom-in duration-200`}>
+                <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl shadow-blue-500/5' : 'bg-white border-slate-200'} rounded-[2rem] shadow-2xl p-6 w-full max-w-md border animate-in fade-in zoom-in duration-300`}>
                         <div className="flex items-center gap-3 mb-6 text-orange-600">
                             <div className={`${isDarkMode ? 'bg-orange-500/10' : 'bg-orange-100'} p-3 rounded-xl`}>
                                 <FileSignature className="w-8 h-8" />
@@ -929,16 +929,16 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                         </div>
 
                         <div className="space-y-4">
-                            <div className={`${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'} p-4 rounded-xl border text-sm`}>
-                                <div className="grid grid-cols-2 gap-y-2">
-                                    <span className={`font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase text-[10px]`}>Documento:</span>
-                                    <span className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>OM #{orderToSign.omisNumber}</span>
+                            <div className={`${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 backdrop-blur-md' : 'bg-slate-50 border-slate-200'} p-5 rounded-3xl border text-sm`}>
+                                <div className="grid grid-cols-2 gap-y-3">
+                                    <span className={`font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase text-[9px] tracking-widest`}>Documento:</span>
+                                    <span className={`font-black tracking-tight ${isDarkMode ? 'text-blue-400' : 'text-slate-800'}`}>OM #{orderToSign.omisNumber}</span>
 
-                                    <span className={`font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase text-[10px]`}>Assinante:</span>
+                                    <span className={`font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase text-[9px] tracking-widest`}>Assinante:</span>
                                     <span className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{user.name}</span>
 
-                                    <span className={`font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase text-[10px]`}>Função:</span>
-                                    <span className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{user.rank} - {user.sector}</span>
+                                    <span className={`font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase text-[9px] tracking-widest`}>Função:</span>
+                                    <span className={`font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-800'}`}>{user.rank} - {user.sector}</span>
                                 </div>
                             </div>
 
@@ -948,7 +948,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                     type="password"
                                     value={signaturePassword}
                                     onChange={(e) => setSignaturePassword(e.target.value)}
-                                    className={`w-full px-4 py-3 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-300 bg-white text-slate-900'} rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition-all`}
+                                    className={`w-full px-5 py-4 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white focus:bg-slate-800' : 'border-slate-300 bg-white text-slate-900'} rounded-2xl focus:ring-4 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all placeholder:text-slate-600`}
                                     placeholder="Digite sua senha de login..."
                                     autoFocus
                                 />
@@ -957,7 +957,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                             <div className="pt-2">
                                 <button
                                     onClick={confirmSignature}
-                                    className="w-full py-4 bg-orange-600 text-white font-black uppercase tracking-widest rounded-xl hover:bg-orange-700 shadow-lg shadow-orange-600/20 transition-all active:scale-[0.98]"
+                                    className="w-full py-4 bg-orange-600 text-white font-black uppercase tracking-[0.2em] text-xs rounded-2xl hover:bg-orange-500 shadow-xl shadow-orange-600/20 hover:shadow-orange-500/40 transition-all active:scale-[0.98]"
                                 >
                                     Confirmar Assinatura
                                 </button>
@@ -994,9 +994,9 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                             alert('Falha na autenticação biométrica.');
                                         }
                                     }}
-                                    className={`w-full mt-3 py-4 ${isDarkMode ? 'bg-emerald-900/20 text-emerald-400 border-emerald-800 hover:bg-emerald-900/30' : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'} rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 transition-all border`}
+                                    className={`w-full mt-3 py-4 ${isDarkMode ? 'bg-emerald-900/20 text-emerald-400 border-emerald-800/50 hover:bg-emerald-800/30' : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'} rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] flex items-center justify-center gap-3 transition-all border shadow-lg shadow-emerald-950/20`}
                                 >
-                                    <Fingerprint className="w-5 h-5" /> Assinar com Biometria
+                                    <Fingerprint className="w-5 h-5 animate-pulse" /> Assinar com Biometria
                                 </button>
                             )}
                         </div>
@@ -1027,10 +1027,10 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
             {
                 showEndMissionModal && missionEnding && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-                        <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} w-full max-w-md shadow-2xl overflow-hidden relative border animate-in fade-in zoom-in duration-200`}
+                        <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl' : 'bg-white border-slate-200'} w-full max-w-md shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden relative border animate-in fade-in zoom-in duration-300`}
                             style={{
-                                borderRadius: '0px',
-                                borderTop: `8px solid ${isDarkMode ? '#ef4444' : '#cc0000'}`
+                                borderRadius: '2rem',
+                                borderTop: `12px solid ${isDarkMode ? '#ef4444' : '#cc0000'}`
                             }}>
 
                             <div className="p-8 space-y-6">
@@ -1048,7 +1048,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                         <textarea
                                             value={endReport}
                                             onChange={e => setEndReport(e.target.value)}
-                                            className={`w-full px-4 py-3 ${isDarkMode ? 'bg-slate-800/50 border-slate-700 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-900'} rounded-lg text-sm font-mono focus:ring-2 focus:ring-red-500 outline-none resize-none transition-all`}
+                                            className={`w-full px-5 py-4 ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 text-slate-200 focus:bg-slate-800' : 'bg-slate-50 border-slate-200 text-slate-900'} rounded-2xl text-sm font-mono focus:ring-4 focus:ring-red-500/20 focus:border-red-500 outline-none resize-none transition-all placeholder:text-slate-600`}
                                             rows={6}
                                             placeholder="Descreva as ocorrências e resultados da missão..."
                                             autoFocus
@@ -1063,7 +1063,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 <div className="flex flex-col gap-3">
                                     <button
                                         onClick={confirmMissionEnd}
-                                        className="w-full py-4 bg-red-600 text-white font-black uppercase tracking-widest hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all active:scale-[0.98]"
+                                        className="w-full py-5 bg-red-600 text-white font-black uppercase tracking-[0.2em] text-xs hover:bg-red-500 shadow-xl shadow-red-600/20 hover:shadow-red-500/40 transition-all active:scale-[0.98] rounded-2xl"
                                     >
                                         Confirmar Finalização
                                     </button>
