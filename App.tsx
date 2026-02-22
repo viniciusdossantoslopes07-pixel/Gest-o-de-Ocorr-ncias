@@ -671,10 +671,9 @@ const App: FC = () => {
       schedule: [
         {
           id: Math.random().toString(),
-          activity: mission.dados_missao.tipo_missao,
-          location: mission.dados_missao.local,
-          date: mission.dados_missao.data,
-          time: mission.dados_missao.inicio
+          startTime: mission.dados_missao.inicio,
+          endTime: mission.dados_missao.termino,
+          event: `${mission.dados_missao.tipo_missao} - ${mission.dados_missao.local}`
         }
       ],
       missionCommanderId: mission.solicitante_id
@@ -1004,6 +1003,7 @@ const App: FC = () => {
                 user={currentUser}
                 onCancel={() => setActiveTab('home')}
                 onSubmit={handleCreateMissionRequest}
+                isDarkMode={isDarkMode}
               />
             </div>
           )}
@@ -1024,7 +1024,7 @@ const App: FC = () => {
           {/* MISSION CENTER (Unified) */}
           {activeTab === 'mission-center' && (canManageMissions || canRequestMission) && (
             <div className="flex-1 overflow-auto p-4">
-              <MissionManager user={currentUser} />
+              <MissionManager user={currentUser} isDarkMode={isDarkMode} />
             </div>
           )}
 

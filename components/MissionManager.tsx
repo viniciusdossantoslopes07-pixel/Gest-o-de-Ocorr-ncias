@@ -617,36 +617,36 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
 
             {/* Unified Tabs - Responsive with horizontal scroll */}
             <div className="overflow-x-auto pb-2 -mx-1 sm:mx-0 scrollbar-hide">
-                <div className={`flex p-1 ${isDarkMode ? 'bg-slate-900/50 border border-slate-800/50' : 'bg-slate-100'} rounded-xl w-max sm:w-fit min-w-full sm:min-w-0`}>
+                <div className={`flex p-1 ${isDarkMode ? 'bg-slate-950/50 border border-slate-800/50 backdrop-blur-md shadow-inner' : 'bg-slate-100'} rounded-xl w-max sm:w-fit min-w-full sm:min-w-0`}>
                     <button
                         onClick={() => setActiveTab('solicitar_missao')}
-                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'solicitar_missao' ? (isDarkMode ? 'bg-slate-700 text-blue-400' : 'bg-white text-blue-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
+                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'solicitar_missao' ? (isDarkMode ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20 shadow-lg shadow-blue-500/10' : 'bg-white text-blue-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
                     >
                         <PlusCircle className="w-3.5 h-3.5 sm:w-4 h-4" /> <span className="hidden xs:inline">Solicitar Missão</span><span className="xs:hidden">Solicitar</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('minhas_solicitacoes')}
-                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'minhas_solicitacoes' ? (isDarkMode ? 'bg-slate-700 text-blue-400' : 'bg-white text-blue-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
+                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'minhas_solicitacoes' ? (isDarkMode ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20 shadow-lg shadow-blue-500/10' : 'bg-white text-blue-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
                     >
                         <List className="w-3.5 h-3.5 sm:w-4 h-4" /> <span className="hidden xs:inline">Minhas Solicitações</span><span className="xs:hidden">Minhas</span>
                     </button>
                     {(isSop || isChSop) && (
                         <button
                             onClick={() => setActiveTab('painel_gestao')}
-                            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'painel_gestao' ? (isDarkMode ? 'bg-slate-700 text-orange-400' : 'bg-white text-orange-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
+                            className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'painel_gestao' ? (isDarkMode ? 'bg-orange-600/20 text-orange-400 border border-orange-500/20 shadow-lg shadow-orange-500/10' : 'bg-white text-orange-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
                         >
                             <Shield className="w-3.5 h-3.5 sm:w-4 h-4" /> Gestão
                         </button>
                     )}
                     <button
                         onClick={() => setActiveTab('missoes_ativas')}
-                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'missoes_ativas' ? (isDarkMode ? 'bg-slate-700 text-emerald-400' : 'bg-white text-emerald-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
+                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'missoes_ativas' ? (isDarkMode ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 shadow-lg shadow-emerald-500/10' : 'bg-white text-emerald-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
                     >
                         <Play className="w-3.5 h-3.5 sm:w-4 h-4" /> Ativas
                     </button>
                     <button
                         onClick={() => setActiveTab('missoes_finalizadas')}
-                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'missoes_finalizadas' ? (isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-white text-slate-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
+                        className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'missoes_finalizadas' ? (isDarkMode ? 'bg-slate-800 text-slate-200 border border-slate-700 shadow-sm' : 'bg-white text-slate-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
                     >
                         <CheckCircle className="w-3.5 h-3.5 sm:w-4 h-4" /> Finalizadas
                     </button>
@@ -677,7 +677,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                         setSelectedMission(m);
                                         setShowMissionCard(true);
                                     }}
-                                    className={`p-4 rounded-2xl border ${isDarkMode ? 'border-slate-800 bg-slate-800/50 hover:bg-slate-800' : 'border-slate-100 bg-white hover:bg-slate-50'} transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center cursor-pointer hover:shadow-lg group relative overflow-hidden`}
+                                    className={`p-4 rounded-2xl border ${isDarkMode ? 'border-slate-800 bg-slate-900/40 hover:bg-slate-800/60 backdrop-blur-md shadow-lg shadow-black/20' : 'border-slate-100 bg-white hover:bg-slate-50'} transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center cursor-pointer hover:shadow-xl group relative overflow-hidden`}
                                 >
                                     <div className="flex-1 min-w-0 w-full">
                                         <div className="flex items-center justify-between sm:justify-start gap-2 mb-1">
