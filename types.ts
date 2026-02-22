@@ -52,6 +52,7 @@ export interface User {
   customPermissions?: string[]; // Array de keys de permissão (ex: ['view_dashboard'])
   photo_url?: string;
   biometric_credentials_id?: string;
+  active?: boolean;
 }
 
 export interface UserFunction {

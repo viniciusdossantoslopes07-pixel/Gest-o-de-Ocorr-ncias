@@ -1,17 +1,19 @@
 import React, { useState, FC } from 'react';
 import { User, UserRole } from '../../types';
 import { RANKS, SETORES } from '../../constants';
-import { UserPlus, Search, Edit2, Trash2, Shield, User as UserIcon, Hash, Building2, Users, AlertTriangle } from 'lucide-react';
+import { UserPlus, Search, Edit2, Trash2, Shield, User as UserIcon, Hash, Building2, Users, AlertTriangle, XCircle } from 'lucide-react';
 
 interface PersonnelManagementProps {
     users: User[];
     onAddPersonnel: (user: Partial<User>) => void;
     onUpdatePersonnel: (user: User) => void;
     onDeletePersonnel: (id: string) => void;
+    onPermanentDeletePersonnel?: (id: string) => void;
     isDarkMode?: boolean;
+    currentUserRole?: string;
 }
 
-const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPersonnel, onUpdatePersonnel, onDeletePersonnel, isDarkMode = false }) => {
+const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPersonnel, onUpdatePersonnel, onDeletePersonnel, onPermanentDeletePersonnel, isDarkMode = false, currentUserRole }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -30,6 +32,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     const [filterSector, setFilterSector] = useState('TODOS');
 
     const filteredUsers = users.filter(u =>
+        (u.active !== false) && // Filtro de integridade: apenas ativos nesta gestão
         (filterSector === 'TODOS' ? true : u.sector === filterSector) &&
         (u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             u.warName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -269,9 +272,14 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                                 <button onClick={() => handleEdit(user)} className={`p-2 transition-colors ${isDarkMode ? 'text-slate-500 hover:text-indigo-400' : 'text-slate-400 hover:text-blue-600'}`}>
                                                     <Edit2 className="w-4 h-4" />
                                                 </button>
-                                                <button onClick={() => { if (confirm('Excluir militar?')) onDeletePersonnel(user.id); }} className={`p-2 transition-colors ${isDarkMode ? 'text-slate-500 hover:text-red-400' : 'text-slate-400 hover:text-red-500'}`}>
-                                                    <Trash2 className="w-4 h-4" />
+                                                <button onClick={() => { if (confirm('Desativar militar do sistema?')) onDeletePersonnel(user.id); }} className={`p-2 transition-colors ${isDarkMode ? 'text-slate-500 hover:text-amber-400' : 'text-slate-400 hover:text-amber-500'}`} title="Desativar (Soft Delete)">
+                                                    <XCircle className="w-4 h-4" />
                                                 </button>
+                                                {currentUserRole === UserRole.ADMIN && onPermanentDeletePersonnel && (
+                                                    <button onClick={() => onPermanentDeletePersonnel(user.id)} className={`p-2 transition-colors ${isDarkMode ? 'text-slate-500 hover:text-red-400' : 'text-slate-400 hover:text-red-500'}`} title="Excluir Definitivamente (Hard Delete)">
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -337,12 +345,21 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                         </button>
                                     )}
                                     <button
-                                        onClick={() => { if (confirm('Excluir militar?')) onDeletePersonnel(user.id); }}
-                                        className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-red-400/5 border-red-400/10 text-red-400 active:bg-red-400/10' : 'bg-red-50/30 border-red-100 text-red-500 active:bg-red-50'
+                                        onClick={() => { if (confirm('Desativar militar?')) onDeletePersonnel(user.id); }}
+                                        className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-amber-400/5 border-amber-400/10 text-amber-400 active:bg-amber-400/10' : 'bg-amber-50/30 border-amber-100 text-amber-500 active:bg-amber-50'
                                             }`}
                                     >
-                                        <Trash2 className="w-4 h-4" />
+                                        <XCircle className="w-4 h-4" />
                                     </button>
+                                    {currentUserRole === UserRole.ADMIN && onPermanentDeletePersonnel && (
+                                        <button
+                                            onClick={() => onPermanentDeletePersonnel(user.id)}
+                                            className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-red-400/5 border-red-400/10 text-red-400 active:bg-red-400/10' : 'bg-red-50/30 border-red-100 text-red-500 active:bg-red-50'
+                                                }`}
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         ))}

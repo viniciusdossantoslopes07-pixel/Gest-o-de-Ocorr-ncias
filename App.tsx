@@ -359,7 +359,8 @@ const App: FC = () => {
         photo_url: data.photo_url,
         functionId: data.function_id,
         customPermissions: data.custom_permissions,
-        biometric_credentials_id: data.biometric_credentials_id
+        biometric_credentials_id: data.biometric_credentials_id,
+        active: data.active
       };
 
       if (user.approved === false) {
@@ -434,7 +435,8 @@ const App: FC = () => {
         photo_url: u.photo_url,
         functionId: u.function_id,
         customPermissions: u.custom_permissions,
-        biometric_credentials_id: u.biometric_credentials_id
+        biometric_credentials_id: u.biometric_credentials_id,
+        active: u.active
       }));
       setUsers(mappedUsers);
     }
@@ -469,7 +471,8 @@ const App: FC = () => {
       display_order: newUser.displayOrder || 0,
       function_id: newUser.functionId,
       custom_permissions: newUser.customPermissions,
-      biometric_credentials_id: newUser.biometric_credentials_id
+      biometric_credentials_id: newUser.biometric_credentials_id,
+      active: true
     };
 
     const { data, error } = await supabase
@@ -498,7 +501,8 @@ const App: FC = () => {
         displayOrder: data.display_order,
         functionId: data.function_id,
         customPermissions: data.custom_permissions,
-        biometric_credentials_id: data.biometric_credentials_id
+        biometric_credentials_id: data.biometric_credentials_id,
+        active: data.active
       };
       setUsers([...users, createdUser]);
       return true;
@@ -522,7 +526,8 @@ const App: FC = () => {
       sector: newUser.sector,
       access_level: 'N1',
       approved: false,
-      phone_number: newUser.phoneNumber
+      phone_number: newUser.phoneNumber,
+      active: true
     };
 
     const { error } = await supabase
@@ -560,7 +565,8 @@ const App: FC = () => {
         photo_url: updatedUser.photo_url,
         function_id: updatedUser.functionId,
         custom_permissions: updatedUser.customPermissions,
-        biometric_credentials_id: updatedUser.biometric_credentials_id
+        biometric_credentials_id: updatedUser.biometric_credentials_id,
+        active: updatedUser.active
       })
       .eq('id', updatedUser.id);
 
@@ -575,9 +581,23 @@ const App: FC = () => {
   };
 
   const handleDeleteUser = async (id: string) => {
+    // Soft Delete por padrão para segurança histórica
+    const { error } = await supabase.from('users').update({ active: false }).eq('id', id);
+    if (!error) {
+      setUsers(users.map(u => u.id === id ? { ...u, active: false } : u));
+      alert('Militar desativado com sucesso. Ele não aparecerá mais nas chamadas atuais.');
+    } else {
+      alert('Erro ao desativar militar: ' + error.message);
+    }
+  };
+
+  const handlePermanentDeleteUser = async (id: string) => {
+    if (!confirm('AVISO CRÍTICO: Esta ação removerá o militar PERMANENTEMENTE do banco de dados. Isso pode quebrar estatísticas se os dados não foram salvos em texto. Deseja continuar?')) return;
+
     const { error } = await supabase.from('users').delete().eq('id', id);
     if (!error) {
       setUsers(users.filter(u => u.id !== id));
+      alert('Militar excluído definitivamente.');
     } else {
       alert('Erro ao excluir usuário: ' + error.message);
     }
@@ -1015,6 +1035,7 @@ const App: FC = () => {
               onCreateUser={handleCreateUser}
               onUpdateUser={handleUpdateUser}
               onDeleteUser={handleDeleteUser}
+              onPermanentDeleteUser={handlePermanentDeleteUser}
               onRefreshUsers={fetchUsers}
               currentUser={currentUser}
               isDarkMode={isDarkMode}
@@ -1046,7 +1067,7 @@ const App: FC = () => {
 
           {activeTab === 'daily-attendance' && canViewAttendance && (
             <DailyAttendanceView
-              users={users}
+              users={users.filter(u => u.active !== false)}
               onReorderUsers={handleReorderUsers}
               currentUser={currentUser!}
               attendanceHistory={attendanceHistory}
@@ -1225,14 +1246,8 @@ const App: FC = () => {
                 }
               }}
               onExcludeUser={async (userId) => {
-                if (!confirm('Deseja realmente remover este militar do setor? Ele será excluído do sistema.')) return;
-                const { error } = await supabase.from('users').delete().eq('id', userId);
-                if (error) {
-                  alert('Erro ao remover: ' + error.message);
-                } else {
-                  alert('Militar removido com sucesso.');
-                  fetchUsers();
-                }
+                if (!confirm('Deseja realmente desativar este militar? Ele será removido da chamada diária, mas seus registros históricos serão preservados.')) return;
+                await handleDeleteUser(userId);
               }}
             />
           )}
@@ -1261,10 +1276,11 @@ const App: FC = () => {
                 });
               }}
               onDeletePersonnel={(id) => {
-                if (confirm('Tem certeza que deseja excluir este usuário do sistema? Esta ação é irreversível.')) {
-                  handleDeleteUser(id);
-                }
+                // Por padrão usa o soft delete
+                handleDeleteUser(id);
               }}
+              onPermanentDeletePersonnel={handlePermanentDeleteUser}
+              currentUserRole={currentUser?.role}
             />
           )}
 

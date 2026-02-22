@@ -10,12 +10,13 @@ interface UserManagementProps {
   onCreateUser: (user: User) => void;
   onUpdateUser: (user: User) => void;
   onDeleteUser: (id: string) => void;
+  onPermanentDeleteUser?: (id: string) => void;
   onRefreshUsers?: () => void;
   currentUser: User | null;
   isDarkMode: boolean;
 }
 
-const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdateUser, onDeleteUser, onRefreshUsers, currentUser, isDarkMode }) => {
+const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdateUser, onDeleteUser, onPermanentDeleteUser, onRefreshUsers, currentUser, isDarkMode }) => {
   const [activeTab, setActiveTab] = useState<'users' | 'permissions'>('users');
   const initialFormState = {
     name: '',
@@ -36,6 +37,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showInactive, setShowInactive] = useState(false);
 
   // Rank Categories for Filtering (Consistent with PermissionManagement)
   const RANK_CATEGORIES = {
@@ -78,7 +80,13 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
   }, [users, searchTerm, selectedCategory]);
 
   const pendingUsers = useMemo(() => filteredUsers.filter(u => u.approved === false), [filteredUsers]);
-  const approvedUsers = useMemo(() => filteredUsers.filter(u => u.approved !== false), [filteredUsers]);
+  const approvedUsers = useMemo(() => {
+    return filteredUsers.filter(u => {
+      const isApproved = u.approved !== false;
+      const isActiveMatch = showInactive ? (u.active === false) : (u.active !== false);
+      return isApproved && isActiveMatch;
+    });
+  }, [filteredUsers, showInactive]);
   const resetPasswordUsers = useMemo(() => filteredUsers.filter(u => u.pending_password_reset === true), [filteredUsers]);
 
   const handleSubmit = (e: FormEvent) => {
@@ -163,6 +171,21 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
           </button>
         </div>
       </div>
+
+      {activeTab === 'users' && (
+        <div className="flex justify-end px-4">
+          <button
+            onClick={() => setShowInactive(!showInactive)}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 border-2 ${showInactive
+              ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-900/40'
+              : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700 shadow-sm')
+              }`}
+          >
+            {showInactive ? <Shield className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+            {showInactive ? 'Visualizando Desativados' : 'Ver Militares Desativados'}
+          </button>
+        </div>
+      )}
 
       {activeTab === 'users' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -510,21 +533,46 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-1">
-                          <button
-                            onClick={() => handleEditClick(u)}
-                            className={`p-2 transition-colors ${isDarkMode ? 'text-slate-400 hover:text-blue-400' : 'text-slate-300 hover:text-blue-600'}`}
-                            title="Editar usuário"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          {u.username !== 'admin' && (
+                          {u.active !== false ? (
                             <button
-                              onClick={() => onDeleteUser(u.id)}
-                              className={`p-2 transition-colors ${isDarkMode ? 'text-slate-400 hover:text-red-400' : 'text-slate-300 hover:text-red-500'}`}
-                              title="Excluir usuário"
+                              onClick={() => handleEditClick(u)}
+                              className={`p-2 transition-colors ${isDarkMode ? 'text-slate-400 hover:text-blue-400' : 'text-slate-300 hover:text-blue-600'}`}
+                              title="Editar usuário"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Edit2 className="w-4 h-4" />
                             </button>
+                          ) : (
+                            <button
+                              onClick={() => onUpdateUser({ ...u, active: true })}
+                              className={`p-2 transition-colors ${isDarkMode ? 'text-green-500 hover:text-green-400' : 'text-green-600 hover:text-green-700'}`}
+                              title="Reativar militar"
+                            >
+                              <ShieldCheck className="w-4 h-4" />
+                            </button>
+                          )}
+
+                          {u.username !== 'admin' && (
+                            <>
+                              {u.active !== false ? (
+                                <button
+                                  onClick={() => onDeleteUser(u.id)}
+                                  className={`p-2 transition-colors ${isDarkMode ? 'text-slate-400 hover:text-amber-400' : 'text-slate-300 hover:text-amber-500'}`}
+                                  title="Desativar militar (Soft Delete)"
+                                >
+                                  <XCircle className="w-4 h-4" />
+                                </button>
+                              ) : null}
+
+                              {currentUser?.role === UserRole.ADMIN && onPermanentDeleteUser && (
+                                <button
+                                  onClick={() => onPermanentDeleteUser(u.id)}
+                                  className={`p-2 transition-colors ${isDarkMode ? 'text-red-900/50 hover:text-red-400' : 'text-slate-200 hover:text-red-600'}`}
+                                  title="Excluir Definitivamente (Hard Delete)"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
+                            </>
                           )}
                         </div>
                       </td>
