@@ -248,7 +248,7 @@ export default function ParkingStatistics() {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                     <div className="flex items-center gap-2 mb-2 text-blue-600"><Car className="w-4 h-4" /> <span className="text-[10px] font-bold uppercase">Ocupação Hoje</span></div>
                     <p className="text-2xl font-black text-slate-800">{vagasOcupadasHoje}<span className="text-sm text-slate-400 font-medium">/{TOTAL_VAGAS}</span></p>
@@ -262,12 +262,12 @@ export default function ParkingStatistics() {
                     <p className="text-2xl font-black text-slate-800">{requests.filter(r => r.status === 'Pendente').length}</p>
                 </div>
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                    <div className="flex items-center gap-2 mb-2 text-red-500"><AlertTriangle className="w-4 h-4" /> <span className="text-[10px] font-bold uppercase">Pico no Período</span></div>
+                    <div className="flex items-center gap-2 mb-2 text-red-500"><AlertTriangle className="w-4 h-4" /> <span className="text-[10px] font-bold uppercase tracking-tight">Pico no Período</span></div>
                     <p className="text-2xl font-black text-slate-800">{peakOccupation.value}<span className="text-sm text-slate-400 font-medium">/{TOTAL_VAGAS}</span></p>
-                    <p className="text-[9px] text-slate-400 mt-0.5">{peakOccupation.label || '—'}</p>
+                    <p className="text-[9px] text-slate-400 mt-0.5 truncate">{peakOccupation.label || '—'}</p>
                 </div>
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                    <div className="flex items-center gap-2 mb-2 text-indigo-600"><TrendingUp className="w-4 h-4" /> <span className="text-[10px] font-bold uppercase">Méd. Ocupação</span></div>
+                    <div className="flex items-center gap-2 mb-2 text-indigo-600"><TrendingUp className="w-4 h-4" /> <span className="text-[10px] font-bold uppercase tracking-tight">Méd. Ocupação</span></div>
                     <p className="text-2xl font-black text-slate-800">{avgOccupation}<span className="text-sm text-slate-400 font-medium">/{TOTAL_VAGAS}</span></p>
                     <p className="text-[9px] text-slate-400 mt-0.5">{Math.round((avgOccupation / TOTAL_VAGAS) * 100)}% da capacidade</p>
                 </div>
@@ -277,7 +277,7 @@ export default function ParkingStatistics() {
             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                 <h3 className="font-bold text-slate-700 mb-1 flex items-center gap-2"><Calendar className="w-5 h-5 text-blue-500" /> Previsão de Ocupação (Próximos 14 dias)</h3>
                 <p className="text-[10px] text-slate-400 mb-4">Baseada nas solicitações já aprovadas. Vagas vermelhas = alta ocupação.</p>
-                <div className="h-64">
+                <div className="h-48 sm:h-64">
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={forecast}>
                             <defs>
@@ -308,7 +308,7 @@ export default function ParkingStatistics() {
             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                 <h3 className="font-bold text-slate-700 mb-1 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-indigo-500" /> Ocupação no Período Selecionado</h3>
                 <p className="text-[10px] text-slate-400 mb-4">Evolução da ocupação dia a dia no período filtrado.</p>
-                <div className="h-64">
+                <div className="h-48 sm:h-64">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={occupationTimeline}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -329,7 +329,7 @@ export default function ParkingStatistics() {
                 {/* Ocupação Atual Donut */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2"><Car className="w-5 h-5 text-blue-500" /> Ocupação Atual</h3>
-                    <div className="h-56">
+                    <div className="h-48 sm:h-56">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie data={occupationData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
@@ -346,7 +346,7 @@ export default function ParkingStatistics() {
                 {/* Status Distribution */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2"><Shield className="w-5 h-5 text-emerald-500" /> Status das Solicitações</h3>
-                    <div className="h-56">
+                    <div className="h-48 sm:h-56">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={statusData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -366,7 +366,7 @@ export default function ParkingStatistics() {
                 {/* Duration Distribution */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2"><Clock className="w-5 h-5 text-amber-500" /> Duração das Autorizações</h3>
-                    <div className="h-56">
+                    <div className="h-48 sm:h-56">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={durationData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -382,7 +382,7 @@ export default function ParkingStatistics() {
                 {/* Top OMs */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2"><Building2 className="w-5 h-5 text-indigo-500" /> Solicitações por OM (Top 6)</h3>
-                    <div className="h-56">
+                    <div className="h-48 sm:h-56">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={omData} layout="vertical" margin={{ left: 20 }}>
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
@@ -400,7 +400,7 @@ export default function ParkingStatistics() {
                 {/* User Type */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2"><UserCircle className="w-5 h-5 text-purple-500" /> Perfil do Solicitante</h3>
-                    <div className="h-56">
+                    <div className="h-48 sm:h-56">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie data={typeData} innerRadius={50} outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
@@ -415,7 +415,7 @@ export default function ParkingStatistics() {
                 {/* Solicitações nos Últimos 30 Dias */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-blue-500" /> Novas Solicitações (30 dias)</h3>
-                    <div className="h-56">
+                    <div className="h-48 sm:h-56">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={trendData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />

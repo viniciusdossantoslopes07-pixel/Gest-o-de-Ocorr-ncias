@@ -305,26 +305,26 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                         </div>
                         <div className="p-6 overflow-y-auto custom-scrollbar space-y-6">
                             {/* Dados do Solicitante */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="min-w-0">
                                     <p className="text-[10px] font-bold text-slate-400 uppercase">Solicitante</p>
-                                    <p className="font-black text-slate-800">{analysingRequest.nome_completo}</p>
-                                    <p className="text-xs text-slate-500">{analysingRequest.posto_graduacao} • {analysingRequest.forca} • {analysingRequest.tipo_pessoa}</p>
+                                    <p className="font-black text-slate-800 truncate">{analysingRequest.nome_completo}</p>
+                                    <p className="text-xs text-slate-500 truncate">{analysingRequest.posto_graduacao} • {analysingRequest.forca} • {analysingRequest.tipo_pessoa}</p>
                                 </div>
-                                <div>
+                                <div className="min-w-0">
                                     <p className="text-[10px] font-bold text-slate-400 uppercase">Contato</p>
-                                    <p className="font-bold text-slate-700">{analysingRequest.telefone}</p>
-                                    <p className="text-xs text-slate-500">{analysingRequest.email}</p>
+                                    <p className="font-bold text-slate-700 truncate">{analysingRequest.telefone}</p>
+                                    <p className="text-xs text-slate-500 truncate">{analysingRequest.email}</p>
                                 </div>
                             </div>
 
                             {/* Dados do Veículo */}
                             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Veículo</p>
-                                <div className="grid grid-cols-3 gap-4">
-                                    <div><p className="text-xs font-bold text-slate-500">Marca/Modelo</p><p className="font-black text-slate-800">{analysingRequest.vehicle?.marca_modelo || analysingRequest.ext_marca_modelo}</p></div>
-                                    <div><p className="text-xs font-bold text-slate-500">Placa</p><p className="font-black text-slate-800">{analysingRequest.vehicle?.placa || analysingRequest.ext_placa}</p></div>
-                                    <div><p className="text-xs font-bold text-slate-500">Cor</p><p className="font-black text-slate-800">{analysingRequest.vehicle?.cor || analysingRequest.ext_cor}</p></div>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-3">Veículo</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                                    <div className="min-w-0"><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Marca/Modelo</p><p className="font-black text-slate-800 text-xs sm:text-sm truncate">{analysingRequest.vehicle?.marca_modelo || analysingRequest.ext_marca_modelo}</p></div>
+                                    <div className="min-w-0"><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Placa</p><p className="font-black text-slate-800 text-xs sm:text-sm truncate">{analysingRequest.vehicle?.placa || analysingRequest.ext_placa}</p></div>
+                                    <div className="min-w-0"><p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Cor</p><p className="font-black text-slate-800 text-xs sm:text-sm truncate">{analysingRequest.vehicle?.cor || analysingRequest.ext_cor}</p></div>
                                 </div>
                             </div>
 
@@ -384,7 +384,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                 const aprovadoEm = printRequest.aprovado_em ? new Date(printRequest.aprovado_em) : null;
 
                 return (
-                    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] flex items-center justify-center overflow-auto print:p-0 print:bg-white print:block">
+                    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] flex items-center justify-center overflow-auto print:p-0 print:bg-white print:block p-4 sm:p-8">
                         <style>{`
                             @media print {
                                 .no-print { display: none !important; }
@@ -396,7 +396,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                         {/* Overlay Close Area (click outside) */}
                         <div className="absolute inset-0 no-print" onClick={() => setPrintRequest(null)}></div>
 
-                        <div className="relative bg-white w-full max-w-[210mm] min-h-[297mm] shadow-2xl mx-auto my-8 p-8 font-serif text-black print-container animate-in zoom-in-95 duration-200 flex flex-col justify-between">
+                        <div className="relative bg-white w-full max-w-[210mm] min-h-[297mm] h-fit shadow-2xl mx-auto my-auto p-4 sm:p-8 font-serif text-black print-container animate-in zoom-in-95 duration-200 flex flex-col justify-between overflow-x-hidden sm:overflow-visible">
                             <div>
                                 {/* Close Button (Mobile/Desktop friendly) */}
                                 <button onClick={() => setPrintRequest(null)} className="no-print absolute -top-12 right-0 text-white/70 hover:text-white flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full backdrop-blur-md">
@@ -441,8 +441,8 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                             </div>
 
                             {/* Floating Action Buttons for Print */}
-                            <div className="no-print fixed bottom-8 right-8 flex gap-3 z-[210]">
-                                <button onClick={() => window.print()} className="shadow-xl px-6 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all flex items-center gap-3 animate-bounce-subtle">
+                            <div className="no-print fixed bottom-6 left-6 right-6 sm:bottom-8 sm:right-8 sm:left-auto flex gap-3 z-[210]">
+                                <button onClick={() => window.print()} className="w-full sm:w-auto shadow-xl px-6 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-3 active:scale-95">
                                     <Printer className="w-5 h-5" /> Imprimir Agora
                                 </button>
                             </div>

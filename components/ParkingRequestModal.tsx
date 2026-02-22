@@ -206,7 +206,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                         <div className="space-y-1">
                                             <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Força</label>
                                             <select value={parkData.tipo === 'Civil' ? 'Civil' : parkData.forca} onChange={e => setParkData({ ...parkData, forca: e.target.value })} disabled={parkData.tipo === 'Civil'} className={`w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all ${parkData.tipo === 'Civil' ? 'opacity-50' : ''}`}><option>FAB</option><option>EB</option><option>MB</option><option>PMSP</option><option>PRF</option><option>PF</option><option>Civil</option><option>Outro</option></select>
