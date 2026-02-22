@@ -221,6 +221,7 @@ export default function ParkingStatistics() {
                 {showFilters && (
                     <div className="p-3 space-y-3 animate-fade-in">
                         <div className="flex flex-wrap gap-2">
+                            <button onClick={() => setQuickFilter(0, 0)} className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-[10px] font-bold transition-colors">Hoje</button>
                             <button onClick={() => setQuickFilter(7, 0)} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[10px] font-bold text-slate-600 transition-colors">Últimos 7 dias</button>
                             <button onClick={() => setQuickFilter(30, 0)} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[10px] font-bold text-slate-600 transition-colors">Últimos 30 dias</button>
                             <button onClick={() => setQuickFilter(90, 0)} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[10px] font-bold text-slate-600 transition-colors">Últimos 90 dias</button>

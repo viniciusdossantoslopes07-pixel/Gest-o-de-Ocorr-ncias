@@ -36,7 +36,7 @@ const subDays = (date: Date, days: number) => {
 const startOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1);
 const startOfYear = (date: Date) => new Date(date.getFullYear(), 0, 1);
 
-type DatePreset = '7D' | '30D' | 'MONTH' | 'YEAR' | 'CUSTOM';
+type DatePreset = 'TODAY' | '7D' | '30D' | 'MONTH' | 'YEAR' | 'CUSTOM';
 
 export default function AccessStatistics() {
     const [records, setRecords] = useState<AccessRecord[]>([]); // Current period records
@@ -66,6 +66,9 @@ export default function AccessStatistics() {
         let start = new Date();
 
         switch (preset) {
+            case 'TODAY':
+                start = today;
+                break;
             case '7D':
                 start = subDays(today, 6);
                 break;
@@ -329,7 +332,7 @@ export default function AccessStatistics() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
-                    {(['7D', '30D', 'MONTH', 'YEAR'] as DatePreset[]).map(preset => (
+                    {(['TODAY', '7D', '30D', 'MONTH', 'YEAR'] as DatePreset[]).map(preset => (
                         <button
                             key={preset}
                             onClick={() => handlePresetChange(preset)}
@@ -338,6 +341,7 @@ export default function AccessStatistics() {
                                 : 'text-slate-500 hover:bg-slate-50'
                                 }`}
                         >
+                            {preset === 'TODAY' && 'Hoje'}
                             {preset === '7D' && '7 Dias'}
                             {preset === '30D' && '30 Dias'}
                             {preset === 'MONTH' && 'Este Mês'}
