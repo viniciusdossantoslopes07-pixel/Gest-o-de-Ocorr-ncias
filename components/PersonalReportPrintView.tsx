@@ -55,6 +55,7 @@ const PersonalReportPrintView: FC<PersonalReportPrintViewProps> = ({
                     <div className="flex items-start justify-between mb-4 border-b-2 border-slate-900 pb-4">
                         <img src="/logo_basp.png" alt="Logo BASP" className="w-16 h-16 object-contain" />
                         <div className="flex-1 text-center">
+                            <h1 className="text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-0.5">Ministério da Defesa</h1>
                             <h1 className="text-base font-black uppercase tracking-tight">Comando da Aeronáutica</h1>
                             <h2 className="text-sm font-bold uppercase tracking-wide">BASP — Base Aérea de São Paulo</h2>
                             <h3 className="text-xs font-bold uppercase text-slate-700">Grupo de Segurança e Defesa de São Paulo</h3>

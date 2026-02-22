@@ -43,6 +43,7 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
                     <div className="flex items-start justify-between mb-6 border-b-2 border-slate-900 pb-4">
                         <img src="/logo_basp.png" alt="Logo BASP" className="w-20 h-20 object-contain" />
                         <div className="flex-1 text-center">
+                            <h1 className="text-xs font-bold uppercase tracking-widest text-slate-600 mb-0.5">Ministério da Defesa</h1>
                             <h1 className="text-lg font-black uppercase">Comando da Aeronáutica</h1>
                             <h2 className="text-base font-bold uppercase">BASP</h2>
                             <h3 className="text-sm font-bold uppercase">Grupo de Segurança e Defesa de São Paulo</h3>
