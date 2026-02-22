@@ -89,25 +89,19 @@ const HomeView: React.FC<HomeViewProps> = ({
     }
   };
 
-  const baseQuickActions = [
-    { title: 'Emergências', icon: <Zap className="w-8 h-8" />, color: 'bg-red-600', category: 'Ocorrências de Emergência' },
-    { title: 'Acesso', icon: <Lock className="w-8 h-8" />, color: 'bg-orange-600', category: 'Controle de Acesso e Credenciamento' },
-    { title: 'Patrimonial', icon: <Shield className="w-8 h-8" />, color: 'bg-blue-700', category: 'Segurança Orgânica / Patrimonial' },
-    { title: 'Tecnologia', icon: <Camera className="w-8 h-8" />, color: 'bg-indigo-600', category: 'Segurança de Sistemas e Tecnologia' },
-    { title: 'Tráfego', icon: <Truck className="w-8 h-8" />, color: 'bg-slate-700', category: 'Veículos e Tráfego Interno' },
-    { title: 'Conduta', icon: <Users className="w-8 h-8" />, color: 'bg-purple-600', category: 'Pessoas e Conduta' },
-    { title: 'Logística', icon: <Box className="w-8 h-8" />, color: 'bg-emerald-600', category: 'Materiais e Logística' },
-  ];
-
-  // Add Mission button if handler is provided
-  if (onRequestMission) {
-    baseQuickActions.unshift({
-      title: 'Missão',
-      icon: <ShieldAlert className="w-8 h-8" />,
-      color: 'bg-slate-900',
-      category: 'MISSION_REQUEST'
-    });
-  }
+  const getQuickActionData = (categoryId: string) => {
+    const actions: any[] = [
+      { id: 'MISSION_REQUEST', title: 'Missão', icon: <ShieldAlert className="w-8 h-8" />, color: isDarkMode ? 'bg-slate-800/50 border-slate-700 text-blue-400' : 'bg-slate-50 border-slate-200 text-slate-700', glow: 'bg-blue-500' },
+      { id: 'Ocorrências de Emergência', title: 'Emergências', icon: <Zap className="w-8 h-8" />, color: isDarkMode ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-red-50 border-red-100 text-red-600', glow: 'bg-red-500' },
+      { id: 'Controle de Acesso e Credenciamento', title: 'Acesso', icon: <Lock className="w-8 h-8" />, color: isDarkMode ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-orange-50 border-orange-100 text-orange-600', glow: 'bg-orange-500' },
+      { id: 'Segurança Orgânica / Patrimonial', title: 'Patrimonial', icon: <Shield className="w-8 h-8" />, color: isDarkMode ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-blue-50 border-blue-100 text-blue-700', glow: 'bg-blue-600' },
+      { id: 'Segurança de Sistemas e Tecnologia', title: 'Tecnologia', icon: <Camera className="w-8 h-8" />, color: isDarkMode ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' : 'bg-indigo-50 border-indigo-100 text-indigo-600', glow: 'bg-indigo-500' },
+      { id: 'Veículos e Tráfego Interno', title: 'Tráfego', icon: <Truck className="w-8 h-8" />, color: isDarkMode ? 'bg-slate-700/20 border-slate-600/30 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-800', glow: 'bg-slate-500' },
+      { id: 'Pessoas e Conduta', title: 'Conduta', icon: <Users className="w-8 h-8" />, color: isDarkMode ? 'bg-purple-500/10 border-purple-500/20 text-purple-400' : 'bg-purple-50 border-purple-100 text-purple-600', glow: 'bg-purple-500' },
+      { id: 'Materiais e Logística', title: 'Logística', icon: <Box className="w-8 h-8" />, color: isDarkMode ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-emerald-50 border-emerald-100 text-emerald-600', glow: 'bg-emerald-500' },
+    ];
+    return actions.find(a => a.id === categoryId);
+  };
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto pb-12">
@@ -186,37 +180,28 @@ const HomeView: React.FC<HomeViewProps> = ({
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 lg:gap-4">
           {customOrder.map((categoryId, idx) => {
-            const action = [
-              { title: 'Missão', icon: <ShieldAlert className="w-8 h-8" />, color: 'bg-slate-900', category: 'MISSION_REQUEST' },
-              { title: 'Emergências', icon: <Zap className="w-8 h-8" />, color: 'bg-red-600', category: 'Ocorrências de Emergência' },
-              { title: 'Acesso', icon: <Lock className="w-8 h-8" />, color: 'bg-orange-600', category: 'Controle de Acesso e Credenciamento' },
-              { title: 'Patrimonial', icon: <Shield className="w-8 h-8" />, color: 'bg-blue-700', category: 'Segurança Orgânica / Patrimonial' },
-              { title: 'Tecnologia', icon: <Camera className="w-8 h-8" />, color: 'bg-indigo-600', category: 'Segurança de Sistemas e Tecnologia' },
-              { title: 'Tráfego', icon: <Truck className="w-8 h-8" />, color: 'bg-slate-700', category: 'Veículos e Tráfego Interno' },
-              { title: 'Conduta', icon: <Users className="w-8 h-8" />, color: 'bg-purple-600', category: 'Pessoas e Conduta' },
-              { title: 'Logística', icon: <Box className="w-8 h-8" />, color: 'bg-emerald-600', category: 'Materiais e Logística' },
-            ].find(a => a.category === categoryId);
+            const action = getQuickActionData(categoryId);
 
             if (!action) return null;
-            if (action.category === 'MISSION_REQUEST' && !onRequestMission) return null;
+            if (action.id === 'MISSION_REQUEST' && !onRequestMission) return null;
 
             return (
-              <div key={categoryId} className="relative group">
+              <div key={categoryId} className="relative group/action">
                 <button
-                  onClick={() => !isEditMode && (action.category === 'MISSION_REQUEST' && onRequestMission ? onRequestMission() : onNewOccurrence(action.category))}
-                  className={`w-full h-full flex flex-col items-center justify-center p-4 lg:p-7 rounded-[1.5rem] lg:rounded-[2.5rem] shadow-xl border transition-all relative overflow-hidden active:scale-95 ${isEditMode ? 'cursor-default opacity-80' : 'group hover:shadow-2xl hover:-translate-y-1.5'} ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 backdrop-blur-md hover:border-blue-500/50' : 'bg-white border-slate-100 hover:border-blue-400 shadow-slate-200/50 hover:shadow-blue-500/10'}`}
+                  onClick={() => !isEditMode && (action.id === 'MISSION_REQUEST' && onRequestMission ? onRequestMission() : onNewOccurrence(action.id))}
+                  className={`w-full h-full flex flex-col items-center justify-center p-4 lg:p-7 rounded-[1.5rem] lg:rounded-[2.5rem] shadow-xl border transition-all relative overflow-hidden active:scale-95 ${isEditMode ? 'cursor-default opacity-80' : 'group hover:shadow-2xl hover:-translate-y-1.5'} ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 backdrop-blur-md hover:border-blue-500/50 shadow-black/40' : 'bg-white border-slate-100 hover:shadow-blue-500/10'}`}
                 >
-                  {/* Subtle Gradient Glow behind icon */}
-                  <div className={`absolute top-0 left-0 w-full h-1 opacity-20 ${action.color}`}></div>
+                  {/* Subtle Top Indicator or Glow */}
+                  <div className={`absolute top-0 left-0 w-full h-1.5 opacity-20 ${action.glow}`}></div>
 
-                  <div className={`${action.color} p-3.5 lg:p-5 rounded-2xl lg:rounded-3xl text-white mb-3 lg:mb-5 transition-transform shadow-lg ${!isEditMode && 'group-hover:scale-110 group-hover:rotate-3'} shadow-xl ${action.color}/20`}>
+                  <div className={`p-4 lg:p-6 rounded-2xl lg:rounded-3xl mb-3 lg:mb-5 transition-transform shadow-lg ${!isEditMode && 'group-hover:scale-110 group-hover:rotate-3'} ${action.color} border`}>
                     {React.cloneElement(action.icon as React.ReactElement<any>, { className: 'w-6 h-6 lg:w-9 lg:h-9' })}
                   </div>
                   <span className={`text-[10px] lg:text-[13px] font-black text-center uppercase tracking-wider leading-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{action.title}</span>
 
                   {!isEditMode && (
-                    <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-20 transition-opacity">
-                      <PlusCircle className="w-4 h-4" />
+                    <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-40 transition-opacity">
+                      <PlusCircle className={`w-4 h-4 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
                     </div>
                   )}
                 </button>
