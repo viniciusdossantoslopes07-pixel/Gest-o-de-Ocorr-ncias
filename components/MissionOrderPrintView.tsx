@@ -140,10 +140,10 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
                                 {order.schedule.length > 0 ? (
                                     order.schedule.map((s, idx) => (
                                         <tr key={s.id}>
-                                            <td className="border border-slate-900 px-2 py-1">{s.activity}</td>
-                                            <td className="border border-slate-900 px-2 py-1">{s.location}</td>
-                                            <td className="border border-slate-900 px-2 py-1 text-center">{new Date(s.date).toLocaleDateString('pt-BR')}</td>
-                                            <td className="border border-slate-900 px-2 py-1 text-center">{s.time}</td>
+                                            <td className="border border-slate-900 px-2 py-1">{s.event}</td>
+                                            <td className="border border-slate-900 px-2 py-1 text-center">-</td>
+                                            <td className="border border-slate-900 px-2 py-1 text-center">{new Date(order.date).toLocaleDateString('pt-BR')}</td>
+                                            <td className="border border-slate-900 px-2 py-1 text-center">{s.startTime}</td>
                                         </tr>
                                     ))
                                 ) : (
