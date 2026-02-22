@@ -57,7 +57,31 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
 
                 {/* Content Area */}
                 <div className="flex-1 overflow-auto print:overflow-visible bg-slate-100 print:bg-white p-4 print:p-0">
-                    <div className="bg-white shadow-xl print:shadow-none mx-auto p-8 print:p-8 min-h-full max-w-[210mm] print:max-w-none mb-8 print:mb-0">
+                    <style>{`
+                        @media print {
+                            body {
+                                visibility: hidden !important;
+                                background: white !important;
+                                -webkit-print-color-adjust: exact !important;
+                                print-color-adjust: exact !important;
+                            }
+                            .force-map-printable {
+                                visibility: visible !important;
+                                position: absolute !important;
+                                left: 0 !important;
+                                top: 0 !important;
+                                width: 100% !important;
+                                margin: 0 !important;
+                                padding: 0 !important;
+                                height: auto !important;
+                            }
+                            /* Hide potential artifacts from other components */
+                            .modals-container, .print-weekly, .print-header, .print-footer {
+                                display: none !important;
+                            }
+                        }
+                    `}</style>
+                    <div className="bg-white shadow-xl print:shadow-none mx-auto p-8 print:p-8 min-h-full max-w-[210mm] print:max-w-none mb-8 print:mb-0 force-map-printable">
 
                         {/* Standard Military Header */}
                         <div className="flex items-start justify-between mb-6 border-b-2 border-slate-900 pb-4">

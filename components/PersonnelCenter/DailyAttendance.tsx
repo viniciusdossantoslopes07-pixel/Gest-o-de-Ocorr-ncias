@@ -1338,7 +1338,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
                 {/* Printable Area (Hidden in UI) */}
                 <div className="hidden print:block bg-white text-black font-sans">
-                    <style>{`
+                    {activeSubTab !== 'mapa_forca' && (
+                        <style>{`
                     @media print {
                         @page { 
                             size: portrait; 
@@ -1396,6 +1397,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         }
                     }
                 `}</style>
+                    )}
                     <div className="print-weekly w-full mx-auto">
                         {/* Institutional Header */}
                         <div className="text-center mb-10 space-y-0.5 print-header">
