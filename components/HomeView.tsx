@@ -159,6 +159,9 @@ const HomeView: React.FC<HomeViewProps> = ({
               <p className="text-slate-200 text-[10px] lg:text-base italic font-serif leading-relaxed line-clamp-2">
                 "{quote.text}"
               </p>
+              <p className="text-blue-400 text-[8px] lg:text-[10px] font-black uppercase tracking-[0.2em] mt-1 lg:mt-2 ml-1">
+                — {quote.author}
+              </p>
             </div>
           </div>
         </div>
