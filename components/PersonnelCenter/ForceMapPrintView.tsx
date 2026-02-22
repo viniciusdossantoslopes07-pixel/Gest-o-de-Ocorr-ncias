@@ -68,12 +68,27 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
                             .force-map-printable {
                                 visibility: visible !important;
                                 position: absolute !important;
-                                left: 0 !important;
-                                top: 0 !important;
-                                width: 100% !important;
+                                left: 15mm !important;
+                                top: 15mm !important;
+                                width: calc(100% - 30mm) !important;
                                 margin: 0 !important;
                                 padding: 0 !important;
                                 height: auto !important;
+                                font-size: 9pt !important;
+                            }
+                            /* Refinar tabelas para impressão premium */
+                            .force-map-printable table {
+                                font-size: 8pt !important;
+                            }
+                            .force-map-printable th {
+                                padding: 4px 8px !important;
+                            }
+                            .force-map-printable td {
+                                padding: 4px 8px !important;
+                            }
+                            /* Garantir que quebras de página não ocorram no meio de seções */
+                            .force-map-printable .print-section {
+                                page-break-inside: avoid !important;
                             }
                             /* Hide potential artifacts from other components */
                             .modals-container, .print-weekly, .print-header, .print-footer {
@@ -81,7 +96,7 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
                             }
                         }
                     `}</style>
-                    <div className="bg-white shadow-xl print:shadow-none mx-auto p-8 print:p-8 min-h-full max-w-[210mm] print:max-w-none mb-8 print:mb-0 force-map-printable">
+                    <div className="bg-white shadow-xl print:shadow-none mx-auto p-12 print:p-0 min-h-full max-w-[210mm] print:max-w-none mb-8 print:mb-0 force-map-printable">
 
                         {/* Standard Military Header */}
                         <div className="flex items-start justify-between mb-6 border-b-2 border-slate-900 pb-4">
@@ -110,38 +125,38 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
                         </div>
 
                         {/* KPI Dashboard */}
-                        <div className="grid grid-cols-4 gap-4 mb-8">
-                            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center">
-                                <p className="text-2xl font-black text-slate-900 tabular-nums">{efetivoTotal}</p>
-                                <p className="text-[8px] font-black uppercase text-slate-500 tracking-widest">Efetivo Total</p>
+                        <div className="grid grid-cols-4 gap-3 mb-6 print-section">
+                            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-center">
+                                <p className="text-xl font-black text-slate-900 tabular-nums">{efetivoTotal}</p>
+                                <p className="text-[7px] font-black uppercase text-slate-500 tracking-widest">Efetivo Total</p>
                             </div>
-                            <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-center">
-                                <p className="text-2xl font-black text-emerald-700 tabular-nums">{presentes}</p>
-                                <p className="text-[8px] font-black uppercase text-emerald-600 tracking-widest">Presentes</p>
+                            <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3 text-center">
+                                <p className="text-xl font-black text-emerald-700 tabular-nums">{presentes}</p>
+                                <p className="text-[7px] font-black uppercase text-emerald-600 tracking-widest">Presentes</p>
                             </div>
-                            <div className="bg-red-50 border border-red-100 rounded-xl p-4 text-center">
-                                <p className="text-2xl font-black text-red-700 tabular-nums">{ausentes}</p>
-                                <p className="text-[8px] font-black uppercase text-red-600 tracking-widest">Ausentes</p>
+                            <div className="bg-red-50 border border-red-100 rounded-lg p-3 text-center">
+                                <p className="text-xl font-black text-red-700 tabular-nums">{ausentes}</p>
+                                <p className="text-[7px] font-black uppercase text-red-600 tracking-widest">Ausentes</p>
                             </div>
-                            <div className="bg-slate-900 rounded-xl p-4 text-center text-white">
-                                <p className="text-2xl font-black tabular-nums">{prontidao}%</p>
-                                <p className="text-[8px] font-black uppercase text-white/60 tracking-widest">Prontidão</p>
+                            <div className="bg-slate-900 rounded-lg p-3 text-center text-white">
+                                <p className="text-xl font-black tabular-nums">{prontidao}%</p>
+                                <p className="text-[7px] font-black uppercase text-white/60 tracking-widest">Prontidão</p>
                             </div>
                         </div>
 
                         {/* Status Breakdown Section */}
-                        <div className="mb-8">
-                            <div className="flex items-center gap-3 mb-4 border-b border-slate-200 pb-2">
-                                <BarChart3 className="w-4 h-4 text-slate-600" />
-                                <h3 className="font-black uppercase tracking-widest text-slate-900 text-[10px]">Distribuição por Situação</h3>
+                        <div className="mb-6 print-section">
+                            <div className="flex items-center gap-2 mb-3 border-b border-slate-200 pb-1">
+                                <BarChart3 className="w-3.5 h-3.5 text-slate-600" />
+                                <h3 className="font-black uppercase tracking-widest text-slate-900 text-[9px]">Distribuição por Situação</h3>
                             </div>
-                            <div className="grid grid-cols-5 gap-4">
+                            <div className="grid grid-cols-5 gap-3">
                                 {statusBreakdown.map(s => (
-                                    <div key={s.key} className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                                        <p className="text-[8px] font-black text-slate-500 uppercase truncate mb-1">{s.label}</p>
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="text-base font-black text-slate-900">{s.count}</span>
-                                            <span className="text-[8px] font-bold text-slate-400">{s.pct}%</span>
+                                    <div key={s.key} className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                                        <p className="text-[7px] font-black text-slate-500 uppercase truncate mb-0.5">{s.label}</p>
+                                        <div className="flex items-baseline gap-1.5">
+                                            <span className="text-sm font-black text-slate-900">{s.count}</span>
+                                            <span className="text-[7px] font-bold text-slate-400">{s.pct}%</span>
                                         </div>
                                     </div>
                                 ))}
@@ -149,29 +164,29 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
                         </div>
 
                         {/* Sector Breakdown Section */}
-                        <div className="mb-8">
-                            <div className="flex items-center gap-3 mb-4 border-b border-slate-200 pb-2">
-                                <Building2 className="w-4 h-4 text-slate-600" />
-                                <h3 className="font-black uppercase tracking-widest text-slate-900 text-[10px]">Resumo Detalhado por Setor</h3>
+                        <div className="mb-6 print-section">
+                            <div className="flex items-center gap-2 mb-3 border-b border-slate-200 pb-1">
+                                <Building2 className="w-3.5 h-3.5 text-slate-600" />
+                                <h3 className="font-black uppercase tracking-widest text-slate-900 text-[9px]">Resumo Detalhado por Setor</h3>
                             </div>
-                            <table className="w-full text-left border-collapse">
+                            <table className="w-full text-left border-collapse border border-slate-200">
                                 <thead>
                                     <tr className="bg-slate-900 text-white">
-                                        <th className="px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-tl-lg">Setor</th>
-                                        <th className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-center">Efetivo</th>
-                                        <th className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-center">Prontos</th>
-                                        <th className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-center">Ausentes</th>
-                                        <th className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-right rounded-tr-lg">Prontidão</th>
+                                        <th className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest">Setor</th>
+                                        <th className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-center">Efetivo</th>
+                                        <th className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-center">Prontos</th>
+                                        <th className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-center">Ausentes</th>
+                                        <th className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-right">Prontidão</th>
                                     </tr>
                                 </thead>
-                                <tbody className="text-xs divide-y divide-slate-200 border-x border-b border-slate-200">
+                                <tbody className="text-[9px] divide-y divide-slate-200">
                                     {sectorBreakdown.map((s, idx) => (
-                                        <tr key={s.sector} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                                            <td className="px-4 py-2.5 font-bold uppercase">{s.sector}</td>
-                                            <td className="px-4 py-2.5 text-center font-bold text-slate-500">{s.total}</td>
-                                            <td className="px-4 py-2.5 text-center font-black text-emerald-600">{s.ready}</td>
-                                            <td className="px-4 py-2.5 text-center font-black text-red-500">{s.absent}</td>
-                                            <td className="px-4 py-2.5 text-right font-black">
+                                        <tr key={s.sector} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
+                                            <td className="px-3 py-1.5 font-bold uppercase">{s.sector}</td>
+                                            <td className="px-3 py-1.5 text-center font-bold text-slate-500">{s.total}</td>
+                                            <td className="px-3 py-1.5 text-center font-black text-emerald-600">{s.ready}</td>
+                                            <td className="px-3 py-1.5 text-center font-black text-red-500">{s.absent}</td>
+                                            <td className="px-3 py-1.5 text-right font-black">
                                                 <span className={s.pct > 85 ? 'text-emerald-600' : s.pct > 60 ? 'text-amber-600' : 'text-red-600'}>
                                                     {Math.round(s.pct)}%
                                                 </span>
@@ -183,16 +198,16 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
                         </div>
 
                         {/* Footer Signature Area */}
-                        <div className="mt-16 pt-10 border-t border-slate-200 grid grid-cols-2 gap-20">
+                        <div className="mt-12 pt-8 border-t border-slate-200 grid grid-cols-2 gap-16 print-section">
                             <div className="text-center">
-                                <div className="w-48 h-px bg-slate-400 mx-auto mb-2" />
-                                <p className="text-[10px] font-black uppercase text-slate-700">Oficial de Permanência / C-SOP</p>
-                                <p className="text-[8px] uppercase text-slate-400">Responsável pela Verificação</p>
+                                <div className="w-40 h-px bg-slate-400 mx-auto mb-2" />
+                                <p className="text-[9px] font-black uppercase text-slate-700">SECRETARIA DE COMANDO GSD-SP</p>
+                                <p className="text-[7px] uppercase text-slate-400">Responsável pela Verificação</p>
                             </div>
                             <div className="text-center">
-                                <div className="w-48 h-px bg-slate-400 mx-auto mb-2" />
-                                <p className="text-[10px] font-black uppercase text-slate-700">Comandante do GSD-SP</p>
-                                <p className="text-[8px] uppercase text-slate-400">Homologação</p>
+                                <div className="w-40 h-px bg-slate-400 mx-auto mb-2" />
+                                <p className="text-[9px] font-black uppercase text-slate-700">Comandante do GSD-SP</p>
+                                <p className="text-[7px] uppercase text-slate-400">Homologação</p>
                             </div>
                         </div>
 
