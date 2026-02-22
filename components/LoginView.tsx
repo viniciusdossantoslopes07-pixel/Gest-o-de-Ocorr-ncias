@@ -198,12 +198,10 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                 <img src="/logo_gsd.jpg" alt="Logo GSD-SP" className="w-full h-full object-cover" />
               </div>
             </div>
-            <div className={`flex flex-col items-center gap-2 mb-4`}>
-              <h1 className={`text-5xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'} tracking-tighter leading-none`}>Guardião</h1>
-              <span className="text-[10px] font-black tracking-[0.4em] text-blue-500 uppercase bg-blue-500/10 border border-blue-500/20 px-4 py-1.5 rounded-full">
-                GSD-SP
-              </span>
-            </div>
+            <h1 className={`text-3xl sm:text-4xl font-black tracking-tighter mb-2 whitespace-nowrap`}>
+              <span className={isDarkMode ? 'text-white' : 'text-slate-900'}>GUARDIÃO</span>
+              <span className="text-blue-500 ml-2 font-bold tracking-[0.15em]">GSD-SP</span>
+            </h1>
             <p className={`${isDarkMode ? 'text-slate-400' : 'text-slate-500'} font-medium text-sm`}>Sistema de Segurança e Defesa</p>
           </div>
 
