@@ -1,5 +1,5 @@
 
-import { useState, useEffect, FC, Fragment } from 'react';
+import { useState, useEffect, useRef, FC, Fragment } from 'react';
 import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '../../types';
 import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, SETORES, RANKS } from '../../constants';
 import { hasPermission, PERMISSIONS } from '../../constants/permissions';
@@ -32,12 +32,18 @@ const getStatusColor = (status: string, isDarkMode: boolean) => {
             return isDarkMode ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'bg-blue-50 text-blue-700 border-blue-200';
         case 'FE': case 'LP': case 'LM': case 'NU': case 'LT':
             return isDarkMode ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-orange-50 text-orange-700 border-orange-200';
-        case 'NIL':
+        case 'NIL': case 'DSV':
             return isDarkMode ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-500 border-slate-200';
         default:
             return isDarkMode ? 'bg-slate-900 text-slate-400 border-slate-800' : 'bg-white text-slate-600 border-slate-200';
     }
 };
+
+const STATUS_GROUPS = [
+    { label: 'Serviço/Presença', codes: ['P', 'ESV', 'SSV', 'MIS', 'INST', 'C-E'] },
+    { label: 'Saúde/Faltas', codes: ['F', 'A', 'DPM', 'JS', 'INSP', 'DCH'] },
+    { label: 'Outros/Licenças', codes: ['FE', 'LP', 'LM', 'NU', 'LT', 'NIL', 'DSV'] }
+];
 
 const StatusPicker: FC<{
     value: string;
@@ -46,16 +52,51 @@ const StatusPicker: FC<{
     isDarkMode?: boolean;
 }> = ({ value, onChange, disabled, isDarkMode }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const statuses = Object.keys(PRESENCE_STATUS);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [position, setPosition] = useState({ top: 0, left: 0 });
+
+    const toggleOpen = () => {
+        if (!isOpen && containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            // Estimativa de tamanho do menu para ajuste de tela
+            const menuWidth = 224;
+            const menuHeight = 310;
+
+            let top = rect.bottom + 8;
+            let left = rect.left;
+
+            // Evitar estouro à direita
+            if (left + menuWidth > window.innerWidth - 10) {
+                left = window.innerWidth - menuWidth - 10;
+            }
+
+            // Abrir para cima se não houver espaço embaixo
+            if (top + menuHeight > window.innerHeight - 10) {
+                top = rect.top - menuHeight - 8;
+            }
+
+            setPosition({ top, left });
+        }
+        setIsOpen(!isOpen);
+    };
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setIsOpen(false);
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen]);
 
     return (
-        <div className="relative w-full min-w-[50px]">
+        <div ref={containerRef} className="relative w-full min-w-[55px]">
             <button
                 type="button"
                 disabled={disabled}
-                onClick={() => setIsOpen(!isOpen)}
-                className={`w-full h-10 flex items-center justify-center rounded-xl border-2 font-black text-[11px] transition-all active:scale-95 shadow-sm ${disabled ? 'opacity-30 cursor-not-allowed' : 'hover:brightness-110'
-                    } ${getStatusColor(value, !!isDarkMode)}`}
+                onClick={toggleOpen}
+                className={`w-full h-10 flex items-center justify-center rounded-xl border-2 font-black text-[11px] transition-all active:scale-95 shadow-sm select-none ${disabled ? 'opacity-30 cursor-not-allowed' : 'hover:brightness-110'
+                    } ${getStatusColor(value, !!isDarkMode)} ${isOpen ? 'ring-2 ring-indigo-500 border-indigo-500 shadow-lg' : ''}`}
             >
                 {value}
             </button>
@@ -63,26 +104,46 @@ const StatusPicker: FC<{
             {isOpen && !disabled && (
                 <>
                     <div
-                        className="fixed inset-0 z-[100]"
-                        onClick={() => setIsOpen(false)}
+                        className="fixed inset-0 z-[120] cursor-default bg-black/5 backdrop-blur-[0.5px]"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsOpen(false);
+                        }}
                     />
-                    <div className={`absolute left-0 top-full mt-2 z-[101] w-48 p-2 rounded-2xl border shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'
-                        }`}>
-                        <div className="grid grid-cols-3 gap-1">
-                            {statuses.map(s => (
-                                <button
-                                    key={s}
-                                    type="button"
-                                    onClick={() => {
-                                        onChange(s);
-                                        setIsOpen(false);
-                                    }}
-                                    title={PRESENCE_STATUS[s as keyof typeof PRESENCE_STATUS]}
-                                    className={`h-10 flex items-center justify-center rounded-lg border-2 font-black text-[10px] transition-all hover:scale-110 active:scale-90 ${getStatusColor(s, !!isDarkMode)
-                                        } ${value === s ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-transparent' : ''}`}
-                                >
-                                    {s}
-                                </button>
+
+                    <div
+                        className={`fixed z-[121] w-56 p-3 rounded-2xl border shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-900 border-slate-700 shadow-black' : 'bg-white border-slate-200 shadow-slate-200/50'
+                            }`}
+                        style={{
+                            top: `${position.top}px`,
+                            left: `${position.left}px`
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex flex-col gap-4">
+                            {STATUS_GROUPS.map(group => (
+                                <div key={group.label}>
+                                    <div className={`text-[9px] font-black uppercase tracking-widest mb-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                        {group.label}
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-1.5">
+                                        {group.codes.map(s => (
+                                            <button
+                                                key={s}
+                                                type="button"
+                                                onClick={() => {
+                                                    onChange(s);
+                                                    setIsOpen(false);
+                                                }}
+                                                title={PRESENCE_STATUS[s as keyof typeof PRESENCE_STATUS]}
+                                                className={`h-9 flex items-center justify-center rounded-lg border-2 font-black text-[10px] transition-all hover:scale-110 active:scale-90 ${getStatusColor(s, !!isDarkMode)
+                                                    } ${value === s ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-transparent' : 'border-transparent'}`}
+                                            >
+                                                {s}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     </div>
