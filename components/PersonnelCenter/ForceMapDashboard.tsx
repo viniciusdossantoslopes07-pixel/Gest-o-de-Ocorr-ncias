@@ -5,8 +5,9 @@ import { PRESENCE_STATUS, SETORES, RANKS } from '../../constants';
 import {
     BarChart3, Users, CheckCircle, AlertTriangle, ExternalLink, ShieldAlert,
     Clock, Filter, TrendingUp, TrendingDown, Minus, UserX, Shield, Award,
-    ChevronDown, ChevronUp, Briefcase, Activity, Eye, Printer
+    ChevronDown, ChevronUp, Briefcase, Activity, Eye, Printer, X
 } from 'lucide-react';
+import ForceMapPrintView from './ForceMapPrintView';
 
 interface ForceMapProps {
     users: User[];
@@ -42,6 +43,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
     const [rankFilter, setRankFilter] = useState<'TODOS' | 'OFICIAIS' | 'GRADUADOS' | 'PRACAS'>('TODOS');
     const [showAbsentList, setShowAbsentList] = useState(false);
     const [expandedSector, setExpandedSector] = useState<string | null>(null);
+    const [isPrinting, setIsPrinting] = useState(false);
 
     // Previous day for delta comparison
     const previousDate = useMemo(() => {
@@ -225,8 +227,13 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <button onClick={() => window.print()} className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all text-slate-500">
+                            <button
+                                onClick={() => setIsPrinting(true)}
+                                className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all text-slate-900 border border-slate-200 flex items-center gap-2 font-bold text-xs"
+                                title="Gerar Mapa Oficial (BASP/GSD-SP)"
+                            >
                                 <Printer className="w-4 h-4" />
+                                <span className="hidden sm:inline">Gerar Mapa Oficial</span>
                             </button>
                             {allRecords.length > 0 && (
                                 <div className="flex items-center gap-2 text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-4 py-2.5 rounded-xl border border-emerald-100">
@@ -610,6 +617,22 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                     </div>
                 </div>
             </div>
+
+            {/* Print View Modal */}
+            {isPrinting && (
+                <ForceMapPrintView
+                    date={selectedDate}
+                    sector={selectedSector}
+                    efetivoTotal={totalEfetivo}
+                    presentes={presentCount}
+                    ausentes={absenceCount}
+                    emMissao={getCount(allRecords, ['MIS'])}
+                    prontidao={prontidao}
+                    statusBreakdown={statusBreakdown}
+                    sectorBreakdown={sectorBreakdown}
+                    onClose={() => setIsPrinting(false)}
+                />
+            )}
         </div>
     );
 };
