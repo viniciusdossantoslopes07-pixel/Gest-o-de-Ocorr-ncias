@@ -741,24 +741,24 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     return (
         <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 pb-20">
             {/* Sub-Tabs Navigation — FIRST */}
-            <div className={`flex gap-1 p-1 rounded-2xl w-fit border transition-all ${isDarkMode ? 'bg-slate-900/80 border-slate-800/50 backdrop-blur-xl shadow-xl shadow-black/20' : 'bg-indigo-50/30 border-indigo-100/50'}`}>
+            <div className={`flex w-full md:w-fit gap-1 p-1 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-900/80 border-slate-800/50 backdrop-blur-xl shadow-xl shadow-black/20' : 'bg-indigo-50/30 border-indigo-100/50'}`}>
                 <button
                     onClick={() => setActiveSubTab('chamada')}
-                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.15em] transition-all duration-300 ${activeSubTab === 'chamada' ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-white text-slate-900 shadow-md') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
+                    className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 md:px-6 py-2.5 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-wider md:tracking-[0.15em] transition-all duration-300 ${activeSubTab === 'chamada' ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-white text-slate-900 shadow-md') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
                 >
-                    <Users className="w-4 h-4" /> Chamada Diária
+                    <Users className="w-3.5 h-3.5" /> <span className="truncate">Chamada</span>
                 </button>
                 <button
                     onClick={() => setActiveSubTab('cupons')}
-                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.15em] transition-all duration-300 ${activeSubTab === 'cupons' ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-white text-slate-900 shadow-md') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
+                    className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 md:px-6 py-2.5 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-wider md:tracking-[0.15em] transition-all duration-300 ${activeSubTab === 'cupons' ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-white text-slate-900 shadow-md') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
                 >
-                    <FileText className="w-4 h-4" /> Cupons Gerados
+                    <FileText className="w-3.5 h-3.5" /> <span className="truncate">Cupons</span>
                 </button>
                 <button
                     onClick={() => setActiveSubTab('mapa_forca')}
-                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-[0.15em] transition-all duration-300 ${activeSubTab === 'mapa_forca' ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-white text-slate-900 shadow-md') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
+                    className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 md:px-6 py-2.5 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-wider md:tracking-[0.15em] transition-all duration-300 ${activeSubTab === 'mapa_forca' ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-white text-slate-900 shadow-md') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
                 >
-                    <BarChart3 className="w-4 h-4" /> Mapa de Força
+                    <BarChart3 className="w-3.5 h-3.5" /> <span className="truncate">Mapa</span>
                 </button>
             </div>
 
