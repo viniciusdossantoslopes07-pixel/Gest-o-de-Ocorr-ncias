@@ -140,34 +140,34 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
 
 
   return (
-    <div className="space-y-8 animate-fade-in max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="space-y-4 md:space-y-8 animate-fade-in max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-4 md:py-8">
       {/* Header Premium */}
-      <div className={`p-8 rounded-[2.5rem] border shadow-sm flex flex-col md:flex-row justify-between items-center gap-6 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black/20' : 'bg-white border-slate-100 shadow-slate-200/50'}`}>
-        <div className="flex items-center gap-6">
-          <div className="p-5 bg-slate-900 rounded-3xl shadow-xl shadow-slate-900/20 text-white transform -rotate-3 hover:rotate-0 transition-all duration-500">
-            <ShieldCheck className="w-10 h-10" />
+      <div className={`p-4 md:p-8 rounded-3xl md:rounded-[2.5rem] border shadow-sm flex flex-col md:flex-row justify-between items-center gap-6 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black/20' : 'bg-white border-slate-100 shadow-slate-200/50'}`}>
+        <div className="flex items-center gap-4 md:gap-6">
+          <div className="p-3 md:p-5 bg-slate-900 rounded-2xl md:rounded-3xl shadow-xl shadow-slate-900/20 text-white transform -rotate-3 hover:rotate-0 transition-all duration-500">
+            <ShieldCheck className="w-6 h-6 md:w-10 md:h-10" />
           </div>
           <div>
-            <h2 className={`text-3xl font-black tracking-tighter uppercase ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Gestão de Acessos</h2>
-            <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] mt-1.5 flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-              Administração de Identidades e Privilégios
+            <h2 className={`text-xl md:text-3xl font-black tracking-tighter uppercase ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Acessos</h2>
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-[8px] md:text-[10px] mt-1 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-blue-500 animate-pulse" />
+              Gestão de Identidades
             </p>
           </div>
         </div>
 
-        <div className={`flex p-1.5 rounded-2xl shadow-inner transition-all ${isDarkMode ? 'bg-slate-900' : 'bg-slate-100'}`}>
+        <div className={`flex p-1 md:p-1.5 rounded-xl md:rounded-2xl shadow-inner transition-all w-full md:w-auto ${isDarkMode ? 'bg-slate-900' : 'bg-slate-100'}`}>
           <button
             onClick={() => setActiveTab('users')}
-            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'users' ? (isDarkMode ? 'bg-slate-700 text-blue-400 shadow-lg' : 'bg-white text-blue-600 shadow-md') : 'text-slate-500 hover:text-slate-800'}`}
+            className={`flex-1 md:flex-none px-4 md:px-8 py-2 md:py-3 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'users' ? (isDarkMode ? 'bg-slate-700 text-blue-400 shadow-lg' : 'bg-white text-blue-600 shadow-md') : 'text-slate-500 hover:text-slate-800'}`}
           >
             Usuários
           </button>
           <button
             onClick={() => setActiveTab('permissions')}
-            className={`px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'permissions' ? (isDarkMode ? 'bg-slate-700 text-blue-400 shadow-lg' : 'bg-white text-blue-600 shadow-md') : 'text-slate-500 hover:text-slate-800'}`}
+            className={`flex-1 md:flex-none px-4 md:px-8 py-2 md:py-3 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'permissions' ? (isDarkMode ? 'bg-slate-700 text-blue-400 shadow-lg' : 'bg-white text-blue-600 shadow-md') : 'text-slate-500 hover:text-slate-800'}`}
           >
-            Gerir Permissões
+            Permissões
           </button>
         </div>
       </div>
@@ -189,27 +189,27 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
 
       {activeTab === 'users' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className={`lg:col-span-3 p-10 rounded-[2.5rem] border shadow-sm transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black/20' : 'bg-white border-slate-100 shadow-slate-200/50'}`}>
-            <div className="flex items-center justify-between mb-8">
+          <div className={`lg:col-span-3 p-6 md:p-10 rounded-2xl md:rounded-[2.5rem] border shadow-sm transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black/20' : 'bg-white border-slate-100 shadow-slate-200/50'}`}>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
               <div className="flex items-center gap-3">
                 <div className={`${editingUserId ? 'bg-amber-500' : 'bg-blue-600'} p-2 rounded-xl transition-colors`}>
-                  {editingUserId ? <Edit2 className="w-6 h-6 text-white" /> : <UserPlus className="w-6 h-6 text-white" />}
+                  {editingUserId ? <Edit2 className="w-5 h-5 md:w-6 md:h-6 text-white" /> : <UserPlus className="w-5 h-5 md:w-6 md:h-6 text-white" />}
                 </div>
                 <div>
-                  <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                    {editingUserId ? 'Editar Usuário' : 'Novo Cadastro de Permissões'}
+                  <h2 className={`text-lg md:text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                    {editingUserId ? 'Editar Usuário' : 'Novo Cadastro'}
                   </h2>
-                  <p className="text-slate-500 text-xs font-medium">
-                    {editingUserId ? `Alterando dados de acesso de @${formData.username}` : 'Defina as credenciais e o nível de acesso militar no sistema'}
+                  <p className="text-slate-500 text-[10px] md:text-xs font-medium uppercase tracking-widest">
+                    {editingUserId ? `@${formData.username}` : 'Defina credenciais e níveis'}
                   </p>
                 </div>
               </div>
               {editingUserId && (
                 <button
                   onClick={handleCancelEdit}
-                  className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${isDarkMode ? 'bg-slate-700 text-slate-300 hover:text-white hover:bg-slate-600' : 'bg-slate-100 text-slate-500 hover:text-slate-700'}`}
+                  className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-[10px] font-bold rounded-xl transition-all ${isDarkMode ? 'bg-slate-700 text-slate-300 hover:text-white hover:bg-slate-600' : 'bg-slate-100 text-slate-500 hover:text-slate-700'}`}
                 >
-                  <XCircle className="w-4 h-4" /> Cancelar Edição
+                  <XCircle className="w-4 h-4" /> Cancelar
                 </button>
               )}
             </div>
@@ -488,10 +488,59 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
               </div>
             )}
 
-            <div className={`p-6 border-b transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-slate-50/50 border-slate-100'}`}>
-              <h3 className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Usuários com Acesso ao Sistema ({approvedUsers.length})</h3>
+            <div className={`p-4 md:p-6 border-b transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-slate-50/50 border-slate-100'}`}>
+              <h3 className={`text-xs md:text-sm font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Usuários Ativos ({approvedUsers.length})</h3>
             </div>
-            <div className="overflow-x-auto">
+
+            {/* Visualização em Cards (Mobile) */}
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-700">
+              {approvedUsers.map(u => (
+                <div key={u.id} className={`p-5 space-y-4 transition-colors ${editingUserId === u.id ? 'bg-amber-500/5' : 'bg-transparent'}`}>
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm ${isDarkMode ? 'bg-slate-700 text-blue-400' : 'bg-slate-100 text-blue-600'}`}>
+                        {u.warName?.[0] || u.name?.[0]}
+                      </div>
+                      <div>
+                        <div className={`font-black uppercase tracking-tight text-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{u.rank} {u.warName || u.name.split(' ')[0]}</div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">@{u.username} • {u.saram}</div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${u.role === UserRole.ADMIN ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'}`}>
+                        {u.role}
+                      </span>
+                      <span className="text-[8px] font-bold text-slate-400 uppercase flex items-center gap-1">
+                        <ChevronRight className="w-2 h-2" /> Nível {u.accessLevel}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-blue-500 opacity-80">{u.sector}</div>
+                    <div className="flex items-center gap-2">
+                      {u.active !== false ? (
+                        <button onClick={() => handleEditClick(u)} className="p-2.5 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 rounded-xl">
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <button onClick={() => onUpdateUser({ ...u, active: true })} className="p-2.5 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 rounded-xl">
+                          <ShieldCheck className="w-4 h-4" />
+                        </button>
+                      )}
+                      {u.username !== 'admin' && (
+                        <button onClick={() => onDeleteUser(u.id)} className="p-2.5 bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 rounded-xl">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Visualização em Tabela (Desktop) */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead className={isDarkMode ? 'bg-slate-900/50' : 'bg-slate-50/50'}>
                   <tr>
