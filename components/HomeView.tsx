@@ -119,13 +119,16 @@ const HomeView: React.FC<HomeViewProps> = ({
 
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="bg-white p-1.5 rounded-2xl w-12 h-12 lg:w-14 lg:h-14 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-white/10 group-hover:ring-white/20 transition-all">
+            <div className="flex items-center gap-6">
+              <div className="bg-white p-2 rounded-[2rem] w-20 h-20 lg:w-28 lg:h-28 flex items-center justify-center overflow-hidden shadow-2xl ring-8 ring-white/5 group-hover:ring-white/10 transition-all duration-700">
                 <img src="/logo_gsd.jpg" alt="Logo GSD-SP" className="w-full h-full object-cover scale-110" />
               </div>
               <div>
-                <span className="text-blue-400 font-black tracking-[0.2em] text-[10px] uppercase">GSD-SP • Operacional</span>
-                <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mt-0.5">Sistema Guardião v1.1</p>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-blue-400 font-black tracking-[0.3em] text-[11px] uppercase bg-blue-400/10 px-3 py-1 rounded-full border border-blue-400/20">GSD-SP</span>
+                  <span className="text-white/40 font-bold text-[11px] uppercase tracking-widest">• Operacional</span>
+                </div>
+                <p className="text-white/60 text-[11px] font-bold uppercase tracking-wider">Sistema Guardião v1.1</p>
               </div>
             </div>
             {onRefresh && (
