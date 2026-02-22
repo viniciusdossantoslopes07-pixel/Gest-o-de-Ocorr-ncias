@@ -22,33 +22,72 @@ interface DailyAttendanceProps {
     isDarkMode?: boolean;
 }
 
-const StatusWheel: FC<{
+const getStatusColor = (status: string, isDarkMode: boolean) => {
+    switch (status) {
+        case 'P':
+            return isDarkMode ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        case 'F': case 'A': case 'DPM': case 'JS': case 'INSP': case 'DCH':
+            return isDarkMode ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' : 'bg-red-50 text-red-700 border-red-200';
+        case 'ESV': case 'SSV': case 'MIS': case 'INST': case 'C-E':
+            return isDarkMode ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'bg-blue-50 text-blue-700 border-blue-200';
+        case 'FE': case 'LP': case 'LM': case 'NU': case 'LT':
+            return isDarkMode ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-orange-50 text-orange-700 border-orange-200';
+        case 'NIL':
+            return isDarkMode ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-500 border-slate-200';
+        default:
+            return isDarkMode ? 'bg-slate-900 text-slate-400 border-slate-800' : 'bg-white text-slate-600 border-slate-200';
+    }
+};
+
+const StatusPicker: FC<{
     value: string;
     onChange: (val: string) => void;
     disabled?: boolean;
     isDarkMode?: boolean;
 }> = ({ value, onChange, disabled, isDarkMode }) => {
+    const [isOpen, setIsOpen] = useState(false);
     const statuses = Object.keys(PRESENCE_STATUS);
 
     return (
-        <div className={`relative h-10 w-full min-w-[50px] overflow-y-auto snap-y snap-mandatory scrollbar-hide rounded-xl border transition-all ${disabled ? 'opacity-30 cursor-not-allowed' : 'hover:scale-[1.02] active:scale-95'
-            } ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-indigo-100'}`}>
-            <div className="flex flex-col">
-                {statuses.map(s => (
-                    <button
-                        key={s}
-                        type="button"
-                        disabled={disabled}
-                        onClick={() => onChange(s)}
-                        className={`h-10 shrink-0 w-full flex items-center justify-center snap-center text-[11px] font-black transition-all ${value === s
-                            ? (isDarkMode ? 'text-emerald-400 bg-emerald-500/10' : 'text-emerald-700 bg-emerald-50')
-                            : (isDarkMode ? 'text-slate-600 hover:text-white' : 'text-slate-400 hover:text-slate-900')
-                            }`}
-                    >
-                        {s}
-                    </button>
-                ))}
-            </div>
+        <div className="relative w-full min-w-[50px]">
+            <button
+                type="button"
+                disabled={disabled}
+                onClick={() => setIsOpen(!isOpen)}
+                className={`w-full h-10 flex items-center justify-center rounded-xl border-2 font-black text-[11px] transition-all active:scale-95 shadow-sm ${disabled ? 'opacity-30 cursor-not-allowed' : 'hover:brightness-110'
+                    } ${getStatusColor(value, !!isDarkMode)}`}
+            >
+                {value}
+            </button>
+
+            {isOpen && !disabled && (
+                <>
+                    <div
+                        className="fixed inset-0 z-[100]"
+                        onClick={() => setIsOpen(false)}
+                    />
+                    <div className={`absolute left-0 top-full mt-2 z-[101] w-48 p-2 rounded-2xl border shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'
+                        }`}>
+                        <div className="grid grid-cols-3 gap-1">
+                            {statuses.map(s => (
+                                <button
+                                    key={s}
+                                    type="button"
+                                    onClick={() => {
+                                        onChange(s);
+                                        setIsOpen(false);
+                                    }}
+                                    title={PRESENCE_STATUS[s as keyof typeof PRESENCE_STATUS]}
+                                    className={`h-10 flex items-center justify-center rounded-lg border-2 font-black text-[10px] transition-all hover:scale-110 active:scale-90 ${getStatusColor(s, !!isDarkMode)
+                                        } ${value === s ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-transparent' : ''}`}
+                                >
+                                    {s}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 };
@@ -880,7 +919,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                             {currentWeek.map(date => (
                                                 <Fragment key={`${user.id}-${date}`}>
                                                     <td key={`${user.id}-${date}-INICIO`} className={`p-1 lg:p-1.5 border-l transition-all ${isDarkMode ? 'border-slate-800/50 bg-slate-900/20' : 'border-indigo-100/30 bg-white'}`}>
-                                                        <StatusWheel
+                                                        <StatusPicker
                                                             disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
                                                             value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P'}
                                                             onChange={(status) => handleWeeklyChange(user.id, date, 'INICIO', status)}
@@ -888,7 +927,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                         />
                                                     </td>
                                                     <td key={`${user.id}-${date}-TERMINO`} className={`p-1 lg:p-1.5 border-l transition-all ${isDarkMode ? 'border-slate-800/50 bg-slate-900/20' : 'border-indigo-100/30 bg-white'}`}>
-                                                        <StatusWheel
+                                                        <StatusPicker
                                                             disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
                                                             value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P'}
                                                             onChange={(status) => handleWeeklyChange(user.id, date, 'TERMINO', status)}
@@ -969,7 +1008,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-y-5 gap-x-8">
                             {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
                                 <div key={code} className="flex items-center gap-3 group transition-transform hover:translate-x-1">
-                                    <div className={`text-[11px] font-black min-w-[35px] h-7 flex items-center justify-center rounded-lg shadow-sm ${isDarkMode ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
+                                    <div className={`text-[11px] font-black min-w-[35px] h-7 flex items-center justify-center rounded-lg border-2 shadow-sm transition-all ${getStatusColor(code, !!isDarkMode)}`}>
                                         {code}
                                     </div>
                                     <span className={`text-[10px] font-bold uppercase tracking-tight transition-colors ${isDarkMode ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-900'}`}>{label}</span>
