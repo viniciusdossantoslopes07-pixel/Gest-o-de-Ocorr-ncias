@@ -30,7 +30,9 @@ const getStatusColor = (status: string, isDarkMode: boolean) => {
             return isDarkMode ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' : 'bg-red-50 text-red-700 border-red-200';
         case 'ESV': case 'SSV': case 'MIS': case 'INST': case 'C-E':
             return isDarkMode ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'bg-blue-50 text-blue-700 border-blue-200';
-        case 'FE': case 'LP': case 'LM': case 'NU': case 'LT':
+        case 'FE':
+            return isDarkMode ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' : 'bg-cyan-50 text-cyan-700 border-cyan-200';
+        case 'LP': case 'LM': case 'NU': case 'LT':
             return isDarkMode ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-orange-50 text-orange-700 border-orange-200';
         case 'NIL': case 'DSV':
             return isDarkMode ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-500 border-slate-200';
@@ -40,9 +42,9 @@ const getStatusColor = (status: string, isDarkMode: boolean) => {
 };
 
 const STATUS_GROUPS = [
-    { label: 'Serviço/Presença', codes: ['P', 'ESV', 'SSV', 'MIS', 'INST', 'C-E'] },
+    { label: 'Serviço/Presença', codes: ['P', 'FE', 'ESV', 'SSV', 'MIS', 'INST', 'C-E'] },
     { label: 'Saúde/Faltas', codes: ['F', 'A', 'DPM', 'JS', 'INSP', 'DCH'] },
-    { label: 'Outros/Licenças', codes: ['FE', 'LP', 'LM', 'NU', 'LT', 'NIL', 'DSV'] }
+    { label: 'Outros/Licenças', codes: ['LP', 'LM', 'NU', 'LT', 'NIL', 'DSV'] }
 ];
 
 const StatusPicker: FC<{

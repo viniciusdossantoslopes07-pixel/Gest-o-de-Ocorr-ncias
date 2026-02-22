@@ -34,6 +34,15 @@ export const STATUS_COLORS: Record<string, string> = {
   'Retornado para Ajuste': 'bg-red-100 text-red-700',
 };
 
+export const PRESENCE_COLORS: Record<string, string> = {
+  'P': 'bg-emerald-100 text-emerald-700',
+  'FE': 'bg-cyan-100 text-cyan-700',
+  'ESV': 'bg-blue-100 text-blue-700',
+  'SSV': 'bg-blue-100 text-blue-700',
+  'MIS': 'bg-blue-100 text-blue-700',
+  'F': 'bg-red-100 text-red-700',
+};
+
 export const URGENCY_COLORS: Record<string, string> = {
   Baixa: 'bg-slate-100 text-slate-600',
   Média: 'bg-blue-50 text-blue-600',
@@ -71,7 +80,7 @@ export const PRESENCE_STATUS = {
   'P': 'PRESENTE',
   'F': 'FALTA',
   'A': 'AUSENTE',
-  'ESV': 'SERVIÇO',
+  'ESV': 'ENTRANDO DE SERVIÇO',
   'SSV': 'SAINDO SERVIÇO',
   'DSV': 'DISP DE SERVIÇO',
   'MIS': 'MISSÃO',
