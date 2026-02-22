@@ -5,6 +5,7 @@ import MissionRequestList from './MissionRequestList';
 import { supabase } from '../services/supabase';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import { jsPDF } from 'jspdf';
+import PersonalReportPrintView from './PersonalReportPrintView';
 
 interface MeuPlanoViewProps {
     user: User;
@@ -30,6 +31,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
     const [filterDateStart, setFilterDateStart] = useState('');
     const [filterDateEnd, setFilterDateEnd] = useState('');
     const [filterType, setFilterType] = useState('');
+    const [showPrintView, setShowPrintView] = useState(false);
 
     // Data for Requests Tab
     const [requests, setRequests] = useState<any[]>([]);
@@ -230,66 +232,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
     };
 
     const generateReport = () => {
-        const doc = new jsPDF();
-        const missionsToPrint = hasActiveFilters ? filteredStats.allFiltered : allMissions;
-
-        // Header
-        doc.setFontSize(18);
-        doc.text('Relatório Individual - GSD-SP', 20, 20);
-
-        doc.setFontSize(12);
-        doc.text(`Militar: ${user.rank} ${user.warName}`, 20, 30);
-        doc.text(`ID Militar: ${user.militarId || 'N/A'}`, 20, 36);
-        doc.text(`Saram: ${user.saram}`, 20, 42);
-        doc.text(`Data: ${new Date().toLocaleDateString()}`, 20, 48);
-
-        if (hasActiveFilters) {
-            doc.setFontSize(10);
-            doc.setTextColor(100);
-            let filterText = 'Filtros aplicados: ';
-            if (filterType) filterText += `Tipo: ${filterType} | `;
-            if (filterDateStart || filterDateEnd) filterText += `Período: ${filterDateStart || '...'} a ${filterDateEnd || '...'}`;
-            doc.text(filterText, 20, 54);
-            doc.setTextColor(0);
-        }
-
-        doc.line(20, 56, 190, 56);
-
-        // Stats Summary
-        doc.setFontSize(14);
-        doc.text('Resumo Operacional', 20, 65);
-
-        doc.setFontSize(12);
-        doc.text(`Total de Missões: ${hasActiveFilters ? filteredStats.totalMissions : stats.totalMissions}`, 20, 75);
-        doc.text(`Assiduidade: ${(hasActiveFilters ? filteredStats.attendanceRate : stats.attendanceRate).toFixed(1)}%`, 20, 83);
-        doc.text(`Cautelas Ativas: ${stats.activeLoans} itens`, 20, 91);
-        doc.text(`Histórico de Cautelas: ${stats.loanHistory} registros`, 20, 99);
-
-        // Recent Missions
-        doc.setFontSize(14);
-        doc.text(hasActiveFilters ? 'Missões Filtradas' : 'Últimas Missões', 20, 105);
-
-        let y = 115;
-        const listToRender = hasActiveFilters ? missionsToPrint.slice(0, 15) : stats.recentMissions;
-
-        listToRender.forEach((m: any) => {
-            if (y > 270) {
-                doc.addPage();
-                y = 20;
-            }
-            doc.setFontSize(10);
-            const date = new Date(m.date).toLocaleDateString();
-            doc.text(`${date} - ${m.mission} (${m.omis_number})`, 20, y);
-            y += 6;
-            doc.setFontSize(9);
-            doc.setTextColor(100);
-            doc.text(`Local: ${m.location}`, 25, y);
-            y += 8;
-            doc.setTextColor(0);
-        });
-
-        doc.autoPrint();
-        window.open(doc.output('bloburl'), '_blank');
+        setShowPrintView(true);
     };
 
     return (
@@ -599,6 +542,16 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                     )}
                 </div>
             </div>
+
+            {showPrintView && (
+                <PersonalReportPrintView
+                    user={user}
+                    stats={stats}
+                    filteredStats={filteredStats}
+                    hasActiveFilters={!!hasActiveFilters}
+                    onClose={() => setShowPrintView(false)}
+                />
+            )}
         </div>
     );
 }
