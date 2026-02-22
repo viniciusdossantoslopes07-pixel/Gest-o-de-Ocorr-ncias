@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { User, Occurrence } from '../types';
-import { STATUS_COLORS, URGENCY_COLORS } from '../constants';
+import { STATUS_COLORS, URGENCY_COLORS, MILITARY_QUOTES } from '../constants';
 
 interface HomeViewProps {
   user: User;
@@ -50,6 +50,12 @@ const HomeView: React.FC<HomeViewProps> = ({
   const [isEditMode, setIsEditMode] = useState(false);
   const defaultHomeOrder = ['MISSION_REQUEST', 'Ocorrências de Emergência', 'Controle de Acesso e Credenciamento', 'Segurança Orgânica / Patrimonial', 'Segurança de Sistemas e Tecnologia', 'Veículos e Tráfego Interno', 'Pessoas e Conduta', 'Materiais e Logística'];
   const [customOrder, setCustomOrder] = useState<string[]>(user.home_order || defaultHomeOrder);
+
+  // Lógica para Citação do Dia
+  const today = new Date();
+  const dateSeed = today.getFullYear() * 1000 + today.getMonth() * 100 + today.getDate();
+  const quoteIndex = dateSeed % MILITARY_QUOTES.length;
+  const quote = MILITARY_QUOTES[quoteIndex];
 
   const handleRefresh = async () => {
     if (!onRefresh) return;
@@ -123,23 +129,34 @@ const HomeView: React.FC<HomeViewProps> = ({
               </div>
             </div>
             {onRefresh && (
-              <button
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-white font-bold text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-white/10 backdrop-blur-md group"
-              >
-                <RefreshCw className={`w-4 h-4 transition-transform ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180 duration-500'}`} />
-                <span>{isRefreshing ? 'Atualizando...' : 'Sincronizar'}</span>
-              </button>
+              <div className="flex flex-col items-end gap-1.5">
+                <span className="text-[10px] font-black uppercase text-white/40 tracking-widest mr-1">
+                  Acesso: <span className="text-white/70">{user.role}</span>
+                </span>
+                <button
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-white font-bold text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-white/10 backdrop-blur-md group"
+                >
+                  <RefreshCw className={`w-4 h-4 transition-transform ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180 duration-500'}`} />
+                  <span>{isRefreshing ? 'Atualizando...' : 'Sincronizar'}</span>
+                </button>
+              </div>
             )}
           </div>
           <div className="max-w-2xl">
             <h2 className="text-3xl lg:text-5xl font-black mb-4 tracking-tight leading-tight">
               Bem-vindo à Central de Comando, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{user.rank} {user.warName || user.name.split(' ')[0]}</span>
             </h2>
-            <p className="text-slate-400 text-sm lg:text-lg leading-relaxed font-medium">
-              Identificamos o seu acesso como <span className="text-white">{user.role}</span>. O sistema está operando em <span className="text-emerald-400 font-bold">Nível Normal</span> com redundância ativa.
-            </p>
+            <div className={`mt-6 p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-900/40 border-white/5' : 'bg-black/5 border-black/5'} backdrop-blur-sm relative group/quote`}>
+              <div className="absolute -left-1 top-4 w-1 h-8 bg-blue-500 rounded-full"></div>
+              <p className="text-slate-200 text-sm lg:text-base italic font-serif leading-relaxed line-clamp-2">
+                "{quote.text}"
+              </p>
+              <p className="text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2 ml-1">
+                — {quote.author}
+              </p>
+            </div>
           </div>
         </div>
         <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
