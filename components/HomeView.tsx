@@ -110,15 +110,15 @@ const HomeView: React.FC<HomeViewProps> = ({
   }
 
   return (
-    <div className="space-y-12 max-w-6xl mx-auto pb-12">
+    <div className="space-y-8 max-w-6xl mx-auto pb-12">
       {/* Welcome Section */}
-      <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-900 border-transparent'} rounded-[2rem] lg:rounded-[2.5rem] p-6 lg:p-10 text-white shadow-2xl relative overflow-hidden transition-all duration-500 border`}>
+      <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-900 border-transparent'} rounded-[2rem] lg:rounded-[2.5rem] p-5 lg:p-8 text-white shadow-2xl relative overflow-hidden transition-all duration-500 border`}>
         {/* Glow Effects */}
         <div className="absolute -top-24 -left-24 w-64 h-64 bg-blue-600/20 rounded-full blur-[80px]"></div>
         <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-indigo-600/20 rounded-full blur-[80px]"></div>
 
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <div className="bg-white p-1.5 rounded-2xl w-12 h-12 lg:w-14 lg:h-14 flex items-center justify-center overflow-hidden shadow-2xl ring-4 ring-white/10 group-hover:ring-white/20 transition-all">
                 <img src="/logo_gsd.jpg" alt="Logo GSD-SP" className="w-full h-full object-cover scale-110" />
@@ -145,10 +145,10 @@ const HomeView: React.FC<HomeViewProps> = ({
             )}
           </div>
           <div className="max-w-2xl">
-            <h2 className="text-3xl lg:text-5xl font-black mb-4 tracking-tight leading-tight">
+            <h2 className="text-2xl lg:text-4xl font-black mb-3 tracking-tight leading-tight">
               Bem-vindo à Central de Comando, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">{user.rank} {user.warName || user.name.split(' ')[0]}</span>
             </h2>
-            <div className={`mt-6 p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-900/40 border-white/5' : 'bg-black/5 border-black/5'} backdrop-blur-sm relative group/quote`}>
+            <div className={`mt-4 p-3 rounded-2xl border ${isDarkMode ? 'bg-slate-900/40 border-white/5' : 'bg-black/5 border-black/5'} backdrop-blur-sm relative group/quote`}>
               <div className="absolute -left-1 top-4 w-1 h-8 bg-blue-500 rounded-full"></div>
               <p className="text-slate-200 text-sm lg:text-base italic font-serif leading-relaxed line-clamp-2">
                 "{quote.text}"
