@@ -195,7 +195,8 @@ const App: FC = () => {
             saram: r.saram,
             status: r.status,
             timestamp: r.timestamp
-          }))
+          })),
+          observacao: a.observacao
         })));
       }
 
@@ -1167,6 +1168,23 @@ const App: FC = () => {
                   .upsert(recordsToUpsert, { onConflict: 'attendance_id, militar_id' });
 
                 if (batchErr) console.error('Error batch saving attendance records:', batchErr);
+
+                // Atualização otimista: atualizar estado local imediatamente
+                setAttendanceHistory(prev => {
+                  const idx = prev.findIndex(
+                    x => x.date === a.date && x.sector === a.sector && x.callType === a.callType
+                  );
+                  const updated: DailyAttendance = {
+                    ...a,
+                    id: attendanceId!
+                  };
+                  if (idx >= 0) {
+                    const next = [...prev];
+                    next[idx] = updated;
+                    return next;
+                  }
+                  return [...prev, updated];
+                });
               }}
               onSaveJustification={async (j) => {
                 const { error } = await supabase
