@@ -266,7 +266,7 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
             size: A4 portrait;
             margin: 2.5cm 2cm 2.5cm 2cm;
           }
-          body * {
+          body, body * {
             visibility: hidden;
           }
           #omis-print-content,
@@ -274,12 +274,15 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
             visibility: visible;
           }
           #omis-print-content {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
+            right: 0;
             padding: 0;
             margin: 0;
+            border: none !important;
+            box-shadow: none !important;
+            max-width: 100% !important;
           }
           body {
             print-color-adjust: exact;
