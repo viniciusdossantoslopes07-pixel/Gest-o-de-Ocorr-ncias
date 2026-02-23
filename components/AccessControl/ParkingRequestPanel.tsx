@@ -6,6 +6,7 @@ import {
     XCircle, Printer, Download, Plus, FileText, Send, Mail, MailCheck, Ticket,
     List, BarChart3, Eye, CheckCircle, History, ChevronRight, Loader2, Lock, ShieldCheck
 } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 import { notificationService } from '../../services/notificationService';
 import ParkingStatistics from './ParkingStatistics';
 
@@ -176,6 +177,45 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
         }
     };
 
+    const generateParkingPDF = (req: ParkingRequest) => {
+        const doc = new jsPDF();
+        const year = new Date(req.created_at).getFullYear();
+        const veiculo = req.vehicle || { marca_modelo: req.ext_marca_modelo || '—', placa: req.ext_placa || '—', cor: req.ext_cor || '' };
+
+        // Estilização simples para o PDF
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text("AUTORIZAÇÃO DE ESTACIONAMENTO - BASP", 105, 20, { align: "center" });
+
+        doc.setFontSize(10);
+        doc.text(`Nº ${req.numero_autorizacao}/${year}`, 105, 28, { align: "center" });
+
+        doc.line(20, 35, 190, 35);
+
+        doc.setFontSize(11);
+        doc.text("DADOS DO SOLICITANTE:", 20, 45);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Nome: ${req.nome_completo}`, 20, 52);
+        doc.text(`Posto/Grad: ${req.posto_graduacao} (${req.tipo_pessoa})`, 20, 58);
+        doc.text(`Veículo: ${veiculo.marca_modelo} - Placa: ${veiculo.placa}`, 20, 64);
+
+        doc.setFont("helvetica", "bold");
+        doc.text("PERÍODO DE VALIDADE:", 20, 75);
+        doc.setFont("helvetica", "normal");
+        doc.text(`De: ${new Date(req.inicio + 'T00:00:00').toLocaleDateString('pt-BR')}`, 20, 82);
+        doc.text(`Até: ${new Date(req.termino + 'T00:00:00').toLocaleDateString('pt-BR')}`, 20, 88);
+
+        doc.setFontSize(9);
+        doc.text("Manter este documento visível no para-brisa.", 105, 105, { align: "center" });
+
+        doc.setFont("helvetica", "bold");
+        doc.text("APROVADO POR:", 105, 120, { align: "center" });
+        doc.setFont("helvetica", "normal");
+        doc.text(req.aprovado_por || "AUTORIDADE COMPETENTE", 105, 126, { align: "center" });
+
+        return doc.output('datauristring').split(',')[1]; // Retorna apenas o base64
+    };
+
     const handleSendEmail = async (req: ParkingRequest) => {
         if (!req.email) {
             alert('E-mail do solicitante não encontrado');
@@ -184,6 +224,8 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
 
         setSendingEmailId(req.id);
         try {
+            const pdfBase64 = generateParkingPDF(req);
+
             await notificationService.sendParkingAuthorizationNotification({
                 militarEmail: req.email,
                 militarName: req.nome_completo,
@@ -191,10 +233,18 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                 plate: req.vehicle?.placa || req.ext_placa || '—',
                 startDate: req.inicio,
                 endDate: req.termino,
-                authNumber: req.id.slice(0, 8).toUpperCase()
+                authNumber: req.id.slice(0, 8).toUpperCase(),
+                attachments: [
+                    {
+                        filename: `Autorizacao_Estacionamento_${req.id.slice(0, 8).toUpperCase()}.pdf`,
+                        content: pdfBase64,
+                        encoding: 'base64'
+                    }
+                ]
             });
-            alert('E-mail enviado com sucesso!');
+            alert('E-mail enviado com sucesso com a autorização em anexo!');
         } catch (error) {
+            console.error('Erro ao enviar e-mail:', error);
             alert('Falha ao enviar e-mail');
         } finally {
             setSendingEmailId(null);

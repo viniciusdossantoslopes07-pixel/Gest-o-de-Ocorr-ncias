@@ -9,6 +9,7 @@ interface MissionNotificationData {
     missionLocation: string;
     omisNumber: string;
     commanderName?: string;
+    attachments?: any[];
 }
 
 interface ParkingNotificationData {
@@ -19,6 +20,7 @@ interface ParkingNotificationData {
     startDate: string;
     endDate: string;
     authNumber: string | number;
+    attachments?: any[];
 }
 
 export const notificationService = {
@@ -53,7 +55,7 @@ export const notificationService = {
 
         try {
             const { error } = await supabase.functions.invoke('send-email', {
-                body: { to: militarEmail, subject, html }
+                body: { to: militarEmail, subject, html, attachments: data.attachments }
             });
             if (error) throw error;
             return true;
@@ -94,7 +96,7 @@ export const notificationService = {
 
         try {
             const { error } = await supabase.functions.invoke('send-email', {
-                body: { to: militarEmail, subject, html }
+                body: { to: militarEmail, subject, html, attachments: data.attachments }
             });
             if (error) throw error;
             return true;

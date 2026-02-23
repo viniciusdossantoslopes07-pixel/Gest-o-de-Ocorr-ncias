@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     }
 
     try {
-        const { to, subject, html } = await req.json();
+        const { to, subject, html, attachments } = await req.json();
 
         if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
             throw new Error("Configurações de e-mail (GMAIL_USER ou GMAIL_APP_PASSWORD) não encontradas.");
@@ -38,6 +38,7 @@ Deno.serve(async (req) => {
             to,
             subject,
             html,
+            attachments: attachments || [],
         };
 
         const info = await transporter.sendMail(mailOptions);
