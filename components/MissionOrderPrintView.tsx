@@ -10,7 +10,107 @@ interface MissionOrderPrintViewProps {
 
 const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose }) => {
     const handlePrint = () => {
-        window.print();
+        const content = document.getElementById('omis-print-content');
+        if (!content) return;
+
+        const printWindow = window.open('', '_blank', 'width=900,height=700');
+        if (!printWindow) return;
+
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+            <head>
+                <meta charset="UTF-8" />
+                <title>OMIS - ${order.omisNumber}</title>
+                <style>
+                    @page {
+                        size: A4 portrait;
+                        margin: 2.5cm 2cm 2.5cm 2cm;
+                    }
+                    * { box-sizing: border-box; }
+                    body {
+                        font-family: Arial, sans-serif;
+                        font-size: 12px;
+                        color: #000;
+                        background: #fff;
+                        margin: 0;
+                        padding: 0;
+                        print-color-adjust: exact;
+                        -webkit-print-color-adjust: exact;
+                    }
+                    img { max-width: 100%; }
+                    table { width: 100%; border-collapse: collapse; }
+                    td, th { border: 1.5px solid #000; padding: 4px 8px; }
+                    .border { border: 1.5px solid #000; }
+                    .border-b-2 { border-bottom: 2px solid #000; }
+                    .text-center { text-align: center; }
+                    .font-bold { font-weight: bold; }
+                    .font-black { font-weight: 900; }
+                    .uppercase { text-transform: uppercase; }
+                    .text-slate-500 { color: #64748b; }
+                    .text-slate-700 { color: #334155; }
+                    .text-slate-800 { color: #1e293b; }
+                    .text-slate-900 { color: #0f172a; }
+                    .text-blue-600 { color: #2563eb; }
+                    .text-red-500 { color: #ef4444; }
+                    .bg-slate-50 { background-color: #f8fafc; }
+                    .bg-slate-100 { background-color: #f1f5f9; }
+                    .bg-green-50 { background-color: #f0fdf4; }
+                    .rounded-lg { border-radius: 8px; }
+                    .rounded-xl { border-radius: 12px; }
+                    .p-2 { padding: 8px; }
+                    .p-4 { padding: 16px; }
+                    .mb-4 { margin-bottom: 16px; }
+                    .mb-6 { margin-bottom: 24px; }
+                    .mt-1 { margin-top: 4px; }
+                    .pb-4 { padding-bottom: 16px; }
+                    .flex { display: flex; }
+                    .items-start { align-items: flex-start; }
+                    .items-center { align-items: center; }
+                    .justify-between { justify-content: space-between; }
+                    .flex-1 { flex: 1; }
+                    .gap-2 { gap: 8px; }
+                    .px-2 { padding-left: 8px; padding-right: 8px; }
+                    .px-2\\.5 { padding-left: 10px; padding-right: 10px; }
+                    .py-1 { padding-top: 4px; padding-bottom: 4px; }
+                    .py-1\\.5 { padding-top: 6px; padding-bottom: 6px; }
+                    .w-16 { width: 64px; }
+                    .h-16 { height: 64px; }
+                    .w-20 { width: 80px; }
+                    .h-20 { height: 80px; }
+                    .object-contain { object-fit: contain; }
+                    .tracking-wide { letter-spacing: 0.05em; }
+                    .tracking\\[0\\.2em\\] { letter-spacing: 0.2em; }
+                    .leading-tight { line-height: 1.25; }
+                    .text-xs { font-size: 11px; }
+                    .text-sm { font-size: 13px; }
+                    .text-base { font-size: 15px; }
+                    .text-xl { font-size: 20px; }
+                    .text-\\[9px\\] { font-size: 9px; }
+                    .text-\\[10px\\] { font-size: 10px; }
+                    .text-\\[11px\\] { font-size: 11px; }
+                    .border-slate-950 { border-color: #020617; }
+                    .border-\\[1\\.5px\\] { border-width: 1.5px; }
+                    .border-b-2 { border-bottom-width: 2px; }
+                    .w-32 { width: 128px; }
+                    .w-24 { width: 96px; }
+                    .w-12 { width: 48px; }
+                    /* Esconde prints internos */
+                    [class*="print\\:hidden"] { display: none !important; }
+                </style>
+            </head>
+            <body>
+                ${content.innerHTML}
+            </body>
+            </html>
+        `);
+
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 500);
     };
 
     const formatValue = (val: any) => {
@@ -259,71 +359,6 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
                 </div>
             </div>
 
-            {/* Print-specific styles */}
-            <style>{`
-        @media print {
-          @page {
-            size: A4 portrait;
-            margin: 2cm 1.8cm 2cm 1.8cm;
-          }
-
-          /* Esconde TUDO da página */
-          body > *:not(.force-light) {
-            display: none !important;
-          }
-
-          /* O overlay do modal precisa ficar visível e estático */
-          .force-light {
-            display: block !important;
-            position: static !important;
-            background: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            overflow: visible !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-          }
-
-          /* O wrapper interno do modal */
-          .force-light > div {
-            position: static !important;
-            max-width: 100% !important;
-            width: 100% !important;
-            height: auto !important;
-            min-height: 0 !important;
-            max-height: none !important;
-            overflow: visible !important;
-            box-shadow: none !important;
-            border-radius: 0 !important;
-            display: block !important;
-          }
-
-          /* O scrollable body wrapper */
-          .force-light > div > div {
-            overflow: visible !important;
-            padding: 0 !important;
-            background: none !important;
-          }
-
-          /* O documento em si */
-          #omis-print-content {
-            position: static !important;
-            display: block !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            border: none !important;
-            box-shadow: none !important;
-            min-height: 0 !important;
-          }
-
-          body {
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
-          }
-        }
-      `}</style>
         </div>
     );
 };
