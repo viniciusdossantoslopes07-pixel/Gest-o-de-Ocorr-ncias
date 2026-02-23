@@ -1295,8 +1295,14 @@ const App: FC = () => {
                 }
               }}
               onExcludeUser={async (userId) => {
-                if (!confirm('Deseja realmente desativar este militar? Ele será removido da chamada diária, mas seus registros históricos serão preservados.')) return;
-                await handleDeleteUser(userId);
+                if (!confirm('Deseja remover este militar da chamada diária? Ele será movido para a lista "Sem Setor Atribuído" e permanecerá ativo no sistema.')) return;
+                const { error } = await supabase.from('users').update({ sector: '' }).eq('id', userId);
+                if (!error) {
+                  setUsers(users.map(u => u.id === userId ? { ...u, sector: '' } : u));
+                  alert('Militar removido da chamada. Ele está na lista de ativos sem setor atribuído.');
+                } else {
+                  alert('Erro ao remover militar da chamada: ' + error.message);
+                }
               }}
             />
           )}
