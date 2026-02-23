@@ -189,7 +189,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 query = query.eq('guard_gate', filterGate);
             }
 
-            const { data, error } = await query.limit(50); // Reduced limit for list view
+            const { data, error } = await query;
             if (error) throw error;
             setRecords(data || []);
         } catch (err) {
@@ -732,46 +732,14 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                     <div className={`rounded-xl border shadow-sm overflow-hidden mb-4 ${card}`}>
                         <button
                             onClick={() => setShowStats(!showStats)}
-                            className={`w-full flex items-center justify-between p-2.5 transition-colors ${dk ? 'bg-slate-700/40 hover:bg-slate-700/60' : 'bg-slate-50 hover:bg-slate-100'}`}
+                            className={`flex-1 flex items-center justify-between p-2.5 transition-colors ${dk ? 'bg-slate-700/40 hover:bg-slate-700/60' : 'bg-slate-50 hover:bg-slate-100'}`}
                         >
                             <span className={`text-xs font-black uppercase flex items-center gap-2 ${textSecondary}`}>
                                 <RefreshCw className="w-3.5 h-3.5" /> Resumo do Dia
-                                <span className={`px-1.5 py-0.5 rounded text-[10px] ${dk ? 'bg-slate-600 text-slate-300' : 'bg-slate-200 text-slate-700'}`}>{todayStats.total}</span>
+                                <span className={`px-1.5 py-0.5 rounded text-[10px] ${dk ? 'bg-slate-600 text-slate-300' : 'bg-slate-200 text-slate-700'}`}>{(historyGateFilter ? records.filter(r => r.guard_gate === historyGateFilter) : records).length}</span>
                             </span>
-                            {showStats ? <ChevronUp className={`w-4 h-4 ${textMuted}`} /> : <ChevronDown className={`w-4 h-4 ${textMuted}`} />}
-                        </button>
-
-                        {showStats && (
-                            <div className="p-2 grid grid-cols-2 sm:grid-cols-4 gap-2 animate-fade-in">
-                                <div className={`p-1.5 rounded-lg border text-center ${dk ? 'bg-emerald-900/20 border-emerald-800/30' : 'bg-emerald-50 border-emerald-100'}`}>
-                                    <p className="text-[9px] font-bold text-emerald-600 uppercase">Entradas</p>
-                                    <p className="text-base font-black text-emerald-700 leading-none mt-0.5">{todayStats.entries}</p>
-                                </div>
-                                <div className={`p-1.5 rounded-lg border text-center ${dk ? 'bg-red-900/20 border-red-800/30' : 'bg-red-50 border-red-100'}`}>
-                                    <p className="text-[9px] font-bold text-red-600 uppercase">Saídas</p>
-                                    <p className="text-base font-black text-red-700 leading-none mt-0.5">{todayStats.exits}</p>
-                                </div>
-                                <div className={`p-1.5 rounded-lg border text-center relative overflow-hidden ${dk ? 'bg-blue-900/20 border-blue-800/30' : 'bg-blue-50 border-blue-100'}`}>
-                                    <Footprints className={`absolute -right-1 -bottom-1 w-8 h-8 opacity-10 ${dk ? 'text-blue-400' : 'text-blue-600'}`} />
-                                    <p className="text-[9px] font-bold text-blue-600 uppercase">Pedestres</p>
-                                    <p className="text-base font-black text-blue-700 leading-none mt-0.5">{records.filter(r => r.access_mode === 'Pedestre').length}</p>
-                                </div>
-                                <div className={`p-1.5 rounded-lg border text-center relative overflow-hidden ${dk ? 'bg-violet-900/20 border-violet-800/30' : 'bg-violet-50 border-violet-100'}`}>
-                                    <Car className={`absolute -right-1 -bottom-1 w-8 h-8 opacity-10 ${dk ? 'text-violet-400' : 'text-violet-600'}`} />
-                                    <p className="text-[9px] font-bold text-violet-600 uppercase">Veículos</p>
-                                    <p className="text-base font-black text-violet-700 leading-none mt-0.5">{records.filter(r => r.access_mode === 'Veículo').length}</p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* 2. History List (Compact) */}
-                    <div className={`rounded-xl shadow-sm border overflow-hidden ${card}`}>
-                        <div className={`p-3 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
-                            <span className={`text-xs font-black uppercase flex items-center gap-2 ${textSecondary}`}>
-                                <History className="w-3.5 h-3.5" /> Últimos Acessos (Hoje)
-                            </span>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                {/* Gate Filters - agora controlam AMBOS os containers */}
                                 <div className="flex gap-1">
                                     {['', 'PORTÃO G1', 'PORTÃO G2', 'PORTÃO G3'].map(gate => {
                                         const label = gate ? gate.replace('PORTÃO ', '') : 'Todos';
@@ -790,10 +758,54 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                         );
                                     })}
                                 </div>
-                                <div className={`flex gap-2 text-[10px] ${textMuted}`}>
-                                    <span>Entradas: {(historyGateFilter ? records.filter(r => r.guard_gate === historyGateFilter) : records).filter(r => r.access_category === 'Entrada').length}</span>
-                                    <span>Saídas: {(historyGateFilter ? records.filter(r => r.guard_gate === historyGateFilter) : records).filter(r => r.access_category === 'Saída').length}</span>
-                                </div>
+                                {showStats ? <ChevronUp className={`w-4 h-4 ${textMuted}`} /> : <ChevronDown className={`w-4 h-4 ${textMuted}`} />}
+                            </div>
+                        </button>
+
+                        {showStats && (
+                            <div className="p-2 grid grid-cols-2 sm:grid-cols-4 gap-2 animate-fade-in">
+                                {/* Os cards filtram pelo portão selecionado */}
+                                {(() => {
+                                    const filtered = historyGateFilter ? records.filter(r => r.guard_gate === historyGateFilter) : records;
+                                    return (
+                                        <>
+                                            <div className={`p-1.5 rounded-lg border text-center ${dk ? 'bg-emerald-900/20 border-emerald-800/30' : 'bg-emerald-50 border-emerald-100'}`}>
+                                                <p className="text-[9px] font-bold text-emerald-600 uppercase">Entradas</p>
+                                                <p className="text-base font-black text-emerald-700 leading-none mt-0.5">{filtered.filter(r => r.access_category === 'Entrada').length}</p>
+                                            </div>
+                                            <div className={`p-1.5 rounded-lg border text-center ${dk ? 'bg-red-900/20 border-red-800/30' : 'bg-red-50 border-red-100'}`}>
+                                                <p className="text-[9px] font-bold text-red-600 uppercase">Saídas</p>
+                                                <p className="text-base font-black text-red-700 leading-none mt-0.5">{filtered.filter(r => r.access_category === 'Saída').length}</p>
+                                            </div>
+                                            <div className={`p-1.5 rounded-lg border text-center relative overflow-hidden ${dk ? 'bg-blue-900/20 border-blue-800/30' : 'bg-blue-50 border-blue-100'}`}>
+                                                <Footprints className={`absolute -right-1 -bottom-1 w-8 h-8 opacity-10 ${dk ? 'text-blue-400' : 'text-blue-600'}`} />
+                                                <p className="text-[9px] font-bold text-blue-600 uppercase">Pedestres</p>
+                                                <p className="text-base font-black text-blue-700 leading-none mt-0.5">{filtered.filter(r => r.access_mode === 'Pedestre').length}</p>
+                                            </div>
+                                            <div className={`p-1.5 rounded-lg border text-center relative overflow-hidden ${dk ? 'bg-violet-900/20 border-violet-800/30' : 'bg-violet-50 border-violet-100'}`}>
+                                                <Car className={`absolute -right-1 -bottom-1 w-8 h-8 opacity-10 ${dk ? 'text-violet-400' : 'text-violet-600'}`} />
+                                                <p className="text-[9px] font-bold text-violet-600 uppercase">Veículos</p>
+                                                <p className="text-base font-black text-violet-700 leading-none mt-0.5">{filtered.filter(r => r.access_mode === 'Veículo').length}</p>
+                                            </div>
+                                        </>
+                                    );
+                                })()}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* 2. History List (Compact) */}
+                    <div className={`rounded-xl shadow-sm border overflow-hidden ${card}`}>
+                        <div className={`p-3 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
+                            <span className={`text-xs font-black uppercase flex items-center gap-2 ${textSecondary}`}>
+                                <History className="w-3.5 h-3.5" /> Últimos Acessos (Hoje)
+                            </span>
+                            <div className={`flex gap-2 text-[10px] ${textMuted}`}>
+                                <span>Entradas: {(historyGateFilter ? records.filter(r => r.guard_gate === historyGateFilter) : records).filter(r => r.access_category === 'Entrada').length}</span>
+                                <span>Saídas: {(historyGateFilter ? records.filter(r => r.guard_gate === historyGateFilter) : records).filter(r => r.access_category === 'Saída').length}</span>
+                                {historyGateFilter && (
+                                    <span className={`font-bold ${dk ? 'text-blue-400' : 'text-blue-600'}`}>• {historyGateFilter.replace('PORTÃO ', '')}</span>
+                                )}
                             </div>
                         </div>
 
