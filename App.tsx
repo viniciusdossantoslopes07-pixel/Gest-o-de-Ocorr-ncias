@@ -1324,7 +1324,7 @@ const App: FC = () => {
 
           {/* Access Control Module */}
           {activeTab === 'access-control' && canViewAccessControl && currentUser && (
-            <AccessControlPanel user={currentUser} />
+            <AccessControlPanel user={currentUser} isDarkMode={isDarkMode} />
           )}
 
           {activeTab === 'access-statistics' && canViewAccessControl && (
@@ -1332,7 +1332,7 @@ const App: FC = () => {
           )}
 
           {activeTab === 'parking-request' && canViewAccessControl && (
-            <ParkingRequestPanel user={currentUser} />
+            <ParkingRequestPanel user={currentUser} isDarkMode={isDarkMode} />
           )}
 
           {/* Legacy Profile tab mapped to Settings for now, or kept separate if needed. 

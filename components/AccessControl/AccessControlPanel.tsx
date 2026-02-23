@@ -12,6 +12,7 @@ import { Combobox } from '../Combobox';
 
 interface AccessControlPanelProps {
     user: User;
+    isDarkMode?: boolean;
 }
 
 interface AccessRecord {
@@ -39,7 +40,18 @@ const DESTINATIONS = [
     'HOTEL DE TRÂNSITO BASP', 'HOTEL DE TRÂNSITO SEREP', 'HOTEL DE TRÂNSITO ILA'
 ];
 
-export default function AccessControlPanel({ user }: AccessControlPanelProps) {
+export default function AccessControlPanel({ user, isDarkMode = false }: AccessControlPanelProps) {
+    // Dark mode helpers
+    const dk = isDarkMode;
+    const card = dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-200';
+    const cardSm = dk ? 'bg-slate-800/60 border-slate-700' : 'bg-white border-slate-200';
+    const surfaceBg = dk ? 'bg-slate-700/60' : 'bg-slate-50';
+    const surfaceBorder = dk ? 'border-slate-600' : 'border-slate-100';
+    const inputCls = dk ? 'bg-slate-700/60 border-slate-600 text-white placeholder:text-slate-500 focus:ring-blue-500/30 focus:border-blue-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-blue-100 focus:border-blue-500';
+    const textPrimary = dk ? 'text-white' : 'text-slate-900';
+    const textSecondary = dk ? 'text-slate-300' : 'text-slate-600';
+    const textMuted = dk ? 'text-slate-400' : 'text-slate-500';
+    const hoverRow = dk ? 'hover:bg-slate-700/40' : 'hover:bg-slate-50';
     // Tab State
     const [activeTab, setActiveTab] = useState<'registrar' | 'estatisticas' | 'busca'>('registrar');
     const [showStats, setShowStats] = useState(true);
@@ -441,12 +453,12 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
         <div className="space-y-4 animate-fade-in max-w-7xl mx-auto pb-20">
 
             {/* Navigation Tabs */}
-            <div className="flex p-1 bg-slate-100 rounded-xl mb-4">
+            <div className={`flex p-1 rounded-xl mb-4 ${dk ? 'bg-slate-700/50' : 'bg-slate-100'}`}>
                 <button
                     onClick={() => setActiveTab('registrar')}
                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black uppercase tracking-wider rounded-lg transition-all ${activeTab === 'registrar'
-                        ? 'bg-white text-blue-600 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200/50'
+                        ? (dk ? 'bg-slate-600 text-white shadow-sm' : 'bg-white text-blue-600 shadow-sm')
+                        : (dk ? 'text-slate-400 hover:text-white hover:bg-slate-600/50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200/50')
                         }`}
                 >
                     <List className="w-4 h-4" />
@@ -455,8 +467,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                 <button
                     onClick={() => setActiveTab('estatisticas')}
                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black uppercase tracking-wider rounded-lg transition-all ${activeTab === 'estatisticas'
-                        ? 'bg-white text-blue-600 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200/50'
+                        ? (dk ? 'bg-slate-600 text-white shadow-sm' : 'bg-white text-blue-600 shadow-sm')
+                        : (dk ? 'text-slate-400 hover:text-white hover:bg-slate-600/50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200/50')
                         }`}
                 >
                     <BarChart3 className="w-4 h-4" />
@@ -465,8 +477,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                 <button
                     onClick={() => setActiveTab('busca')}
                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black uppercase tracking-wider rounded-lg transition-all ${activeTab === 'busca'
-                        ? 'bg-white text-blue-600 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200/50'
+                        ? (dk ? 'bg-slate-600 text-white shadow-sm' : 'bg-white text-blue-600 shadow-sm')
+                        : (dk ? 'text-slate-400 hover:text-white hover:bg-slate-600/50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200/50')
                         }`}
                 >
                     <Search className="w-4 h-4" />
@@ -479,11 +491,11 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
             {activeTab === 'registrar' && (
                 <div className="space-y-4 animate-fade-in">
                     {/* 1. Registration Card */}
-                    <div className={`bg-white rounded-2xl shadow-xl overflow-hidden border-t-4 ${selectedGate === 'PORTÃO G1' ? 'border-t-blue-500' :
+                    <div className={`rounded-2xl shadow-xl overflow-hidden border-t-4 ${dk ? 'bg-slate-800/80' : 'bg-white'} ${selectedGate === 'PORTÃO G1' ? 'border-t-blue-500' :
                         selectedGate === 'PORTÃO G2' ? 'border-t-emerald-500' : 'border-t-amber-500'
                         }`}>
                         {/* Header: Title + Gate Selectors */}
-                        <div className="p-3 bg-slate-50 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                        <div className={`p-3 border-b flex flex-wrap items-center justify-between gap-3 ${dk ? 'bg-slate-700/50 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
                             <div className="flex items-center gap-3">
                                 <div className={`p-2 rounded-lg ${selectedGate === 'PORTÃO G1' ? 'bg-blue-100 text-blue-600' :
                                     selectedGate === 'PORTÃO G2' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
@@ -491,10 +503,10 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                     <DoorOpen className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="font-black text-sm uppercase tracking-wider text-slate-800">
+                                    <h3 className={`font-black text-sm uppercase tracking-wider ${dk ? 'text-white' : 'text-slate-800'}`}>
                                         Novo Registro
                                     </h3>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">Registro de Entrada/Saída</p>
+                                    <p className={`text-[10px] font-bold uppercase tracking-tight ${textMuted}`}>Registro de Entrada/Saída</p>
                                 </div>
                             </div>
 
@@ -507,14 +519,14 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                 )}
                                 <button
                                     onClick={() => setShowImportModal(true)}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase text-blue-600 hover:bg-blue-50 transition-all shadow-sm active:scale-95"
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-xl text-[10px] font-black uppercase transition-all shadow-sm active:scale-95 ${dk ? 'bg-slate-700 border-slate-600 text-blue-400 hover:bg-slate-600' : 'bg-white border-slate-200 text-blue-600 hover:bg-blue-50'}`}
                                 >
                                     <Database className="w-3.5 h-3.5" /> Importar
                                 </button>
                             </div>
 
                             {/* Gate Selectors - Compact & Inline */}
-                            <div className="flex bg-slate-200/50 p-1 rounded-xl w-full">
+                            <div className={`flex p-1 rounded-xl w-full ${dk ? 'bg-slate-600/50' : 'bg-slate-200/50'}`}>
                                 {GATES.map(gate => {
                                     const isSelected = selectedGate === gate;
                                     let activeClass = '';
@@ -523,7 +535,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                         else if (gate === 'PORTÃO G2') activeClass = 'bg-emerald-600 text-white shadow-lg ring-2 ring-emerald-100 scale-[1.02]';
                                         else if (gate === 'PORTÃO G3') activeClass = 'bg-amber-600 text-white shadow-lg ring-2 ring-amber-100 scale-[1.02]';
                                     } else {
-                                        activeClass = 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/80';
+                                        activeClass = dk ? 'text-slate-400 hover:text-white hover:bg-slate-500/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/80';
                                     }
 
                                     return (
@@ -543,12 +555,12 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                             {/* Row 1: Access Type & Mode (Compact) */}
                             <div className="grid grid-cols-2 gap-2">
                                 {/* Access Category Toggle */}
-                                <div className="bg-slate-200 p-1 rounded-2xl flex">
+                                <div className={`p-1 rounded-2xl flex ${dk ? 'bg-slate-600/50' : 'bg-slate-200'}`}>
                                     <button
                                         onClick={() => setAccessCategory('Entrada')}
                                         className={`flex-1 py-2 sm:py-2.5 rounded-xl font-black text-[10px] sm:text-xs uppercase flex items-center justify-center gap-2 transition-all ${accessCategory === 'Entrada'
                                             ? 'bg-emerald-500 text-white shadow-lg scale-[1.02]'
-                                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-300/30'
+                                            : (dk ? 'text-slate-400 hover:text-white hover:bg-slate-500/30' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-300/30')
                                             }`}
                                     >
                                         <ArrowDownToLine className="w-4 h-4" /> Entrada
@@ -557,7 +569,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                         onClick={() => setAccessCategory('Saída')}
                                         className={`flex-1 py-2 sm:py-2.5 rounded-xl font-black text-[10px] sm:text-xs uppercase flex items-center justify-center gap-2 transition-all ${accessCategory === 'Saída'
                                             ? 'bg-red-500 text-white shadow-lg scale-[1.02]'
-                                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-300/30'
+                                            : (dk ? 'text-slate-400 hover:text-white hover:bg-slate-500/30' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-300/30')
                                             }`}
                                     >
                                         <ArrowUpFromLine className="w-4 h-4" /> Saída
@@ -565,12 +577,12 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                 </div>
 
                                 {/* Access Mode Toggle */}
-                                <div className="bg-slate-200 p-1 rounded-2xl flex">
+                                <div className={`p-1 rounded-2xl flex ${dk ? 'bg-slate-600/50' : 'bg-slate-200'}`}>
                                     <button
                                         onClick={() => setAccessMode('Pedestre')}
                                         className={`flex-1 py-2 sm:py-2.5 rounded-xl font-black text-[10px] sm:text-xs uppercase flex items-center justify-center gap-2 transition-all ${accessMode === 'Pedestre'
                                             ? 'bg-slate-800 text-white shadow-lg scale-[1.02]'
-                                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-300/30'
+                                            : (dk ? 'text-slate-400 hover:text-white hover:bg-slate-500/30' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-300/30')
                                             }`}
                                     >
                                         <Footprints className="w-4 h-4" /> Pedestre
@@ -579,7 +591,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                         onClick={() => setAccessMode('Veículo')}
                                         className={`flex-1 py-2 sm:py-2.5 rounded-xl font-black text-[10px] sm:text-xs uppercase flex items-center justify-center gap-2 transition-all ${accessMode === 'Veículo'
                                             ? 'bg-violet-600 text-white shadow-lg scale-[1.02]'
-                                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-300/30'
+                                            : (dk ? 'text-slate-400 hover:text-white hover:bg-slate-500/30' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-300/30')
                                             }`}
                                     >
                                         <Car className="w-4 h-4" /> Veículo
@@ -596,7 +608,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                             onClick={() => setCharacteristic(c)}
                                             className={`whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all border ${characteristic === c
                                                 ? 'bg-slate-800 text-white border-slate-800 shadow'
-                                                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+                                                : (dk ? 'bg-slate-700/60 text-slate-300 border-slate-600 hover:bg-slate-600' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50')
                                                 }`}
                                         >
                                             {c}
@@ -612,7 +624,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder="NOME COMPLETO"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 sm:p-3.5 font-black text-sm text-slate-900 placeholder:text-slate-400 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none uppercase transition-all"
+                                    className={`w-full border rounded-xl p-2.5 sm:p-3.5 font-black text-sm outline-none uppercase transition-all focus:ring-4 ${inputCls}`}
                                     autoFocus
                                 />
                                 <div className="relative">
@@ -622,7 +634,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                         value={identification}
                                         onChange={(e) => setIdentification(e.target.value.replace(/\D/g, ''))}
                                         placeholder="IDENTIFICAÇÃO (SARAM / CPF / RG)"
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 sm:p-3.5 font-black text-sm text-slate-900 placeholder:text-slate-400 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none uppercase transition-all"
+                                        className={`w-full border rounded-xl p-2.5 sm:p-3.5 font-black text-sm outline-none uppercase transition-all focus:ring-4 ${inputCls}`}
                                     />
                                     {identification && isFrequentVisitor && (
                                         <History className="absolute right-3 top-3.5 w-4 h-4 text-amber-500 animate-pulse" />
@@ -632,13 +644,13 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
 
                             {/* Row 4: Vehicle Details (Conditional) */}
                             {accessMode === 'Veículo' && (
-                                <div className="grid grid-cols-2 gap-2 sm:gap-3 animate-fade-in bg-violet-50 p-1.5 sm:p-2 rounded-xl border border-violet-100">
+                                <div className={`grid grid-cols-2 gap-2 sm:gap-3 animate-fade-in p-1.5 sm:p-2 rounded-xl border ${dk ? 'bg-violet-900/20 border-violet-800/30' : 'bg-violet-50 border-violet-100'}`}>
                                     <input
                                         type="text"
                                         value={vehicleModel}
                                         onChange={(e) => setVehicleModel(e.target.value)}
                                         placeholder="MODELO"
-                                        className="w-full bg-white border border-violet-200 rounded-lg p-2 font-bold text-xs text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-violet-400 outline-none uppercase"
+                                        className={`w-full border rounded-lg p-2 font-bold text-xs outline-none uppercase ${dk ? 'bg-slate-700/60 border-violet-700/50 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-violet-500/40' : 'bg-white border-violet-200 text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-violet-400'}`}
                                     />
                                     <div className="relative">
                                         <input
@@ -646,7 +658,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                             value={vehiclePlate}
                                             onChange={(e) => setVehiclePlate(e.target.value)}
                                             placeholder="PLACA"
-                                            className="w-full bg-white border border-violet-200 rounded-lg p-2 font-bold text-xs text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-violet-400 outline-none uppercase"
+                                            className={`w-full border rounded-lg p-2 font-bold text-xs outline-none uppercase ${dk ? 'bg-slate-700/60 border-violet-700/50 text-white placeholder:text-slate-500 focus:ring-2 focus:ring-violet-500/40' : 'bg-white border-violet-200 text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-violet-400'}`}
                                         />
                                         {vehiclePlate && isFrequentVisitor && (
                                             <History className="absolute right-2 top-2.5 w-3.5 h-3.5 text-amber-500" />
@@ -671,7 +683,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                     value={authorizer}
                                     onChange={(e) => setAuthorizer(e.target.value)}
                                     placeholder="AUTORIZADOR (Opcional)"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 sm:p-3 font-bold text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none uppercase"
+                                    className={`w-full border rounded-xl p-2.5 sm:p-3 font-bold text-sm outline-none uppercase focus:ring-2 ${inputCls}`}
                                 />
                             </div>
 
@@ -697,33 +709,33 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                     </div>
 
                     {/* 1.5. Daily Summary (Restored) */}
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-4">
+                    <div className={`rounded-xl border shadow-sm overflow-hidden mb-4 ${card}`}>
                         <button
                             onClick={() => setShowStats(!showStats)}
-                            className="w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 transition-colors"
+                            className={`w-full flex items-center justify-between p-2.5 transition-colors ${dk ? 'bg-slate-700/40 hover:bg-slate-700/60' : 'bg-slate-50 hover:bg-slate-100'}`}
                         >
-                            <span className="text-xs font-black uppercase text-slate-600 flex items-center gap-2">
+                            <span className={`text-xs font-black uppercase flex items-center gap-2 ${textSecondary}`}>
                                 <RefreshCw className="w-3.5 h-3.5" /> Resumo do Dia
-                                <span className="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded text-[10px]">{todayStats.total}</span>
+                                <span className={`px-1.5 py-0.5 rounded text-[10px] ${dk ? 'bg-slate-600 text-slate-300' : 'bg-slate-200 text-slate-700'}`}>{todayStats.total}</span>
                             </span>
-                            {showStats ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                            {showStats ? <ChevronUp className={`w-4 h-4 ${textMuted}`} /> : <ChevronDown className={`w-4 h-4 ${textMuted}`} />}
                         </button>
 
                         {showStats && (
                             <div className="p-2 grid grid-cols-2 sm:grid-cols-4 gap-2 animate-fade-in">
-                                <div className="bg-emerald-50 p-1.5 rounded-lg border border-emerald-100 text-center">
+                                <div className={`p-1.5 rounded-lg border text-center ${dk ? 'bg-emerald-900/20 border-emerald-800/30' : 'bg-emerald-50 border-emerald-100'}`}>
                                     <p className="text-[9px] font-bold text-emerald-600 uppercase">Entradas</p>
                                     <p className="text-base font-black text-emerald-700 leading-none mt-0.5">{todayStats.entries}</p>
                                 </div>
-                                <div className="bg-red-50 p-1.5 rounded-lg border border-red-100 text-center">
+                                <div className={`p-1.5 rounded-lg border text-center ${dk ? 'bg-red-900/20 border-red-800/30' : 'bg-red-50 border-red-100'}`}>
                                     <p className="text-[9px] font-bold text-red-600 uppercase">Saídas</p>
                                     <p className="text-base font-black text-red-700 leading-none mt-0.5">{todayStats.exits}</p>
                                 </div>
-                                <div className="bg-blue-50 p-1.5 rounded-lg border border-blue-100 text-center">
+                                <div className={`p-1.5 rounded-lg border text-center ${dk ? 'bg-blue-900/20 border-blue-800/30' : 'bg-blue-50 border-blue-100'}`}>
                                     <p className="text-[9px] font-bold text-blue-600 uppercase">Pedestres</p>
                                     <p className="text-base font-black text-blue-700 leading-none mt-0.5">{records.filter(r => r.access_mode === 'Pedestre').length}</p>
                                 </div>
-                                <div className="bg-violet-50 p-1.5 rounded-lg border border-violet-100 text-center">
+                                <div className={`p-1.5 rounded-lg border text-center ${dk ? 'bg-violet-900/20 border-violet-800/30' : 'bg-violet-50 border-violet-100'}`}>
                                     <p className="text-[9px] font-bold text-violet-600 uppercase">Veículos</p>
                                     <p className="text-base font-black text-violet-700 leading-none mt-0.5">{records.filter(r => r.access_mode === 'Veículo').length}</p>
                                 </div>
@@ -732,12 +744,12 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                     </div>
 
                     {/* 2. History List (Compact) */}
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="p-3 border-b border-slate-100 flex items-center justify-between">
-                            <span className="text-xs font-black uppercase text-slate-600 flex items-center gap-2">
+                    <div className={`rounded-xl shadow-sm border overflow-hidden ${card}`}>
+                        <div className={`p-3 border-b flex items-center justify-between ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
+                            <span className={`text-xs font-black uppercase flex items-center gap-2 ${textSecondary}`}>
                                 <History className="w-3.5 h-3.5" /> Últimos Acessos (Hoje)
                             </span>
-                            <div className="flex gap-2 text-[10px] text-slate-400">
+                            <div className={`flex gap-2 text-[10px] ${textMuted}`}>
                                 <span>Entradas: {todayStats.entries}</span>
                                 <span>Saídas: {todayStats.exits}</span>
                             </div>
@@ -746,12 +758,12 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                         {/* Compact Table */}
                         <div className="overflow-x-auto max-h-[300px]">
                             <table className="w-full text-left">
-                                <thead className="sticky top-0 bg-slate-50 shadow-sm z-10">
+                                <thead className={`sticky top-0 shadow-sm z-10 ${dk ? 'bg-slate-700' : 'bg-slate-50'}`}>
                                     <tr>
-                                        <th className="px-3 py-2 text-[9px] font-black text-slate-500 uppercase">Hora</th>
-                                        <th className="px-3 py-2 text-[9px] font-black text-slate-500 uppercase">Local</th>
-                                        <th className="px-3 py-2 text-[9px] font-black text-slate-500 uppercase">Nome / Detalhes</th>
-                                        <th className="px-3 py-2 text-[9px] font-black text-slate-500 uppercase text-right">Status</th>
+                                        <th className={`px-3 py-2 text-[9px] font-black uppercase ${textMuted}`}>Hora</th>
+                                        <th className={`px-3 py-2 text-[9px] font-black uppercase ${textMuted}`}>Local</th>
+                                        <th className={`px-3 py-2 text-[9px] font-black uppercase ${textMuted}`}>Nome / Detalhes</th>
+                                        <th className={`px-3 py-2 text-[9px] font-black uppercase text-right ${textMuted}`}>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -761,17 +773,17 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                         <tr><td colSpan={4} className="text-center py-4 text-xs text-slate-400 italic">Nenhum registro encontrado.</td></tr>
                                     ) : (
                                         records.map((record) => (
-                                            <tr key={record.id} className="border-b border-slate-50 hover:bg-slate-50">
-                                                <td className="px-3 py-2 text-[10px] font-bold text-slate-600 align-top">
+                                            <tr key={record.id} className={`border-b ${dk ? 'border-slate-700/50 hover:bg-slate-700/30' : 'border-slate-50 hover:bg-slate-50'}`}>
+                                                <td className={`px-3 py-2 text-[10px] font-bold align-top ${textSecondary}`}>
                                                     {new Date(record.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                                 </td>
-                                                <td className="px-3 py-2 text-[10px] font-bold text-slate-600 align-top">
+                                                <td className={`px-3 py-2 text-[10px] font-bold align-top ${textSecondary}`}>
                                                     {record.guard_gate.replace('PORTÃO ', '')}
                                                 </td>
                                                 <td className="px-3 py-2 align-top">
                                                     <div className="flex flex-col">
-                                                        <span className="text-xs font-bold text-slate-900">{record.name}</span>
-                                                        <div className="flex items-center gap-1 text-[9px] text-slate-500 mt-0.5">
+                                                        <span className={`text-xs font-bold ${textPrimary}`}>{record.name}</span>
+                                                        <div className={`flex items-center gap-1 text-[9px] mt-0.5 ${textMuted}`}>
                                                             <span className="uppercase">{record.characteristic}</span>
                                                             {record.access_mode === 'Veículo' && (
                                                                 <>• {record.vehicle_model} <span className="font-mono">{record.vehicle_plate}</span></>
@@ -780,7 +792,9 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                                     </div>
                                                 </td>
                                                 <td className="px-3 py-2 text-right align-top">
-                                                    <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${record.access_category === 'Entrada' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                                                    <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${record.access_category === 'Entrada'
+                                                        ? (dk ? 'bg-emerald-900/30 text-emerald-400' : 'bg-emerald-100 text-emerald-700')
+                                                        : (dk ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-700')
                                                         }`}>
                                                         {record.access_category === 'Entrada' ? 'ENT' : 'SAI'}
                                                     </span>
@@ -803,7 +817,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
             {/* TAB CONTENT: BUSCA */}
             {activeTab === 'busca' && (
                 <div className="space-y-4 animate-fade-in">
-                    <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <div className={`p-4 md:p-6 rounded-2xl shadow-sm border space-y-4 ${card}`}>
                         {/* Search Input */}
                         <div className="relative">
                             <input
@@ -811,7 +825,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Pesquisar por NOME, PLACA, MODELO, IDENTIFICAÇÃO ou DESTINO..."
-                                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 font-bold text-lg text-slate-900 placeholder:text-slate-400 focus:border-blue-500 outline-none transition-all uppercase"
+                                className={`w-full pl-12 pr-4 py-4 border rounded-xl font-bold text-lg outline-none transition-all uppercase focus:ring-4 ${inputCls}`}
                                 autoFocus
                             />
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400" />
@@ -823,15 +837,15 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                         {/* Filters Panel */}
                         <div className="flex flex-col md:flex-row gap-4 pt-2">
                             {/* Date Range */}
-                            <div className="flex gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200">
-                                <span className="text-[10px] font-black uppercase text-slate-400 pl-2 whitespace-nowrap">Tipo:</span>
+                            <div className={`flex gap-2 items-center p-2 rounded-xl border ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
+                                <span className={`text-[10px] font-black uppercase pl-2 whitespace-nowrap ${textMuted}`}>Tipo:</span>
                                 {(['all', 'Pedestre', 'Veículo'] as const).map(type => (
                                     <button
                                         key={type}
                                         onClick={() => setSearchFilterType(type)}
                                         className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${searchFilterType === type
                                             ? 'bg-blue-600 text-white shadow-sm'
-                                            : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-200'
+                                            : (dk ? 'bg-slate-600 text-slate-300 hover:bg-slate-500 border border-slate-500' : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-200')
                                             }`}
                                     >
                                         {type === 'all' ? 'Todos' : type}
@@ -841,8 +855,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                         </div>
 
                         {/* Category Filters */}
-                        <div className="flex gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-200 overflow-x-auto">
-                            <span className="text-[10px] font-black uppercase text-slate-400 pl-2 whitespace-nowrap">Sentido:</span>
+                        <div className={`flex gap-2 items-center p-2 rounded-xl border overflow-x-auto ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
+                            <span className={`text-[10px] font-black uppercase pl-2 whitespace-nowrap ${textMuted}`}>Sentido:</span>
                             <div className="flex gap-1">
                                 {(['all', 'Entrada', 'Saída'] as const).map(cat => (
                                     <button
@@ -850,7 +864,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                         onClick={() => setSearchFilterCategory(cat)}
                                         className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${searchFilterCategory === cat
                                             ? (cat === 'Entrada' ? 'bg-emerald-600' : cat === 'Saída' ? 'bg-red-600' : 'bg-slate-800') + ' text-white shadow-sm'
-                                            : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-200'
+                                            : (dk ? 'bg-slate-600 text-slate-300 hover:bg-slate-500 border border-slate-500' : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-200')
                                             }`}
                                     >
                                         {cat === 'all' ? 'Todos' : cat}
@@ -876,27 +890,27 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                     {/* Search Results */}
                     {
                         hasSearched && (
-                            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-bottom-4">
-                                <div className="p-3 border-b border-slate-100 flex items-center justify-between">
-                                    <span className="text-xs font-black uppercase text-slate-600 flex items-center gap-2">
+                            <div className={`rounded-xl shadow-sm border overflow-hidden animate-in fade-in slide-in-from-bottom-4 ${card}`}>
+                                <div className={`p-3 border-b flex items-center justify-between ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
+                                    <span className={`text-xs font-black uppercase flex items-center gap-2 ${textSecondary}`}>
                                         <List className="w-3.5 h-3.5" /> Resultados Encontrados
                                     </span>
-                                    <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
+                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${dk ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-700'}`}>
                                         {searchResults.length} Registros
                                     </span>
                                 </div>
 
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left">
-                                        <thead className="bg-slate-50 border-b border-slate-100">
+                                        <thead className={`border-b ${dk ? 'bg-slate-700 border-slate-600' : 'bg-slate-50 border-slate-100'}`}>
                                             <tr>
-                                                <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase">Data / Hora</th>
-                                                <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase">Local / Tipo</th>
-                                                <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase">Solicitante / Veículo</th>
-                                                <th className="px-4 py-3 text-[9px] font-black text-slate-500 uppercase text-right">Status</th>
+                                                <th className={`px-4 py-3 text-[9px] font-black uppercase ${textMuted}`}>Data / Hora</th>
+                                                <th className={`px-4 py-3 text-[9px] font-black uppercase ${textMuted}`}>Local / Tipo</th>
+                                                <th className={`px-4 py-3 text-[9px] font-black uppercase ${textMuted}`}>Solicitante / Veículo</th>
+                                                <th className={`px-4 py-3 text-[9px] font-black uppercase text-right ${textMuted}`}>Status</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-slate-50">
+                                        <tbody className={`divide-y ${dk ? 'divide-slate-700/50' : 'divide-slate-50'}`}>
                                             {searchResults.length === 0 ? (
                                                 <tr>
                                                     <td colSpan={4} className="text-center py-8">
@@ -908,13 +922,13 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                                 </tr>
                                             ) : (
                                                 searchResults.map((record) => (
-                                                    <tr key={record.id} className="hover:bg-blue-50/30 transition-colors">
+                                                    <tr key={record.id} className={`transition-colors ${dk ? 'hover:bg-slate-700/30' : 'hover:bg-blue-50/30'}`}>
                                                         <td className="px-4 py-3 align-top">
                                                             <div className="flex flex-col">
-                                                                <span className="text-xs font-bold text-slate-900">
+                                                                <span className={`text-xs font-bold ${textPrimary}`}>
                                                                     {new Date(record.timestamp).toLocaleDateString('pt-BR')}
                                                                 </span>
-                                                                <span className="text-[10px] font-medium text-slate-500 flex items-center gap-1">
+                                                                <span className={`text-[10px] font-medium flex items-center gap-1 ${textMuted}`}>
                                                                     <Clock className="w-3 h-3" />
                                                                     {new Date(record.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                                                 </span>
@@ -922,10 +936,10 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                                         </td>
                                                         <td className="px-4 py-3 align-top">
                                                             <div className="flex flex-col">
-                                                                <span className="text-[10px] font-black text-slate-700 uppercase">
+                                                                <span className={`text-[10px] font-black uppercase ${dk ? 'text-slate-300' : 'text-slate-700'}`}>
                                                                     {record.guard_gate.replace('PORTÃO ', 'G')}
                                                                 </span>
-                                                                <span className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">
+                                                                <span className={`text-[9px] font-bold uppercase mt-0.5 ${textMuted}`}>
                                                                     {record.access_mode} • {record.characteristic}
                                                                 </span>
                                                                 {record.destination && (
@@ -937,14 +951,14 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                                         </td>
                                                         <td className="px-4 py-3 align-top">
                                                             <div className="flex flex-col">
-                                                                <span className="text-xs font-black text-slate-800 uppercase">
+                                                                <span className={`text-xs font-black uppercase ${textPrimary}`}>
                                                                     {record.name}
                                                                 </span>
                                                                 {record.access_mode === 'Veículo' && (
-                                                                    <div className="flex items-center gap-1.5 mt-1 bg-slate-100 w-fit px-1.5 py-0.5 rounded">
-                                                                        <Car className="w-3 h-3 text-slate-500" />
-                                                                        <span className="text-[10px] font-bold text-slate-600 uppercase">
-                                                                            {record.vehicle_model} • <span className="text-slate-900">{record.vehicle_plate}</span>
+                                                                    <div className={`flex items-center gap-1.5 mt-1 w-fit px-1.5 py-0.5 rounded ${dk ? 'bg-slate-600' : 'bg-slate-100'}`}>
+                                                                        <Car className={`w-3 h-3 ${textMuted}`} />
+                                                                        <span className={`text-[10px] font-bold uppercase ${textSecondary}`}>
+                                                                            {record.vehicle_model} • <span className={textPrimary}>{record.vehicle_plate}</span>
                                                                         </span>
                                                                     </div>
                                                                 )}
@@ -957,8 +971,8 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                                         </td>
                                                         <td className="px-4 py-3 text-right align-top">
                                                             <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-black uppercase ${record.access_category === 'Entrada'
-                                                                ? 'bg-emerald-100 text-emerald-700'
-                                                                : 'bg-red-100 text-red-700'
+                                                                ? (dk ? 'bg-emerald-900/30 text-emerald-400' : 'bg-emerald-100 text-emerald-700')
+                                                                : (dk ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-700')
                                                                 }`}>
                                                                 {record.access_category === 'Entrada' ? (
                                                                     <ArrowDownToLine className="w-3 h-3" />
@@ -990,9 +1004,9 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
             {
                 showImportModal && (
                     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                        <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-                                <h3 className="font-black text-lg uppercase tracking-tight text-slate-800 flex items-center gap-2">
+                        <div className={`w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 ${dk ? 'bg-slate-800' : 'bg-white'}`}>
+                            <div className={`p-4 border-b flex items-center justify-between ${dk ? 'bg-slate-700 border-slate-600' : 'bg-slate-50 border-slate-100'}`}>
+                                <h3 className={`font-black text-lg uppercase tracking-tight flex items-center gap-2 ${dk ? 'text-white' : 'text-slate-800'}`}>
                                     <Database className="w-5 h-5 text-blue-600" />
                                     Importação de Dados
                                 </h3>
@@ -1005,7 +1019,7 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                             </div>
 
                             <div className="p-6 flex-1 overflow-y-auto space-y-4">
-                                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800 space-y-2">
+                                <div className={`border rounded-xl p-4 text-sm space-y-2 ${dk ? 'bg-blue-900/20 border-blue-800/30 text-blue-300' : 'bg-blue-50 border-blue-100 text-blue-800'}`}>
                                     <p className="font-bold flex items-center gap-2">
                                         <Info className="w-4 h-4" /> Instruções:
                                     </p>
@@ -1020,15 +1034,15 @@ export default function AccessControlPanel({ user }: AccessControlPanelProps) {
                                     value={importText}
                                     onChange={(e) => setImportText(e.target.value)}
                                     placeholder="Cole seus dados aqui..."
-                                    className="w-full h-96 p-4 font-mono text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none resize-none"
+                                    className={`w-full h-96 p-4 font-mono text-xs border rounded-xl outline-none resize-none focus:ring-4 ${inputCls}`}
                                     autoFocus
                                 />
                             </div>
 
-                            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+                            <div className={`p-4 border-t flex justify-end gap-3 ${dk ? 'border-slate-700 bg-slate-700' : 'border-slate-100 bg-slate-50'}`}>
                                 <button
                                     onClick={() => setShowImportModal(false)}
-                                    className="px-6 py-3 rounded-xl font-bold uppercase text-xs text-slate-500 hover:bg-slate-200 transition-all"
+                                    className={`px-6 py-3 rounded-xl font-bold uppercase text-xs transition-all ${dk ? 'text-slate-300 hover:bg-slate-600' : 'text-slate-500 hover:bg-slate-200'}`}
                                 >
                                     Cancelar
                                 </button>

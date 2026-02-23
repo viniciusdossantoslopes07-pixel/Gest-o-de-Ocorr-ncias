@@ -53,7 +53,13 @@ interface ParkingRequest {
 
 const TOTAL_VAGAS = 32;
 
-export default function ParkingRequestPanel({ user }: { user: any }) {
+export default function ParkingRequestPanel({ user, isDarkMode = false }: { user: any; isDarkMode?: boolean }) {
+    const dk = isDarkMode;
+    const card = dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-200';
+    const surfaceBg = dk ? 'bg-slate-700/40' : 'bg-slate-50';
+    const textPrimary = dk ? 'text-white' : 'text-slate-800';
+    const textSecondary = dk ? 'text-slate-300' : 'text-slate-600';
+    const textMuted = dk ? 'text-slate-400' : 'text-slate-500';
     const [activeTab, setActiveTab] = useState<'gerenciar' | 'estatisticas'>('gerenciar');
     const [requests, setRequests] = useState<ParkingRequest[]>([]);
     const [allRequests, setAllRequests] = useState<ParkingRequest[]>([]);
@@ -257,16 +263,16 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
     return (
         <div className="space-y-4 animate-fade-in relative min-h-screen">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 bg-white p-3 rounded-xl shadow-sm border border-slate-100">
+            <div className={`flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 p-3 rounded-xl shadow-sm border ${card}`}>
                 <div className="flex items-center gap-2">
-                    <div className="bg-blue-50 p-2 rounded-lg">
-                        <Car className="w-5 h-5 text-blue-600" />
+                    <div className={`p-2 rounded-lg ${dk ? 'bg-blue-900/30' : 'bg-blue-50'}`}>
+                        <Car className={`w-5 h-5 ${dk ? 'text-blue-400' : 'text-blue-600'}`} />
                     </div>
                     <div>
-                        <h2 className="text-sm sm:text-lg font-black text-slate-800 leading-tight">
+                        <h2 className={`text-sm sm:text-lg font-black leading-tight ${textPrimary}`}>
                             Estacionamento BASP
                         </h2>
-                        <p className="text-[10px] text-slate-400 font-medium leading-tight">Gestão de Vagas</p>
+                        <p className={`text-[10px] font-medium leading-tight ${textMuted}`}>Gestão de Vagas</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -277,10 +283,10 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 bg-slate-100 p-1 rounded-xl">
+            <div className={`flex gap-1 p-1 rounded-xl ${dk ? 'bg-slate-700/50' : 'bg-slate-100'}`}>
                 {tabs.map(t => (
                     <button key={t.id} onClick={() => setActiveTab(t.id)}
-                        className={`flex-1 py-2 px-2 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 ${activeTab === t.id ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                        className={`flex-1 py-2 px-2 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 ${activeTab === t.id ? (dk ? 'bg-slate-600 text-white shadow-sm' : 'bg-white text-slate-800 shadow-sm') : (dk ? 'text-slate-400 hover:text-white' : 'text-slate-400 hover:text-slate-600')}`}>
                         <t.icon className="w-3.5 h-3.5" /> {t.label}
                     </button>
                 ))}
@@ -302,11 +308,11 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                                 const vName = req.vehicle?.marca_modelo || req.ext_marca_modelo || '—';
                                 const vPlate = req.vehicle?.placa || req.ext_placa || '';
                                 return (
-                                    <div key={req.id} className="bg-amber-50 rounded-xl border border-amber-200 p-3 sm:p-4 space-y-2">
+                                    <div key={req.id} className={`rounded-xl border p-3 sm:p-4 space-y-2 ${dk ? 'bg-amber-900/20 border-amber-700/40' : 'bg-amber-50 border-amber-200'}`}>
                                         <div className="flex items-center justify-between">
                                             <div className="min-w-0 flex-1 mr-2">
-                                                <p className="font-black text-xs sm:text-sm text-slate-800 truncate">{req.nome_completo}</p>
-                                                <p className="text-[10px] text-slate-500 font-medium truncate">{req.posto_graduacao} • {req.forca}</p>
+                                                <p className={`font-black text-xs sm:text-sm truncate ${textPrimary}`}>{req.nome_completo}</p>
+                                                <p className={`text-[10px] font-medium truncate ${textMuted}`}>{req.posto_graduacao} • {req.forca}</p>
                                             </div>
                                             <span className="shrink-0 px-2 py-1 bg-amber-100 text-amber-700 text-[9px] font-black uppercase rounded-lg">Pendente</span>
                                         </div>
@@ -324,7 +330,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                     )}
 
                     <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><List className="w-3 h-3" /> {isAdmin ? 'Todas as Solicitações' : 'Minhas Solicitações'}</h3>
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-700 font-bold text-center">
+                    <div className={`border rounded-xl p-3 text-xs font-bold text-center ${dk ? 'bg-blue-900/20 border-blue-800/30 text-blue-300' : 'bg-blue-50 border-blue-200 text-blue-700'}`}>
                         Para realizar novas solicitações, utilize a tela inicial do sistema.
                     </div>
                     {(isAdmin ? allRequests.filter(r => r.status !== 'Pendente') : requests).length === 0 && (
@@ -338,23 +344,26 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                         return (
                             <div
                                 key={req.id}
-                                className={`group relative bg-white rounded-xl border p-3 sm:p-4 space-y-2 cursor-pointer transition-all hover:shadow-md active:scale-[0.98] ${req.status === 'Aprovado' ? 'border-emerald-200 hover:border-emerald-300' : req.status === 'Rejeitado' ? 'border-red-200 hover:border-red-300' : 'border-slate-200 hover:border-slate-300'}`}
+                                className={`group relative rounded-xl border p-3 sm:p-4 space-y-2 cursor-pointer transition-all hover:shadow-md active:scale-[0.98] ${dk
+                                    ? (req.status === 'Aprovado' ? 'bg-slate-800/80 border-emerald-700/40 hover:border-emerald-600' : req.status === 'Rejeitado' ? 'bg-slate-800/80 border-red-700/40 hover:border-red-600' : 'bg-slate-800/80 border-slate-700 hover:border-slate-600')
+                                    : (req.status === 'Aprovado' ? 'bg-white border-emerald-200 hover:border-emerald-300' : req.status === 'Rejeitado' ? 'bg-white border-red-200 hover:border-red-300' : 'bg-white border-slate-200 hover:border-slate-300')
+                                    }`}
                                 onClick={() => setShowingCoupon(req)}
                             >
                                 <div className="flex items-center justify-between">
                                     <div className="min-w-0 flex-1 mr-2">
-                                        <p className="font-black text-xs sm:text-sm text-slate-800 truncate">{req.nome_completo}</p>
-                                        <p className="text-[10px] text-slate-500 font-medium truncate">{req.posto_graduacao} • {req.forca}</p>
+                                        <p className={`font-black text-xs sm:text-sm truncate ${textPrimary}`}>{req.nome_completo}</p>
+                                        <p className={`text-[10px] font-medium truncate ${textMuted}`}>{req.posto_graduacao} • {req.forca}</p>
                                     </div>
                                     <span className={`shrink-0 px-2 py-1 text-[9px] font-black uppercase rounded-lg ${req.status === 'Aprovado' ? 'bg-emerald-100 text-emerald-700' : req.status === 'Rejeitado' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>{req.status}</span>
                                 </div>
-                                <p className="text-[10px] sm:text-xs text-slate-500 font-bold">{vName} — {vPlate}</p>
-                                <p className="text-[10px] sm:text-xs text-slate-500">{new Date(req.inicio + 'T00:00:00').toLocaleDateString('pt-BR')} → {new Date(req.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+                                <p className={`text-[10px] sm:text-xs font-bold ${textMuted}`}>{vName} — {vPlate}</p>
+                                <p className={`text-[10px] sm:text-xs ${textMuted}`}>{new Date(req.inicio + 'T00:00:00').toLocaleDateString('pt-BR')} → {new Date(req.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
 
-                                <div className="flex gap-2 pt-1 border-t border-slate-50 mt-2" onClick={(e) => e.stopPropagation()}>
+                                <div className={`flex gap-2 pt-1 border-t mt-2 ${dk ? 'border-slate-700' : 'border-slate-50'}`} onClick={(e) => e.stopPropagation()}>
                                     <button
                                         onClick={() => setPrintRequest(req)}
-                                        className="flex-1 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-blue-100 transition-all"
+                                        className={`flex-1 py-1.5 border rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${dk ? 'bg-blue-900/20 text-blue-400 border-blue-800/30 hover:bg-blue-900/40' : 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100'}`}
                                     >
                                         <Download className="w-3.5 h-3.5" /> Baixar
                                     </button>
