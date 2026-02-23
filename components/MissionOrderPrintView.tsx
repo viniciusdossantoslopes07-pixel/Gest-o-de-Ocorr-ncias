@@ -264,26 +264,60 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
         @media print {
           @page {
             size: A4 portrait;
-            margin: 2.5cm 2cm 2.5cm 2cm;
+            margin: 2cm 1.8cm 2cm 1.8cm;
           }
-          body, body * {
-            visibility: hidden;
+
+          /* Esconde TUDO da página */
+          body > *:not(.force-light) {
+            display: none !important;
           }
-          #omis-print-content,
-          #omis-print-content * {
-            visibility: visible;
+
+          /* O overlay do modal precisa ficar visível e estático */
+          .force-light {
+            display: block !important;
+            position: static !important;
+            background: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
           }
+
+          /* O wrapper interno do modal */
+          .force-light > div {
+            position: static !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            display: block !important;
+          }
+
+          /* O scrollable body wrapper */
+          .force-light > div > div {
+            overflow: visible !important;
+            padding: 0 !important;
+            background: none !important;
+          }
+
+          /* O documento em si */
           #omis-print-content {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 0;
-            margin: 0;
+            position: static !important;
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
             border: none !important;
             box-shadow: none !important;
-            max-width: 100% !important;
+            min-height: 0 !important;
           }
+
           body {
             print-color-adjust: exact;
             -webkit-print-color-adjust: exact;
