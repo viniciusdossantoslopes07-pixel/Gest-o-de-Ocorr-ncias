@@ -702,7 +702,8 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                     value={authorizer}
                                     onChange={(e) => setAuthorizer(e.target.value)}
                                     placeholder="AUTORIZADOR (Opcional)"
-                                    className={`w-full border rounded-xl p-2.5 sm:p-3 font-bold text-sm outline-none uppercase focus:ring-2 ${inputCls}`}
+                                    disabled={accessCategory === 'Saída'}
+                                    className={`w-full border rounded-xl p-2.5 sm:p-3 font-bold text-sm outline-none uppercase focus:ring-2 ${inputCls} ${accessCategory === 'Saída' ? 'opacity-40 cursor-not-allowed' : ''}`}
                                 />
                             </div>
 
