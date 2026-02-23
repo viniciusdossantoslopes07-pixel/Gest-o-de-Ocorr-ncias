@@ -279,7 +279,7 @@ export const MILITARY_QUOTES = [
   { text: "A velhice é um prêmio para o soldado que sobreviveu.", author: "Ditado Militar" },
   { text: "Escrevemos com tinta, mas a história é escrita com sangue.", author: "Anónimo" },
   { text: "Um herói é alguém que entende a responsabilidade que vem com sua liberdade.", author: "Bob Dylan" },
-  { text: "A tecnologia muda, a natureza humana não.", author: "Thucydides" },
+  { text: "O verdadeiro guerreiro não é aquele que nunca cai, mas aquele que se levanta a cada vez que cai.", author: "Provérbio Samurai" },
   { text: "Bravo não é quem não sente medo, mas quem o vence.", author: "Nelson Mandela" },
   { text: "O silêncio do cemitério militar é o grito mais alto da história.", author: "Anónimo" },
   { text: "As cicatrizes são as medalhas da alma.", author: "Ditado de Veterano" },
