@@ -761,8 +761,8 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                                 key={gate}
                                                 onClick={() => setHistoryGateFilter(gate)}
                                                 className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase transition-all ${isActive
-                                                        ? (gate === 'PORTÃO G1' ? 'bg-blue-600 text-white' : gate === 'PORTÃO G2' ? 'bg-emerald-600 text-white' : gate === 'PORTÃO G3' ? 'bg-amber-600 text-white' : (dk ? 'bg-slate-500 text-white' : 'bg-slate-700 text-white'))
-                                                        : (dk ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+                                                    ? (gate === 'PORTÃO G1' ? 'bg-blue-600 text-white' : gate === 'PORTÃO G2' ? 'bg-emerald-600 text-white' : gate === 'PORTÃO G3' ? 'bg-amber-600 text-white' : (dk ? 'bg-slate-500 text-white' : 'bg-slate-700 text-white'))
+                                                    : (dk ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
                                                     }`}
                                             >
                                                 {label}
@@ -811,6 +811,11 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                                                 <>• {record.vehicle_model} <span className="font-mono">{record.vehicle_plate}</span></>
                                                             )}
                                                         </div>
+                                                        {record.destination && (
+                                                            <span className="text-[9px] font-bold text-blue-600/80 uppercase mt-0.5">
+                                                                {record.destination}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </td>
                                                 <td className="px-3 py-2 text-right align-top">
