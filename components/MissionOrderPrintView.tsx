@@ -22,8 +22,8 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-start sm:items-center justify-center p-0 sm:p-4 overflow-y-auto print:p-0 print:bg-white force-light animate-fade-in">
             <div className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full my-0 sm:my-auto min-h-screen sm:min-h-0 h-fit sm:h-[95vh] flex flex-col overflow-hidden print:h-auto print:rounded-none print:max-w-none shadow-2xl">
 
-                {/* Header - Fixed controls */}
-                <div className="bg-white border-b border-slate-200 p-3 sm:p-4 flex items-center justify-between print:hidden flex-shrink-0 z-20">
+                {/* Header - apenas título e fechar */}
+                <div className="bg-white border-b border-slate-200 p-3 sm:p-4 flex items-center justify-between print:hidden flex-shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
                             <FileDown className="w-4 h-4 text-blue-600" />
@@ -33,25 +33,13 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
                             <p className="text-[10px] font-bold text-slate-500 uppercase">{order.omisNumber}</p>
                         </div>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={handlePrint}
-                            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg font-black text-xs sm:text-sm hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all active:scale-95"
-                        >
-                            <Printer className="w-3.5 h-3.5 sm:w-4 h-4" />
-                            <span className="hidden sm:inline">Imprimir Documento</span>
-                            <span className="inline sm:hidden">Imprimir</span>
-                        </button>
-                        <div className="w-px h-6 bg-slate-200 mx-1"></div>
-                        <button
-                            onClick={onClose}
-                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
-                            title="Fechar Visualização"
-                        >
-                            <X className="w-5 h-5 sm:w-6 h-6" />
-                        </button>
-                    </div>
+                    <button
+                        onClick={onClose}
+                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                        title="Fechar Visualização"
+                    >
+                        <X className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </button>
                 </div>
 
                 {/* Scrollable Document Body */}
@@ -230,18 +218,36 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
                         </div>
                     </div>
                 </div>
+
+                {/* Rodapé fixo com botão de impressão */}
+                <div className="bg-white border-t border-slate-200 p-4 sm:p-5 flex items-center justify-between gap-4 print:hidden flex-shrink-0">
+                    <p className="text-xs text-slate-400 font-medium hidden sm:block leading-tight">
+                        Revise o documento antes de imprimir.<br />
+                        Confirme todas as informações.
+                    </p>
+                    <button
+                        onClick={handlePrint}
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-black text-sm hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition-all active:scale-95"
+                    >
+                        <Printer className="w-4 h-4" />
+                        Imprimir Documento Oficial
+                    </button>
+                </div>
             </div>
 
             {/* Print-specific styles */}
             <style>{`
         @media print {
           @page {
-            size: A4;
-            margin: 1cm;
+            size: A4 portrait;
+            margin: 2.5cm 2cm 2.5cm 2cm;
           }
           body {
             print-color-adjust: exact;
             -webkit-print-color-adjust: exact;
+          }
+          .print\\:hidden {
+            display: none !important;
           }
         }
       `}</style>
