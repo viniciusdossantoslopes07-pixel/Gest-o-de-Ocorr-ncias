@@ -491,7 +491,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
             {activeTab === 'registrar' && (
                 <div className="space-y-4 animate-fade-in">
                     {/* 1. Registration Card */}
-                    <div className={`rounded-2xl shadow-xl overflow-hidden border-t-4 ${dk ? 'bg-slate-800/80' : 'bg-white'} ${selectedGate === 'PORTÃO G1' ? 'border-t-blue-500' :
+                    <div className={`rounded-2xl shadow-xl border-t-4 ${dk ? 'bg-slate-800/80' : 'bg-white'} ${selectedGate === 'PORTÃO G1' ? 'border-t-blue-500' :
                         selectedGate === 'PORTÃO G2' ? 'border-t-emerald-500' : 'border-t-amber-500'
                         }`}>
                         {/* Header: Title + Gate Selectors */}
