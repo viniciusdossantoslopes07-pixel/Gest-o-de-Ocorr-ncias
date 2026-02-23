@@ -8,6 +8,7 @@ import {
     ChevronDown, ChevronUp, Briefcase, Activity, Eye, Printer, X
 } from 'lucide-react';
 import ForceMapPrintView from './ForceMapPrintView';
+import FilterSelect from '../Common/FilterSelect';
 
 interface ForceMapProps {
     users: User[];
@@ -118,11 +119,18 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 
     // Relevant users after rank filter
     const relevantUsers = useMemo(() => {
+        // [MODIFICAÇÃO]: Filtrar apenas militares habilitados E que estejam na relação de chamada (setores válidos)
+        const activeAndInRoster = users.filter(u =>
+            u.active !== false &&
+            SETORES.includes(u.sector)
+        );
+
         const sectorFiltered = selectedSector === 'TODOS'
-            ? users
+            ? activeAndInRoster
             : selectedSector === 'GSD-SP'
-                ? users.filter(u => u.sector !== 'BASP')
-                : users.filter(u => u.sector === selectedSector);
+                ? activeAndInRoster.filter(u => u.sector !== 'BASP')
+                : activeAndInRoster.filter(u => u.sector === selectedSector);
+
         return filterUsersByRank(sectorFiltered);
     }, [users, selectedSector, rankFilter]);
 
@@ -175,7 +183,8 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 : [selectedSector];
 
         return sectors.map(sector => {
-            const sectorUsers = filterUsersByRank(users.filter(u => u.sector === sector));
+            // [MODIFICAÇÃO]: Garantir que apenas militares habilitados contem aqui também
+            const sectorUsers = filterUsersByRank(users.filter(u => u.sector === sector && u.active !== false));
             const sectorRecords = Array.from(currentRecordsMap.values()).filter(r => r.sector === sector);
             const ready = sectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
             const total = sectorUsers.length;
@@ -281,22 +290,25 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                 type="date"
                                 value={selectedDate}
                                 onChange={(e) => setSelectedDate(e.target.value)}
-                                className={`bg-transparent border-none text-xs font-black uppercase focus:ring-0 cursor-pointer ${inputBg}`}
+                                className={`bg-transparent border-none text-xs font-black uppercase focus:ring-0 cursor-pointer ${dk ? 'color-scheme-dark' : ''} ${inputBg}`}
+                                style={{ colorScheme: dk ? 'dark' : 'light' }}
                             />
                         </div>
 
                         {/* Sector */}
-                        <div className={`flex items-center gap-2 p-2 rounded-xl border ${filterPill}`}>
-                            <Filter className={`w-4 h-4 ml-1 ${textMuted}`} />
-                            <select
+                        <div className="min-w-[160px]">
+                            <FilterSelect
+                                icon={Filter}
+                                placeholder="Todos Setores"
                                 value={selectedSector}
-                                onChange={(e) => setSelectedSector(e.target.value)}
-                                className={`bg-transparent border-none text-xs font-black uppercase focus:ring-0 cursor-pointer min-w-[120px] ${inputBg}`}
-                            >
-                                <option value="TODOS">Todos Setores</option>
-                                <option value="GSD-SP">GSD-SP</option>
-                                {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
-                            </select>
+                                onChange={setSelectedSector}
+                                isDarkMode={dk}
+                                options={[
+                                    { label: 'Todos Setores', value: 'TODOS' },
+                                    { label: 'GSD-SP', value: 'GSD-SP' },
+                                    ...SETORES.map(s => ({ label: s, value: s }))
+                                ]}
+                            />
                         </div>
 
                         {/* Call Type */}

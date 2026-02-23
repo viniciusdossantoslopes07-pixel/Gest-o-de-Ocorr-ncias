@@ -316,7 +316,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
         for (const date of dates) {
             for (const sector of SETORES) {
-                const sectorUsers = users.filter(u => u.sector === sector);
+                const sectorUsers = users.filter(u => u.sector === sector && u.active !== false);
                 // Do not continue if sectorUsers is empty, we want to create a NIL record for the sector anyway
 
                 for (const type of calls) {
@@ -370,7 +370,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
         for (const date of dates) {
             for (const sector of SETORES) {
-                const sectorUsers = users.filter(u => u.sector === sector);
+                const sectorUsers = users.filter(u => u.sector === sector && u.active !== false);
 
                 for (const type of calls) {
                     const existing = attendanceHistory.find(a => a.date === date && a.callType === type && a.sector === sector);
@@ -521,6 +521,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     const filteredUsers = users.filter(u =>
         u.sector === selectedSector &&
+        u.active !== false &&
         (u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             u.warName?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
