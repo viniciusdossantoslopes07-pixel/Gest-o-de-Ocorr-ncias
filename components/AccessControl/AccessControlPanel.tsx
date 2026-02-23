@@ -750,11 +750,13 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                     <p className="text-[9px] font-bold text-red-600 uppercase">Saídas</p>
                                     <p className="text-base font-black text-red-700 leading-none mt-0.5">{todayStats.exits}</p>
                                 </div>
-                                <div className={`p-1.5 rounded-lg border text-center ${dk ? 'bg-blue-900/20 border-blue-800/30' : 'bg-blue-50 border-blue-100'}`}>
+                                <div className={`p-1.5 rounded-lg border text-center relative overflow-hidden ${dk ? 'bg-blue-900/20 border-blue-800/30' : 'bg-blue-50 border-blue-100'}`}>
+                                    <Footprints className={`absolute -right-1 -bottom-1 w-8 h-8 opacity-10 ${dk ? 'text-blue-400' : 'text-blue-600'}`} />
                                     <p className="text-[9px] font-bold text-blue-600 uppercase">Pedestres</p>
                                     <p className="text-base font-black text-blue-700 leading-none mt-0.5">{records.filter(r => r.access_mode === 'Pedestre').length}</p>
                                 </div>
-                                <div className={`p-1.5 rounded-lg border text-center ${dk ? 'bg-violet-900/20 border-violet-800/30' : 'bg-violet-50 border-violet-100'}`}>
+                                <div className={`p-1.5 rounded-lg border text-center relative overflow-hidden ${dk ? 'bg-violet-900/20 border-violet-800/30' : 'bg-violet-50 border-violet-100'}`}>
+                                    <Car className={`absolute -right-1 -bottom-1 w-8 h-8 opacity-10 ${dk ? 'text-violet-400' : 'text-violet-600'}`} />
                                     <p className="text-[9px] font-bold text-violet-600 uppercase">Veículos</p>
                                     <p className="text-base font-black text-violet-700 leading-none mt-0.5">{records.filter(r => r.access_mode === 'Veículo').length}</p>
                                 </div>
@@ -821,7 +823,14 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                                 </td>
                                                 <td className="px-3 py-2 align-top">
                                                     <div className="flex flex-col">
-                                                        <span className={`text-xs font-bold ${textPrimary}`}>{record.name}</span>
+                                                        <div className="flex items-center gap-1.5">
+                                                            {record.access_mode === 'Veículo' ? (
+                                                                <Car className={`w-3 h-3 ${dk ? 'text-slate-500' : 'text-slate-400'}`} />
+                                                            ) : (
+                                                                <Footprints className={`w-3 h-3 ${dk ? 'text-slate-500' : 'text-slate-400'}`} />
+                                                            )}
+                                                            <span className={`text-xs font-bold ${textPrimary}`}>{record.name}</span>
+                                                        </div>
                                                         <div className={`flex items-center gap-1 text-[9px] mt-0.5 ${textMuted}`}>
                                                             <span className="uppercase">{record.characteristic}</span>
                                                             {record.access_mode === 'Veículo' && (
