@@ -8,6 +8,7 @@ interface ComboboxProps {
     placeholder?: string;
     disabled?: boolean;
     className?: string;
+    isDarkMode?: boolean;
 }
 
 export const Combobox: React.FC<ComboboxProps> = ({
@@ -16,8 +17,10 @@ export const Combobox: React.FC<ComboboxProps> = ({
     onChange,
     placeholder = "Selecione...",
     disabled = false,
-    className = ""
+    className = "",
+    isDarkMode = false
 }) => {
+    const dk = isDarkMode;
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState(value);
     const [highlightedIndex, setHighlightedIndex] = useState(0);
@@ -132,7 +135,10 @@ export const Combobox: React.FC<ComboboxProps> = ({
                     onKeyDown={handleKeyDown}
                     disabled={disabled}
                     placeholder={placeholder}
-                    className={`w-full bg-slate-50 border border-slate-200 rounded-xl p-3 pr-10 font-bold text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none uppercase transition-all ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-100' : ''}`}
+                    className={`w-full border rounded-xl p-3 pr-10 font-bold text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none uppercase transition-all ${dk
+                        ? `bg-slate-700/60 border-slate-600 text-white placeholder:text-slate-500 ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-800' : ''}`
+                        : `bg-slate-50 border-slate-200 text-slate-900 ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-100' : ''}`
+                        }`}
                     autoComplete="off"
                 />
 
@@ -145,7 +151,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
                             setSearchTerm('');
                             inputRef.current?.focus();
                         }}
-                        className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 p-1"
+                        className={`absolute right-8 top-1/2 -translate-y-1/2 p-1 ${dk ? 'text-slate-500 hover:text-slate-300' : 'text-slate-300 hover:text-slate-500'}`}
                     >
                         <X className="w-3 h-3" />
                     </button>
@@ -154,15 +160,18 @@ export const Combobox: React.FC<ComboboxProps> = ({
                 <div
                     className={`absolute right-3 top-1/2 -translate-y-1/2 transition-transform duration-200 pointer-events-none ${isOpen ? 'rotate-180' : ''}`}
                 >
-                    <ChevronDown className="w-4 h-4 text-slate-400" />
+                    <ChevronDown className={`w-4 h-4 ${dk ? 'text-slate-500' : 'text-slate-400'}`} />
                 </div>
             </div>
 
             {/* Dropdown Menu */}
             {isOpen && !disabled && (
-                <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-80 overflow-y-auto animate-in fade-in zoom-in-95 duration-100 origin-top scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                <div className={`absolute z-50 top-full left-0 right-0 mt-1 border rounded-xl shadow-xl max-h-56 overflow-y-auto animate-in fade-in zoom-in-95 duration-100 origin-top ${dk
+                    ? 'bg-slate-800 border-slate-600 shadow-black/30 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800'
+                    : 'bg-white border-slate-200 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent'
+                    }`}>
                     {filteredOptions.length === 0 ? (
-                        <div className="p-3 text-center text-xs text-slate-400 font-bold uppercase italic">
+                        <div className={`p-3 text-center text-xs font-bold uppercase italic ${dk ? 'text-slate-500' : 'text-slate-400'}`}>
                             Nenhum resultado
                         </div>
                     ) : (
@@ -172,7 +181,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
                                 onClick={() => selectOption(option)}
                                 className={`w-full text-left px-4 py-2.5 text-xs font-bold uppercase tracking-wide flex items-center justify-between transition-all ${index === highlightedIndex
                                     ? 'bg-blue-600 text-white'
-                                    : 'text-slate-600 hover:bg-slate-50'
+                                    : (dk ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-600 hover:bg-slate-50')
                                     }`}
                                 onMouseEnter={() => setHighlightedIndex(index)}
                             >

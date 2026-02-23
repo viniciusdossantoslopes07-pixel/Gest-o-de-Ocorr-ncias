@@ -676,6 +676,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                         onChange={setDestination}
                                         placeholder="DESTINO"
                                         disabled={accessCategory === 'Saída'}
+                                        isDarkMode={isDarkMode}
                                     />
                                 </div>
                                 <input
