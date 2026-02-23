@@ -157,6 +157,18 @@ const App: FC = () => {
     fetchOccurrences();
   }, []);
 
+  // Fetch users when session is restored from localStorage (page refresh)
+  useEffect(() => {
+    if (currentUser && currentUser.role !== UserRole.PUBLIC) {
+      if (hasPermission(currentUser, PERMISSIONS.MANAGE_USERS) ||
+        hasPermission(currentUser, PERMISSIONS.MANAGE_PERSONNEL) ||
+        hasPermission(currentUser, PERMISSIONS.VIEW_PERSONNEL) ||
+        hasPermission(currentUser, PERMISSIONS.VIEW_DAILY_ATTENDANCE)) {
+        fetchUsers();
+      }
+    }
+  }, []);
+
   // Theme Persistence & Class Toggling
   useEffect(() => {
     const root = window.document.documentElement;
