@@ -1189,7 +1189,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             {
                 activeSubTab === 'mapa_forca' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4">
-                        <ForceMapDashboard users={users} attendanceHistory={attendanceHistory} />
+                        <ForceMapDashboard users={users} attendanceHistory={attendanceHistory} isDarkMode={isDarkMode} />
                     </div>
                 )
             }

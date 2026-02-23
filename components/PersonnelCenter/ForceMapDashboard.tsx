@@ -12,6 +12,7 @@ import ForceMapPrintView from './ForceMapPrintView';
 interface ForceMapProps {
     users: User[];
     attendanceHistory: DailyAttendance[];
+    isDarkMode?: boolean;
 }
 
 const OFICIAIS = ['ASP', '2T', '1T', 'CAP', 'MAJ', 'TEN CEL', 'CEL', 'BR', 'MB', 'TB'];
@@ -32,7 +33,7 @@ const STATUS_GROUPS = {
     NAO_INFO: { codes: ['N'], label: 'Não Informado', color: 'gray', icon: Eye },
 } as const;
 
-const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
+const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDarkMode = false }) => {
     // Filters
     const [selectedDate, setSelectedDate] = useState(() => {
         const d = new Date();
@@ -209,34 +210,45 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
         return <span className="text-[10px] font-bold text-red-600 flex items-center gap-0.5"><TrendingDown className="w-3 h-3" /> {value}{suffix}</span>;
     };
 
+    // Dark mode helper aliases
+    const dk = isDarkMode;
+    const card = dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-200';
+    const filterPill = dk ? 'bg-slate-700/60 border-slate-600' : 'bg-slate-50 border-slate-100';
+    const filterBtnActive = dk ? 'bg-slate-600 text-white shadow-sm' : 'bg-white text-slate-900 shadow-sm';
+    const filterBtnInactive = dk ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-700';
+    const textPrimary = dk ? 'text-white' : 'text-slate-900';
+    const textSecondary = dk ? 'text-slate-400' : 'text-slate-500';
+    const textMuted = dk ? 'text-slate-500' : 'text-slate-400';
+    const inputBg = dk ? 'text-slate-200' : 'text-slate-700';
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 pb-20">
             {/* Header + Filters */}
-            <div className="bg-white p-6 lg:p-8 rounded-[2rem] border border-slate-200 shadow-sm">
+            <div className={`p-6 lg:p-8 rounded-[2rem] border shadow-sm ${card}`}>
                 <div className="flex flex-col gap-6">
                     {/* Title Row */}
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
-                            <div className="bg-slate-900 p-3 rounded-2xl shadow-xl">
+                            <div className={`p-3 rounded-2xl shadow-xl ${dk ? 'bg-blue-600' : 'bg-slate-900'}`}>
                                 <BarChart3 className="w-6 h-6 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">Mapa de Força</h2>
-                                <p className="text-slate-500 text-sm font-medium">Análise em tempo real do efetivo GSD-SP</p>
+                                <h2 className={`text-xl lg:text-2xl font-black tracking-tight ${textPrimary}`}>Mapa de Força</h2>
+                                <p className={`text-sm font-medium ${textSecondary}`}>Análise em tempo real do efetivo GSD-SP</p>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => setIsPrinting(true)}
-                                className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all text-slate-900 border border-slate-200 flex items-center gap-2 font-bold text-xs"
+                                className={`p-2.5 rounded-xl transition-all border flex items-center gap-2 font-bold text-xs ${dk ? 'bg-slate-700 hover:bg-slate-600 text-white border-slate-600' : 'bg-slate-100 hover:bg-slate-200 text-slate-900 border-slate-200'}`}
                                 title="Gerar Mapa Oficial (BASP/GSD-SP)"
                             >
                                 <Printer className="w-4 h-4" />
                                 <span className="hidden sm:inline">Gerar Mapa</span>
                             </button>
                             {allRecords.length > 0 && (
-                                <div className="flex items-center gap-2 text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-4 py-2.5 rounded-xl border border-emerald-100">
+                                <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-2.5 rounded-xl border ${dk ? 'text-emerald-400 bg-emerald-900/30 border-emerald-800/50' : 'text-emerald-600 bg-emerald-50 border-emerald-100'}`}>
                                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                                     {allRecords.length} Registros
                                 </div>
@@ -247,39 +259,39 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                     {/* Filter Bar */}
                     <div className="flex flex-wrap items-center gap-3">
                         {/* Quick Date Buttons */}
-                        <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-100">
+                        <div className={`flex items-center gap-1 p-1 rounded-xl border ${filterPill}`}>
                             <button
                                 onClick={() => setSelectedDate(getToday())}
-                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${selectedDate === getToday() ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-700'}`}
+                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${selectedDate === getToday() ? filterBtnActive : filterBtnInactive}`}
                             >
                                 Hoje
                             </button>
                             <button
                                 onClick={() => setSelectedDate(getYesterday())}
-                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${selectedDate === getYesterday() ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-700'}`}
+                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${selectedDate === getYesterday() ? filterBtnActive : filterBtnInactive}`}
                             >
                                 Ontem
                             </button>
                         </div>
 
                         {/* Date Picker */}
-                        <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-100">
-                            <Clock className="w-4 h-4 text-slate-400 ml-1" />
+                        <div className={`flex items-center gap-2 p-2 rounded-xl border ${filterPill}`}>
+                            <Clock className={`w-4 h-4 ml-1 ${textMuted}`} />
                             <input
                                 type="date"
                                 value={selectedDate}
                                 onChange={(e) => setSelectedDate(e.target.value)}
-                                className="bg-transparent border-none text-xs font-black text-slate-700 uppercase focus:ring-0 cursor-pointer"
+                                className={`bg-transparent border-none text-xs font-black uppercase focus:ring-0 cursor-pointer ${inputBg}`}
                             />
                         </div>
 
                         {/* Sector */}
-                        <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-100">
-                            <Filter className="w-4 h-4 text-slate-400 ml-1" />
+                        <div className={`flex items-center gap-2 p-2 rounded-xl border ${filterPill}`}>
+                            <Filter className={`w-4 h-4 ml-1 ${textMuted}`} />
                             <select
                                 value={selectedSector}
                                 onChange={(e) => setSelectedSector(e.target.value)}
-                                className="bg-transparent border-none text-xs font-black text-slate-700 uppercase focus:ring-0 cursor-pointer min-w-[120px]"
+                                className={`bg-transparent border-none text-xs font-black uppercase focus:ring-0 cursor-pointer min-w-[120px] ${inputBg}`}
                             >
                                 <option value="TODOS">Todos Setores</option>
                                 <option value="GSD-SP">GSD-SP</option>
@@ -288,30 +300,30 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                         </div>
 
                         {/* Call Type */}
-                        <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-100">
-                            <button onClick={() => setCallTypeFilter('LATEST')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${callTypeFilter === 'LATEST' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-700'}`}>
+                        <div className={`flex items-center gap-1 p-1 rounded-xl border ${filterPill}`}>
+                            <button onClick={() => setCallTypeFilter('LATEST')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${callTypeFilter === 'LATEST' ? filterBtnActive : filterBtnInactive}`}>
                                 Última
                             </button>
-                            <button onClick={() => setCallTypeFilter('INICIO')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${callTypeFilter === 'INICIO' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-700'}`}>
+                            <button onClick={() => setCallTypeFilter('INICIO')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${callTypeFilter === 'INICIO' ? filterBtnActive : filterBtnInactive}`}>
                                 1ª Ch.
                             </button>
-                            <button onClick={() => setCallTypeFilter('TERMINO')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${callTypeFilter === 'TERMINO' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-700'}`}>
+                            <button onClick={() => setCallTypeFilter('TERMINO')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${callTypeFilter === 'TERMINO' ? filterBtnActive : filterBtnInactive}`}>
                                 2ª Ch.
                             </button>
                         </div>
 
                         {/* Rank Filter */}
-                        <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-100">
-                            <button onClick={() => setRankFilter('TODOS')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${rankFilter === 'TODOS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-700'}`}>
+                        <div className={`flex items-center gap-1 p-1 rounded-xl border ${filterPill}`}>
+                            <button onClick={() => setRankFilter('TODOS')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${rankFilter === 'TODOS' ? filterBtnActive : filterBtnInactive}`}>
                                 Todos
                             </button>
-                            <button onClick={() => setRankFilter('OFICIAIS')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${rankFilter === 'OFICIAIS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-700'}`}>
+                            <button onClick={() => setRankFilter('OFICIAIS')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${rankFilter === 'OFICIAIS' ? filterBtnActive : filterBtnInactive}`}>
                                 Oficiais
                             </button>
-                            <button onClick={() => setRankFilter('GRADUADOS')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${rankFilter === 'GRADUADOS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-700'}`}>
+                            <button onClick={() => setRankFilter('GRADUADOS')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${rankFilter === 'GRADUADOS' ? filterBtnActive : filterBtnInactive}`}>
                                 Graduados
                             </button>
-                            <button onClick={() => setRankFilter('PRACAS')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${rankFilter === 'PRACAS' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-700'}`}>
+                            <button onClick={() => setRankFilter('PRACAS')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${rankFilter === 'PRACAS' ? filterBtnActive : filterBtnInactive}`}>
                                 Praças
                             </button>
                         </div>
@@ -351,79 +363,96 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                 {/* Summary Cards */}
                 <div className="lg:col-span-3 grid grid-cols-2 lg:grid-cols-4 gap-3">
                     {/* Total Efetivo */}
-                    <div className="bg-white p-5 rounded-[1.5rem] border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div className={`p-5 rounded-[1.5rem] border shadow-sm flex flex-col justify-between ${card}`}>
                         <div className="flex items-center justify-between">
-                            <div className="p-2.5 rounded-xl bg-slate-100"><Users className="w-5 h-5 text-slate-600" /></div>
-                            <Activity className="w-4 h-4 text-slate-300" />
+                            <div className={`p-2.5 rounded-xl ${dk ? 'bg-slate-700' : 'bg-slate-100'}`}><Users className={`w-5 h-5 ${dk ? 'text-slate-300' : 'text-slate-600'}`} /></div>
+                            <Activity className={`w-4 h-4 ${dk ? 'text-slate-600' : 'text-slate-300'}`} />
                         </div>
                         <div className="mt-4">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Efetivo Total</p>
-                            <p className="text-3xl font-black text-slate-900 tabular-nums">{totalEfetivo}</p>
+                            <p className={`text-[9px] font-black uppercase tracking-widest ${textMuted}`}>Efetivo Total</p>
+                            <p className={`text-3xl font-black tabular-nums ${textPrimary}`}>{totalEfetivo}</p>
                         </div>
                     </div>
 
                     {/* Presentes */}
-                    <div className="bg-white p-5 rounded-[1.5rem] border border-emerald-100 shadow-sm flex flex-col justify-between">
+                    <div className={`p-5 rounded-[1.5rem] border shadow-sm flex flex-col justify-between ${dk ? 'bg-emerald-900/20 border-emerald-800/40' : 'bg-white border-emerald-100'}`}>
                         <div className="flex items-center justify-between">
-                            <div className="p-2.5 rounded-xl bg-emerald-50"><CheckCircle className="w-5 h-5 text-emerald-600" /></div>
+                            <div className={`p-2.5 rounded-xl ${dk ? 'bg-emerald-900/40' : 'bg-emerald-50'}`}><CheckCircle className="w-5 h-5 text-emerald-600" /></div>
                             <DeltaIndicator value={presentCount - prevPresentCount} />
                         </div>
                         <div className="mt-4">
-                            <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Presentes</p>
-                            <p className="text-3xl font-black text-emerald-700 tabular-nums">{presentCount}</p>
+                            <p className={`text-[9px] font-black uppercase tracking-widest ${dk ? 'text-emerald-400' : 'text-emerald-500'}`}>Presentes</p>
+                            <p className={`text-3xl font-black tabular-nums ${dk ? 'text-emerald-400' : 'text-emerald-700'}`}>{presentCount}</p>
                         </div>
                     </div>
 
                     {/* Ausentes */}
-                    <div className="bg-white p-5 rounded-[1.5rem] border border-red-100 shadow-sm flex flex-col justify-between">
+                    <div className={`p-5 rounded-[1.5rem] border shadow-sm flex flex-col justify-between ${dk ? 'bg-red-900/20 border-red-800/40' : 'bg-white border-red-100'}`}>
                         <div className="flex items-center justify-between">
-                            <div className="p-2.5 rounded-xl bg-red-50"><UserX className="w-5 h-5 text-red-600" /></div>
+                            <div className={`p-2.5 rounded-xl ${dk ? 'bg-red-900/40' : 'bg-red-50'}`}><UserX className="w-5 h-5 text-red-600" /></div>
                             <DeltaIndicator value={-(absenceCount - (totalEfetivo - prevPresentCount))} />
                         </div>
                         <div className="mt-4">
-                            <p className="text-[9px] font-black text-red-500 uppercase tracking-widest">Ausentes</p>
-                            <p className="text-3xl font-black text-red-700 tabular-nums">{absenceCount}</p>
+                            <p className={`text-[9px] font-black uppercase tracking-widest ${dk ? 'text-red-400' : 'text-red-500'}`}>Ausentes</p>
+                            <p className={`text-3xl font-black tabular-nums ${dk ? 'text-red-400' : 'text-red-700'}`}>{absenceCount}</p>
                         </div>
                     </div>
 
                     {/* Em Missão */}
-                    <div className="bg-white p-5 rounded-[1.5rem] border border-indigo-100 shadow-sm flex flex-col justify-between">
+                    <div className={`p-5 rounded-[1.5rem] border shadow-sm flex flex-col justify-between ${dk ? 'bg-indigo-900/20 border-indigo-800/40' : 'bg-white border-indigo-100'}`}>
                         <div className="flex items-center justify-between">
-                            <div className="p-2.5 rounded-xl bg-indigo-50"><ExternalLink className="w-5 h-5 text-indigo-600" /></div>
+                            <div className={`p-2.5 rounded-xl ${dk ? 'bg-indigo-900/40' : 'bg-indigo-50'}`}><ExternalLink className="w-5 h-5 text-indigo-600" /></div>
                             <DeltaIndicator value={getCount(allRecords, ['MIS']) - getCount(prevRecords, ['MIS'])} />
                         </div>
                         <div className="mt-4">
-                            <p className="text-[9px] font-black text-indigo-500 uppercase tracking-widest">Em Missão</p>
-                            <p className="text-3xl font-black text-indigo-700 tabular-nums">{getCount(allRecords, ['MIS'])}</p>
+                            <p className={`text-[9px] font-black uppercase tracking-widest ${dk ? 'text-indigo-400' : 'text-indigo-500'}`}>Em Missão</p>
+                            <p className={`text-3xl font-black tabular-nums ${dk ? 'text-indigo-400' : 'text-indigo-700'}`}>{getCount(allRecords, ['MIS'])}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Status Breakdown */}
-            <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-6">
+            <div className={`rounded-[2rem] border shadow-sm p-6 ${card}`}>
                 <div className="flex items-center gap-3 mb-5">
                     <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
-                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Distribuição por Situação</h3>
+                    <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Distribuição por Situação</h3>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                     {statusBreakdown.map(s => {
                         const Icon = s.icon;
-                        const bgMap: Record<string, string> = {
+                        const bgMap: Record<string, string> = dk ? {
+                            emerald: 'bg-emerald-900/30 border-emerald-800/40', red: 'bg-red-900/30 border-red-800/40',
+                            indigo: 'bg-indigo-900/30 border-indigo-800/40', blue: 'bg-blue-900/30 border-blue-800/40',
+                            amber: 'bg-amber-900/30 border-amber-800/40', cyan: 'bg-cyan-900/30 border-cyan-800/40',
+                            violet: 'bg-violet-900/30 border-violet-800/40', pink: 'bg-pink-900/30 border-pink-800/40',
+                            slate: 'bg-slate-700/50 border-slate-600', gray: 'bg-gray-700/50 border-gray-600'
+                        } : {
                             emerald: 'bg-emerald-50 border-emerald-100', red: 'bg-red-50 border-red-100',
                             indigo: 'bg-indigo-50 border-indigo-100', blue: 'bg-blue-50 border-blue-100',
                             amber: 'bg-amber-50 border-amber-100', cyan: 'bg-cyan-50 border-cyan-100',
                             violet: 'bg-violet-50 border-violet-100', pink: 'bg-pink-50 border-pink-100',
                             slate: 'bg-slate-50 border-slate-100', gray: 'bg-gray-50 border-gray-100'
                         };
-                        const iconMap: Record<string, string> = {
+                        const iconMap: Record<string, string> = dk ? {
+                            emerald: 'bg-emerald-800/50 text-emerald-400', red: 'bg-red-800/50 text-red-400',
+                            indigo: 'bg-indigo-800/50 text-indigo-400', blue: 'bg-blue-800/50 text-blue-400',
+                            amber: 'bg-amber-800/50 text-amber-400', cyan: 'bg-cyan-800/50 text-cyan-400',
+                            violet: 'bg-violet-800/50 text-violet-400', pink: 'bg-pink-800/50 text-pink-400',
+                            slate: 'bg-slate-600 text-slate-300', gray: 'bg-gray-600 text-gray-300'
+                        } : {
                             emerald: 'bg-emerald-100 text-emerald-600', red: 'bg-red-100 text-red-600',
                             indigo: 'bg-indigo-100 text-indigo-600', blue: 'bg-blue-100 text-blue-600',
                             amber: 'bg-amber-100 text-amber-600', cyan: 'bg-cyan-100 text-cyan-600',
                             violet: 'bg-violet-100 text-violet-600', pink: 'bg-pink-100 text-pink-600',
                             slate: 'bg-slate-200 text-slate-600', gray: 'bg-gray-100 text-gray-500'
                         };
-                        const textMap: Record<string, string> = {
+                        const textMap: Record<string, string> = dk ? {
+                            emerald: 'text-emerald-400', red: 'text-red-400', indigo: 'text-indigo-400',
+                            blue: 'text-blue-400', amber: 'text-amber-400', cyan: 'text-cyan-400',
+                            violet: 'text-violet-400', pink: 'text-pink-400', slate: 'text-slate-300',
+                            gray: 'text-gray-400'
+                        } : {
                             emerald: 'text-emerald-800', red: 'text-red-800', indigo: 'text-indigo-800',
                             blue: 'text-blue-800', amber: 'text-amber-800', cyan: 'text-cyan-800',
                             violet: 'text-violet-800', pink: 'text-pink-800', slate: 'text-slate-800',
@@ -438,10 +467,10 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                                     <DeltaIndicator value={s.delta} />
                                 </div>
                                 <div>
-                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{s.label}</p>
+                                    <p className={`text-[9px] font-black uppercase tracking-widest ${textMuted}`}>{s.label}</p>
                                     <div className="flex items-baseline gap-2">
                                         <span className={`text-2xl font-black tabular-nums ${textMap[s.color]}`}>{s.count}</span>
-                                        {s.pct > 0 && <span className="text-[10px] font-bold text-slate-400">{s.pct}%</span>}
+                                        {s.pct > 0 && <span className={`text-[10px] font-bold ${textMuted}`}>{s.pct}%</span>}
                                     </div>
                                 </div>
                             </div>
@@ -453,32 +482,32 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
             {/* Sector Table + Signature Control */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Sector Table */}
-                <div className="lg:col-span-2 bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-sm">
-                    <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Resumo por Setor</h3>
+                <div className={`lg:col-span-2 rounded-[2rem] border overflow-hidden shadow-sm ${card}`}>
+                    <div className={`p-5 border-b flex justify-between items-center ${dk ? 'border-slate-700 bg-slate-800/50' : 'border-slate-100 bg-slate-50/50'}`}>
+                        <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Resumo por Setor</h3>
                         <div className="flex gap-3">
-                            <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase"><div className="w-2 h-2 rounded-full bg-emerald-500" /> Prontos</span>
-                            <span className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase"><div className="w-2 h-2 rounded-full bg-red-500" /> Ausentes</span>
+                            <span className={`flex items-center gap-1.5 text-[10px] font-black uppercase ${textMuted}`}><div className="w-2 h-2 rounded-full bg-emerald-500" /> Prontos</span>
+                            <span className={`flex items-center gap-1.5 text-[10px] font-black uppercase ${textMuted}`}><div className="w-2 h-2 rounded-full bg-red-500" /> Ausentes</span>
                         </div>
                     </div>
 
-                    <div className="divide-y divide-slate-100">
+                    <div className={`divide-y ${dk ? 'divide-slate-700/50' : 'divide-slate-100'}`}>
                         {sectorBreakdown.map(s => (
                             <div key={s.sector}>
                                 {/* Main Row */}
                                 <button
                                     onClick={() => setExpandedSector(expandedSector === s.sector ? null : s.sector)}
-                                    className="w-full flex items-center justify-between p-4 lg:px-6 hover:bg-slate-50/50 transition-colors"
+                                    className={`w-full flex items-center justify-between p-4 lg:px-6 transition-colors ${dk ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50/50'}`}
                                 >
                                     <div className="flex items-center gap-4 flex-1 min-w-0">
-                                        <span className="text-xs font-black text-slate-900 uppercase tracking-tight min-w-[80px]">{s.sector}</span>
-                                        <div className="hidden md:flex items-center gap-6 text-xs">
-                                            <span className="text-slate-400 font-bold w-12 text-center">{s.total}</span>
+                                        <span className={`text-xs font-black uppercase tracking-tight min-w-[80px] ${textPrimary}`}>{s.sector}</span>
+                                        <div className={`hidden md:flex items-center gap-6 text-xs`}>
+                                            <span className={`font-bold w-12 text-center ${textMuted}`}>{s.total}</span>
                                             <span className="text-emerald-600 font-black w-8 text-center">{s.ready}</span>
-                                            <span className={`font-black w-8 text-center ${s.absent > 0 ? 'text-red-500' : 'text-slate-300'}`}>{s.absent}</span>
+                                            <span className={`font-black w-8 text-center ${s.absent > 0 ? 'text-red-500' : dk ? 'text-slate-600' : 'text-slate-300'}`}>{s.absent}</span>
                                         </div>
                                         <div className="flex-1 flex items-center gap-3 max-w-[200px]">
-                                            <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                            <div className={`flex-1 h-2 rounded-full overflow-hidden ${dk ? 'bg-slate-700' : 'bg-slate-100'}`}>
                                                 <div
                                                     className={`h-full rounded-full transition-all duration-700 ${s.pct > 85 ? 'bg-emerald-500' : s.pct > 60 ? 'bg-amber-400' : 'bg-red-500'}`}
                                                     style={{ width: `${s.pct}%` }}
@@ -493,8 +522,8 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                                         <DeltaIndicator value={s.delta} suffix="%" />
                                         {s.absent > 0 && (
                                             expandedSector === s.sector
-                                                ? <ChevronUp className="w-4 h-4 text-slate-400" />
-                                                : <ChevronDown className="w-4 h-4 text-slate-400" />
+                                                ? <ChevronUp className={`w-4 h-4 ${textMuted}`} />
+                                                : <ChevronDown className={`w-4 h-4 ${textMuted}`} />
                                         )}
                                     </div>
                                 </button>
@@ -502,21 +531,21 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                                 {/* Expanded Absent Detail */}
                                 {expandedSector === s.sector && s.absentDetails.length > 0 && (
                                     <div className="px-6 pb-4 animate-in fade-in slide-in-from-top-2">
-                                        <div className="bg-red-50/50 rounded-xl border border-red-100 overflow-hidden">
-                                            <div className="px-4 py-2 bg-red-50 border-b border-red-100">
-                                                <p className="text-[9px] font-black text-red-400 uppercase tracking-widest">Militares Ausentes — {s.sector}</p>
+                                        <div className={`rounded-xl border overflow-hidden ${dk ? 'bg-red-900/15 border-red-800/30' : 'bg-red-50/50 border-red-100'}`}>
+                                            <div className={`px-4 py-2 border-b ${dk ? 'bg-red-900/20 border-red-800/30' : 'bg-red-50 border-red-100'}`}>
+                                                <p className={`text-[9px] font-black uppercase tracking-widest ${dk ? 'text-red-400' : 'text-red-400'}`}>Militares Ausentes — {s.sector}</p>
                                             </div>
-                                            <div className="divide-y divide-red-50">
+                                            <div className={`divide-y ${dk ? 'divide-red-900/20' : 'divide-red-50'}`}>
                                                 {s.absentDetails.map(a => (
                                                     <div key={a.user.id} className="flex items-center justify-between px-4 py-2">
                                                         <div>
-                                                            <p className="text-xs font-black text-slate-800 uppercase">{a.user.rank} {a.user.warName || a.user.name}</p>
+                                                            <p className={`text-xs font-black uppercase ${dk ? 'text-slate-200' : 'text-slate-800'}`}>{a.user.rank} {a.user.warName || a.user.name}</p>
                                                         </div>
-                                                        <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-lg ${a.status === 'F' || a.status === 'A' ? 'bg-red-100 text-red-700' :
-                                                            a.status === 'MIS' ? 'bg-indigo-100 text-indigo-700' :
-                                                                a.status === 'ESV' || a.status === 'DSV' || a.status === 'SSV' ? 'bg-blue-100 text-blue-700' :
-                                                                    a.status === 'FE' ? 'bg-cyan-100 text-cyan-700' :
-                                                                        'bg-amber-100 text-amber-700'
+                                                        <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-lg ${a.status === 'F' || a.status === 'A' ? (dk ? 'bg-red-900/40 text-red-400' : 'bg-red-100 text-red-700') :
+                                                            a.status === 'MIS' ? (dk ? 'bg-indigo-900/40 text-indigo-400' : 'bg-indigo-100 text-indigo-700') :
+                                                                a.status === 'ESV' || a.status === 'DSV' || a.status === 'SSV' ? (dk ? 'bg-blue-900/40 text-blue-400' : 'bg-blue-100 text-blue-700') :
+                                                                    a.status === 'FE' ? (dk ? 'bg-cyan-900/40 text-cyan-400' : 'bg-cyan-100 text-cyan-700') :
+                                                                        (dk ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-100 text-amber-700')
                                                             }`}>
                                                             {a.label}
                                                         </span>
@@ -531,10 +560,10 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                     </div>
 
                     {allRecords.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-16 bg-slate-50/30">
-                            <AlertTriangle className="w-8 h-8 text-slate-200 mb-3" />
-                            <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Nenhuma chamada assinada encontrada</p>
-                            <p className="text-[10px] text-slate-400 mt-1">Selecione outra data ou aguarde a assinatura</p>
+                        <div className={`flex flex-col items-center justify-center py-16 ${dk ? 'bg-slate-800/30' : 'bg-slate-50/30'}`}>
+                            <AlertTriangle className={`w-8 h-8 mb-3 ${dk ? 'text-slate-600' : 'text-slate-200'}`} />
+                            <p className={`text-xs font-black uppercase tracking-widest ${dk ? 'text-slate-500' : 'text-slate-300'}`}>Nenhuma chamada assinada encontrada</p>
+                            <p className={`text-[10px] mt-1 ${textMuted}`}>Selecione outra data ou aguarde a assinatura</p>
                         </div>
                     )}
                 </div>
@@ -542,36 +571,36 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory }) => {
                 {/* Signature Control + Absent Summary */}
                 <div className="space-y-4">
                     {/* Absent Toggle */}
-                    <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+                    <div className={`rounded-[2rem] border shadow-sm overflow-hidden ${card}`}>
                         <button
                             onClick={() => setShowAbsentList(!showAbsentList)}
-                            className="w-full flex items-center justify-between p-5 hover:bg-slate-50 transition-all"
+                            className={`w-full flex items-center justify-between p-5 transition-all ${dk ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'}`}
                         >
                             <div className="flex items-center gap-3">
-                                <div className="p-2.5 rounded-xl bg-red-50">
+                                <div className={`p-2.5 rounded-xl ${dk ? 'bg-red-900/30' : 'bg-red-50'}`}>
                                     <UserX className="w-5 h-5 text-red-600" />
                                 </div>
                                 <div className="text-left">
-                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Todos os Ausentes</p>
+                                    <p className={`text-[9px] font-black uppercase tracking-widest ${textMuted}`}>Todos os Ausentes</p>
                                     <p className="text-lg font-black text-red-600">{absentPersonnel.length} militares</p>
                                 </div>
                             </div>
-                            {showAbsentList ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
+                            {showAbsentList ? <ChevronUp className={`w-5 h-5 ${textMuted}`} /> : <ChevronDown className={`w-5 h-5 ${textMuted}`} />}
                         </button>
 
                         {showAbsentList && absentPersonnel.length > 0 && (
-                            <div className="border-t border-slate-100 max-h-[400px] overflow-y-auto">
+                            <div className={`border-t max-h-[400px] overflow-y-auto ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
                                 {absentPersonnel.map(a => (
-                                    <div key={a.user.id} className="flex items-center justify-between px-5 py-2.5 border-b border-slate-50 last:border-b-0 hover:bg-slate-50/50">
+                                    <div key={a.user.id} className={`flex items-center justify-between px-5 py-2.5 border-b last:border-b-0 ${dk ? 'border-slate-700/50 hover:bg-slate-700/20' : 'border-slate-50 hover:bg-slate-50/50'}`}>
                                         <div>
-                                            <p className="text-[11px] font-black text-slate-800 uppercase">{a.user.rank} {a.user.warName || a.user.name}</p>
-                                            <p className="text-[9px] font-bold text-slate-400">{a.sector}</p>
+                                            <p className={`text-[11px] font-black uppercase ${dk ? 'text-slate-200' : 'text-slate-800'}`}>{a.user.rank} {a.user.warName || a.user.name}</p>
+                                            <p className={`text-[9px] font-bold ${textMuted}`}>{a.sector}</p>
                                         </div>
-                                        <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg ${a.status === 'F' || a.status === 'A' ? 'bg-red-100 text-red-700' :
-                                            a.status === 'MIS' ? 'bg-indigo-100 text-indigo-700' :
-                                                ['ESV', 'DSV', 'SSV'].includes(a.status) ? 'bg-blue-100 text-blue-700' :
-                                                    a.status === 'FE' ? 'bg-cyan-100 text-cyan-700' :
-                                                        'bg-amber-100 text-amber-700'
+                                        <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg ${a.status === 'F' || a.status === 'A' ? (dk ? 'bg-red-900/40 text-red-400' : 'bg-red-100 text-red-700') :
+                                            a.status === 'MIS' ? (dk ? 'bg-indigo-900/40 text-indigo-400' : 'bg-indigo-100 text-indigo-700') :
+                                                ['ESV', 'DSV', 'SSV'].includes(a.status) ? (dk ? 'bg-blue-900/40 text-blue-400' : 'bg-blue-100 text-blue-700') :
+                                                    a.status === 'FE' ? (dk ? 'bg-cyan-900/40 text-cyan-400' : 'bg-cyan-100 text-cyan-700') :
+                                                        (dk ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-100 text-amber-700')
                                             }`}>
                                             {a.statusLabel}
                                         </span>
