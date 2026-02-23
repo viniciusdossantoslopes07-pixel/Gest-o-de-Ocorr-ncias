@@ -60,7 +60,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     // Form state
     const [selectedGate, setSelectedGate] = useState('PORTÃO G1');
     const [name, setName] = useState('');
-    const [characteristic, setCharacteristic] = useState('CIVIL');
+    const [characteristic, setCharacteristic] = useState('');
     const [identification, setIdentification] = useState('');
     const [accessMode, setAccessMode] = useState<'Pedestre' | 'Veículo'>('Veículo');
     const [accessCategory, setAccessCategory] = useState<'Entrada' | 'Saída'>('Entrada');
@@ -274,6 +274,11 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
             return;
         }
 
+        if (!characteristic) {
+            alert('Por favor, selecione a modalidade (MILITAR, CIVIL, etc).');
+            return;
+        }
+
         if (accessCategory === 'Entrada') {
             if (!destination.trim()) {
                 alert('Por favor, informe o destino.');
@@ -312,6 +317,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
             setAuthorizer('');
             setAuthorizerId('');
             setDestination('');
+            setCharacteristic('');
             setIsFrequentVisitor(false);
             setVisitorStats({ count: 0, lastVisit: null });
 
