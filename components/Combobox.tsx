@@ -166,7 +166,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
 
             {/* Dropdown Menu */}
             {isOpen && !disabled && (
-                <div className={`absolute z-50 top-full left-0 right-0 mt-1 border rounded-xl shadow-xl max-h-56 overflow-y-auto animate-in fade-in zoom-in-95 duration-100 origin-top ${dk
+                <div className={`absolute z-[200] top-full left-0 right-0 mt-1 border rounded-xl shadow-2xl max-h-80 overflow-y-auto animate-in fade-in zoom-in-95 duration-100 origin-top ${dk
                     ? 'bg-slate-800 border-slate-600 shadow-black/30 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800'
                     : 'bg-white border-slate-200 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent'
                     }`}>
