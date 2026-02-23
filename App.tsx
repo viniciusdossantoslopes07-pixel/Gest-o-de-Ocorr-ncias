@@ -1346,7 +1346,7 @@ const App: FC = () => {
           )}
 
           {activeTab === 'access-statistics' && canViewAccessControl && (
-            <AccessStatistics />
+            <AccessStatistics isDarkMode={isDarkMode} />
           )}
 
           {activeTab === 'parking-request' && canViewAccessControl && (

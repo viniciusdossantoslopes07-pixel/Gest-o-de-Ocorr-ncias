@@ -38,7 +38,15 @@ const startOfYear = (date: Date) => new Date(date.getFullYear(), 0, 1);
 
 type DatePreset = 'TODAY' | '7D' | '30D' | 'MONTH' | 'YEAR' | 'CUSTOM';
 
-export default function AccessStatistics() {
+export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: boolean }) {
+    const dk = isDarkMode;
+    const card = dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-100';
+    const textPrimary = dk ? 'text-white' : 'text-slate-800';
+    const textMuted = dk ? 'text-slate-400' : 'text-slate-500';
+    const filterBg = dk ? 'bg-slate-700/60 border-slate-600' : 'bg-slate-50 border-slate-200';
+    const selectCls = dk ? 'bg-transparent text-slate-200 outline-none' : 'bg-transparent text-slate-700 outline-none';
+    const gridStroke = dk ? '#334155' : '#f1f5f9';
+    const axisFill = dk ? '#94a3b8' : '#64748b';
     const [records, setRecords] = useState<AccessRecord[]>([]); // Current period records
     const [totalCount, setTotalCount] = useState(0); // Server-side count
     const [prevInfo, setPrevInfo] = useState({ entries: 0, exits: 0, total: 0 }); // Comparison stats
@@ -324,21 +332,21 @@ export default function AccessStatistics() {
             {/* Header / Date Controls */}
             <div className="flex flex-col lg:flex-row gap-4 lg:items-center justify-between">
                 <div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <h2 className={`text-xl sm:text-2xl font-bold flex items-center gap-2 ${textPrimary}`}>
                         <Activity className="w-6 h-6 text-blue-600" />
                         Controle de Acesso
                     </h2>
-                    <p className="text-slate-500 text-sm">Análise detalhada de fluxo de visitantes e militares.</p>
+                    <p className={`text-sm ${textMuted}`}>Análise detalhada de fluxo de visitantes e militares.</p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+                <div className={`flex flex-col sm:flex-row gap-2 p-1 rounded-xl border shadow-sm ${dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
                     {(['TODAY', '7D', '30D', 'MONTH', 'YEAR'] as DatePreset[]).map(preset => (
                         <button
                             key={preset}
                             onClick={() => handlePresetChange(preset)}
                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${datePreset === preset
-                                ? 'bg-blue-100 text-blue-700 shadow-sm'
-                                : 'text-slate-500 hover:bg-slate-50'
+                                ? (dk ? 'bg-blue-900/40 text-blue-400 shadow-sm' : 'bg-blue-100 text-blue-700 shadow-sm')
+                                : (dk ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-500 hover:bg-slate-50')
                                 }`}
                         >
                             {preset === 'TODAY' && 'Hoje'}
@@ -348,20 +356,20 @@ export default function AccessStatistics() {
                             {preset === 'YEAR' && 'Este Ano'}
                         </button>
                     ))}
-                    <div className="w-px bg-slate-200 mx-1 hidden sm:block" />
+                    <div className={`w-px mx-1 hidden sm:block ${dk ? 'bg-slate-700' : 'bg-slate-200'}`} />
                     <div className="flex items-center gap-2 px-2">
                         <input
                             type="date"
                             value={dateStart}
                             onChange={(e) => { setDateStart(e.target.value); setDatePreset('CUSTOM'); }}
-                            className="bg-transparent text-xs font-bold text-slate-700 outline-none w-24"
+                            className={`bg-transparent text-xs font-bold outline-none w-24 ${dk ? 'text-slate-200' : 'text-slate-700'}`}
                         />
-                        <span className="text-slate-300 text-xs">à</span>
+                        <span className={`text-xs ${dk ? 'text-slate-500' : 'text-slate-300'}`}>à</span>
                         <input
                             type="date"
                             value={dateEnd}
                             onChange={(e) => { setDateEnd(e.target.value); setDatePreset('CUSTOM'); }}
-                            className="bg-transparent text-xs font-bold text-slate-700 outline-none w-24"
+                            className={`bg-transparent text-xs font-bold outline-none w-24 ${dk ? 'text-slate-200' : 'text-slate-700'}`}
                         />
                     </div>
                 </div>
@@ -370,17 +378,17 @@ export default function AccessStatistics() {
             {/* Filter Bar */}
 
 
-            <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col gap-3">
-                <div className="flex items-center gap-2 text-slate-600">
+            <div className={`p-3 sm:p-4 rounded-2xl shadow-sm border flex flex-col gap-3 ${card}`}>
+                <div className={`flex items-center gap-2 ${dk ? 'text-slate-300' : 'text-slate-600'}`}>
                     <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                     <span className="font-bold text-xs sm:text-sm uppercase tracking-wider">Filtros Avançados</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     {/* Gate Filter */}
-                    <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+                    <div className={`flex items-center gap-2 border rounded-xl px-3 py-2 ${filterBg}`}>
                         <DoorOpen className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                        <select value={filterGate} onChange={(e) => setFilterGate(e.target.value)} className="bg-transparent text-xs font-bold text-slate-700 outline-none flex-1">
+                        <select value={filterGate} onChange={(e) => setFilterGate(e.target.value)} className={`text-xs font-bold flex-1 ${selectCls}`}>
                             <option value="">Todos os Portões</option>
                             <option value="PORTÃO G1">PORTÃO G1</option>
                             <option value="PORTÃO G2">PORTÃO G2</option>
@@ -389,14 +397,14 @@ export default function AccessStatistics() {
                     </div>
 
                     {/* Hour Range */}
-                    <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+                    <div className={`flex items-center gap-2 border rounded-xl px-3 py-2 ${filterBg}`}>
                         <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                        <select value={filterHourStart} onChange={(e) => setFilterHourStart(e.target.value)} className="bg-transparent text-xs font-bold text-slate-700 outline-none flex-1">
+                        <select value={filterHourStart} onChange={(e) => setFilterHourStart(e.target.value)} className={`text-xs font-bold flex-1 ${selectCls}`}>
                             <option value="">00h</option>
                             {Array.from({ length: 24 }, (_, i) => <option key={i} value={String(i)}>{String(i).padStart(2, '0')}h</option>)}
                         </select>
-                        <span className="text-slate-300 text-xs text-center w-4">-</span>
-                        <select value={filterHourEnd} onChange={(e) => setFilterHourEnd(e.target.value)} className="bg-transparent text-xs font-bold text-slate-700 outline-none flex-1">
+                        <span className={`text-xs text-center w-4 ${dk ? 'text-slate-500' : 'text-slate-300'}`}>-</span>
+                        <select value={filterHourEnd} onChange={(e) => setFilterHourEnd(e.target.value)} className={`text-xs font-bold flex-1 ${selectCls}`}>
                             <option value="">23h</option>
                             {Array.from({ length: 24 }, (_, i) => <option key={i} value={String(i)}>{String(i).padStart(2, '0')}h</option>)}
                         </select>
@@ -404,17 +412,17 @@ export default function AccessStatistics() {
 
                     {/* Characteristic + Mode */}
                     <div className="flex items-center gap-2">
-                        <select value={filterCharacteristic} onChange={(e) => setFilterCharacteristic(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none flex-1">
+                        <select value={filterCharacteristic} onChange={(e) => setFilterCharacteristic(e.target.value)} className={`border rounded-xl px-3 py-2 text-xs font-bold flex-1 ${filterBg} ${selectCls}`}>
                             <option value="">Todos os Tipos</option>
                             {uniqueCharacteristics.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
-                        <select value={filterAccessMode} onChange={(e) => setFilterAccessMode(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none flex-1">
+                        <select value={filterAccessMode} onChange={(e) => setFilterAccessMode(e.target.value)} className={`border rounded-xl px-3 py-2 text-xs font-bold flex-1 ${filterBg} ${selectCls}`}>
                             <option value="">Todos Modos</option>
                             <option value="Pedestre">Pedestre</option>
                             <option value="Veículo">Veículo</option>
                         </select>
                         {hasActiveFilters && (
-                            <button onClick={clearFilters} className="p-2 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors flex-shrink-0"><X className="w-4 h-4" /></button>
+                            <button onClick={clearFilters} className={`p-2 rounded-xl transition-colors flex-shrink-0 ${dk ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50' : 'bg-red-50 text-red-500 hover:bg-red-100'}`}><X className="w-4 h-4" /></button>
                         )}
                     </div>
                 </div>
@@ -422,17 +430,17 @@ export default function AccessStatistics() {
 
             {/* Summary Cards with Trend Indicators */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group">
+                <div className={`p-4 sm:p-5 rounded-2xl shadow-sm border relative overflow-hidden group ${card}`}>
                     <div className="flex justify-between items-start mb-2">
-                        <div className="p-2 bg-slate-50 rounded-lg"><Shield className="w-5 h-5 text-slate-600" /></div>
+                        <div className={`p-2 rounded-lg ${dk ? 'bg-slate-700' : 'bg-slate-50'}`}><Shield className={`w-5 h-5 ${dk ? 'text-slate-300' : 'text-slate-600'}`} /></div>
                         {showComparison && (
-                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${variationTotal.includes('+') ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${variationTotal.includes('+') ? (dk ? 'bg-emerald-900/30 text-emerald-400' : 'bg-emerald-100 text-emerald-700') : (dk ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-700')}`}>
                                 {variationTotal}
                             </span>
                         )}
                     </div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Acessos</p>
-                    <p className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
+                    <p className={`text-[10px] font-bold uppercase tracking-wider ${textMuted}`}>Total Acessos</p>
+                    <p className={`text-2xl sm:text-3xl font-black mt-1 ${textPrimary}`}>
                         {hasActiveFilters ? filteredRecords.length : totalCount}
                     </p>
                     {!hasActiveFilters && totalCount > records.length && (
@@ -442,41 +450,41 @@ export default function AccessStatistics() {
                     )}
                 </div>
 
-                <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-emerald-100 relative overflow-hidden group">
+                <div className={`p-4 sm:p-5 rounded-2xl shadow-sm border relative overflow-hidden group ${dk ? 'bg-slate-800/80 border-emerald-800/40' : 'bg-white border-emerald-100'}`}>
                     <div className="flex justify-between items-start mb-2">
-                        <div className="p-2 bg-emerald-50 rounded-lg"><ArrowDownToLine className="w-5 h-5 text-emerald-600" /></div>
+                        <div className={`p-2 rounded-lg ${dk ? 'bg-emerald-900/30' : 'bg-emerald-50'}`}><ArrowDownToLine className={`w-5 h-5 ${dk ? 'text-emerald-400' : 'text-emerald-600'}`} /></div>
                         {showComparison && (
-                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${variationEntries.includes('+') ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${variationEntries.includes('+') ? (dk ? 'bg-emerald-900/30 text-emerald-400' : 'bg-emerald-100 text-emerald-700') : (dk ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-700')}`}>
                                 {variationEntries}
                             </span>
                         )}
                     </div>
-                    <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Entradas</p>
-                    <p className="text-2xl sm:text-3xl font-black text-emerald-900 mt-1">{totalEntries}</p>
+                    <p className={`text-[10px] font-bold uppercase tracking-wider ${dk ? 'text-emerald-400' : 'text-emerald-600'}`}>Entradas</p>
+                    <p className={`text-2xl sm:text-3xl font-black mt-1 ${dk ? 'text-emerald-300' : 'text-emerald-900'}`}>{totalEntries}</p>
                 </div>
 
-                <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-red-100 relative overflow-hidden group">
+                <div className={`p-4 sm:p-5 rounded-2xl shadow-sm border relative overflow-hidden group ${dk ? 'bg-slate-800/80 border-red-800/40' : 'bg-white border-red-100'}`}>
                     <div className="flex justify-between items-start mb-2">
-                        <div className="p-2 bg-red-50 rounded-lg"><ArrowUpFromLine className="w-5 h-5 text-red-600" /></div>
+                        <div className={`p-2 rounded-lg ${dk ? 'bg-red-900/30' : 'bg-red-50'}`}><ArrowUpFromLine className={`w-5 h-5 ${dk ? 'text-red-400' : 'text-red-600'}`} /></div>
                         {showComparison && (
-                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${variationExits.includes('+') ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${variationExits.includes('+') ? (dk ? 'bg-emerald-900/30 text-emerald-400' : 'bg-emerald-100 text-emerald-700') : (dk ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-700')}`}>
                                 {variationExits}
                             </span>
                         )}
                     </div>
-                    <p className="text-[10px] font-bold text-red-600 uppercase tracking-wider">Saídas</p>
-                    <p className="text-2xl sm:text-3xl font-black text-red-900 mt-1">{totalExits}</p>
+                    <p className={`text-[10px] font-bold uppercase tracking-wider ${dk ? 'text-red-400' : 'text-red-600'}`}>Saídas</p>
+                    <p className={`text-2xl sm:text-3xl font-black mt-1 ${dk ? 'text-red-300' : 'text-red-900'}`}>{totalExits}</p>
                 </div>
 
-                <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-violet-100 relative overflow-hidden group">
+                <div className={`p-4 sm:p-5 rounded-2xl shadow-sm border relative overflow-hidden group ${dk ? 'bg-slate-800/80 border-violet-800/40' : 'bg-white border-violet-100'}`}>
                     <div className="flex justify-between items-start mb-2">
-                        <div className="p-2 bg-violet-50 rounded-lg"><Car className="w-5 h-5 text-violet-600" /></div>
-                        <div className="p-1 px-2 bg-violet-100 text-violet-700 rounded-md text-[10px] font-bold">
+                        <div className={`p-2 rounded-lg ${dk ? 'bg-violet-900/30' : 'bg-violet-50'}`}><Car className={`w-5 h-5 ${dk ? 'text-violet-400' : 'text-violet-600'}`} /></div>
+                        <div className={`p-1 px-2 rounded-md text-[10px] font-bold ${dk ? 'bg-violet-900/30 text-violet-400' : 'bg-violet-100 text-violet-700'}`}>
                             {((totalVehicles / (filteredRecords.length || 1)) * 100).toFixed(0)}%
                         </div>
                     </div>
-                    <p className="text-[10px] font-bold text-violet-600 uppercase tracking-wider">Veículos</p>
-                    <p className="text-2xl sm:text-3xl font-black text-violet-900 mt-1">{totalVehicles}</p>
+                    <p className={`text-[10px] font-bold uppercase tracking-wider ${dk ? 'text-violet-400' : 'text-violet-600'}`}>Veículos</p>
+                    <p className={`text-2xl sm:text-3xl font-black mt-1 ${dk ? 'text-violet-300' : 'text-violet-900'}`}>{totalVehicles}</p>
                 </div>
             </div>
 
@@ -489,13 +497,13 @@ export default function AccessStatistics() {
                 <>
                     {/* Trend Chart (Dynamic) + Gate Breakdown */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-                        <div className="lg:col-span-2 bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div className={`lg:col-span-2 p-4 sm:p-6 rounded-2xl shadow-sm border ${card}`}>
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-2">
                                     <TrendingUp className="w-5 h-5 text-indigo-600" />
-                                    <h3 className="font-bold text-sm sm:text-base text-slate-800">Tendência de Fluxo</h3>
+                                    <h3 className={`font-bold text-sm sm:text-base ${textPrimary}`}>Tendência de Fluxo</h3>
                                 </div>
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
+                                <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md border ${dk ? 'text-slate-400 bg-slate-700 border-slate-600' : 'text-slate-400 bg-slate-50 border-slate-100'}`}>
                                     {trendData.length > 30 ? 'Visão Mensal/Semanal' : 'Visão Diária'}
                                 </span>
                             </div>
@@ -512,11 +520,11 @@ export default function AccessStatistics() {
                                                 <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                                             </linearGradient>
                                         </defs>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                        <XAxis dataKey="label" tick={{ fontSize: 10, fontWeight: '600', fill: '#64748b' }} axisLine={false} tickLine={false} />
-                                        <YAxis tick={{ fontSize: 10, fontWeight: '600', fill: '#64748b' }} axisLine={false} tickLine={false} />
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
+                                        <XAxis dataKey="label" tick={{ fontSize: 10, fontWeight: '600', fill: axisFill }} axisLine={false} tickLine={false} />
+                                        <YAxis tick={{ fontSize: 10, fontWeight: '600', fill: axisFill }} axisLine={false} tickLine={false} />
                                         <Tooltip
-                                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', backgroundColor: dk ? '#1e293b' : '#fff', color: dk ? '#e2e8f0' : '#1e293b' }}
                                             itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
                                         />
                                         <Area type="monotone" dataKey="entries" name="Entradas" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorEntries)" />
@@ -526,18 +534,18 @@ export default function AccessStatistics() {
                             </div>
                         </div>
 
-                        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div className={`p-4 sm:p-6 rounded-2xl shadow-sm border ${card}`}>
                             <div className="flex items-center gap-2 mb-4">
                                 <DoorOpen className="w-5 h-5 text-blue-600" />
-                                <h3 className="font-bold text-sm sm:text-base text-slate-800">Por Portão</h3>
+                                <h3 className={`font-bold text-sm sm:text-base ${textPrimary}`}>Por Portão</h3>
                             </div>
                             <div className="h-72 w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={byGate} layout="vertical" margin={{ top: 0, right: 30, left: 40, bottom: 0 }}>
-                                        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
+                                        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke={gridStroke} />
                                         <XAxis type="number" hide />
-                                        <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fontWeight: 'bold', fill: '#475569' }} width={80} axisLine={false} tickLine={false} />
-                                        <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px' }} />
+                                        <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fontWeight: 'bold', fill: axisFill }} width={80} axisLine={false} tickLine={false} />
+                                        <Tooltip cursor={{ fill: dk ? '#1e293b' : '#f8fafc' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: dk ? '#1e293b' : '#fff', color: dk ? '#e2e8f0' : '#1e293b' }} />
                                         <Bar dataKey="total" name="Total" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />
                                     </BarChart>
                                 </ResponsiveContainer>
@@ -547,18 +555,18 @@ export default function AccessStatistics() {
 
                     {/* Hourly Flow + Characteristics */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div className={`p-4 sm:p-6 rounded-2xl shadow-sm border ${card}`}>
                             <div className="flex items-center gap-2 mb-4">
                                 <Clock className="w-5 h-5 text-amber-600" />
-                                <h3 className="font-bold text-sm sm:text-base text-slate-800">Pico de Horário</h3>
+                                <h3 className={`font-bold text-sm sm:text-base ${textPrimary}`}>Pico de Horário</h3>
                             </div>
                             <div className="h-64 w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={byHour} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                        <XAxis dataKey="hour" tick={{ fontSize: 9, fontWeight: 'bold', fill: '#64748b' }} interval={3} axisLine={false} tickLine={false} />
-                                        <YAxis tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                                        <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }} />
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
+                                        <XAxis dataKey="hour" tick={{ fontSize: 9, fontWeight: 'bold', fill: axisFill }} interval={3} axisLine={false} tickLine={false} />
+                                        <YAxis tick={{ fontSize: 10, fill: axisFill }} axisLine={false} tickLine={false} />
+                                        <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px', backgroundColor: dk ? '#1e293b' : '#fff', color: dk ? '#e2e8f0' : '#1e293b' }} />
                                         <Bar dataKey="entries" stackId="a" name="Entradas" fill="#10b981" radius={[0, 0, 0, 0]} />
                                         <Bar dataKey="exits" stackId="a" name="Saídas" fill="#ef4444" radius={[4, 4, 0, 0]} />
                                     </BarChart>
@@ -566,10 +574,10 @@ export default function AccessStatistics() {
                             </div>
                         </div>
 
-                        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div className={`p-4 sm:p-6 rounded-2xl shadow-sm border ${card}`}>
                             <div className="flex items-center gap-2 mb-4">
                                 <Users className="w-5 h-5 text-purple-600" />
-                                <h3 className="font-bold text-sm sm:text-base text-slate-800">Perfil do Visitante</h3>
+                                <h3 className={`font-bold text-sm sm:text-base ${textPrimary}`}>Perfil do Visitante</h3>
                             </div>
                             <div className="h-64 w-full flex justify-center">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -588,8 +596,8 @@ export default function AccessStatistics() {
                                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                             ))}
                                         </Pie>
-                                        <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }} />
-                                        <Legend wrapperStyle={{ fontSize: '11px', fontWeight: '600' }} />
+                                        <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px', backgroundColor: dk ? '#1e293b' : '#fff', color: dk ? '#e2e8f0' : '#1e293b' }} />
+                                        <Legend wrapperStyle={{ fontSize: '11px', fontWeight: '600', color: dk ? '#94a3b8' : undefined }} />
                                     </PieChart>
                                 </ResponsiveContainer>
                             </div>
@@ -597,30 +605,30 @@ export default function AccessStatistics() {
                     </div>
 
                     {/* Top Visitors List */}
-                    <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div className={`p-4 sm:p-6 rounded-2xl shadow-sm border ${card}`}>
                         <div className="flex items-center gap-2 mb-4">
                             <Users className="w-5 h-5 text-blue-600" />
-                            <h3 className="font-bold text-sm sm:text-base text-slate-800">Visitantes/Militares Recorrentes</h3>
+                            <h3 className={`font-bold text-sm sm:text-base ${textPrimary}`}>Visitantes/Militares Recorrentes</h3>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                             {topVisitors.map((v, i) => {
                                 const maxVal = topVisitors[0].count;
                                 return (
-                                    <div key={v.name} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${i === 0 ? 'bg-yellow-100 text-yellow-700' :
-                                            i === 1 ? 'bg-slate-200 text-slate-700' :
-                                                i === 2 ? 'bg-orange-100 text-orange-700' :
-                                                    'bg-slate-100 text-slate-500'
+                                    <div key={v.name} className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${dk ? 'hover:bg-slate-700/50' : 'hover:bg-slate-50'}`}>
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${i === 0 ? (dk ? 'bg-yellow-900/30 text-yellow-400' : 'bg-yellow-100 text-yellow-700') :
+                                            i === 1 ? (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700') :
+                                                i === 2 ? (dk ? 'bg-orange-900/30 text-orange-400' : 'bg-orange-100 text-orange-700') :
+                                                    (dk ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500')
                                             }`}>
                                             {i + 1}º
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-xs font-bold text-slate-900 truncate capitalize">{v.name?.toLowerCase()}</p>
-                                            <div className="w-full bg-slate-100 rounded-full h-1.5 mt-1">
+                                            <p className={`text-xs font-bold truncate capitalize ${dk ? 'text-white' : 'text-slate-900'}`}>{v.name?.toLowerCase()}</p>
+                                            <div className={`w-full rounded-full h-1.5 mt-1 ${dk ? 'bg-slate-700' : 'bg-slate-100'}`}>
                                                 <div className="bg-blue-500 h-full rounded-full transition-all" style={{ width: `${(v.count / maxVal) * 100}%` }} />
                                             </div>
                                         </div>
-                                        <span className="text-sm font-bold text-slate-600">{v.count}</span>
+                                        <span className={`text-sm font-bold ${dk ? 'text-slate-300' : 'text-slate-600'}`}>{v.count}</span>
                                     </div>
                                 );
                             })}
