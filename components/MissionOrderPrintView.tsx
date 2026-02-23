@@ -1,5 +1,5 @@
 
-import { type FC } from 'react';
+import { type FC, useEffect } from 'react';
 import { MissionOrder } from '../types';
 import { X, Printer, FileDown } from 'lucide-react';
 
@@ -18,9 +18,23 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
         return val;
     };
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [onClose]);
+
     return (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-start sm:items-center justify-center p-0 sm:p-4 overflow-y-auto print:p-0 print:bg-white force-light animate-fade-in">
-            <div className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full my-0 sm:my-auto min-h-screen sm:min-h-0 h-fit sm:h-[95vh] flex flex-col overflow-hidden print:h-auto print:rounded-none print:max-w-none shadow-2xl">
+        <div
+            className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-start sm:items-center justify-center p-0 sm:p-4 overflow-y-auto print:p-0 print:bg-white force-light animate-fade-in"
+            onClick={onClose}
+        >
+            <div
+                className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full my-0 sm:my-auto min-h-screen sm:min-h-0 h-fit sm:h-[95vh] flex flex-col overflow-hidden print:h-auto print:rounded-none print:max-w-none shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+            >
 
                 {/* Header - apenas título e fechar */}
                 <div className="bg-white border-b border-slate-200 p-3 sm:p-4 flex items-center justify-between print:hidden flex-shrink-0">
@@ -221,16 +235,26 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
 
                 {/* Rodapé fixo com botão de impressão */}
                 <div className="bg-white border-t border-slate-200 p-4 sm:p-5 flex items-center justify-between gap-4 print:hidden flex-shrink-0">
-                    <p className="text-xs text-slate-400 font-medium hidden sm:block leading-tight">
-                        Revise o documento antes de imprimir.<br />
-                        Confirme todas as informações.
-                    </p>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={onClose}
+                            className="flex items-center gap-2 px-4 py-3 border border-slate-200 text-slate-600 rounded-xl font-black text-sm hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all active:scale-95"
+                            title="Fechar (Esc)"
+                        >
+                            <X className="w-4 h-4" />
+                            <span className="hidden sm:inline">Fechar</span>
+                        </button>
+                        <p className="text-xs text-slate-400 font-medium hidden sm:block leading-tight">
+                            Pressione <kbd className="px-1 py-0.5 bg-slate-100 rounded text-[10px] font-mono">Esc</kbd> para fechar
+                        </p>
+                    </div>
                     <button
                         onClick={handlePrint}
-                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-black text-sm hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition-all active:scale-95"
+                        className="w-auto flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-black text-sm hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition-all active:scale-95"
                     >
                         <Printer className="w-4 h-4" />
-                        Imprimir Documento Oficial
+                        <span className="hidden sm:inline">Imprimir Documento Oficial</span>
+                        <span className="inline sm:hidden">Imprimir</span>
                     </button>
                 </div>
             </div>
