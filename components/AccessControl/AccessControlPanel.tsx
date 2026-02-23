@@ -274,9 +274,15 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
             return;
         }
 
-        if (accessCategory === 'Entrada' && destination.trim() && !DESTINATIONS.includes(destination)) {
-            alert('Por favor, selecione um destino válido da lista.');
-            return;
+        if (accessCategory === 'Entrada') {
+            if (!destination.trim()) {
+                alert('Por favor, informe o destino.');
+                return;
+            }
+            if (!DESTINATIONS.includes(destination)) {
+                alert('Por favor, selecione um destino válido da lista.');
+                return;
+            }
         }
 
         setSubmitting(true);
@@ -680,7 +686,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                         options={DESTINATIONS}
                                         value={destination}
                                         onChange={setDestination}
-                                        placeholder="DESTINO"
+                                        placeholder="DESTINO (OBRIGATÓRIO)"
                                         disabled={accessCategory === 'Saída'}
                                         isDarkMode={isDarkMode}
                                     />
