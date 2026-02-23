@@ -192,20 +192,27 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
 
         setSendingFromPrint(true);
         try {
+            // Oculta os elementos .no-print antes da captura
+            const noPrintEls = printDocRef.current.querySelectorAll('.no-print');
+            noPrintEls.forEach(el => (el as HTMLElement).style.display = 'none');
+
             // Captura o HTML exato do documento renderizado
             const canvas = await html2canvas(printDocRef.current, {
-                scale: 2,
+                scale: 1.5,
                 useCORS: true,
                 allowTaint: true,
                 backgroundColor: '#ffffff',
             });
 
-            // Converte o canvas em imagem e coloca em um PDF A4
-            const imgData = canvas.toDataURL('image/png');
+            // Restaura os elementos ocultos
+            noPrintEls.forEach(el => (el as HTMLElement).style.display = '');
+
+            // Converte o canvas em imagem JPEG (mais leve) e coloca em um PDF A4
+            const imgData = canvas.toDataURL('image/jpeg', 0.85);
             const doc = new jsPDF({ unit: 'mm', format: 'a4' });
             const pdfWidth = 210;
             const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-            doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, Math.min(pdfHeight, 297));
+            doc.addImage(imgData, 'JPEG', 0, 0, pdfWidth, Math.min(pdfHeight, 297));
 
             const pdfBase64 = doc.output('datauristring').split(',')[1];
 
