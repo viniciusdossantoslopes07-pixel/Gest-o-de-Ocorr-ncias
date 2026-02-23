@@ -285,6 +285,6 @@ export const MILITARY_QUOTES = [
   { text: "As cicatrizes são as medalhas da alma.", author: "Ditado de Veterano" },
   { text: "O exército é a nação em armas.", author: "Rui Barbosa" },
   { text: "A disciplina militar é o laço que une a ordem à força.", author: "Duque de Caxias" },
-  { text: "Guerra: jovens que não se odeiam matam-se por ordem de velhos que se odeiam.", author: "Atribuído a Diversos" },
+  { text: "A disciplina é a ponte entre metas e conquistas.", author: "Jim Rohn" },
   { text: "Sempre prontos, para qualquer missão, em qualquer lugar.", author: "Lema de Prontidão" },
 ];
