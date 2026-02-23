@@ -87,7 +87,7 @@ export const notificationService = {
                     <p>🚗 <strong>Veículo:</strong> ${vehicleModel} (${plate})</p>
                     <p>📅 <strong>Período:</strong> ${new Date(startDate + 'T00:00:00').toLocaleDateString('pt-BR')} até ${new Date(endDate + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
                 </div>
-                <p>Acesse o sistema Guardião GSD-SP para baixar seu comprovante digital.</p>
+                <p><strong>Imprima o anexo com a sua autorização e apresente ao chegar na portaria.</strong></p>
                 <p style="color: #ef4444; font-size: 13px;"><strong>Lembre-se:</strong> Mantenha o documento impresso ou digital acessível caso solicitado pela segurança.</p>
                 <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
                 <p style="font-size: 12px; color: #64748b;">Atenciosamente,<br>SOP-03 - GSD-SP</p>
