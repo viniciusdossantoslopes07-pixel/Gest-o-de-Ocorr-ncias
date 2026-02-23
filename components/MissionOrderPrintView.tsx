@@ -58,7 +58,7 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
 
                 {/* Scrollable Document Body */}
                 <div className="flex-1 overflow-auto p-4 sm:p-12 bg-slate-50/30 print:p-0 print:bg-white print:overflow-visible">
-                    <div className="bg-white shadow-sm print:shadow-none mx-auto max-w-[21cm] p-6 sm:p-12 border border-slate-100 print:border-none print:p-0 min-h-full">
+                    <div id="omis-print-content" className="bg-white shadow-sm print:shadow-none mx-auto max-w-[21cm] p-6 sm:p-12 border border-slate-100 print:border-none print:p-0 min-h-full">
                         {/* Header with Logos */}
                         <div className="flex items-start justify-between mb-6 border-b-2 border-slate-900 pb-4">
                             <img src="/logo_basp.png" alt="Logo BASP" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
@@ -266,12 +266,24 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
             size: A4 portrait;
             margin: 2.5cm 2cm 2.5cm 2cm;
           }
+          body * {
+            visibility: hidden;
+          }
+          #omis-print-content,
+          #omis-print-content * {
+            visibility: visible;
+          }
+          #omis-print-content {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+          }
           body {
             print-color-adjust: exact;
             -webkit-print-color-adjust: exact;
-          }
-          .print\\:hidden {
-            display: none !important;
           }
         }
       `}</style>
