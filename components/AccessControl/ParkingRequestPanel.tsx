@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../services/supabase';
 import {
     Car, Clock, Shield, Users, TrendingUp, Building2, UserCircle, Calendar,
@@ -7,6 +7,7 @@ import {
     List, BarChart3, Eye, CheckCircle, History, ChevronRight, Loader2, Lock, ShieldCheck
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas-pro';
 import { notificationService } from '../../services/notificationService';
 import ParkingStatistics from './ParkingStatistics';
 
@@ -66,6 +67,8 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
     const [passwordConfirm, setPasswordConfirm] = useState('');
     const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+    const [sendingFromPrint, setSendingFromPrint] = useState(false);
+    const printDocRef = useRef<HTMLDivElement>(null);
 
     const isAdmin = user?.role === 'Gestor Master / OSD' || user?.role === 'Comandante OM' || (user?.sector && user.sector.includes('SOP'));
 
@@ -177,128 +180,34 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
         }
     };
 
-    const generateParkingPDF = (req: ParkingRequest) => {
-        const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-        const year = new Date(req.created_at).getFullYear();
-        const veiculo = req.vehicle || {
-            marca_modelo: req.ext_marca_modelo || '—',
-            placa: req.ext_placa || '—',
-            cor: req.ext_cor || ''
-        };
-        const aprovadoEm = req.aprovado_em ? new Date(req.aprovado_em) : null;
-
-        const W = 210; // Largura A4 em mm
-
-        // --- Aviso superior ---
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9);
-        doc.text('Manter este documento visível no para-brisa e estacionar o carro de ré.', W / 2, 15, { align: 'center' });
-
-        // --- Título ---
-        doc.setFontSize(28);
-        doc.text('AUTORIZAÇÃO', W / 2, 32, { align: 'center' });
-        doc.setFontSize(13);
-        doc.text(`Nº ${req.numero_autorizacao}/${year}`, W / 2, 40, { align: 'center' });
-
-        // --- Subtítulo ---
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(14);
-        doc.line(20, 45, W - 20, 45);
-        doc.text('ESTACIONAMENTO DA BASP', W / 2, 52, { align: 'center' });
-        doc.line(20, 55, W - 20, 55);
-
-        // --- Aviso vermelho (Hotel de Trânsito) ---
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
-        // Usando cor escura pois jsPDF não exporta vermelho por padrão sem GState
-        const warningText = 'Informo a V.S.ª que a área coberta do Hotel de Trânsito é destinada aos Residentes, Usuários do Hotel em Trânsito, Of. Superiores da OM e Of. Generais';
-        const lines = doc.splitTextToSize(warningText, W - 40);
-        doc.text(lines, W / 2, 65, { align: 'center' });
-
-        // --- Dados do Solicitante ---
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.text('DADOS DO SOLICITANTE:', 20, 82);
-        doc.line(20, 84, W - 20, 84);
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        doc.text('Nome Completo: ', 20, 92);
-        doc.setFont('helvetica', 'bold');
-        doc.text(req.nome_completo, 20 + doc.getTextWidth('Nome Completo: '), 92);
-
-        doc.setFont('helvetica', 'normal');
-        doc.text('Posto/Grad: ', 20, 99);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`${req.posto_graduacao}`, 20 + doc.getTextWidth('Posto/Grad: '), 99);
-        doc.setFont('helvetica', 'normal');
-        doc.text(` (${req.tipo_pessoa} — ${req.forca})`, 20 + doc.getTextWidth('Posto/Grad: ') + doc.getTextWidth(`${req.posto_graduacao}`), 99);
-
-        doc.text('Veículo: ', 20, 106);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`${veiculo.marca_modelo}`, 20 + doc.getTextWidth('Veículo: '), 106);
-
-        doc.setFont('helvetica', 'normal');
-        doc.text('Placa: ', 20, 113);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`${veiculo.placa}`, 20 + doc.getTextWidth('Placa: '), 113);
-
-        if (veiculo.cor) {
-            doc.setFont('helvetica', 'normal');
-            doc.text('Cor: ', 20, 120);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`${veiculo.cor}`, 20 + doc.getTextWidth('Cor: '), 120);
-        }
-
-        // --- Período ---
-        doc.line(20, 130, W - 20, 130);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        doc.text('Início da Autorização:', 20, 140);
-        doc.setFont('helvetica', 'bold');
-        doc.text(new Date(req.inicio + 'T00:00:00').toLocaleDateString('pt-BR'), W - 20, 140, { align: 'right' });
-
-        doc.setFont('helvetica', 'normal');
-        doc.text('Término da Autorização:', 20, 148);
-        doc.setFont('helvetica', 'bold');
-        doc.text(new Date(req.termino + 'T00:00:00').toLocaleDateString('pt-BR'), W - 20, 148, { align: 'right' });
-
-        // --- Caixa de instruções ---
-        doc.setDrawColor(180, 180, 180);
-        doc.rect(20, 158, W - 40, 18);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9);
-        const instrText = 'Ao chegar ao portão G3 utilize esta autorização em mãos para se identificar. Mantenha este documento visível no para-brisa e estacione o carro de ré no Cassino dos Oficiais.';
-        const instrLines = doc.splitTextToSize(instrText, W - 50);
-        doc.text(instrLines, W / 2, 164, { align: 'center' });
-
-        // --- Rodapé / Assinatura ---
-        doc.line(20, 200, W - 20, 200);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
-        doc.text('Aprovação feita pela Seção de Contrainteligência e Segurança Orgânica, SOP-03 do GSD-SP', W / 2, 207, { align: 'center' });
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
-        doc.text((req.aprovado_por || 'AUTORIDADE COMPETENTE').toUpperCase(), W / 2, 214, { align: 'center' });
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
-        const assinadoText = aprovadoEm
-            ? `Assinado digitalmente em ${aprovadoEm.toLocaleDateString('pt-BR')} às ${aprovadoEm.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
-            : 'Assinado digitalmente';
-        doc.text(assinadoText, W / 2, 220, { align: 'center' });
-
-        return doc.output('datauristring').split(',')[1]; // base64 puro
-    };
-
-    const handleSendEmail = async (req: ParkingRequest) => {
+    const handleSendEmailFromPrint = async (req: ParkingRequest) => {
         if (!req.email) {
             alert('E-mail do solicitante não encontrado');
             return;
         }
+        if (!printDocRef.current) {
+            alert('Erro: documento não encontrado.');
+            return;
+        }
 
-        setSendingEmailId(req.id);
+        setSendingFromPrint(true);
         try {
-            const pdfBase64 = generateParkingPDF(req);
+            // Captura o HTML exato do documento renderizado
+            const canvas = await html2canvas(printDocRef.current, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+            });
+
+            // Converte o canvas em imagem e coloca em um PDF A4
+            const imgData = canvas.toDataURL('image/png');
+            const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+            const pdfWidth = 210;
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, Math.min(pdfHeight, 297));
+
+            const pdfBase64 = doc.output('datauristring').split(',')[1];
 
             await notificationService.sendParkingAuthorizationNotification({
                 militarEmail: req.email,
@@ -310,7 +219,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                 authNumber: req.id.slice(0, 8).toUpperCase(),
                 attachments: [
                     {
-                        filename: `Autorizacao_Estacionamento_${req.id.slice(0, 8).toUpperCase()}.pdf`,
+                        filename: `Autorizacao_Estacionamento_${req.numero_autorizacao}.pdf`,
                         content: pdfBase64,
                         encoding: 'base64'
                     }
@@ -319,10 +228,15 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
             alert('E-mail enviado com sucesso com a autorização em anexo!');
         } catch (error) {
             console.error('Erro ao enviar e-mail:', error);
-            alert('Falha ao enviar e-mail');
+            alert('Falha ao enviar e-mail. Tente novamente.');
         } finally {
-            setSendingEmailId(null);
+            setSendingFromPrint(false);
         }
+    };
+
+    const handleSendEmail = async (req: ParkingRequest) => {
+        // Abre o modal de impressão para que o usuário envie de lá
+        setPrintRequest(req);
     };
 
     const tabs = [
@@ -582,7 +496,7 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                         {/* Overlay Close Area (click outside) */}
                         <div className="absolute inset-0 no-print" onClick={() => setPrintRequest(null)}></div>
 
-                        <div className="relative bg-white w-full max-w-[210mm] min-h-[297mm] h-fit shadow-2xl mx-auto my-auto p-4 sm:p-8 font-serif text-black print-container animate-in zoom-in-95 duration-200 flex flex-col justify-between overflow-x-hidden sm:overflow-visible">
+                        <div ref={printDocRef} className="relative bg-white w-full max-w-[210mm] min-h-[297mm] h-fit shadow-2xl mx-auto my-auto p-4 sm:p-8 font-serif text-black print-container animate-in zoom-in-95 duration-200 flex flex-col justify-between overflow-x-hidden sm:overflow-visible">
                             <div>
                                 {/* Close Button (Mobile/Desktop friendly) */}
                                 <button onClick={() => setPrintRequest(null)} className="no-print absolute -top-12 right-0 text-white/70 hover:text-white flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full backdrop-blur-md">
@@ -626,10 +540,21 @@ export default function ParkingRequestPanel({ user }: { user: any }) {
                                 <p className="text-[10px] text-gray-400">Assinado digitalmente {aprovadoEm ? `em ${aprovadoEm.toLocaleDateString('pt-BR')} às ${aprovadoEm.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : ''}</p>
                             </div>
 
-                            {/* Floating Action Buttons for Print */}
-                            <div className="no-print fixed bottom-6 left-6 right-6 sm:bottom-8 sm:right-8 sm:left-auto flex gap-3 z-[210]">
+                            {/* Floating Action Buttons for Print & Send */}
+                            <div className="no-print fixed bottom-6 left-6 right-6 sm:bottom-8 sm:right-8 sm:left-auto flex flex-col sm:flex-row gap-3 z-[210]">
                                 <button onClick={() => window.print()} className="w-full sm:w-auto shadow-xl px-6 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-3 active:scale-95">
                                     <Printer className="w-5 h-5" /> Imprimir Agora
+                                </button>
+                                <button
+                                    onClick={() => handleSendEmailFromPrint(printRequest)}
+                                    disabled={sendingFromPrint}
+                                    className="w-full sm:w-auto shadow-xl px-6 py-4 bg-emerald-600 text-white rounded-2xl font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {sendingFromPrint ? (
+                                        <><Loader2 className="w-5 h-5 animate-spin" /> Enviando...</>
+                                    ) : (
+                                        <><Send className="w-5 h-5" /> Enviar por E-mail</>
+                                    )}
                                 </button>
                             </div>
                         </div>
