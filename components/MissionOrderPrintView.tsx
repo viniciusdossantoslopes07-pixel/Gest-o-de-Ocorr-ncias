@@ -19,8 +19,8 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
     };
 
     return (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light animate-fade-in">
-            <div className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full h-full sm:h-[95vh] flex flex-col overflow-hidden print:h-auto print:rounded-none print:max-w-none shadow-2xl">
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-start sm:items-center justify-center p-0 sm:p-4 overflow-y-auto print:p-0 print:bg-white force-light animate-fade-in">
+            <div className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full my-0 sm:my-auto min-h-screen sm:min-h-0 h-fit sm:h-[95vh] flex flex-col overflow-hidden print:h-auto print:rounded-none print:max-w-none shadow-2xl">
 
                 {/* Header - Fixed controls */}
                 <div className="bg-white border-b border-slate-200 p-3 sm:p-4 flex items-center justify-between print:hidden flex-shrink-0 z-20">
@@ -62,9 +62,9 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
                             <img src="/logo_basp.png" alt="Logo BASP" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
                             <div className="flex-1 text-center px-2">
                                 <h1 className="text-[9px] sm:text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">Ministério da Defesa</h1>
-                                <h1 className="text-base sm:text-xl font-black uppercase text-slate-900">Comando da Aeronáutica</h1>
-                                <h2 className="text-sm sm:text-lg font-extrabold uppercase text-slate-800">BASP</h2>
-                                <h3 className="text-[11px] sm:text-sm font-bold uppercase text-slate-700">Grupo de Segurança e Defesa de São Paulo</h3>
+                                <h1 className="text-base sm:text-xl font-black uppercase text-slate-900 leading-tight">Comando da Aeronáutica</h1>
+                                <h2 className="text-xs sm:text-base font-black uppercase text-slate-800 tracking-wide mt-1">BASE AÉREA DE SÃO PAULO</h2>
+                                <h3 className="text-[10px] sm:text-sm font-bold uppercase text-slate-700 leading-tight">Grupo de Segurança e Defesa de São Paulo</h3>
                             </div>
                             <img src="/logo_gsd_sp.png" alt="Logo GSD-SP" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
                         </div>
