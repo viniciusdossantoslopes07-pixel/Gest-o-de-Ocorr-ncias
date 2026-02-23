@@ -274,6 +274,11 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
             return;
         }
 
+        if (accessCategory === 'Entrada' && destination.trim() && !DESTINATIONS.includes(destination)) {
+            alert('Por favor, selecione um destino válido da lista.');
+            return;
+        }
+
         setSubmitting(true);
         try {
             const { error } = await supabase.from('access_control').insert([{
