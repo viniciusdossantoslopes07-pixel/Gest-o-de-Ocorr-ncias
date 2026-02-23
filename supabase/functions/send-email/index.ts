@@ -1,7 +1,18 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { Resend } from "npm:resend";
+import nodemailer from "npm:nodemailer";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const GMAIL_USER = Deno.env.get("GMAIL_USER");
+const GMAIL_APP_PASSWORD = Deno.env.get("GMAIL_APP_PASSWORD");
+
+const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true, // true for 465, false for other ports
+    auth: {
+        user: GMAIL_USER,
+        pass: GMAIL_APP_PASSWORD,
+    },
+});
 
 Deno.serve(async (req) => {
     // CORS handling
@@ -18,16 +29,20 @@ Deno.serve(async (req) => {
     try {
         const { to, subject, html } = await req.json();
 
-        const { data, error } = await resend.emails.send({
-            from: "Guardiao GSD-SP <notificacoes@gsdsp.mil.br>", // Altere para o seu domínio verificado
+        if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
+            throw new Error("Configurações de e-mail (GMAIL_USER ou GMAIL_APP_PASSWORD) não encontradas.");
+        }
+
+        const mailOptions = {
+            from: `"Guardião GSD-SP" <${GMAIL_USER}>`,
             to,
             subject,
             html,
-        });
+        };
 
-        if (error) throw error;
+        const info = await transporter.sendMail(mailOptions);
 
-        return new Response(JSON.stringify(data), {
+        return new Response(JSON.stringify({ success: true, messageId: info.messageId }), {
             status: 200,
             headers: {
                 "Content-Type": "application/json",
