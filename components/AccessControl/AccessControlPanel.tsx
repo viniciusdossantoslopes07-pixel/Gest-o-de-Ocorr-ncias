@@ -811,7 +811,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
 
             {/* TAB CONTENT: ESTATÍSTICAS */}
             {activeTab === 'estatisticas' && (
-                <AccessStatistics />
+                <AccessStatistics isDarkMode={isDarkMode} />
             )}
 
             {/* TAB CONTENT: BUSCA */}
