@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '../../services/supabase';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -40,6 +40,48 @@ type DatePreset = 'TODAY' | '7D' | '30D' | 'MONTH' | 'YEAR' | 'CUSTOM';
 
 export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: boolean }) {
     const dk = isDarkMode;
+
+    // Custom Select for filters to handle dark mode dropdown correctly
+    const FilterSelect = ({ options, value, onChange, placeholder, icon: Icon, className = "" }: any) => {
+        const [isOpen, setIsOpen] = useState(false);
+        const ref = useRef<HTMLDivElement>(null);
+
+        useEffect(() => {
+            const click = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false); };
+            document.addEventListener('mousedown', click);
+            return () => document.removeEventListener('mousedown', click);
+        }, []);
+
+        const label = options.find((o: any) => o.value === value)?.label || placeholder;
+
+        return (
+            <div className={`relative ${className}`} ref={ref}>
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl border w-full text-xs font-bold transition-all ${dk ? 'bg-slate-700/60 border-slate-600 text-slate-200 hover:bg-slate-700' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-white hover:shadow-sm'}`}
+                >
+                    {Icon && <Icon className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />}
+                    <span className="flex-1 text-left truncate uppercase tracking-tight">{label}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isOpen && (
+                    <div className={`absolute z-50 top-full left-0 right-0 mt-1 rounded-xl border shadow-2xl max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-100 ${dk ? 'bg-slate-800 border-slate-700 shadow-black/40' : 'bg-white border-slate-200 shadow-slate-200'}`}>
+                        {options.map((opt: any) => (
+                            <button
+                                key={opt.value}
+                                onClick={() => { onChange(opt.value); setIsOpen(false); }}
+                                className={`w-full text-left px-4 py-2.5 text-[10px] font-black uppercase tracking-wider transition-colors ${value === opt.value ? 'bg-blue-600 text-white' : (dk ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-600 hover:bg-slate-50')}`}
+                            >
+                                {opt.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     const card = dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-100';
     const textPrimary = dk ? 'text-white' : 'text-slate-800';
     const textMuted = dk ? 'text-slate-400' : 'text-slate-500';
@@ -386,43 +428,79 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     {/* Gate Filter */}
-                    <div className={`flex items-center gap-2 border rounded-xl px-3 py-2 ${filterBg}`}>
-                        <DoorOpen className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                        <select value={filterGate} onChange={(e) => setFilterGate(e.target.value)} className={`text-xs font-bold flex-1 ${selectCls}`}>
-                            <option value="">Todos os Portões</option>
-                            <option value="PORTÃO G1">PORTÃO G1</option>
-                            <option value="PORTÃO G2">PORTÃO G2</option>
-                            <option value="PORTÃO G3">PORTÃO G3</option>
-                        </select>
-                    </div>
+                    <FilterSelect
+                        icon={DoorOpen}
+                        placeholder="Todos os Portões"
+                        value={filterGate}
+                        onChange={setFilterGate}
+                        options={[
+                            { label: 'Todos os Portões', value: '' },
+                            { label: 'PORTÃO G1', value: 'PORTÃO G1' },
+                            { label: 'PORTÃO G2', value: 'PORTÃO G2' },
+                            { label: 'PORTÃO G3', value: 'PORTÃO G3' },
+                        ]}
+                    />
 
                     {/* Hour Range */}
-                    <div className={`flex items-center gap-2 border rounded-xl px-3 py-2 ${filterBg}`}>
-                        <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                        <select value={filterHourStart} onChange={(e) => setFilterHourStart(e.target.value)} className={`text-xs font-bold flex-1 ${selectCls}`}>
-                            <option value="">00h</option>
-                            {Array.from({ length: 24 }, (_, i) => <option key={i} value={String(i)}>{String(i).padStart(2, '0')}h</option>)}
-                        </select>
-                        <span className={`text-xs text-center w-4 ${dk ? 'text-slate-500' : 'text-slate-300'}`}>-</span>
-                        <select value={filterHourEnd} onChange={(e) => setFilterHourEnd(e.target.value)} className={`text-xs font-bold flex-1 ${selectCls}`}>
-                            <option value="">23h</option>
-                            {Array.from({ length: 24 }, (_, i) => <option key={i} value={String(i)}>{String(i).padStart(2, '0')}h</option>)}
-                        </select>
+                    <div className="flex items-center gap-2">
+                        <FilterSelect
+                            icon={Clock}
+                            placeholder="00h"
+                            value={filterHourStart}
+                            onChange={setFilterHourStart}
+                            className="flex-1"
+                            options={[
+                                { label: '00h', value: '' },
+                                ...Array.from({ length: 24 }, (_, i) => ({ label: `${String(i).padStart(2, '0')}h`, value: String(i) }))
+                            ]}
+                        />
+                        <span className={`text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-300'}`}>ATÉ</span>
+                        <FilterSelect
+                            placeholder="23h"
+                            value={filterHourEnd}
+                            onChange={setFilterHourEnd}
+                            className="flex-1"
+                            options={[
+                                { label: '23h', value: '' },
+                                ...Array.from({ length: 24 }, (_, i) => ({ label: `${String(i).padStart(2, '0')}h`, value: String(i) }))
+                            ]}
+                        />
                     </div>
 
-                    {/* Characteristic + Mode */}
+                    {/* Type Filter */}
+                    <FilterSelect
+                        icon={Users}
+                        placeholder="Todos os Tipos"
+                        value={filterCharacteristic}
+                        onChange={setFilterCharacteristic}
+                        options={[
+                            { label: 'Todos os Tipos', value: '' },
+                            ...uniqueCharacteristics.map(c => ({ label: c, value: c }))
+                        ]}
+                    />
+
+                    {/* Mode Filter */}
                     <div className="flex items-center gap-2">
-                        <select value={filterCharacteristic} onChange={(e) => setFilterCharacteristic(e.target.value)} className={`border rounded-xl px-3 py-2 text-xs font-bold flex-1 ${filterBg} ${selectCls}`}>
-                            <option value="">Todos os Tipos</option>
-                            {uniqueCharacteristics.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                        <select value={filterAccessMode} onChange={(e) => setFilterAccessMode(e.target.value)} className={`border rounded-xl px-3 py-2 text-xs font-bold flex-1 ${filterBg} ${selectCls}`}>
-                            <option value="">Todos Modos</option>
-                            <option value="Pedestre">Pedestre</option>
-                            <option value="Veículo">Veículo</option>
-                        </select>
+                        <FilterSelect
+                            icon={Car}
+                            placeholder="Todos Modos"
+                            value={filterAccessMode}
+                            onChange={setFilterAccessMode}
+                            className="flex-1"
+                            options={[
+                                { label: 'Todos Modos', value: '' },
+                                { label: 'Pedestre', value: 'Pedestre' },
+                                { label: 'Veículo', value: 'Veículo' },
+                            ]}
+                        />
                         {hasActiveFilters && (
-                            <button onClick={clearFilters} className={`p-2 rounded-xl transition-colors flex-shrink-0 ${dk ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50' : 'bg-red-50 text-red-500 hover:bg-red-100'}`}><X className="w-4 h-4" /></button>
+                            <button
+                                onClick={clearFilters}
+                                className={`p-2.5 rounded-xl transition-all flex-shrink-0 group ${dk ? 'bg-red-900/20 text-red-400 hover:bg-red-500 hover:text-white' : 'bg-red-50 text-red-500 hover:bg-red-500 hover:text-white'}`}
+                                title="Limpar Filtros"
+                            >
+                                <X className="w-4 h-4 group-hover:scale-110" />
+                            </button>
                         )}
                     </div>
                 </div>
