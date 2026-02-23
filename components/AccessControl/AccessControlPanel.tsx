@@ -55,6 +55,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     // Tab State
     const [activeTab, setActiveTab] = useState<'registrar' | 'estatisticas' | 'busca'>('registrar');
     const [showStats, setShowStats] = useState(true);
+    const [historyGateFilter, setHistoryGateFilter] = useState('');
 
     // Form state
     const [selectedGate, setSelectedGate] = useState('PORTÃO G1');
@@ -746,13 +747,33 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
 
                     {/* 2. History List (Compact) */}
                     <div className={`rounded-xl shadow-sm border overflow-hidden ${card}`}>
-                        <div className={`p-3 border-b flex items-center justify-between ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
+                        <div className={`p-3 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
                             <span className={`text-xs font-black uppercase flex items-center gap-2 ${textSecondary}`}>
                                 <History className="w-3.5 h-3.5" /> Últimos Acessos (Hoje)
                             </span>
-                            <div className={`flex gap-2 text-[10px] ${textMuted}`}>
-                                <span>Entradas: {todayStats.entries}</span>
-                                <span>Saídas: {todayStats.exits}</span>
+                            <div className="flex items-center gap-2">
+                                <div className="flex gap-1">
+                                    {['', 'PORTÃO G1', 'PORTÃO G2', 'PORTÃO G3'].map(gate => {
+                                        const label = gate ? gate.replace('PORTÃO ', '') : 'Todos';
+                                        const isActive = historyGateFilter === gate;
+                                        return (
+                                            <button
+                                                key={gate}
+                                                onClick={() => setHistoryGateFilter(gate)}
+                                                className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase transition-all ${isActive
+                                                        ? (gate === 'PORTÃO G1' ? 'bg-blue-600 text-white' : gate === 'PORTÃO G2' ? 'bg-emerald-600 text-white' : gate === 'PORTÃO G3' ? 'bg-amber-600 text-white' : (dk ? 'bg-slate-500 text-white' : 'bg-slate-700 text-white'))
+                                                        : (dk ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200')
+                                                    }`}
+                                            >
+                                                {label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                <div className={`flex gap-2 text-[10px] ${textMuted}`}>
+                                    <span>Entradas: {(historyGateFilter ? records.filter(r => r.guard_gate === historyGateFilter) : records).filter(r => r.access_category === 'Entrada').length}</span>
+                                    <span>Saídas: {(historyGateFilter ? records.filter(r => r.guard_gate === historyGateFilter) : records).filter(r => r.access_category === 'Saída').length}</span>
+                                </div>
                             </div>
                         </div>
 
@@ -773,7 +794,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                     ) : records.length === 0 ? (
                                         <tr><td colSpan={4} className="text-center py-4 text-xs text-slate-400 italic">Nenhum registro encontrado.</td></tr>
                                     ) : (
-                                        records.map((record) => (
+                                        (historyGateFilter ? records.filter(r => r.guard_gate === historyGateFilter) : records).map((record) => (
                                             <tr key={record.id} className={`border-b ${dk ? 'border-slate-700/50 hover:bg-slate-700/30' : 'border-slate-50 hover:bg-slate-50'}`}>
                                                 <td className={`px-3 py-2 text-[10px] font-bold align-top ${textSecondary}`}>
                                                     {new Date(record.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
