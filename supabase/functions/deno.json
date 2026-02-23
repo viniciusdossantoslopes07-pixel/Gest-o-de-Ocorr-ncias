@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "lib": [
+            "deno.window"
+        ],
+        "strict": true
+    },
+    "nodeModulesDir": false,
+    "imports": {
+        "nodemailer": "npm:nodemailer@^6.9.0"
+    }
+}
