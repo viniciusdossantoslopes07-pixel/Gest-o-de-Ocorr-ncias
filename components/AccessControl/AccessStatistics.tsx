@@ -697,7 +697,7 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
 
                     {/* Top Destinations Chart */}
                     <div className={`p-4 sm:p-6 rounded-2xl shadow-sm border ${card}`}>
-                        <div className="flex items-center gap-2 mb-4">
+                        <div className="flex items-center gap-2 mb-5">
                             <MapPin className="w-5 h-5 text-emerald-600" />
                             <h3 className={`font-bold text-sm sm:text-base ${textPrimary}`}>Destinos Mais Visitados</h3>
                             <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full ${dk ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
@@ -706,23 +706,54 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
                         </div>
                         {topDestinations.length === 0 ? (
                             <div className={`flex flex-col items-center justify-center h-48 rounded-xl ${dk ? 'bg-slate-700/30' : 'bg-slate-50'}`}>
-                                <MapPin className={`w-8 h-8 mb-2 opacity-30 ${dk ? 'text-slate-400' : 'text-slate-400'}`} />
+                                <MapPin className="w-8 h-8 mb-2 opacity-30 text-slate-400" />
                                 <p className={`text-xs font-bold uppercase tracking-wider opacity-50 ${textPrimary}`}>Sem dados de destino disponíveis</p>
                                 <p className={`text-[10px] mt-1 opacity-40 ${textMuted}`}>Os registros do período não possuem destino informado</p>
                             </div>
-                        ) : (
-                            <div style={{ height: 288, width: '100%' }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={topDestinations} margin={{ top: 20, right: 10, left: -10, bottom: 60 }}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
-                                        <XAxis dataKey="name" tick={{ fontSize: 9, fontWeight: 'bold', fill: axisFill }} angle={-35} textAnchor="end" interval={0} axisLine={false} tickLine={false} />
-                                        <YAxis tick={{ fontSize: 10, fill: axisFill }} axisLine={false} tickLine={false} />
-                                        <Tooltip cursor={{ fill: dk ? '#1e293b' : '#f8fafc' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: dk ? '#1e293b' : '#fff', color: dk ? '#e2e8f0' : '#1e293b' }} />
-                                        <Bar dataKey="total" name="Visitas" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={36} label={{ position: 'top', fontSize: 10, fontWeight: 'bold', fill: axisFill }} />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        )}
+                        ) : (() => {
+                            const maxVal = topDestinations[0]?.total || 1;
+                            const barColors = [
+                                ['#3b82f6', '#1d4ed8'],
+                                ['#6366f1', '#4338ca'],
+                                ['#8b5cf6', '#6d28d9'],
+                                ['#06b6d4', '#0e7490'],
+                                ['#10b981', '#047857'],
+                                ['#f59e0b', '#b45309'],
+                                ['#ef4444', '#b91c1c'],
+                            ];
+                            return (
+                                <div className="flex items-end gap-2 sm:gap-3 h-52 px-1">
+                                    {topDestinations.map((d, i) => {
+                                        const pct = Math.max(8, (d.total / maxVal) * 100);
+                                        const [from, to] = barColors[i % barColors.length];
+                                        const shortName = d.name.length > 10 ? d.name.slice(0, 9) + '…' : d.name;
+                                        return (
+                                            <div key={d.name} className="flex-1 flex flex-col items-center justify-end gap-1 h-full group" title={d.name}>
+                                                {/* Value label */}
+                                                <span className={`text-[10px] sm:text-xs font-black ${dk ? 'text-white' : 'text-slate-800'}`}>{d.total}</span>
+                                                {/* Bar */}
+                                                <div
+                                                    className="w-full rounded-t-lg transition-all duration-500 group-hover:opacity-80 group-hover:scale-105 origin-bottom"
+                                                    style={{
+                                                        height: `${pct}%`,
+                                                        background: `linear-gradient(to top, ${to}, ${from})`,
+                                                        minHeight: 12,
+                                                        boxShadow: `0 4px 12px ${from}44`
+                                                    }}
+                                                />
+                                                {/* Name tag */}
+                                                <span
+                                                    className={`text-[8px] sm:text-[9px] font-bold text-center leading-tight mt-1 break-words w-full truncate ${dk ? 'text-slate-400' : 'text-slate-500'}`}
+                                                    title={d.name}
+                                                >
+                                                    {shortName}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            );
+                        })()}
                     </div>
 
                     {/* Top Visitors List */}
