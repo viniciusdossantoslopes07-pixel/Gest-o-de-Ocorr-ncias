@@ -186,14 +186,14 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return sectors.map(sector => {
             // [MODIFICAÇÃO]: Garantir que apenas militares habilitados contem aqui também
             const sectorUsers = filterUsersByRank(users.filter(u => u.sector === sector && u.active !== false));
-            const sectorRecords = Array.from(currentRecordsMap.values()).filter(r => r.sector === sector);
+            const sectorRecords = Array.from(currentRecordsMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
             const ready = sectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
             const total = sectorUsers.length;
             const absent = total - ready;
             const pct = total > 0 ? (ready / total) * 100 : 0;
 
             // Previous day comparison
-            const prevSectorRecords = Array.from(previousRecordsMap.values()).filter(r => r.sector === sector);
+            const prevSectorRecords = Array.from(previousRecordsMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
             const prevReady = prevSectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
             const prevPct = total > 0 ? (prevReady / total) * 100 : 0;
 
