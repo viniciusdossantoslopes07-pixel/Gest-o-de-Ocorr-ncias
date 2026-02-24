@@ -700,18 +700,29 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
                         <div className="flex items-center gap-2 mb-4">
                             <MapPin className="w-5 h-5 text-emerald-600" />
                             <h3 className={`font-bold text-sm sm:text-base ${textPrimary}`}>Destinos Mais Visitados</h3>
+                            <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full ${dk ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                                {topDestinations.length} destinos
+                            </span>
                         </div>
-                        <div className="h-72 w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={topDestinations} layout="vertical" margin={{ top: 0, right: 30, left: 60, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke={gridStroke} />
-                                    <XAxis type="number" hide />
-                                    <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fontWeight: 'bold', fill: axisFill }} width={120} axisLine={false} tickLine={false} />
-                                    <Tooltip cursor={{ fill: dk ? '#1e293b' : '#f8fafc' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: dk ? '#1e293b' : '#fff', color: dk ? '#e2e8f0' : '#1e293b' }} />
-                                    <Bar dataKey="total" name="Visitas" fill="#10b981" radius={[0, 4, 4, 0]} barSize={20} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
+                        {topDestinations.length === 0 ? (
+                            <div className={`flex flex-col items-center justify-center h-48 rounded-xl ${dk ? 'bg-slate-700/30' : 'bg-slate-50'}`}>
+                                <MapPin className={`w-8 h-8 mb-2 opacity-30 ${dk ? 'text-slate-400' : 'text-slate-400'}`} />
+                                <p className={`text-xs font-bold uppercase tracking-wider opacity-50 ${textPrimary}`}>Sem dados de destino disponíveis</p>
+                                <p className={`text-[10px] mt-1 opacity-40 ${textMuted}`}>Os registros do período não possuem destino informado</p>
+                            </div>
+                        ) : (
+                            <div style={{ height: 288, width: '100%' }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={topDestinations} layout="vertical" margin={{ top: 0, right: 30, left: 10, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke={gridStroke} />
+                                        <XAxis type="number" hide />
+                                        <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fontWeight: 'bold', fill: axisFill }} width={140} axisLine={false} tickLine={false} />
+                                        <Tooltip cursor={{ fill: dk ? '#1e293b' : '#f8fafc' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: dk ? '#1e293b' : '#fff', color: dk ? '#e2e8f0' : '#1e293b' }} />
+                                        <Bar dataKey="total" name="Visitas" fill="#10b981" radius={[0, 4, 4, 0]} barSize={24} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        )}
                     </div>
 
                     {/* Top Visitors List */}
