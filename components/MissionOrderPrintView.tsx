@@ -24,7 +24,6 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
             })
             .join('\n');
 
-        // iframe oculto — sem nova aba, @page respeitado
         const iframe = document.createElement('iframe');
         iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:210mm;height:297mm;border:none;visibility:hidden;';
         document.body.appendChild(iframe);
@@ -33,27 +32,31 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
         if (!doc) { document.body.removeChild(iframe); return; }
 
         doc.open();
+        // Estratégia mais confiável: zera margens do @page e aplica padding 
+        // diretamente no body wrapper — funciona em todos os navegadores
         doc.write(`<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
 <title>OMIS ${order.omisNumber}</title>
 <style>
-  @page { size: A4 portrait; margin: 2.5cm 2cm 2.5cm 2cm; }
-  body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  /* CSS compilado da aplicação */
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2.5cm 2cm;
+    background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
   ${appCss}
-  /* Garante que elementos de UI do modal sejam ocultados */
   [class*="print:hidden"] { display: none !important; }
   .animate-fade-in { animation: none !important; }
-  /* Sem min-height para não expandir a página desnecessariamente */
-  #omis-print-content { min-height: 0 !important; }
+  #omis-print-content { min-height: 0 !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; box-shadow: none !important; }
 </style>
 </head>
 <body>
-<div style="padding: 0; margin: 0;">
 ${content.outerHTML}
-</div>
 </body>
 </html>`);
         doc.close();
