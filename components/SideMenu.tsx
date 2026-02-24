@@ -85,7 +85,7 @@ export default function SideMenu({
             {isOpen && <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-40 lg:hidden transition-opacity duration-300" onClick={onClose} />}
 
             {/* Sidebar */}
-            <aside className={`fixed inset-y-0 left-0 z-50 transform transition-all duration-300 ease-in-out lg:relative lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} ${isCollapsed ? 'w-20' : 'w-64 sm:w-72'} flex flex-col shadow-2xl lg:shadow-none border-r bg-slate-950 border-slate-800 text-white`}>
+            <aside className={`print:hidden fixed inset-y-0 left-0 z-50 transform transition-all duration-300 ease-in-out lg:relative lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} ${isCollapsed ? 'w-20' : 'w-64 sm:w-72'} flex flex-col shadow-2xl lg:shadow-none border-r bg-slate-950 border-slate-800 text-white`}>
 
                 {/* Toggle Collapse (Desktop) */}
                 <button onClick={() => setIsCollapsed(!isCollapsed)} className="hidden lg:flex absolute -right-3 top-20 bg-blue-600 w-6 h-6 rounded-full items-center justify-center border-2 border-white dark:border-slate-900 hover:bg-blue-500 z-[60] shadow-md transition-transform hover:scale-110">

@@ -965,7 +965,7 @@ const App: FC = () => {
 
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {!isPublic && (
-          <header className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} border-b px-3 lg:px-6 py-2.5 lg:py-3.5 flex items-center justify-between z-[130] relative`}>
+          <header className={`print:hidden ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} border-b px-3 lg:px-6 py-2.5 lg:py-3.5 flex items-center justify-between z-[130] relative`}>
             <div className="flex items-center gap-4">
               <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors"><Menu className="w-5 h-5" /></button>
               <h2 className={`text-lg lg:text-xl font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'} truncate max-w-[200px] sm:max-w-none`}>
