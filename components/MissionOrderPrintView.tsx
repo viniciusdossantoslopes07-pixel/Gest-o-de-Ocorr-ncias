@@ -13,9 +13,20 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
         const content = document.getElementById('omis-print-content');
         if (!content) return;
 
-        // iframe oculto — sem nova aba, sem bloqueador de popup, @page respeitado
+        // Coleta o CSS compilado da aplicação (inclui todos os utilitários Tailwind gerados)
+        const appCss = Array.from(document.styleSheets)
+            .map(sheet => {
+                try {
+                    return Array.from(sheet.cssRules).map(r => r.cssText).join('\n');
+                } catch {
+                    return '';
+                }
+            })
+            .join('\n');
+
+        // iframe oculto — sem nova aba, @page respeitado
         const iframe = document.createElement('iframe');
-        iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;';
+        iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:210mm;height:297mm;border:none;visibility:hidden;';
         document.body.appendChild(iframe);
 
         const doc = iframe.contentDocument || (iframe.contentWindow as any)?.document;
@@ -29,97 +40,21 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
 <title>OMIS ${order.omisNumber}</title>
 <style>
   @page { size: A4 portrait; margin: 2.5cm 2cm 2.5cm 2cm; }
-  * { box-sizing: border-box; }
-  body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #000; background: #fff; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  img { max-width: 100%; display: inline-block; }
-  table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
-  td, th { border: 1.5px solid #0f172a; padding: 4px 8px; vertical-align: middle; }
-  th { background-color: #f8fafc; font-weight: 900; text-transform: uppercase; font-size: 10px; }
-  .flex { display: flex; }
-  .items-start { align-items: flex-start; }
-  .items-center { align-items: center; }
-  .flex-1 { flex: 1; }
-  .gap-1 { gap: 4px; }
-  .gap-2 { gap: 8px; }
-  .justify-between { justify-content: space-between; }
-  .flex-col { flex-direction: column; }
-  .text-center { text-align: center; }
-  .font-bold { font-weight: 700; }
-  .font-black { font-weight: 900; }
-  .font-extrabold { font-weight: 800; }
-  .font-medium { font-weight: 500; }
-  .font-mono { font-family: monospace; }
-  .uppercase { text-transform: uppercase; }
-  .tracking-wide { letter-spacing: 0.05em; }
-  .leading-tight { line-height: 1.25; }
-  .leading-relaxed { line-height: 1.6; }
-  .whitespace-pre-wrap { white-space: pre-wrap; }
-  .select-all { user-select: all; }
-  .italic { font-style: italic; }
-  .text-slate-400 { color: #94a3b8; }
-  .text-slate-500 { color: #64748b; }
-  .text-slate-600 { color: #475569; }
-  .text-slate-700 { color: #334155; }
-  .text-slate-800 { color: #1e293b; }
-  .text-slate-900 { color: #0f172a; }
-  .text-blue-600 { color: #2563eb; }
-  .text-blue-800 { color: #1e40af; }
-  .text-blue-900 { color: #1e3a8a; }
-  .bg-blue-50 { background-color: #eff6ff; }
-  .bg-slate-50 { background-color: #f8fafc; }
-  .bg-slate-100 { background-color: #f1f5f9; }
-  .bg-white { background-color: #fff; }
-  .rounded-lg { border-radius: 8px; }
-  .rounded-xl { border-radius: 12px; }
-  .border { border: 1.5px solid #0f172a; }
-  .border-t { border-top: 1px solid #cbd5e1; }
-  .border-blue-100 { border-color: #dbeafe !important; }
-  .border-slate-200 { border-color: #e2e8f0; }
-  .border-slate-300 { border-color: #cbd5e1; }
-  .mb-1 { margin-bottom: 4px; }
-  .mb-2 { margin-bottom: 8px; }
-  .mb-4 { margin-bottom: 14px; }
-  .mb-6 { margin-bottom: 20px; }
-  .mt-1 { margin-top: 4px; }
-  .mt-4 { margin-top: 14px; }
-  .mt-8 { margin-top: 28px; }
-  .pt-4 { padding-top: 14px; }
-  .pb-4 { padding-bottom: 14px; }
-  .px-2 { padding-left: 8px; padding-right: 8px; }
-  .px-4 { padding-left: 14px; padding-right: 14px; }
-  .py-1 { padding-top: 4px; padding-bottom: 4px; }
-  .py-1\\.5 { padding-top: 6px; padding-bottom: 6px; }
-  .py-3 { padding-top: 10px; padding-bottom: 10px; }
-  .p-2 { padding: 8px; }
-  .p-6 { padding: 20px; }
-  .w-16 { width: 64px; }
-  .w-24 { width: 88px; }
-  .w-32 { width: 110px; }
-  .w-12 { width: 42px; }
-  .h-16 { height: 64px; }
-  .h-20 { height: 72px; }
-  .w-2 { width: 8px; }
-  .h-2 { height: 8px; }
-  .rounded-full { border-radius: 100%; background-color: #2563eb; }
-  .min-h-\\[60px\\] { min-height: 60px; }
-  .object-contain { object-fit: contain; }
-  .shadow-sm { box-shadow: none; }
-  h1, h2, h3 { margin: 0; padding: 0; }
-  .border-b-2 { border-bottom: 2px solid #0f172a; }
-  .tracking-tighter { letter-spacing: -0.02em; }
-  .tracking-wider { letter-spacing: 0.08em; }
-  .tracking-widest { letter-spacing: 0.15em; }
-  .mb-1\\.5 { margin-bottom: 6px; }
-  /* classes de tamanho de fonte */
-  .text-xs { font-size: 11px; }
-  .text-sm { font-size: 12px; }
-  .text-base { font-size: 14px; }
-  .text-xl { font-size: 18px; }
-  .px-2\\.5 { padding-left: 10px; padding-right: 10px; }
-  .py-1\\.5 { padding-top: 6px; padding-bottom: 6px; }
+  body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  /* CSS compilado da aplicação */
+  ${appCss}
+  /* Garante que elementos de UI do modal sejam ocultados */
+  [class*="print:hidden"] { display: none !important; }
+  .animate-fade-in { animation: none !important; }
+  /* Sem min-height para não expandir a página desnecessariamente */
+  #omis-print-content { min-height: 0 !important; }
 </style>
 </head>
-<body>${content.innerHTML}</body>
+<body>
+<div style="padding: 0; margin: 0;">
+${content.outerHTML}
+</div>
+</body>
 </html>`);
         doc.close();
 
@@ -127,7 +62,7 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
         setTimeout(() => {
             iframe.contentWindow?.print();
             setTimeout(() => document.body.removeChild(iframe), 2000);
-        }, 400);
+        }, 500);
     };
 
     const formatValue = (val: any) => {
