@@ -351,6 +351,19 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
             .slice(0, 10);
     }, [filteredRecords]);
 
+    const topDestinations = useMemo(() => {
+        const map: Record<string, number> = {};
+        filteredRecords.forEach(r => {
+            if (r.destination && r.destination.trim() !== '') {
+                map[r.destination] = (map[r.destination] || 0) + 1;
+            }
+        });
+        return Object.entries(map)
+            .map(([name, total]) => ({ name, total }))
+            .sort((a, b) => a.total > b.total ? -1 : 1)
+            .slice(0, 7);
+    }, [filteredRecords]);
+
     const byCharacteristic = useMemo(() => {
         const map: Record<string, number> = {};
         filteredRecords.forEach(r => {
@@ -679,6 +692,25 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
                                     </PieChart>
                                 </ResponsiveContainer>
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Top Destinations Chart */}
+                    <div className={`p-4 sm:p-6 rounded-2xl shadow-sm border ${card}`}>
+                        <div className="flex items-center gap-2 mb-4">
+                            <MapPin className="w-5 h-5 text-emerald-600" />
+                            <h3 className={`font-bold text-sm sm:text-base ${textPrimary}`}>Destinos Mais Visitados</h3>
+                        </div>
+                        <div className="h-72 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={topDestinations} layout="vertical" margin={{ top: 0, right: 30, left: 60, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke={gridStroke} />
+                                    <XAxis type="number" hide />
+                                    <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fontWeight: 'bold', fill: axisFill }} width={120} axisLine={false} tickLine={false} />
+                                    <Tooltip cursor={{ fill: dk ? '#1e293b' : '#f8fafc' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: dk ? '#1e293b' : '#fff', color: dk ? '#e2e8f0' : '#1e293b' }} />
+                                    <Bar dataKey="total" name="Visitas" fill="#10b981" radius={[0, 4, 4, 0]} barSize={20} />
+                                </BarChart>
+                            </ResponsiveContainer>
                         </div>
                     </div>
 
