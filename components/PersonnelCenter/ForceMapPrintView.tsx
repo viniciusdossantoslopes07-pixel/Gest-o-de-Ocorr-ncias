@@ -212,7 +212,6 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
                                         <th className="px-2 py-1.5 text-[7px] font-black uppercase tracking-widest text-center border border-slate-700">Prontos</th>
                                         <th className="px-2 py-1.5 text-[7px] font-black uppercase tracking-widest text-center border border-slate-700">Ausentes</th>
                                         <th className="px-2 py-1.5 text-[7px] font-black uppercase tracking-widest text-center border border-slate-700">Prontidão</th>
-                                        <th className="px-2 py-1.5 text-[7px] font-black uppercase tracking-widest border border-slate-700">Militares Ausentes</th>
                                     </tr>
                                 </thead>
                                 <tbody className="text-[8px]">
@@ -226,19 +225,6 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
                                                 <span className={`font-black ${s.pct > 85 ? 'text-emerald-600' : s.pct > 60 ? 'text-amber-600' : 'text-red-600'}`}>
                                                     {Math.round(s.pct)}%
                                                 </span>
-                                            </td>
-                                            <td className="px-2 py-1 border border-slate-200">
-                                                {s.absentDetails && s.absentDetails.length > 0 ? (
-                                                    <div className="flex flex-wrap gap-x-2 gap-y-0.5">
-                                                        {s.absentDetails.map((a: any) => (
-                                                            <span key={a.user.id} className="text-[7px] text-slate-600">
-                                                                {a.user.rank} {a.user.warName || a.user.name} <span className="font-black text-red-500">({a.label})</span>
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-[7px] text-emerald-600 font-bold">100% presente</span>
-                                                )}
                                             </td>
                                         </tr>
                                     ))}
@@ -255,7 +241,6 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
                                                 {prontidao}%
                                             </span>
                                         </td>
-                                        <td className="px-2 py-1.5 border border-slate-300"></td>
                                     </tr>
                                 </tfoot>
                             </table>
