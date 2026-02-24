@@ -134,8 +134,9 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return filterUsersByRank(sectorFiltered);
     }, [users, selectedSector, rankFilter]);
 
-    const allRecords = Array.from(currentRecordsMap.values());
-    const prevRecords = Array.from(previousRecordsMap.values());
+    const relevantUserIds = new Set(relevantUsers.map(u => u.id));
+    const allRecords = Array.from(currentRecordsMap.values()).filter(r => relevantUserIds.has(r.militarId));
+    const prevRecords = Array.from(previousRecordsMap.values()).filter(r => relevantUserIds.has(r.militarId));
     const totalEfetivo = relevantUsers.length;
 
     // Count helpers
