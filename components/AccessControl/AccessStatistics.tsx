@@ -713,12 +713,12 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
                         ) : (
                             <div style={{ height: 288, width: '100%' }}>
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={topDestinations} layout="vertical" margin={{ top: 0, right: 30, left: 10, bottom: 0 }}>
-                                        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke={gridStroke} />
-                                        <XAxis type="number" hide />
-                                        <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fontWeight: 'bold', fill: axisFill }} width={140} axisLine={false} tickLine={false} />
+                                    <BarChart data={topDestinations} margin={{ top: 20, right: 10, left: -10, bottom: 60 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
+                                        <XAxis dataKey="name" tick={{ fontSize: 9, fontWeight: 'bold', fill: axisFill }} angle={-35} textAnchor="end" interval={0} axisLine={false} tickLine={false} />
+                                        <YAxis tick={{ fontSize: 10, fill: axisFill }} axisLine={false} tickLine={false} />
                                         <Tooltip cursor={{ fill: dk ? '#1e293b' : '#f8fafc' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: dk ? '#1e293b' : '#fff', color: dk ? '#e2e8f0' : '#1e293b' }} />
-                                        <Bar dataKey="total" name="Visitas" fill="#10b981" radius={[0, 4, 4, 0]} barSize={24} />
+                                        <Bar dataKey="total" name="Visitas" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={36} label={{ position: 'top', fontSize: 10, fontWeight: 'bold', fill: axisFill }} />
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>
