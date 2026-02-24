@@ -26,21 +26,52 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
         saram: '',
         cpf: '',
         sector: SETORES[0],
-        role: UserRole.OPERATIONAL
-    });
+        role: UserRole.OPERATIONAL,
+        specialty: '',
+        class_year: '',
+        service: '',
+        address: '',
+        enlistment_date: '',
+        presentation_date: '',
+        last_promotion_date: '',
+        military_identity: '',
+        rc: '',
+        workplace: '',
+        emergency_contact: ''
+    } as Partial<User>);
+
+    // Category Filter State
+    const [filterCategory, setFilterCategory] = useState<'TODOS' | 'OFICIAIS' | 'GRADUADOS' | 'PRAÇAS'>('TODOS');
 
     // Sector Filter State
     const [filterSector, setFilterSector] = useState('TODOS');
 
+    const isOficial = (rank: string) => ['TB', 'MB', 'BR', 'CL', 'TC', 'MJ', 'CP', '1T', '2T', 'AP'].includes(rank);
+    const isGraduado = (rank: string) => ['SO', '1S', '2S', '3S'].includes(rank);
+    const isPraca = (rank: string) => ['CB', 'S1', 'S2'].includes(rank);
+
     const filteredUsers = users.filter(u => {
         const statusMatch = showInactive ? (u.active === false) : (u.active !== false);
         const sectorMatch = (filterSector === 'TODOS' ? true : u.sector === filterSector);
+
+        let categoryMatch = true;
+        if (filterCategory === 'OFICIAIS') categoryMatch = u.rank ? isOficial(u.rank) : false;
+        if (filterCategory === 'GRADUADOS') categoryMatch = u.rank ? isGraduado(u.rank) : false;
+        if (filterCategory === 'PRAÇAS') categoryMatch = u.rank ? isPraca(u.rank) : false;
+
         const searchMatch = (u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             u.warName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             u.saram.includes(searchTerm));
 
-        return statusMatch && sectorMatch && searchMatch;
+        return statusMatch && sectorMatch && categoryMatch && searchMatch;
     }).sort((a, b) => a.name.localeCompare(b.name));
+
+    // Calculate stats
+    const activeUsers = users.filter(u => u.active !== false);
+    const totalMilitaries = activeUsers.length;
+    const totalOficiais = activeUsers.filter(u => u.rank && isOficial(u.rank)).length;
+    const totalGraduados = activeUsers.filter(u => u.rank && isGraduado(u.rank)).length;
+    const totalPracas = activeUsers.filter(u => u.rank && isPraca(u.rank)).length;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -56,13 +87,20 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
 
     const handleEdit = (user: User) => {
         setFormData({
-            name: user.name,
+            ...user,
             warName: user.warName || '',
-            rank: user.rank,
-            saram: user.saram,
             cpf: user.cpf || '',
-            sector: user.sector,
-            role: user.role
+            specialty: user.specialty || '',
+            class_year: user.class_year || '',
+            service: user.service || '',
+            address: user.address || '',
+            enlistment_date: user.enlistment_date || '',
+            presentation_date: user.presentation_date || '',
+            last_promotion_date: user.last_promotion_date || '',
+            military_identity: user.military_identity || '',
+            rc: user.rc || '',
+            workplace: user.workplace || '',
+            emergency_contact: user.emergency_contact || ''
         });
         setEditingId(user.id);
         setIsAdding(true);
@@ -93,29 +131,50 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                 </div>
 
                 {!isAdding && (
-                    <div className="flex flex-col md:flex-row gap-4">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                            <input
-                                type="text"
-                                placeholder="Buscar por nome, nome de guerra ou SARAM..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className={`w-full border rounded-2xl py-4 pl-12 pr-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
-                            />
+                    <>
+                        <div className={`grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8`}>
+                            <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'} cursor-pointer transition-all hover:ring-2 ring-blue-500 ${filterCategory === 'TODOS' ? 'ring-2' : ''}`} onClick={() => setFilterCategory('TODOS')}>
+                                <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Total do Efetivo</p>
+                                <p className={`text-2xl lg:text-3xl font-black mt-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{totalMilitaries}</p>
+                            </div>
+                            <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-indigo-900/20 border-indigo-800' : 'bg-indigo-50 border-indigo-100'} cursor-pointer transition-all hover:ring-2 ring-indigo-500 ${filterCategory === 'OFICIAIS' ? 'ring-2' : ''}`} onClick={() => setFilterCategory('OFICIAIS')}>
+                                <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>Oficiais</p>
+                                <p className={`text-2xl lg:text-3xl font-black mt-1 ${isDarkMode ? 'text-indigo-100' : 'text-indigo-900'}`}>{totalOficiais}</p>
+                            </div>
+                            <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-blue-900/20 border-blue-800' : 'bg-blue-50 border-blue-100'} cursor-pointer transition-all hover:ring-2 ring-blue-500 ${filterCategory === 'GRADUADOS' ? 'ring-2' : ''}`} onClick={() => setFilterCategory('GRADUADOS')}>
+                                <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>Graduados</p>
+                                <p className={`text-2xl lg:text-3xl font-black mt-1 ${isDarkMode ? 'text-blue-100' : 'text-blue-900'}`}>{totalGraduados}</p>
+                            </div>
+                            <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-emerald-900/20 border-emerald-800' : 'bg-emerald-50 border-emerald-100'} cursor-pointer transition-all hover:ring-2 ring-emerald-500 ${filterCategory === 'PRAÇAS' ? 'ring-2' : ''}`} onClick={() => setFilterCategory('PRAÇAS')}>
+                                <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>Praças</p>
+                                <p className={`text-2xl lg:text-3xl font-black mt-1 ${isDarkMode ? 'text-emerald-100' : 'text-emerald-900'}`}>{totalPracas}</p>
+                            </div>
                         </div>
-                        <div className="md:w-64">
-                            <select
-                                value={filterSector}
-                                onChange={(e) => setFilterSector(e.target.value)}
-                                className={`w-full h-full border rounded-2xl px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'} ${filterSector === 'SEM SETOR' ? (isDarkMode ? 'text-red-400 border-red-900/50 bg-red-400/10' : 'text-red-500 border-red-200 bg-red-50') : ''}`}
-                            >
-                                <option value="TODOS">Todos os Setores</option>
-                                <option value="SEM SETOR">⚠ SEM SETOR (Não Alocados)</option>
-                                {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
-                            </select>
+
+                        <div className="flex flex-col md:flex-row gap-4">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por nome, nome de guerra ou SARAM..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className={`w-full border rounded-2xl py-4 pl-12 pr-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                />
+                            </div>
+                            <div className="md:w-64">
+                                <select
+                                    value={filterSector}
+                                    onChange={(e) => setFilterSector(e.target.value)}
+                                    className={`w-full h-full border rounded-2xl px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'} ${filterSector === 'SEM SETOR' ? (isDarkMode ? 'text-red-400 border-red-900/50 bg-red-400/10' : 'text-red-500 border-red-200 bg-red-50') : ''}`}
+                                >
+                                    <option value="TODOS">Todos os Setores</option>
+                                    <option value="SEM SETOR">⚠ SEM SETOR (Não Alocados)</option>
+                                    {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                            </div>
                         </div>
-                    </div>
+                    </>
                 )}
             </div>
 
@@ -222,6 +281,138 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             >
                                 {SETORES.map(s => <option key={s} value={s} className={isDarkMode ? 'bg-slate-900' : ''}>{s}</option>)}
                             </select>
+                        </div>
+
+                        <div className="space-y-1.5 lg:space-y-2">
+                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                Especialidade
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.specialty || ''}
+                                onChange={e => setFormData({ ...formData, specialty: e.target.value })}
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            />
+                        </div>
+
+                        <div className="space-y-1.5 lg:space-y-2">
+                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                Turma
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.class_year || ''}
+                                onChange={e => setFormData({ ...formData, class_year: e.target.value })}
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            />
+                        </div>
+
+                        <div className="space-y-1.5 lg:space-y-2">
+                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                Serviço
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.service || ''}
+                                onChange={e => setFormData({ ...formData, service: e.target.value })}
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            />
+                        </div>
+
+                        <div className="space-y-1.5 lg:space-y-2">
+                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                Endereço
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.address || ''}
+                                onChange={e => setFormData({ ...formData, address: e.target.value })}
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            />
+                        </div>
+
+                        <div className="space-y-1.5 lg:space-y-2">
+                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                Data de Praça
+                            </label>
+                            <input
+                                type="date"
+                                value={formData.enlistment_date || ''}
+                                onChange={e => setFormData({ ...formData, enlistment_date: e.target.value })}
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            />
+                        </div>
+
+                        <div className="space-y-1.5 lg:space-y-2">
+                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                Apresentação
+                            </label>
+                            <input
+                                type="date"
+                                value={formData.presentation_date || ''}
+                                onChange={e => setFormData({ ...formData, presentation_date: e.target.value })}
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            />
+                        </div>
+
+                        <div className="space-y-1.5 lg:space-y-2">
+                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                Última Promoção
+                            </label>
+                            <input
+                                type="date"
+                                value={formData.last_promotion_date || ''}
+                                onChange={e => setFormData({ ...formData, last_promotion_date: e.target.value })}
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            />
+                        </div>
+
+                        <div className="space-y-1.5 lg:space-y-2">
+                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                Identidade Militar
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.military_identity || ''}
+                                onChange={e => setFormData({ ...formData, military_identity: e.target.value })}
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            />
+                        </div>
+
+                        <div className="space-y-1.5 lg:space-y-2">
+                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                RC
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.rc || ''}
+                                onChange={e => setFormData({ ...formData, rc: e.target.value })}
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            />
+                        </div>
+
+                        <div className="space-y-1.5 lg:space-y-2">
+                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                Local de Trabalho
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.workplace || ''}
+                                onChange={e => setFormData({ ...formData, workplace: e.target.value })}
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            />
+                        </div>
+
+                        <div className="space-y-1.5 lg:space-y-2">
+                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                Telefone de Emergência
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.emergency_contact || ''}
+                                onChange={e => setFormData({ ...formData, emergency_contact: e.target.value })}
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            />
                         </div>
 
                         <div className="sm:col-span-2 lg:col-span-3 flex flex-col sm:flex-row justify-end gap-3 pt-4">

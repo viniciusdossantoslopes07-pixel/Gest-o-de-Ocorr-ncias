@@ -500,7 +500,18 @@ const App: FC = () => {
       function_id: newUser.functionId,
       custom_permissions: newUser.customPermissions,
       biometric_credentials_id: newUser.biometric_credentials_id,
-      active: true
+      active: true,
+      specialty: newUser.specialty,
+      class_year: newUser.class_year || (newUser as any).classYear,
+      service: newUser.service,
+      address: newUser.address,
+      enlistment_date: newUser.enlistment_date || (newUser as any).enlistmentDate,
+      presentation_date: newUser.presentation_date || (newUser as any).presentationDate,
+      last_promotion_date: newUser.last_promotion_date || (newUser as any).lastPromotionDate,
+      military_identity: newUser.military_identity || (newUser as any).militaryIdentity,
+      rc: newUser.rc,
+      workplace: newUser.workplace,
+      emergency_contact: newUser.emergency_contact || (newUser as any).emergencyContact
     };
 
     const { data, error } = await supabase
@@ -530,7 +541,18 @@ const App: FC = () => {
         functionId: data.function_id,
         customPermissions: data.custom_permissions,
         biometric_credentials_id: data.biometric_credentials_id,
-        active: data.active
+        active: data.active,
+        specialty: data.specialty,
+        class_year: data.class_year,
+        service: data.service,
+        address: data.address,
+        enlistment_date: data.enlistment_date,
+        presentation_date: data.presentation_date,
+        last_promotion_date: data.last_promotion_date,
+        military_identity: data.military_identity,
+        rc: data.rc,
+        workplace: data.workplace,
+        emergency_contact: data.emergency_contact
       };
       setUsers([...users, createdUser]);
       return true;
@@ -594,7 +616,18 @@ const App: FC = () => {
         function_id: updatedUser.functionId,
         custom_permissions: updatedUser.customPermissions,
         biometric_credentials_id: updatedUser.biometric_credentials_id,
-        active: updatedUser.active
+        active: updatedUser.active,
+        specialty: updatedUser.specialty,
+        class_year: updatedUser.class_year || (updatedUser as any).classYear,
+        service: updatedUser.service,
+        address: updatedUser.address,
+        enlistment_date: updatedUser.enlistment_date || (updatedUser as any).enlistmentDate,
+        presentation_date: updatedUser.presentation_date || (updatedUser as any).presentationDate,
+        last_promotion_date: updatedUser.last_promotion_date || (updatedUser as any).lastPromotionDate,
+        military_identity: updatedUser.military_identity || (updatedUser as any).militaryIdentity,
+        rc: updatedUser.rc,
+        workplace: updatedUser.workplace,
+        emergency_contact: updatedUser.emergency_contact || (updatedUser as any).emergencyContact
       })
       .eq('id', updatedUser.id);
 

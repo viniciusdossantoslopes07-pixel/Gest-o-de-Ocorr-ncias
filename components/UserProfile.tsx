@@ -140,7 +140,7 @@ const UserProfile: FC<UserProfileProps> = ({ user, occurrences, missionRequests,
                 </div>
 
                 {/* My Material Loans */}
-                <MyMaterialLoans user={user} />
+                <MyMaterialLoans user={user} isDarkMode={false} />
             </div>
 
             {/* My Command Orders */}

@@ -53,6 +53,17 @@ export interface User {
   photo_url?: string;
   biometric_credentials_id?: string;
   active?: boolean;
+  specialty?: string;
+  class_year?: string;
+  service?: string;
+  address?: string;
+  enlistment_date?: string;
+  presentation_date?: string;
+  last_promotion_date?: string;
+  military_identity?: string;
+  rc?: string;
+  workplace?: string;
+  emergency_contact?: string;
 }
 
 export interface UserFunction {
