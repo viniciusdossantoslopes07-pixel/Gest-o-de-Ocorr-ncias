@@ -44,7 +44,7 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose 
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    padding: 2.5cm 2cm;
+    padding: 2.0cm 1.5cm;
     background: #fff;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
