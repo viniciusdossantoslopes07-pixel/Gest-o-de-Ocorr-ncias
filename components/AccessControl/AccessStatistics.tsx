@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '../../services/supabase';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    PieChart, Pie, Cell, Legend, LineChart, Line, Area, AreaChart
+    PieChart, Pie, Cell, Legend, LineChart, Line, Area, AreaChart, LabelList
 } from 'recharts';
 import {
     Filter, Calendar, Clock, DoorOpen, ArrowDownToLine, ArrowUpFromLine,
@@ -695,95 +695,80 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
                         </div>
                     </div>
 
-                    {/* Top Destinations Chart */}
-                    <div className={`p-4 sm:p-6 rounded-2xl shadow-sm border ${card}`}>
-                        <div className="flex items-center gap-2 mb-5">
-                            <MapPin className="w-5 h-5 text-emerald-600" />
-                            <h3 className={`font-bold text-sm sm:text-base ${textPrimary}`}>Destinos Mais Visitados</h3>
-                            <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full ${dk ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
-                                {topDestinations.length} destinos
-                            </span>
-                        </div>
-                        {topDestinations.length === 0 ? (
-                            <div className={`flex flex-col items-center justify-center h-48 rounded-xl ${dk ? 'bg-slate-700/30' : 'bg-slate-50'}`}>
-                                <MapPin className="w-8 h-8 mb-2 opacity-30 text-slate-400" />
-                                <p className={`text-xs font-bold uppercase tracking-wider opacity-50 ${textPrimary}`}>Sem dados de destino disponíveis</p>
-                                <p className={`text-[10px] mt-1 opacity-40 ${textMuted}`}>Os registros do período não possuem destino informado</p>
+                    {/* Combined Bottom Section Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6">
+                        {/* Top Destinations Chart */}
+                        <div className={`p-4 sm:p-6 rounded-2xl shadow-sm border ${card}`}>
+                            <div className="flex items-center gap-2 mb-4">
+                                <MapPin className="w-5 h-5 text-emerald-600" />
+                                <h3 className={`font-bold text-sm sm:text-base ${textPrimary}`}>Destinos Mais Visitados</h3>
+                                <span className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full ${dk ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                                    {topDestinations.length} destinos
+                                </span>
                             </div>
-                        ) : (() => {
-                            const maxVal = topDestinations[0]?.total || 1;
-                            const barColors = [
-                                ['#3b82f6', '#1d4ed8'],
-                                ['#6366f1', '#4338ca'],
-                                ['#8b5cf6', '#6d28d9'],
-                                ['#06b6d4', '#0e7490'],
-                                ['#10b981', '#047857'],
-                                ['#f59e0b', '#b45309'],
-                                ['#ef4444', '#b91c1c'],
-                            ];
-                            return (
-                                <div className="flex items-end gap-2 sm:gap-3 h-52 px-1">
-                                    {topDestinations.map((d, i) => {
-                                        const pct = Math.max(8, (d.total / maxVal) * 100);
-                                        const [from, to] = barColors[i % barColors.length];
-                                        const shortName = d.name.length > 10 ? d.name.slice(0, 9) + '…' : d.name;
-                                        return (
-                                            <div key={d.name} className="flex-1 flex flex-col items-center justify-end gap-1 h-full group" title={d.name}>
-                                                {/* Value label */}
-                                                <span className={`text-[10px] sm:text-xs font-black ${dk ? 'text-white' : 'text-slate-800'}`}>{d.total}</span>
-                                                {/* Bar */}
-                                                <div
-                                                    className="w-full rounded-t-lg transition-all duration-500 group-hover:opacity-80 group-hover:scale-105 origin-bottom"
-                                                    style={{
-                                                        height: `${pct}%`,
-                                                        background: `linear-gradient(to top, ${to}, ${from})`,
-                                                        minHeight: 12,
-                                                        boxShadow: `0 4px 12px ${from}44`
-                                                    }}
-                                                />
-                                                {/* Name tag */}
-                                                <span
-                                                    className={`text-[8px] sm:text-[9px] font-bold text-center leading-tight mt-1 break-words w-full truncate ${dk ? 'text-slate-400' : 'text-slate-500'}`}
-                                                    title={d.name}
-                                                >
-                                                    {shortName}
-                                                </span>
-                                            </div>
-                                        );
-                                    })}
+                            {topDestinations.length === 0 ? (
+                                <div className={`flex flex-col items-center justify-center h-52 rounded-xl ${dk ? 'bg-slate-700/30' : 'bg-slate-50'}`}>
+                                    <MapPin className="w-8 h-8 mb-2 opacity-30 text-slate-400" />
+                                    <p className={`text-xs font-bold uppercase tracking-wider opacity-50 ${textPrimary}`}>Sem dados de destino disponíveis</p>
+                                    <p className={`text-[10px] mt-1 opacity-40 ${textMuted}`}>Os registros do período não possuem destino informado</p>
                                 </div>
-                            );
-                        })()}
-                    </div>
-
-                    {/* Top Visitors List */}
-                    <div className={`p-4 sm:p-6 rounded-2xl shadow-sm border ${card}`}>
-                        <div className="flex items-center gap-2 mb-4">
-                            <Users className="w-5 h-5 text-blue-600" />
-                            <h3 className={`font-bold text-sm sm:text-base ${textPrimary}`}>Visitantes/Militares Recorrentes</h3>
+                            ) : (
+                                <div className="h-64 w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={topDestinations} margin={{ top: 20, right: 10, left: -20, bottom: 40 }}>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
+                                            <XAxis
+                                                dataKey="name"
+                                                tick={{ fontSize: 9, fontWeight: 'bold', fill: axisFill }}
+                                                angle={-30}
+                                                textAnchor="end"
+                                                interval={0}
+                                                axisLine={false}
+                                                tickLine={false}
+                                            />
+                                            <YAxis tick={{ fontSize: 10, fill: axisFill }} axisLine={false} tickLine={false} />
+                                            <Tooltip
+                                                cursor={{ fill: dk ? '#1e293b' : '#f8fafc' }}
+                                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px -2px rgb(0 0 0 / 0.15)', fontSize: '12px', backgroundColor: dk ? '#1e293b' : '#fff', color: dk ? '#e2e8f0' : '#1e293b' }}
+                                            />
+                                            <Bar dataKey="total" name="Visitantes" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={24}>
+                                                <LabelList dataKey="total" position="top" style={{ fill: axisFill, fontSize: 10, fontWeight: 'bold' }} />
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            )}
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                            {topVisitors.map((v, i) => {
-                                const maxVal = topVisitors[0].count;
-                                return (
-                                    <div key={v.name} className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${dk ? 'hover:bg-slate-700/50' : 'hover:bg-slate-50'}`}>
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${i === 0 ? (dk ? 'bg-yellow-900/30 text-yellow-400' : 'bg-yellow-100 text-yellow-700') :
-                                            i === 1 ? (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700') :
-                                                i === 2 ? (dk ? 'bg-orange-900/30 text-orange-400' : 'bg-orange-100 text-orange-700') :
-                                                    (dk ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500')
-                                            }`}>
-                                            {i + 1}º
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className={`text-xs font-bold truncate capitalize ${dk ? 'text-white' : 'text-slate-900'}`}>{v.name?.toLowerCase()}</p>
-                                            <div className={`w-full rounded-full h-1.5 mt-1 ${dk ? 'bg-slate-700' : 'bg-slate-100'}`}>
-                                                <div className="bg-blue-500 h-full rounded-full transition-all" style={{ width: `${(v.count / maxVal) * 100}%` }} />
+
+                        {/* Top Visitors List */}
+                        <div className={`p-4 sm:p-6 rounded-2xl shadow-sm border ${card}`}>
+                            <div className="flex items-center gap-2 mb-4">
+                                <Users className="w-5 h-5 text-blue-600" />
+                                <h3 className={`font-bold text-sm sm:text-base ${textPrimary}`}>Visitantes/Militares Recorrentes</h3>
+                            </div>
+                            <div className="space-y-3">
+                                {topVisitors.slice(0, 5).map((v, i) => {
+                                    const maxVal = topVisitors[0].count;
+                                    return (
+                                        <div key={v.name} className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${dk ? 'hover:bg-slate-700/50' : 'hover:bg-slate-50'}`}>
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${i === 0 ? (dk ? 'bg-yellow-900/30 text-yellow-400' : 'bg-yellow-100 text-yellow-700') :
+                                                i === 1 ? (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700') :
+                                                    i === 2 ? (dk ? 'bg-orange-900/30 text-orange-400' : 'bg-orange-100 text-orange-700') :
+                                                        (dk ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500')
+                                                }`}>
+                                                {i + 1}º
                                             </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className={`text-xs font-bold truncate capitalize ${dk ? 'text-white' : 'text-slate-900'}`}>{v.name?.toLowerCase()}</p>
+                                                <div className={`w-full rounded-full h-1 mt-1 ${dk ? 'bg-slate-700' : 'bg-slate-100'}`}>
+                                                    <div className="bg-blue-500 h-full rounded-full transition-all" style={{ width: `${(v.count / maxVal) * 100}%` }} />
+                                                </div>
+                                            </div>
+                                            <span className={`text-xs font-bold ${dk ? 'text-slate-300' : 'text-slate-600'}`}>{v.count}</span>
                                         </div>
-                                        <span className={`text-sm font-bold ${dk ? 'text-slate-300' : 'text-slate-600'}`}>{v.count}</span>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 </>
