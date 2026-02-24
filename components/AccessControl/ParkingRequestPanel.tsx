@@ -294,7 +294,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
             {/* ========== TAB: Estatísticas ========== */}
             {activeTab === 'estatisticas' && (
-                <ParkingStatistics />
+                <ParkingStatistics dk={dk} />
             )}
 
             {/* ========== TAB: Gerenciar Solicitações ========== */}

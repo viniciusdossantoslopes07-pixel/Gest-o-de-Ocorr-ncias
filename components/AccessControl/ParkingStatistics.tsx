@@ -23,7 +23,15 @@ interface ParkingRequest {
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 const TOTAL_VAGAS = 32;
 
-export default function ParkingStatistics() {
+export default function ParkingStatistics({ dk = false }: { dk?: boolean }) {
+    const card = dk ? 'bg-slate-800/80 border-slate-700/50' : 'bg-white border-slate-200';
+    const textPrimary = dk ? 'text-white' : 'text-slate-800';
+    const textSecondary = dk ? 'text-slate-300' : 'text-slate-600';
+    const textMuted = dk ? 'text-slate-400' : 'text-slate-500';
+    const axisFill = dk ? '#94a3b8' : '#64748b';
+    const gridStroke = dk ? '#334155' : '#e2e8f0';
+    const tooltipStyle = { borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px -2px rgb(0 0 0 / 0.15)', fontSize: '11px', backgroundColor: dk ? '#1e293b' : '#fff', color: dk ? '#e2e8f0' : '#1e293b' };
+
     const [requests, setRequests] = useState<ParkingRequest[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -208,12 +216,12 @@ export default function ParkingStatistics() {
         <div className="space-y-6 animate-fade-in">
 
             {/* Filter Bar */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className={`rounded-xl border shadow-sm overflow-hidden transition-colors ${card}`}>
                 <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 transition-colors"
+                    className={`w-full flex items-center justify-between p-3 transition-colors ${dk ? 'bg-slate-800/50 hover:bg-slate-800' : 'bg-slate-50 hover:bg-slate-100'}`}
                 >
-                    <span className="text-xs font-black uppercase text-slate-600 flex items-center gap-2">
+                    <span className={`text-xs font-black uppercase flex items-center gap-2 ${textSecondary}`}>
                         <Filter className="w-3.5 h-3.5" /> Filtros de Período
                     </span>
                     {showFilters ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
@@ -221,27 +229,27 @@ export default function ParkingStatistics() {
                 {showFilters && (
                     <div className="p-3 space-y-3 animate-fade-in">
                         <div className="flex flex-wrap gap-2">
-                            <button onClick={() => setQuickFilter(0, 0)} className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-[10px] font-bold transition-colors">Hoje</button>
-                            <button onClick={() => setQuickFilter(7, 0)} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[10px] font-bold text-slate-600 transition-colors">Últimos 7 dias</button>
-                            <button onClick={() => setQuickFilter(30, 0)} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[10px] font-bold text-slate-600 transition-colors">Últimos 30 dias</button>
-                            <button onClick={() => setQuickFilter(90, 0)} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[10px] font-bold text-slate-600 transition-colors">Últimos 90 dias</button>
-                            <button onClick={() => setQuickFilter(0, 30)} className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-[10px] font-bold transition-colors">Próximos 30 dias</button>
-                            <button onClick={() => setQuickFilter(30, 30)} className="px-3 py-1.5 bg-violet-50 hover:bg-violet-100 text-violet-600 rounded-lg text-[10px] font-bold transition-colors">Período Completo (±30d)</button>
+                            <button onClick={() => setQuickFilter(0, 0)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${dk ? 'bg-blue-900/30 text-blue-400 hover:bg-blue-900/50' : 'bg-blue-100 hover:bg-blue-200 text-blue-700'}`}>Hoje</button>
+                            <button onClick={() => setQuickFilter(7, 0)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${dk ? 'bg-slate-700/50 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}>Últimos 7 dias</button>
+                            <button onClick={() => setQuickFilter(30, 0)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${dk ? 'bg-slate-700/50 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}>Últimos 30 dias</button>
+                            <button onClick={() => setQuickFilter(90, 0)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${dk ? 'bg-slate-700/50 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}>Últimos 90 dias</button>
+                            <button onClick={() => setQuickFilter(0, 30)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${dk ? 'bg-blue-900/20 text-blue-400 hover:bg-blue-900/40' : 'bg-blue-50 hover:bg-blue-100 text-blue-600'}`}>Próximos 30 dias</button>
+                            <button onClick={() => setQuickFilter(30, 30)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${dk ? 'bg-violet-900/20 text-violet-400 hover:bg-violet-900/40' : 'bg-violet-50 hover:bg-violet-100 text-violet-600'}`}>Período Completo (±30d)</button>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Data Início</label>
+                                <label className={`text-[10px] font-bold uppercase block mb-1 ${textMuted}`}>Data Início</label>
                                 <input type="date" value={filterStart} onChange={e => setFilterStart(e.target.value)}
-                                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none" />
+                                    className={`w-full p-2 border rounded-lg text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-colors ${dk ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'}`} />
                             </div>
                             <div>
-                                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Data Fim</label>
+                                <label className={`text-[10px] font-bold uppercase block mb-1 ${textMuted}`}>Data Fim</label>
                                 <input type="date" value={filterEnd} onChange={e => setFilterEnd(e.target.value)}
-                                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none" />
+                                    className={`w-full p-2 border rounded-lg text-xs font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-colors ${dk ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-700'}`} />
                             </div>
                         </div>
-                        <p className="text-[10px] text-slate-400 text-center">
-                            Exibindo <strong>{filteredRequests.length}</strong> solicitações no período selecionado
+                        <p className={`text-[10px] text-center ${textMuted}`}>
+                            Exibindo <strong className={textPrimary}>{filteredRequests.length}</strong> solicitações no período selecionado
                         </p>
                     </div>
                 )}
@@ -249,34 +257,34 @@ export default function ParkingStatistics() {
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div className={`p-4 rounded-xl border shadow-sm transition-colors ${card}`}>
                     <div className="flex items-center gap-2 mb-2 text-blue-600"><Car className="w-4 h-4" /> <span className="text-[10px] font-bold uppercase">Ocupação Hoje</span></div>
-                    <p className="text-2xl font-black text-slate-800">{vagasOcupadasHoje}<span className="text-sm text-slate-400 font-medium">/{TOTAL_VAGAS}</span></p>
-                    <div className="mt-1.5 w-full bg-slate-100 rounded-full h-1.5">
+                    <p className={`text-2xl font-black ${textPrimary}`}>{vagasOcupadasHoje}<span className={`text-sm font-medium ${textMuted}`}>/{TOTAL_VAGAS}</span></p>
+                    <div className={`mt-1.5 w-full rounded-full h-1.5 ${dk ? 'bg-slate-700' : 'bg-slate-100'}`}>
                         <div className={`h-1.5 rounded-full transition-all ${vagasOcupadasHoje > TOTAL_VAGAS * 0.8 ? 'bg-red-500' : vagasOcupadasHoje > TOTAL_VAGAS * 0.5 ? 'bg-amber-500' : 'bg-emerald-500'}`}
                             style={{ width: `${Math.min(100, (vagasOcupadasHoje / TOTAL_VAGAS) * 100)}%` }} />
                     </div>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div className={`p-4 rounded-xl border shadow-sm transition-colors ${card}`}>
                     <div className="flex items-center gap-2 mb-2 text-amber-600"><Clock className="w-4 h-4" /> <span className="text-[10px] font-bold uppercase">Pendentes</span></div>
-                    <p className="text-2xl font-black text-slate-800">{requests.filter(r => r.status === 'Pendente').length}</p>
+                    <p className={`text-2xl font-black ${textPrimary}`}>{requests.filter(r => r.status === 'Pendente').length}</p>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div className={`p-4 rounded-xl border shadow-sm transition-colors ${card}`}>
                     <div className="flex items-center gap-2 mb-2 text-red-500"><AlertTriangle className="w-4 h-4" /> <span className="text-[10px] font-bold uppercase tracking-tight">Pico no Período</span></div>
-                    <p className="text-2xl font-black text-slate-800">{peakOccupation.value}<span className="text-sm text-slate-400 font-medium">/{TOTAL_VAGAS}</span></p>
-                    <p className="text-[9px] text-slate-400 mt-0.5 truncate">{peakOccupation.label || '—'}</p>
+                    <p className={`text-2xl font-black ${textPrimary}`}>{peakOccupation.value}<span className={`text-sm font-medium ${textMuted}`}>/{TOTAL_VAGAS}</span></p>
+                    <p className={`text-[9px] mt-0.5 truncate ${textMuted}`}>{peakOccupation.label || '—'}</p>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div className={`p-4 rounded-xl border shadow-sm transition-colors ${card}`}>
                     <div className="flex items-center gap-2 mb-2 text-indigo-600"><TrendingUp className="w-4 h-4" /> <span className="text-[10px] font-bold uppercase tracking-tight">Méd. Ocupação</span></div>
-                    <p className="text-2xl font-black text-slate-800">{avgOccupation}<span className="text-sm text-slate-400 font-medium">/{TOTAL_VAGAS}</span></p>
-                    <p className="text-[9px] text-slate-400 mt-0.5">{Math.round((avgOccupation / TOTAL_VAGAS) * 100)}% da capacidade</p>
+                    <p className={`text-2xl font-black ${textPrimary}`}>{avgOccupation}<span className={`text-sm font-medium ${textMuted}`}>/{TOTAL_VAGAS}</span></p>
+                    <p className={`text-[9px] mt-0.5 ${textMuted}`}>{Math.round((avgOccupation / TOTAL_VAGAS) * 100)}% da capacidade</p>
                 </div>
             </div>
 
             {/* Forecast: Next 14 days */}
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                <h3 className="font-bold text-slate-700 mb-1 flex items-center gap-2"><Calendar className="w-5 h-5 text-blue-500" /> Previsão de Ocupação (Próximos 14 dias)</h3>
-                <p className="text-[10px] text-slate-400 mb-4">Baseada nas solicitações já aprovadas. Vagas vermelhas = alta ocupação.</p>
+            <div className={`p-5 rounded-2xl border shadow-sm transition-colors ${card}`}>
+                <h3 className={`font-bold mb-1 flex items-center gap-2 ${textPrimary}`}><Calendar className="w-5 h-5 text-blue-500" /> Previsão de Ocupação (Próximos 14 dias)</h3>
+                <p className={`text-[10px] mb-4 ${textMuted}`}>Baseada nas solicitações já aprovadas. Vagas vermelhas = alta ocupação.</p>
                 <div className="h-48 sm:h-64">
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={forecast}>
@@ -290,11 +298,11 @@ export default function ParkingStatistics() {
                                     <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="label" tick={{ fontSize: 9 }} interval={1} />
-                            <YAxis domain={[0, TOTAL_VAGAS]} tick={{ fontSize: 10 }} />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
+                            <XAxis dataKey="label" tick={{ fontSize: 9, fill: axisFill }} interval={1} axisLine={false} tickLine={false} />
+                            <YAxis domain={[0, TOTAL_VAGAS]} tick={{ fontSize: 10, fill: axisFill }} axisLine={false} tickLine={false} />
                             <Tooltip
-                                contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '11px' }}
+                                contentStyle={tooltipStyle}
                                 formatter={(value: number, name: string) => [value, name === 'ocupadas' ? 'Ocupadas' : 'Livres']}
                             />
                             <Area type="monotone" dataKey="ocupadas" stroke="#ef4444" strokeWidth={2} fill="url(#gradOcupadas)" name="Ocupadas" />
@@ -305,17 +313,18 @@ export default function ParkingStatistics() {
             </div>
 
             {/* Occupation Timeline (filtered period) */}
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                <h3 className="font-bold text-slate-700 mb-1 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-indigo-500" /> Ocupação no Período Selecionado</h3>
-                <p className="text-[10px] text-slate-400 mb-4">Evolução da ocupação dia a dia no período filtrado.</p>
+            <div className={`p-5 rounded-2xl border shadow-sm transition-colors ${card}`}>
+                <h3 className={`font-bold mb-1 flex items-center gap-2 ${textPrimary}`}><TrendingUp className="w-5 h-5 text-indigo-500" /> Ocupação no Período Selecionado</h3>
+                <p className={`text-[10px] mb-4 ${textMuted}`}>Evolução da ocupação dia a dia no período filtrado.</p>
                 <div className="h-48 sm:h-64">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={occupationTimeline}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="label" tick={{ fontSize: 9 }} interval={Math.max(0, Math.floor(occupationTimeline.length / 15))} />
-                            <YAxis domain={[0, TOTAL_VAGAS]} tick={{ fontSize: 10 }} />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
+                            <XAxis dataKey="label" tick={{ fontSize: 9, fill: axisFill }} interval={Math.max(0, Math.floor(occupationTimeline.length / 15))} axisLine={false} tickLine={false} />
+                            <YAxis domain={[0, TOTAL_VAGAS]} tick={{ fontSize: 10, fill: axisFill }} axisLine={false} tickLine={false} />
                             <Tooltip
-                                contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '11px' }}
+                                contentStyle={tooltipStyle}
+                                cursor={{ fill: dk ? '#1e293b' : '#f8fafc' }}
                                 formatter={(value: number, name: string) => [value, name === 'ocupadas' ? 'Ocupadas' : 'Livres']}
                             />
                             <Bar dataKey="ocupadas" stackId="a" fill="#ef4444" radius={[0, 0, 0, 0]} name="Ocupadas" />
@@ -327,32 +336,32 @@ export default function ParkingStatistics() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Ocupação Atual Donut */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2"><Car className="w-5 h-5 text-blue-500" /> Ocupação Atual</h3>
+                <div className={`p-5 rounded-2xl border shadow-sm transition-colors ${card}`}>
+                    <h3 className={`font-bold mb-4 flex items-center gap-2 ${textPrimary}`}><Car className="w-5 h-5 text-blue-500" /> Ocupação Atual</h3>
                     <div className="h-48 sm:h-56">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
-                                <Pie data={occupationData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                                <Pie data={occupationData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" stroke="none">
                                     <Cell fill="#ef4444" />
                                     <Cell fill="#10b981" />
                                 </Pie>
-                                <Tooltip />
-                                <Legend verticalAlign="bottom" height={36} />
+                                <Tooltip contentStyle={tooltipStyle} />
+                                <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: '11px', fontWeight: '600', color: dk ? '#94a3b8' : undefined }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
                 {/* Status Distribution */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2"><Shield className="w-5 h-5 text-emerald-500" /> Status das Solicitações</h3>
+                <div className={`p-5 rounded-2xl border shadow-sm transition-colors ${card}`}>
+                    <h3 className={`font-bold mb-4 flex items-center gap-2 ${textPrimary}`}><Shield className="w-5 h-5 text-emerald-500" /> Status das Solicitações</h3>
                     <div className="h-48 sm:h-56">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={statusData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                                <YAxis />
-                                <Tooltip cursor={{ fill: 'transparent' }} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
+                                <XAxis dataKey="name" tick={{ fontSize: 12, fill: axisFill }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fill: axisFill }} axisLine={false} tickLine={false} />
+                                <Tooltip cursor={{ fill: dk ? '#1e293b' : '#f8fafc' }} contentStyle={tooltipStyle} />
                                 <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                                     {statusData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.name === 'Aprovado' ? '#10b981' : entry.name === 'Rejeitado' ? '#ef4444' : '#f59e0b'} />
@@ -364,15 +373,15 @@ export default function ParkingStatistics() {
                 </div>
 
                 {/* Duration Distribution */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2"><Clock className="w-5 h-5 text-amber-500" /> Duração das Autorizações</h3>
+                <div className={`p-5 rounded-2xl border shadow-sm transition-colors ${card}`}>
+                    <h3 className={`font-bold mb-4 flex items-center gap-2 ${textPrimary}`}><Clock className="w-5 h-5 text-amber-500" /> Duração das Autorizações</h3>
                     <div className="h-48 sm:h-56">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={durationData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                                <YAxis />
-                                <Tooltip cursor={{ fill: 'transparent' }} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
+                                <XAxis dataKey="name" tick={{ fontSize: 10, fill: axisFill }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fill: axisFill }} axisLine={false} tickLine={false} />
+                                <Tooltip cursor={{ fill: dk ? '#1e293b' : '#f8fafc' }} contentStyle={tooltipStyle} />
                                 <Bar dataKey="value" fill="#f59e0b" radius={[6, 6, 0, 0]} barSize={30} />
                             </BarChart>
                         </ResponsiveContainer>
@@ -380,15 +389,15 @@ export default function ParkingStatistics() {
                 </div>
 
                 {/* Top OMs */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2"><Building2 className="w-5 h-5 text-indigo-500" /> Solicitações por OM (Top 6)</h3>
+                <div className={`p-5 rounded-2xl border shadow-sm transition-colors ${card}`}>
+                    <h3 className={`font-bold mb-4 flex items-center gap-2 ${textPrimary}`}><Building2 className="w-5 h-5 text-indigo-500" /> Solicitações por OM (Top 6)</h3>
                     <div className="h-48 sm:h-56">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={omData} layout="vertical" margin={{ left: 20 }}>
-                                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                                <XAxis type="number" />
-                                <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 10 }} />
-                                <Tooltip cursor={{ fill: 'transparent' }} />
+                                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={gridStroke} />
+                                <XAxis type="number" tick={{ fill: axisFill }} axisLine={false} tickLine={false} />
+                                <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 10, fill: axisFill }} axisLine={false} tickLine={false} />
+                                <Tooltip cursor={{ fill: dk ? '#1e293b' : '#f8fafc' }} contentStyle={tooltipStyle} />
                                 <Bar dataKey="value" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={20} />
                             </BarChart>
                         </ResponsiveContainer>
@@ -398,30 +407,30 @@ export default function ParkingStatistics() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* User Type */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2"><UserCircle className="w-5 h-5 text-purple-500" /> Perfil do Solicitante</h3>
+                <div className={`p-5 rounded-2xl border shadow-sm transition-colors ${card}`}>
+                    <h3 className={`font-bold mb-4 flex items-center gap-2 ${textPrimary}`}><UserCircle className="w-5 h-5 text-purple-500" /> Perfil do Solicitante</h3>
                     <div className="h-48 sm:h-56">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
-                                <Pie data={typeData} innerRadius={50} outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                                <Pie data={typeData} innerRadius={50} outerRadius={80} dataKey="value" stroke="none" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                                     {typeData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                                 </Pie>
-                                <Tooltip />
+                                <Tooltip contentStyle={tooltipStyle} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
                 {/* Solicitações nos Últimos 30 Dias */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-blue-500" /> Novas Solicitações (30 dias)</h3>
+                <div className={`p-5 rounded-2xl border shadow-sm transition-colors ${card}`}>
+                    <h3 className={`font-bold mb-4 flex items-center gap-2 ${textPrimary}`}><TrendingUp className="w-5 h-5 text-blue-500" /> Novas Solicitações (30 dias)</h3>
                     <div className="h-48 sm:h-56">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={trendData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="date" tick={{ fontSize: 9 }} interval={4} />
-                                <YAxis />
-                                <Tooltip />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
+                                <XAxis dataKey="date" tick={{ fontSize: 9, fill: axisFill }} interval={4} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fill: axisFill }} axisLine={false} tickLine={false} />
+                                <Tooltip contentStyle={tooltipStyle} />
                                 <Line type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={2.5} dot={{ r: 2 }} activeDot={{ r: 5 }} />
                             </LineChart>
                         </ResponsiveContainer>
