@@ -73,8 +73,10 @@ export const RANKS = [
 ];
 
 export const SETORES = [
-  'BASP', 'SOP', 'SAP', 'EPA-SEÇÃO', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'
+  'BASP', 'SOP', 'SAP', 'EPA-SEÇÃO', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA', 'EQP DE SERVIÇO'
 ];
+
+export const DISPLAY_SECTORS = SETORES.filter(s => s !== 'EQP DE SERVIÇO');
 
 export const PRESENCE_STATUS = {
   'P': 'PRESENTE',

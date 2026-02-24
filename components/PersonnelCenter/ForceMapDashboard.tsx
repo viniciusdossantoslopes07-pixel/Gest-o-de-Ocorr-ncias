@@ -1,7 +1,7 @@
 
 import { useState, useMemo, FC } from 'react';
 import { DailyAttendance, User } from '../../types';
-import { PRESENCE_STATUS, SETORES, RANKS } from '../../constants';
+import { PRESENCE_STATUS, SETORES, DISPLAY_SECTORS, RANKS } from '../../constants';
 import {
     BarChart3, Users, CheckCircle, AlertTriangle, ExternalLink, ShieldAlert,
     Clock, Filter, TrendingUp, TrendingDown, Minus, UserX, Shield, Award,
@@ -122,7 +122,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         // [MODIFICAÇÃO]: Filtrar apenas militares habilitados E que estejam na relação de chamada (setores válidos)
         const activeAndInRoster = users.filter(u =>
             u.active !== false &&
-            SETORES.includes(u.sector)
+            DISPLAY_SECTORS.includes(u.sector)
         );
 
         const sectorFiltered = selectedSector === 'TODOS'
@@ -177,9 +177,9 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     // Sector breakdown
     const sectorBreakdown = useMemo(() => {
         const sectors = selectedSector === 'TODOS'
-            ? SETORES
+            ? DISPLAY_SECTORS
             : selectedSector === 'GSD-SP'
-                ? SETORES.filter(s => s !== 'BASP')
+                ? DISPLAY_SECTORS.filter(s => s !== 'BASP')
                 : [selectedSector];
 
         return sectors.map(sector => {
@@ -306,7 +306,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                 options={[
                                     { label: 'Todos Setores', value: 'TODOS' },
                                     { label: 'GSD-SP', value: 'GSD-SP' },
-                                    ...SETORES.map(s => ({ label: s, value: s }))
+                                    ...DISPLAY_SECTORS.map(s => ({ label: s, value: s }))
                                 ]}
                             />
                         </div>
@@ -629,7 +629,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                         </div>
                         <h3 className="text-sm font-black tracking-tight mb-4 uppercase">Controle de Assinaturas</h3>
                         <div className="space-y-3 relative z-10">
-                            {(selectedSector === 'GSD-SP' ? SETORES.filter(s => s !== 'BASP') : SETORES).map(sector => {
+                            {(selectedSector === 'GSD-SP' ? DISPLAY_SECTORS.filter(s => s !== 'BASP') : DISPLAY_SECTORS).map(sector => {
                                 const sectorCalls = attendanceHistory?.filter(a =>
                                     a.date === selectedDate && a.sector === sector && !!a.signedBy
                                 ) || [];

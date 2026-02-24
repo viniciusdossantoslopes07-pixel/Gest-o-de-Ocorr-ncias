@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useRef, FC, Fragment } from 'react';
 import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '../../types';
-import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, SETORES, RANKS } from '../../constants';
+import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, SETORES, DISPLAY_SECTORS, RANKS } from '../../constants';
 import { hasPermission, PERMISSIONS } from '../../constants/permissions';
 import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint, BarChart3, MoveHorizontal } from 'lucide-react';
 import ForceMapDashboard from './ForceMapDashboard';
@@ -182,7 +182,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     absenceJustifications,
     isDarkMode = false
 }) => {
-    const [selectedSector, setSelectedSector] = useState(SETORES[0]);
+    const [selectedSector, setSelectedSector] = useState(DISPLAY_SECTORS[0]);
     const [callType, setCallType] = useState<CallTypeCode>('INICIO');
     const [searchTerm, setSearchTerm] = useState('');
     const [signedDates, setSignedDates] = useState<Record<string, { signedBy: string, signedAt: string }>>({});
@@ -315,7 +315,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         const calls: CallTypeCode[] = ['INICIO', 'TERMINO'];
 
         for (const date of dates) {
-            for (const sector of SETORES) {
+            for (const sector of DISPLAY_SECTORS) {
                 const sectorUsers = users.filter(u => u.sector === sector && u.active !== false);
                 // Do not continue if sectorUsers is empty, we want to create a NIL record for the sector anyway
 
@@ -369,7 +369,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         const calls: CallTypeCode[] = ['INICIO', 'TERMINO'];
 
         for (const date of dates) {
-            for (const sector of SETORES) {
+            for (const sector of DISPLAY_SECTORS) {
                 const sectorUsers = users.filter(u => u.sector === sector && u.active !== false);
 
                 for (const type of calls) {
@@ -827,7 +827,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             onChange={(e) => setSelectedSector(e.target.value)}
                             className={`border-2 rounded-xl px-4 py-2.5 text-xs font-black focus:ring-4 focus:ring-blue-500/10 outline-none transition-all md:w-[220px] cursor-pointer ${isDarkMode ? 'bg-slate-800 border-slate-700/50 text-slate-200' : 'bg-white border-indigo-100/50 text-slate-700'}`}
                         >
-                            {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
+                            {DISPLAY_SECTORS.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                         <div className="relative flex-1 group">
                             <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isDarkMode ? 'text-slate-500 group-focus-within:text-blue-400' : 'text-slate-400'}`} />
@@ -935,10 +935,10 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                                                     <MoveHorizontal className="w-3.5 h-3.5" /> Mover para:
                                                                                 </div>
                                                                                 <div className="flex flex-col gap-1.5 max-h-64 overflow-y-auto custom-scrollbar pr-1">
-                                                                                    {SETORES.filter(s => s.trim() !== selectedSector.trim()).length === 0 ? (
+                                                                                    {DISPLAY_SECTORS.filter(s => s.trim() !== selectedSector.trim()).length === 0 ? (
                                                                                         <div className="text-[11px] p-4 text-slate-500 italic text-center">Nenhum outro setor disponível</div>
                                                                                     ) : (
-                                                                                        SETORES.filter(s => s.trim() !== selectedSector.trim()).map(s => (
+                                                                                        DISPLAY_SECTORS.filter(s => s.trim() !== selectedSector.trim()).map(s => (
                                                                                             <button
                                                                                                 key={s}
                                                                                                 type="button"
