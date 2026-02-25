@@ -458,6 +458,21 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
         await updateStatus(request.id, 'Rejeitado', obs, isLoss, request.id_material, request.quantidade);
     };
 
+    const handleDeleteRequest = async (id: string) => {
+        if (!confirm('Tem certeza que deseja cancelar e excluir esta solicitação?')) return;
+        setActionLoading(id);
+        try {
+            const { error } = await supabase.from('movimentacao_cautela').delete().eq('id', id);
+            if (error) throw error;
+            fetchRequests();
+        } catch (err: any) {
+            console.error('Error deleting request:', err);
+            alert('Erro ao excluir solicitação: ' + err.message);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
     const filteredRequests = requests.filter(req => {
         let matchesTab = false;
         if (activeTab === 'Solicitações') matchesTab = ['Pendente', 'Aprovado'].includes(req.status);
@@ -697,24 +712,22 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                         <Package className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     </div>
 
-                    {(activeTab === 'Em Uso' || (activeTab === 'Solicitações' && filteredRequests.some(r => r.status === 'Pendente'))) && (
+                    {(activeTab === 'Em Uso') && (
                         <div className="flex items-center gap-4 w-full md:w-auto">
                             <label className="flex items-center gap-2 cursor-pointer group bg-white px-4 py-2 rounded-xl border border-slate-200">
                                 <input
                                     type="checkbox"
                                     className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
-                                    checked={filteredRequests.filter(r => activeTab === 'Em Uso' || r.status === 'Pendente').length > 0 && selectedBatchIds.length === filteredRequests.filter(r => activeTab === 'Em Uso' || r.status === 'Pendente').length}
+                                    checked={filteredRequests.filter(r => activeTab === 'Em Uso').length > 0 && selectedBatchIds.length === filteredRequests.filter(r => activeTab === 'Em Uso').length}
                                     onChange={(e) => {
                                         if (e.target.checked) {
-                                            const selectable = activeTab === 'Em Uso'
-                                                ? filteredRequests.map(r => r.id)
-                                                : filteredRequests.filter(r => r.status === 'Pendente').map(r => r.id);
+                                            const selectable = filteredRequests.filter(r => activeTab === 'Em Uso').map(r => r.id);
                                             setSelectedBatchIds(selectable);
                                         }
                                         else setSelectedBatchIds([]);
                                     }}
                                 />
-                                <span className="text-sm font-bold text-slate-600 group-hover:text-blue-600">Selecionar Tudo ({activeTab === 'Em Uso' ? filteredRequests.length : filteredRequests.filter(r => r.status === 'Pendente').length})</span>
+                                <span className="text-sm font-bold text-slate-600 group-hover:text-blue-600">Selecionar Tudo ({filteredRequests.filter(r => activeTab === 'Em Uso').length})</span>
                             </label>
 
                             {selectedBatchIds.length > 0 && (
@@ -724,17 +737,12 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                             const firstId = selectedBatchIds[0];
                                             const firstReq = requests.find(r => r.id === firstId);
                                             if (firstReq) startSignatureFlow(selectedBatchIds, firstReq.id_usuario, 'update_return');
-                                        } else {
-                                            setFoundUser(user);
-                                            setSignatureRequestId(selectedBatchIds);
-                                            setSignatureAction('approve');
-                                            setShowSignatureModal(true);
                                         }
                                     }}
-                                    className={`px-4 py-2 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${activeTab === 'Em Uso' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+                                    className={`px-4 py-2 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700`}
                                 >
                                     <CheckCircle className="w-4 h-4" />
-                                    {activeTab === 'Em Uso' ? `Receber Selecionados (${selectedBatchIds.length})` : `Aprovar Selecionados (${selectedBatchIds.length})`}
+                                    Receber Selecionados ({selectedBatchIds.length})
                                 </button>
                             )}
                         </div>
@@ -834,7 +842,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                     filteredRequests.map(req => (
                         <div key={req.id} className={`rounded-2xl border transition-all duration-300 ${expandedRequestId === req.id ? (isDarkMode ? 'border-blue-500 bg-slate-800 shadow-2xl shadow-blue-500/10' : 'border-blue-300 ring-4 ring-blue-50 bg-white shadow-xl') : (isDarkMode ? 'bg-slate-800/60 border-slate-700 hover:border-slate-600' : 'bg-white border-slate-100 shadow-sm hover:border-blue-100')}`}>
                             <div className="p-6 flex flex-col md:flex-row gap-6 items-start md:items-center cursor-pointer" onClick={() => setExpandedRequestId(expandedRequestId === req.id ? null : req.id)}>
-                                {(activeTab === 'Em Uso' || (activeTab === 'Solicitações' && req.status === 'Pendente')) && (
+                                {(activeTab === 'Em Uso') && (
                                     <div className="shrink-0" onClick={e => e.stopPropagation()}>
                                         <input
                                             type="checkbox"
@@ -874,14 +882,6 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                         <ChevronDown className={`w-5 h-5 text-slate-300 transition-transform ${expandedRequestId === req.id ? 'rotate-180' : ''}`} />
                                         <div className="flex flex-col gap-2 min-w-[160px]" onClick={e => e.stopPropagation()}>
                                             {req.status === 'Pendente' && (
-                                                <button onClick={() => {
-                                                    setFoundUser(user); // Analyst signing
-                                                    setSignatureRequestId(req.id);
-                                                    setSignatureAction('approve');
-                                                    setShowSignatureModal(true);
-                                                }} className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm">Aprovar com Senha</button>
-                                            )}
-                                            {req.status === 'Aprovado' && (
                                                 <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_release')} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm">Entregar Material</button>
                                             )}
                                             {req.status === 'Pendente Devolução' && (
@@ -921,11 +921,14 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                         </div>
                                         <div className="space-y-4">
                                             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Ações Operacionais</h4>
+                                            {req.status === 'Pendente' && (
+                                                <>
+                                                    <button onClick={(e) => { e.stopPropagation(); startSignatureFlow(req.id, req.id_usuario, 'update_release'); }} className="w-full px-5 py-4 bg-blue-600 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-blue-500/20 active:scale-95 transition-all">Entregar Material com Senha do Solicitante</button>
+                                                    <button onClick={(e) => { e.stopPropagation(); handleDeleteRequest(req.id); }} className="w-full px-5 py-3 border-2 border-red-500 text-red-500 hover:bg-red-50 rounded-xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Excluir Solicitação (Não Compareceu)</button>
+                                                </>
+                                            )}
                                             {req.status === 'Pendente Devolução' && (
                                                 <button onClick={(e) => { e.stopPropagation(); handleRejectReturn(req); }} className="w-full px-5 py-4 bg-red-500 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-red-500/20 active:scale-95 transition-all">Rejeitar Devolução</button>
-                                            )}
-                                            {req.status === 'Aprovado' && (
-                                                <button onClick={(e) => { e.stopPropagation(); startSignatureFlow(req.id, req.id_usuario, 'update_release'); }} className="w-full px-5 py-4 bg-blue-600 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-blue-500/20 active:scale-95 transition-all">Registrar Entrega do Material</button>
                                             )}
                                             {(req.status === 'Em Uso' || req.status === 'Pendente Devolução') && (
                                                 <button onClick={(e) => { e.stopPropagation(); startSignatureFlow(req.id, req.id_usuario, 'update_return'); }} className="w-full px-5 py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">Confirmar Recebimento</button>
