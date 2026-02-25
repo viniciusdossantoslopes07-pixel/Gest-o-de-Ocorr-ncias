@@ -627,7 +627,10 @@ const App: FC = () => {
         military_identity: updatedUser.military_identity || (updatedUser as any).militaryIdentity,
         rc: updatedUser.rc,
         workplace: updatedUser.workplace,
-        emergency_contact: updatedUser.emergency_contact || (updatedUser as any).emergencyContact
+        emergency_contact: updatedUser.emergency_contact || (updatedUser as any).emergencyContact,
+        pending_password_reset: updatedUser.pending_password_reset,
+        reset_password_at_login: updatedUser.reset_password_at_login,
+        password_status: updatedUser.password_status
       })
       .eq('id', updatedUser.id);
 
