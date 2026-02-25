@@ -38,6 +38,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showInactive, setShowInactive] = useState(false);
+  const [showNewUserForm, setShowNewUserForm] = useState(false);
 
   // Rank Categories for Filtering (Consistent with PermissionManagement)
   const RANK_CATEGORIES = {
@@ -105,6 +106,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
       onCreateUser(userData);
     }
     setFormData(initialFormState);
+    setShowNewUserForm(false);
   };
 
   const handleEditClick = (user: User) => {
@@ -129,6 +131,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
   const handleCancelEdit = () => {
     setEditingUserId(null);
     setFormData(initialFormState);
+    setShowNewUserForm(false);
   };
 
   // Refresh users when component mounts to ensure we have latest data
@@ -173,7 +176,15 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
       </div>
 
       {activeTab === 'users' && (
-        <div className="flex justify-end px-4">
+        <div className="flex justify-end gap-3 px-4">
+          {!showNewUserForm && !editingUserId && (
+            <button
+              onClick={() => setShowNewUserForm(true)}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 shadow-xl active:scale-95 border-2 ${isDarkMode ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700 shadow-blue-900/40' : 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700 shadow-blue-600/30'}`}
+            >
+              <UserPlus className="w-4 h-4" /> Novo Cadastro
+            </button>
+          )}
           <button
             onClick={() => setShowInactive(!showInactive)}
             className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 border-2 ${showInactive
@@ -187,7 +198,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
         </div>
       )}
 
-      {activeTab === 'users' && (
+      {activeTab === 'users' && (showNewUserForm || editingUserId) && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className={`lg:col-span-3 p-6 md:p-10 rounded-2xl md:rounded-[2.5rem] border shadow-sm transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black/20' : 'bg-white border-slate-100 shadow-slate-200/50'}`}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
@@ -204,8 +215,9 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                   </p>
                 </div>
               </div>
-              {editingUserId && (
+              {(editingUserId || showNewUserForm) && (
                 <button
+                  type="button"
                   onClick={handleCancelEdit}
                   className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-[10px] font-bold rounded-xl transition-all ${isDarkMode ? 'bg-slate-700 text-slate-300 hover:text-white hover:bg-slate-600' : 'bg-slate-100 text-slate-500 hover:text-slate-700'}`}
                 >
