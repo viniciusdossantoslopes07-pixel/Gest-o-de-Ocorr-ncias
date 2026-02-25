@@ -538,7 +538,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                 value={directSaram}
                                 onChange={(e) => setDirectSaram(e.target.value)}
                                 placeholder="Digite o SARAM..."
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none"
+                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none transition-colors ${isDarkMode ? 'bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:bg-slate-900 focus:border-blue-500' : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white'}`}
                             />
                             {isSearchingSaram && <p className="text-[10px] font-bold text-blue-500 mt-1 animate-pulse">Buscando militar...</p>}
                             {foundUser && <p className="text-[10px] font-bold text-green-600 mt-1">✓ {foundUser.rank} {foundUser.war_name || foundUser.name}</p>}
@@ -552,32 +552,32 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                     onChange={(e) => { setMaterialSearch(e.target.value); setIsMaterialDropdownOpen(true); }}
                                     onFocus={() => setIsMaterialDropdownOpen(true)}
                                     placeholder="Digite o nome do material..."
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none pr-10"
+                                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none pr-10 transition-colors ${isDarkMode ? 'bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:bg-slate-900 focus:border-blue-500' : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white'}`}
                                 />
                                 <button onClick={(e) => { e.preventDefault(); setIsMaterialDropdownOpen(!isMaterialDropdownOpen); }} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors">
                                     {isMaterialDropdownOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                 </button>
                             </div>
                             {isMaterialDropdownOpen && (
-                                <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl max-h-60 overflow-y-auto">
+                                <div className={`absolute z-50 w-full mt-1 border rounded-xl shadow-2xl max-h-60 overflow-y-auto overflow-x-hidden ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
                                     {(materialSearch ? inventory.filter(item => item.material.toLowerCase().includes(materialSearch.toLowerCase())) : inventory).map(item => (
                                         <button
                                             key={item.id}
                                             onClick={() => { setDirectMaterialId(item.id); setMaterialSearch(item.material); setIsMaterialDropdownOpen(false); }}
-                                            className="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors border-b last:border-0 flex justify-between items-center"
+                                            className={`w-full px-4 py-3 text-left transition-colors border-b last:border-0 flex justify-between items-center ${isDarkMode ? 'hover:bg-slate-700/50 border-slate-700' : 'hover:bg-blue-50 border-slate-100'}`}
                                         >
-                                            <div>
-                                                <p className="font-bold text-slate-800 text-sm">{item.material}</p>
-                                                <div className="flex items-center gap-2">
-                                                    <p className="text-[10px] text-slate-400 font-medium">{item.qtdisponivel} disponíveis</p>
+                                            <div className="min-w-0 pr-4">
+                                                <p className={`font-bold text-sm truncate ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{item.material}</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <p className={`text-[10px] font-medium whitespace-nowrap ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{item.qtdisponivel} disponíveis</p>
                                                     {item.endereco && (
-                                                        <p className="text-[10px] text-amber-500 font-medium flex items-center gap-0.5">
-                                                            <MapPin className="w-2.5 h-2.5" /> {item.endereco}
+                                                        <p className="text-[10px] text-amber-500 font-medium flex items-center gap-0.5 truncate">
+                                                            <MapPin className="w-2.5 h-2.5 shrink-0" /> {item.endereco}
                                                         </p>
                                                     )}
                                                 </div>
                                             </div>
-                                            {directMaterialId === item.id && <CheckCircle className="w-4 h-4 text-blue-600" />}
+                                            {directMaterialId === item.id && <CheckCircle className="w-4 h-4 text-blue-500 shrink-0" />}
                                         </button>
                                     ))}
                                 </div>
@@ -590,14 +590,14 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                 min="1"
                                 value={directQuantity}
                                 onChange={(e) => setDirectQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-black outline-none text-center"
+                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 font-black outline-none text-center transition-colors ${isDarkMode ? 'bg-slate-900/50 border-slate-700 text-white focus:bg-slate-900 focus:border-blue-500' : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white'}`}
                             />
                         </div>
-                        <div className="md:col-span-4 flex flex-col md:flex-row gap-4 items-end">
+                        <div className="md:col-span-4 flex flex-col md:flex-row gap-4 items-end mt-2">
                             <button
                                 onClick={addItem}
                                 disabled={!directMaterialId || !foundUser}
-                                className="px-6 h-[50px] bg-slate-800 text-white rounded-xl font-black hover:bg-slate-900 transition-all flex items-center justify-center gap-2 uppercase text-xs tracking-widest disabled:opacity-50"
+                                className={`px-6 h-[50px] rounded-xl font-black transition-all flex items-center justify-center gap-2 uppercase text-xs tracking-widest disabled:opacity-50 disabled:cursor-not-allowed ${isDarkMode ? 'bg-slate-700 text-white hover:bg-slate-600 border border-slate-600' : 'bg-slate-800 text-white hover:bg-slate-900 shadow-md'}`}
                             >
                                 <Plus className="w-5 h-5" /> Adicionar
                             </button>
@@ -605,31 +605,31 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                             <button
                                 onClick={showDirectRelease ? handleDirectRelease : handleReceiveMaterial}
                                 disabled={actionLoading === 'direct' || (!selectedItems.length && (!foundUser || !directMaterialId))}
-                                className={`min-w-[200px] h-[50px] text-white rounded-xl font-black transition-all shadow-lg text-sm uppercase tracking-widest ${showDirectRelease ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'} disabled:opacity-50 disabled:cursor-not-allowed`}
+                                className={`min-w-[200px] h-[50px] text-white rounded-xl font-black transition-all shadow-lg text-sm uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed ${showDirectRelease ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/20' : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/20'}`}
                             >
                                 {actionLoading === 'direct' ? 'Processando...' : (showDirectRelease ? 'Confirmar Cautela' : 'Confirmar Recebimento')}
                             </button>
                         </div>
                         {selectedItems.length > 0 && (
-                            <div className="md:col-span-4 mt-4 space-y-2 border-t pt-4">
+                            <div className={`md:col-span-4 mt-4 space-y-2 border-t pt-4 ${isDarkMode ? 'border-slate-700' : 'border-slate-200'}`}>
                                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Itens Selecionados</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                     {selectedItems.map((item, idx) => (
-                                        <div key={idx} className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border group">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm font-bold text-blue-600 text-xs">
+                                        <div key={idx} className={`flex items-center justify-between p-3 rounded-xl border group transition-colors ${isDarkMode ? 'bg-slate-800/50 border-slate-700 hover:border-slate-600' : 'bg-slate-50 border-slate-200 hover:border-blue-200'}`}>
+                                            <div className="flex items-center gap-3 w-full min-w-0 pr-2">
+                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-sm font-bold text-xs shrink-0 ${isDarkMode ? 'bg-slate-700 text-blue-400' : 'bg-white text-blue-600'}`}>
                                                     {item.quantidade}x
                                                 </div>
-                                                <div>
-                                                    <span className="font-bold text-slate-800 text-sm">{item.material}</span>
+                                                <div className="min-w-0 flex-1">
+                                                    <span className={`font-bold text-sm truncate block ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{item.material}</span>
                                                     {item.endereco && (
-                                                        <p className="text-[9px] text-amber-500 font-medium flex items-center gap-0.5">
-                                                            <MapPin className="w-2.5 h-2.5" /> {item.endereco}
+                                                        <p className="text-[9px] text-amber-500 font-medium flex items-center gap-0.5 mt-0.5 truncate">
+                                                            <MapPin className="w-2.5 h-2.5 shrink-0" /> {item.endereco}
                                                         </p>
                                                     )}
                                                 </div>
                                             </div>
-                                            <button onClick={() => removeItem(idx)} className="p-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => removeItem(idx)} className="p-2 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
                                         </div>
