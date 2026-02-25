@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../services/supabase';
 import { Package, CheckCircle, XCircle, Clock, Truck, ShieldCheck, AlertCircle, Lock, Plus, Trash2, ChevronDown, ChevronUp, BarChart3, PieChart as PieIcon, History, Fingerprint, MapPin } from 'lucide-react';
 import { authenticateBiometrics } from '../services/webauthn';
@@ -52,6 +52,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     const [isMaterialDropdownOpen, setIsMaterialDropdownOpen] = useState(false);
     const [selectedItems, setSelectedItems] = useState<{ id_material: string, material: string, quantidade: number, endereco?: string }[]>([]);
     const [expandedRequestId, setExpandedRequestId] = useState<string | null>(null);
+    const materialDropdownRef = useRef<HTMLDivElement>(null);
 
     // Mass Action States
     const [inUseSearch, setInUseSearch] = useState('');
@@ -79,6 +80,22 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
         fetchRequests();
         fetchInventory();
     }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (materialDropdownRef.current && !materialDropdownRef.current.contains(event.target as Node)) {
+                setIsMaterialDropdownOpen(false);
+            }
+        };
+
+        if (isMaterialDropdownOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isMaterialDropdownOpen]);
 
     const fetchInventory = async () => {
         const { data } = await supabase
@@ -543,7 +560,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                             {isSearchingSaram && <p className="text-[10px] font-bold text-blue-500 mt-1 animate-pulse">Buscando militar...</p>}
                             {foundUser && <p className="text-[10px] font-bold text-green-600 mt-1">✓ {foundUser.rank} {foundUser.war_name || foundUser.name}</p>}
                         </div>
-                        <div className="md:col-span-2 space-y-1 relative">
+                        <div className="md:col-span-2 space-y-1 relative" ref={materialDropdownRef}>
                             <label className="text-[10px] font-bold text-slate-400 uppercase">Buscar Material</label>
                             <div className="relative">
                                 <input
