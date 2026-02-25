@@ -881,6 +881,9 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                                     setShowSignatureModal(true);
                                                 }} className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm">Aprovar com Senha</button>
                                             )}
+                                            {req.status === 'Aprovado' && (
+                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_release')} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm">Entregar Material</button>
+                                            )}
                                             {req.status === 'Pendente Devolução' && (
                                                 <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return')} className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm">Receber Material</button>
                                             )}
@@ -920,6 +923,9 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Ações Operacionais</h4>
                                             {req.status === 'Pendente Devolução' && (
                                                 <button onClick={(e) => { e.stopPropagation(); handleRejectReturn(req); }} className="w-full px-5 py-4 bg-red-500 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-red-500/20 active:scale-95 transition-all">Rejeitar Devolução</button>
+                                            )}
+                                            {req.status === 'Aprovado' && (
+                                                <button onClick={(e) => { e.stopPropagation(); startSignatureFlow(req.id, req.id_usuario, 'update_release'); }} className="w-full px-5 py-4 bg-blue-600 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-blue-500/20 active:scale-95 transition-all">Registrar Entrega do Material</button>
                                             )}
                                             {(req.status === 'Em Uso' || req.status === 'Pendente Devolução') && (
                                                 <button onClick={(e) => { e.stopPropagation(); startSignatureFlow(req.id, req.id_usuario, 'update_return'); }} className="w-full px-5 py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">Confirmar Recebimento</button>
