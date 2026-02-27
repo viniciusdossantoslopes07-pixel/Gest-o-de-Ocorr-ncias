@@ -94,7 +94,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
     return (
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between mb-2 sm:mb-2">
+            <div className="flex items-center justify-between mb-2">
                 <div>
                     <h2 className={`text-xl sm:text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'} leading-tight`}>
                         {order && order.id ? 'Editar OMIS' : 'Nova Ordem de Missão'}
@@ -103,13 +103,6 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                         Preencha os dados abaixo para {order && order.id ? 'atualizar a' : 'gerar uma nova'} ordem de missão
                     </p>
                 </div>
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className={`p-2.5 ${isDarkMode ? 'text-slate-400 hover:bg-slate-800 hover:text-white' : 'text-slate-500 hover:bg-slate-100'} rounded-xl transition-all shrink-0 border ${isDarkMode ? 'border-slate-800' : 'border-transparent'}`}
-                >
-                    <X className="w-5 h-5 sm:w-6 sm:h-6" />
-                </button>
             </div>
 
             {/* Basic Info */}
@@ -636,23 +629,6 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                 )}
             </div>
 
-            {/* Form Actions */}
-            <div className={`flex flex-col sm:flex-row items-center justify-end gap-3 pt-6 sm:pt-4 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className={`w-full sm:w-auto px-6 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${isDarkMode ? 'text-slate-400 hover:bg-slate-800 hover:text-white border border-slate-700' : 'text-slate-500 hover:bg-slate-100 border border-slate-200'}`}
-                >
-                    Cancelar
-                </button>
-                <button
-                    type="submit"
-                    className={`w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-600/20 active:scale-95`}
-                >
-                    <Save className="w-4 h-4" />
-                    {order && order.id ? 'Salvar Alterações' : 'Gerar Ordem de Missão'}
-                </button>
-            </div>
 
             {/* Orders */}
             <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} rounded-xl p-6 border space-y-4`}>
@@ -685,17 +661,10 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <button
                     type="submit"
-                    className={`w-full sm:flex-1 py-3 ${isDarkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-900 hover:bg-slate-800'} text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 order-1 sm:order-1 whitespace-nowrap min-w-fit px-4`}
+                    className={`w-full py-4 ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500 shadow-xl shadow-blue-900/20' : 'bg-slate-900 hover:bg-slate-800'} text-white rounded-2xl font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95`}
                 >
                     <Save className="w-5 h-5" />
                     {order && order.id ? 'Salvar Alterações' : 'Criar Ordem de Missão'}
-                </button>
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className={`w-full sm:px-6 py-3 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'} rounded-xl font-bold transition-all order-2 sm:order-2`}
-                >
-                    Cancelar
                 </button>
             </div>
 
