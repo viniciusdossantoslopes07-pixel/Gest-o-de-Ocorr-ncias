@@ -872,20 +872,48 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
 
                         {(activeTab === 'Em Uso') && (
                             <div className="flex items-center gap-4 w-full md:w-auto">
-                                <label className="flex items-center gap-2 cursor-pointer group bg-white px-4 py-2 rounded-xl border border-slate-200">
+                                <label className={`flex items-center gap-2 cursor-pointer group px-4 py-2 rounded-xl border transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-white border-slate-200'}`}>
                                     <input
                                         type="checkbox"
-                                        className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
-                                        checked={filteredRequests.filter(r => activeTab === 'Em Uso').length > 0 && selectedBatchIds.length === filteredRequests.filter(r => activeTab === 'Em Uso').length}
+                                        className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-30"
+                                        checked={(() => {
+                                            const selectableRequests = filteredRequests.filter(r => activeTab === 'Em Uso');
+                                            if (selectableRequests.length === 0) return false;
+
+                                            // Se já tem seleção, o "Selecionar Tudo" deve se referir apenas ao usuário já selecionado
+                                            if (selectedBatchIds.length > 0) {
+                                                const firstId = selectedBatchIds[0];
+                                                const firstReq = requests.find(r => r.id === firstId);
+                                                const userItems = selectableRequests.filter(r => r.id_usuario === firstReq?.id_usuario);
+                                                return selectedBatchIds.length === userItems.length;
+                                            }
+
+                                            return false;
+                                        })()}
                                         onChange={(e) => {
                                             if (e.target.checked) {
-                                                const selectable = filteredRequests.filter(r => activeTab === 'Em Uso').map(r => r.id);
-                                                setSelectedBatchIds(selectable);
+                                                const selectable = filteredRequests.filter(r => activeTab === 'Em Uso');
+                                                if (selectable.length > 0) {
+                                                    // Se não tem nada selecionado, seleciona todos do primeiro usuário da lista
+                                                    // Se já tem seleção, seleciona todos do usuário já selecionado
+                                                    const targetUserId = selectedBatchIds.length > 0
+                                                        ? requests.find(r => r.id === selectedBatchIds[0])?.id_usuario
+                                                        : selectable[0].id_usuario;
+
+                                                    const idsToSelect = selectable
+                                                        .filter(r => r.id_usuario === targetUserId)
+                                                        .map(r => r.id);
+                                                    setSelectedBatchIds(idsToSelect);
+                                                }
                                             }
                                             else setSelectedBatchIds([]);
                                         }}
                                     />
-                                    <span className="text-sm font-bold text-slate-600 group-hover:text-blue-600">Selecionar Tudo ({filteredRequests.filter(r => activeTab === 'Em Uso').length})</span>
+                                    <span className="text-sm font-bold text-slate-600 group-hover:text-blue-600 whitespace-nowrap">
+                                        {selectedBatchIds.length > 0 ? (
+                                            `Selecionar todos de ${requests.find(r => r.id === selectedBatchIds[0])?.solicitante?.war_name || '... '}`
+                                        ) : "Selecionar Tudo (por usuário)"}
+                                    </span>
                                 </label>
 
                                 {selectedBatchIds.length > 0 && (
@@ -1007,8 +1035,14 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                     <div className="shrink-0" onClick={e => e.stopPropagation()}>
                                         <input
                                             type="checkbox"
-                                            className="w-5 h-5 rounded-lg text-blue-600 focus:ring-blue-500"
+                                            className="w-5 h-5 rounded-lg text-blue-600 focus:ring-blue-500 disabled:opacity-20 disabled:cursor-not-allowed"
                                             checked={selectedBatchIds.includes(req.id)}
+                                            disabled={(() => {
+                                                if (selectedBatchIds.length === 0) return false;
+                                                const firstId = selectedBatchIds[0];
+                                                const firstReq = requests.find(r => r.id === firstId);
+                                                return firstReq?.id_usuario !== req.id_usuario;
+                                            })()}
                                             onChange={(e) => {
                                                 if (e.target.checked) setSelectedBatchIds([...selectedBatchIds, req.id]);
                                                 else setSelectedBatchIds(selectedBatchIds.filter(id => id !== req.id));
@@ -1016,7 +1050,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                         />
                                     </div>
                                 )}
-                                <div className="flex-1 flex flex-col md:flex-row gap-6 items-start md:items-center">
+                                <div className={`flex-1 flex flex-col md:flex-row gap-6 items-start md:items-center ${selectedBatchIds.length > 0 && requests.find(r => r.id === selectedBatchIds[0])?.id_usuario !== req.id_usuario ? 'opacity-40 grayscale-[0.5]' : ''}`}>
                                     <div className={`p-4 rounded-2xl shrink-0 transition-transform ${expandedRequestId === req.id ? 'scale-110' : ''} ${req.status === 'Pendente' ? 'bg-amber-500/10 text-amber-500' : req.status === 'Aprovado' ? 'bg-blue-500/10 text-blue-500' : req.status === 'Pendente Devolução' ? 'bg-purple-500/10 text-purple-500' : req.status === 'Concluído' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-500/10 text-slate-500'}`}>
                                         <Package className="w-6 h-6" />
                                     </div>
