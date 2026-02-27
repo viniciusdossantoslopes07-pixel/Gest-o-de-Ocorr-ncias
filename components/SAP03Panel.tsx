@@ -48,6 +48,13 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     const [historyFilterStatus, setHistoryFilterStatus] = useState<'ALL' | 'Concluído' | 'Rejeitado'>('ALL');
     const [historyTimeRange, setHistoryTimeRange] = useState<'all' | 'today' | '7days' | '30days'>('all');
 
+    // Estados de Filtro para aba 'Em Uso'
+    const [inUseFilterDay, setInUseFilterDay] = useState('');
+    const [inUseFilterMonth, setInUseFilterMonth] = useState('');
+    const [inUseFilterYear, setInUseFilterYear] = useState('');
+    const [inUseFilterCategory, setInUseFilterCategory] = useState<string | null>(null);
+    const [inUseTimeRange, setInUseTimeRange] = useState<'all' | 'today' | '7days' | '30days'>('all');
+
     const availableYears = Array.from(new Set(requests.map(req => new Date(req.created_at).getFullYear()))).sort((a, b) => b - a);
 
     const [showDirectRelease, setShowDirectRelease] = useState(false);
@@ -572,6 +579,29 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             }
         }
 
+        const reqDate = new Date(req.created_at);
+
+        if (activeTab === 'Em Uso') {
+            // Filtro de Data
+            if (inUseFilterYear && reqDate.getFullYear().toString() !== inUseFilterYear) return false;
+            if (inUseFilterMonth && (reqDate.getMonth() + 1).toString() !== inUseFilterMonth) return false;
+            if (inUseFilterDay && reqDate.getDate().toString() !== inUseFilterDay) return false;
+
+            // Filtro de Categoria
+            if (inUseFilterCategory && req.material?.tipo_de_material !== inUseFilterCategory) return false;
+
+            // Filtro de Range de Tempo
+            if (inUseTimeRange !== 'all') {
+                const now = new Date();
+                const diffTime = Math.abs(now.getTime() - reqDate.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (inUseTimeRange === 'today' && reqDate.toDateString() !== now.toDateString()) return false;
+                if (inUseTimeRange === '7days' && diffDays > 7) return false;
+                if (inUseTimeRange === '30days' && diffDays > 30) return false;
+            }
+        }
+
         if (activeTab === 'Histórico') {
             const reqDate = new Date(req.created_at);
 
@@ -863,11 +893,11 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                 <Package className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             </div>
 
-                            {activeTab === 'Histórico' && (
+                            {(activeTab === 'Histórico' || activeTab === 'Em Uso') && (
                                 <div className="flex flex-wrap gap-2 w-full md:w-auto">
                                     <select
-                                        value={historyFilterDay}
-                                        onChange={(e) => setHistoryFilterDay(e.target.value)}
+                                        value={activeTab === 'Histórico' ? historyFilterDay : inUseFilterDay}
+                                        onChange={(e) => activeTab === 'Histórico' ? setHistoryFilterDay(e.target.value) : setInUseFilterDay(e.target.value)}
                                         className={`px-3 py-3 border rounded-xl outline-none text-sm font-bold transition-all focus:ring-2 focus:ring-blue-500 flex-1 md:flex-none ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
                                     >
                                         <option value="">Dia</option>
@@ -876,8 +906,8 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                         ))}
                                     </select>
                                     <select
-                                        value={historyFilterMonth}
-                                        onChange={(e) => setHistoryFilterMonth(e.target.value)}
+                                        value={activeTab === 'Histórico' ? historyFilterMonth : inUseFilterMonth}
+                                        onChange={(e) => activeTab === 'Histórico' ? setHistoryFilterMonth(e.target.value) : setInUseFilterMonth(e.target.value)}
                                         className={`px-3 py-3 border rounded-xl outline-none text-sm font-bold transition-all focus:ring-2 focus:ring-blue-500 flex-1 md:flex-none ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
                                     >
                                         <option value="">Mês</option>
@@ -886,8 +916,8 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                         ))}
                                     </select>
                                     <select
-                                        value={historyFilterYear}
-                                        onChange={(e) => setHistoryFilterYear(e.target.value)}
+                                        value={activeTab === 'Histórico' ? historyFilterYear : inUseFilterYear}
+                                        onChange={(e) => activeTab === 'Histórico' ? setHistoryFilterYear(e.target.value) : setInUseFilterYear(e.target.value)}
                                         className={`px-3 py-3 border rounded-xl outline-none text-sm font-bold transition-all focus:ring-2 focus:ring-blue-500 flex-1 md:flex-none ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
                                     >
                                         <option value="">Ano</option>
@@ -966,8 +996,8 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                 )
             }
 
-            {/* Filtros Analíticos do Histórico */}
-            {activeTab === 'Histórico' && (
+            {/* Filtros Analíticos (Histórico e Em Uso) */}
+            {(activeTab === 'Histórico' || activeTab === 'Em Uso') && (
                 <div className="flex flex-col gap-6 -mt-2 mb-8 animate-fade-in">
                     {/* Status e Tempo */}
                     <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-700 pb-4">
@@ -976,8 +1006,8 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                             {(['all', 'today', '7days', '30days'] as const).map((range) => (
                                 <button
                                     key={range}
-                                    onClick={() => setHistoryTimeRange(range)}
-                                    className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tight transition-all whitespace-nowrap ${historyTimeRange === range
+                                    onClick={() => activeTab === 'Histórico' ? setHistoryTimeRange(range) : setInUseTimeRange(range)}
+                                    className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tight transition-all whitespace-nowrap ${(activeTab === 'Histórico' ? historyTimeRange : inUseTimeRange) === range
                                         ? 'bg-blue-600 text-white shadow-md'
                                         : (isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-white text-slate-500 border border-slate-200 hover:border-blue-200 hover:text-blue-600')
                                         }`}
@@ -987,21 +1017,23 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                             ))}
                         </div>
 
-                        <div className="flex items-center gap-2">
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-2">Status:</span>
-                            {(['ALL', 'Concluído', 'Rejeitado'] as const).map((status) => (
-                                <button
-                                    key={status}
-                                    onClick={() => setHistoryFilterStatus(status)}
-                                    className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tight transition-all ${historyFilterStatus === status
-                                        ? (status === 'Rejeitado' ? 'bg-red-500 text-white shadow-md' : 'bg-emerald-600 text-white shadow-md')
-                                        : (isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-white text-slate-500 border border-slate-200 hover:border-blue-200')
-                                        }`}
-                                >
-                                    {status === 'ALL' ? 'Todos' : status}
-                                </button>
-                            ))}
-                        </div>
+                        {activeTab === 'Histórico' && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-2">Status:</span>
+                                {(['ALL', 'Concluído', 'Rejeitado'] as const).map((status) => (
+                                    <button
+                                        key={status}
+                                        onClick={() => setHistoryFilterStatus(status)}
+                                        className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tight transition-all ${historyFilterStatus === status
+                                            ? (status === 'Rejeitado' ? 'bg-red-500 text-white shadow-md' : 'bg-emerald-600 text-white shadow-md')
+                                            : (isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-white text-slate-500 border border-slate-200 hover:border-blue-200')
+                                            }`}
+                                    >
+                                        {status === 'ALL' ? 'Todos' : status}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Categorias */}
@@ -1010,29 +1042,35 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                 <LayoutGrid className="w-3 h-3" /> Categorias de Material
                             </span>
-                            {(historyFilterCategory || historyFilterDay || historyFilterMonth || historyFilterYear || inUseSearch || historyTimeRange !== 'all') && (
-                                <button
-                                    onClick={() => {
-                                        setHistoryFilterCategory(null);
-                                        setHistoryFilterDay('');
-                                        setHistoryFilterMonth('');
-                                        setHistoryFilterYear('');
-                                        setInUseSearch('');
-                                        setHistoryTimeRange('all');
-                                        setHistoryFilterStatus('ALL');
-                                    }}
-                                    className="text-[9px] font-black text-blue-500 uppercase hover:text-blue-600 transition-colors underline underline-offset-4"
-                                >
-                                    Limpar Filtros
-                                </button>
-                            )}
+                            {(historyFilterCategory || historyFilterDay || historyFilterMonth || historyFilterYear || inUseSearch || historyTimeRange !== 'all' ||
+                                inUseFilterCategory || inUseFilterDay || inUseFilterMonth || inUseFilterYear || inUseTimeRange !== 'all') && (
+                                    <button
+                                        onClick={() => {
+                                            setHistoryFilterCategory(null);
+                                            setHistoryFilterDay('');
+                                            setHistoryFilterMonth('');
+                                            setHistoryFilterYear('');
+                                            setInUseFilterCategory(null);
+                                            setInUseFilterDay('');
+                                            setInUseFilterMonth('');
+                                            setInUseFilterYear('');
+                                            setInUseSearch('');
+                                            setHistoryTimeRange('all');
+                                            setInUseTimeRange('all');
+                                            setHistoryFilterStatus('ALL');
+                                        }}
+                                        className="text-[9px] font-black text-blue-500 uppercase hover:text-blue-600 transition-colors underline underline-offset-4"
+                                    >
+                                        Limpar Filtros
+                                    </button>
+                                )}
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {Array.from(new Set(requests.filter(r => r.material?.tipo_de_material).map(r => r.material?.tipo_de_material))).sort().map(cat => (
                                 <button
                                     key={cat}
-                                    onClick={() => setHistoryFilterCategory(historyFilterCategory === cat ? null : cat)}
-                                    className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wide border transition-all ${historyFilterCategory === cat
+                                    onClick={() => activeTab === 'Histórico' ? setHistoryFilterCategory(historyFilterCategory === cat ? null : cat) : setInUseFilterCategory(inUseFilterCategory === cat ? null : cat)}
+                                    className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wide border transition-all ${(activeTab === 'Histórico' ? historyFilterCategory : inUseFilterCategory) === cat
                                         ? (isDarkMode ? 'bg-blue-600/20 border-blue-500 text-blue-400 shadow-lg' : 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-200')
                                         : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600' : 'bg-white border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600 shadow-sm')
                                         }`}
