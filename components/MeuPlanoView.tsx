@@ -28,8 +28,8 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
     });
     const [loading, setLoading] = useState(false);
     const [allMissions, setAllMissions] = useState<any[]>([]);
-    const [filterDateStart, setFilterDateStart] = useState('');
-    const [filterDateEnd, setFilterDateEnd] = useState('');
+    const [filterMonth, setFilterMonth] = useState('0'); // 0 = Todos
+    const [filterYear, setFilterYear] = useState('');    // Vazio = Todos
     const [filterType, setFilterType] = useState('');
     const [showPrintView, setShowPrintView] = useState(false);
 
@@ -50,11 +50,12 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         setLoading(true);
         try {
             // 1. Fetch Mission Orders where user is in personnel AND status is CONCLUIDA
+            // Avoid stringification to prevent Supabase bugs with JSONB operators. Send actual object directly.
             const { data: missions, error: mError } = await supabase
                 .from('mission_orders')
                 .select('*')
-                .eq('status', 'CONCLUIDA') // Only finalized missions
-                .contains('personnel', `[{"saram": "${user.saram}"}]`) // Query JSONB array for user by SARAM
+                .eq('status', 'CONCLUIDA')
+                .contains('personnel', [{ saram: String(user.saram) }])
                 .order('date', { ascending: false });
 
             if (mError) throw mError;
@@ -160,10 +161,16 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
     const filteredStats = useMemo(() => {
         const filtered = allMissions.filter(m => {
             const matchType = !filterType || m.mission === filterType;
-            const mDate = new Date(m.date);
-            const matchDateStart = !filterDateStart || mDate >= new Date(filterDateStart);
-            const matchDateEnd = !filterDateEnd || mDate <= new Date(filterDateEnd);
-            return matchType && matchDateStart && matchDateEnd;
+
+            // Corrige o bug de Timezone extraindo a data UTC correta que veio do banco.
+            const [y, mm] = m.date.split('-');
+            const mYear = y;
+            const mMonth = parseInt(mm, 10).toString();
+
+            const matchYear = !filterYear || mYear === filterYear;
+            const matchMonth = filterMonth === '0' || mMonth === filterMonth;
+
+            return matchType && matchYear && matchMonth;
         });
 
         // Re-calculate grouped data for charts and cards based on filtered set
@@ -177,12 +184,17 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
 
         // Filter Attendance
         const filteredAttendance = stats.attendanceHistory.filter(a => {
-            const aDate = new Date(a.daily_attendance?.date || a.timestamp);
-            const matchDateStart = !filterDateStart || aDate >= new Date(filterDateStart);
-            const matchDateEnd = !filterDateEnd || aDate <= new Date(filterDateEnd);
-            // Attendance history is already filtered for valid records in state, but let's be safe
+            const rawDate = a.daily_attendance?.date || a.timestamp;
+            // Pegue somente a trinca da data e ignore a hora caso haja timezone
+            const [y, mm] = rawDate.split('T')[0].split('-');
+            const aYear = y;
+            const aMonth = parseInt(mm, 10).toString();
+
+            const matchYear = !filterYear || aYear === filterYear;
+            const matchMonth = filterMonth === '0' || aMonth === filterMonth;
+
             const isValid = !['NIL', 'N'].includes(a.status);
-            return matchDateStart && matchDateEnd && isValid;
+            return matchYear && matchMonth && isValid;
         });
 
         const fPresenceCount = filteredAttendance.filter((a: any) =>
@@ -206,7 +218,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             attendanceHistory: filteredAttendance,
             allFiltered: filtered
         };
-    }, [allMissions, filterType, filterDateStart, filterDateEnd, stats.attendanceHistory]);
+    }, [allMissions, filterType, filterMonth, filterYear, stats.attendanceHistory]);
 
     const missionTypes = useMemo(() => {
         const types = new Set<string>();
@@ -214,13 +226,29 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         return Array.from(types).sort();
     }, [allMissions]);
 
+    // Extrair listagem de Anos Dinâmica com base nas estatísticas reais
+    const availableYears = useMemo(() => {
+        const years = new Set<string>();
+        allMissions.forEach(m => {
+            if (m.date) years.add(m.date.split('-')[0]);
+        });
+        stats.attendanceHistory.forEach(a => {
+            const rawDate = a.daily_attendance?.date || a.timestamp;
+            if (rawDate) years.add(rawDate.split('-')[0]);
+        });
+        // Add current year if empty
+        const currentYear = new Date().getFullYear().toString();
+        years.add(currentYear);
+        return Array.from(years).sort((a, b) => parseInt(b) - parseInt(a));
+    }, [allMissions, stats.attendanceHistory]);
+
     const clearFilters = () => {
-        setFilterDateStart('');
-        setFilterDateEnd('');
+        setFilterMonth('0');
+        setFilterYear('');
         setFilterType('');
     };
 
-    const hasActiveFilters = filterDateStart || filterDateEnd || filterType;
+    const hasActiveFilters = filterMonth !== '0' || filterYear !== '' || filterType !== '';
 
     const fetchMyRequests = async () => {
         const { data } = await supabase
@@ -306,19 +334,38 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
 
                                 <div className={`flex flex-wrap items-center gap-3 bg-opacity-50 rounded-xl px-3 py-1.5 ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
                                     <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                                    <input
-                                        type="date"
-                                        value={filterDateStart}
-                                        onChange={(e) => setFilterDateStart(e.target.value)}
-                                        className="bg-transparent text-xs font-bold text-slate-500 outline-none w-28"
-                                    />
-                                    <span className="text-slate-400 text-xs">até</span>
-                                    <input
-                                        type="date"
-                                        value={filterDateEnd}
-                                        onChange={(e) => setFilterDateEnd(e.target.value)}
-                                        className="bg-transparent text-xs font-bold text-slate-500 outline-none w-28"
-                                    />
+                                    <select
+                                        value={filterMonth}
+                                        onChange={(e) => setFilterMonth(e.target.value)}
+                                        className="bg-transparent text-xs font-bold text-slate-500 outline-none appearance-none cursor-pointer"
+                                    >
+                                        <option value="0">Qualquer Mês</option>
+                                        <option value="1">Janeiro</option>
+                                        <option value="2">Fevereiro</option>
+                                        <option value="3">Março</option>
+                                        <option value="4">Abril</option>
+                                        <option value="5">Maio</option>
+                                        <option value="6">Junho</option>
+                                        <option value="7">Julho</option>
+                                        <option value="8">Agosto</option>
+                                        <option value="9">Setembro</option>
+                                        <option value="10">Outubro</option>
+                                        <option value="11">Novembro</option>
+                                        <option value="12">Dezembro</option>
+                                    </select>
+
+                                    <span className="text-slate-300">/</span>
+
+                                    <select
+                                        value={filterYear}
+                                        onChange={(e) => setFilterYear(e.target.value)}
+                                        className="bg-transparent text-xs font-bold text-slate-500 outline-none appearance-none cursor-pointer"
+                                    >
+                                        <option value="">Qualquer Ano</option>
+                                        {availableYears.map(yr => (
+                                            <option key={yr} value={yr}>{yr}</option>
+                                        ))}
+                                    </select>
                                 </div>
 
                                 <div className={`flex items-center gap-3 bg-opacity-50 rounded-xl px-3 py-1.5 flex-1 min-w-[150px] ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
@@ -328,7 +375,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                                         onChange={(e) => setFilterType(e.target.value)}
                                         className="bg-transparent text-xs font-bold text-slate-500 outline-none flex-1 appearance-none cursor-pointer"
                                     >
-                                        <option value="">Todos os Tipos</option>
+                                        <option value="">Todos os Tipos de Missão</option>
                                         {missionTypes.map(type => (
                                             <option key={type} value={type}>{type}</option>
                                         ))}
