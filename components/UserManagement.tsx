@@ -30,7 +30,10 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     email: '',
     role: UserRole.OPERATIONAL,
     accessLevel: 'N0' as 'N0' | 'N1' | 'N2' | 'N3' | 'OM',
-    phoneNumber: ''
+    phoneNumber: '',
+    pending_password_reset: false,
+    reset_password_at_login: false,
+    password_status: 'ACTIVE' as 'ACTIVE' | 'EXPIRED' | 'PENDING_RESET'
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -96,11 +99,15 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    const isStandardReset = formData.password === '123456';
     const userData: User = {
       ...formData,
       id: editingUserId || Math.random().toString(36).substr(2, 9),
       email: formData.email || `${formData.username}@secureguard.mil.br`,
-      accessLevel: formData.accessLevel // Always save accessLevel (N0 default)
+      accessLevel: formData.accessLevel, // Always save accessLevel (N0 default)
+      pending_password_reset: isStandardReset ? false : formData.pending_password_reset,
+      reset_password_at_login: isStandardReset ? true : formData.reset_password_at_login,
+      password_status: isStandardReset ? 'EXPIRED' : formData.password_status
     };
 
     if (editingUserId) {
@@ -128,7 +135,10 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
       email: user.email,
       role: user.role,
       accessLevel: user.accessLevel || 'N1',
-      phoneNumber: user.phoneNumber || ''
+      phoneNumber: user.phoneNumber || '',
+      pending_password_reset: user.pending_password_reset || false,
+      reset_password_at_login: user.reset_password_at_login || false,
+      password_status: user.password_status || 'ACTIVE'
     });
     setShowForm(true); // Abre o formulário ao editar
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -317,10 +327,25 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <Key className="w-3 h-3" /> {editingUserId ? 'Alterar Senha' : 'Senha Inicial'}
-                  </label>
-                  <input required type="password" placeholder="••••••••" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <Key className="w-3 h-3" /> {editingUserId ? 'Alterar Senha' : 'Senha Inicial'}
+                    </label>
+                    {editingUserId && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, password: '123456' })}
+                        className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded transition-colors ${formData.password === '123456'
+                          ? 'bg-blue-600 text-white'
+                          : isDarkMode ? 'bg-slate-800 text-blue-400 hover:bg-slate-700' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                          }`}
+                        title="Isso forçará a troca no login"
+                      >
+                        Senha: 123456
+                      </button>
+                    )}
+                  </div>
+                  <input required={!editingUserId} type="text" placeholder="••••••••" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
                 </div>
 
                 <div className={`md:col-span-3 p-4 rounded-xl border transition-all ${isDarkMode ? 'bg-blue-500/10 border-blue-500/30 text-blue-300' : 'bg-blue-50/50 border-blue-100 text-blue-800'}`}>

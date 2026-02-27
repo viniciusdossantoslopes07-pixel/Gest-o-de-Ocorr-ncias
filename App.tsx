@@ -483,6 +483,9 @@ const App: FC = () => {
         functionId: u.function_id,
         customPermissions: u.custom_permissions,
         biometric_credentials_id: u.biometric_credentials_id,
+        pending_password_reset: u.pending_password_reset,
+        reset_password_at_login: u.reset_password_at_login,
+        password_status: u.password_status,
         active: u.active
       }));
       setUsers(mappedUsers);
