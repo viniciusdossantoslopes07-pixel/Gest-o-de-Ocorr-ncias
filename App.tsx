@@ -389,28 +389,7 @@ const App: FC = () => {
       }
 
       if (user.reset_password_at_login) {
-        const newPassword = prompt('Sua senha foi resetada. Por favor, defina uma nova senha (mín. 8 caracteres):');
-        if (newPassword && newPassword.length >= 8) {
-          const { error: resetError } = await supabase
-            .from('users')
-            .update({
-              password: newPassword,
-              reset_password_at_login: false,
-              password_status: 'ACTIVE'
-            })
-            .eq('id', user.id);
-
-          if (resetError) {
-            alert('Erro ao atualizar senha. Tente novamente.');
-            return false;
-          }
-          user.password = newPassword;
-          user.reset_password_at_login = false;
-          alert('Senha atualizada com sucesso!');
-        } else {
-          alert('Troca de senha obrigatória cancelada ou senha muito curta.');
-          return false;
-        }
+        return 'REQUIRES_PASSWORD_RESET' as any;
       }
 
       setCurrentUser(user);
@@ -428,6 +407,52 @@ const App: FC = () => {
       return true;
     } catch (err) {
       console.error('Login error:', err);
+      return false;
+    }
+  };
+
+  const handleForcePasswordReset = async (username: string, newPassword: string): Promise<boolean> => {
+    try {
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('username', username)
+        .single();
+
+      if (error || !user) return false;
+
+      const { error: resetError } = await supabase
+        .from('users')
+        .update({
+          password: newPassword,
+          reset_password_at_login: false,
+          password_status: 'ACTIVE'
+        })
+        .eq('id', user.id);
+
+      if (resetError) return false;
+
+      // Log the user in
+      user.password = newPassword;
+      user.reset_password_at_login = false;
+      user.password_status = 'ACTIVE';
+
+      setCurrentUser(user as User);
+      localStorage.setItem('gsdsp_user_session', JSON.stringify(user));
+      localStorage.setItem('gsdsp_last_saram', username);
+      setActiveTab('home');
+
+      if (hasPermission(user as User, PERMISSIONS.MANAGE_USERS) ||
+        hasPermission(user as User, PERMISSIONS.MANAGE_PERSONNEL) ||
+        hasPermission(user as User, PERMISSIONS.VIEW_PERSONNEL) ||
+        hasPermission(user as User, PERMISSIONS.VIEW_DAILY_ATTENDANCE)) {
+        fetchUsers();
+      }
+
+      return true;
+
+    } catch (err) {
+      console.error('Reset error:', err);
       return false;
     }
   };
@@ -974,6 +999,7 @@ const App: FC = () => {
         onRegister={handleRegister}
         onPublicAccess={handlePublicAccess}
         onRequestPasswordReset={onRequestPasswordReset}
+        onForcePasswordReset={handleForcePasswordReset}
         isDarkMode={isDarkMode}
       />
     );

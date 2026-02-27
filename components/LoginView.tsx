@@ -8,21 +8,22 @@ import { supabase } from '../services/supabase';
 import { ParkingRequestModal } from './ParkingRequestModal';
 
 interface LoginViewProps {
-  onLogin: (username: string, password: string) => Promise<boolean> | boolean;
+  onLogin: (username: string, password: string) => Promise<boolean | string> | boolean | string;
   onRegister: (user: User) => Promise<boolean> | boolean;
   onPublicAccess: () => void;
   onRequestPasswordReset?: (saram: string) => Promise<boolean>;
+  onForcePasswordReset?: (username: string, newPassword: string) => Promise<boolean>;
   isDarkMode?: boolean;
 }
 
-const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, onRequestPasswordReset, isDarkMode }) => {
+const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, onRequestPasswordReset, onForcePasswordReset, isDarkMode }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const [view, setView] = useState<'login' | 'register' | 'forgot-password'>('login');
+  const [view, setView] = useState<'login' | 'register' | 'forgot-password' | 'force-password-reset'>('login');
   const [showParkingModal, setShowParkingModal] = useState(false);
 
   // Register form data
@@ -101,9 +102,32 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
             setError('SARAM não encontrado ou erro na solicitação.');
           }
         }
+      } else if (view === 'force-password-reset') {
+        if (password.length < 8) {
+          setError('A nova senha deve ter no mínimo 8 caracteres.');
+          return;
+        }
+
+        if (onForcePasswordReset) {
+          const successRes = await onForcePasswordReset(username, password);
+          if (successRes) {
+            // O App.tsx já atualizará o contexto global, então a tela mudará para a home automaticamente
+            // setSuccess('Senha atualizada com sucesso!');
+            // setTimeout(() => setView('login'), 2000); // Se não fizesse auto-login
+          } else {
+            setError('Erro ao salvar nova senha. Tente novamente.');
+          }
+        }
       } else {
         const successRes = await onLogin(username, password);
-        if (successRes) {
+        if (successRes === 'REQUIRES_PASSWORD_RESET') {
+          setView('force-password-reset');
+          setPassword(''); // limpa a senha pra ele digitar a nova
+          setError('Sua senha foi resetada temporariamente. Defina uma nova senha de no mínimo 8 caracteres.');
+          return; // Para não mostrar erro
+        }
+
+        if (successRes === true) {
           // After successful login, check if biometrics should be offered
           const { data: userData } = await supabase.from('users').select('id, name, saram, biometric_credentials_id').eq('username', username).single();
 
@@ -297,6 +321,24 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                 </button>
                 <button type="button" onClick={() => setView('login')} className="w-full text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-slate-600">
                   Voltar para Login
+                </button>
+              </div>
+            ) : view === 'force-password-reset' ? (
+              <div className="space-y-6">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <ShieldCheck className="w-3 h-3" /> Ação Obrigatória
+                </p>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Definir Nova Senha Segura (Mín 8 caracteres)</label>
+                  <input required type="password" minLength={8} className={`w-full ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'} rounded-xl p-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} placeholder="Sua nova senha" value={password} onChange={e => setPassword(e.target.value)} />
+                  <p className={`text-[9px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} font-bold uppercase mt-2`}>Você precisará guardar esta senha ou configurar biometria depois.</p>
+                </div>
+
+                <button type="submit" disabled={isLoading || password.length < 8} className={`w-full ${isDarkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-600 hover:bg-blue-700'} text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-lg`}>
+                  {isLoading ? 'Salvando...' : 'Salvar Senha e Entrar'}
+                </button>
+                <button type="button" onClick={() => setView('login')} className="w-full text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-slate-600">
+                  Cancelar Acesso
                 </button>
               </div>
             ) : (
