@@ -415,7 +415,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             />
                         </div>
 
-                        <div className="sm:col-span-2 lg:col-span-3 flex flex-col sm:flex-row justify-end gap-3 pt-4">
+                        <div className={`sm:col-span-2 lg:col-span-3 flex flex-col sm:flex-row justify-end gap-3 pt-6 pb-2 mt-4 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-100'} sticky bottom-0 bg-inherit z-10`}>
                             <button
                                 type="button"
                                 onClick={() => { setIsAdding(false); setEditingId(null); }}
@@ -425,7 +425,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             </button>
                             <button
                                 type="submit"
-                                className={`w-full sm:w-auto px-8 py-3 rounded-xl font-bold transition-all shadow-xl ${isDarkMode ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-900/20' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-100'}`}
+                                className={`w-full sm:w-auto px-10 py-3 rounded-xl font-bold transition-all shadow-xl ${isDarkMode ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-900/20' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200'}`}
                             >
                                 {editingId ? 'Salvar Alterações' : 'Confirmar Cadastro'}
                             </button>

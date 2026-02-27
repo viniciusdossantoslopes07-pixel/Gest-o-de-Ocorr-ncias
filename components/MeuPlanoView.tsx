@@ -49,13 +49,13 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
     const fetchPersonalStats = async () => {
         setLoading(true);
         try {
-            // 1. Fetch Mission Orders where user is in personnel AND status is CONCLUIDA
-            // Avoid stringification to prevent Supabase bugs with JSONB operators. Send actual object directly.
+            // 1. Fetch Mission Orders where user is in personnel
+            // Removed .eq('status', 'CONCLUIDA') to allow calculating all types of participations
+            const userSaramStr = String(user.saram || '').trim();
             const { data: missions, error: mError } = await supabase
                 .from('mission_orders')
                 .select('*')
-                .eq('status', 'CONCLUIDA')
-                .contains('personnel', [{ saram: String(user.saram) }])
+                .contains('personnel', [{ saram: userSaramStr }])
                 .order('date', { ascending: false });
 
             if (mError) throw mError;
@@ -76,7 +76,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
 
             if (lError) throw lError;
 
-            // 3. Fetch Attendance Records for this militar (using SARAM)
+            // 3. Fetch Attendance Records for this militar (using SARAM normalized)
             const { data: attendance, error: aError } = await supabase
                 .from('attendance_records')
                 .select(`
@@ -88,7 +88,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                         call_type
                     )
                 `)
-                .eq('saram', user.saram)
+                .eq('saram', userSaramStr)
                 .order('timestamp', { ascending: false });
 
             if (aError) throw aError;
@@ -104,6 +104,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
     };
 
     const processAndSetStats = (missions: any[], loans: any[], attendance: any[]) => {
+        const concludedMissionsCount = missions.filter(m => m.status === 'CONCLUIDA').length;
         const totalMissions = missions.length;
         const recentMissions = missions.slice(0, 5);
 
@@ -126,7 +127,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             .sort((a, b) => b.value - a.value);
 
         const loanHistory = loans.length;
-        const activeLoans = loans.filter((l: any) => l.status === 'Em Uso').reduce((acc: number, curr: any) => acc + (curr.quantidade || 1), 0);
+        const activeLoans = loans.filter((l: any) => ['Em Uso', 'Pendente'].includes(l.status)).reduce((acc: number, curr: any) => acc + (curr.quantidade || 1), 0);
 
         // Process Attendance
         const validAttendance = attendance.filter((a: any) => !['NIL', 'N'].includes(a.status));
@@ -144,7 +145,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         const attendanceByStatus = Object.entries(statusCount).map(([name, value]) => ({ name, value }));
 
         setStats({
-            totalMissions,
+            totalMissions: concludedMissionsCount, // Mostramos as concluidas no KPI principal
             totalHours: 0,
             missionsByType,
             loansByCategory,
