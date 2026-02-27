@@ -200,13 +200,22 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
                 </div>
 
                 {/* Dashboard KPIs */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <div className={`p-5 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-800/50 border-blue-500/20 shadow-lg shadow-blue-500/5' : 'bg-white border-blue-100 shadow-sm'}`}>
                         <p className="text-[10px] font-black uppercase tracking-widest text-blue-500 mb-1">Total em Acervo</p>
                         <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{totals.entrada}</h3>
                         <div className="flex items-center gap-1 mt-2">
                             <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                            <span className="text-[10px] font-bold text-slate-500 uppercase">Itens Cadastrados</span>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase">Unidades Totais</span>
+                        </div>
+                    </div>
+
+                    <div className={`p-5 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-800/50 border-slate-700/50 shadow-lg shadow-slate-900/10' : 'bg-white border-slate-100 shadow-sm'}`}>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Total de Itens</p>
+                        <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{items.length}</h3>
+                        <div className="flex items-center gap-1 mt-2">
+                            <div className="w-2 h-2 rounded-full bg-slate-400"></div>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase">Tipos Cadastrados</span>
                         </div>
                     </div>
 
@@ -366,114 +375,116 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
                 </div>
 
                 {/* Modal */}
-                {isModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-                        <div className={`rounded-2xl w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-white'}`}>
-                            <form onSubmit={handleSubmit}>
-                                <div className={`px-6 py-4 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
-                                    <h3 className={`font-black uppercase tracking-widest text-sm ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                                        {editingItem ? 'Editar Material' : 'Novo Material'}
-                                    </h3>
-                                    <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors">
-                                        <Trash2 className="w-6 h-6 rotate-45" />
-                                    </button>
-                                </div>
-
-                                <div className="p-6 space-y-4">
-                                    <div>
-                                        <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Material *</label>
-                                        <input
-                                            type="text"
-                                            value={formData.material}
-                                            onChange={e => setFormData({ ...formData, material: e.target.value })}
-                                            className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
-                                            required
-                                        />
+                {
+                    isModalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+                            <div className={`rounded-2xl w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-white'}`}>
+                                <form onSubmit={handleSubmit}>
+                                    <div className={`px-6 py-4 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
+                                        <h3 className={`font-black uppercase tracking-widest text-sm ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                                            {editingItem ? 'Editar Material' : 'Novo Material'}
+                                        </h3>
+                                        <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors">
+                                            <Trash2 className="w-6 h-6 rotate-45" />
+                                        </button>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-6 space-y-4">
                                         <div>
-                                            <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Tipo de Material</label>
-                                            <select
-                                                value={formData.tipo_de_material}
-                                                onChange={e => setFormData({ ...formData, tipo_de_material: e.target.value })}
-                                                className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
-                                            >
-                                                <option value="">Selecione...</option>
-                                                {MATERIAL_TYPES.map(type => (
-                                                    <option key={type} value={type}>{type}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Setor</label>
-                                            <select
-                                                value={formData.setor}
-                                                onChange={e => setFormData({ ...formData, setor: e.target.value })}
-                                                className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
-                                            >
-                                                <option value="">Selecione...</option>
-                                                {GESTAO_MATERIAL_SETORES.map(sector => (
-                                                    <option key={sector} value={sector}>{sector}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Endereço</label>
-                                        <input
-                                            type="text"
-                                            value={formData.endereco}
-                                            onChange={e => setFormData({ ...formData, endereco: e.target.value })}
-                                            className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Entrada (Total Recebido)</label>
+                                            <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Material *</label>
                                             <input
-                                                type="number"
-                                                min="0"
-                                                value={formData.entrada}
-                                                onChange={e => setFormData({ ...formData, entrada: parseInt(e.target.value) || 0 })}
-                                                className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                                                type="text"
+                                                value={formData.material}
+                                                onChange={e => setFormData({ ...formData, material: e.target.value })}
+                                                className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
+                                                required
                                             />
                                         </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Tipo de Material</label>
+                                                <select
+                                                    value={formData.tipo_de_material}
+                                                    onChange={e => setFormData({ ...formData, tipo_de_material: e.target.value })}
+                                                    className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                                                >
+                                                    <option value="">Selecione...</option>
+                                                    {MATERIAL_TYPES.map(type => (
+                                                        <option key={type} value={type}>{type}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Setor</label>
+                                                <select
+                                                    value={formData.setor}
+                                                    onChange={e => setFormData({ ...formData, setor: e.target.value })}
+                                                    className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                                                >
+                                                    <option value="">Selecione...</option>
+                                                    {GESTAO_MATERIAL_SETORES.map(sector => (
+                                                        <option key={sector} value={sector}>{sector}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+
                                         <div>
-                                            <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Saída (Perdas/Baixas)</label>
+                                            <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Endereço</label>
                                             <input
-                                                type="number"
-                                                min="0"
-                                                value={formData.saida}
-                                                onChange={e => setFormData({ ...formData, saida: parseInt(e.target.value) || 0 })}
-                                                className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                                                type="text"
+                                                value={formData.endereco}
+                                                onChange={e => setFormData({ ...formData, endereco: e.target.value })}
+                                                className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
                                             />
                                         </div>
-                                    </div>
-                                </div>
 
-                                <div className={`px-6 py-4 rounded-b-2xl flex justify-end gap-3 ${isDarkMode ? 'bg-slate-900/50' : 'bg-slate-50'}`}>
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsModalOpen(false)}
-                                        className={`px-5 py-2 font-bold text-sm rounded-xl transition-all ${isDarkMode ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}`}
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="px-6 py-2 bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95"
-                                    >
-                                        Salvar Registro
-                                    </button>
-                                </div>
-                            </form>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Entrada (Total Recebido)</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={formData.entrada}
+                                                    onChange={e => setFormData({ ...formData, entrada: parseInt(e.target.value) || 0 })}
+                                                    className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Saída (Perdas/Baixas)</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={formData.saida}
+                                                    onChange={e => setFormData({ ...formData, saida: parseInt(e.target.value) || 0 })}
+                                                    className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className={`px-6 py-4 rounded-b-2xl flex justify-end gap-3 ${isDarkMode ? 'bg-slate-900/50' : 'bg-slate-50'}`}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsModalOpen(false)}
+                                            className={`px-5 py-2 font-bold text-sm rounded-xl transition-all ${isDarkMode ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-200 text-slate-600 hover:bg-slate-300'}`}
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            className="px-6 py-2 bg-blue-600 text-white font-black uppercase tracking-widest text-[10px] hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+                                        >
+                                            Salvar Registro
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )
+                }
             </>)}
-        </div>
+        </div >
     );
 };
