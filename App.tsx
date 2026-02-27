@@ -146,11 +146,7 @@ const App: FC = () => {
 
 
   useEffect(() => {
-    supabase.from('test').select('*').then(({ data, error }) => {
-      console.log('Supabase connection test:', { data, error });
-    });
-
-
+    // Supabase connection health check removed to avoid 404 console errors with 'test' table
   }, []);
 
   useEffect(() => {
@@ -243,7 +239,7 @@ const App: FC = () => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'daily_attendance' }, () => fetchAttendanceData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_records' }, () => fetchAttendanceData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'absence_justifications' }, () => fetchAttendanceData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => fetchUsers())
+      // .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => fetchUsers()) // Temporariamente desativado para evitar loops
       .subscribe();
 
     return () => {

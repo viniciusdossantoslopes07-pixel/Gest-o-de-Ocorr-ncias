@@ -5,9 +5,10 @@ import { Car, X, CheckCircle, Send, Upload, AlertCircle } from 'lucide-react';
 interface ParkingRequestModalProps {
     isOpen: boolean;
     onClose: () => void;
+    isDarkMode?: boolean;
 }
 
-export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen, onClose }) => {
+export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen, onClose, isDarkMode = false }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [parkSuccess, setParkSuccess] = useState(false);
@@ -122,8 +123,8 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
     }
 
     return (
-        <div className="fixed inset-0 z-[200] flex sm:items-center sm:justify-center bg-white sm:bg-slate-900/60 sm:backdrop-blur-md">
-            <div className="w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-lg bg-white sm:rounded-2xl shadow-2xl flex flex-col sm:border border-slate-200 overflow-hidden">
+        <div className={`fixed inset-0 z-[200] flex sm:items-center sm:justify-center ${isDarkMode ? 'bg-slate-950/80' : 'bg-white sm:bg-slate-900/60'} sm:backdrop-blur-md`}>
+            <div className={`w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-lg ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} sm:rounded-2xl shadow-2xl flex flex-col sm:border overflow-hidden`}>
 
                 {/* Header Fixo */}
                 <div className="bg-slate-900 p-3 sm:p-6 text-white flex justify-between items-center shrink-0 safe-top">
@@ -144,15 +145,15 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                 </div>
 
                 {/* Conteúdo com Scroll */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50">
+                <div className={`flex-1 overflow-y-auto custom-scrollbar ${isDarkMode ? 'bg-slate-900' : 'bg-slate-50/50'}`}>
                     {parkSuccess ? (
                         <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-6 animate-in zoom-in-95 duration-300">
                             <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center shadow-lg shadow-emerald-100">
                                 <CheckCircle className="w-10 h-10 text-emerald-600" />
                             </div>
                             <div>
-                                <h3 className="text-xl font-black text-slate-800 mb-2">Solicitação Enviada!</h3>
-                                <div className="bg-white px-4 py-2 rounded-lg border border-slate-200 inline-block shadow-sm">
+                                <h3 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-800'} mb-2`}>Solicitação Enviada!</h3>
+                                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} px-4 py-2 rounded-lg border inline-block shadow-sm`}>
                                     <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Protocolo</p>
                                     <p className="text-2xl font-black text-blue-600 tracking-tight">{parkProto}</p>
                                 </div>
@@ -180,124 +181,124 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
 
                             <div className="space-y-4">
                                 {/* Seção Pessoal */}
-                                <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-100 space-y-3 sm:space-y-4">
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-2">Dados Pessoais</h3>
+                                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-3 sm:p-4 rounded-xl shadow-sm border space-y-3 sm:space-y-4`}>
+                                    <h3 className={`text-[10px] font-black ${isDarkMode ? 'text-slate-500 border-slate-700' : 'text-slate-400 border-slate-100'} uppercase tracking-widest border-b pb-2 mb-2`}>Dados Pessoais</h3>
 
                                     <div className="space-y-1">
-                                        <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Nome Completo *</label>
+                                        <label className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`}>Nome Completo *</label>
                                         <input
                                             required
                                             placeholder="EX: JOÃO DA SILVA"
                                             value={parkData.nome}
                                             onChange={e => setParkData({ ...parkData, nome: e.target.value })}
                                             style={{ textTransform: 'uppercase' }}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                                            className={`w-full ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-900' : 'bg-slate-50 border-slate-200 focus:bg-white'} border rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`}
                                         />
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                         <div className="space-y-1">
-                                            <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Posto/Grad</label>
-                                            <input placeholder="EX: CAP, SGT" value={parkData.posto} onChange={e => setParkData({ ...parkData, posto: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                            <label className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`}>Posto/Grad</label>
+                                            <input placeholder="EX: CAP, SGT" value={parkData.posto} onChange={e => setParkData({ ...parkData, posto: e.target.value })} style={{ textTransform: 'uppercase' }} className={`w-full ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-900' : 'bg-slate-50 border-slate-200 focus:bg-white'} border rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Tipo</label>
-                                            <select value={parkData.tipo} onChange={e => setParkData({ ...parkData, tipo: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all appearance-none"><option>Militar</option><option>Civil</option></select>
+                                            <label className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`}>Tipo</label>
+                                            <select value={parkData.tipo} onChange={e => setParkData({ ...parkData, tipo: e.target.value })} className={`w-full ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-900' : 'bg-slate-50 border-slate-200 focus:bg-white'} border rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none`}><option>Militar</option><option>Civil</option></select>
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                         <div className="space-y-1">
-                                            <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Força</label>
-                                            <select value={parkData.tipo === 'Civil' ? 'Civil' : parkData.forca} onChange={e => setParkData({ ...parkData, forca: e.target.value })} disabled={parkData.tipo === 'Civil'} className={`w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all ${parkData.tipo === 'Civil' ? 'opacity-50' : ''}`}><option>FAB</option><option>EB</option><option>MB</option><option>PMSP</option><option>PRF</option><option>PF</option><option>Civil</option><option>Outro</option></select>
+                                            <label className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`}>Força</label>
+                                            <select value={parkData.tipo === 'Civil' ? 'Civil' : parkData.forca} onChange={e => setParkData({ ...parkData, forca: e.target.value })} disabled={parkData.tipo === 'Civil'} className={`w-full ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-900' : 'bg-slate-50 border-slate-200 focus:bg-white'} border rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all ${parkData.tipo === 'Civil' ? 'opacity-50' : ''}`}><option>FAB</option><option>EB</option><option>MB</option><option>PMSP</option><option>PRF</option><option>PF</option><option>Civil</option><option>Outro</option></select>
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-xs font-black text-slate-700 uppercase tracking-wide">OM / Órgão</label>
-                                            <input placeholder="BASP..." value={parkData.om} onChange={e => setParkData({ ...parkData, om: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                            <label className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`}>OM / Órgão</label>
+                                            <input placeholder="BASP..." value={parkData.om} onChange={e => setParkData({ ...parkData, om: e.target.value })} style={{ textTransform: 'uppercase' }} className={`w-full ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-900' : 'bg-slate-50 border-slate-200 focus:bg-white'} border rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} />
                                         </div>
                                     </div>
 
                                     <div className="space-y-1">
-                                        <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Identidade (RG/CPF/SARAM) {parkData.tipo === 'Civil' ? '*' : ''}</label>
-                                        <input required={parkData.tipo === 'Civil'} placeholder="Somente números" inputMode="numeric" value={parkData.identidade} onChange={e => setParkData({ ...parkData, identidade: e.target.value.replace(/\D/g, '') })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                        <label className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`}>Identidade (RG/CPF/SARAM) {parkData.tipo === 'Civil' ? '*' : ''}</label>
+                                        <input required={parkData.tipo === 'Civil'} placeholder="Somente números" inputMode="numeric" value={parkData.identidade} onChange={e => setParkData({ ...parkData, identidade: e.target.value.replace(/\D/g, '') })} className={`w-full ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-900' : 'bg-slate-50 border-slate-200 focus:bg-white'} border rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} />
                                     </div>
 
                                     <div className="space-y-1">
-                                        <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Telefone</label>
-                                        <input placeholder="(11) 99999-9999" inputMode="tel" value={parkData.telefone} onChange={e => setParkData({ ...parkData, telefone: e.target.value.replace(/\D/g, '') })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                        <label className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`}>Telefone</label>
+                                        <input placeholder="(11) 99999-9999" inputMode="tel" value={parkData.telefone} onChange={e => setParkData({ ...parkData, telefone: e.target.value.replace(/\D/g, '') })} className={`w-full ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-900' : 'bg-slate-50 border-slate-200 focus:bg-white'} border rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} />
                                     </div>
 
                                     <div className="space-y-1">
-                                        <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Email *</label>
-                                        <input type="email" inputMode="email" required placeholder="seu@email.com" value={parkData.email} onChange={e => setParkData({ ...parkData, email: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                        <label className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`}>Email *</label>
+                                        <input type="email" inputMode="email" required placeholder="seu@email.com" value={parkData.email} onChange={e => setParkData({ ...parkData, email: e.target.value })} className={`w-full ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-900' : 'bg-slate-50 border-slate-200 focus:bg-white'} border rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} />
                                     </div>
                                 </div>
 
                                 {/* Veículo */}
-                                <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-100 space-y-3 sm:space-y-4">
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-2">Dados do Veículo</h3>
+                                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-3 sm:p-4 rounded-xl shadow-sm border space-y-3 sm:space-y-4`}>
+                                    <h3 className={`text-[10px] font-black ${isDarkMode ? 'text-slate-500 border-slate-700' : 'text-slate-400 border-slate-100'} uppercase tracking-widest border-b pb-2 mb-2`}>Dados do Veículo</h3>
 
                                     <div className="space-y-1">
-                                        <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Marca/Modelo *</label>
-                                        <input required placeholder="EX: FIAT ARGO" value={parkData.marcaModelo} onChange={e => setParkData({ ...parkData, marcaModelo: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                        <label className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`}>Marca/Modelo *</label>
+                                        <input required placeholder="EX: FIAT ARGO" value={parkData.marcaModelo} onChange={e => setParkData({ ...parkData, marcaModelo: e.target.value })} style={{ textTransform: 'uppercase' }} className={`w-full ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-900' : 'bg-slate-50 border-slate-200 focus:bg-white'} border rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} />
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                         <div className="space-y-1">
-                                            <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Placa *</label>
-                                            <input required placeholder="ABC-1234" value={parkData.placa} onChange={e => setParkData({ ...parkData, placa: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                            <label className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`}>Placa *</label>
+                                            <input required placeholder="ABC-1234" value={parkData.placa} onChange={e => setParkData({ ...parkData, placa: e.target.value })} style={{ textTransform: 'uppercase' }} className={`w-full ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-900' : 'bg-slate-50 border-slate-200 focus:bg-white'} border rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Cor</label>
-                                            <input placeholder="EX: PRATA" value={parkData.cor} onChange={e => setParkData({ ...parkData, cor: e.target.value })} style={{ textTransform: 'uppercase' }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                            <label className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`}>Cor</label>
+                                            <input placeholder="EX: PRATA" value={parkData.cor} onChange={e => setParkData({ ...parkData, cor: e.target.value })} style={{ textTransform: 'uppercase' }} className={`w-full ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-900' : 'bg-slate-50 border-slate-200 focus:bg-white'} border rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} />
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Período */}
-                                <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-100 space-y-3 sm:space-y-4">
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-2">Período</h3>
+                                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-3 sm:p-4 rounded-xl shadow-sm border space-y-3 sm:space-y-4`}>
+                                    <h3 className={`text-[10px] font-black ${isDarkMode ? 'text-slate-500 border-slate-700' : 'text-slate-400 border-slate-100'} uppercase tracking-widest border-b pb-2 mb-2`}>Período</h3>
                                     <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                         <div className="space-y-1">
-                                            <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Início *</label>
-                                            <input required type="date" value={parkData.inicio} onChange={e => setParkData({ ...parkData, inicio: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                            <label className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`}>Início *</label>
+                                            <input required type="date" value={parkData.inicio} onChange={e => setParkData({ ...parkData, inicio: e.target.value })} className={`w-full ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-900' : 'bg-slate-50 border-slate-200 focus:bg-white'} border rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Término *</label>
-                                            <input required type="date" value={parkData.termino} onChange={e => setParkData({ ...parkData, termino: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" />
+                                            <label className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`}>Término *</label>
+                                            <input required type="date" value={parkData.termino} onChange={e => setParkData({ ...parkData, termino: e.target.value })} className={`w-full ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-900' : 'bg-slate-50 border-slate-200 focus:bg-white'} border rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} />
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Documentos */}
-                                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 space-y-4">
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 mb-2">Documentação (PDF/Foto)</h3>
+                                <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-4 rounded-xl shadow-sm border space-y-4`}>
+                                    <h3 className={`text-[10px] font-black ${isDarkMode ? 'text-slate-500 border-slate-700' : 'text-slate-400 border-slate-100'} uppercase tracking-widest border-b pb-2 mb-2`}>Documentação (PDF/Foto)</h3>
 
-                                    <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
-                                        <p className="text-[10px] text-blue-800 font-bold uppercase text-center flex items-center justify-center gap-2">
+                                    <div className={`p-3 ${isDarkMode ? 'bg-blue-900/20 border-blue-800/30' : 'bg-blue-50 border-blue-100'} rounded-xl border`}>
+                                        <p className={`text-[10px] ${isDarkMode ? 'text-blue-400' : 'text-blue-800'} font-bold uppercase text-center flex items-center justify-center gap-2`}>
                                             <Upload className="w-3 h-3" /> Anexe documentos legíveis
                                         </p>
                                     </div>
 
                                     <div className="space-y-3">
                                         <div className="space-y-1">
-                                            <label className="text-xs font-black text-slate-700 uppercase tracking-wide">Identidade (Militar/Civil) *</label>
-                                            <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setIdentityFile(e.target.files ? e.target.files[0] : null)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 transition-all font-medium" />
+                                            <label className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`}>Identidade (Militar/Civil) *</label>
+                                            <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setIdentityFile(e.target.files ? e.target.files[0] : null)} className={`w-full ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500'} border rounded-xl p-3 text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold ${isDarkMode ? 'file:bg-blue-900/40 file:text-blue-400' : 'file:bg-blue-100 file:text-blue-700'} hover:file:bg-blue-200 transition-all font-medium`} />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-xs font-black text-slate-700 uppercase tracking-wide">CNH *</label>
-                                            <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setCnhFile(e.target.files ? e.target.files[0] : null)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 transition-all font-medium" />
+                                            <label className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`}>CNH *</label>
+                                            <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setCnhFile(e.target.files ? e.target.files[0] : null)} className={`w-full ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500'} border rounded-xl p-3 text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold ${isDarkMode ? 'file:bg-blue-900/40 file:text-blue-400' : 'file:bg-blue-100 file:text-blue-700'} hover:file:bg-blue-200 transition-all font-medium`} />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-xs font-black text-slate-700 uppercase tracking-wide">CRLV (Documento do Carro) *</label>
-                                            <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setCrlvFile(e.target.files ? e.target.files[0] : null)} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 transition-all font-medium" />
+                                            <label className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`}>CRLV (Documento do Carro) *</label>
+                                            <input required type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setCrlvFile(e.target.files ? e.target.files[0] : null)} className={`w-full ${isDarkMode ? 'bg-slate-900 border-slate-700 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500'} border rounded-xl p-3 text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold ${isDarkMode ? 'file:bg-blue-900/40 file:text-blue-400' : 'file:bg-blue-100 file:text-blue-700'} hover:file:bg-blue-200 transition-all font-medium`} />
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-black text-slate-400 uppercase tracking-wide pl-1">Observações</label>
-                                    <textarea placeholder="Informações adicionais..." value={parkData.obs} onChange={e => setParkData({ ...parkData, obs: e.target.value })} rows={3} style={{ textTransform: 'uppercase' }} className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 resize-none shadow-sm" />
+                                    <label className={`text-xs font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase tracking-wide pl-1`}>Observações</label>
+                                    <textarea placeholder="Informações adicionais..." value={parkData.obs} onChange={e => setParkData({ ...parkData, obs: e.target.value })} rows={3} style={{ textTransform: 'uppercase' }} className={`w-full ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white focus:ring-blue-500' : 'bg-white border-slate-200 focus:ring-blue-500'} border rounded-xl p-4 text-sm font-bold outline-none resize-none shadow-sm`} />
                                 </div>
                             </div>
                         </div>
@@ -306,11 +307,11 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
 
                 {/* Footer Fixo (só mostra se não tiver sucesso) */}
                 {!parkSuccess && (
-                    <div className="bg-white p-4 sm:p-6 border-t border-slate-200 flex flex-col sm:flex-row justify-end gap-3 shrink-0 pb-6 sm:pb-6 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] z-10">
+                    <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.5)]' : 'bg-white border-slate-200 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]'} p-4 sm:p-6 border-t flex flex-col sm:flex-row justify-end gap-3 shrink-0 pb-6 sm:pb-6 z-10`}>
                         <button
                             type="button"
                             onClick={handleClose}
-                            className="w-full sm:w-auto px-6 py-4 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors order-2 sm:order-1"
+                            className={`w-full sm:w-auto px-6 py-4 rounded-xl font-bold ${isDarkMode ? 'text-slate-400 bg-slate-800 hover:bg-slate-700' : 'text-slate-500 bg-slate-100 hover:bg-slate-200'} transition-colors order-2 sm:order-1`}
                         >
                             Cancelar
                         </button>

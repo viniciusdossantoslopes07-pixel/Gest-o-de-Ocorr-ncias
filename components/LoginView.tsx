@@ -403,7 +403,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
       )}
 
       {/* Parking Request Modal */}
-      <ParkingRequestModal isOpen={showParkingModal} onClose={() => setShowParkingModal(false)} />
+      <ParkingRequestModal isOpen={showParkingModal} onClose={() => setShowParkingModal(false)} isDarkMode={isDarkMode} />
     </div>
   );
 };

@@ -232,6 +232,7 @@ export default function SideMenu({
                                     </button>
                                     {(!isCollapsed && isOccurrencesOpen) && (
                                         <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
+                                            {canManageUsers && <MenuItem id="users" label="Gerir Usuários" icon={ShieldCheck} />}
                                             {hasPermission(currentUser, PERMISSIONS.VIEW_SERVICE_QUEUE) && <MenuItem id="kanban" label="Fila de Serviço" icon={LayoutDashboard} />}
                                             <MenuItem id="dashboard" label="Estatísticas BI" icon={BarChart3} />
                                             <MenuItem id="list" label="Arquivo Geral" icon={FileText} />
