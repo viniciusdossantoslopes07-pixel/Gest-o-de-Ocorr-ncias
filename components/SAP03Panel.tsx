@@ -297,26 +297,6 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
         setShowSignatureModal(true);
     };
 
-    const handleReceiveMaterial = async (loanId: string, userId: string) => {
-        setSignatureRequestId(loanId);
-        setSignatureAction('return');
-        try {
-            const { data } = await supabase
-                .from('users')
-                .select('id, name, rank, war_name, password')
-                .eq('id', userId)
-                .single();
-
-            if (data) {
-                setFoundUser(data);
-                setShowSignatureModal(true);
-            } else {
-                alert('Militar não encontrado para assinatura.');
-            }
-        } catch (err) {
-            console.error('Error starting receipt flow:', err);
-        }
-    };
 
     const addItem = () => {
         if (!directMaterialId) {
@@ -473,6 +453,13 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                         })
                         .in('id', signatureRequestId);
                     if (error) throw error;
+
+                    // Atualizar estoque para cada item no lote
+                    for (const id of signatureRequestId) {
+                        const { data: loan } = await supabase.from('movimentacao_cautela').select('id_material, quantidade').eq('id', id).single();
+                        if (loan) await updateInventoryStock(loan.id_material, loan.quantidade || 1, 'return');
+                    }
+
                     alert(`${signatureRequestId.length} itens recebidos com sucesso!`);
                 } else {
                     const { error } = await supabase
@@ -484,8 +471,14 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                         })
                         .eq('id', signatureRequestId);
                     if (error) throw error;
+
+                    // Atualizar estoque para item individual
+                    const { data: loan } = await supabase.from('movimentacao_cautela').select('id_material, quantidade').eq('id', signatureRequestId).single();
+                    if (loan) await updateInventoryStock(loan.id_material, loan.quantidade || 1, 'return');
+
                     alert('Devolução aprovada e assinada!');
                 }
+                setActiveTab('Histórico');
             }
 
             setDirectSaram('');
@@ -1259,7 +1252,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                                 <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return')} className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold text-sm">Receber Material</button>
                                             )}
                                             {req.status === 'Em Uso' && (
-                                                <button onClick={() => handleReceiveMaterial(req.id, req.id_usuario)} className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold text-sm">Receber Material</button>
+                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return')} className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold text-sm">Receber Material</button>
                                             )}
                                         </div>
                                     </div>
