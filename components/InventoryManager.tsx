@@ -135,6 +135,16 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
         else fetchItems();
     };
 
+    const totals = items.reduce((acc, item) => ({
+        entrada: acc.entrada + (item.entrada || 0),
+        saida: acc.saida + (item.saida || 0),
+        disponivel: acc.disponivel + (item.entrada - item.saida),
+        tipos: {
+            ...acc.tipos,
+            [item.tipo_de_material || 'Outros']: (acc.tipos[item.tipo_de_material || 'Outros'] || 0) + (item.entrada - item.saida)
+        }
+    }), { entrada: 0, saida: 0, disponivel: 0, tipos: {} as Record<string, number> });
+
     const filteredItems = items.filter(i => {
         const matchesSearch = i.material.toLowerCase().includes(searchTerm.toLowerCase()) ||
             i.tipo_de_material?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -179,14 +189,63 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
                             </div>
                             Gestão de Estoque (SAP-03)
                         </h2>
-                        <p className="text-slate-500 text-sm font-medium mt-1">Controle técnico e operacional de materiais da Unidade.</p>
+                        <p className="text-slate-500 text-sm font-medium mt-1">Visão logística integrada e controle operacional de materiais.</p>
                     </div>
                     <button
                         onClick={() => handleOpenModal()}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center gap-2"
+                        className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25 flex items-center gap-2 active:scale-95"
                     >
-                        <Plus className="w-5 h-5" /> Novo Item
+                        <Plus className="w-4 h-4" /> Novo Item
                     </button>
+                </div>
+
+                {/* Dashboard KPIs */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className={`p-5 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-800/50 border-blue-500/20 shadow-lg shadow-blue-500/5' : 'bg-white border-blue-100 shadow-sm'}`}>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-blue-500 mb-1">Total em Acervo</p>
+                        <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{totals.entrada}</h3>
+                        <div className="flex items-center gap-1 mt-2">
+                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase">Itens Cadastrados</span>
+                        </div>
+                    </div>
+
+                    <div className={`p-5 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-800/50 border-emerald-500/20 shadow-lg shadow-emerald-500/5' : 'bg-white border-emerald-100 shadow-sm'}`}>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500 mb-1">Disponível</p>
+                        <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{totals.disponivel}</h3>
+                        <div className="flex items-center gap-1 mt-2">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase">Pronto para Cautela</span>
+                        </div>
+                    </div>
+
+                    <div className={`p-5 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-800/50 border-amber-500/20 shadow-lg shadow-amber-500/5' : 'bg-white border-amber-100 shadow-sm'}`}>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 mb-1">Em Uso / Saídas</p>
+                        <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{totals.saida}</h3>
+                        <div className="flex items-center gap-1 mt-2">
+                            <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase">Circulação Externa</span>
+                        </div>
+                    </div>
+
+                    <div className={`p-5 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-800/50 border-purple-500/20 shadow-lg shadow-purple-500/5' : 'bg-white border-purple-100 shadow-sm'}`}>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-purple-500 mb-1">Categorias</p>
+                        <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{Object.keys(totals.tipos).length}</h3>
+                        <div className="flex items-center gap-1 mt-2">
+                            <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                            <span className="text-[10px] font-bold text-slate-500 uppercase">Tipagens Ativas</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Categories Summary Chips */}
+                <div className={`p-4 rounded-2xl border flex flex-wrap gap-2 ${isDarkMode ? 'bg-slate-900/30 border-slate-700/50' : 'bg-slate-50/50 border-slate-200'}`}>
+                    {Object.entries(totals.tipos).map(([tipo, qtd]) => (
+                        <div key={tipo} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${isDarkMode ? 'bg-slate-800/50 border-slate-700 text-slate-300' : 'bg-white border-slate-200 text-slate-600'}`}>
+                            <span className="text-[10px] font-black uppercase tracking-tighter">{tipo}</span>
+                            <span className="px-1.5 py-0.5 rounded-md bg-blue-600 text-[10px] font-black text-white leading-none">{qtd}</span>
+                        </div>
+                    ))}
                 </div>
 
                 {/* Filters and Search */}
