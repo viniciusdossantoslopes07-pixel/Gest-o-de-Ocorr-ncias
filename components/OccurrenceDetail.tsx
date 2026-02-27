@@ -137,7 +137,7 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
   const canManage = isAdmin || isOM || canTriage || canEscalate || canResolve || hasPermission(user, PERMISSIONS.MANAGE_OCCURRENCES) || hasPermission(user, PERMISSIONS.FINALIZE_OCCURRENCES);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[500] flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-sm">
       <div className="bg-white w-full max-w-6xl h-full sm:h-[90vh] overflow-hidden rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col animate-in zoom-in-95 duration-200">
         {/* Top Header */}
         <div className="p-4 sm:p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between bg-white shrink-0 gap-4">
