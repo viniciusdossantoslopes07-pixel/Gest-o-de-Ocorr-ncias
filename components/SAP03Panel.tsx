@@ -111,6 +111,38 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
         if (data) setInventory(data);
     };
 
+    const updateInventoryStock = async (materialId: string, quantity: number, type: 'release' | 'return') => {
+        const { data: matData, error: fetchError } = await supabase
+            .from('gestao_estoque')
+            .select('saida, qtdisponivel')
+            .eq('id', materialId)
+            .single();
+
+        if (fetchError || !matData) {
+            console.error('Error fetching material for stock update:', fetchError);
+            return;
+        }
+
+        const currentSaida = matData.saida || 0;
+        const currentQtd = matData.qtdisponivel || 0;
+
+        const newSaida = type === 'release' ? currentSaida + quantity : Math.max(0, currentSaida - quantity);
+        const newQtd = type === 'release' ? Math.max(0, currentQtd - quantity) : currentQtd + quantity;
+
+        const { error: updateError } = await supabase
+            .from('gestao_estoque')
+            .update({
+                saida: newSaida,
+                qtdisponivel: newQtd,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', materialId);
+
+        if (updateError) {
+            console.error('Error updating stock in gestao_estoque:', updateError);
+        }
+    };
+
     const fetchRequests = async () => {
         setLoading(true);
         const { data: rawData, error } = await supabase
@@ -328,6 +360,12 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                 }));
                 const { error } = await supabase.from('movimentacao_cautela').insert(inserts);
                 if (error) throw error;
+
+                // Atualizar estoque para cada item liberado
+                for (const item of selectedItems) {
+                    await updateInventoryStock(item.id_material, item.quantidade, 'release');
+                }
+
                 alert('Materiais liberados com sucesso!');
             } else if (signatureAction === 'approve' && signatureRequestId) {
                 if (Array.isArray(signatureRequestId)) {
@@ -366,6 +404,14 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                         })
                         .in('id', updateIds);
                     if (error) throw error;
+
+                    // Atualizar estoque para cada item devolvido (com UUID)
+                    for (const item of selectedItems) {
+                        if (item.id_loan) {
+                            await updateInventoryStock(item.id_material, item.quantidade, 'return');
+                        }
+                    }
+
                     alert('Itens registrados como recebidos!');
                 } else {
                     // Fallback for manual type-in without loan id if ever occurs
@@ -382,6 +428,12 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                     }));
                     const { error } = await supabase.from('movimentacao_cautela').insert(inserts);
                     if (error) throw error;
+
+                    // Atualizar estoque para cada item (Fallback)
+                    for (const item of selectedItems) {
+                        await updateInventoryStock(item.id_material, item.quantidade, 'return');
+                    }
+
                     alert('Itens registrados como devolvidos!');
                 }
             } else if (signatureAction === 'update_release' && signatureRequestId) {
@@ -394,6 +446,11 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                     })
                     .eq('id', signatureRequestId as string);
                 if (error) throw error;
+
+                // Buscar dados da cautela para processar estoque
+                const { data: loan } = await supabase.from('movimentacao_cautela').select('id_material, quantidade').eq('id', signatureRequestId as string).single();
+                if (loan) await updateInventoryStock(loan.id_material, loan.quantidade || 1, 'release');
+
                 alert('Entrega confirmada e assinada!');
             } else if (signatureAction === 'update_return' && signatureRequestId) {
                 if (Array.isArray(signatureRequestId)) {
@@ -455,15 +512,11 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             if (error) throw error;
 
             if (incrementExit && materialId) {
-                const { data: matData, error: matError } = await supabase
-                    .from('gestao_estoque')
-                    .select('saida')
-                    .eq('id', materialId)
-                    .single();
-
-                if (matError) throw matError;
-                const newSaida = (matData.saida || 0) + quantity;
-                await supabase.from('gestao_estoque').update({ saida: newSaida }).eq('id', materialId);
+                // Se incrementExit é true, significa que estamos tendo uma saída (ou perda)
+                await updateInventoryStock(materialId, quantity, 'release');
+            } else if (newStatus === 'Concluído' && materialId) {
+                // Se o status mudou para Concluído, retornamos ao estoque
+                await updateInventoryStock(materialId, quantity, 'return');
             }
 
             fetchRequests();
