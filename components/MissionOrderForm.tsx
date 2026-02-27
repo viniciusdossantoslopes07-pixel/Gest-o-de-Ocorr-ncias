@@ -658,13 +658,20 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
                 <button
                     type="submit"
-                    className={`w-full py-4 ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500 shadow-xl shadow-blue-900/20' : 'bg-slate-900 hover:bg-slate-800'} text-white rounded-2xl font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95`}
+                    className={`w-full sm:flex-1 py-4 ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500 shadow-xl shadow-blue-900/20' : 'bg-slate-900 hover:bg-slate-800'} text-white rounded-2xl font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95`}
                 >
                     <Save className="w-5 h-5" />
                     {order && order.id ? 'Salvar Alterações' : 'Criar Ordem de Missão'}
+                </button>
+                <button
+                    type="button"
+                    onClick={onCancel}
+                    className={`w-full sm:w-auto sm:px-10 py-4 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'} rounded-2xl font-black uppercase tracking-widest transition-all`}
+                >
+                    Cancelar
                 </button>
             </div>
 
