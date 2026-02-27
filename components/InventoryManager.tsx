@@ -200,22 +200,13 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
                 </div>
 
                 {/* Dashboard KPIs */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className={`p-5 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-800/50 border-indigo-500/20 shadow-lg shadow-indigo-500/5' : 'bg-white border-indigo-100 shadow-sm'}`}>
                         <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-1">Total de Itens</p>
                         <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{items.length}</h3>
                         <div className="flex items-center gap-1 mt-2">
                             <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
                             <span className="text-[10px] font-bold text-slate-500 uppercase">Tipos Cadastrados</span>
-                        </div>
-                    </div>
-
-                    <div className={`p-5 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-800/50 border-blue-500/20 shadow-lg shadow-blue-500/5' : 'bg-white border-blue-100 shadow-sm'}`}>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-blue-500 mb-1">Total em Acervo</p>
-                        <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{totals.entrada}</h3>
-                        <div className="flex items-center gap-1 mt-2">
-                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                            <span className="text-[10px] font-bold text-slate-500 uppercase">Unidades Totais</span>
                         </div>
                     </div>
 
