@@ -1068,14 +1068,14 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                         )}
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col justify-center">
+                            <div className={`p-6 rounded-[2rem] border shadow-sm flex flex-col justify-center ${isDarkMode ? 'bg-slate-800/40 border-slate-700 shadow-none' : 'bg-white border-slate-100 shadow-sm'}`}>
                                 <div className="flex items-center gap-4 mb-6">
-                                    <div className="bg-blue-50 p-3 rounded-2xl text-blue-600">
+                                    <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-blue-600/20 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
                                         <History className="w-6 h-6" />
                                     </div>
                                     <div>
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Total Cautelas</p>
-                                        <h3 className="text-2xl font-black text-slate-800">{filteredRequests.length}</h3>
+                                        <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{filteredRequests.length}</h3>
                                     </div>
                                 </div>
                                 <div className="h-[120px] mb-4">
@@ -1102,18 +1102,18 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </div>
-                                <div className="flex items-center gap-4 mt-auto pt-4 border-t border-slate-50">
-                                    <div className="bg-emerald-50 p-3 rounded-2xl text-emerald-600">
+                                <div className={`flex items-center gap-4 mt-auto pt-4 border-t ${isDarkMode ? 'border-slate-700' : 'border-slate-50'}`}>
+                                    <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-emerald-600/20 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
                                         <Package className="w-6 h-6" />
                                     </div>
                                     <div>
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Materiais Retirados</p>
-                                        <h3 className="text-2xl font-black text-slate-800">{historyStats.totalItems}</h3>
+                                        <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{historyStats.totalItems}</h3>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="md:col-span-2 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm min-h-[200px]">
+                            <div className={`md:col-span-2 p-6 rounded-[2rem] border shadow-sm min-h-[200px] ${isDarkMode ? 'bg-slate-800/40 border-slate-700 shadow-none' : 'bg-white border-slate-100 shadow-sm'}`}>
                                 <div className="flex items-center justify-between mb-4">
                                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <BarChart3 className="w-4 h-4 text-blue-500" />
