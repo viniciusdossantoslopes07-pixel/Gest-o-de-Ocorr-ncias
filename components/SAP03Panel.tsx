@@ -42,7 +42,6 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     const [activeTab, setActiveTab] = useState<'Solicitações' | 'Devoluções' | 'Em Uso' | 'Histórico'>('Solicitações');
 
     const [showDirectRelease, setShowDirectRelease] = useState(false);
-    const [showReceiveMaterial, setShowReceiveMaterial] = useState(false);
     const [directSaram, setDirectSaram] = useState('');
     const [directMaterialId, setDirectMaterialId] = useState('');
     const [directQuantity, setDirectQuantity] = useState(1);
@@ -50,7 +49,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     const [foundUser, setFoundUser] = useState<any>(null);
     const [materialSearch, setMaterialSearch] = useState('');
     const [isMaterialDropdownOpen, setIsMaterialDropdownOpen] = useState(false);
-    const [selectedItems, setSelectedItems] = useState<{ id_material: string, material: string, quantidade: number, endereco?: string }[]>([]);
+    const [selectedItems, setSelectedItems] = useState<{ id_material: string, material: string, quantidade: number, endereco?: string, id_loan?: string }[]>([]);
     const [expandedRequestId, setExpandedRequestId] = useState<string | null>(null);
     const materialDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -250,24 +249,25 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
         setShowSignatureModal(true);
     };
 
-    const handleReceiveMaterial = async () => {
-        // Same logic for receive
-        if (selectedItems.length === 0 && directMaterialId && foundUser) {
-            const mat = inventory.find(i => i.id === directMaterialId);
-            if (mat) {
-                const singleItem = {
-                    id_material: directMaterialId,
-                    material: mat.material,
-                    quantidade: directQuantity
-                };
-                setSelectedItems([singleItem]);
-            }
-        } else if (!foundUser || selectedItems.length === 0) {
-            alert('Selecione um militar válido e pelo menos um material.');
-            return;
-        }
+    const handleReceiveMaterial = async (loanId: string, userId: string) => {
+        setSignatureRequestId(loanId);
         setSignatureAction('return');
-        setShowSignatureModal(true);
+        try {
+            const { data } = await supabase
+                .from('users')
+                .select('id, name, rank, war_name, password')
+                .eq('id', userId)
+                .single();
+
+            if (data) {
+                setFoundUser(data);
+                setShowSignatureModal(true);
+            } else {
+                alert('Militar não encontrado para assinatura.');
+            }
+        } catch (err) {
+            console.error('Error starting receipt flow:', err);
+        }
     };
 
     const addItem = () => {
@@ -275,15 +275,18 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             alert('Selecione um material primeiro.');
             return;
         }
-        const mat = inventory.find(i => i.id === directMaterialId);
-        if (!mat) return;
 
-        setSelectedItems([...selectedItems, {
-            id_material: directMaterialId,
-            material: mat.material,
-            quantidade: directQuantity,
-            endereco: mat.endereco
-        }]);
+        if (showDirectRelease) {
+            const mat = inventory.find(i => i.id === directMaterialId);
+            if (!mat) return;
+
+            setSelectedItems([...selectedItems, {
+                id_material: directMaterialId,
+                material: mat.material,
+                quantidade: directQuantity,
+                endereco: mat.endereco
+            }]);
+        }
 
         setDirectMaterialId('');
         setMaterialSearch('');
@@ -345,20 +348,36 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                     alert('Solicitação aprovada e assinada!');
                 }
             } else if (signatureAction === 'return') {
-                const inserts = selectedItems.map(item => ({
-                    id_material: item.id_material,
-                    id_usuario: foundUser.id,
-                    status: 'Concluído',
-                    quantidade: item.quantidade,
-                    autorizado_por: userName,
-                    entregue_por: userName,
-                    recebido_por: userName,
-                    observacao: `Recebimento de Material: Assinado digitalmente por ${militaryName} em ${new Date().toLocaleString()}`,
-                    created_at: now
-                }));
-                const { error } = await supabase.from('movimentacao_cautela').insert(inserts);
-                if (error) throw error;
-                alert('Itens registrados como devolvidos!');
+                const updateIds = selectedItems.filter(item => item.id_loan).map(item => item.id_loan!);
+
+                if (updateIds.length > 0) {
+                    const { error } = await supabase
+                        .from('movimentacao_cautela')
+                        .update({
+                            status: 'Concluído',
+                            recebido_por: userName,
+                            observacao: `Recebimento de Material: Assinado digitalmente por ${militaryName} em ${new Date().toLocaleString()}`
+                        })
+                        .in('id', updateIds);
+                    if (error) throw error;
+                    alert('Itens registrados como recebidos!');
+                } else {
+                    // Fallback for manual type-in without loan id if ever occurs
+                    const inserts = selectedItems.map(item => ({
+                        id_material: item.id_material,
+                        id_usuario: foundUser.id,
+                        status: 'Concluído',
+                        quantidade: item.quantidade,
+                        autorizado_por: userName,
+                        entregue_por: userName,
+                        recebido_por: userName,
+                        observacao: `Recebimento de Material (Novo Registro): Assinado digitalmente por ${militaryName} em ${new Date().toLocaleString()}`,
+                        created_at: now
+                    }));
+                    const { error } = await supabase.from('movimentacao_cautela').insert(inserts);
+                    if (error) throw error;
+                    alert('Itens registrados como devolvidos!');
+                }
             } else if (signatureAction === 'update_release' && signatureRequestId) {
                 const { error } = await supabase
                     .from('movimentacao_cautela')
@@ -402,7 +421,6 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             setFoundUser(null);
             setSelectedItems([]);
             setShowDirectRelease(false);
-            setShowReceiveMaterial(false);
             setShowSignatureModal(false);
             setSignaturePassword('');
             setSignatureRequestId(null);
@@ -536,18 +554,18 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
 
                 <div className="flex flex-wrap gap-3 w-full md:w-auto">
                     <button
-                        onClick={() => { setShowDirectRelease(!showDirectRelease); setShowReceiveMaterial(false); }}
+                        onClick={() => { setShowDirectRelease(!showDirectRelease); }}
                         className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2 text-[10px] active:scale-95 ${showDirectRelease ? 'bg-red-500 text-white shadow-red-500/20' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20'}`}
                     >
                         <Package className="w-4 h-4" />
                         <span>{showDirectRelease ? 'Cancelar' : 'Nova Cautela'}</span>
                     </button>
                     <button
-                        onClick={() => { setShowReceiveMaterial(!showReceiveMaterial); setShowDirectRelease(false); }}
-                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2 text-[10px] active:scale-95 ${showReceiveMaterial ? 'bg-red-500 text-white shadow-red-500/20' : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-500/20'}`}
+                        onClick={() => { setActiveTab('Em Uso'); setInUseSearch(''); setShowDirectRelease(false); }}
+                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2 text-[10px] active:scale-95 ${activeTab === 'Em Uso' ? 'bg-emerald-600 text-white shadow-emerald-500/20' : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-500/20'}`}
                     >
                         <Plus className="w-4 h-4" />
-                        <span>{showReceiveMaterial ? 'Cancelar' : 'Receber Material'}</span>
+                        <span>Receber Material</span>
                     </button>
                     <button onClick={fetchRequests} className={`p-2.5 rounded-xl transition-all shadow-sm shrink-0 border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
                         <Clock className="w-5 h-5" />
@@ -556,11 +574,11 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             </div>
 
             {/* Direct forms */}
-            {(showDirectRelease || showReceiveMaterial) && (
+            {showDirectRelease && (
                 <div className={`p-8 rounded-[2rem] border-2 shadow-2xl space-y-6 animate-scale-in ${isDarkMode ? 'bg-slate-800 border-blue-500/30' : 'bg-white border-blue-100 shadow-blue-100/50'}`}>
                     <h2 className={`font-black flex items-center gap-3 uppercase text-[10px] tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                        <div className={`w-2.5 h-2.5 rounded-full shadow-lg ${showDirectRelease ? 'bg-blue-500 shadow-blue-500/50 animate-pulse' : 'bg-emerald-500 shadow-emerald-500/50 animate-pulse'}`}></div>
-                        {showDirectRelease ? 'Nova Movimentação de Cautela (Saída)' : 'Registro de Recebimento de Material (Entrada)'}
+                        <div className={`w-2.5 h-2.5 rounded-full shadow-lg bg-blue-500 shadow-blue-500/50 animate-pulse`}></div>
+                        Nova Movimentação de Cautela (Saída)
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div className="space-y-1">
@@ -592,26 +610,46 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                             </div>
                             {isMaterialDropdownOpen && (
                                 <div className={`absolute z-50 w-full mt-1 border rounded-xl shadow-2xl max-h-60 overflow-y-auto overflow-x-hidden ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-                                    {(materialSearch ? inventory.filter(item => item.material.toLowerCase().includes(materialSearch.toLowerCase())) : inventory).map(item => (
-                                        <button
-                                            key={item.id}
-                                            onClick={() => { setDirectMaterialId(item.id); setMaterialSearch(item.material); setIsMaterialDropdownOpen(false); }}
-                                            className={`w-full px-4 py-3 text-left transition-colors border-b last:border-0 flex justify-between items-center ${isDarkMode ? 'hover:bg-slate-700/50 border-slate-700' : 'hover:bg-blue-50 border-slate-100'}`}
-                                        >
-                                            <div className="min-w-0 pr-4">
-                                                <p className={`font-bold text-sm truncate ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{item.material}</p>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <p className={`text-[10px] font-medium whitespace-nowrap ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{item.qtdisponivel} disponíveis</p>
-                                                    {item.endereco && (
-                                                        <p className="text-[10px] text-amber-500 font-medium flex items-center gap-0.5 truncate">
-                                                            <MapPin className="w-2.5 h-2.5 shrink-0" /> {item.endereco}
-                                                        </p>
-                                                    )}
+                                    {(() => {
+                                        let itemsForSearch: any[] = [];
+                                        if (showDirectRelease) {
+                                            itemsForSearch = inventory.map(item => ({
+                                                id: item.id,
+                                                material: item.material,
+                                                label: `${item.qtdisponivel} disponíveis`,
+                                                endereco: item.endereco
+                                            }));
+                                        }
+
+                                        const filtered = materialSearch
+                                            ? itemsForSearch.filter(i => i.material.toLowerCase().includes(materialSearch.toLowerCase()))
+                                            : itemsForSearch;
+
+                                        if (filtered.length === 0) {
+                                            return <div className="px-4 py-3 text-slate-500 text-xs font-bold text-center">Nenhum material encontrado</div>;
+                                        }
+
+                                        return filtered.map(item => (
+                                            <button
+                                                key={item.id}
+                                                onClick={() => { setDirectMaterialId(item.id); setMaterialSearch(item.material); setIsMaterialDropdownOpen(false); }}
+                                                className={`w-full px-4 py-3 text-left transition-colors border-b last:border-0 flex justify-between items-center ${isDarkMode ? 'hover:bg-slate-700/50 border-slate-700' : 'hover:bg-blue-50 border-slate-100'}`}
+                                            >
+                                                <div className="min-w-0 pr-4">
+                                                    <p className={`font-bold text-sm truncate ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{item.material}</p>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <p className={`text-[10px] font-medium whitespace-nowrap ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{item.label}</p>
+                                                        {item.endereco && (
+                                                            <p className="text-[10px] text-amber-500 font-medium flex items-center gap-0.5 truncate">
+                                                                <MapPin className="w-2.5 h-2.5 shrink-0" /> {item.endereco}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            {directMaterialId === item.id && <CheckCircle className="w-4 h-4 text-blue-500 shrink-0" />}
-                                        </button>
-                                    ))}
+                                                {directMaterialId === item.id && <CheckCircle className="w-4 h-4 text-blue-500 shrink-0" />}
+                                            </button>
+                                        ));
+                                    })()}
                                 </div>
                             )}
                         </div>
@@ -635,11 +673,11 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                             </button>
                             <div className="flex-1"></div>
                             <button
-                                onClick={showDirectRelease ? handleDirectRelease : handleReceiveMaterial}
+                                onClick={handleDirectRelease}
                                 disabled={actionLoading === 'direct' || (!selectedItems.length && (!foundUser || !directMaterialId))}
-                                className={`min-w-[200px] h-[50px] text-white rounded-xl font-black transition-all shadow-lg text-sm uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed ${showDirectRelease ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/20' : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/20'}`}
+                                className={`min-w-[200px] h-[50px] text-white rounded-xl font-black transition-all shadow-lg text-sm uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-500 shadow-blue-500/20`}
                             >
-                                {actionLoading === 'direct' ? 'Processando...' : (showDirectRelease ? 'Confirmar Cautela' : 'Confirmar Recebimento')}
+                                {actionLoading === 'direct' ? 'Processando...' : 'Confirmar Cautela'}
                             </button>
                         </div>
                         {selectedItems.length > 0 && (
@@ -699,136 +737,140 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             </div>
 
             {/* Search and Batch Actions */}
-            {(activeTab === 'Em Uso' || activeTab === 'Histórico' || activeTab === 'Solicitações') && (
-                <div className={`flex flex-col md:flex-row gap-6 items-center justify-between p-6 rounded-[2rem] border animate-scale-in mb-6 ${isDarkMode ? 'bg-slate-800/40 border-slate-700 shadow-none' : 'bg-blue-50/50 border-blue-100 shadow-sm shadow-blue-100/20'}`}>
-                    <div className="relative w-full md:w-96">
-                        <input
-                            type="text"
-                            placeholder="SARAM, Militar ou Material..."
-                            value={inUseSearch}
-                            onChange={(e) => setInUseSearch(e.target.value)}
-                            className={`w-full pl-10 pr-4 py-3 border rounded-xl outline-none text-sm font-bold transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
-                        />
-                        <Package className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    </div>
-
-                    {(activeTab === 'Em Uso') && (
-                        <div className="flex items-center gap-4 w-full md:w-auto">
-                            <label className="flex items-center gap-2 cursor-pointer group bg-white px-4 py-2 rounded-xl border border-slate-200">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
-                                    checked={filteredRequests.filter(r => activeTab === 'Em Uso').length > 0 && selectedBatchIds.length === filteredRequests.filter(r => activeTab === 'Em Uso').length}
-                                    onChange={(e) => {
-                                        if (e.target.checked) {
-                                            const selectable = filteredRequests.filter(r => activeTab === 'Em Uso').map(r => r.id);
-                                            setSelectedBatchIds(selectable);
-                                        }
-                                        else setSelectedBatchIds([]);
-                                    }}
-                                />
-                                <span className="text-sm font-bold text-slate-600 group-hover:text-blue-600">Selecionar Tudo ({filteredRequests.filter(r => activeTab === 'Em Uso').length})</span>
-                            </label>
-
-                            {selectedBatchIds.length > 0 && (
-                                <button
-                                    onClick={() => {
-                                        if (activeTab === 'Em Uso') {
-                                            const firstId = selectedBatchIds[0];
-                                            const firstReq = requests.find(r => r.id === firstId);
-                                            if (firstReq) startSignatureFlow(selectedBatchIds, firstReq.id_usuario, 'update_return');
-                                        }
-                                    }}
-                                    className={`px-4 py-2 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700`}
-                                >
-                                    <CheckCircle className="w-4 h-4" />
-                                    Receber Selecionados ({selectedBatchIds.length})
-                                </button>
-                            )}
+            {
+                (activeTab === 'Em Uso' || activeTab === 'Histórico' || activeTab === 'Solicitações') && (
+                    <div className={`flex flex-col md:flex-row gap-6 items-center justify-between p-6 rounded-[2rem] border animate-scale-in mb-6 ${isDarkMode ? 'bg-slate-800/40 border-slate-700 shadow-none' : 'bg-blue-50/50 border-blue-100 shadow-sm shadow-blue-100/20'}`}>
+                        <div className="relative w-full md:w-96">
+                            <input
+                                type="text"
+                                placeholder="SARAM, Militar ou Material..."
+                                value={inUseSearch}
+                                onChange={(e) => setInUseSearch(e.target.value)}
+                                className={`w-full pl-10 pr-4 py-3 border rounded-xl outline-none text-sm font-bold transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
+                            />
+                            <Package className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         </div>
-                    )}
-                </div>
-            )}
+
+                        {(activeTab === 'Em Uso') && (
+                            <div className="flex items-center gap-4 w-full md:w-auto">
+                                <label className="flex items-center gap-2 cursor-pointer group bg-white px-4 py-2 rounded-xl border border-slate-200">
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                                        checked={filteredRequests.filter(r => activeTab === 'Em Uso').length > 0 && selectedBatchIds.length === filteredRequests.filter(r => activeTab === 'Em Uso').length}
+                                        onChange={(e) => {
+                                            if (e.target.checked) {
+                                                const selectable = filteredRequests.filter(r => activeTab === 'Em Uso').map(r => r.id);
+                                                setSelectedBatchIds(selectable);
+                                            }
+                                            else setSelectedBatchIds([]);
+                                        }}
+                                    />
+                                    <span className="text-sm font-bold text-slate-600 group-hover:text-blue-600">Selecionar Tudo ({filteredRequests.filter(r => activeTab === 'Em Uso').length})</span>
+                                </label>
+
+                                {selectedBatchIds.length > 0 && (
+                                    <button
+                                        onClick={() => {
+                                            if (activeTab === 'Em Uso') {
+                                                const firstId = selectedBatchIds[0];
+                                                const firstReq = requests.find(r => r.id === firstId);
+                                                if (firstReq) startSignatureFlow(selectedBatchIds, firstReq.id_usuario, 'update_return');
+                                            }
+                                        }}
+                                        className={`px-4 py-2 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700`}
+                                    >
+                                        <CheckCircle className="w-4 h-4" />
+                                        Receber Selecionados ({selectedBatchIds.length})
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )
+            }
 
             {/* History Dashboard */}
-            {activeTab === 'Histórico' && historyStats && historyStats.totalItems > 0 && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
-                    {searchedSoldier && (
-                        <div className="bg-slate-800 text-white px-6 py-3 rounded-2xl flex items-center justify-between shadow-lg">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-black text-blue-400 border border-white/5">
-                                    {searchedSoldier.rank}
+            {
+                activeTab === 'Histórico' && historyStats && historyStats.totalItems > 0 && (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                        {searchedSoldier && (
+                            <div className="bg-slate-800 text-white px-6 py-3 rounded-2xl flex items-center justify-between shadow-lg">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-black text-blue-400 border border-white/5">
+                                        {searchedSoldier.rank}
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Militar Identificado</p>
+                                        <h3 className="text-lg font-black">{searchedSoldier.war_name}</h3>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Militar Identificado</p>
-                                    <h3 className="text-lg font-black">{searchedSoldier.war_name}</h3>
+                                <div className="text-right">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">SARAM</p>
+                                    <p className="font-bold text-blue-400">{searchedSoldier.saram}</p>
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">SARAM</p>
-                                <p className="font-bold text-blue-400">{searchedSoldier.saram}</p>
-                            </div>
-                        </div>
-                    )}
+                        )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col justify-center">
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="bg-blue-50 p-3 rounded-2xl text-blue-600">
-                                    <History className="w-6 h-6" />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col justify-center">
+                                <div className="flex items-center gap-4 mb-4">
+                                    <div className="bg-blue-50 p-3 rounded-2xl text-blue-600">
+                                        <History className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Total Cautelas</p>
+                                        <h3 className="text-2xl font-black text-slate-800">{filteredRequests.length}</h3>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Total Cautelas</p>
-                                    <h3 className="text-2xl font-black text-slate-800">{filteredRequests.length}</h3>
+                                <div className="flex items-center gap-4">
+                                    <div className="bg-emerald-50 p-3 rounded-2xl text-emerald-600">
+                                        <Package className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Materiais Retirados</p>
+                                        <h3 className="text-2xl font-black text-slate-800">{historyStats.totalItems}</h3>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4">
-                                <div className="bg-emerald-50 p-3 rounded-2xl text-emerald-600">
-                                    <Package className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Materiais Retirados</p>
-                                    <h3 className="text-2xl font-black text-slate-800">{historyStats.totalItems}</h3>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div className="md:col-span-2 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm min-h-[200px]">
-                            <div className="flex items-center justify-between mb-4">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                    <BarChart3 className="w-4 h-4 text-blue-500" />
-                                    Uso por Categoria
-                                </h4>
-                            </div>
-                            <div className="h-[150px] w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={historyStats.chartData} layout="vertical" margin={{ left: 20 }}>
-                                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                                        <XAxis type="number" hide />
-                                        <YAxis
-                                            dataKey="name"
-                                            type="category"
-                                            axisLine={false}
-                                            tickLine={false}
-                                            tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }}
-                                            width={100}
-                                        />
-                                        <Tooltip
-                                            cursor={{ fill: '#f8fafc' }}
-                                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold' }}
-                                        />
-                                        <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={20}>
-                                            {historyStats.chartData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={historyStats.COLORS[index % historyStats.COLORS.length]} />
-                                            ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
+                            <div className="md:col-span-2 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm min-h-[200px]">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <BarChart3 className="w-4 h-4 text-blue-500" />
+                                        Uso por Categoria
+                                    </h4>
+                                </div>
+                                <div className="h-[150px] w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={historyStats.chartData} layout="vertical" margin={{ left: 20 }}>
+                                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                                            <XAxis type="number" hide />
+                                            <YAxis
+                                                dataKey="name"
+                                                type="category"
+                                                axisLine={false}
+                                                tickLine={false}
+                                                tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }}
+                                                width={100}
+                                            />
+                                            <Tooltip
+                                                cursor={{ fill: '#f8fafc' }}
+                                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold' }}
+                                            />
+                                            <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={20}>
+                                                {historyStats.chartData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={historyStats.COLORS[index % historyStats.COLORS.length]} />
+                                                ))}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             <div className="space-y-4">
                 {filteredRequests.length === 0 ? (
@@ -885,7 +927,10 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                                 <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_release')} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm">Entregar Material</button>
                                             )}
                                             {req.status === 'Pendente Devolução' && (
-                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return')} className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm">Receber Material</button>
+                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return')} className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold text-sm">Receber Material</button>
+                                            )}
+                                            {req.status === 'Em Uso' && (
+                                                <button onClick={() => handleReceiveMaterial(req.id, req.id_usuario)} className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold text-sm">Receber Material</button>
                                             )}
                                         </div>
                                     </div>
@@ -944,228 +989,231 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             </div>
 
             {/* Modal Cupom Compacto */}
-            {selectedRequest && (
-                <div
-                    className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in"
-                    onClick={() => setSelectedRequest(null)}
-                >
+            {
+                selectedRequest && (
                     <div
-                        className={`rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-white'}`}
-                        onClick={(e) => e.stopPropagation()}
+                        className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in"
+                        onClick={() => setSelectedRequest(null)}
                     >
-                        {/* Header compacto */}
-                        <div className={`px-6 py-5 flex items-center gap-4 relative ${selectedRequest.status === 'Concluído' ? 'bg-emerald-600 shadow-lg shadow-emerald-500/20' :
-                            selectedRequest.status === 'Em Uso' ? 'bg-blue-600 shadow-lg shadow-blue-500/20' :
-                                selectedRequest.status === 'Rejeitado' ? 'bg-red-600 shadow-lg shadow-red-500/20' :
-                                    'bg-amber-500 shadow-lg shadow-amber-500/20'
-                            }`}>
-                            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                                {selectedRequest.status === 'Concluído' ? <CheckCircle className="w-4 h-4 text-white" /> :
-                                    selectedRequest.status === 'Em Uso' ? <Truck className="w-4 h-4 text-white" /> :
-                                        selectedRequest.status === 'Rejeitado' ? <XCircle className="w-4 h-4 text-white" /> :
-                                            <Clock className="w-4 h-4 text-white" />}
-                            </div>
-                            <div className="flex-1">
-                                <h2 className="text-white font-black text-sm uppercase tracking-tight">{selectedRequest.status === 'Concluído' ? 'Cautela Concluída' : selectedRequest.status === 'Em Uso' ? 'Material em Uso' : selectedRequest.status === 'Rejeitado' ? 'Cautela Rejeitada' : 'Cautela Pendente'}</h2>
-                                <p className="text-white/70 text-[10px] font-medium">Comprovante</p>
-                            </div>
-                            <button onClick={() => setSelectedRequest(null)} className="p-1 bg-white/20 hover:bg-white/30 rounded-full transition-all">
-                                <XCircle className="w-4 h-4 text-white" />
-                            </button>
-                        </div>
-
-                        <div className="border-t-2 border-dashed border-slate-200"></div>
-
-                        {/* Corpo compacto */}
-                        <div className="p-4 space-y-3">
-                            {/* Material + Info */}
-                            <div className="text-center pb-2 border-b border-slate-100">
-                                <p className="text-lg font-black text-slate-800">{selectedRequest.material?.material || '—'}</p>
-                                <p className="text-[10px] text-slate-400 font-medium">{selectedRequest.material?.tipo_de_material || 'Sem categoria'}</p>
-                                {selectedRequest.material?.endereco && (
-                                    <p className="text-[10px] text-amber-600 font-bold flex items-center justify-center gap-1 mt-1">
-                                        <MapPin className="w-3 h-3" /> {selectedRequest.material.endereco}
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Grid compacto: Qtd + Data + Solicitante */}
-                            <div className="grid grid-cols-3 gap-2 text-center">
-                                <div className="bg-slate-50 p-2 rounded-lg">
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase">Qtd</p>
-                                    <p className="font-black text-slate-800">{selectedRequest.quantidade || 1}</p>
+                        <div
+                            className={`rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden animate-scale-in border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-white'}`}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* Header compacto */}
+                            <div className={`px-6 py-5 flex items-center gap-4 relative ${selectedRequest.status === 'Concluído' ? 'bg-emerald-600 shadow-lg shadow-emerald-500/20' :
+                                selectedRequest.status === 'Em Uso' ? 'bg-blue-600 shadow-lg shadow-blue-500/20' :
+                                    selectedRequest.status === 'Rejeitado' ? 'bg-red-600 shadow-lg shadow-red-500/20' :
+                                        'bg-amber-500 shadow-lg shadow-amber-500/20'
+                                }`}>
+                                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                                    {selectedRequest.status === 'Concluído' ? <CheckCircle className="w-4 h-4 text-white" /> :
+                                        selectedRequest.status === 'Em Uso' ? <Truck className="w-4 h-4 text-white" /> :
+                                            selectedRequest.status === 'Rejeitado' ? <XCircle className="w-4 h-4 text-white" /> :
+                                                <Clock className="w-4 h-4 text-white" />}
                                 </div>
-                                <div className="bg-slate-50 p-2 rounded-lg">
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase">Data</p>
-                                    <p className="font-bold text-slate-800 text-xs">{new Date(selectedRequest.created_at).toLocaleDateString('pt-BR')}</p>
-                                    <p className="text-[9px] text-slate-400">{new Date(selectedRequest.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                                <div className="flex-1">
+                                    <h2 className="text-white font-black text-sm uppercase tracking-tight">{selectedRequest.status === 'Concluído' ? 'Cautela Concluída' : selectedRequest.status === 'Em Uso' ? 'Material em Uso' : selectedRequest.status === 'Rejeitado' ? 'Cautela Rejeitada' : 'Cautela Pendente'}</h2>
+                                    <p className="text-white/70 text-[10px] font-medium">Comprovante</p>
                                 </div>
-                                {selectedRequest.solicitante && (
-                                    <div className="bg-blue-50 p-2 rounded-lg border border-blue-100">
-                                        <p className="text-[9px] font-bold text-blue-400 uppercase">Solic.</p>
-                                        <p className="font-black text-slate-800 text-xs">{selectedRequest.solicitante.rank} {selectedRequest.solicitante.war_name}</p>
-                                    </div>
-                                )}
+                                <button onClick={() => setSelectedRequest(null)} className="p-1 bg-white/20 hover:bg-white/30 rounded-full transition-all">
+                                    <XCircle className="w-4 h-4 text-white" />
+                                </button>
                             </div>
 
-                            <div className="border-t border-dashed border-slate-100"></div>
+                            <div className="border-t-2 border-dashed border-slate-200"></div>
 
-                            {/* Cadeia de Responsabilidade — compacta em linhas */}
-                            <div className="space-y-1.5">
-                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Responsabilidade</p>
-                                {selectedRequest.autorizado_por && (
-                                    <div className="flex items-center gap-2 bg-amber-50 px-3 py-1.5 rounded-lg">
-                                        <ShieldCheck className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                                        <p className="text-[10px] font-bold text-amber-600 uppercase w-20 shrink-0">Autorizado</p>
-                                        <p className="font-bold text-slate-700 text-xs truncate flex-1">{selectedRequest.autorizado_por}</p>
+                            {/* Corpo compacto */}
+                            <div className="p-4 space-y-3">
+                                {/* Material + Info */}
+                                <div className="text-center pb-2 border-b border-slate-100">
+                                    <p className="text-lg font-black text-slate-800">{selectedRequest.material?.material || '—'}</p>
+                                    <p className="text-[10px] text-slate-400 font-medium">{selectedRequest.material?.tipo_de_material || 'Sem categoria'}</p>
+                                    {selectedRequest.material?.endereco && (
+                                        <p className="text-[10px] text-amber-600 font-bold flex items-center justify-center gap-1 mt-1">
+                                            <MapPin className="w-3 h-3" /> {selectedRequest.material.endereco}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Grid compacto: Qtd + Data + Solicitante */}
+                                <div className="grid grid-cols-3 gap-2 text-center">
+                                    <div className="bg-slate-50 p-2 rounded-lg">
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase">Qtd</p>
+                                        <p className="font-black text-slate-800">{selectedRequest.quantidade || 1}</p>
                                     </div>
-                                )}
-                                {selectedRequest.entregue_por && (
-                                    <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg">
-                                        <Truck className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                                        <p className="text-[10px] font-bold text-blue-600 uppercase w-20 shrink-0">Entregue</p>
-                                        <p className="font-bold text-slate-700 text-xs truncate flex-1">{selectedRequest.entregue_por}</p>
+                                    <div className="bg-slate-50 p-2 rounded-lg">
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase">Data</p>
+                                        <p className="font-bold text-slate-800 text-xs">{new Date(selectedRequest.created_at).toLocaleDateString('pt-BR')}</p>
+                                        <p className="text-[9px] text-slate-400">{new Date(selectedRequest.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                                     </div>
+                                    {selectedRequest.solicitante && (
+                                        <div className="bg-blue-50 p-2 rounded-lg border border-blue-100">
+                                            <p className="text-[9px] font-bold text-blue-400 uppercase">Solic.</p>
+                                            <p className="font-black text-slate-800 text-xs">{selectedRequest.solicitante.rank} {selectedRequest.solicitante.war_name}</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="border-t border-dashed border-slate-100"></div>
+
+                                {/* Cadeia de Responsabilidade — compacta em linhas */}
+                                <div className="space-y-1.5">
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Responsabilidade</p>
+                                    {selectedRequest.autorizado_por && (
+                                        <div className="flex items-center gap-2 bg-amber-50 px-3 py-1.5 rounded-lg">
+                                            <ShieldCheck className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                                            <p className="text-[10px] font-bold text-amber-600 uppercase w-20 shrink-0">Autorizado</p>
+                                            <p className="font-bold text-slate-700 text-xs truncate flex-1">{selectedRequest.autorizado_por}</p>
+                                        </div>
+                                    )}
+                                    {selectedRequest.entregue_por && (
+                                        <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg">
+                                            <Truck className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                                            <p className="text-[10px] font-bold text-blue-600 uppercase w-20 shrink-0">Entregue</p>
+                                            <p className="font-bold text-slate-700 text-xs truncate flex-1">{selectedRequest.entregue_por}</p>
+                                        </div>
+                                    )}
+                                    {selectedRequest.recebido_por && (
+                                        <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-lg">
+                                            <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                            <p className="text-[10px] font-bold text-emerald-600 uppercase w-20 shrink-0">Recebido</p>
+                                            <p className="font-bold text-slate-700 text-xs truncate flex-1">{selectedRequest.recebido_por}</p>
+                                        </div>
+                                    )}
+                                    {!selectedRequest.autorizado_por && !selectedRequest.entregue_por && !selectedRequest.recebido_por && (
+                                        <p className="text-[10px] text-slate-400 italic">Sem movimentação.</p>
+                                    )}
+                                </div>
+
+                                {/* Observações compactas */}
+                                {selectedRequest.observacao && (
+                                    <>
+                                        <div className="border-t border-dashed border-slate-100"></div>
+                                        <div className="bg-slate-50 px-3 py-2 rounded-lg">
+                                            <p className="text-[9px] font-bold text-slate-400 uppercase mb-0.5">Obs</p>
+                                            <p className="text-[10px] text-slate-600 italic leading-snug">"{selectedRequest.observacao}"</p>
+                                        </div>
+                                    </>
                                 )}
-                                {selectedRequest.recebido_por && (
-                                    <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-lg">
-                                        <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                                        <p className="text-[10px] font-bold text-emerald-600 uppercase w-20 shrink-0">Recebido</p>
-                                        <p className="font-bold text-slate-700 text-xs truncate flex-1">{selectedRequest.recebido_por}</p>
-                                    </div>
-                                )}
-                                {!selectedRequest.autorizado_por && !selectedRequest.entregue_por && !selectedRequest.recebido_por && (
-                                    <p className="text-[10px] text-slate-400 italic">Sem movimentação.</p>
-                                )}
+
+                                {/* Footer ID */}
+                                <div className="border-t border-dashed border-slate-100 pt-2 flex justify-between text-[9px] text-slate-300 font-mono">
+                                    <span>ID: {selectedRequest.id.slice(0, 8).toUpperCase()}</span>
+                                    <span>GSD-SP • SAP-03</span>
+                                </div>
                             </div>
 
-                            {/* Observações compactas */}
-                            {selectedRequest.observacao && (
-                                <>
-                                    <div className="border-t border-dashed border-slate-100"></div>
-                                    <div className="bg-slate-50 px-3 py-2 rounded-lg">
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-0.5">Obs</p>
-                                        <p className="text-[10px] text-slate-600 italic leading-snug">"{selectedRequest.observacao}"</p>
-                                    </div>
-                                </>
-                            )}
-
-                            {/* Footer ID */}
-                            <div className="border-t border-dashed border-slate-100 pt-2 flex justify-between text-[9px] text-slate-300 font-mono">
-                                <span>ID: {selectedRequest.id.slice(0, 8).toUpperCase()}</span>
-                                <span>GSD-SP • SAP-03</span>
+                            <div className="px-4 pb-4">
+                                <button onClick={() => setSelectedRequest(null)} className="w-full py-2.5 bg-slate-800 text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-900 transition-all">
+                                    Fechar
+                                </button>
                             </div>
-                        </div>
-
-                        <div className="px-4 pb-4">
-                            <button onClick={() => setSelectedRequest(null)} className="w-full py-2.5 bg-slate-800 text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-900 transition-all">
-                                Fechar
-                            </button>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Signature Modal */}
-            {showSignatureModal && foundUser && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/90 backdrop-blur-md animate-fade-in p-4"
-                    onClick={() => {
-                        setShowSignatureModal(false);
-                        setSignaturePassword('');
-                    }}
-                >
+            {
+                showSignatureModal && foundUser && (
                     <div
-                        className={`p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md space-y-8 animate-scale-in relative border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-white'}`}
-                        onClick={(e) => e.stopPropagation()}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/90 backdrop-blur-md animate-fade-in p-4"
+                        onClick={() => {
+                            setShowSignatureModal(false);
+                            setSignaturePassword('');
+                        }}
                     >
-                        <button
-                            onClick={() => {
-                                setShowSignatureModal(false);
-                                setSignaturePassword('');
-                            }}
-                            className={`absolute top-6 right-6 p-2 rounded-full transition-all ${isDarkMode ? 'bg-slate-700 text-slate-400 hover:text-white' : 'bg-slate-50 text-slate-300 hover:text-slate-500'}`}
+                        <div
+                            className={`p-10 rounded-[2.5rem] shadow-2xl w-full max-w-md space-y-8 animate-scale-in relative border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-white'}`}
+                            onClick={(e) => e.stopPropagation()}
                         >
-                            <XCircle className="w-6 h-6" />
-                        </button>
-
-                        <div className="text-center space-y-4">
-                            <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl transform -rotate-3 ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-600 text-white'}`}>
-                                <ShieldCheck className="w-10 h-10" />
-                            </div>
-                            <h2 className={`text-2xl font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Assinatura Digital</h2>
-                            <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Validação de Identidade Criptográfica</p>
-                        </div>
-
-                        <div className={`p-6 rounded-2xl border flex items-center gap-5 transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-700 shadow-inner' : 'bg-slate-50 border-slate-100 shadow-sm'}`}>
-                            <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center font-black text-white shadow-lg border-2 border-white/20">
-                                {foundUser.rank}
-                            </div>
-                            <div>
-                                <p className={`font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{foundUser.war_name || foundUser.name}</p>
-                                <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Militar Responsável</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-3">
-                            <label className="text-[10px] font-black text-slate-500 uppercase flex items-center gap-2 mb-1 tracking-widest pl-1">
-                                <Lock className="w-3 h-3 text-blue-500" /> Senha do Sistema
-                            </label>
-                            <input
-                                autoFocus
-                                type="password"
-                                value={signaturePassword}
-                                onChange={(e) => setSignaturePassword(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') confirmSignature();
-                                    if (e.key === 'Escape') {
-                                        setShowSignatureModal(false);
-                                        setSignaturePassword('');
-                                    }
-                                }}
-                                className={`w-full px-6 py-5 border rounded-2xl font-black outline-none text-center tracking-[1em] text-xl transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:ring-blue-500/50 focus:ring-4' : 'bg-slate-50 border-slate-200 text-slate-900 focus:ring-blue-500/20 focus:ring-4'}`}
-                            />
-                        </div>
-
-                        {localStorage.getItem('gsdsp_biometric_id') && (
                             <button
-                                onClick={async () => {
-                                    try {
-                                        const credentialId = localStorage.getItem('gsdsp_biometric_id');
-                                        if (!credentialId) return;
-                                        const success = await authenticateBiometrics(credentialId);
-                                        if (success) {
-                                            const { data: userData } = await supabase
-                                                .from('users')
-                                                .select('password')
-                                                .filter('webauthn_credential->>id', 'eq', credentialId)
-                                                .single();
-                                            if (userData) {
-                                                setSignaturePassword(userData.password);
-                                                setTimeout(() => confirmSignature(), 100);
-                                            }
-                                        }
-                                    } catch (err) {
-                                        console.error(err);
-                                        alert('Falha na autenticação biométrica.');
-                                    }
+                                onClick={() => {
+                                    setShowSignatureModal(false);
+                                    setSignaturePassword('');
                                 }}
-                                className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-100 transition-all border border-emerald-200"
+                                className={`absolute top-6 right-6 p-2 rounded-full transition-all ${isDarkMode ? 'bg-slate-700 text-slate-400 hover:text-white' : 'bg-slate-50 text-slate-300 hover:text-slate-500'}`}
                             >
-                                <Fingerprint className="w-5 h-5" /> Assinar com Biometria
+                                <XCircle className="w-6 h-6" />
                             </button>
-                        )}
 
-                        <button
-                            onClick={confirmSignature}
-                            disabled={!signaturePassword || actionLoading === 'signature'}
-                            className="w-full h-[50px] bg-blue-600 text-white rounded-xl font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 uppercase text-xs tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {actionLoading === 'signature' ? 'Assinando...' : 'Confirmar Assinatura'}
-                        </button>
+                            <div className="text-center space-y-4">
+                                <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl transform -rotate-3 ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-600 text-white'}`}>
+                                    <ShieldCheck className="w-10 h-10" />
+                                </div>
+                                <h2 className={`text-2xl font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Assinatura Digital</h2>
+                                <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Validação de Identidade Criptográfica</p>
+                            </div>
+
+                            <div className={`p-6 rounded-2xl border flex items-center gap-5 transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-700 shadow-inner' : 'bg-slate-50 border-slate-100 shadow-sm'}`}>
+                                <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center font-black text-white shadow-lg border-2 border-white/20">
+                                    {foundUser.rank}
+                                </div>
+                                <div>
+                                    <p className={`font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{foundUser.war_name || foundUser.name}</p>
+                                    <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Militar Responsável</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-500 uppercase flex items-center gap-2 mb-1 tracking-widest pl-1">
+                                    <Lock className="w-3 h-3 text-blue-500" /> Senha do Sistema
+                                </label>
+                                <input
+                                    autoFocus
+                                    type="password"
+                                    value={signaturePassword}
+                                    onChange={(e) => setSignaturePassword(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') confirmSignature();
+                                        if (e.key === 'Escape') {
+                                            setShowSignatureModal(false);
+                                            setSignaturePassword('');
+                                        }
+                                    }}
+                                    className={`w-full px-6 py-5 border rounded-2xl font-black outline-none text-center tracking-[1em] text-xl transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:ring-blue-500/50 focus:ring-4' : 'bg-slate-50 border-slate-200 text-slate-900 focus:ring-blue-500/20 focus:ring-4'}`}
+                                />
+                            </div>
+
+                            {localStorage.getItem('gsdsp_biometric_id') && (
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const credentialId = localStorage.getItem('gsdsp_biometric_id');
+                                            if (!credentialId) return;
+                                            const success = await authenticateBiometrics(credentialId);
+                                            if (success) {
+                                                const { data: userData } = await supabase
+                                                    .from('users')
+                                                    .select('password')
+                                                    .filter('webauthn_credential->>id', 'eq', credentialId)
+                                                    .single();
+                                                if (userData) {
+                                                    setSignaturePassword(userData.password);
+                                                    setTimeout(() => confirmSignature(), 100);
+                                                }
+                                            }
+                                        } catch (err) {
+                                            console.error(err);
+                                            alert('Falha na autenticação biométrica.');
+                                        }
+                                    }}
+                                    className="w-full py-4 bg-emerald-50 text-emerald-600 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-100 transition-all border border-emerald-200"
+                                >
+                                    <Fingerprint className="w-5 h-5" /> Assinar com Biometria
+                                </button>
+                            )}
+
+                            <button
+                                onClick={confirmSignature}
+                                disabled={!signaturePassword || actionLoading === 'signature'}
+                                className="w-full h-[50px] bg-blue-600 text-white rounded-xl font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 uppercase text-xs tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {actionLoading === 'signature' ? 'Assinando...' : 'Confirmar Assinatura'}
+                            </button>
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
         </div>
     );
 };
