@@ -41,6 +41,12 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     const [selectedRequest, setSelectedRequest] = useState<LoanRequest | null>(null);
     const [activeTab, setActiveTab] = useState<'Solicitações' | 'Devoluções' | 'Em Uso' | 'Histórico'>('Solicitações');
 
+    const [historyFilterDay, setHistoryFilterDay] = useState('');
+    const [historyFilterMonth, setHistoryFilterMonth] = useState('');
+    const [historyFilterYear, setHistoryFilterYear] = useState('');
+
+    const availableYears = Array.from(new Set(requests.map(req => new Date(req.created_at).getFullYear()))).sort((a, b) => b - a);
+
     const [showDirectRelease, setShowDirectRelease] = useState(false);
     const [directSaram, setDirectSaram] = useState('');
     const [directMaterialId, setDirectMaterialId] = useState('');
@@ -505,8 +511,18 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             const name = req.solicitante?.war_name?.toLowerCase() || '';
             const material = req.material?.material?.toLowerCase() || '';
             const searchObj = inUseSearch.toLowerCase();
-            return saram.includes(searchObj) || name.includes(searchObj) || material.includes(searchObj);
+            if (!(saram.includes(searchObj) || name.includes(searchObj) || material.includes(searchObj))) {
+                return false;
+            }
         }
+
+        if (activeTab === 'Histórico') {
+            const reqDate = new Date(req.created_at);
+            if (historyFilterYear && reqDate.getFullYear().toString() !== historyFilterYear) return false;
+            if (historyFilterMonth && (reqDate.getMonth() + 1).toString() !== historyFilterMonth) return false;
+            if (historyFilterDay && reqDate.getDate().toString() !== historyFilterDay) return false;
+        }
+
         return true;
     });
 
@@ -727,6 +743,11 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                         onClick={() => {
                             setActiveTab(tab);
                             setSelectedBatchIds([]);
+                            if (tab !== 'Histórico') {
+                                setHistoryFilterDay('');
+                                setHistoryFilterMonth('');
+                                setHistoryFilterYear('');
+                            }
                         }}
                         className={`px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap flex items-center gap-2 ${activeTab === tab ? (isDarkMode ? 'bg-slate-700 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md') : 'text-slate-500 hover:text-slate-400'}`}
                     >
@@ -748,15 +769,52 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             {
                 (activeTab === 'Em Uso' || activeTab === 'Histórico' || activeTab === 'Solicitações') && (
                     <div className={`flex flex-col md:flex-row gap-6 items-center justify-between p-6 rounded-[2rem] border animate-scale-in mb-6 ${isDarkMode ? 'bg-slate-800/40 border-slate-700 shadow-none' : 'bg-blue-50/50 border-blue-100 shadow-sm shadow-blue-100/20'}`}>
-                        <div className="relative w-full md:w-96">
-                            <input
-                                type="text"
-                                placeholder="SARAM, Militar ou Material..."
-                                value={inUseSearch}
-                                onChange={(e) => setInUseSearch(e.target.value)}
-                                className={`w-full pl-10 pr-4 py-3 border rounded-xl outline-none text-sm font-bold transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
-                            />
-                            <Package className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <div className="flex-1 w-full flex flex-col md:flex-row gap-4 items-center">
+                            <div className="relative w-full md:w-96">
+                                <input
+                                    type="text"
+                                    placeholder="SARAM, Militar ou Material..."
+                                    value={inUseSearch}
+                                    onChange={(e) => setInUseSearch(e.target.value)}
+                                    className={`w-full pl-10 pr-4 py-3 border rounded-xl outline-none text-sm font-bold transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
+                                />
+                                <Package className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            </div>
+
+                            {activeTab === 'Histórico' && (
+                                <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                                    <select
+                                        value={historyFilterDay}
+                                        onChange={(e) => setHistoryFilterDay(e.target.value)}
+                                        className={`px-3 py-3 border rounded-xl outline-none text-sm font-bold transition-all focus:ring-2 focus:ring-blue-500 flex-1 md:flex-none ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                                    >
+                                        <option value="">Dia</option>
+                                        {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                                            <option key={d} value={d.toString()}>{d.toString().padStart(2, '0')}</option>
+                                        ))}
+                                    </select>
+                                    <select
+                                        value={historyFilterMonth}
+                                        onChange={(e) => setHistoryFilterMonth(e.target.value)}
+                                        className={`px-3 py-3 border rounded-xl outline-none text-sm font-bold transition-all focus:ring-2 focus:ring-blue-500 flex-1 md:flex-none ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                                    >
+                                        <option value="">Mês</option>
+                                        {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+                                            <option key={m} value={m.toString()}>{m.toString().padStart(2, '0')}</option>
+                                        ))}
+                                    </select>
+                                    <select
+                                        value={historyFilterYear}
+                                        onChange={(e) => setHistoryFilterYear(e.target.value)}
+                                        className={`px-3 py-3 border rounded-xl outline-none text-sm font-bold transition-all focus:ring-2 focus:ring-blue-500 flex-1 md:flex-none ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                                    >
+                                        <option value="">Ano</option>
+                                        {availableYears.map(y => (
+                                            <option key={y} value={y.toString()}>{y}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
                         </div>
 
                         {(activeTab === 'Em Uso') && (
