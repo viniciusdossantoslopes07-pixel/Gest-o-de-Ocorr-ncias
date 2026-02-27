@@ -555,7 +555,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                 <div className="flex flex-wrap gap-3 w-full md:w-auto">
                     <button
                         onClick={() => { setShowDirectRelease(!showDirectRelease); }}
-                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2 text-[10px] active:scale-95 ${showDirectRelease ? 'bg-red-500 text-white shadow-red-500/20' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20'}`}
+                        className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2 text-[10px] active:scale-95 ${showDirectRelease ? 'bg-blue-700 text-white shadow-blue-500/20' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20'}`}
                     >
                         <Package className="w-4 h-4" />
                         <span>{showDirectRelease ? 'Cancelar' : 'Nova Cautela'}</span>
