@@ -150,6 +150,9 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
 
         if (updateError) {
             console.error('Error updating stock in gestao_estoque:', updateError);
+        } else {
+            // Recarregar inventário para atualizar saldos na UI (dropdowns/listas)
+            fetchInventory();
         }
     };
 
@@ -356,6 +359,9 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                     await updateInventoryStock(item.id_material, item.quantidade, 'release');
                 }
 
+                // Recarregar dados
+                fetchRequests();
+                fetchInventory();
                 alert('Materiais liberados com sucesso!');
             } else if (signatureAction === 'approve' && signatureRequestId) {
                 if (Array.isArray(signatureRequestId)) {
