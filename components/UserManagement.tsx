@@ -209,142 +209,144 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
         </div>
       )}
 
-      {activeTab === 'users' && showForm && (
+      {activeTab === 'users' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className={`lg:col-span-3 p-6 md:p-10 rounded-2xl md:rounded-[2.5rem] border shadow-sm transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black/20' : 'bg-white border-slate-100 shadow-slate-200/50'}`}>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
-              <div className="flex items-center gap-3">
-                <div className={`${editingUserId ? 'bg-amber-500' : 'bg-blue-600'} p-2 rounded-xl transition-colors`}>
-                  {editingUserId ? <Edit2 className="w-5 h-5 md:w-6 md:h-6 text-white" /> : <UserPlus className="w-5 h-5 md:w-6 md:h-6 text-white" />}
+          {showForm && (
+            <div className={`lg:col-span-3 p-6 md:p-10 rounded-2xl md:rounded-[2.5rem] border shadow-sm transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black/20' : 'bg-white border-slate-100 shadow-slate-200/50'}`}>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+                <div className="flex items-center gap-3">
+                  <div className={`${editingUserId ? 'bg-amber-500' : 'bg-blue-600'} p-2 rounded-xl transition-colors`}>
+                    {editingUserId ? <Edit2 className="w-5 h-5 md:w-6 md:h-6 text-white" /> : <UserPlus className="w-5 h-5 md:w-6 md:h-6 text-white" />}
+                  </div>
+                  <div>
+                    <h2 className={`text-lg md:text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                      {editingUserId ? 'Editar Usuário' : 'Novo Cadastro'}
+                    </h2>
+                    <p className="text-slate-500 text-[10px] md:text-xs font-medium uppercase tracking-widest">
+                      {editingUserId ? `@${formData.username}` : 'Defina credenciais e níveis'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className={`text-lg md:text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                    {editingUserId ? 'Editar Usuário' : 'Novo Cadastro'}
-                  </h2>
-                  <p className="text-slate-500 text-[10px] md:text-xs font-medium uppercase tracking-widest">
-                    {editingUserId ? `@${formData.username}` : 'Defina credenciais e níveis'}
+                {(editingUserId || showNewUserForm) && (
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-[10px] font-bold rounded-xl transition-all ${isDarkMode ? 'bg-slate-700 text-slate-300 hover:text-white hover:bg-slate-600' : 'bg-slate-100 text-slate-500 hover:text-slate-700'}`}
+                  >
+                    <XCircle className="w-4 h-4" /> Cancelar
+                  </button>
+                )}
+              </div>
+
+              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <UserIcon className="w-3 h-3" /> Nome Completo
+                  </label>
+                  <input required type="text" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <BadgeCheck className="w-3 h-3" /> Posto / Graduação
+                  </label>
+                  <select required className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.rank} onChange={e => setFormData({ ...formData, rank: e.target.value })}>
+                    <option value="">Selecione...</option>
+                    {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Hash className="w-3 h-3" /> SARAM
+                  </label>
+                  <input required type="text" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.saram} onChange={e => setFormData({ ...formData, saram: e.target.value })} />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Hash className="w-3 h-3" /> CPF
+                  </label>
+                  <input required type="text" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.cpf} onChange={e => setFormData({ ...formData, cpf: e.target.value })} placeholder="000.000.000-00" />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <UserIcon className="w-3 h-3" /> Nome de Guerra
+                  </label>
+                  <input required type="text" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.warName} onChange={e => setFormData({ ...formData, warName: e.target.value })} placeholder="Ex: SGT SILVA" />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Building2 className="w-3 h-3" /> Setor
+                  </label>
+                  <select required className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.sector} onChange={e => setFormData({ ...formData, sector: e.target.value })}>
+                    <option value="">Selecione...</option>
+                    {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Hash className="w-3 h-3" /> Email
+                  </label>
+                  <input required type="email" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Key className="w-3 h-3" /> Login (Usuário)
+                  </label>
+                  <input required type="text" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <UserIcon className="w-3 h-3" /> WhatsApp / Telefone
+                  </label>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    placeholder="5511999999999"
+                    className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                    value={formData.phoneNumber || ''}
+                    onChange={e => setFormData({ ...formData, phoneNumber: e.target.value.replace(/\D/g, '') })}
+                  />
+                  <p className="text-[9px] text-slate-400">Formato: 55 + DDD + Número (ex: 5511999998888)</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Key className="w-3 h-3" /> {editingUserId ? 'Alterar Senha' : 'Senha Inicial'}
+                  </label>
+                  <input required type="password" placeholder="••••••••" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
+                </div>
+
+                <div className={`md:col-span-3 p-4 rounded-xl border transition-all ${isDarkMode ? 'bg-blue-500/10 border-blue-500/30 text-blue-300' : 'bg-blue-50/50 border-blue-100 text-blue-800'}`}>
+                  <p className={`text-xs flex items-center gap-2 font-medium ${isDarkMode ? 'text-blue-400' : 'text-blue-800'}`}>
+                    <Shield className="w-4 h-4" />
+                    O usuário será criado com perfil <strong>Operacional Padrão (N1)</strong>.
+                  </p>
+                  <p className={`text-[10px] mt-1 pl-6 ${isDarkMode ? 'text-blue-400/70' : 'text-blue-600'}`}>
+                    Para conceder permissões administrativas, níveis superiores ou funções específicas, utilize a aba <strong>"Gerir Permissões"</strong> após o cadastro.
                   </p>
                 </div>
-              </div>
-              {(editingUserId || showNewUserForm) && (
-                <button
-                  type="button"
-                  onClick={handleCancelEdit}
-                  className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-[10px] font-bold rounded-xl transition-all ${isDarkMode ? 'bg-slate-700 text-slate-300 hover:text-white hover:bg-slate-600' : 'bg-slate-100 text-slate-500 hover:text-slate-700'}`}
-                >
-                  <XCircle className="w-4 h-4" /> Cancelar
-                </button>
-              )}
+
+                <div className="md:col-span-3">
+                  <button type="submit" className={`w-full ${editingUserId ? 'bg-amber-600 hover:bg-amber-700' : 'bg-slate-900 hover:bg-slate-800'} text-white py-4 rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center gap-2`}>
+                    {editingUserId ? (
+                      <>
+                        <Save className="w-5 h-5" /> Salvar Alterações de Acesso
+                      </>
+                    ) : (
+                      'Finalizar Cadastro de Acesso'
+                    )}
+                  </button>
+                </div>
+              </form>
             </div>
-
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <UserIcon className="w-3 h-3" /> Nome Completo
-                </label>
-                <input required type="text" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <BadgeCheck className="w-3 h-3" /> Posto / Graduação
-                </label>
-                <select required className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.rank} onChange={e => setFormData({ ...formData, rank: e.target.value })}>
-                  <option value="">Selecione...</option>
-                  {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Hash className="w-3 h-3" /> SARAM
-                </label>
-                <input required type="text" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.saram} onChange={e => setFormData({ ...formData, saram: e.target.value })} />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Hash className="w-3 h-3" /> CPF
-                </label>
-                <input required type="text" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.cpf} onChange={e => setFormData({ ...formData, cpf: e.target.value })} placeholder="000.000.000-00" />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <UserIcon className="w-3 h-3" /> Nome de Guerra
-                </label>
-                <input required type="text" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.warName} onChange={e => setFormData({ ...formData, warName: e.target.value })} placeholder="Ex: SGT SILVA" />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Building2 className="w-3 h-3" /> Setor
-                </label>
-                <select required className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.sector} onChange={e => setFormData({ ...formData, sector: e.target.value })}>
-                  <option value="">Selecione...</option>
-                  {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Hash className="w-3 h-3" /> Email
-                </label>
-                <input required type="email" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Key className="w-3 h-3" /> Login (Usuário)
-                </label>
-                <input required type="text" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <UserIcon className="w-3 h-3" /> WhatsApp / Telefone
-                </label>
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  placeholder="5511999999999"
-                  className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
-                  value={formData.phoneNumber || ''}
-                  onChange={e => setFormData({ ...formData, phoneNumber: e.target.value.replace(/\D/g, '') })}
-                />
-                <p className="text-[9px] text-slate-400">Formato: 55 + DDD + Número (ex: 5511999998888)</p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Key className="w-3 h-3" /> {editingUserId ? 'Alterar Senha' : 'Senha Inicial'}
-                </label>
-                <input required type="password" placeholder="••••••••" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
-              </div>
-
-              <div className={`md:col-span-3 p-4 rounded-xl border transition-all ${isDarkMode ? 'bg-blue-500/10 border-blue-500/30 text-blue-300' : 'bg-blue-50/50 border-blue-100 text-blue-800'}`}>
-                <p className={`text-xs flex items-center gap-2 font-medium ${isDarkMode ? 'text-blue-400' : 'text-blue-800'}`}>
-                  <Shield className="w-4 h-4" />
-                  O usuário será criado com perfil <strong>Operacional Padrão (N1)</strong>.
-                </p>
-                <p className={`text-[10px] mt-1 pl-6 ${isDarkMode ? 'text-blue-400/70' : 'text-blue-600'}`}>
-                  Para conceder permissões administrativas, níveis superiores ou funções específicas, utilize a aba <strong>"Gerir Permissões"</strong> após o cadastro.
-                </p>
-              </div>
-
-              <div className="md:col-span-3">
-                <button type="submit" className={`w-full ${editingUserId ? 'bg-amber-600 hover:bg-amber-700' : 'bg-slate-900 hover:bg-slate-800'} text-white py-4 rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center gap-2`}>
-                  {editingUserId ? (
-                    <>
-                      <Save className="w-5 h-5" /> Salvar Alterações de Acesso
-                    </>
-                  ) : (
-                    'Finalizar Cadastro de Acesso'
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
+          )}
 
           <div className={`lg:col-span-3 rounded-[2rem] border overflow-hidden shadow-sm transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black/20' : 'bg-white border-slate-200'}`}>
             {/* Search Bar */}
