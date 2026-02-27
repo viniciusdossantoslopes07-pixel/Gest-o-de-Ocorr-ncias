@@ -381,23 +381,23 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
 
                                 <div className="p-6 space-y-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-600 mb-1">Material *</label>
+                                        <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Material *</label>
                                         <input
                                             type="text"
                                             value={formData.material}
                                             onChange={e => setFormData({ ...formData, material: e.target.value })}
-                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
+                                            className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
                                             required
                                         />
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-600 mb-1">Tipo de Material</label>
+                                            <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Tipo de Material</label>
                                             <select
                                                 value={formData.tipo_de_material}
                                                 onChange={e => setFormData({ ...formData, tipo_de_material: e.target.value })}
-                                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors bg-white"
+                                                className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
                                             >
                                                 <option value="">Selecione...</option>
                                                 {MATERIAL_TYPES.map(type => (
@@ -406,11 +406,11 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-600 mb-1">Setor</label>
+                                            <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Setor</label>
                                             <select
                                                 value={formData.setor}
                                                 onChange={e => setFormData({ ...formData, setor: e.target.value })}
-                                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors bg-white"
+                                                className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
                                             >
                                                 <option value="">Selecione...</option>
                                                 {GESTAO_MATERIAL_SETORES.map(sector => (
@@ -421,34 +421,34 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-600 mb-1">Endereço</label>
+                                        <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Endereço</label>
                                         <input
                                             type="text"
                                             value={formData.endereco}
                                             onChange={e => setFormData({ ...formData, endereco: e.target.value })}
-                                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
+                                            className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
                                         />
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-600 mb-1">Entrada (Total Recebido)</label>
+                                            <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Entrada (Total Recebido)</label>
                                             <input
                                                 type="number"
                                                 min="0"
                                                 value={formData.entrada}
                                                 onChange={e => setFormData({ ...formData, entrada: parseInt(e.target.value) || 0 })}
-                                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
+                                                className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-600 mb-1">Saída (Perdas/Baixas)</label>
+                                            <label className={`block text-xs font-bold mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Saída (Perdas/Baixas)</label>
                                             <input
                                                 type="number"
                                                 min="0"
                                                 value={formData.saida}
                                                 onChange={e => setFormData({ ...formData, saida: parseInt(e.target.value) || 0 })}
-                                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-500 transition-colors"
+                                                className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-blue-500 transition-colors ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
                                             />
                                         </div>
                                     </div>
