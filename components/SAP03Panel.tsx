@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../services/supabase';
-import { Package, CheckCircle, XCircle, Clock, Truck, ShieldCheck, AlertCircle, Lock, Plus, Trash2, ChevronDown, ChevronUp, BarChart3, PieChart as PieIcon, History, Fingerprint, MapPin } from 'lucide-react';
+import { Package, CheckCircle, XCircle, Clock, Truck, ShieldCheck, AlertCircle, Lock, Plus, Trash2, ChevronDown, ChevronUp, BarChart3, PieChart as PieIcon, History, Fingerprint, MapPin, LayoutGrid } from 'lucide-react';
 import { authenticateBiometrics } from '../services/webauthn';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
@@ -44,6 +44,9 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     const [historyFilterDay, setHistoryFilterDay] = useState('');
     const [historyFilterMonth, setHistoryFilterMonth] = useState('');
     const [historyFilterYear, setHistoryFilterYear] = useState('');
+    const [historyFilterCategory, setHistoryFilterCategory] = useState<string | null>(null);
+    const [historyFilterStatus, setHistoryFilterStatus] = useState<'ALL' | 'Concluído' | 'Rejeitado'>('ALL');
+    const [historyTimeRange, setHistoryTimeRange] = useState<'all' | 'today' | '7days' | '30days'>('all');
 
     const availableYears = Array.from(new Set(requests.map(req => new Date(req.created_at).getFullYear()))).sort((a, b) => b - a);
 
@@ -571,29 +574,55 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
 
         if (activeTab === 'Histórico') {
             const reqDate = new Date(req.created_at);
+
+            // Filtro de Data (Dia/Mês/Ano)
             if (historyFilterYear && reqDate.getFullYear().toString() !== historyFilterYear) return false;
             if (historyFilterMonth && (reqDate.getMonth() + 1).toString() !== historyFilterMonth) return false;
             if (historyFilterDay && reqDate.getDate().toString() !== historyFilterDay) return false;
+
+            // Filtro de Categoria
+            if (historyFilterCategory && req.material?.tipo_de_material !== historyFilterCategory) return false;
+
+            // Filtro de Status
+            if (historyFilterStatus !== 'ALL' && req.status !== historyFilterStatus) return false;
+
+            // Filtro de Range de Tempo
+            if (historyTimeRange !== 'all') {
+                const now = new Date();
+                const diffTime = Math.abs(now.getTime() - reqDate.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (historyTimeRange === 'today' && reqDate.toDateString() !== now.toDateString()) return false;
+                if (historyTimeRange === '7days' && diffDays > 7) return false;
+                if (historyTimeRange === '30days' && diffDays > 30) return false;
+            }
         }
 
         return true;
     });
 
     const getHistoryStats = () => {
-        if (!inUseSearch || activeTab !== 'Histórico') return null;
+        if (activeTab !== 'Histórico') return null;
 
         const stats: { [key: string]: number } = {};
         let totalItems = 0;
 
-        filteredRequests.forEach(req => {
+        // Se houver busca ou filtros de data ativos, usamos os filtrados, senão mostramos o geral do histórico
+        const dataToAnalyze = (inUseSearch || historyFilterYear || historyFilterMonth || historyFilterDay || historyFilterCategory || historyFilterStatus !== 'ALL' || historyTimeRange !== 'all')
+            ? filteredRequests
+            : requests.filter(r => ['Concluído', 'Rejeitado'].includes(r.status));
+
+        dataToAnalyze.forEach(req => {
             const category = req.material?.tipo_de_material || 'Não Categorizado';
             const qty = req.quantidade || 1;
             stats[category] = (stats[category] || 0) + qty;
             totalItems += qty;
         });
 
-        const chartData = Object.entries(stats).map(([name, value]) => ({ name, value }));
-        const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+        const chartData = Object.entries(stats).map(([name, value]) => ({ name, value }))
+            .sort((a, b) => b.value - a.value); // Ordenar os mais usados
+
+        const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#475569'];
 
         return { totalItems, chartData, COLORS };
     };
@@ -937,6 +966,85 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                 )
             }
 
+            {/* Filtros Analíticos do Histórico */}
+            {activeTab === 'Histórico' && (
+                <div className="flex flex-col gap-6 -mt-2 mb-8 animate-fade-in">
+                    {/* Status e Tempo */}
+                    <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-700 pb-4">
+                        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-2">Período:</span>
+                            {(['all', 'today', '7days', '30days'] as const).map((range) => (
+                                <button
+                                    key={range}
+                                    onClick={() => setHistoryTimeRange(range)}
+                                    className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tight transition-all whitespace-nowrap ${historyTimeRange === range
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : (isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-white text-slate-500 border border-slate-200 hover:border-blue-200 hover:text-blue-600')
+                                        }`}
+                                >
+                                    {range === 'all' ? 'Tudo' : range === 'today' ? 'Hoje' : range === '7days' ? '7 Dias' : '30 Dias'}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-2">Status:</span>
+                            {(['ALL', 'Concluído', 'Rejeitado'] as const).map((status) => (
+                                <button
+                                    key={status}
+                                    onClick={() => setHistoryFilterStatus(status)}
+                                    className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tight transition-all ${historyFilterStatus === status
+                                        ? (status === 'Rejeitado' ? 'bg-red-500 text-white shadow-md' : 'bg-emerald-600 text-white shadow-md')
+                                        : (isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-white text-slate-500 border border-slate-200 hover:border-blue-200')
+                                        }`}
+                                >
+                                    {status === 'ALL' ? 'Todos' : status}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Categorias */}
+                    <div className="flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <LayoutGrid className="w-3 h-3" /> Categorias de Material
+                            </span>
+                            {(historyFilterCategory || historyFilterDay || historyFilterMonth || historyFilterYear || inUseSearch || historyTimeRange !== 'all') && (
+                                <button
+                                    onClick={() => {
+                                        setHistoryFilterCategory(null);
+                                        setHistoryFilterDay('');
+                                        setHistoryFilterMonth('');
+                                        setHistoryFilterYear('');
+                                        setInUseSearch('');
+                                        setHistoryTimeRange('all');
+                                        setHistoryFilterStatus('ALL');
+                                    }}
+                                    className="text-[9px] font-black text-blue-500 uppercase hover:text-blue-600 transition-colors underline underline-offset-4"
+                                >
+                                    Limpar Filtros
+                                </button>
+                            )}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {Array.from(new Set(requests.filter(r => r.material?.tipo_de_material).map(r => r.material?.tipo_de_material))).sort().map(cat => (
+                                <button
+                                    key={cat}
+                                    onClick={() => setHistoryFilterCategory(historyFilterCategory === cat ? null : cat)}
+                                    className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wide border transition-all ${historyFilterCategory === cat
+                                        ? (isDarkMode ? 'bg-blue-600/20 border-blue-500 text-blue-400 shadow-lg' : 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-200')
+                                        : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600' : 'bg-white border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600 shadow-sm')
+                                        }`}
+                                >
+                                    {cat}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* History Dashboard */}
             {
                 activeTab === 'Histórico' && historyStats && historyStats.totalItems > 0 && (
@@ -961,7 +1069,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col justify-center">
-                                <div className="flex items-center gap-4 mb-4">
+                                <div className="flex items-center gap-4 mb-6">
                                     <div className="bg-blue-50 p-3 rounded-2xl text-blue-600">
                                         <History className="w-6 h-6" />
                                     </div>
@@ -970,7 +1078,31 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                         <h3 className="text-2xl font-black text-slate-800">{filteredRequests.length}</h3>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-4">
+                                <div className="h-[120px] mb-4">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={historyStats.chartData}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={35}
+                                                outerRadius={50}
+                                                paddingAngle={5}
+                                                dataKey="value"
+                                                onClick={(data) => setHistoryFilterCategory(data.name === historyFilterCategory ? null : data.name)}
+                                                className="cursor-pointer outline-none"
+                                            >
+                                                {historyStats.chartData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={historyStats.COLORS[index % historyStats.COLORS.length]} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip
+                                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '10px', fontWeight: 'bold' }}
+                                            />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                                <div className="flex items-center gap-4 mt-auto pt-4 border-t border-slate-50">
                                     <div className="bg-emerald-50 p-3 rounded-2xl text-emerald-600">
                                         <Package className="w-6 h-6" />
                                     </div>
@@ -1005,7 +1137,13 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                                 cursor={{ fill: '#f8fafc' }}
                                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold' }}
                                             />
-                                            <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={20}>
+                                            <Bar
+                                                dataKey="value"
+                                                radius={[0, 8, 8, 0]}
+                                                barSize={20}
+                                                onClick={(data) => setHistoryFilterCategory(data.name === historyFilterCategory ? null : data.name)}
+                                                className="cursor-pointer"
+                                            >
                                                 {historyStats.chartData.map((entry, index) => (
                                                     <Cell key={`cell-${index}`} fill={historyStats.COLORS[index % historyStats.COLORS.length]} />
                                                 ))}
