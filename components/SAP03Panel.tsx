@@ -888,40 +888,6 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                 <Package className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             </div>
 
-                            {(activeTab === 'Histórico' || activeTab === 'Em Uso') && (
-                                <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                                    <select
-                                        value={activeTab === 'Histórico' ? historyFilterDay : inUseFilterDay}
-                                        onChange={(e) => activeTab === 'Histórico' ? setHistoryFilterDay(e.target.value) : setInUseFilterDay(e.target.value)}
-                                        className={`px-3 py-3 border rounded-xl outline-none text-sm font-bold transition-all focus:ring-2 focus:ring-blue-500 flex-1 md:flex-none ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
-                                    >
-                                        <option value="">Dia</option>
-                                        {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
-                                            <option key={d} value={d.toString()}>{d.toString().padStart(2, '0')}</option>
-                                        ))}
-                                    </select>
-                                    <select
-                                        value={activeTab === 'Histórico' ? historyFilterMonth : inUseFilterMonth}
-                                        onChange={(e) => activeTab === 'Histórico' ? setHistoryFilterMonth(e.target.value) : setInUseFilterMonth(e.target.value)}
-                                        className={`px-3 py-3 border rounded-xl outline-none text-sm font-bold transition-all focus:ring-2 focus:ring-blue-500 flex-1 md:flex-none ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
-                                    >
-                                        <option value="">Mês</option>
-                                        {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-                                            <option key={m} value={m.toString()}>{m.toString().padStart(2, '0')}</option>
-                                        ))}
-                                    </select>
-                                    <select
-                                        value={activeTab === 'Histórico' ? historyFilterYear : inUseFilterYear}
-                                        onChange={(e) => activeTab === 'Histórico' ? setHistoryFilterYear(e.target.value) : setInUseFilterYear(e.target.value)}
-                                        className={`px-3 py-3 border rounded-xl outline-none text-sm font-bold transition-all focus:ring-2 focus:ring-blue-500 flex-1 md:flex-none ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
-                                    >
-                                        <option value="">Ano</option>
-                                        {availableYears.map(y => (
-                                            <option key={y} value={y.toString()}>{y}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
                         </div>
 
                         {(activeTab === 'Em Uso') && (
@@ -996,20 +962,57 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                 <div className="flex flex-col gap-6 -mt-2 mb-8 animate-fade-in">
                     {/* Status e Tempo */}
                     <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-700 pb-4">
-                        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide flex-1">
                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-2">Período:</span>
-                            {(['all', 'today', '7days', '30days'] as const).map((range) => (
-                                <button
-                                    key={range}
-                                    onClick={() => activeTab === 'Histórico' ? setHistoryTimeRange(range) : setInUseTimeRange(range)}
-                                    className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tight transition-all whitespace-nowrap ${(activeTab === 'Histórico' ? historyTimeRange : inUseTimeRange) === range
-                                        ? 'bg-blue-600 text-white shadow-md'
-                                        : (isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-white text-slate-500 border border-slate-200 hover:border-blue-200 hover:text-blue-600')
-                                        }`}
+                            <div className={`flex items-center p-1 rounded-full border ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                {(['all', 'today', '7days', '30days'] as const).map((range) => (
+                                    <button
+                                        key={range}
+                                        onClick={() => activeTab === 'Histórico' ? setHistoryTimeRange(range) : setInUseTimeRange(range)}
+                                        className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tight transition-all whitespace-nowrap ${(activeTab === 'Histórico' ? historyTimeRange : inUseTimeRange) === range
+                                            ? 'bg-blue-600 text-white shadow-md'
+                                            : `text-slate-500 hover:text-blue-500`
+                                            }`}
+                                    >
+                                        {range === 'all' ? 'Tudo' : range === 'today' ? 'Hoje' : range === '7days' ? '7 Dias' : '30 Dias'}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-2 hidden md:block" />
+
+                            <div className="flex items-center gap-1">
+                                <select
+                                    value={activeTab === 'Histórico' ? historyFilterDay : inUseFilterDay}
+                                    onChange={(e) => activeTab === 'Histórico' ? setHistoryFilterDay(e.target.value) : setInUseFilterDay(e.target.value)}
+                                    className={`pl-2 pr-1 py-1 bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer border rounded-lg transition-all ${isDarkMode ? 'text-slate-400 border-slate-700 hover:border-slate-500' : 'text-slate-600 border-slate-200 hover:border-blue-200'}`}
                                 >
-                                    {range === 'all' ? 'Tudo' : range === 'today' ? 'Hoje' : range === '7days' ? '7 Dias' : '30 Dias'}
-                                </button>
-                            ))}
+                                    <option value="">Dia</option>
+                                    {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                                        <option key={d} value={d.toString()}>{d.toString().padStart(2, '0')}</option>
+                                    ))}
+                                </select>
+                                <select
+                                    value={activeTab === 'Histórico' ? historyFilterMonth : inUseFilterMonth}
+                                    onChange={(e) => activeTab === 'Histórico' ? setHistoryFilterMonth(e.target.value) : setInUseFilterMonth(e.target.value)}
+                                    className={`pl-2 pr-1 py-1 bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer border rounded-lg transition-all ${isDarkMode ? 'text-slate-400 border-slate-700 hover:border-slate-500' : 'text-slate-600 border-slate-200 hover:border-blue-200'}`}
+                                >
+                                    <option value="">Mês</option>
+                                    {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+                                        <option key={m} value={m.toString()}>{m.toString().padStart(2, '0')}</option>
+                                    ))}
+                                </select>
+                                <select
+                                    value={activeTab === 'Histórico' ? historyFilterYear : inUseFilterYear}
+                                    onChange={(e) => activeTab === 'Histórico' ? setHistoryFilterYear(e.target.value) : setInUseFilterYear(e.target.value)}
+                                    className={`pl-2 pr-1 py-1 bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer border rounded-lg transition-all ${isDarkMode ? 'text-slate-400 border-slate-700 hover:border-slate-500' : 'text-slate-600 border-slate-200 hover:border-blue-200'}`}
+                                >
+                                    <option value="">Ano</option>
+                                    {availableYears.map(y => (
+                                        <option key={y} value={y.toString()}>{y}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
                         {activeTab === 'Histórico' && (
