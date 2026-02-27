@@ -210,11 +210,11 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
                         </div>
                     </div>
 
-                    <div className={`p-5 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-800/50 border-slate-700/50 shadow-lg shadow-slate-900/10' : 'bg-white border-slate-100 shadow-sm'}`}>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Total de Itens</p>
+                    <div className={`p-5 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-800/50 border-indigo-500/20 shadow-lg shadow-indigo-500/5' : 'bg-white border-indigo-100 shadow-sm'}`}>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-1">Total de Itens</p>
                         <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{items.length}</h3>
                         <div className="flex items-center gap-1 mt-2">
-                            <div className="w-2 h-2 rounded-full bg-slate-400"></div>
+                            <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
                             <span className="text-[10px] font-bold text-slate-500 uppercase">Tipos Cadastrados</span>
                         </div>
                     </div>
