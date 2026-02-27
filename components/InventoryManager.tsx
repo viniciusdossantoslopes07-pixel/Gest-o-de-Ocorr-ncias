@@ -291,7 +291,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
                                     setFilterCategory('');
                                     setFilterSector('');
                                 }}
-                                className="px-4 py-3 text-blue-600 font-bold text-sm hover:bg-blue-50 rounded-xl transition-all whitespace-nowrap"
+                                className={`px-4 py-3 font-bold text-sm rounded-xl transition-all whitespace-nowrap ${isDarkMode ? 'text-blue-400 hover:bg-blue-900/30' : 'text-blue-600 hover:bg-blue-50'}`}
                             >
                                 Limpar Filtros
                             </button>
@@ -333,14 +333,14 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
                                                 <div className="flex justify-end gap-2">
                                                     <button
                                                         onClick={() => handleOpenModal(item)}
-                                                        className="p-1.5 text-slate-500 hover:bg-slate-200 rounded-lg transition-colors"
+                                                        className={`p-1.5 rounded-lg transition-colors ${isDarkMode ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-500 hover:bg-slate-200'}`}
                                                         title="Editar"
                                                     >
                                                         <Edit2 className="w-4 h-4" />
                                                     </button>
                                                     <button
                                                         onClick={() => handleDelete(item.id)}
-                                                        className="p-1.5 text-red-500 hover:bg-red-100 rounded-lg transition-colors"
+                                                        className={`p-1.5 rounded-lg transition-colors ${isDarkMode ? 'text-red-400 hover:bg-red-900/30' : 'text-red-500 hover:bg-red-100'}`}
                                                         title="Excluir"
                                                     >
                                                         <Trash2 className="w-4 h-4" />

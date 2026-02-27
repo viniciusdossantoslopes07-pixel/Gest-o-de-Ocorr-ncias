@@ -1352,11 +1352,11 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                             {/* Corpo compacto */}
                             <div className="p-4 space-y-3">
                                 {/* Material + Info */}
-                                <div className="text-center pb-2 border-b border-slate-100">
-                                    <p className="text-lg font-black text-slate-800">{selectedRequest.material?.material || '—'}</p>
-                                    <p className="text-[10px] text-slate-400 font-medium">{selectedRequest.material?.tipo_de_material || 'Sem categoria'}</p>
+                                <div className={`text-center pb-2 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
+                                    <p className={`text-lg font-black ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{selectedRequest.material?.material || '—'}</p>
+                                    <p className={`text-[10px] font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>{selectedRequest.material?.tipo_de_material || 'Sem categoria'}</p>
                                     {selectedRequest.material?.endereco && (
-                                        <p className="text-[10px] text-amber-600 font-bold flex items-center justify-center gap-1 mt-1">
+                                        <p className="text-[10px] text-amber-500 font-bold flex items-center justify-center gap-1 mt-1">
                                             <MapPin className="w-3 h-3" /> {selectedRequest.material.endereco}
                                         </p>
                                     )}
@@ -1364,67 +1364,67 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
 
                                 {/* Grid compacto: Qtd + Data + Solicitante */}
                                 <div className="grid grid-cols-3 gap-2 text-center">
-                                    <div className="bg-slate-50 p-2 rounded-lg">
+                                    <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-slate-900/50' : 'bg-slate-50'}`}>
                                         <p className="text-[9px] font-bold text-slate-400 uppercase">Qtd</p>
-                                        <p className="font-black text-slate-800">{selectedRequest.quantidade || 1}</p>
+                                        <p className={`font-black ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{selectedRequest.quantidade || 1}</p>
                                     </div>
-                                    <div className="bg-slate-50 p-2 rounded-lg">
+                                    <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-slate-900/50' : 'bg-slate-50'}`}>
                                         <p className="text-[9px] font-bold text-slate-400 uppercase">Data</p>
-                                        <p className="font-bold text-slate-800 text-xs">{new Date(selectedRequest.created_at).toLocaleDateString('pt-BR')}</p>
-                                        <p className="text-[9px] text-slate-400">{new Date(selectedRequest.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                                        <p className={`font-bold text-xs ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{new Date(selectedRequest.created_at).toLocaleDateString('pt-BR')}</p>
+                                        <p className="text-[9px] text-slate-500">{new Date(selectedRequest.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                                     </div>
                                     {selectedRequest.solicitante && (
-                                        <div className="bg-blue-50 p-2 rounded-lg border border-blue-100">
+                                        <div className={`p-2 rounded-lg border ${isDarkMode ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'}`}>
                                             <p className="text-[9px] font-bold text-blue-400 uppercase">Solic.</p>
-                                            <p className="font-black text-slate-800 text-xs">{selectedRequest.solicitante.rank} {selectedRequest.solicitante.war_name}</p>
+                                            <p className={`font-black text-xs ${isDarkMode ? 'text-blue-200' : 'text-slate-800'}`}>{selectedRequest.solicitante.rank} {selectedRequest.solicitante.war_name}</p>
                                         </div>
                                     )}
                                 </div>
 
-                                <div className="border-t border-dashed border-slate-100"></div>
+                                <div className={`border-t border-dashed ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}></div>
 
                                 {/* Cadeia de Responsabilidade — compacta em linhas */}
                                 <div className="space-y-1.5">
                                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Responsabilidade</p>
                                     {selectedRequest.autorizado_por && (
-                                        <div className="flex items-center gap-2 bg-amber-50 px-3 py-1.5 rounded-lg">
+                                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${isDarkMode ? 'bg-amber-500/10' : 'bg-amber-50'}`}>
                                             <ShieldCheck className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                                             <p className="text-[10px] font-bold text-amber-600 uppercase w-20 shrink-0">Autorizado</p>
-                                            <p className="font-bold text-slate-700 text-xs truncate flex-1">{selectedRequest.autorizado_por}</p>
+                                            <p className={`font-bold text-xs truncate flex-1 ${isDarkMode ? 'text-amber-200' : 'text-slate-700'}`}>{selectedRequest.autorizado_por}</p>
                                         </div>
                                     )}
                                     {selectedRequest.entregue_por && (
-                                        <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg">
+                                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${isDarkMode ? 'bg-blue-500/10' : 'bg-blue-50'}`}>
                                             <Truck className="w-3.5 h-3.5 text-blue-500 shrink-0" />
                                             <p className="text-[10px] font-bold text-blue-600 uppercase w-20 shrink-0">Entregue</p>
-                                            <p className="font-bold text-slate-700 text-xs truncate flex-1">{selectedRequest.entregue_por}</p>
+                                            <p className={`font-bold text-xs truncate flex-1 ${isDarkMode ? 'text-blue-200' : 'text-slate-700'}`}>{selectedRequest.entregue_por}</p>
                                         </div>
                                     )}
                                     {selectedRequest.recebido_por && (
-                                        <div className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-lg">
+                                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${isDarkMode ? 'bg-emerald-500/10' : 'bg-emerald-50'}`}>
                                             <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                                             <p className="text-[10px] font-bold text-emerald-600 uppercase w-20 shrink-0">Recebido</p>
-                                            <p className="font-bold text-slate-700 text-xs truncate flex-1">{selectedRequest.recebido_por}</p>
+                                            <p className={`font-bold text-xs truncate flex-1 ${isDarkMode ? 'text-emerald-200' : 'text-slate-700'}`}>{selectedRequest.recebido_por}</p>
                                         </div>
                                     )}
                                     {!selectedRequest.autorizado_por && !selectedRequest.entregue_por && !selectedRequest.recebido_por && (
-                                        <p className="text-[10px] text-slate-400 italic">Sem movimentação.</p>
+                                        <p className="text-[10px] text-slate-500 italic">Sem movimentação.</p>
                                     )}
                                 </div>
 
                                 {/* Observações compactas */}
                                 {selectedRequest.observacao && (
                                     <>
-                                        <div className="border-t border-dashed border-slate-100"></div>
-                                        <div className="bg-slate-50 px-3 py-2 rounded-lg">
+                                        <div className={`border-t border-dashed ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}></div>
+                                        <div className={`px-3 py-2 rounded-lg ${isDarkMode ? 'bg-slate-900/50' : 'bg-slate-50'}`}>
                                             <p className="text-[9px] font-bold text-slate-400 uppercase mb-0.5">Obs</p>
-                                            <p className="text-[10px] text-slate-600 italic leading-snug">"{selectedRequest.observacao}"</p>
+                                            <p className={`text-[10px] italic leading-snug ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>"{selectedRequest.observacao}"</p>
                                         </div>
                                     </>
                                 )}
 
                                 {/* Footer ID */}
-                                <div className="border-t border-dashed border-slate-100 pt-2 flex justify-between text-[9px] text-slate-300 font-mono">
+                                <div className={`border-t border-dashed pt-2 flex justify-between text-[9px] font-mono ${isDarkMode ? 'border-slate-700 text-slate-600' : 'border-slate-100 text-slate-300'}`}>
                                     <span>ID: {selectedRequest.id.slice(0, 8).toUpperCase()}</span>
                                     <span>GSD-SP • SAP-03</span>
                                 </div>
