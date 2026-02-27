@@ -134,16 +134,12 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
         }
 
         const currentSaida = matData.saida || 0;
-        const currentQtd = matData.qtdisponivel || 0;
-
         const newSaida = type === 'release' ? currentSaida + quantity : Math.max(0, currentSaida - quantity);
-        const newQtd = type === 'release' ? Math.max(0, currentQtd - quantity) : currentQtd + quantity;
 
         const { error: updateError } = await supabase
             .from('gestao_estoque')
             .update({
                 saida: newSaida,
-                qtdisponivel: newQtd,
                 updated_at: new Date().toISOString()
             })
             .eq('id', materialId);
