@@ -60,12 +60,18 @@ const Destinometro: React.FC<DestinometroProps> = ({ user, onClose, isDarkMode }
         setIsLoading(true);
         setMessage(null);
 
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const dateStr = tomorrow.toISOString().split('T')[0];
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        let daysToAdd = 1;
+
+        if (dayOfWeek === 5) daysToAdd = 3;
+        else if (dayOfWeek === 6) daysToAdd = 2;
+
+        const targetDate = new Date();
+        targetDate.setDate(today.getDate() + daysToAdd);
+        const dateStr = targetDate.toISOString().split('T')[0];
 
         try {
-            // Usar UPSERT baseado em user_id e start_date para evitar duplicados para o mesmo dia
             const { error } = await supabase
                 .from('user_destinations')
                 .upsert({
@@ -143,9 +149,22 @@ const Destinometro: React.FC<DestinometroProps> = ({ user, onClose, isDarkMode }
                 <div className="flex p-1 mx-4 mt-3 rounded-xl bg-black/20 border border-white/5">
                     <button
                         onClick={() => setActiveTab('amanha')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-black transition-all ${activeTab === 'amanha' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}
+                        className={`flex-1 flex flex-col items-center justify-center py-2 rounded-lg transition-all ${activeTab === 'amanha' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}
                     >
-                        <Clock className="w-4 h-4" /> AMANHÃ
+                        <div className="flex items-center gap-2 text-xs font-black">
+                            <Clock className="w-3.5 h-3.5" /> PRÓX. DIA
+                        </div>
+                        <span className="text-[8px] font-bold opacity-60">
+                            {(() => {
+                                const d = new Date();
+                                const day = d.getDay();
+                                let add = 1;
+                                if (day === 5) add = 3;
+                                else if (day === 6) add = 2;
+                                d.setDate(d.getDate() + add);
+                                return d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }).toUpperCase();
+                            })()}
+                        </span>
                     </button>
                     <button
                         onClick={() => setActiveTab('ferias')}
