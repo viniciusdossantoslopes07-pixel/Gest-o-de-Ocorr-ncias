@@ -383,7 +383,18 @@ const App: FC = () => {
         functionId: data.function_id,
         customPermissions: data.custom_permissions,
         biometric_credentials_id: data.biometric_credentials_id,
-        active: data.active
+        active: data.active,
+        specialty: data.specialty,
+        class_year: data.class_year,
+        service: data.service,
+        address: data.address,
+        enlistment_date: data.enlistment_date,
+        presentation_date: data.presentation_date,
+        last_promotion_date: data.last_promotion_date,
+        military_identity: data.military_identity,
+        rc: data.rc,
+        workplace: data.workplace,
+        emergency_contact: data.emergency_contact
       };
 
       if (user.approved === false) {
@@ -489,7 +500,18 @@ const App: FC = () => {
         pending_password_reset: u.pending_password_reset,
         reset_password_at_login: u.reset_password_at_login,
         password_status: u.password_status,
-        active: u.active
+        active: u.active,
+        specialty: u.specialty,
+        class_year: u.class_year,
+        service: u.service,
+        address: u.address,
+        enlistment_date: u.enlistment_date,
+        presentation_date: u.presentation_date,
+        last_promotion_date: u.last_promotion_date,
+        military_identity: u.military_identity,
+        rc: u.rc,
+        workplace: u.workplace,
+        emergency_contact: u.emergency_contact
       }));
       setUsers(mappedUsers);
     }
