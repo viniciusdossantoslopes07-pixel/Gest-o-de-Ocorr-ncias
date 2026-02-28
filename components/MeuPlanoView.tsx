@@ -54,70 +54,79 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
     const fetchPersonalStats = async () => {
         setLoading(true);
         try {
-            // Se houver um personalSaram definido, usamos ele. Caso contrário, usamos o saram do usuário logado.
             const userSaramStr = String(personalSaram || user.saram || '').trim();
 
             if (!userSaramStr) {
                 setStats({ ...stats, totalMissions: 0, activeLoans: 0 });
+                setLoading(false);
                 return;
             }
 
-            // 1. Fetch Mission Orders where user is in personnel
-            const { data: missions, error: mError } = await supabase
-                .from('mission_orders')
-                .select('*')
-                .contains('personnel', [{ saram: userSaramStr }])
-                .order('date', { ascending: false });
-
-            if (mError) throw mError;
-            setAllMissions(missions || []);
-
-            // 2. Fetch Material Loans (History)
-            // Se estiver usando SARAM pessoal, precisamos buscar o ID do usuário correspondente ou buscar por SARAM se a tabela suportar
-            // Como a tabela movimentacao_cautela usa id_usuario (UUID), vamos buscar o UUID do militar pelo SARAM
+            // 1. Determina o Target User ID (UUID) para Cautelas
             let targetUserId = user.id;
-            if (personalSaram && personalSaram !== user.saram) {
-                const { data: userData } = await supabase
+            if (userSaramStr !== user.saram) {
+                const { data: userData, error: uError } = await supabase
                     .from('users')
                     .select('id')
                     .eq('saram', userSaramStr)
-                    .single();
-                if (userData) targetUserId = userData.id;
+                    .maybeSingle();
+
+                if (userData) {
+                    targetUserId = userData.id;
+                } else if (uError) {
+                    console.error('Error finding user by saram:', uError);
+                }
             }
 
-            const { data: loans, error: lError } = await supabase
-                .from('movimentacao_cautela')
-                .select(`
-                    id, 
-                    status, 
-                    quantidade,
-                    gestao_estoque (
-                        tipo_de_material
-                    )
-                `)
-                .eq('id_usuario', targetUserId);
+            // 2. Busca de dados em paralelo para melhor performance
+            const [missionsRes, loansRes, attendanceRes] = await Promise.all([
+                // Missões (OMIS)
+                supabase
+                    .from('mission_orders')
+                    .select('*')
+                    .contains('personnel', [{ saram: userSaramStr }]),
 
-            if (lError) throw lError;
+                // Cautelas (Material em Uso)
+                supabase
+                    .from('movimentacao_cautela')
+                    .select(`
+                        id, 
+                        status, 
+                        quantidade,
+                        gestao_estoque (
+                            tipo_de_material
+                        )
+                    `)
+                    .eq('id_usuario', targetUserId),
 
-            // 3. Fetch Attendance Records
-            const { data: attendance, error: aError } = await supabase
-                .from('attendance_records')
-                .select(`
-                    id,
-                    status,
-                    timestamp,
-                    daily_attendance (
-                        date,
-                        call_type
-                    )
-                `)
-                .eq('saram', userSaramStr)
-                .order('timestamp', { ascending: false });
+                // Assiduidade (Chamada)
+                supabase
+                    .from('attendance_records')
+                    .select(`
+                        id,
+                        status,
+                        timestamp,
+                        daily_attendance (
+                            date,
+                            call_type
+                        )
+                    `)
+                    .eq('saram', userSaramStr)
+            ]);
 
-            if (aError) throw aError;
+            // Verificação de erros individuais
+            if (missionsRes.error) console.error('Missions error:', missionsRes.error);
+            if (loansRes.error) console.error('Loans error:', loansRes.error);
+            if (attendanceRes.error) console.error('Attendance error:', attendanceRes.error);
 
-            // Process Initial Data (Full)
-            processAndSetStats(missions || [], loans || [], attendance || []);
+            const missions = missionsRes.data || [];
+            const loans = loansRes.data || [];
+            const attendance = attendanceRes.data || [];
+
+            setAllMissions(missions);
+
+            // 3. Process Initial Data (Full)
+            processAndSetStats(missions, loans, attendance);
 
         } catch (error) {
             console.error('Error fetching personal stats:', error);
@@ -127,14 +136,20 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
     };
 
     const processAndSetStats = (missions: any[], loans: any[], attendance: any[]) => {
-        const concludedMissionsCount = missions.filter(m => m.status === 'CONCLUIDA').length;
-        const totalMissions = missions.length;
+        // Filtro de missões pendentes/concluídas (case insensitive e robusto)
+        const concludedMissions = missions.filter(m =>
+            m.status?.toUpperCase() === 'CONCLUIDA' ||
+            m.status?.toUpperCase() === 'CONCLUÍDA' ||
+            m.status?.toUpperCase() === 'FINALIZADA'
+        );
+
+        const totalMissions = concludedMissions.length;
         const recentMissions = missions.slice(0, 5);
 
         // Group by Type
         const typeCount: Record<string, number> = {};
         missions.forEach((m: any) => {
-            const type = m.mission || 'Outros';
+            const type = (m.mission || 'Outros').trim();
             typeCount[type] = (typeCount[type] || 0) + 1;
         });
         const missionsByType = Object.entries(typeCount).map(([name, value]) => ({ name, value }));
@@ -142,7 +157,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         // Group Loans by Category
         const categoryCount: Record<string, number> = {};
         loans.forEach((l: any) => {
-            const category = l.gestao_estoque?.tipo_de_material || 'Outros';
+            const category = (l.gestao_estoque?.tipo_de_material || 'Outros').trim();
             categoryCount[category] = (categoryCount[category] || 0) + (l.quantidade || 1);
         });
         const loansByCategory = Object.entries(categoryCount)
@@ -150,36 +165,44 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             .sort((a, b) => b.value - a.value);
 
         const loanHistory = loans.length;
-        // Filtramos explicitamente 'Concluído' e outros status de finalização
-        const activeLoans = loans.filter((l: any) =>
-            ['Em Uso', 'Pendente', 'RETIRADO', 'APROVADA'].includes(l.status) &&
-            !['Concluído', 'CONCLUÍDO', 'DEVOLVIDO', 'REJEITADA'].includes(l.status)
-        ).reduce((acc: number, curr: any) => acc + (curr.quantidade || 1), 0);
+
+        // Filtramos cautelas ativas com maior tolerância a variações de status
+        const activeLoans = loans.filter((l: any) => {
+            const status = (l.status || '').toUpperCase().trim();
+            const isActive = ['EM USO', 'PENDENTE', 'RETIRADO', 'APROVADA', 'APROVADO'].includes(status);
+            const isFinished = ['CONCLUIDO', 'CONCLUÍDO', 'DEVOLVIDO', 'REJEITADA', 'REJEITADO'].includes(status);
+            return isActive && !isFinished;
+        }).reduce((acc: number, curr: any) => acc + (curr.quantidade || 1), 0);
 
         // Process Attendance
-        const validAttendance = attendance.filter((a: any) => !['NIL', 'N'].includes(a.status));
+        const validAttendance = attendance.filter((a: any) => {
+            const status = (a.status || '').toUpperCase().trim();
+            return !['NIL', 'N', 'NULL', ''].includes(status);
+        });
+
         const totalAttendance = validAttendance.length;
         const presenceCount = validAttendance.filter((a: any) =>
-            ['P', 'ESV', 'MIS', 'SV'].includes(a.status)
+            ['P', 'ESV', 'MIS', 'SV', 'PRESENÇA', 'PRESENCA'].includes((a.status || '').toUpperCase().trim())
         ).length;
+
         const attendanceRate = totalAttendance > 0 ? (presenceCount / totalAttendance) * 100 : 0;
 
         const statusCount: Record<string, number> = {};
         validAttendance.forEach((a: any) => {
-            const status = a.status || 'Outros';
+            const status = (a.status || 'Outros').trim().toUpperCase();
             statusCount[status] = (statusCount[status] || 0) + 1;
         });
         const attendanceByStatus = Object.entries(statusCount).map(([name, value]) => ({ name, value }));
 
         setStats({
-            totalMissions: concludedMissionsCount, // Mostramos as concluidas no KPI principal
+            totalMissions, //KPI de missões FINALIZADAS
             totalHours: 0,
             missionsByType,
             loansByCategory,
             recentMissions,
             loanHistory,
             activeLoans,
-            attendanceHistory: validAttendance,
+            attendanceHistory: attendance, // Guardamos todos para filtros posteriores
             attendanceRate,
             attendanceByStatus
         });
@@ -190,8 +213,13 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         const filtered = allMissions.filter(m => {
             const matchType = !filterType || m.mission === filterType;
 
-            // Corrige o bug de Timezone extraindo a data UTC correta que veio do banco.
-            const [y, mm] = m.date.split('-');
+            // Corrige o bug de Timezone extraindo a data
+            const rawDate = m.date || '';
+            const datePart = rawDate.includes('T') ? rawDate.split('T')[0] : rawDate.split(' ')[0];
+
+            if (!datePart.includes('-')) return false;
+
+            const [y, mm] = datePart.split('-');
             const mYear = y;
             const mMonth = parseInt(mm, 10).toString();
 
@@ -212,16 +240,21 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
 
         // Filter Attendance
         const filteredAttendance = stats.attendanceHistory.filter(a => {
-            const rawDate = a.daily_attendance?.date || a.timestamp;
-            // Pegue somente a trinca da data e ignore a hora caso haja timezone
-            const [y, mm] = rawDate.split('T')[0].split('-');
+            const rawDate = a.daily_attendance?.date || a.timestamp || '';
+            const datePart = rawDate.includes('T') ? rawDate.split('T')[0] : rawDate.split(' ')[0];
+
+            if (!datePart.includes('-')) return false;
+
+            const [y, mm] = datePart.split('-');
             const aYear = y;
             const aMonth = parseInt(mm, 10).toString();
 
             const matchYear = !filterYear || aYear === filterYear;
             const matchMonth = filterMonth === '0' || aMonth === filterMonth;
 
-            const isValid = !['NIL', 'N'].includes(a.status);
+            const status = (a.status || '').toUpperCase().trim();
+            const isValid = !['NIL', 'N', 'NULL', ''].includes(status);
+
             return matchYear && matchMonth && isValid;
         });
 
@@ -258,7 +291,11 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
     const availableYears = useMemo(() => {
         const years = new Set<string>();
         allMissions.forEach(m => {
-            if (m.date) years.add(m.date.split('-')[0]);
+            if (m.date) {
+                const rawDate = m.date || '';
+                const datePart = rawDate.includes('T') ? rawDate.split('T')[0] : rawDate.split(' ')[0];
+                if (datePart.includes('-')) years.add(datePart.split('-')[0]);
+            }
         });
         stats.attendanceHistory.forEach(a => {
             const rawDate = a.daily_attendance?.date || a.timestamp;
@@ -299,11 +336,11 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                 <div className={`p-6 border-b flex flex-col md:flex-row justify-between items-start md:items-center gap-4 ${isDarkMode ? 'border-slate-700' : 'border-slate-200'}`}>
                     <div>
                         <h1 className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                            Meu Plano
+                            Painel Individual
                         </h1>
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
                             <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                                SARAM Vinculado:
+                                SARAM (Visualização Pessoal):
                             </p>
                             {isEditingPersonalSaram ? (
                                 <div className="flex items-center gap-2">

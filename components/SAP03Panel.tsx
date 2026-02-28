@@ -429,21 +429,41 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                     alert('Itens registrados como devolvidos!');
                 }
             } else if (signatureAction === 'update_release' && signatureRequestId) {
-                const { error } = await supabase
-                    .from('movimentacao_cautela')
-                    .update({
-                        status: 'Em Uso',
-                        entregue_por: userName,
-                        observacao: `Retirada assinada digitalmente por ${militaryName} em ${new Date().toLocaleString()}`
-                    })
-                    .eq('id', signatureRequestId as string);
-                if (error) throw error;
+                if (Array.isArray(signatureRequestId)) {
+                    const { error } = await supabase
+                        .from('movimentacao_cautela')
+                        .update({
+                            status: 'Em Uso',
+                            entregue_por: userName,
+                            observacao: `Retirada em lote: Assinada digitalmente por ${militaryName} em ${new Date().toLocaleString()}`
+                        })
+                        .in('id', signatureRequestId);
+                    if (error) throw error;
 
-                // Buscar dados da cautela para processar estoque
-                const { data: loan } = await supabase.from('movimentacao_cautela').select('id_material, quantidade').eq('id', signatureRequestId as string).single();
-                if (loan) await updateInventoryStock(loan.id_material, loan.quantidade || 1, 'release');
+                    // Atualizar estoque para cada item no lote
+                    for (const id of signatureRequestId) {
+                        const { data: loan } = await supabase.from('movimentacao_cautela').select('id_material, quantidade').eq('id', id).single();
+                        if (loan) await updateInventoryStock(loan.id_material, loan.quantidade || 1, 'release');
+                    }
 
-                alert('Entrega confirmada e assinada!');
+                    alert(`${signatureRequestId.length} materiais entregues com sucesso!`);
+                } else {
+                    const { error } = await supabase
+                        .from('movimentacao_cautela')
+                        .update({
+                            status: 'Em Uso',
+                            entregue_por: userName,
+                            observacao: `Retirada assinada digitalmente por ${militaryName} em ${new Date().toLocaleString()}`
+                        })
+                        .eq('id', signatureRequestId as string);
+                    if (error) throw error;
+
+                    // Buscar dados da cautela para processar estoque
+                    const { data: loan } = await supabase.from('movimentacao_cautela').select('id_material, quantidade').eq('id', signatureRequestId as string).single();
+                    if (loan) await updateInventoryStock(loan.id_material, loan.quantidade || 1, 'release');
+
+                    alert('Entrega confirmada e assinada!');
+                }
             } else if (signatureAction === 'update_return' && signatureRequestId) {
                 if (Array.isArray(signatureRequestId)) {
                     const { error } = await supabase
@@ -890,14 +910,14 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
 
                         </div>
 
-                        {(activeTab === 'Em Uso') && (
+                        {(activeTab === 'Em Uso' || activeTab === 'Solicitações') && (
                             <div className="flex items-center gap-4 w-full md:w-auto">
                                 <label className={`flex items-center gap-2 cursor-pointer group px-4 py-2 rounded-xl border transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-white border-slate-200'}`}>
                                     <input
                                         type="checkbox"
                                         className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-30"
                                         checked={(() => {
-                                            const selectableRequests = filteredRequests.filter(r => activeTab === 'Em Uso');
+                                            const selectableRequests = filteredRequests.filter(r => (activeTab === 'Em Uso' || activeTab === 'Solicitações'));
                                             if (selectableRequests.length === 0) return false;
 
                                             // Se já tem seleção, o "Selecionar Tudo" deve se referir apenas ao usuário já selecionado
@@ -912,7 +932,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                         })()}
                                         onChange={(e) => {
                                             if (e.target.checked) {
-                                                const selectable = filteredRequests.filter(r => activeTab === 'Em Uso');
+                                                const selectable = filteredRequests.filter(r => (activeTab === 'Em Uso' || activeTab === 'Solicitações'));
                                                 if (selectable.length > 0) {
                                                     // Se não tem nada selecionado, seleciona todos do primeiro usuário da lista
                                                     // Se já tem seleção, seleciona todos do usuário já selecionado
@@ -939,16 +959,17 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                 {selectedBatchIds.length > 0 && (
                                     <button
                                         onClick={() => {
-                                            if (activeTab === 'Em Uso') {
-                                                const firstId = selectedBatchIds[0];
-                                                const firstReq = requests.find(r => r.id === firstId);
-                                                if (firstReq) startSignatureFlow(selectedBatchIds, firstReq.id_usuario, 'update_return');
+                                            const firstId = selectedBatchIds[0];
+                                            const firstReq = requests.find(r => r.id === firstId);
+                                            if (firstReq) {
+                                                const action = activeTab === 'Solicitações' ? 'update_release' : 'update_return';
+                                                startSignatureFlow(selectedBatchIds, firstReq.id_usuario, action);
                                             }
                                         }}
-                                        className={`px-4 py-2 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700`}
+                                        className={`px-4 py-2 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${activeTab === 'Solicitações' ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/20' : 'bg-emerald-600 hover:bg-emerald-700'}`}
                                     >
-                                        <CheckCircle className="w-4 h-4" />
-                                        Receber Selecionados ({selectedBatchIds.length})
+                                        {activeTab === 'Solicitações' ? <Package className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                                        {activeTab === 'Solicitações' ? 'Entregar Selecionados' : 'Receber Selecionados'} ({selectedBatchIds.length})
                                     </button>
                                 )}
                             </div>
@@ -1205,7 +1226,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                     filteredRequests.map(req => (
                         <div key={req.id} className={`rounded-2xl border transition-all duration-300 ${expandedRequestId === req.id ? (isDarkMode ? 'border-blue-500 bg-slate-800 shadow-2xl shadow-blue-500/10' : 'border-blue-300 ring-4 ring-blue-50 bg-white shadow-xl') : (isDarkMode ? 'bg-slate-800/60 border-slate-700 hover:border-slate-600' : 'bg-white border-slate-100 shadow-sm hover:border-blue-100')}`}>
                             <div className="p-6 flex flex-col md:flex-row gap-6 items-start md:items-center cursor-pointer" onClick={() => setExpandedRequestId(expandedRequestId === req.id ? null : req.id)}>
-                                {(activeTab === 'Em Uso') && (
+                                {(activeTab === 'Em Uso' || (activeTab === 'Solicitações' && (req.status === 'Pendente' || req.status === 'Aprovado'))) && (
                                     <div className="shrink-0" onClick={e => e.stopPropagation()}>
                                         <input
                                             type="checkbox"
