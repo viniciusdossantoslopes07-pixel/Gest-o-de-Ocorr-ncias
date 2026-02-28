@@ -1025,6 +1025,7 @@ const App: FC = () => {
         onToggleTheme={toggleTheme}
         isDarkMode={isDarkMode}
         onOpenFAQ={() => setShowFAQ(true)}
+        onOpenDestinometro={() => setShowDestinometro(true)}
       />
 
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">

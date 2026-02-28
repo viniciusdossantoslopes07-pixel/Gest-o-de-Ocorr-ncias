@@ -5,7 +5,7 @@ import {
     Home, PlusCircle, ShieldCheck, ShieldAlert, Package,
     LayoutDashboard, FileText, LogOut, ChevronLeft, ChevronRight,
     User as UserIcon, Settings, HelpCircle, Moon, Sun, Lock, Siren, BarChart3,
-    ChevronUp, ChevronDown, Check, Settings2, DoorOpen, Car
+    ChevronUp, ChevronDown, Check, Settings2, DoorOpen, Car, MapPin
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { USER_FUNCTIONS, PERMISSIONS, hasPermission } from '../constants/permissions';
@@ -20,11 +20,12 @@ interface SideMenuProps {
     onToggleTheme: () => void;
     isDarkMode: boolean;
     onOpenFAQ: () => void;
+    onOpenDestinometro: () => void;
 }
 
 export default function SideMenu({
     isOpen, onClose, activeTab, setActiveTab, currentUser, onLogout,
-    onToggleTheme, isDarkMode, onOpenFAQ
+    onToggleTheme, isDarkMode, onOpenFAQ, onOpenDestinometro
 }: SideMenuProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMaterialMenuOpen, setIsMaterialMenuOpen] = useState(false);
@@ -128,6 +129,7 @@ export default function SideMenu({
                                     <MenuItem id="mission-center" label="Central de Missões" icon={ShieldAlert} />
                                 )}
                                 <MenuItem id="meu-plano" label="Meu Plano" icon={UserIcon} />
+                                <MenuItem id="destinometro" label="Destinômetro" icon={MapPin} onClick={onOpenDestinometro} />
                             </div>
 
                             {/* Material Section */}
