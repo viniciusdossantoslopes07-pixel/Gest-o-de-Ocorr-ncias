@@ -126,7 +126,6 @@ const HomeView: React.FC<HomeViewProps> = ({
                   <span className="bg-white/10 px-2 lg:px-3 py-0.5 lg:py-1 rounded-full border border-white/20 flex items-center w-fit">
                     <span className="text-white font-black italic tracking-tighter text-[10px] lg:text-[14px]">GUARDIÃO <span className="not-italic ml-0.5 opacity-90 text-[8px] lg:text-[12px]">GSD-SP</span></span>
                   </span>
-                  <p className="text-white/60 text-[9px] lg:text-[11px] font-bold uppercase tracking-wider">Sistema v1.1</p>
                 </div>
               </div>
             </div>
