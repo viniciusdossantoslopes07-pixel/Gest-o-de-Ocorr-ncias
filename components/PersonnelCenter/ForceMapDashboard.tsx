@@ -40,6 +40,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         const d = new Date();
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     });
+    const [viewMode, setViewMode] = useState<'DAILY' | 'WEEKLY'>('DAILY');
     const [selectedSector, setSelectedSector] = useState<string>('TODOS');
     const [callTypeFilter, setCallTypeFilter] = useState<'INICIO' | 'TERMINO' | 'LATEST'>('LATEST');
     const [rankFilter, setRankFilter] = useState<'TODOS' | 'OFICIAIS' | 'GRADUADOS' | 'PRACAS'>('TODOS');
@@ -66,6 +67,28 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         const d = new Date();
         d.setDate(d.getDate() - 1);
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
+
+    // Week helpers
+    const currentWeekRange = useMemo(() => {
+        const d = new Date(selectedDate + 'T12:00:00');
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(d.setDate(diff));
+
+        const days = [];
+        for (let i = 0; i < 5; i++) {
+            const temp = new Date(monday);
+            temp.setDate(monday.getDate() + i);
+            days.push(`${temp.getFullYear()}-${String(temp.getMonth() + 1).padStart(2, '0')}-${String(temp.getDate()).padStart(2, '0')}`);
+        }
+        return days;
+    }, [selectedDate]);
+
+    const navigateWeek = (direction: 'next' | 'prev') => {
+        const d = new Date(selectedDate + 'T12:00:00');
+        d.setDate(d.getDate() + (direction === 'next' ? 7 : -7));
+        setSelectedDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
     };
 
     // Filter users by rank
@@ -113,8 +136,47 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return latestMap;
     };
 
+    // Get weekly records (aggregate most recent status for each user in the week)
+    const getRecordsForWeek = (weekDays: string[]) => {
+        const latestMap = new Map<string, any>();
+
+        // Process each day of the week
+        weekDays.forEach(date => {
+            const dailyMap = getRecordsForDate(date);
+            dailyMap.forEach((record, militarId) => {
+                // Keep the record for calculation (we might take average or latest)
+                // For a "Weekly Map", we could show the most recent across the week,
+                // or just collect all to average them later.
+                // Let's collect all for averaging KPIs.
+                if (!latestMap.has(militarId)) {
+                    latestMap.set(militarId, []);
+                }
+                latestMap.get(militarId).push(record);
+            });
+        });
+
+        return latestMap;
+    };
+
     // Current and previous records
-    const currentRecordsMap = useMemo(() => getRecordsForDate(selectedDate), [selectedDate, selectedSector, callTypeFilter, attendanceHistory]);
+    const currentRecordsMap = useMemo(() => {
+        if (viewMode === 'WEEKLY') {
+            const weekMap = getRecordsForWeek(currentWeekRange);
+            const flattenedMap = new Map<string, any>();
+
+            // For weekly aggregation, we'll store the list of records to calculate averages later
+            // but for simple lookups we'll use the most recent
+            weekMap.forEach((records: any[], id) => {
+                flattenedMap.set(id, {
+                    ...records[records.length - 1],
+                    weeklyRecords: records // Store all for averaging
+                });
+            });
+            return flattenedMap;
+        }
+        return getRecordsForDate(selectedDate);
+    }, [selectedDate, selectedSector, callTypeFilter, attendanceHistory, viewMode, currentWeekRange]);
+
     const previousRecordsMap = useMemo(() => getRecordsForDate(previousDate), [previousDate, selectedSector, callTypeFilter, attendanceHistory]);
 
     // Relevant users after rank filter
@@ -140,11 +202,46 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const totalEfetivo = relevantUsers.length;
 
     // Count helpers
-    const getCount = (records: any[], codes: string[]) => records.filter(r => codes.includes(r.status)).length;
+    const getCount = (records: any[], codes: string[]) => {
+        if (viewMode === 'WEEKLY') {
+            // Average count across the week
+            let totalMatchCount = 0;
+            const daysCount = currentWeekRange.length;
+
+            currentWeekRange.forEach(date => {
+                const dayRecords = Array.from(getRecordsForDate(date).values())
+                    .filter(r => relevantUserIds.has(r.militarId));
+                totalMatchCount += dayRecords.filter(r => codes.includes(r.status)).length;
+            });
+
+            return Math.round(totalMatchCount / daysCount);
+        }
+        return records.filter(r => codes.includes(r.status)).length;
+    };
+
     const presentCount = getCount(allRecords, ['P', 'INST']);
     const prevPresentCount = getCount(prevRecords, ['P', 'INST']);
     const absenceCount = totalEfetivo - presentCount;
-    const prontidao = totalEfetivo > 0 ? Math.round((presentCount / totalEfetivo) * 100) : 0;
+
+    // Weekly average readiness
+    const prontidao = useMemo(() => {
+        if (viewMode === 'WEEKLY') {
+            let totalProntidao = 0;
+            let validDays = 0;
+            currentWeekRange.forEach(date => {
+                const dayRecords = Array.from(getRecordsForDate(date).values())
+                    .filter(r => relevantUserIds.has(r.militarId));
+                if (dayRecords.length > 0) {
+                    const dailyPresent = dayRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
+                    totalProntidao += (dailyPresent / totalEfetivo) * 100;
+                    validDays++;
+                }
+            });
+            return validDays > 0 ? Math.round(totalProntidao / validDays) : 0;
+        }
+        return totalEfetivo > 0 ? Math.round((presentCount / totalEfetivo) * 100) : 0;
+    }, [viewMode, currentWeekRange, totalEfetivo, presentCount, relevantUserIds, attendanceHistory]);
+
     const prevProntidao = totalEfetivo > 0 ? Math.round((prevPresentCount / totalEfetivo) * 100) : 0;
     const prontidaoDelta = prontidao - prevProntidao;
 
@@ -184,20 +281,39 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 : [selectedSector];
 
         return sectors.map(sector => {
-            // [MODIFICAÇÃO]: Garantir que apenas militares habilitados contem aqui também
             const sectorUsers = filterUsersByRank(users.filter(u => u.sector === sector && u.active !== false));
-            const sectorRecords = Array.from(currentRecordsMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
-            const ready = sectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
             const total = sectorUsers.length;
+
+            let ready = 0;
+            let pct = 0;
+            let prevPct = 0;
+
+            if (viewMode === 'WEEKLY') {
+                let totalReady = 0;
+                let validDays = 0;
+                currentWeekRange.forEach(date => {
+                    const dayMap = getRecordsForDate(date);
+                    const daySectorRecords = Array.from(dayMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
+                    if (daySectorRecords.length > 0 || total > 0) {
+                        totalReady += daySectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
+                        validDays++;
+                    }
+                });
+                ready = validDays > 0 ? Math.round(totalReady / validDays) : 0;
+                pct = total > 0 ? (ready / total) * 100 : 0;
+                prevPct = pct;
+            } else {
+                const sectorRecords = Array.from(currentRecordsMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
+                ready = sectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
+                pct = total > 0 ? (ready / total) * 100 : 0;
+
+                const prevSectorRecords = Array.from(previousRecordsMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
+                const prevReadyCount = prevSectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
+                prevPct = total > 0 ? (prevReadyCount / total) * 100 : 0;
+            }
+
             const absent = total - ready;
-            const pct = total > 0 ? (ready / total) * 100 : 0;
 
-            // Previous day comparison
-            const prevSectorRecords = Array.from(previousRecordsMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
-            const prevReady = prevSectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
-            const prevPct = total > 0 ? (prevReady / total) * 100 : 0;
-
-            // Absent detail
             const absentDetails = sectorUsers
                 .filter(u => {
                     const r = currentRecordsMap.get(u.id);
@@ -211,7 +327,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 
             return { sector, total, ready, absent, pct, prevPct, delta: Math.round(pct - prevPct), absentDetails };
         });
-    }, [users, currentRecordsMap, previousRecordsMap, selectedSector, rankFilter]);
+    }, [users, currentRecordsMap, previousRecordsMap, selectedSector, rankFilter, viewMode, currentWeekRange, relevantUserIds]);
 
     // Delta indicator
     const DeltaIndicator = ({ value, suffix = '' }: { value: number; suffix?: string }) => {
@@ -268,36 +384,56 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 
                     {/* Filter Bar */}
                     <div className="flex flex-wrap items-center gap-3">
-                        {/* Quick Date Buttons */}
+                        {/* View Mode Toggle */}
                         <div className={`flex items-center gap-1 p-1 rounded-xl border ${filterPill}`}>
                             <button
-                                onClick={() => setSelectedDate(getToday())}
-                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${selectedDate === getToday() ? filterBtnActive : filterBtnInactive}`}
+                                onClick={() => setViewMode('DAILY')}
+                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${viewMode === 'DAILY' ? filterBtnActive : filterBtnInactive}`}
                             >
-                                Hoje
+                                Diário
                             </button>
                             <button
-                                onClick={() => setSelectedDate(getYesterday())}
-                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${selectedDate === getYesterday() ? filterBtnActive : filterBtnInactive}`}
+                                onClick={() => setViewMode('WEEKLY')}
+                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${viewMode === 'WEEKLY' ? filterBtnActive : filterBtnInactive}`}
                             >
-                                Ontem
+                                Semanal
                             </button>
                         </div>
 
-                        {/* Date Picker */}
-                        <div className={`flex items-center gap-2 p-2 rounded-xl border ${filterPill}`}>
-                            <Clock className={`w-4 h-4 ml-1 ${textMuted}`} />
-                            <input
-                                type="date"
-                                value={selectedDate}
-                                onChange={(e) => setSelectedDate(e.target.value)}
-                                className={`bg-transparent border-none text-xs font-black uppercase focus:ring-0 cursor-pointer ${dk ? 'color-scheme-dark' : ''} ${inputBg}`}
-                                style={{ colorScheme: dk ? 'dark' : 'light' }}
-                            />
-                        </div>
+                        {/* Quick Date Buttons (Daily Only) */}
+                        {viewMode === 'DAILY' && (
+                            <div className={`flex items-center gap-1 p-1 rounded-xl border ${filterPill}`}>
+                                <button
+                                    onClick={() => setSelectedDate(getToday())}
+                                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${selectedDate === getToday() ? filterBtnActive : filterBtnInactive}`}
+                                >
+                                    Hoje
+                                </button>
+                                <button
+                                    onClick={() => setSelectedDate(getYesterday())}
+                                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${selectedDate === getYesterday() ? filterBtnActive : filterBtnInactive}`}
+                                >
+                                    Ontem
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Date Picker (Daily Only) */}
+                        {viewMode === 'DAILY' && (
+                            <div className={`flex items-center gap-2 p-2 rounded-xl border ${filterPill}`}>
+                                <Clock className={`w-4 h-4 ml-1 ${textMuted}`} />
+                                <input
+                                    type="date"
+                                    value={selectedDate}
+                                    onChange={(e) => setSelectedDate(e.target.value)}
+                                    className={`bg-transparent border-none text-xs font-black uppercase focus:ring-0 cursor-pointer ${dk ? 'color-scheme-dark' : ''} ${inputBg}`}
+                                    style={{ colorScheme: dk ? 'dark' : 'light' }}
+                                />
+                            </div>
+                        )}
 
                         {/* Sector */}
-                        <div className="min-w-[160px]">
+                        <div className="min-w-[140px]">
                             <FilterSelect
                                 icon={Filter}
                                 placeholder="Todos Setores"
@@ -312,17 +448,38 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                             />
                         </div>
 
-                        {/* Call Type */}
-                        <div className={`flex items-center gap-1 p-1 rounded-xl border ${filterPill}`}>
-                            <button onClick={() => setCallTypeFilter('LATEST')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${callTypeFilter === 'LATEST' ? filterBtnActive : filterBtnInactive}`}>
-                                Última
+                        {/* Weekly Navigator (like image) */}
+                        <div className={`flex items-center gap-0.5 px-1 py-1 rounded-[2rem] border transition-all ${filterPill}`}>
+                            <button
+                                onClick={() => navigateWeek('prev')}
+                                className={`p-2 rounded-full transition-colors ${dk ? 'hover:bg-slate-700 text-slate-400 hover:text-white' : 'hover:bg-slate-200 text-slate-500 hover:text-slate-900'}`}
+                                title="Semana Anterior"
+                            >
+                                <ChevronDown className="w-3.5 h-3.5 rotate-90" />
                             </button>
-                            <button onClick={() => setCallTypeFilter('INICIO')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${callTypeFilter === 'INICIO' ? filterBtnActive : filterBtnInactive}`}>
-                                1ª Ch.
+
+                            <div className="px-4 py-1 flex items-center justify-center min-w-[130px]">
+                                <span className={`text-[11px] font-black tabular-nums tracking-tight ${textPrimary}`}>
+                                    {(() => {
+                                        const start = new Date(currentWeekRange[0] + 'T12:00:00');
+                                        const end = new Date(currentWeekRange[4] + 'T12:00:00');
+                                        return `${start.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} — ${end.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`;
+                                    })()}
+                                </span>
+                            </div>
+
+                            <button
+                                onClick={() => navigateWeek('next')}
+                                className={`p-2 rounded-full transition-colors ${dk ? 'hover:bg-slate-700 text-slate-400 hover:text-white' : 'hover:bg-slate-200 text-slate-500 hover:text-slate-900'}`}
+                                title="Próxima Semana"
+                            >
+                                <ChevronDown className="w-3.5 h-3.5 -rotate-90" />
                             </button>
-                            <button onClick={() => setCallTypeFilter('TERMINO')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${callTypeFilter === 'TERMINO' ? filterBtnActive : filterBtnInactive}`}>
-                                2ª Ch.
-                            </button>
+                        </div>
+
+                        {/* Funnel Icon (Extra) */}
+                        <div className={`p-2.5 rounded-full border ${filterPill} text-slate-400`}>
+                            <Filter className="w-3.5 h-3.5" />
                         </div>
 
                         {/* Rank Filter */}
