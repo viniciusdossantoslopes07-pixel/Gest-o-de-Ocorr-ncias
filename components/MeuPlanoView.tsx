@@ -84,7 +84,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                 supabase
                     .from('mission_orders')
                     .select('*')
-                    .contains('personnel', [{ saram: userSaramStr }]),
+                    .or(`personnel.cs.[{"saram":"${userSaramStr}"}],personnel.cs.[{"saram":${userSaramStr}}],personnel.cs.[{"SARAM":"${userSaramStr}"}]`),
 
                 // Cautelas (Material em Uso)
                 supabase
@@ -137,11 +137,12 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
 
     const processAndSetStats = (missions: any[], loans: any[], attendance: any[]) => {
         // Filtro de missões pendentes/concluídas (case insensitive e robusto)
-        const concludedMissions = missions.filter(m =>
-            m.status?.toUpperCase() === 'CONCLUIDA' ||
-            m.status?.toUpperCase() === 'CONCLUÍDA' ||
-            m.status?.toUpperCase() === 'FINALIZADA'
-        );
+        const concludedMissions = missions.filter(m => {
+            const status = (m.status || '').toUpperCase().trim();
+            return status === 'CONCLUIDA' ||
+                status === 'CONCLUÍDA' ||
+                status === 'FINALIZADA';
+        });
 
         const totalMissions = concludedMissions.length;
         const recentMissions = missions.slice(0, 5);
@@ -270,8 +271,15 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         });
         const fAttendanceByStatus = Object.entries(fStatusCount).map(([name, value]) => ({ name, value }));
 
+        const filteredMissionsCount = filtered.filter(m => {
+            const status = (m.status || '').toUpperCase().trim();
+            return status === 'CONCLUIDA' ||
+                status === 'CONCLUÍDA' ||
+                status === 'FINALIZADA';
+        }).length;
+
         return {
-            totalMissions: filtered.length,
+            totalMissions: filteredMissionsCount,
             missionsByType,
             recentMissions,
             attendanceRate: fAttendanceRate,
