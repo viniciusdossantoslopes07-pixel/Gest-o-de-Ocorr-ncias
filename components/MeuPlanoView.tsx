@@ -32,6 +32,11 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
     const [filterYear, setFilterYear] = useState('');    // Vazio = Todos
     const [filterType, setFilterType] = useState('');
     const [showPrintView, setShowPrintView] = useState(false);
+    const [personalSaram, setPersonalSaram] = useState<string>(() => {
+        // Tenta recuperar o SARAM pessoal do localStorage para manter a sessão
+        return localStorage.getItem('gsdsp_personal_saram') || '';
+    });
+    const [isEditingPersonalSaram, setIsEditingPersonalSaram] = useState(false);
 
     // Data for Requests Tab
     const [requests, setRequests] = useState<any[]>([]);
@@ -44,14 +49,20 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         } else {
             fetchMyRequests();
         }
-    }, [activeTab, user.id]);
+    }, [activeTab, user.id, personalSaram]);
 
     const fetchPersonalStats = async () => {
         setLoading(true);
         try {
+            // Se houver um personalSaram definido, usamos ele. Caso contrário, usamos o saram do usuário logado.
+            const userSaramStr = String(personalSaram || user.saram || '').trim();
+
+            if (!userSaramStr) {
+                setStats({ ...stats, totalMissions: 0, activeLoans: 0 });
+                return;
+            }
+
             // 1. Fetch Mission Orders where user is in personnel
-            // Removed .eq('status', 'CONCLUIDA') to allow calculating all types of participations
-            const userSaramStr = String(user.saram || '').trim();
             const { data: missions, error: mError } = await supabase
                 .from('mission_orders')
                 .select('*')
@@ -61,7 +72,19 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             if (mError) throw mError;
             setAllMissions(missions || []);
 
-            // 2. Fetch Material Loans (History) with Material Category Join
+            // 2. Fetch Material Loans (History)
+            // Se estiver usando SARAM pessoal, precisamos buscar o ID do usuário correspondente ou buscar por SARAM se a tabela suportar
+            // Como a tabela movimentacao_cautela usa id_usuario (UUID), vamos buscar o UUID do militar pelo SARAM
+            let targetUserId = user.id;
+            if (personalSaram && personalSaram !== user.saram) {
+                const { data: userData } = await supabase
+                    .from('users')
+                    .select('id')
+                    .eq('saram', userSaramStr)
+                    .single();
+                if (userData) targetUserId = userData.id;
+            }
+
             const { data: loans, error: lError } = await supabase
                 .from('movimentacao_cautela')
                 .select(`
@@ -72,11 +95,11 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                         tipo_de_material
                     )
                 `)
-                .eq('id_usuario', user.id);
+                .eq('id_usuario', targetUserId);
 
             if (lError) throw lError;
 
-            // 3. Fetch Attendance Records for this militar (using SARAM normalized)
+            // 3. Fetch Attendance Records
             const { data: attendance, error: aError } = await supabase
                 .from('attendance_records')
                 .select(`
@@ -127,7 +150,11 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             .sort((a, b) => b.value - a.value);
 
         const loanHistory = loans.length;
-        const activeLoans = loans.filter((l: any) => ['Em Uso', 'Pendente'].includes(l.status)).reduce((acc: number, curr: any) => acc + (curr.quantidade || 1), 0);
+        // Filtramos explicitamente 'Concluído' e outros status de finalização
+        const activeLoans = loans.filter((l: any) =>
+            ['Em Uso', 'Pendente', 'RETIRADO', 'APROVADA'].includes(l.status) &&
+            !['Concluído', 'CONCLUÍDO', 'DEVOLVIDO', 'REJEITADA'].includes(l.status)
+        ).reduce((acc: number, curr: any) => acc + (curr.quantidade || 1), 0);
 
         // Process Attendance
         const validAttendance = attendance.filter((a: any) => !['NIL', 'N'].includes(a.status));
@@ -274,9 +301,56 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                         <h1 className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                             Meu Plano
                         </h1>
-                        <p className={`text-sm mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                            ID Militar: <span className="font-bold">{user.militarId || 'N/A'}</span> | Painel pessoal de controle e estatísticas
-                        </p>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
+                            <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                                SARAM Vinculado:
+                            </p>
+                            {isEditingPersonalSaram ? (
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        autoFocus
+                                        type="text"
+                                        maxLength={7}
+                                        placeholder="Digite seu SARAM"
+                                        className={`px-2 py-1 text-xs font-bold border rounded outline-none ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-50 border-slate-300'}`}
+                                        value={personalSaram}
+                                        onChange={(e) => setPersonalSaram(e.target.value.replace(/\D/g, ''))}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                localStorage.setItem('gsdsp_personal_saram', personalSaram);
+                                                setIsEditingPersonalSaram(false);
+                                            }
+                                        }}
+                                    />
+                                    <button
+                                        onClick={() => {
+                                            localStorage.setItem('gsdsp_personal_saram', personalSaram);
+                                            setIsEditingPersonalSaram(false);
+                                        }}
+                                        className="text-[10px] font-bold text-blue-500 hover:text-blue-600 uppercase"
+                                    >
+                                        Vincular
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-sm font-black ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                                        {personalSaram || user.saram || 'Não Informado'}
+                                    </span>
+                                    <button
+                                        onClick={() => setIsEditingPersonalSaram(true)}
+                                        className={`p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}
+                                        title="Alterar SARAM para visualização pessoal"
+                                    >
+                                        <Filter className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            )}
+                            <span className="hidden sm:inline text-slate-300">|</span>
+                            <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                Identificação: <span className={isDarkMode ? 'text-slate-300' : 'text-slate-600'}>{user.militarId || 'FNC'}</span>
+                            </p>
+                        </div>
                     </div>
                     {activeTab === 'estatisticas' && (
                         <button

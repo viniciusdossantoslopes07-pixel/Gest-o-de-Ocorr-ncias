@@ -329,23 +329,44 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                      <Key className="w-3 h-3" /> {editingUserId ? 'Alterar Senha' : 'Senha Inicial'}
+                      <Key className="w-3 h-3" /> {editingUserId ? 'Segurança da Conta' : 'Senha Inicial'}
                     </label>
-                    {editingUserId && (
+                  </div>
+                  {editingUserId ? (
+                    <div className="flex flex-col gap-2">
                       <button
                         type="button"
-                        onClick={() => setFormData({ ...formData, password: '123456' })}
-                        className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded transition-colors ${formData.password === '123456'
-                          ? 'bg-blue-600 text-white'
-                          : isDarkMode ? 'bg-slate-800 text-blue-400 hover:bg-slate-700' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                        onClick={() => {
+                          if (confirm(`Deseja resetar a senha do usuário ${formData.username} para o padrão '123456'? O usuário será obrigado a trocar a senha no próximo login.`)) {
+                            setFormData({
+                              ...formData,
+                              password: '123456',
+                              password_status: 'EXPIRED',
+                              reset_password_at_login: true
+                            });
+                            alert('Senha resetada para 123456. Clique em "Salvar Alterações" para confirmar.');
+                          }
+                        }}
+                        className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.password === '123456'
+                            ? 'bg-amber-100 text-amber-700 border-2 border-amber-200'
+                            : isDarkMode ? 'bg-slate-900 border border-slate-700 text-blue-400 hover:bg-slate-800' : 'bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100'
                           }`}
-                        title="Isso forçará a troca no login"
                       >
-                        Senha: 123456
+                        <Key className="w-4 h-4" />
+                        {formData.password === '123456' ? 'Senha Resetada (Clique em Salvar)' : 'Resetar Senha para 123456'}
                       </button>
-                    )}
-                  </div>
-                  <input required={!editingUserId} type="text" placeholder="••••••••" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
+                      <p className="text-[9px] text-slate-500 italic">Por motivos de segurança, a senha atual não é exibida.</p>
+                    </div>
+                  ) : (
+                    <input
+                      required
+                      type="password"
+                      placeholder="••••••••"
+                      className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                      value={formData.password}
+                      onChange={e => setFormData({ ...formData, password: e.target.value })}
+                    />
+                  )}
                 </div>
 
                 <div className={`md:col-span-3 p-4 rounded-xl border transition-all ${isDarkMode ? 'bg-blue-500/10 border-blue-500/30 text-blue-300' : 'bg-blue-50/50 border-blue-100 text-blue-800'}`}>
