@@ -521,7 +521,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
                                 <p className="text-center text-sm font-bold mb-4">Manter este documento visível no para-brisa e estacionar o carro de ré.</p>
                                 <div className="flex items-center justify-between mb-2">
-                                    <img src="/logo_basp_novo.png" alt="BASP" className="h-24 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                    <img src="/logo_basp_optimized.png" alt="BASP" className="h-24 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                                     <div className="text-center flex-1">
                                         <h1 className="text-3xl font-black tracking-tight">AUTORIZAÇÃO</h1>
                                         <p className="text-lg font-bold">Nº {printRequest.numero_autorizacao}/{year}</p>

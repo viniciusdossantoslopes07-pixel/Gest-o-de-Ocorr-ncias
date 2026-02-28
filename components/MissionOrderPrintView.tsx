@@ -116,7 +116,7 @@ ${content.outerHTML}
                     <div id="omis-print-content" className="bg-white shadow-sm print:shadow-none mx-auto max-w-[21cm] p-6 sm:p-12 border border-slate-100 print:border-none print:p-0 min-h-full">
                         {/* Header with Logos */}
                         <div className="flex items-start justify-between mb-6 border-b-2 border-slate-900 pb-4">
-                            <img src="/logo_basp.png" alt="Logo BASP" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
+                            <img src="/logo_basp_optimized.png" alt="Logo BASP" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
                             <div className="flex-1 text-center px-2">
                                 <h1 className="text-[9px] sm:text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">Ministério da Defesa</h1>
                                 <h1 className="text-base sm:text-xl font-black uppercase text-slate-900 leading-tight">Comando da Aeronáutica</h1>

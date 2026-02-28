@@ -135,7 +135,7 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
 
                         {/* Standard Military Header */}
                         <div className="flex items-start justify-between mb-5 border-b-2 border-slate-900 pb-3 print-section">
-                            <img src="/logo_basp.png" alt="Logo BASP" className="w-14 h-14 object-contain" />
+                            <img src="/logo_basp_optimized.png" alt="Logo BASP" className="w-14 h-14 object-contain" />
                             <div className="flex-1 text-center">
                                 <h1 className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">Ministério da Defesa</h1>
                                 <h1 className="text-sm font-black uppercase tracking-tight">Comando da Aeronáutica</h1>
