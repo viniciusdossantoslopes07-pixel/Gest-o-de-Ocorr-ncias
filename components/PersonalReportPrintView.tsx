@@ -65,7 +65,7 @@ const PersonalReportPrintView: FC<PersonalReportPrintViewProps> = ({
                                     Relatório Operacional Individual
                                 </div>
                             </div>
-                            <img src="/logo_gsd_sp.png" alt="Logo GSD-SP" className="w-16 h-16 object-contain" />
+                            <img src="/logo_gsd.png" alt="Logo GSD-SP" className="w-16 h-16 object-contain" />
                         </div>
 
                         {/* Personal Info Grid */}

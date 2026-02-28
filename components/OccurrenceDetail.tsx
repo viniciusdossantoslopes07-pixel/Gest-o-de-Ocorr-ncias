@@ -105,7 +105,7 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
         </head>
         <body>
           <div class="header">
-            <img src="/logo_gsd.jpg" alt="Logo GSD-SP" style="width: 80px; height: auto; margin-bottom: 10px;" />
+            <img src="/logo_gsd.png" alt="Logo GSD-SP" style="width: 80px; height: auto; margin-bottom: 10px;" />
             <h1>GUARDIÃO GSD-SP - SISTEMA DE DEFESA</h1>
             <p>RELATÓRIO TÉCNICO DE OCORRÊNCIA PARA O COMANDO DA UNIDADE</p>
             <p style="font-size: 12px; margin-top: 10px;">ID: ${occurrence.id}</p>

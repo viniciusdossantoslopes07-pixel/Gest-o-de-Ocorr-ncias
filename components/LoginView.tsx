@@ -219,7 +219,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
           <div className={`p-10 pb-6 border-b ${isDarkMode ? 'border-slate-800' : 'border-slate-50'} text-center`}>
             <div className="flex justify-center mb-6">
               <div className={`w-32 h-32 rounded-full overflow-hidden shadow-xl ring-4 ${isDarkMode ? 'ring-slate-800' : 'ring-white'} relative z-10 bg-white`}>
-                <img src="/logo_gsd.jpg" alt="Logo GSD-SP" className="w-full h-full object-cover" />
+                <img src="/logo_gsd.png" alt="Logo GSD-SP" className="w-full h-full object-cover" />
               </div>
             </div>
             <h1 className={`text-3xl sm:text-4xl font-black italic tracking-tighter mb-2 whitespace-nowrap ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>

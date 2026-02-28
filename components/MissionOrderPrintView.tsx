@@ -123,7 +123,7 @@ ${content.outerHTML}
                                 <h2 className="text-xs sm:text-base font-black uppercase text-slate-800 tracking-wide mt-1">BASE AÉREA DE SÃO PAULO</h2>
                                 <h3 className="text-[10px] sm:text-sm font-bold uppercase text-slate-700 leading-tight">Grupo de Segurança e Defesa de São Paulo</h3>
                             </div>
-                            <img src="/logo_gsd_sp.png" alt="Logo GSD-SP" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
+                            <img src="/logo_gsd.png" alt="Logo GSD-SP" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
                         </div>
 
                         {/* Basic Info Table */}

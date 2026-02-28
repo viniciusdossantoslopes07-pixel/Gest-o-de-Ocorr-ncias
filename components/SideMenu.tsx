@@ -96,7 +96,7 @@ export default function SideMenu({
                 <div className={`p-6 flex flex-col ${isCollapsed ? 'items-center px-4' : ''}`}>
                     <div className={`flex items-center gap-3 mb-8 overflow-hidden ${isCollapsed ? 'justify-center' : ''}`}>
                         <div className="shrink-0 relative w-12 h-12 rounded-full overflow-hidden shadow-md ring-2 ring-white/10">
-                            <img src="/logo_gsd.jpg" alt="Logo" className="w-full h-full object-cover scale-125" />
+                            <img src="/logo_gsd.png" alt="Logo" className="w-full h-full object-cover scale-125" />
                         </div>
                         {!isCollapsed && (
                             <h1 className="text-lg font-black italic tracking-tighter whitespace-nowrap text-white">

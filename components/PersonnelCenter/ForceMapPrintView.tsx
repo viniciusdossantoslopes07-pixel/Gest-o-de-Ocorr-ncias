@@ -145,7 +145,7 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
                                     Mapa de Força
                                 </div>
                             </div>
-                            <img src="/logo_gsd_sp.png" alt="Logo GSD-SP" className="w-14 h-14 object-contain" />
+                            <img src="/logo_gsd.png" alt="Logo GSD-SP" className="w-14 h-14 object-contain" />
                         </div>
 
                         {/* Document Info */}

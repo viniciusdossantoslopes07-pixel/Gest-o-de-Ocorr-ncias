@@ -164,7 +164,7 @@ const HomeView: React.FC<HomeViewProps> = ({
           </div>
         </div>
         <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
-          <img src="/logo_gsd.jpg" alt="Logo Background" className="w-64 h-64 lg:w-96 lg:h-96 grayscale rotate-12" />
+          <img src="/logo_gsd.png" alt="Logo Background" className="w-64 h-64 lg:w-96 lg:h-96 grayscale rotate-12" />
         </div>
       </div>
 
