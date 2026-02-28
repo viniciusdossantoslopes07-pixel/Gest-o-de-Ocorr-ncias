@@ -25,7 +25,6 @@ interface DestinometroProps {
 const Destinometro: React.FC<DestinometroProps> = ({ user, onClose, isDarkMode }) => {
     const [activeTab, setActiveTab] = useState<'amanha' | 'ferias'>('amanha');
     const [selectedStatus, setSelectedStatus] = useState<string>('P');
-    const [observation, setObservation] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -74,7 +73,6 @@ const Destinometro: React.FC<DestinometroProps> = ({ user, onClose, isDarkMode }
                     saram: user.saram,
                     start_date: dateStr,
                     status: selectedStatus,
-                    observation: observation,
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'user_id,start_date' });
 
@@ -108,7 +106,6 @@ const Destinometro: React.FC<DestinometroProps> = ({ user, onClose, isDarkMode }
                     start_date: startDate,
                     end_date: endDate,
                     status: 'FE',
-                    observation: observation || 'Período de Férias lançado via Destinômetro',
                 });
 
             if (error) throw error;
@@ -125,16 +122,16 @@ const Destinometro: React.FC<DestinometroProps> = ({ user, onClose, isDarkMode }
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className={`w-full max-w-md overflow-hidden rounded-[2.5rem] border shadow-2xl transition-all duration-500 ${isDarkMode ? 'bg-slate-900/90 border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900'} relative`}>
+            <div className={`w-full max-w-sm overflow-hidden rounded-[2rem] border shadow-2xl transition-all duration-500 ${isDarkMode ? 'bg-slate-900/95 border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900'} relative`}>
                 {/* Header */}
-                <div className="p-6 pb-4 flex items-center justify-between border-b border-white/5">
+                <div className="p-4 pb-3 flex items-center justify-between border-b border-white/5">
                     <div className="flex items-center gap-3">
-                        <div className="p-3 rounded-2xl bg-blue-500/20 text-blue-400">
-                            <MapPin className="w-6 h-6" />
+                        <div className="p-2.5 rounded-xl bg-blue-500/20 text-blue-400">
+                            <MapPin className="w-5 h-5" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-black tracking-tight">Destinômetro</h2>
-                            <p className={`text-[10px] font-bold uppercase tracking-widest opacity-40`}>Planeje seu dia</p>
+                            <h2 className="text-lg font-black tracking-tight">Destinômetro</h2>
+                            <p className={`text-[9px] font-bold uppercase tracking-widest opacity-40`}>Planeje seu dia</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 rounded-full hover:bg-white/5 transition-colors">
@@ -143,54 +140,54 @@ const Destinometro: React.FC<DestinometroProps> = ({ user, onClose, isDarkMode }
                 </div>
 
                 {/* Tabs */}
-                <div className="flex p-1 mx-6 mt-4 rounded-2xl bg-black/20 border border-white/5">
+                <div className="flex p-1 mx-4 mt-3 rounded-xl bg-black/20 border border-white/5">
                     <button
                         onClick={() => setActiveTab('amanha')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-black transition-all ${activeTab === 'amanha' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-black transition-all ${activeTab === 'amanha' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}
                     >
                         <Clock className="w-4 h-4" /> AMANHÃ
                     </button>
                     <button
                         onClick={() => setActiveTab('ferias')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-black transition-all ${activeTab === 'ferias' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-black transition-all ${activeTab === 'ferias' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}
                     >
                         <Umbrella className="w-4 h-4" /> FÉRIAS
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-6 space-y-6">
+                <div className="p-4 space-y-4">
                     {message && (
-                        <div className={`p-4 rounded-2xl flex items-center gap-3 animate-in slide-in-from-top-2 duration-300 ${message.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'}`}>
-                            <Info className="w-5 h-5 shrink-0" />
-                            <p className="text-sm font-bold">{message.text}</p>
+                        <div className={`p-3 rounded-xl flex items-center gap-2 animate-in slide-in-from-top-2 duration-300 ${message.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'}`}>
+                            <Info className="w-4 h-4 shrink-0" />
+                            <p className="text-xs font-bold">{message.text}</p>
                         </div>
                     )}
 
                     {activeTab === 'amanha' ? (
-                        <div className="space-y-6">
-                            <div className="max-h-[320px] overflow-y-auto pr-2 space-y-5 custom-scrollbar">
+                        <div className="space-y-4">
+                            <div className="max-h-[280px] overflow-y-auto pr-2 space-y-4 custom-scrollbar">
                                 {STATUS_GROUPS.map((group) => (
                                     <div key={group.label}>
-                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-3 block px-1">{group.label}</label>
-                                        <div className="grid grid-cols-4 sm:grid-cols-4 gap-2">
+                                        <label className="text-[9px] font-black uppercase tracking-widest opacity-30 mb-2 block px-1">{group.label}</label>
+                                        <div className="grid grid-cols-4 gap-2">
                                             {group.codes.map((code) => (
                                                 <button
                                                     key={code}
                                                     onClick={() => setSelectedStatus(code)}
                                                     title={PRESENCE_STATUS[code as keyof typeof PRESENCE_STATUS]}
-                                                    className={`relative flex flex-col items-center justify-center h-14 rounded-xl border-2 transition-all p-1 active:scale-95 ${selectedStatus === code
-                                                        ? 'ring-2 ring-blue-500 border-blue-500 shadow-md z-10 scale-105'
+                                                    className={`relative flex flex-col items-center justify-center h-12 rounded-lg border-2 transition-all p-1 active:scale-95 ${selectedStatus === code
+                                                        ? 'ring-2 ring-blue-500 border-blue-500 shadow-md z-10'
                                                         : 'hover:brightness-110'
                                                         } ${getStatusColor(code)}`}
                                                 >
-                                                    <span className="text-[13px] font-black leading-none">{code}</span>
-                                                    <span className="text-[7.5px] font-bold uppercase mt-1 truncate w-full text-center px-0.5 opacity-90">
+                                                    <span className="text-[12px] font-black leading-none">{code}</span>
+                                                    <span className="text-[7px] font-bold uppercase mt-1 truncate w-full text-center px-0.5 opacity-80">
                                                         {PRESENCE_STATUS[code as keyof typeof PRESENCE_STATUS]?.split(' ')[0]}
                                                     </span>
                                                     {selectedStatus === code && (
-                                                        <div className="absolute -top-1.5 -right-1.5 bg-blue-500 text-white rounded-full p-0.5 shadow-sm">
-                                                            <CheckCircle2 className="w-3 h-3" />
+                                                        <div className="absolute -top-1 -right-1 bg-blue-500 text-white rounded-full p-0.5 shadow-sm">
+                                                            <CheckCircle2 className="w-2.5 h-2.5" />
                                                         </div>
                                                     )}
                                                 </button>
@@ -200,74 +197,64 @@ const Destinometro: React.FC<DestinometroProps> = ({ user, onClose, isDarkMode }
                                 ))}
                             </div>
 
-                            <div className={`p-3 rounded-xl border flex items-center gap-3 transition-colors ${isDarkMode ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'}`}>
-                                <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
-                                    <Info className="w-4 h-4" />
+                            <div className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 transition-colors ${isDarkMode ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'}`}>
+                                <div className="flex items-center gap-2">
+                                    <div className="p-1.5 rounded-lg bg-blue-500/20 text-blue-400">
+                                        <Info className="w-3.5 h-3.5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[8px] font-black uppercase tracking-tight opacity-40 leading-none">Status</p>
+                                        <p className="text-[10px] font-black uppercase text-blue-500 mt-0.5">
+                                            {PRESENCE_STATUS[selectedStatus as keyof typeof PRESENCE_STATUS] || 'Selecionar'}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-[10px] font-black uppercase tracking-tight opacity-40">Status Selecionado</p>
-                                    <p className="text-xs font-black uppercase text-blue-500">
-                                        {PRESENCE_STATUS[selectedStatus as keyof typeof PRESENCE_STATUS] || 'Selecionar Status'}
-                                    </p>
-                                </div>
+                                <button
+                                    onClick={handleSaveTomorrow}
+                                    disabled={isLoading}
+                                    className="px-4 py-2.5 rounded-lg bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-blue-700 transition-all disabled:opacity-50"
+                                >
+                                    {isLoading ? '...' : 'LANÇAR'}
+                                </button>
                             </div>
-
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-2 block">Observação (Opcional)</label>
-                                <textarea
-                                    value={observation}
-                                    onChange={(e) => setObservation(e.target.value)}
-                                    placeholder="Ex: Em missão fora da sede..."
-                                    className={`w-full p-4 rounded-2xl border bg-transparent text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}
-                                    rows={2}
-                                />
-                            </div>
-
-                            <button
-                                onClick={handleSaveTomorrow}
-                                disabled={isLoading}
-                                className="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black uppercase tracking-[0.2em] shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                            >
-                                {isLoading ? 'Salvando...' : 'LANÇAR DESTINO'}
-                            </button>
                         </div>
                     ) : (
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-2 block text-center">Início</label>
+                                    <label className="text-[9px] font-black uppercase tracking-widest opacity-40 mb-1.5 block text-center">Início</label>
                                     <input
                                         type="date"
                                         value={startDate}
                                         onChange={(e) => setStartDate(e.target.value)}
-                                        className={`w-full p-4 rounded-2xl border bg-transparent text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}
+                                        className={`w-full p-3 rounded-xl border bg-transparent text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-2 block text-center">Término</label>
+                                    <label className="text-[9px] font-black uppercase tracking-widest opacity-40 mb-1.5 block text-center">Término</label>
                                     <input
                                         type="date"
                                         value={endDate}
                                         onChange={(e) => setEndDate(e.target.value)}
-                                        className={`w-full p-4 rounded-2xl border bg-transparent text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}
+                                        className={`w-full p-3 rounded-xl border bg-transparent text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}
                                     />
                                 </div>
                             </div>
 
-                            <div className={`p-4 rounded-2xl flex items-start gap-4 ${isDarkMode ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-blue-50 border border-blue-100'}`}>
-                                <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400">
-                                    <Info className="w-5 h-5" />
+                            <div className={`p-3 rounded-xl flex items-start gap-3 ${isDarkMode ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-blue-50 border border-blue-100'}`}>
+                                <div className="p-1.5 rounded-lg bg-blue-500/20 text-blue-400">
+                                    <Info className="w-4 h-4" />
                                 </div>
                                 <div>
-                                    < h4 className={`text-xs font-black uppercase tracking-tight ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>Importante</h4>
-                                    <p className="text-[10px] leading-relaxed opacity-70 mt-1 uppercase font-bold">O lançamento de férias será aplicado automaticamente na chamada diária durante todo o período selecionado.</p>
+                                    <h4 className={`text-[10px] font-black uppercase tracking-tight ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>Importante</h4>
+                                    <p className="text-[9px] leading-relaxed opacity-70 mt-0.5 uppercase font-bold">Lançamento aplicado automaticamente no período.</p>
                                 </div>
                             </div>
 
                             <button
                                 onClick={handleSaveVacation}
                                 disabled={isLoading}
-                                className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black uppercase tracking-[0.2em] shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-xs uppercase tracking-[0.2em] shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50"
                             >
                                 {isLoading ? 'Processando...' : 'REGISTRAR FÉRIAS'}
                             </button>
