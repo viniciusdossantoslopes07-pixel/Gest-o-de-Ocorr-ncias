@@ -182,3 +182,15 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-blue-500/20 rounded-full hover:bg-blue-500/40 transition-colors;
+}

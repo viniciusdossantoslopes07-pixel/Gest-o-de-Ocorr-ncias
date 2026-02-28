@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { User } from '../types';
-import { PRESENCE_STATUS, PRESENCE_COLORS } from '../constants';
+import { PRESENCE_STATUS } from '../constants';
 
 interface DestinometroProps {
     user: User;
@@ -31,13 +31,31 @@ const Destinometro: React.FC<DestinometroProps> = ({ user, onClose, isDarkMode }
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-    // Status sugeridos para o Destinômetro rápido
-    const quickStatus = [
-        { code: 'P', label: 'Expediente', icon: <CheckCircle2 className="w-5 h-5 text-emerald-500" /> },
-        { code: 'MIS', label: 'Missão', icon: <Plane className="w-5 h-5 text-blue-500" /> },
-        { code: 'ESV', label: 'Serviço', icon: <Briefcase className="w-5 h-5 text-indigo-500" /> },
-        { code: 'DPM', label: 'Disp. Médica', icon: <AlertCircle className="w-5 h-5 text-red-500" /> },
+    // Grupos de Status conforme o DailyAttendance
+    const STATUS_GROUPS = [
+        { label: 'Operacional / Presença', codes: ['P', 'FE', 'ESV', 'SSV', 'MIS', 'INST', 'C-E'] },
+        { label: 'Saúde / Faltas', codes: ['F', 'A', 'DPM', 'JS', 'INSP', 'DCH'] },
+        { label: 'Licenças / Outros', codes: ['LP', 'LM', 'NU', 'LT', 'NIL', 'DSV'] }
     ];
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'P':
+                return isDarkMode ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-emerald-500/10' : 'bg-emerald-50 text-emerald-700 border-emerald-200';
+            case 'F': case 'A': case 'DPM': case 'JS': case 'INSP': case 'DCH':
+                return isDarkMode ? 'bg-rose-500/20 text-rose-400 border-rose-500/30 shadow-rose-500/10' : 'bg-red-50 text-red-700 border-red-200';
+            case 'ESV': case 'SSV': case 'MIS': case 'INST': case 'C-E':
+                return isDarkMode ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 shadow-blue-500/10' : 'bg-blue-50 text-blue-700 border-blue-200';
+            case 'FE':
+                return isDarkMode ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' : 'bg-cyan-50 text-cyan-700 border-cyan-200';
+            case 'LP': case 'LM': case 'NU': case 'LT':
+                return isDarkMode ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-orange-50 text-orange-700 border-orange-200';
+            case 'NIL': case 'DSV':
+                return isDarkMode ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-500 border-slate-200';
+            default:
+                return isDarkMode ? 'bg-slate-900 text-slate-400 border-slate-800' : 'bg-white text-slate-600 border-slate-200';
+        }
+    };
 
     const handleSaveTomorrow = async () => {
         setIsLoading(true);
@@ -151,23 +169,46 @@ const Destinometro: React.FC<DestinometroProps> = ({ user, onClose, isDarkMode }
 
                     {activeTab === 'amanha' ? (
                         <div className="space-y-6">
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-3 block">Qual seu destino para amanhã?</label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {quickStatus.map((s) => (
-                                        <button
-                                            key={s.code}
-                                            onClick={() => setSelectedStatus(s.code)}
-                                            className={`flex items-center gap-3 p-4 rounded-2xl border transition-all text-left group ${selectedStatus === s.code ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-600/20' : isDarkMode ? 'bg-slate-800/50 border-white/5 hover:border-white/10' : 'bg-slate-50 border-slate-100'}`}
-                                        >
-                                            <div className={`p-2 rounded-xl transition-colors ${selectedStatus === s.code ? 'bg-white/20' : isDarkMode ? 'bg-black/20' : 'bg-white'}`}>
-                                                {React.cloneElement(s.icon as React.ReactElement<any>, {
-                                                    className: `w-5 h-5 ${selectedStatus === s.code ? 'text-white' : ''}`
-                                                })}
-                                            </div>
-                                            <span className="text-xs font-black uppercase tracking-tight">{s.label}</span>
-                                        </button>
-                                    ))}
+                            <div className="max-h-[320px] overflow-y-auto pr-2 space-y-5 custom-scrollbar">
+                                {STATUS_GROUPS.map((group) => (
+                                    <div key={group.label}>
+                                        <label className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-3 block px-1">{group.label}</label>
+                                        <div className="grid grid-cols-4 sm:grid-cols-4 gap-2">
+                                            {group.codes.map((code) => (
+                                                <button
+                                                    key={code}
+                                                    onClick={() => setSelectedStatus(code)}
+                                                    title={PRESENCE_STATUS[code as keyof typeof PRESENCE_STATUS]}
+                                                    className={`relative flex flex-col items-center justify-center h-14 rounded-xl border-2 transition-all p-1 active:scale-95 ${selectedStatus === code
+                                                        ? 'ring-2 ring-blue-500 border-blue-500 shadow-md z-10 scale-105'
+                                                        : 'hover:brightness-110'
+                                                        } ${getStatusColor(code)}`}
+                                                >
+                                                    <span className="text-[13px] font-black leading-none">{code}</span>
+                                                    <span className="text-[7.5px] font-bold uppercase mt-1 truncate w-full text-center px-0.5 opacity-90">
+                                                        {PRESENCE_STATUS[code as keyof typeof PRESENCE_STATUS]?.split(' ')[0]}
+                                                    </span>
+                                                    {selectedStatus === code && (
+                                                        <div className="absolute -top-1.5 -right-1.5 bg-blue-500 text-white rounded-full p-0.5 shadow-sm">
+                                                            <CheckCircle2 className="w-3 h-3" />
+                                                        </div>
+                                                    )}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className={`p-3 rounded-xl border flex items-center gap-3 transition-colors ${isDarkMode ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'}`}>
+                                <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
+                                    <Info className="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-tight opacity-40">Status Selecionado</p>
+                                    <p className="text-xs font-black uppercase text-blue-500">
+                                        {PRESENCE_STATUS[selectedStatus as keyof typeof PRESENCE_STATUS] || 'Selecionar Status'}
+                                    </p>
                                 </div>
                             </div>
 
