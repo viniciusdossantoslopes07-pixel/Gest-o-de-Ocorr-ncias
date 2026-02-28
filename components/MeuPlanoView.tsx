@@ -83,8 +83,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                 // Missões (OMIS)
                 supabase
                     .from('mission_orders')
-                    .select('*')
-                    .or(`personnel.cs.[{"saram":"${userSaramStr}"}],personnel.cs.[{"saram":${userSaramStr}}],personnel.cs.[{"SARAM":"${userSaramStr}"}]`),
+                    .select('*'),
 
                 // Cautelas (Material em Uso)
                 supabase
@@ -119,11 +118,23 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             if (loansRes.error) console.error('Loans error:', loansRes.error);
             if (attendanceRes.error) console.error('Attendance error:', attendanceRes.error);
 
-            const missions = missionsRes.data || [];
+            // Filtramos as missões onde o usuário está no pessoal (via stringify para ser robusto)
+            const userMissions = (missionsRes.data || []).filter(m => {
+                try {
+                    const personnelStr = JSON.stringify(m.personnel || []);
+                    return personnelStr.includes(`"saram":"${userSaramStr}"`) ||
+                        personnelStr.includes(`"saram":${userSaramStr}`) ||
+                        personnelStr.includes(`"SARAM":"${userSaramStr}"`);
+                } catch (e) {
+                    return false;
+                }
+            });
+
+            setAllMissions(userMissions);
+
+            const missions = userMissions;
             const loans = loansRes.data || [];
             const attendance = attendanceRes.data || [];
-
-            setAllMissions(missions);
 
             // 3. Process Initial Data (Full)
             processAndSetStats(missions, loans, attendance);
