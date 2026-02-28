@@ -162,7 +162,8 @@ const HomeView: React.FC<HomeViewProps> = ({
             </div>
           </div>
         </div>
-        <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
+        <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity flex items-center gap-4">
+          <img src="/logo_basp_optimized.png" alt="Logo BASP" className="w-48 h-48 lg:w-72 lg:h-72 grayscale -rotate-12" />
           <img src="/logo_gsd.png" alt="Logo Background" className="w-64 h-64 lg:w-96 lg:h-96 grayscale rotate-12" />
         </div>
       </div>
