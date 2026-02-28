@@ -5,10 +5,11 @@ import {
   Menu,
   ShieldAlert,
   Search,
-  Calendar,
-  AlertTriangle,
-  CheckCircle2,
-  Clock
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  Settings2,
+  MapPin
 } from 'lucide-react';
 import MissionRequestForm from './components/MissionRequestForm';
 import MissionRequestList from './components/MissionRequestList';
@@ -44,6 +45,7 @@ import PersonnelManagementView from './components/PersonnelCenter/PersonnelManag
 import AccessControlPanel from './components/AccessControl/AccessControlPanel';
 import AccessStatistics from './components/AccessControl/AccessStatistics';
 import ParkingRequestPanel from './components/AccessControl/ParkingRequestPanel';
+import Destinometro from './components/Destinometro';
 import {
   STATUS_COLORS,
   OCCURRENCE_CATEGORIES,
@@ -113,6 +115,7 @@ const App: FC = () => {
   // FAQ Modal State
   const [showFAQ, setShowFAQ] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showDestinometro, setShowDestinometro] = useState(false);
 
   // Theme State
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -1063,15 +1066,22 @@ const App: FC = () => {
         <div className={`p-3 lg:p-6 flex-1 overflow-y-auto ${isDarkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
           {/* --- CONTENT AREA START --- */}
 
-          {activeTab === 'home' && !isPublic && (
+          {activeTab === 'home' && (
             <HomeView
               user={currentUser}
-              onNewOccurrence={(cat) => { setInitialCategory(cat); setActiveTab('new'); }}
+              onNewOccurrence={(category) => {
+                setInitialCategory(category);
+                setActiveTab('new');
+              }}
               onViewAll={() => setActiveTab('list')}
-              recentOccurrences={occurrences}
-              onSelectOccurrence={setSelectedOccurrence}
+              recentOccurrences={occurrences.slice(0, 5)}
+              onSelectOccurrence={(occ) => {
+                setSelectedOccurrence(occ);
+                setActiveTab('kanban');
+              }}
               onRefresh={fetchOccurrences}
-              onRequestMission={canRequestMission ? () => setActiveTab('mission-request') : undefined}
+              onRequestMission={() => setActiveTab('mission-request')}
+              onOpenDestinometro={() => setShowDestinometro(true)}
               isDarkMode={isDarkMode}
             />
           )}
@@ -1636,12 +1646,20 @@ const App: FC = () => {
       {showFAQ && <FAQModal onClose={() => setShowFAQ(false)} />}
 
       {/* Suggestions Modal */}
-      {currentUser && (
+      {showSuggestions && currentUser && (
         <SuggestionsModal
           user={currentUser}
           isOpen={showSuggestions}
           onClose={() => setShowSuggestions(false)}
           isAdmin={isAdmin || isOM}
+        />
+      )}
+
+      {showDestinometro && currentUser && (
+        <Destinometro
+          user={currentUser}
+          onClose={() => setShowDestinometro(false)}
+          isDarkMode={isDarkMode}
         />
       )}
 

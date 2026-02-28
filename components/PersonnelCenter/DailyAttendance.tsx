@@ -51,8 +51,9 @@ const StatusPicker: FC<{
     value: string;
     onChange: (val: string) => void;
     disabled?: boolean;
+    isPlanned?: boolean;
     isDarkMode?: boolean;
-}> = ({ value, onChange, disabled, isDarkMode }) => {
+}> = ({ value, onChange, disabled, isPlanned, isDarkMode }) => {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -98,9 +99,10 @@ const StatusPicker: FC<{
                 disabled={disabled}
                 onClick={toggleOpen}
                 className={`w-full h-10 flex items-center justify-center rounded-xl border-2 font-black text-[11px] transition-all active:scale-95 shadow-sm select-none ${disabled ? 'opacity-30 cursor-not-allowed' : 'hover:brightness-110'
-                    } ${getStatusColor(value, !!isDarkMode)} ${isOpen ? 'ring-2 ring-indigo-500 border-indigo-500 shadow-lg' : ''}`}
+                    } ${getStatusColor(value, !!isDarkMode)} ${isOpen ? 'ring-2 ring-indigo-500 border-indigo-500 shadow-lg' : ''} ${isPlanned ? 'border-dashed border-opacity-60' : ''}`}
             >
                 {value}
+                {isPlanned && <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white dark:border-slate-900 animate-pulse" title="Planejado pelo militar" />}
             </button>
 
             {isOpen && !disabled && (
@@ -186,6 +188,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [callType, setCallType] = useState<CallTypeCode>('INICIO');
     const [searchTerm, setSearchTerm] = useState('');
     const [signedDates, setSignedDates] = useState<Record<string, { signedBy: string, signedAt: string }>>({});
+    const [userDestinations, setUserDestinations] = useState<any[]>([]);
 
     // Permission Flags
     const canSign = hasPermission(currentUser, PERMISSIONS.SIGN_DAILY_ATTENDANCE);
@@ -227,7 +230,37 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [selectedDaysForNoWork, setSelectedDaysForNoWork] = useState<string[]>([]);
 
     useEffect(() => {
+        const fetchDestinations = async () => {
+            const { data } = await supabase
+                .from('user_destinations')
+                .select('*')
+                .or(`start_date.in.(${currentWeek.join(',')}),and(start_date.lte.${currentWeek[4]},end_date.gte.${currentWeek[0]})`);
+
+            if (data) setUserDestinations(data);
+        };
+        fetchDestinations();
+    }, [currentWeek]);
+
+    useEffect(() => {
         const grid: Record<string, Record<string, Record<string, string>>> = {};
+
+        // 1. Fill with Destinations (Fallback)
+        userDestinations.forEach(dest => {
+            const start = dest.start_date;
+            const end = dest.end_date || dest.start_date;
+
+            currentWeek.forEach(date => {
+                if (date >= start && date <= end) {
+                    if (!grid[dest.user_id]) grid[dest.user_id] = {};
+                    if (!grid[dest.user_id][date]) grid[dest.user_id][date] = {};
+                    grid[dest.user_id][date]['INICIO'] = dest.status;
+                    grid[dest.user_id][date]['TERMINO'] = dest.status;
+                    grid[dest.user_id][date]['IS_PLANNED'] = 'true';
+                }
+            });
+        });
+
+        // 2. Overwrite with actual attendance history
         attendanceHistory.forEach(a => {
             if (currentWeek.includes(a.date) && a.sector === selectedSector) {
                 // Pre-fill NIL if the signature or observation indicates a no-work-day
@@ -245,11 +278,15 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     if (!grid[r.militarId]) grid[r.militarId] = {};
                     if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
                     grid[r.militarId][a.date][a.callType] = r.status;
+                    // Se houver registro oficial, não é mais "planejado" apenas
+                    if (grid[r.militarId][a.date]['IS_PLANNED']) {
+                        delete grid[r.militarId][a.date]['IS_PLANNED'];
+                    }
                 });
             }
         });
         setWeeklyGrid(grid);
-    }, [currentWeek, attendanceHistory, selectedSector]);
+    }, [currentWeek, attendanceHistory, selectedSector, userDestinations]);
 
     const handleWeeklyChange = (userId: string, date: string, callType: string, status: string) => {
         // Optimistic Update: Update UI immediately
@@ -986,6 +1023,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                         <StatusPicker
                                                             disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
                                                             value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P'}
+                                                            isPlanned={weeklyGrid[user.id]?.[date]?.['IS_PLANNED'] === 'true'}
                                                             onChange={(status) => handleWeeklyChange(user.id, date, 'INICIO', status)}
                                                             isDarkMode={isDarkMode}
                                                         />
@@ -994,6 +1032,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                         <StatusPicker
                                                             disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
                                                             value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P'}
+                                                            isPlanned={weeklyGrid[user.id]?.[date]?.['IS_PLANNED'] === 'true'}
                                                             onChange={(status) => handleWeeklyChange(user.id, date, 'TERMINO', status)}
                                                             isDarkMode={isDarkMode}
                                                         />
