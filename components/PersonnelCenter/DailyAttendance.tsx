@@ -347,16 +347,24 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     const handleWeeklyChange = (userId: string, date: string, callType: string, status: string) => {
         // Optimistic Update: Update UI immediately
-        setWeeklyGrid(prev => ({
-            ...prev,
-            [userId]: {
-                ...prev[userId],
-                [date]: {
-                    ...prev[userId]?.[date],
-                    [callType]: status
-                }
+        setWeeklyGrid(prev => {
+            const userDays = prev[userId] || {};
+            const dayCalls = userDays[date] || {};
+
+            // Se estamos alterando manualmente, removemos o marcador de planejado
+            const newDayCalls = { ...dayCalls, [callType]: status };
+            if (newDayCalls['IS_PLANNED']) {
+                delete newDayCalls['IS_PLANNED'];
             }
-        }));
+
+            return {
+                ...prev,
+                [userId]: {
+                    ...userDays,
+                    [date]: newDayCalls
+                }
+            };
+        });
 
         const existing = attendanceHistory.find(a => a.date === date && a.callType === callType && a.sector === selectedSector);
 
@@ -367,7 +375,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 ...existing,
                 observacao: existing.observacao || '', // Maintain observation
                 records: existing.records.some(r => r.militarId === userId)
-                    ? existing.records.map(r => r.militarId === userId ? { ...r, status, saram: user?.saram } : r)
+                    ? existing.records.map(r => r.militarId === userId ? { ...r, status, saram: user?.saram, timestamp: new Date().toISOString() } : r)
                     : [...existing.records, {
                         militarId: userId,
                         militarName: user?.warName || '',
