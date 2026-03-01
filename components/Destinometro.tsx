@@ -60,17 +60,16 @@ const Destinometro: React.FC<DestinometroProps> = ({ user, onClose, isDarkMode }
         setIsLoading(true);
         setMessage(null);
 
+        // Calcular o próximo dia útil (Seg-Sex)
         const today = new Date();
-        const dayOfWeek = today.getDay();
-        let daysToAdd = 1;
+        const targetDate = new Date(today);
+        targetDate.setDate(today.getDate() + 1);
 
-        if (dayOfWeek === 5) daysToAdd = 3;
-        else if (dayOfWeek === 6) daysToAdd = 2;
+        // Se cair no sábado (6) ou domingo (0), avança até segunda
+        while (targetDate.getDay() === 0 || targetDate.getDay() === 6) {
+            targetDate.setDate(targetDate.getDate() + 1);
+        }
 
-        const targetDate = new Date();
-        targetDate.setDate(today.getDate() + daysToAdd);
-
-        // Formatar YYYY-MM-DD usando componentes locais para evitar problemas de fuso horário
         const year = targetDate.getFullYear();
         const month = String(targetDate.getMonth() + 1).padStart(2, '0');
         const day = String(targetDate.getDate()).padStart(2, '0');

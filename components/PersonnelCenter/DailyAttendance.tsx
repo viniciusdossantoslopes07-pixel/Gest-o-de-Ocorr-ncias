@@ -307,9 +307,19 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
                         grid[r.militarId][a.date][a.callType] = r.status;
                         delete grid[r.militarId][a.date]['IS_PLANNED'];
-                    } else if (isFuture && hasDestination && r.status === 'P') {
-                        // Não sobrescreve o destino (mantém o passo 1)
-                        // Apenas garante que IS_PLANNED continue lá
+                    } else if (isFuture && hasDestination) {
+                        // Se for futuro e tiver destino, prioriza o destino se o status for 'P' ou se nada estiver definido
+                        if (r.status === 'P' || !grid[r.militarId]?.[a.date]?.[a.callType]) {
+                            // Mantém o que veio do Destinometro no passo 1.
+                            // Apenas garante que a estrutura e o flag existam.
+                            if (!grid[r.militarId]) grid[r.militarId] = {};
+                            if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
+                            grid[r.militarId][a.date]['IS_PLANNED'] = 'true';
+                        } else {
+                            // Se o status for diferente de 'P', é uma alteração manual, então respeita ela
+                            grid[r.militarId][a.date][a.callType] = r.status;
+                            delete grid[r.militarId][a.date]['IS_PLANNED'];
+                        }
                     } else {
                         if (!grid[r.militarId]) grid[r.militarId] = {};
                         if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
@@ -600,10 +610,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     );
 
     const isFutureDate = (date: string) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const cellDate = parseISOToDate(date);
-        return cellDate > today;
+        const todayStr = formatDateToISO(new Date());
+        return date > todayStr;
     };
 
     // Drag and drop logic
