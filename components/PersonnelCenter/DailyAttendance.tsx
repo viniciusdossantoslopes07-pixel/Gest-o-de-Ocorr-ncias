@@ -308,17 +308,19 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         grid[r.militarId][a.date][a.callType] = r.status;
                         delete grid[r.militarId][a.date]['IS_PLANNED'];
                     } else if (isFuture && hasDestination) {
-                        // Se for futuro e tiver destino, prioriza o destino se o status for 'P' ou se nada estiver definido
-                        if (r.status === 'P' || !grid[r.militarId]?.[a.date]?.[a.callType]) {
+                        // Se for futuro e tiver destino:
+                        // 1. Se NÃO houver registro manual na tabela history para este militar/data/chamada, usa o destino.
+                        // 2. Se HOUVER registro manual, usa o registro manual (mesmo que seja 'P').
+                        const manualRecord = a.records.find(re => re.militarId === r.militarId);
+
+                        if (manualRecord) {
+                            grid[r.militarId][a.date][a.callType] = manualRecord.status;
+                            delete grid[r.militarId][a.date]['IS_PLANNED'];
+                        } else {
                             // Mantém o que veio do Destinometro no passo 1.
-                            // Apenas garante que a estrutura e o flag existam.
                             if (!grid[r.militarId]) grid[r.militarId] = {};
                             if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
                             grid[r.militarId][a.date]['IS_PLANNED'] = 'true';
-                        } else {
-                            // Se o status for diferente de 'P', é uma alteração manual, então respeita ela
-                            grid[r.militarId][a.date][a.callType] = r.status;
-                            delete grid[r.militarId][a.date]['IS_PLANNED'];
                         }
                     } else {
                         if (!grid[r.militarId]) grid[r.militarId] = {};
