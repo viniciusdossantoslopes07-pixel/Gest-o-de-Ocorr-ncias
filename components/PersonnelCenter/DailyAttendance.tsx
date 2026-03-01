@@ -290,7 +290,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 }
 
                 a.records.forEach(r => {
-                    const hasDestination = userDestinations.some(d =>
+                    const dest = userDestinations.find(d =>
                         d.user_id === r.militarId &&
                         a.date >= d.start_date &&
                         a.date <= (d.end_date || d.start_date)
@@ -298,28 +298,37 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
                     // PRIORIDADE: 
                     // 1. Se estiver assinado, SEMPRE usa o que está no registro
-                    // 2. Se for data futura e NÃO estiver assinado, mas tem destino no Destinometro, 
-                    //    MANTÉM o que veio do Destinometro (passo 1 acima) se o status do registro for 'P' (default).
-                    //    Se o status for diferente de 'P', significa que alguém alterou manualmente na grade, então respeita a alteração.
+                    // 2. Se for data futura e tiver destino, o MAIS RECENTE vence (destino vs manual)
+                    // 3. Caso contrário, usa o que está no registro
 
                     if (isSigned) {
                         if (!grid[r.militarId]) grid[r.militarId] = {};
                         if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
                         grid[r.militarId][a.date][a.callType] = r.status;
                         delete grid[r.militarId][a.date]['IS_PLANNED'];
-                    } else if (isFuture && hasDestination) {
-                        // Se for futuro e tiver destino:
-                        // 1. Se NÃO houver registro manual na tabela history para este militar/data/chamada, usa o destino.
-                        // 2. Se HOUVER registro manual, usa o registro manual (mesmo que seja 'P').
+                    } else if (isFuture && dest) {
                         const manualRecord = a.records.find(re => re.militarId === r.militarId);
 
                         if (manualRecord) {
-                            grid[r.militarId][a.date][a.callType] = manualRecord.status;
-                            delete grid[r.militarId][a.date]['IS_PLANNED'];
+                            const destTime = new Date(dest.updated_at || dest.created_at).getTime();
+                            const manualTime = new Date(manualRecord.timestamp).getTime();
+
+                            if (destTime > manualTime) {
+                                // Destino é mais recente: PRIORIZA DESTINO
+                                if (!grid[r.militarId]) grid[r.militarId] = {};
+                                if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
+                                grid[r.militarId][a.date][a.callType] = dest.status;
+                                grid[r.militarId][a.date]['IS_PLANNED'] = 'true';
+                            } else {
+                                // Registro manual é mais recente: PRIORIZA MANUAL
+                                grid[r.militarId][a.date][a.callType] = manualRecord.status;
+                                delete grid[r.militarId][a.date]['IS_PLANNED'];
+                            }
                         } else {
-                            // Mantém o que veio do Destinometro no passo 1.
+                            // Não tem registro manual ainda (ocorre ao abrir semana nova), usa o destino
                             if (!grid[r.militarId]) grid[r.militarId] = {};
                             if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
+                            grid[r.militarId][a.date][a.callType] = dest.status;
                             grid[r.militarId][a.date]['IS_PLANNED'] = 'true';
                         }
                     } else {
