@@ -69,7 +69,12 @@ const Destinometro: React.FC<DestinometroProps> = ({ user, onClose, isDarkMode }
 
         const targetDate = new Date();
         targetDate.setDate(today.getDate() + daysToAdd);
-        const dateStr = targetDate.toISOString().split('T')[0];
+
+        // Formatar YYYY-MM-DD usando componentes locais para evitar problemas de fuso horário
+        const year = targetDate.getFullYear();
+        const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const day = String(targetDate.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
 
         try {
             const { error } = await supabase

@@ -239,6 +239,17 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             if (data) setUserDestinations(data);
         };
         fetchDestinations();
+
+        // Assinatura em Tempo Real para destinos
+        const channel = supabase.channel('destinations_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'user_destinations' }, () => {
+                fetchDestinations();
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [currentWeek]);
 
     useEffect(() => {
@@ -263,6 +274,10 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         // 2. Overwrite with actual attendance history
         attendanceHistory.forEach(a => {
             if (currentWeek.includes(a.date) && a.sector === selectedSector) {
+                const key = `${a.date}-${a.callType}-${a.sector}`;
+                const isSigned = !!signedDates[key];
+                const isFuture = isFutureDate(a.date);
+
                 // Pre-fill NIL if the signature or observation indicates a no-work-day
                 const isNoWorkDay = a.observacao === 'Feriado' || a.observacao === 'Expediente Cancelado' || a.records.every(r => r.status === 'NIL');
 
@@ -275,12 +290,33 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 }
 
                 a.records.forEach(r => {
-                    if (!grid[r.militarId]) grid[r.militarId] = {};
-                    if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
-                    grid[r.militarId][a.date][a.callType] = r.status;
-                    // Se houver registro oficial, não é mais "planejado" apenas
-                    if (grid[r.militarId][a.date]['IS_PLANNED']) {
+                    const hasDestination = userDestinations.some(d =>
+                        d.user_id === r.militarId &&
+                        a.date >= d.start_date &&
+                        a.date <= (d.end_date || d.start_date)
+                    );
+
+                    // PRIORIDADE: 
+                    // 1. Se estiver assinado, SEMPRE usa o que está no registro
+                    // 2. Se for data futura e NÃO estiver assinado, mas tem destino no Destinometro, 
+                    //    MANTÉM o que veio do Destinometro (passo 1 acima) se o status do registro for 'P' (default).
+                    //    Se o status for diferente de 'P', significa que alguém alterou manualmente na grade, então respeita a alteração.
+
+                    if (isSigned) {
+                        if (!grid[r.militarId]) grid[r.militarId] = {};
+                        if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
+                        grid[r.militarId][a.date][a.callType] = r.status;
                         delete grid[r.militarId][a.date]['IS_PLANNED'];
+                    } else if (isFuture && hasDestination && r.status === 'P') {
+                        // Não sobrescreve o destino (mantém o passo 1)
+                        // Apenas garante que IS_PLANNED continue lá
+                    } else {
+                        if (!grid[r.militarId]) grid[r.militarId] = {};
+                        if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
+                        grid[r.militarId][a.date][a.callType] = r.status;
+                        if (grid[r.militarId][a.date]['IS_PLANNED']) {
+                            delete grid[r.militarId][a.date]['IS_PLANNED'];
+                        }
                     }
                 });
             }
