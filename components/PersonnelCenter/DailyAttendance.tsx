@@ -248,7 +248,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     // Filtragem de contas funcionais
     const realPersonnel = useMemo(() =>
-        users.filter(u => u.is_functional !== true),
+        users.filter(u => u.active !== false && !u.is_functional),
         [users]
     );
 

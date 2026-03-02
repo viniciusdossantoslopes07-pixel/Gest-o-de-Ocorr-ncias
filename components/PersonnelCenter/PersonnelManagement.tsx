@@ -54,7 +54,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
 
     const filteredUsers = users.filter(u => {
         const statusMatch = showInactive ? (u.active === false) : (u.active !== false);
-        const functionalMatch = showFunctional ? (u.is_functional === true) : (u.is_functional !== true);
+        const functionalMatch = showFunctional ? (!!u.is_functional === true) : (!!u.is_functional !== true);
         const sectorMatch = (filterSector === 'TODOS' ? true : u.sector === filterSector);
 
         let categoryMatch = true;
@@ -70,7 +70,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     }).sort((a, b) => a.name.localeCompare(b.name));
 
     // Calculate stats - EXCLUDING functional accounts
-    const activeUsers = users.filter(u => u.active !== false && u.is_functional !== true);
+    const activeUsers = users.filter(u => u.active !== false && !u.is_functional);
     const totalMilitaries = activeUsers.length;
     const totalOficiais = activeUsers.filter(u => u.rank && isOficial(u.rank)).length;
     const totalGraduados = activeUsers.filter(u => u.rank && isGraduado(u.rank)).length;

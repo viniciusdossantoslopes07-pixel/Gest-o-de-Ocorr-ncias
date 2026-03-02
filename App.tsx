@@ -398,7 +398,8 @@ const App: FC = () => {
         military_identity: data.military_identity,
         rc: data.rc,
         workplace: data.workplace,
-        emergency_contact: data.emergency_contact
+        emergency_contact: data.emergency_contact,
+        is_functional: !!data.is_functional
       };
 
       if (user.approved === false) {
@@ -520,7 +521,8 @@ const App: FC = () => {
         military_identity: u.military_identity,
         rc: u.rc,
         workplace: u.workplace,
-        emergency_contact: u.emergency_contact
+        emergency_contact: u.emergency_contact,
+        is_functional: !!u.is_functional
       }));
       setUsers(mappedUsers);
     }
@@ -569,7 +571,8 @@ const App: FC = () => {
       military_identity: newUser.military_identity || (newUser as any).militaryIdentity,
       rc: newUser.rc,
       workplace: newUser.workplace,
-      emergency_contact: newUser.emergency_contact || (newUser as any).emergencyContact
+      emergency_contact: newUser.emergency_contact || (newUser as any).emergencyContact,
+      is_functional: newUser.is_functional || false
     };
 
     const { data, error } = await supabase
@@ -610,7 +613,8 @@ const App: FC = () => {
         military_identity: data.military_identity,
         rc: data.rc,
         workplace: data.workplace,
-        emergency_contact: data.emergency_contact
+        emergency_contact: data.emergency_contact,
+        is_functional: !!data.is_functional
       };
       setUsers([...users, createdUser]);
       return true;
@@ -688,12 +692,13 @@ const App: FC = () => {
         emergency_contact: updatedUser.emergency_contact || (updatedUser as any).emergencyContact,
         pending_password_reset: updatedUser.pending_password_reset,
         reset_password_at_login: updatedUser.reset_password_at_login,
-        password_status: updatedUser.password_status
+        password_status: updatedUser.password_status,
+        is_functional: updatedUser.is_functional
       })
       .eq('id', updatedUser.id);
 
     if (!error) {
-      setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u));
+      setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
       if (currentUser?.id === updatedUser.id) {
         setCurrentUser(updatedUser);
         localStorage.setItem('gsdsp_user_session', JSON.stringify(updatedUser));
