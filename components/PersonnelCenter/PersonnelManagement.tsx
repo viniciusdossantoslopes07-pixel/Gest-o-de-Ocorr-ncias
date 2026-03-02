@@ -52,7 +52,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     const isGraduado = (rank: string) => ['SO', '1S', '2S', '3S'].includes(rank);
     const isPraca = (rank: string) => ['CB', 'S1', 'S2'].includes(rank);
 
-    const filteredUsers = users.filter(u => {
+    // Base list filtered by status, function, sector and search (but NOT category)
+    const baseFilteredList = users.filter(u => {
         const statusMatch = showInactive ? (u.active === false) : (u.active !== false);
         const functionalMatch = showFunctional ? (!!u.is_functional === true) : (!!u.is_functional !== true);
 
@@ -68,24 +69,27 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
             sectorMatch = u.sector === filterSector;
         }
 
-        let categoryMatch = true;
-        if (filterCategory === 'OFICIAIS') categoryMatch = u.rank ? isOficial(u.rank) : false;
-        if (filterCategory === 'GRADUADOS') categoryMatch = u.rank ? isGraduado(u.rank) : false;
-        if (filterCategory === 'PRAÇAS') categoryMatch = u.rank ? isPraca(u.rank) : false;
-
         const searchMatch = (u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             u.warName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             u.saram.includes(searchTerm));
 
-        return statusMatch && functionalMatch && sectorMatch && categoryMatch && searchMatch;
-    }).sort((a, b) => a.name.localeCompare(b.name));
+        return statusMatch && functionalMatch && sectorMatch && searchMatch;
+    });
 
-    // Calculate stats - EXCLUDING functional accounts
-    const activeUsers = users.filter(u => u.active !== false && !u.is_functional);
-    const totalMilitaries = activeUsers.length;
-    const totalOficiais = activeUsers.filter(u => u.rank && isOficial(u.rank)).length;
-    const totalGraduados = activeUsers.filter(u => u.rank && isGraduado(u.rank)).length;
-    const totalPracas = activeUsers.filter(u => u.rank && isPraca(u.rank)).length;
+    // Calculate stats based on baseFilteredList
+    const totalMilitaries = baseFilteredList.length;
+    const totalOficiais = baseFilteredList.filter(u => u.rank && isOficial(u.rank)).length;
+    const totalGraduados = baseFilteredList.filter(u => u.rank && isGraduado(u.rank)).length;
+    const totalPracas = baseFilteredList.filter(u => u.rank && isPraca(u.rank)).length;
+
+    // Final list also filters by category
+    const filteredUsers = baseFilteredList.filter(u => {
+        let categoryMatch = true;
+        if (filterCategory === 'OFICIAIS') categoryMatch = u.rank ? isOficial(u.rank) : false;
+        if (filterCategory === 'GRADUADOS') categoryMatch = u.rank ? isGraduado(u.rank) : false;
+        if (filterCategory === 'PRAÇAS') categoryMatch = u.rank ? isPraca(u.rank) : false;
+        return categoryMatch;
+    }).sort((a, b) => a.name.localeCompare(b.name));
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
