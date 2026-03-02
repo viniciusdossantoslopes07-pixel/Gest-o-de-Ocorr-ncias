@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo, type FC, type FormEvent } from 'react';
 import { User, UserRole } from '../types';
 import { RANKS, SETORES } from '../constants';
-import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown, ShieldCheck, Settings, Search, X, Users } from 'lucide-react';
+import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown, ShieldCheck, Settings, Search, X, Users, Briefcase } from 'lucide-react';
 import PermissionManagement from './PermissionManagement';
 
 interface UserManagementProps {
@@ -33,7 +33,8 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     phoneNumber: '',
     pending_password_reset: false,
     reset_password_at_login: false,
-    password_status: 'ACTIVE' as 'ACTIVE' | 'EXPIRED' | 'PENDING_RESET'
+    password_status: 'ACTIVE' as 'ACTIVE' | 'EXPIRED' | 'PENDING_RESET',
+    is_functional: false
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -41,6 +42,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showInactive, setShowInactive] = useState(false);
+  const [showFunctional, setShowFunctional] = useState(false);
   const [showNewUserForm, setShowNewUserForm] = useState(false);
   const [showForm, setShowForm] = useState(false); // Estado para o toggle de formulário
 
@@ -80,9 +82,12 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
       if (selectedCategory === 'GRADUADOS') matchesCategory = isGraduated;
       if (selectedCategory === 'PRACAS') matchesCategory = isSoldier;
 
-      return matchesSearch && matchesCategory;
+      // Functional filter
+      const matchesFunctional = showFunctional ? user.is_functional === true : user.is_functional !== true;
+
+      return matchesSearch && matchesCategory && matchesFunctional;
     });
-  }, [users, searchTerm, selectedCategory]);
+  }, [users, searchTerm, selectedCategory, showFunctional]);
 
   const pendingUsers = useMemo(() => filteredUsers.filter(u => u.approved === false), [filteredUsers]);
   const approvedUsers = useMemo(() => {
@@ -142,7 +147,8 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
       phoneNumber: user.phoneNumber || '',
       pending_password_reset: user.pending_password_reset || false,
       reset_password_at_login: user.reset_password_at_login || false,
-      password_status: user.password_status || 'ACTIVE'
+      password_status: user.password_status || 'ACTIVE',
+      is_functional: user.is_functional || false
     });
     setShowForm(true); // Abre o formulário ao editar
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -373,6 +379,24 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                   )}
                 </div>
 
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Shield className="w-3 h-3" /> Tipo de Conta
+                  </label>
+                  <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${formData.is_functional ? (isDarkMode ? 'bg-blue-600/20 border-blue-500/50' : 'bg-blue-50 border-blue-200') : (isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-200')}`}>
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      checked={formData.is_functional}
+                      onChange={e => setFormData({ ...formData, is_functional: e.target.checked })}
+                    />
+                    <div className="flex flex-col">
+                      <span className={`text-xs font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Conta Funcional (Escritório/Coletiva)</span>
+                      <span className="text-[9px] text-slate-500 leading-tight">Será excluída da chamada e contagem de efetivo</span>
+                    </div>
+                  </label>
+                </div>
+
                 <div className={`md:col-span-3 p-4 rounded-xl border transition-all ${isDarkMode ? 'bg-blue-500/10 border-blue-500/30 text-blue-300' : 'bg-blue-50/50 border-blue-100 text-blue-800'}`}>
                   <p className={`text-xs flex items-center gap-2 font-medium ${isDarkMode ? 'text-blue-400' : 'text-blue-800'}`}>
                     <Shield className="w-4 h-4" />
@@ -441,6 +465,21 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                     {cat.label}
                   </button>
                 ))}
+
+                <div className={`w-px h-6 mx-2 hidden md:block ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+
+                <button
+                  onClick={() => setShowFunctional(!showFunctional)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border-2 transition-all ${showFunctional
+                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                    : isDarkMode
+                      ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-200'
+                      : 'bg-white border-slate-100 text-slate-500 hover:border-slate-200 shadow-sm'
+                    }`}
+                >
+                  <Briefcase className="w-3 h-3" />
+                  {showFunctional ? 'Visualizando Funcionais' : 'Ver Funcionais'}
+                </button>
               </div>
 
               <div className="flex items-center gap-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
@@ -579,6 +618,11 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                       <div>
                         <div className={`font-black uppercase tracking-tight text-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{u.rank} {u.warName || u.name.split(' ')[0]}</div>
                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">@{u.username} • {u.saram}</div>
+                        {u.is_functional && (
+                          <div className={`mt-1 w-fit px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400 flex items-center gap-1`}>
+                            <Briefcase className="w-2 h-2" /> CONTA FUNCIONAL
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
@@ -601,6 +645,17 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                       ) : (
                         <button onClick={() => onUpdateUser({ ...u, active: true })} className="p-2.5 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 rounded-xl">
                           <ShieldCheck className="w-4 h-4" />
+                        </button>
+                      )}
+                      {u.username !== 'admin' && (
+                        <button
+                          onClick={() => onUpdateUser({ ...u, is_functional: !u.is_functional })}
+                          className={`p-2.5 rounded-xl transition-all ${u.is_functional
+                            ? (isDarkMode ? 'bg-indigo-900/40 text-indigo-400' : 'bg-indigo-100 text-indigo-700')
+                            : (isDarkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400')}`}
+                          title={u.is_functional ? "Remover de Funcionais" : "Mover para Funcionais"}
+                        >
+                          <Briefcase className="w-4 h-4" />
                         </button>
                       )}
                       {u.username !== 'admin' && (
@@ -633,7 +688,14 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                         <div className="flex items-center gap-2">
                           <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-500'}`}>ID {u.militarId || '0'}</span>
                           <div>
-                            <div className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{u.name}</div>
+                            <div className={`font-bold flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                              {u.name}
+                              {u.is_functional && (
+                                <span className={`px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-widest bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400 flex items-center gap-1 border border-indigo-200 dark:border-indigo-800`}>
+                                  <Briefcase className="w-2 h-2" /> FUNCIONAL
+                                </span>
+                              )}
+                            </div>
                             <div className="text-[10px] text-slate-400 font-bold uppercase">{u.rank}</div>
                           </div>
                         </div>
@@ -672,6 +734,18 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                               title="Reativar militar"
                             >
                               <ShieldCheck className="w-4 h-4" />
+                            </button>
+                          )}
+
+                          {u.username !== 'admin' && (
+                            <button
+                              onClick={() => onUpdateUser({ ...u, is_functional: !u.is_functional })}
+                              className={`p-2 transition-colors ${u.is_functional
+                                ? (isDarkMode ? 'text-indigo-400' : 'text-indigo-600')
+                                : (isDarkMode ? 'text-slate-400 hover:text-indigo-400' : 'text-slate-300 hover:text-indigo-600')}`}
+                              title={u.is_functional ? "Remover de Funcionais" : "Mover para Funcionais"}
+                            >
+                              <Briefcase className="w-4 h-4" />
                             </button>
                           )}
 

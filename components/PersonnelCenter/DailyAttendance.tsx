@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef, FC, Fragment } from 'react';
+import { useState, useEffect, useRef, FC, Fragment, useMemo } from 'react';
 import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '../../types';
 import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, SETORES, DISPLAY_SECTORS, RANKS } from '../../constants';
 import { hasPermission, PERMISSIONS } from '../../constants/permissions';
@@ -198,22 +198,10 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [currentWeek, setCurrentWeek] = useState(() => {
         const d = new Date();
         d.setHours(0, 0, 0, 0);
-        const day = d.getDay(); // 0 = Domingo, 1 = Segunda, ..., 5 = Sexta, 6 = Sábado
-
-        // Regra: No Sábado (6) e Domingo (0), mostrar a PRÓXIMA SEGUNDA por padrão
-        // De Segunda a Sexta, mostrar a SEGUNDA desta semana
+        const day = d.getDay();
         let diff = (day === 0 ? 1 : (day === 6 ? 2 : 1 - day));
-
-        // Se quisermos que na SEXTA ele já mude (ou ofereça mudar), mantemos diff atual aqui
-        // Mas o usuário pediu "sempre que chegar na sexta", então a inicialização pode ser 
-        // conservadora (manter a semana atual) e o botão faz o resto.
-        if (day === 0) diff = 1; // Próxima segunda
-        else if (day === 6) diff = 2; // Próxima segunda
-        else diff = 1 - day; // Segunda desta semana
-
         const monday = new Date(d);
         monday.setDate(d.getDate() + diff);
-
         const days = [];
         for (let i = 0; i < 5; i++) {
             const temp = new Date(monday);
@@ -228,6 +216,55 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [openNoWorkMenu, setOpenNoWorkMenu] = useState<string | null>(null);
     const [showManageWeekModal, setShowManageWeekModal] = useState(false);
     const [selectedDaysForNoWork, setSelectedDaysForNoWork] = useState<string[]>([]);
+    const [showAdHocModal, setShowAdHocModal] = useState(false);
+    const [newAdHoc, setNewAdHoc] = useState({ rank: '', warName: '', saram: '' });
+    const [activeSubTab, setActiveSubTab] = useState<'chamada' | 'cupons' | 'mapa_forca'>('chamada');
+    const [showJustificationModal, setShowJustificationModal] = useState(false);
+    const [justifyingSoldier, setJustifyingSoldier] = useState<{
+        userId: string;
+        userName: string;
+        userRank: string;
+        saram: string;
+        date: string;
+        originalStatus: string;
+        callType: string;
+    } | null>(null);
+    const [justificationForm, setJustificationForm] = useState({ newStatus: 'P', text: '' });
+    const [selectedJustification, setSelectedJustification] = useState<AbsenceJustification | null>(null);
+    const [responsible, setResponsible] = useState(`${currentUser.rank} ${currentUser.warName || currentUser.name}`);
+    const [isSigned, setIsSigned] = useState(false);
+    const [recordToPrint, setRecordToPrint] = useState<DailyAttendance | null>(null);
+
+    // Security states
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [dateToSign, setDateToSign] = useState<string | null>(null);
+    const [passwordInput, setPasswordInput] = useState('');
+    const [passwordError, setPasswordError] = useState(false);
+
+    // Move states
+    const [showMoveModal, setShowMoveModal] = useState(false);
+    const [soldierToMove, setSoldierToMove] = useState<User | null>(null);
+    const [targetSector, setTargetSector] = useState(SETORES[0]);
+
+    // Filtragem de contas funcionais
+    const realPersonnel = useMemo(() =>
+        users.filter(u => u.is_functional !== true),
+        [users]
+    );
+
+    const filteredUsers = useMemo(() => {
+        return realPersonnel.filter(user => {
+            const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (user.warName || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesSector = !selectedSector || user.sector === selectedSector;
+            return matchesSearch && matchesSector;
+        });
+    }, [realPersonnel, searchTerm, selectedSector]);
+
+    const isFutureDate = (date: string) => {
+        const todayStr = formatDateToISO(new Date());
+        return date > todayStr;
+    };
 
     useEffect(() => {
         const fetchDestinations = async () => {
@@ -235,18 +272,14 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 .from('user_destinations')
                 .select('*')
                 .or(`start_date.in.(${currentWeek.join(',')}),and(start_date.lte.${currentWeek[4]},end_date.gte.${currentWeek[0]})`);
-
             if (data) setUserDestinations(data);
         };
         fetchDestinations();
-
-        // Assinatura em Tempo Real para destinos
         const channel = supabase.channel('destinations_changes')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'user_destinations' }, () => {
                 fetchDestinations();
             })
             .subscribe();
-
         return () => {
             supabase.removeChannel(channel);
         };
@@ -254,12 +287,9 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     useEffect(() => {
         const grid: Record<string, Record<string, Record<string, string>>> = {};
-
-        // 1. Fill with Destinations (Fallback)
         userDestinations.forEach(dest => {
             const start = dest.start_date;
             const end = dest.end_date || dest.start_date;
-
             currentWeek.forEach(date => {
                 if (date >= start && date <= end) {
                     if (!grid[dest.user_id]) grid[dest.user_id] = {};
@@ -271,14 +301,11 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             });
         });
 
-        // 2. Overwrite with actual attendance history
         attendanceHistory.forEach(a => {
             if (currentWeek.includes(a.date) && a.sector === selectedSector) {
                 const key = `${a.date}-${a.callType}-${a.sector}`;
                 const isSigned = !!signedDates[key];
                 const isFuture = isFutureDate(a.date);
-
-                // Pre-fill NIL if the signature or observation indicates a no-work-day
                 const isNoWorkDay = a.observacao === 'Feriado' || a.observacao === 'Expediente Cancelado' || a.records.every(r => r.status === 'NIL');
 
                 if (isNoWorkDay) {
@@ -290,17 +317,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 }
 
                 a.records.forEach(r => {
-                    const dest = userDestinations.find(d =>
-                        d.user_id === r.militarId &&
-                        a.date >= d.start_date &&
-                        a.date <= (d.end_date || d.start_date)
-                    );
-
-                    // PRIORIDADE: 
-                    // 1. Se estiver assinado, SEMPRE usa o que está no registro
-                    // 2. Se for data futura e tiver destino, o MAIS RECENTE vence (destino vs manual)
-                    // 3. Caso contrário, usa o que está no registro
-
+                    const dest = userDestinations.find(d => d.user_id === r.militarId && a.date >= d.start_date && a.date <= (d.end_date || d.start_date));
                     if (isSigned) {
                         if (!grid[r.militarId]) grid[r.militarId] = {};
                         if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
@@ -308,24 +325,19 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         delete grid[r.militarId][a.date]['IS_PLANNED'];
                     } else if (isFuture && dest) {
                         const manualRecord = a.records.find(re => re.militarId === r.militarId);
-
                         if (manualRecord) {
                             const destTime = new Date(dest.updated_at || dest.created_at).getTime();
                             const manualTime = new Date(manualRecord.timestamp).getTime();
-
                             if (destTime > manualTime) {
-                                // Destino é mais recente: PRIORIZA DESTINO
                                 if (!grid[r.militarId]) grid[r.militarId] = {};
                                 if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
                                 grid[r.militarId][a.date][a.callType] = dest.status;
                                 grid[r.militarId][a.date]['IS_PLANNED'] = 'true';
                             } else {
-                                // Registro manual é mais recente: PRIORIZA MANUAL
                                 grid[r.militarId][a.date][a.callType] = manualRecord.status;
                                 delete grid[r.militarId][a.date]['IS_PLANNED'];
                             }
                         } else {
-                            // Não tem registro manual ainda (ocorre ao abrir semana nova), usa o destino
                             if (!grid[r.militarId]) grid[r.militarId] = {};
                             if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
                             grid[r.militarId][a.date][a.callType] = dest.status;
@@ -335,55 +347,31 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         if (!grid[r.militarId]) grid[r.militarId] = {};
                         if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
                         grid[r.militarId][a.date][a.callType] = r.status;
-                        if (grid[r.militarId][a.date]['IS_PLANNED']) {
-                            delete grid[r.militarId][a.date]['IS_PLANNED'];
-                        }
+                        if (grid[r.militarId][a.date]['IS_PLANNED']) delete grid[r.militarId][a.date]['IS_PLANNED'];
                     }
                 });
             }
         });
         setWeeklyGrid(grid);
-    }, [currentWeek, attendanceHistory, selectedSector, userDestinations]);
+    }, [currentWeek, attendanceHistory, selectedSector, userDestinations, signedDates, filteredUsers]);
 
     const handleWeeklyChange = (userId: string, date: string, callType: string, status: string) => {
-        // Optimistic Update: Update UI immediately
         setWeeklyGrid(prev => {
             const userDays = prev[userId] || {};
             const dayCalls = userDays[date] || {};
-
-            // Se estamos alterando manualmente, removemos o marcador de planejado
             const newDayCalls = { ...dayCalls, [callType]: status };
-            if (newDayCalls['IS_PLANNED']) {
-                delete newDayCalls['IS_PLANNED'];
-            }
-
-            return {
-                ...prev,
-                [userId]: {
-                    ...userDays,
-                    [date]: newDayCalls
-                }
-            };
+            if (newDayCalls['IS_PLANNED']) delete newDayCalls['IS_PLANNED'];
+            return { ...prev, [userId]: { ...userDays, [date]: newDayCalls } };
         });
-
         const existing = attendanceHistory.find(a => a.date === date && a.callType === callType && a.sector === selectedSector);
-
         let newAttendance: DailyAttendance;
         if (existing) {
             const user = users.find(u => u.id === userId);
             newAttendance = {
                 ...existing,
-                observacao: existing.observacao || '', // Maintain observation
                 records: existing.records.some(r => r.militarId === userId)
                     ? existing.records.map(r => r.militarId === userId ? { ...r, status, saram: user?.saram, timestamp: new Date().toISOString() } : r)
-                    : [...existing.records, {
-                        militarId: userId,
-                        militarName: user?.warName || '',
-                        militarRank: user?.rank || '',
-                        saram: user?.saram,
-                        status,
-                        timestamp: new Date().toISOString()
-                    }]
+                    : [...existing.records, { militarId: userId, militarName: user?.warName || '', militarRank: user?.rank || '', saram: user?.saram, status, timestamp: new Date().toISOString() }]
             };
         } else {
             const user = users.find(u => u.id === userId);
@@ -392,15 +380,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 date,
                 callType: callType as CallTypeCode,
                 sector: selectedSector,
-                observacao: '', // Initial observation
-                records: [{
-                    militarId: userId,
-                    militarName: user?.warName || '',
-                    militarRank: user?.rank || '',
-                    saram: user?.saram,
-                    status,
-                    timestamp: new Date().toISOString()
-                }],
+                records: [{ militarId: userId, militarName: user?.warName || '', militarRank: user?.rank || '', saram: user?.saram, status, timestamp: new Date().toISOString() }],
                 responsible: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
                 createdAt: new Date().toISOString()
             };
@@ -409,59 +389,24 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     };
 
     const handleNoWorkDay = async (dates: string[], reason: string) => {
-        const signatureInfo = {
-            signedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
-            signedAt: new Date().toISOString()
-        };
-
+        const signatureInfo = { signedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`, signedAt: new Date().toISOString() };
         const calls: CallTypeCode[] = ['INICIO', 'TERMINO'];
-
         for (const date of dates) {
             for (const sector of DISPLAY_SECTORS) {
                 const sectorUsers = users.filter(u => u.sector === sector && u.active !== false);
-                // Do not continue if sectorUsers is empty, we want to create a NIL record for the sector anyway
-
                 for (const type of calls) {
                     const existing = attendanceHistory.find(a => a.date === date && a.callType === type && a.sector === sector);
-
                     let attendanceToSave: DailyAttendance;
-                    const records: AttendanceRecord[] = sectorUsers.map(u => ({
-                        militarId: u.id,
-                        militarName: u.warName || u.name,
-                        militarRank: u.rank,
-                        saram: u.saram,
-                        status: 'NIL',
-                        timestamp: new Date().toISOString()
-                    }));
-
+                    const records: AttendanceRecord[] = sectorUsers.map(u => ({ militarId: u.id, militarName: u.warName || u.name, militarRank: u.rank, saram: u.saram, status: 'NIL', timestamp: new Date().toISOString() }));
                     if (existing) {
-                        attendanceToSave = {
-                            ...existing,
-                            records,
-                            signedBy: signatureInfo.signedBy,
-                            signedAt: signatureInfo.signedAt,
-                            responsible: signatureInfo.signedBy,
-                            observacao: reason
-                        };
+                        attendanceToSave = { ...existing, records, signedBy: signatureInfo.signedBy, signedAt: signatureInfo.signedAt, responsible: signatureInfo.signedBy, observacao: reason };
                     } else {
-                        attendanceToSave = {
-                            id: Math.random().toString(36).substr(2, 9),
-                            date,
-                            callType: type,
-                            sector,
-                            records,
-                            signedBy: signatureInfo.signedBy,
-                            signedAt: signatureInfo.signedAt,
-                            responsible: signatureInfo.signedBy,
-                            createdAt: new Date().toISOString(),
-                            observacao: reason
-                        };
+                        attendanceToSave = { id: Math.random().toString(36).substr(2, 9), date, callType: type, sector, records, signedBy: signatureInfo.signedBy, signedAt: signatureInfo.signedAt, responsible: signatureInfo.signedBy, createdAt: new Date().toISOString(), observacao: reason };
                     }
                     onSaveAttendance(attendanceToSave);
                 }
             }
         }
-
         setShowManageWeekModal(false);
         setSelectedDaysForNoWork([]);
         alert(`${dates.length} dias marcados como ${reason} para TODOS os setores!`);
@@ -469,35 +414,25 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     const handleRestoreWorkDay = async (dates: string[]) => {
         const calls: CallTypeCode[] = ['INICIO', 'TERMINO'];
-
         for (const date of dates) {
             for (const sector of DISPLAY_SECTORS) {
                 const sectorUsers = users.filter(u => u.sector === sector && u.active !== false);
-
                 for (const type of calls) {
                     const existing = attendanceHistory.find(a => a.date === date && a.callType === type && a.sector === sector);
-
                     if (existing) {
-                        // Force reset regardless of observation, as requested
                         const attendanceToSave: DailyAttendance = {
                             ...existing,
-                            observacao: undefined, // Clear observation
-                            signedBy: null,        // Clear signature
+                            observacao: undefined,
+                            signedBy: null,
                             signedAt: null,
                             responsible: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
-                            records: existing.records.map(r => ({
-                                ...r,
-                                status: 'P', // Reset to default 'P' so they can be edited
-                                timestamp: new Date().toISOString()
-                            }))
+                            records: existing.records.map(r => ({ ...r, status: 'P', timestamp: new Date().toISOString() }))
                         };
                         onSaveAttendance(attendanceToSave);
                     }
-                    // If it doesn't exist, we don't need to do anything as it's already "restored" (empty)
                 }
             }
         }
-
         setShowManageWeekModal(false);
         setSelectedDaysForNoWork([]);
         alert(`${dates.length} dias restaurados para expediente normal!`);
@@ -506,26 +441,16 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const handleOpenJustification = (userId: string, date: string, callType: string, currentStatus: string) => {
         const user = users.find(u => u.id === userId);
         if (!user) return;
-
-        setJustifyingSoldier({
-            userId,
-            userName: user.warName || user.name,
-            userRank: user.rank,
-            saram: user.saram,
-            date,
-            originalStatus: currentStatus,
-            callType
-        });
+        setJustifyingSoldier({ userId, userName: user.warName || user.name, userRank: user.rank, saram: user.saram, date, originalStatus: currentStatus, callType });
         setJustificationForm({ newStatus: 'P', text: '' });
         setShowJustificationModal(true);
     };
 
     const confirmJustification = () => {
         if (!justifyingSoldier || !justificationForm.text) return;
-
         const justification: AbsenceJustification = {
             id: Math.random().toString(36).substr(2, 9),
-            attendanceId: '', // Will be linked if needed
+            attendanceId: '',
             militarId: justifyingSoldier.userId,
             militarName: justifyingSoldier.userName,
             militarRank: justifyingSoldier.userRank,
@@ -539,13 +464,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             date: justifyingSoldier.date,
             callType: justifyingSoldier.callType
         };
-
-        // Update attendance status
         handleWeeklyChange(justifyingSoldier.userId, justifyingSoldier.date, justifyingSoldier.callType, justificationForm.newStatus);
-
-        // Save justification
         onSaveJustification(justification);
-
         setShowJustificationModal(false);
         setJustifyingSoldier(null);
         alert('Falta retirada e cupom gerado com sucesso!');
@@ -553,16 +473,9 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     const handlePrintJustification = (justification: AbsenceJustification) => {
         setSelectedJustification(justification);
-        setTimeout(() => {
-            window.print();
-        }, 300);
+        setTimeout(() => window.print(), 300);
     };
 
-    const [responsible, setResponsible] = useState(`${currentUser.rank} ${currentUser.warName || currentUser.name}`);
-    const [isSigned, setIsSigned] = useState(false);
-    const [recordToPrint, setRecordToPrint] = useState<DailyAttendance | null>(null);
-
-    // Sincronizar assinaturas do histórico para o estado local (incluindo setor)
     useEffect(() => {
         const sigs: Record<string, { signedBy: string, signedAt: string }> = {};
         attendanceHistory.forEach(a => {
@@ -573,17 +486,6 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         });
         setSignedDates(sigs);
     }, [attendanceHistory]);
-
-    // Security states
-    const [showPasswordModal, setShowPasswordModal] = useState(false);
-    const [dateToSign, setDateToSign] = useState<string | null>(null);
-    const [passwordInput, setPasswordInput] = useState('');
-    const [passwordError, setPasswordError] = useState(false);
-
-    // Move states
-    const [showMoveModal, setShowMoveModal] = useState(false);
-    const [soldierToMove, setSoldierToMove] = useState<User | null>(null);
-    const [targetSector, setTargetSector] = useState(SETORES[0]);
 
     const changeWeek = (offset: number) => {
         setCurrentWeek(prev => {
@@ -599,78 +501,23 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         });
     };
 
-    // Ad-hoc military management (now passed via props)
-    const [showAdHocModal, setShowAdHocModal] = useState(false);
-    const [newAdHoc, setNewAdHoc] = useState({ rank: '', warName: '', saram: '' });
-    const [activeSubTab, setActiveSubTab] = useState<'chamada' | 'cupons' | 'mapa_forca'>('chamada');
-
-    // Justification States
-    const [showJustificationModal, setShowJustificationModal] = useState(false);
-    const [justifyingSoldier, setJustifyingSoldier] = useState<{
-        userId: string;
-        userName: string;
-        userRank: string;
-        saram: string;
-        date: string;
-        originalStatus: string;
-        callType: string;
-    } | null>(null);
-    const [justificationForm, setJustificationForm] = useState({
-        newStatus: 'P',
-        text: ''
-    });
-    const [selectedJustification, setSelectedJustification] = useState<AbsenceJustification | null>(null);
-
-    const filteredUsers = users.filter(u =>
-        u.sector === selectedSector &&
-        u.active !== false &&
-        (u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            u.warName?.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-
-    const isFutureDate = (date: string) => {
-        const todayStr = formatDateToISO(new Date());
-        return date > todayStr;
-    };
-
     // Drag and drop logic
     const [draggedItem, setDraggedItem] = useState<number | null>(null);
-
-    const handleDragStart = (index: number) => {
-        setDraggedItem(index);
-    };
-
+    const handleDragStart = (index: number) => setDraggedItem(index);
     const handleDragOver = (e: React.DragEvent, index: number) => {
         e.preventDefault();
         if (draggedItem === null || draggedItem === index) return;
-
-        const newFilteredUsers = [...filteredUsers];
-        const itemToMove = newFilteredUsers[draggedItem];
-        newFilteredUsers.splice(draggedItem, 1);
-        newFilteredUsers.splice(index, 0, itemToMove);
-
-        // We don't update state here yet to avoid jitter, 
-        // but we can if we want immediate feedback.
-        // For simplicity and standard HTML5 DnD, we update on Drop.
     };
-
     const handleDrop = (index: number) => {
         if (draggedItem === null || draggedItem === index) {
             setDraggedItem(null);
             return;
         }
-
         const newFilteredUsers = [...filteredUsers];
         const itemToMove = newFilteredUsers[draggedItem];
         newFilteredUsers.splice(draggedItem, 1);
         newFilteredUsers.splice(index, 0, itemToMove);
-
-        // Update displayOrder for ALL users in this filtered list
-        const updatedUsers = newFilteredUsers.map((user, idx) => ({
-            ...user,
-            displayOrder: idx
-        }));
-
+        const updatedUsers = newFilteredUsers.map((user, idx) => ({ ...user, displayOrder: idx }));
         onReorderUsers(updatedUsers);
         setDraggedItem(null);
     };
@@ -681,8 +528,6 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             alert('Esta chamada já foi assinada para este setor.');
             return;
         }
-
-        // REGRA SEQUENCIAL: 2ª Chamada (TERMINO) exige 1ª Chamada (INICIO) assinada
         if (type === 'TERMINO') {
             const inicioKey = `${date}-INICIO-${selectedSector}`;
             if (!signedDates[inicioKey]) {
@@ -690,9 +535,6 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 return;
             }
         }
-
-        // REMOVIDO: Validação de status 'N' (Não informado) pois foi retirado do sistema.
-
         setDateToSign(date);
         setCallToSign(type);
         setShowPasswordModal(true);
@@ -702,73 +544,29 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     const confirmSignature = () => {
         if (!dateToSign || !callToSign) return;
-
         if (passwordInput === currentUser.password) {
             const key = `${dateToSign}-${callToSign}-${selectedSector}`;
-            const signatureInfo = {
-                signedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
-                signedAt: new Date().toISOString()
-            };
-
-            setSignedDates(prev => ({
-                ...prev,
-                [key]: signatureInfo
-            }));
-
-            // PERSISTÊNCIA: Usamos a lista completa de usuários do setor, NÃO a lista filtrada pela busca
+            const signatureInfo = { signedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`, signedAt: new Date().toISOString() };
+            setSignedDates(prev => ({ ...prev, [key]: signatureInfo }));
             const sectorUsers = users.filter(u => u.sector === selectedSector);
             const existing = attendanceHistory.find(a => a.date === dateToSign && a.callType === callToSign && a.sector === selectedSector);
-
             let attendanceToSave: DailyAttendance;
             if (existing) {
                 attendanceToSave = {
                     ...existing,
-                    // Atualiza os registros para garantir que todos do setor estejam presentes
                     records: sectorUsers.map(u => {
                         const existingRecord = existing.records.find(r => r.militarId === u.id);
-                        return {
-                            militarId: u.id,
-                            militarName: u.warName || u.name,
-                            militarRank: u.rank,
-                            saram: u.saram,
-                            status: existingRecord?.status || weeklyGrid[u.id]?.[dateToSign]?.[callToSign] || 'P',
-                            timestamp: existingRecord?.timestamp || new Date().toISOString()
-                        };
+                        return { militarId: u.id, militarName: u.warName || u.name, militarRank: u.rank, saram: u.saram, status: existingRecord?.status || weeklyGrid[u.id]?.[dateToSign]?.[callToSign] || 'P', timestamp: existingRecord?.timestamp || new Date().toISOString() };
                     }),
-                    signedBy: signatureInfo.signedBy,
-                    signedAt: signatureInfo.signedAt,
-                    responsible: signatureInfo.signedBy
+                    signedBy: signatureInfo.signedBy, signedAt: signatureInfo.signedAt, responsible: signatureInfo.signedBy
                 };
             } else {
-                // Se não existe, criamos com todos do setor
-                const records: AttendanceRecord[] = sectorUsers.map(u => ({
-                    militarId: u.id,
-                    militarName: u.warName || u.name,
-                    militarRank: u.rank,
-                    saram: u.saram,
-                    status: weeklyGrid[u.id]?.[dateToSign]?.[callToSign] || 'P',
-                    timestamp: new Date().toISOString()
-                }));
-
-                attendanceToSave = {
-                    id: Math.random().toString(36).substr(2, 9),
-                    date: dateToSign,
-                    callType: callToSign,
-                    sector: selectedSector,
-                    records,
-                    signedBy: signatureInfo.signedBy,
-                    signedAt: signatureInfo.signedAt,
-                    responsible: signatureInfo.signedBy,
-                    createdAt: new Date().toISOString()
-                };
+                const records: AttendanceRecord[] = sectorUsers.map(u => ({ militarId: u.id, militarName: u.warName || u.name, militarRank: u.rank, saram: u.saram, status: weeklyGrid[u.id]?.[dateToSign]?.[callToSign] || 'P', timestamp: new Date().toISOString() }));
+                attendanceToSave = { id: Math.random().toString(36).substr(2, 9), date: dateToSign, callType: callToSign, sector: selectedSector, records, signedBy: signatureInfo.signedBy, signedAt: signatureInfo.signedAt, responsible: signatureInfo.signedBy, createdAt: new Date().toISOString() };
             }
-
             onSaveAttendance(attendanceToSave);
-
             setShowPasswordModal(false);
-            setDateToSign(null);
-            setCallToSign(null);
-            setPasswordInput('');
+            setDateToSign(null); setCallToSign(null); setPasswordInput('');
             alert(`${CALL_TYPES[callToSign]} assinada com sucesso!`);
         } else {
             setPasswordError(true);
@@ -776,75 +574,34 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     };
 
     const handleStatusChange = (userId: string, status: string) => {
-        setAttendanceRecords(prev => ({
-            ...prev,
-            [userId]: status
-        }));
+        setAttendanceRecords(prev => ({ ...prev, [userId]: status }));
     };
 
     const handleAddAdHoc = () => {
         if (!newAdHoc.rank || !newAdHoc.warName) return;
-
-
-
-        const newUser: User = {
-            id: `adhoc-${Date.now()}`,
-            name: newAdHoc.warName,
-            warName: newAdHoc.warName,
-            rank: newAdHoc.rank,
-            sector: selectedSector,
-            saram: newAdHoc.saram || '',
-            role: {} as any, // Not relevant for this view
-            email: '',
-            username: `adhoc-${Date.now()}`
-        };
+        const newUser: User = { id: `adhoc-${Date.now()}`, name: newAdHoc.warName, warName: newAdHoc.warName, rank: newAdHoc.rank, sector: selectedSector, saram: newAdHoc.saram || '', role: {} as any, email: '', username: `adhoc-${Date.now()}` };
         onAddAdHoc(newUser);
         setNewAdHoc({ rank: '', warName: '', saram: '' });
         setShowAdHocModal(false);
     };
 
     const handleSave = () => {
-        if (!isSigned) {
-            alert('Por favor, realize a assinatura digital antes de finalizar.');
-            return;
-        }
-
-        const records: AttendanceRecord[] = filteredUsers.map(u => ({
-            militarId: u.id,
-            militarName: u.warName || u.name,
-            militarRank: u.rank,
-            status: attendanceRecords[u.id] || 'P',
-            timestamp: new Date().toISOString()
-        }));
-
-        // Validação removida (status 'N' não existe mais)
-
-        const daily: DailyAttendance = {
-            id: Math.random().toString(36).substr(2, 9),
-            date: new Date().toISOString().split('T')[0],
-            sector: selectedSector,
-            callType,
-            records,
-            responsible,
-            signedAt: new Date().toISOString(),
-            signedBy: currentUser.name,
-            createdAt: new Date().toISOString()
-        };
-
+        if (!isSigned) { alert('Por favor, realize a assinatura digital antes de finalizar.'); return; }
+        const records: AttendanceRecord[] = filteredUsers.map(u => ({ militarId: u.id, militarName: u.warName || u.name, militarRank: u.rank, status: attendanceRecords[u.id] || 'P', timestamp: new Date().toISOString() }));
+        const daily: DailyAttendance = { id: Math.random().toString(36).substr(2, 9), date: new Date().toISOString().split('T')[0], sector: selectedSector, callType: callType as CallTypeCode, records, responsible, signedAt: new Date().toISOString(), signedBy: currentUser.name, createdAt: new Date().toISOString() };
         onSaveAttendance(daily);
         alert('Chamada salva e assinada com sucesso!');
     };
+
     const handlePrint = (attendance: DailyAttendance) => {
         setRecordToPrint(attendance);
-        setTimeout(() => {
-            window.print();
-        }, 300);
+        setTimeout(() => window.print(), 300);
     };
 
     return (
-        <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 pb-20">
+        <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 pb-20" >
             {/* Sub-Tabs Navigation — FIRST */}
-            <div className={`flex w-full md:w-fit gap-1 p-1 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-900/80 border-slate-800/50 backdrop-blur-xl shadow-xl shadow-black/20' : 'bg-indigo-50/30 border-indigo-100/50'}`}>
+            < div className={`flex w-full md:w-fit gap-1 p-1 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-900/80 border-slate-800/50 backdrop-blur-xl shadow-xl shadow-black/20' : 'bg-indigo-50/30 border-indigo-100/50'}`} >
                 <button
                     onClick={() => setActiveSubTab('chamada')}
                     className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 md:px-6 py-2.5 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-wider md:tracking-[0.15em] transition-all duration-300 ${activeSubTab === 'chamada' ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-white text-slate-900 shadow-md') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
@@ -863,327 +620,330 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 >
                     <BarChart3 className="w-3.5 h-3.5" /> <span className="truncate">Mapa</span>
                 </button>
-            </div>
+            </div >
 
             {/* Compact Header — only for chamada/cupons */}
-            {(activeSubTab === 'chamada' || activeSubTab === 'cupons') && (
-                <div className={`rounded-[2.5rem] p-5 lg:p-7 border shadow-xl transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl' : 'bg-white border-indigo-100/50'}`}>
-                    {/* Top row: Title + Navigation + Actions */}
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-3 rounded-2xl shadow-lg shadow-blue-900/20">
-                                <FileSignature className="w-5 h-5 text-white" />
+            {
+                (activeSubTab === 'chamada' || activeSubTab === 'cupons') && (
+                    <div className={`rounded-[2.5rem] p-5 lg:p-7 border shadow-xl transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl' : 'bg-white border-indigo-100/50'}`}>
+                        {/* Top row: Title + Navigation + Actions */}
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-3 rounded-2xl shadow-lg shadow-blue-900/20">
+                                    <FileSignature className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <h2 className={`text-base lg:text-lg font-black tracking-tight leading-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Retirada de Faltas</h2>
+                                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-400/80' : 'text-blue-600'}`}>{selectedSector}</p>
+                                </div>
                             </div>
-                            <div>
-                                <h2 className={`text-base lg:text-lg font-black tracking-tight leading-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Retirada de Faltas</h2>
-                                <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-400/80' : 'text-blue-600'}`}>{selectedSector}</p>
+
+                            <div className="flex flex-wrap items-center gap-3">
+                                {/* Week Nav */}
+                                <div className={`flex items-center gap-2 p-1.5 rounded-2xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-indigo-100/50'}`}>
+                                    <button onClick={() => changeWeek(-1)} className={`p-2 rounded-xl transition-all ${isDarkMode ? 'hover:bg-slate-700 text-slate-400 hover:text-white' : 'hover:bg-white text-slate-400 hover:text-slate-900 shadow-sm'}`}>
+                                        <Filter className="w-3.5 h-3.5 rotate-180" />
+                                    </button>
+                                    <span className={`text-[11px] font-black px-2 tracking-tighter ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                                        {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} — {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                                    </span>
+                                    <button onClick={() => changeWeek(1)} className={`p-2 rounded-xl transition-all ${isDarkMode ? 'hover:bg-slate-700 text-slate-400 hover:text-white' : 'hover:bg-white text-slate-400 hover:text-slate-900 shadow-sm'}`}>
+                                        <Filter className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+
+                                {canManage && (
+                                    <button
+                                        onClick={() => setShowManageWeekModal(true)}
+                                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-indigo-100/50 text-indigo-600 hover:bg-indigo-50'}`}
+                                    >
+                                        Gerir Semana
+                                    </button>
+                                )}
+
+                                {canManage && (
+                                    <button
+                                        onClick={() => setShowAdHocModal(true)}
+                                        className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20 active:scale-95"
+                                    >
+                                        <UserPlus className="w-4 h-4" /> Incluir militar
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => window.print()}
+                                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all shadow-lg active:scale-95 ${isDarkMode ? 'bg-slate-800 text-white hover:bg-slate-700 shadow-black/20' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
+                                >
+                                    <Plus className="w-4 h-4" /> Gerar PDF
+                                </button>
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-3">
-                            {/* Week Nav */}
-                            <div className={`flex items-center gap-2 p-1.5 rounded-2xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-indigo-100/50'}`}>
-                                <button onClick={() => changeWeek(-1)} className={`p-2 rounded-xl transition-all ${isDarkMode ? 'hover:bg-slate-700 text-slate-400 hover:text-white' : 'hover:bg-white text-slate-400 hover:text-slate-900 shadow-sm'}`}>
-                                    <Filter className="w-3.5 h-3.5 rotate-180" />
-                                </button>
-                                <span className={`text-[11px] font-black px-2 tracking-tighter ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
-                                    {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} — {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                                </span>
-                                <button onClick={() => changeWeek(1)} className={`p-2 rounded-xl transition-all ${isDarkMode ? 'hover:bg-slate-700 text-slate-400 hover:text-white' : 'hover:bg-white text-slate-400 hover:text-slate-900 shadow-sm'}`}>
-                                    <Filter className="w-3.5 h-3.5" />
-                                </button>
-                            </div>
-
-                            {canManage && (
-                                <button
-                                    onClick={() => setShowManageWeekModal(true)}
-                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-indigo-100/50 text-indigo-600 hover:bg-indigo-50'}`}
-                                >
-                                    Gerir Semana
-                                </button>
-                            )}
-
-                            {canManage && (
-                                <button
-                                    onClick={() => setShowAdHocModal(true)}
-                                    className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20 active:scale-95"
-                                >
-                                    <UserPlus className="w-4 h-4" /> Incluir militar
-                                </button>
-                            )}
-                            <button
-                                onClick={() => window.print()}
-                                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all shadow-lg active:scale-95 ${isDarkMode ? 'bg-slate-800 text-white hover:bg-slate-700 shadow-black/20' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
+                        {/* Bottom row: Sector + Search inline */}
+                        <div className="flex flex-col md:flex-row items-stretch gap-3 mt-5">
+                            <select
+                                value={selectedSector}
+                                onChange={(e) => setSelectedSector(e.target.value)}
+                                className={`border-2 rounded-xl px-4 py-2.5 text-xs font-black focus:ring-4 focus:ring-blue-500/10 outline-none transition-all md:w-[220px] cursor-pointer ${isDarkMode ? 'bg-slate-800 border-slate-700/50 text-slate-200' : 'bg-white border-indigo-100/50 text-slate-700'}`}
                             >
-                                <Plus className="w-4 h-4" /> Gerar PDF
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Bottom row: Sector + Search inline */}
-                    <div className="flex flex-col md:flex-row items-stretch gap-3 mt-5">
-                        <select
-                            value={selectedSector}
-                            onChange={(e) => setSelectedSector(e.target.value)}
-                            className={`border-2 rounded-xl px-4 py-2.5 text-xs font-black focus:ring-4 focus:ring-blue-500/10 outline-none transition-all md:w-[220px] cursor-pointer ${isDarkMode ? 'bg-slate-800 border-slate-700/50 text-slate-200' : 'bg-white border-indigo-100/50 text-slate-700'}`}
-                        >
-                            {DISPLAY_SECTORS.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                        <div className="relative flex-1 group">
-                            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isDarkMode ? 'text-slate-500 group-focus-within:text-blue-400' : 'text-slate-400'}`} />
-                            <input
-                                type="text"
-                                placeholder="Buscar militar por nome ou graduação..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className={`w-full border-2 rounded-xl py-2.5 pl-11 pr-4 text-xs font-bold focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:font-medium ${isDarkMode ? 'bg-slate-800 border-slate-700/50 text-white placeholder:text-slate-500' : 'bg-white border-indigo-100/50 text-slate-900'}`}
-                            />
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {activeSubTab === 'chamada' && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
-                    {/* Weekly Grid Table */}
-                    <div className={`rounded-[2rem] border overflow-hidden shadow-sm relative group ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-100/50'}`}>
-                        {/* Mobile Scroll Hint */}
-                        <div className="lg:hidden absolute right-4 top-4 z-30 animate-pulse pointer-events-none">
-                            <div className="bg-slate-900/80 backdrop-blur-sm text-white text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-xl">
-                                <Filter className="w-2.5 h-2.5 rotate-90" /> Deslize para ver mais
+                                {DISPLAY_SECTORS.map(s => <option key={s} value={s}>{s}</option>)}
+                            </select>
+                            <div className="relative flex-1 group">
+                                <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isDarkMode ? 'text-slate-500 group-focus-within:text-blue-400' : 'text-slate-400'}`} />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar militar por nome ou graduação..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className={`w-full border-2 rounded-xl py-2.5 pl-11 pr-4 text-xs font-bold focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:font-medium ${isDarkMode ? 'bg-slate-800 border-slate-700/50 text-white placeholder:text-slate-500' : 'bg-white border-indigo-100/50 text-slate-900'}`}
+                                />
                             </div>
                         </div>
+                    </div>
+                )
+            }
 
-                        <div className="overflow-x-auto scrollbar-hide lg:scrollbar-default relative group">
-                            <table className="w-full border-collapse">
-                                <thead className="relative z-40">
-                                    <tr className={`${isDarkMode ? 'bg-slate-900/80' : 'bg-indigo-50/50'} premium-table-header`}>
-                                        <th rowSpan={2} className={`px-4 lg:px-7 py-5 border-b text-[10px] font-black uppercase tracking-[0.2em] text-left min-w-[150px] lg:min-w-[220px] sticky left-0 z-30 shadow-[4px_0_10px_rgba(0,0,0,0.05)] ${isDarkMode ? 'bg-slate-900 border-slate-800 text-blue-400' : 'bg-white border-indigo-100/50 text-indigo-600'}`}>
-                                            <div className="flex items-center gap-3">
-                                                <Users className="w-4 h-4 opacity-50" />
-                                                <span>Efetivo Militar</span>
-                                            </div>
-                                        </th>
-                                        {currentWeek.map(date => (
-                                            <th key={date} colSpan={2} className={`px-2 py-4 border-b border-l text-[10px] font-black uppercase tracking-widest text-center min-w-[130px] relative ${isDarkMode ? 'bg-slate-900/40 border-slate-800 text-white' : 'bg-indigo-50/30 border-indigo-100/30 text-indigo-900'}`}>
-                                                <div className="flex flex-col items-center">
-                                                    <span className={`transition-colors ${isDarkMode ? 'text-blue-100' : 'text-slate-800'}`}>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
-                                                    <span className={`text-[9px] font-bold mt-1 px-2 py-0.5 rounded-full ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>{parseISOToDate(date).toLocaleDateString('pt-BR')}</span>
+            {
+                activeSubTab === 'chamada' && (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
+                        {/* Weekly Grid Table */}
+                        <div className={`rounded-[2rem] border overflow-hidden shadow-sm relative group ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-100/50'}`}>
+                            {/* Mobile Scroll Hint */}
+                            <div className="lg:hidden absolute right-4 top-4 z-30 animate-pulse pointer-events-none">
+                                <div className="bg-slate-900/80 backdrop-blur-sm text-white text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-xl">
+                                    <Filter className="w-2.5 h-2.5 rotate-90" /> Deslize para ver mais
+                                </div>
+                            </div>
+
+                            <div className="overflow-x-auto scrollbar-hide lg:scrollbar-default relative group">
+                                <table className="w-full border-collapse">
+                                    <thead className="relative z-40">
+                                        <tr className={`${isDarkMode ? 'bg-slate-900/80' : 'bg-indigo-50/50'} premium-table-header`}>
+                                            <th rowSpan={2} className={`px-4 lg:px-7 py-5 border-b text-[10px] font-black uppercase tracking-[0.2em] text-left min-w-[150px] lg:min-w-[220px] sticky left-0 z-30 shadow-[4px_0_10px_rgba(0,0,0,0.05)] ${isDarkMode ? 'bg-slate-900 border-slate-800 text-blue-400' : 'bg-white border-indigo-100/50 text-indigo-600'}`}>
+                                                <div className="flex items-center gap-3">
+                                                    <Users className="w-4 h-4 opacity-50" />
+                                                    <span>Efetivo Militar</span>
                                                 </div>
                                             </th>
-                                        ))}
-                                    </tr>
-                                    <tr className={`${isDarkMode ? 'bg-slate-900/60' : 'bg-indigo-50/20'}`}>
-                                        {currentWeek.map(date => (
-                                            <Fragment key={date}>
-                                                <th className={`px-1 py-2 lg:py-3 border-b border-l text-[8px] lg:text-[9px] font-black uppercase text-center tracking-tighter ${isDarkMode ? 'border-slate-800 text-slate-500' : 'border-indigo-100/50 text-indigo-400'}`}>1ª Chamada</th>
-                                                <th className={`px-1 py-2 lg:py-3 border-b text-[8px] lg:text-[9px] font-black uppercase text-center tracking-tighter ${isDarkMode ? 'border-slate-800 text-slate-500' : 'border-indigo-100/50 text-indigo-400'}`}>2ª Chamada</th>
-                                            </Fragment>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody className={`divide-y ${isDarkMode ? 'divide-slate-800' : 'divide-indigo-100/30'}`}>
-                                    {filteredUsers.map((user, index) => (
-                                        <tr
-                                            key={user.id}
-                                            className={`transition-colors ${isDarkMode ? 'hover:bg-slate-800/30' : 'hover:bg-slate-50/30'} ${draggedItem === index ? 'opacity-40 bg-blue-500/10' : ''}`}
-                                            draggable
-                                            onDragStart={() => handleDragStart(index)}
-                                            onDragOver={(e) => handleDragOver(e, index)}
-                                            onDrop={() => handleDrop(index)}
-                                        >
-                                            <td className={`px-4 lg:px-6 py-2 lg:py-3 sticky left-0 shadow-[2px_0_5px_rgba(0,0,0,0.02)] ${isDarkMode ? 'bg-slate-900 border-r border-slate-800' : 'bg-white'} ${movingUserId === user.id ? 'z-[60]' : 'z-10'}`}>
-                                                <div className="flex items-center gap-2 lg:gap-3">
-                                                    <div className="cursor-grab active:cursor-grabbing text-slate-500 hover:text-slate-300 transition-colors hidden lg:block">
-                                                        <GripVertical className="w-4 h-4" />
-                                                    </div>
-                                                    <div className="flex-1 flex items-center justify-between min-w-0">
-                                                        <div className="truncate">
-                                                            <div className={`font-bold text-[10px] lg:text-xs uppercase truncate ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{user.warName || user.name}</div>
-                                                            <div className={`text-[8px] lg:text-[9px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-indigo-400/80'}`}>{user.rank}</div>
-                                                        </div>
-                                                        <div className="flex items-center gap-1">
-                                                            {canManage && (
-                                                                <div className="relative">
-                                                                    <button
-                                                                        onClick={() => setMovingUserId(movingUserId === user.id ? null : user.id)}
-                                                                        className={`p-1.5 rounded-lg transition-all ${movingUserId === user.id ? 'bg-indigo-500 text-white' : 'hover:bg-indigo-500/10 text-slate-500 hover:text-indigo-500'}`}
-                                                                        title="Mover para outro setor"
-                                                                    >
-                                                                        <MoveHorizontal className="w-3.5 h-3.5" />
-                                                                    </button>
-
-                                                                    {movingUserId === user.id && (
-                                                                        <>
-                                                                            {/* Overlay invisível para fechar ao clicar fora - Garante cobertura total */}
-                                                                            <div
-                                                                                className="fixed inset-0 z-[45] bg-black/5 backdrop-blur-[0.5px] cursor-default"
-                                                                                onClick={(e) => {
-                                                                                    e.stopPropagation();
-                                                                                    setMovingUserId(null);
-                                                                                }}
-                                                                            />
-                                                                            <div
-                                                                                className={`absolute left-0 top-full mt-2 z-[100] w-64 rounded-2xl border shadow-2xl p-3 animate-in fade-in zoom-in-95 duration-200 ${isDarkMode
-                                                                                    ? 'bg-slate-800 border-slate-700 shadow-black'
-                                                                                    : 'bg-white border-slate-200 shadow-slate-200/50'
-                                                                                    }`}
-                                                                                onClick={(e) => e.stopPropagation()}
-                                                                            >
-                                                                                <div className={`text-[10px] font-black uppercase mb-3 px-2 pb-2 border-b flex items-center gap-2 ${isDarkMode ? 'text-indigo-400 border-slate-700' : 'text-indigo-600 border-slate-100'
-                                                                                    }`}>
-                                                                                    <MoveHorizontal className="w-3.5 h-3.5" /> Mover para:
-                                                                                </div>
-                                                                                <div className="flex flex-col gap-1.5 max-h-64 overflow-y-auto custom-scrollbar pr-1">
-                                                                                    {DISPLAY_SECTORS.filter(s => s.trim() !== selectedSector.trim()).length === 0 ? (
-                                                                                        <div className="text-[11px] p-4 text-slate-500 italic text-center">Nenhum outro setor disponível</div>
-                                                                                    ) : (
-                                                                                        DISPLAY_SECTORS.filter(s => s.trim() !== selectedSector.trim()).map(s => (
-                                                                                            <button
-                                                                                                key={s}
-                                                                                                type="button"
-                                                                                                onClick={() => {
-                                                                                                    if (confirm(`Confirmar transferência de ${user.rank} ${user.warName || user.name} para o setor ${s}?`)) {
-                                                                                                        onMoveUser(user.id, s);
-                                                                                                        setMovingUserId(null);
-                                                                                                    }
-                                                                                                }}
-                                                                                                className={`text-left px-4 py-3 rounded-xl text-[11px] font-bold transition-all border border-transparent ${isDarkMode
-                                                                                                    ? 'hover:bg-slate-700 text-white hover:border-slate-600'
-                                                                                                    : 'hover:bg-indigo-50 text-indigo-900 hover:text-indigo-600 hover:border-indigo-100'
-                                                                                                    }`}
-                                                                                            >
-                                                                                                {s}
-                                                                                            </button>
-                                                                                        ))
-                                                                                    )}
-                                                                                </div>
-                                                                            </div>
-                                                                        </>
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                            {canManage && (
-                                                                <button
-                                                                    onClick={() => {
-                                                                        if (confirm(`Deseja remover ${user.rank} ${user.warName || user.name} desta lista?`)) {
-                                                                            onExcludeUser(user.id);
-                                                                        }
-                                                                    }}
-                                                                    className="p-1.5 hover:bg-red-500/10 text-slate-500 hover:text-red-500 rounded-lg transition-all"
-                                                                    title="Remover militar"
-                                                                >
-                                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
                                             {currentWeek.map(date => (
-                                                <Fragment key={`${user.id}-${date}`}>
-                                                    <td key={`${user.id}-${date}-INICIO`} className={`p-1 lg:p-1.5 border-l transition-all ${isDarkMode ? 'border-slate-800/50 bg-slate-900/20' : 'border-indigo-100/30 bg-white'}`}>
-                                                        <StatusPicker
-                                                            disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
-                                                            value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P'}
-                                                            isPlanned={weeklyGrid[user.id]?.[date]?.['IS_PLANNED'] === 'true'}
-                                                            onChange={(status) => handleWeeklyChange(user.id, date, 'INICIO', status)}
-                                                            isDarkMode={isDarkMode}
-                                                        />
-                                                    </td>
-                                                    <td key={`${user.id}-${date}-TERMINO`} className={`p-1 lg:p-1.5 border-l transition-all ${isDarkMode ? 'border-slate-800/50 bg-slate-900/20' : 'border-indigo-100/30 bg-white'}`}>
-                                                        <StatusPicker
-                                                            disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
-                                                            value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P'}
-                                                            isPlanned={weeklyGrid[user.id]?.[date]?.['IS_PLANNED'] === 'true'}
-                                                            onChange={(status) => handleWeeklyChange(user.id, date, 'TERMINO', status)}
-                                                            isDarkMode={isDarkMode}
-                                                        />
-                                                    </td>
+                                                <th key={date} colSpan={2} className={`px-2 py-4 border-b border-l text-[10px] font-black uppercase tracking-widest text-center min-w-[130px] relative ${isDarkMode ? 'bg-slate-900/40 border-slate-800 text-white' : 'bg-indigo-50/30 border-indigo-100/30 text-indigo-900'}`}>
+                                                    <div className="flex flex-col items-center">
+                                                        <span className={`transition-colors ${isDarkMode ? 'text-blue-100' : 'text-slate-800'}`}>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
+                                                        <span className={`text-[9px] font-bold mt-1 px-2 py-0.5 rounded-full ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>{parseISOToDate(date).toLocaleDateString('pt-BR')}</span>
+                                                    </div>
+                                                </th>
+                                            ))}
+                                        </tr>
+                                        <tr className={`${isDarkMode ? 'bg-slate-900/60' : 'bg-indigo-50/20'}`}>
+                                            {currentWeek.map(date => (
+                                                <Fragment key={date}>
+                                                    <th className={`px-1 py-2 lg:py-3 border-b border-l text-[8px] lg:text-[9px] font-black uppercase text-center tracking-tighter ${isDarkMode ? 'border-slate-800 text-slate-500' : 'border-indigo-100/50 text-indigo-400'}`}>1ª Chamada</th>
+                                                    <th className={`px-1 py-2 lg:py-3 border-b text-[8px] lg:text-[9px] font-black uppercase text-center tracking-tighter ${isDarkMode ? 'border-slate-800 text-slate-500' : 'border-indigo-100/50 text-indigo-400'}`}>2ª Chamada</th>
                                                 </Fragment>
                                             ))}
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                    </div>
-
-                    <div className={`rounded-[2.5rem] p-7 lg:p-10 border shadow-2xl mt-10 transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-xl' : 'bg-white border-slate-200'}`}>
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                            <div className="flex items-center gap-5">
-                                <div className={`p-4 rounded-[1.5rem] shadow-lg ${isDarkMode ? 'bg-indigo-500/10 text-indigo-400 shadow-indigo-900/20' : 'bg-indigo-50 text-indigo-600 shadow-indigo-100'}`}>
-                                    <FileSignature className="w-7 h-7" />
-                                </div>
-                                <div>
-                                    <h3 className={`text-xl lg:text-2xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Status das Assinaturas</h3>
-                                    <p className={`${isDarkMode ? 'text-slate-500' : 'text-slate-400'} text-xs font-bold uppercase tracking-widest mt-1`}>Controle de autenticidade da semana</p>
-                                </div>
-                            </div>
-                            <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest italic ${isDarkMode ? 'bg-slate-800/50 text-slate-400 border border-slate-700' : 'bg-slate-50 text-slate-500 border border-slate-100'}`}>
-                                Cada dia exige assinatura individual
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-10">
-                            {currentWeek.map(date => (
-                                <div key={date} className={`flex flex-col gap-4 p-5 lg:p-6 rounded-[2rem] border-2 transition-all duration-300 group hover:scale-[1.02] ${isDarkMode ? 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50 hover:border-blue-500/30' : 'bg-slate-50 border-slate-100 hover:bg-white hover:border-blue-200 hover:shadow-xl'}`}>
-                                    <div className={`text-[11px] font-black uppercase tracking-[0.1em] border-b pb-3 flex justify-between items-center ${isDarkMode ? 'text-slate-200 border-slate-700' : 'text-slate-900 border-slate-200'}`}>
-                                        <span>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
-                                        <span className="opacity-40">{parseISOToDate(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
-                                    </div>
-                                    <div className="flex flex-col gap-3">
-                                        {(['INICIO', 'TERMINO'] as CallTypeCode[]).map(type => {
-                                            const key = `${date}-${type}-${selectedSector}`;
-                                            const sig = signedDates[key];
-                                            return (
-                                                <div key={type} className={`p-3 rounded-2xl border transition-all duration-300 ${sig ? (isDarkMode ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-emerald-50 border-emerald-200') : (isDarkMode ? 'bg-slate-900/50 border-slate-700 hover:border-blue-500/50' : 'bg-white border-slate-200 hover:border-blue-200')}`}>
-                                                    <div className="text-[9px] font-black text-slate-500 uppercase mb-2 flex justify-between items-center">
-                                                        <span>{type === 'INICIO' ? '1ª Chamada' : '2ª Chamada'}</span>
-                                                        {sig && <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />}
-                                                    </div>
-                                                    {sig ? (
-                                                        <div className="flex flex-col">
-                                                            <div className="text-[10px] font-black text-emerald-500 leading-tight uppercase tracking-widest">Autenticado</div>
-                                                            <div className={`text-[9px] font-bold truncate mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{sig.signedBy.split(' ').pop()}</div>
+                                    </thead>
+                                    <tbody className={`divide-y ${isDarkMode ? 'divide-slate-800' : 'divide-indigo-100/30'}`}>
+                                        {filteredUsers.map((user, index) => (
+                                            <tr
+                                                key={user.id}
+                                                className={`transition-colors ${isDarkMode ? 'hover:bg-slate-800/30' : 'hover:bg-slate-50/30'} ${draggedItem === index ? 'opacity-40 bg-blue-500/10' : ''}`}
+                                                draggable
+                                                onDragStart={() => handleDragStart(index)}
+                                                onDragOver={(e) => handleDragOver(e, index)}
+                                                onDrop={() => handleDrop(index)}
+                                            >
+                                                <td className={`px-4 lg:px-6 py-2 lg:py-3 sticky left-0 shadow-[2px_0_5px_rgba(0,0,0,0.02)] ${isDarkMode ? 'bg-slate-900 border-r border-slate-800' : 'bg-white'} ${movingUserId === user.id ? 'z-[60]' : 'z-10'}`}>
+                                                    <div className="flex items-center gap-2 lg:gap-3">
+                                                        <div className="cursor-grab active:cursor-grabbing text-slate-500 hover:text-slate-300 transition-colors hidden lg:block">
+                                                            <GripVertical className="w-4 h-4" />
                                                         </div>
-                                                    ) : (
-                                                        <button
-                                                            onClick={() => handleSignDate(date, type)}
-                                                            disabled={isFutureDate(date) || !canSign}
-                                                            className={`w-full py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-lg active:scale-95 ${isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-900/40' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'}`}
-                                                        >
-                                                            {canSign ? 'Assinar' : 'Bloqueado'}
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                                                        <div className="flex-1 flex items-center justify-between min-w-0">
+                                                            <div className="truncate">
+                                                                <div className={`font-bold text-[10px] lg:text-xs uppercase truncate ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{user.warName || user.name}</div>
+                                                                <div className={`text-[8px] lg:text-[9px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-indigo-400/80'}`}>{user.rank}</div>
+                                                            </div>
+                                                            <div className="flex items-center gap-1">
+                                                                {canManage && (
+                                                                    <div className="relative">
+                                                                        <button
+                                                                            onClick={() => setMovingUserId(movingUserId === user.id ? null : user.id)}
+                                                                            className={`p-1.5 rounded-lg transition-all ${movingUserId === user.id ? 'bg-indigo-500 text-white' : 'hover:bg-indigo-500/10 text-slate-500 hover:text-indigo-500'}`}
+                                                                            title="Mover para outro setor"
+                                                                        >
+                                                                            <MoveHorizontal className="w-3.5 h-3.5" />
+                                                                        </button>
 
-                    <div className={`rounded-[2.5rem] p-8 lg:p-10 border mt-10 transition-all ${isDarkMode ? 'bg-slate-900/20 border-slate-800/50 backdrop-blur-sm' : 'bg-slate-50 border-slate-200'}`}>
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="w-2 h-8 bg-blue-600 rounded-full shadow-lg shadow-blue-900/20" />
-                            <h3 className={`text-base font-black uppercase tracking-[0.2em] ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Legenda de Situações</h3>
+                                                                        {movingUserId === user.id && (
+                                                                            <>
+                                                                                {/* Overlay invisível para fechar ao clicar fora - Garante cobertura total */}
+                                                                                <div
+                                                                                    className="fixed inset-0 z-[45] bg-black/5 backdrop-blur-[0.5px] cursor-default"
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        setMovingUserId(null);
+                                                                                    }}
+                                                                                />
+                                                                                <div
+                                                                                    className={`absolute left-0 top-full mt-2 z-[100] w-64 rounded-2xl border shadow-2xl p-3 animate-in fade-in zoom-in-95 duration-200 ${isDarkMode
+                                                                                        ? 'bg-slate-800 border-slate-700 shadow-black'
+                                                                                        : 'bg-white border-slate-200 shadow-slate-200/50'
+                                                                                        }`}
+                                                                                    onClick={(e) => e.stopPropagation()}
+                                                                                >
+                                                                                    <div className={`text-[10px] font-black uppercase mb-3 px-2 pb-2 border-b flex items-center gap-2 ${isDarkMode ? 'text-indigo-400 border-slate-700' : 'text-indigo-600 border-slate-100'
+                                                                                        }`}>
+                                                                                        <MoveHorizontal className="w-3.5 h-3.5" /> Mover para:
+                                                                                    </div>
+                                                                                    <div className="flex flex-col gap-1.5 max-h-64 overflow-y-auto custom-scrollbar pr-1">
+                                                                                        {DISPLAY_SECTORS.filter(s => s.trim() !== selectedSector.trim()).length === 0 ? (
+                                                                                            <div className="text-[11px] p-4 text-slate-500 italic text-center">Nenhum outro setor disponível</div>
+                                                                                        ) : (
+                                                                                            DISPLAY_SECTORS.filter(s => s.trim() !== selectedSector.trim()).map(s => (
+                                                                                                <button
+                                                                                                    key={s}
+                                                                                                    type="button"
+                                                                                                    onClick={() => {
+                                                                                                        if (confirm(`Confirmar transferência de ${user.rank} ${user.warName || user.name} para o setor ${s}?`)) {
+                                                                                                            onMoveUser(user.id, s);
+                                                                                                            setMovingUserId(null);
+                                                                                                        }
+                                                                                                    }}
+                                                                                                    className={`text-left px-4 py-3 rounded-xl text-[11px] font-bold transition-all border border-transparent ${isDarkMode
+                                                                                                        ? 'hover:bg-slate-700 text-white hover:border-slate-600'
+                                                                                                        : 'hover:bg-indigo-50 text-indigo-900 hover:text-indigo-600 hover:border-indigo-100'
+                                                                                                        }`}
+                                                                                                >
+                                                                                                    {s}
+                                                                                                </button>
+                                                                                            ))
+                                                                                        )}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                                {canManage && (
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            if (confirm(`Deseja remover ${user.rank} ${user.warName || user.name} desta lista?`)) {
+                                                                                onExcludeUser(user.id);
+                                                                            }
+                                                                        }}
+                                                                        className="p-1.5 hover:bg-red-500/10 text-slate-500 hover:text-red-500 rounded-lg transition-all"
+                                                                        title="Remover militar"
+                                                                    >
+                                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                {currentWeek.map(date => (
+                                                    <Fragment key={`${user.id}-${date}`}>
+                                                        <td key={`${user.id}-${date}-INICIO`} className={`p-1 lg:p-1.5 border-l transition-all ${isDarkMode ? 'border-slate-800/50 bg-slate-900/20' : 'border-indigo-100/30 bg-white'}`}>
+                                                            <StatusPicker
+                                                                disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
+                                                                value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P'}
+                                                                isPlanned={weeklyGrid[user.id]?.[date]?.['IS_PLANNED'] === 'true'}
+                                                                onChange={(status) => handleWeeklyChange(user.id, date, 'INICIO', status)}
+                                                                isDarkMode={isDarkMode}
+                                                            />
+                                                        </td>
+                                                        <td key={`${user.id}-${date}-TERMINO`} className={`p-1 lg:p-1.5 border-l transition-all ${isDarkMode ? 'border-slate-800/50 bg-slate-900/20' : 'border-indigo-100/30 bg-white'}`}>
+                                                            <StatusPicker
+                                                                disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
+                                                                value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P'}
+                                                                isPlanned={weeklyGrid[user.id]?.[date]?.['IS_PLANNED'] === 'true'}
+                                                                onChange={(status) => handleWeeklyChange(user.id, date, 'TERMINO', status)}
+                                                                isDarkMode={isDarkMode}
+                                                            />
+                                                        </td>
+                                                    </Fragment>
+                                                ))}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-y-5 gap-x-8">
-                            {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
-                                <div key={code} className="flex items-center gap-3 group transition-transform hover:translate-x-1">
-                                    <div className={`text-[11px] font-black min-w-[35px] h-7 flex items-center justify-center rounded-lg border-2 shadow-sm transition-all ${getStatusColor(code, !!isDarkMode)}`}>
-                                        {code}
+
+                        <div className={`rounded-[2.5rem] p-7 lg:p-10 border shadow-2xl mt-10 transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-xl' : 'bg-white border-slate-200'}`}>
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                <div className="flex items-center gap-5">
+                                    <div className={`p-4 rounded-[1.5rem] shadow-lg ${isDarkMode ? 'bg-indigo-500/10 text-indigo-400 shadow-indigo-900/20' : 'bg-indigo-50 text-indigo-600 shadow-indigo-100'}`}>
+                                        <FileSignature className="w-7 h-7" />
                                     </div>
-                                    <span className={`text-[10px] font-bold uppercase tracking-tight transition-colors ${isDarkMode ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-900'}`}>{label}</span>
+                                    <div>
+                                        <h3 className={`text-xl lg:text-2xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Status das Assinaturas</h3>
+                                        <p className={`${isDarkMode ? 'text-slate-500' : 'text-slate-400'} text-xs font-bold uppercase tracking-widest mt-1`}>Controle de autenticidade da semana</p>
+                                    </div>
                                 </div>
-                            ))}
+                                <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest italic ${isDarkMode ? 'bg-slate-800/50 text-slate-400 border border-slate-700' : 'bg-slate-50 text-slate-500 border border-slate-100'}`}>
+                                    Cada dia exige assinatura individual
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-10">
+                                {currentWeek.map(date => (
+                                    <div key={date} className={`flex flex-col gap-4 p-5 lg:p-6 rounded-[2rem] border-2 transition-all duration-300 group hover:scale-[1.02] ${isDarkMode ? 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50 hover:border-blue-500/30' : 'bg-slate-50 border-slate-100 hover:bg-white hover:border-blue-200 hover:shadow-xl'}`}>
+                                        <div className={`text-[11px] font-black uppercase tracking-[0.1em] border-b pb-3 flex justify-between items-center ${isDarkMode ? 'text-slate-200 border-slate-700' : 'text-slate-900 border-slate-200'}`}>
+                                            <span>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
+                                            <span className="opacity-40">{parseISOToDate(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
+                                        </div>
+                                        <div className="flex flex-col gap-3">
+                                            {(['INICIO', 'TERMINO'] as CallTypeCode[]).map(type => {
+                                                const key = `${date}-${type}-${selectedSector}`;
+                                                const sig = signedDates[key];
+                                                return (
+                                                    <div key={type} className={`p-3 rounded-2xl border transition-all duration-300 ${sig ? (isDarkMode ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-emerald-50 border-emerald-200') : (isDarkMode ? 'bg-slate-900/50 border-slate-700 hover:border-blue-500/50' : 'bg-white border-slate-200 hover:border-blue-200')}`}>
+                                                        <div className="text-[9px] font-black text-slate-500 uppercase mb-2 flex justify-between items-center">
+                                                            <span>{type === 'INICIO' ? '1ª Chamada' : '2ª Chamada'}</span>
+                                                            {sig && <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />}
+                                                        </div>
+                                                        {sig ? (
+                                                            <div className="flex flex-col">
+                                                                <div className="text-[10px] font-black text-emerald-500 leading-tight uppercase tracking-widest">Autenticado</div>
+                                                                <div className={`text-[9px] font-bold truncate mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{sig.signedBy.split(' ').pop()}</div>
+                                                            </div>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => handleSignDate(date, type)}
+                                                                disabled={isFutureDate(date) || !canSign}
+                                                                className={`w-full py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-lg active:scale-95 ${isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-900/40' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'}`}
+                                                            >
+                                                                {canSign ? 'Assinar' : 'Bloqueado'}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className={`rounded-[2.5rem] p-8 lg:p-10 border mt-10 transition-all ${isDarkMode ? 'bg-slate-900/20 border-slate-800/50 backdrop-blur-sm' : 'bg-slate-50 border-slate-200'}`}>
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="w-2 h-8 bg-blue-600 rounded-full shadow-lg shadow-blue-900/20" />
+                                <h3 className={`text-base font-black uppercase tracking-[0.2em] ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Legenda de Situações</h3>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-y-5 gap-x-8">
+                                {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
+                                    <div key={code} className="flex items-center gap-3 group transition-transform hover:translate-x-1">
+                                        <div className={`text-[11px] font-black min-w-[35px] h-7 flex items-center justify-center rounded-lg border-2 shadow-sm transition-all ${getStatusColor(code, !!isDarkMode)}`}>
+                                            {code}
+                                        </div>
+                                        <span className={`text-[10px] font-bold uppercase tracking-tight transition-colors ${isDarkMode ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-900'}`}>{label}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )
+                )
             }
 
             {

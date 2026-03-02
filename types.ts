@@ -64,6 +64,7 @@ export interface User {
   rc?: string;
   workplace?: string;
   emergency_contact?: string;
+  is_functional?: boolean;
 }
 
 export interface UserFunction {

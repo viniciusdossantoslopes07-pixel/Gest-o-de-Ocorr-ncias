@@ -184,6 +184,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         // [MODIFICAÇÃO]: Filtrar apenas militares habilitados E que estejam na relação de chamada (setores válidos)
         const activeAndInRoster = users.filter(u =>
             u.active !== false &&
+            u.is_functional !== true &&
             DISPLAY_SECTORS.includes(u.sector)
         );
 
@@ -281,7 +282,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 : [selectedSector];
 
         return sectors.map(sector => {
-            const sectorUsers = filterUsersByRank(users.filter(u => u.sector === sector && u.active !== false));
+            const sectorUsers = filterUsersByRank(users.filter(u => u.sector === sector && u.active !== false && u.is_functional !== true));
             const total = sectorUsers.length;
 
             let ready = 0;
