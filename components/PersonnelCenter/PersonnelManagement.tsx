@@ -1,7 +1,7 @@
 import React, { useState, FC } from 'react';
 import { User, UserRole } from '../../types';
 import { RANKS, SETORES } from '../../constants';
-import { UserPlus, Search, Edit2, Trash2, Shield, User as UserIcon, Hash, Building2, Users, AlertTriangle, XCircle } from 'lucide-react';
+import { UserPlus, Search, Edit2, Trash2, Shield, User as UserIcon, Hash, Building2, Users, AlertTriangle, XCircle, Briefcase } from 'lucide-react';
 
 interface PersonnelManagementProps {
     users: User[];
@@ -18,6 +18,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [showInactive, setShowInactive] = useState(false);
+    const [showFunctional, setShowFunctional] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -37,7 +38,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
         military_identity: '',
         rc: '',
         workplace: '',
-        emergency_contact: ''
+        emergency_contact: '',
+        is_functional: false
     } as Partial<User>);
 
     // Category Filter State
@@ -52,6 +54,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
 
     const filteredUsers = users.filter(u => {
         const statusMatch = showInactive ? (u.active === false) : (u.active !== false);
+        const functionalMatch = showFunctional ? (u.is_functional === true) : (u.is_functional !== true);
         const sectorMatch = (filterSector === 'TODOS' ? true : u.sector === filterSector);
 
         let categoryMatch = true;
@@ -63,11 +66,11 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
             u.warName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             u.saram.includes(searchTerm));
 
-        return statusMatch && sectorMatch && categoryMatch && searchMatch;
+        return statusMatch && functionalMatch && sectorMatch && categoryMatch && searchMatch;
     }).sort((a, b) => a.name.localeCompare(b.name));
 
-    // Calculate stats
-    const activeUsers = users.filter(u => u.active !== false);
+    // Calculate stats - EXCLUDING functional accounts
+    const activeUsers = users.filter(u => u.active !== false && u.is_functional !== true);
     const totalMilitaries = activeUsers.length;
     const totalOficiais = activeUsers.filter(u => u.rank && isOficial(u.rank)).length;
     const totalGraduados = activeUsers.filter(u => u.rank && isGraduado(u.rank)).length;
@@ -100,7 +103,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
             military_identity: user.military_identity || '',
             rc: user.rc || '',
             workplace: user.workplace || '',
-            emergency_contact: user.emergency_contact || ''
+            emergency_contact: user.emergency_contact || '',
+            is_functional: user.is_functional || false
         });
         setEditingId(user.id);
         setIsAdding(true);
@@ -178,16 +182,27 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                 )}
             </div>
 
-            {/* Inactive Toggle Filter */}
-            <div className="flex justify-end px-4">
+            {/* Inactive & Functional Toggle Filters */}
+            <div className="flex flex-wrap justify-end gap-3 px-4">
                 <button
-                    onClick={() => setShowInactive(!showInactive)}
+                    onClick={() => { setShowFunctional(!showFunctional); if (!showFunctional) setShowInactive(false); }}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 border-2 ${showFunctional
+                        ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-900/40'
+                        : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700 shadow-sm')
+                        }`}
+                >
+                    <Briefcase className="w-4 h-4" />
+                    {showFunctional ? 'Visualizando Contas Funcionais' : 'Ver Contas Funcionais'}
+                </button>
+
+                <button
+                    onClick={() => { setShowInactive(!showInactive); if (!showInactive) setShowFunctional(false); }}
                     className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 border-2 ${showInactive
                         ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-900/40'
                         : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700 shadow-sm')
                         }`}
                 >
-                    {showInactive ? <Shield className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                    <XCircle className="w-4 h-4" />
                     {showInactive ? 'Visualizando Desativados' : 'Ver Militares Desativados'}
                 </button>
             </div>
@@ -415,6 +430,22 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             />
                         </div>
 
+                        <div className="space-y-1.5 lg:space-y-2 flex items-end pb-3">
+                            <label className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer ${formData.is_functional ? (isDarkMode ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400' : 'bg-indigo-50 border-indigo-200 text-indigo-700') : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-500')}`}>
+                                <input
+                                    type="checkbox"
+                                    checked={formData.is_functional || false}
+                                    onChange={e => setFormData({ ...formData, is_functional: e.target.checked })}
+                                    className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                />
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Conta Funcional</span>
+                                    <span className="text-[8px] font-medium opacity-70 leading-none">Excluir do efetivo real/chamada</span>
+                                </div>
+                                <Briefcase className={`w-4 h-4 ml-auto ${formData.is_functional ? 'opacity-100' : 'opacity-30'}`} />
+                            </label>
+                        </div>
+
                         <div className={`sm:col-span-2 lg:col-span-3 flex flex-col sm:flex-row justify-end gap-3 pt-6 pb-2 mt-4 border-t ${isDarkMode ? 'border-slate-800' : 'border-slate-100'} sticky bottom-0 bg-inherit z-10`}>
                             <button
                                 type="button"
@@ -451,7 +482,14 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                 {filteredUsers.map(user => (
                                     <tr key={user.id} className={`transition-colors ${isDarkMode ? 'hover:bg-slate-800/30' : 'hover:bg-slate-50/30'}`}>
                                         <td className="px-6 py-4">
-                                            <div className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{user.name}</div>
+                                            <div className="flex items-center gap-2">
+                                                <div className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{user.name}</div>
+                                                {user.is_functional && (
+                                                    <span className={`px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-widest bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400 flex items-center gap-1 border border-indigo-200 dark:border-indigo-800`}>
+                                                        <Briefcase className="w-2 h-2" />
+                                                    </span>
+                                                )}
+                                            </div>
                                             <div className={`text-[10px] font-bold uppercase tracking-tight ${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`}>
                                                 {user.rank} {user.warName}
                                             </div>
@@ -488,6 +526,16 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                                 ) : (
                                                     <button onClick={() => handleEdit(user)} className={`p-2 transition-colors ${isDarkMode ? 'text-slate-500 hover:text-indigo-400' : 'text-slate-400 hover:text-blue-600'}`}>
                                                         <Edit2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
+
+                                                {user.active !== false && (
+                                                    <button
+                                                        onClick={() => { if (confirm(user.is_functional ? 'Remover status funcional?' : 'Marcar como conta funcional? (Não contará no efetivo)')) onUpdatePersonnel({ ...user, is_functional: !user.is_functional }); }}
+                                                        className={`p-2 transition-colors ${user.is_functional ? (isDarkMode ? 'text-indigo-400' : 'text-indigo-600') : (isDarkMode ? 'text-slate-500 hover:text-indigo-400' : 'text-slate-400 hover:text-indigo-600')}`}
+                                                        title={user.is_functional ? "Remover de Funcionais" : "Mover para Funcionais"}
+                                                    >
+                                                        <Briefcase className="w-4 h-4" />
                                                     </button>
                                                 )}
 
@@ -576,13 +624,21 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                     )}
 
                                     {user.active !== false ? (
-                                        <button
-                                            onClick={() => { if (confirm('Desativar militar?')) onDeletePersonnel(user.id); }}
-                                            className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-amber-400/5 border-amber-400/10 text-amber-400 active:bg-amber-400/10' : 'bg-amber-50/30 border-amber-100 text-amber-500 active:bg-amber-50'
-                                                }`}
-                                        >
-                                            <XCircle className="w-4 h-4" />
-                                        </button>
+                                        <>
+                                            <button
+                                                onClick={() => { if (confirm(user.is_functional ? 'Remover status funcional?' : 'Marcar como conta funcional?')) onUpdatePersonnel({ ...user, is_functional: !user.is_functional }); }}
+                                                className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${user.is_functional ? (isDarkMode ? 'bg-indigo-400/10 border-indigo-400 text-indigo-400' : 'bg-indigo-50 border-indigo-100 text-indigo-600') : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-600')}`}
+                                            >
+                                                <Briefcase className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => { if (confirm('Desativar militar?')) onDeletePersonnel(user.id); }}
+                                                className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-amber-400/5 border-amber-400/10 text-amber-400 active:bg-amber-400/10' : 'bg-amber-50/30 border-amber-100 text-amber-500 active:bg-amber-50'
+                                                    }`}
+                                            >
+                                                <XCircle className="w-4 h-4" />
+                                            </button>
+                                        </>
                                     ) : null}
                                     {currentUserRole === UserRole.ADMIN && onPermanentDeletePersonnel && (
                                         <button
