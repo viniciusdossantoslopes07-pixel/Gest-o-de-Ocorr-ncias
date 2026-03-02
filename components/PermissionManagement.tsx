@@ -235,9 +235,9 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
             await fetchCustomGroups(); // Refresh list
             setEditingGroup(null); // Close editor
             alert('Grupo salvo com sucesso!');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Erro ao salvar grupo:', error);
-            alert('Erro ao salvar grupo.');
+            alert(`Erro ao salvar grupo: ${error.message || 'Erro desconhecido'}`);
         } finally {
             setIsSaving(false);
         }
