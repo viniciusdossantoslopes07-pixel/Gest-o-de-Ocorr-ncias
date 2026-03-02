@@ -48,14 +48,25 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     // Sector Filter State
     const [filterSector, setFilterSector] = useState('TODOS');
 
-    const isOficial = (rank: string) => ['TB', 'MB', 'BR', 'CL', 'TC', 'MJ', 'CP', '1T', '2T', 'AP'].includes(rank);
+    const isOficial = (rank: string) => ['TB', 'MB', 'BR', 'CL', 'TC', 'MJ', 'CP', '1T', '2T', 'AP', 'Coronel', 'TEN CEL', 'MAJ', 'CAP', 'ASP', 'CEL'].includes(rank);
     const isGraduado = (rank: string) => ['SO', '1S', '2S', '3S'].includes(rank);
     const isPraca = (rank: string) => ['CB', 'S1', 'S2'].includes(rank);
 
     const filteredUsers = users.filter(u => {
         const statusMatch = showInactive ? (u.active === false) : (u.active !== false);
         const functionalMatch = showFunctional ? (!!u.is_functional === true) : (!!u.is_functional !== true);
-        const sectorMatch = (filterSector === 'TODOS' ? true : u.sector === filterSector);
+
+        let sectorMatch = true;
+        if (filterSector === 'TODOS') {
+            sectorMatch = true;
+        } else if (filterSector === 'SEM SETOR') {
+            sectorMatch = !u.sector || u.sector === 'SEM SETOR';
+        } else if (filterSector === 'TODOS GSD-SP') {
+            const gsdSectors = ['SOP', 'SAP', 'EPA-SEÇÃO', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'];
+            sectorMatch = gsdSectors.includes(u.sector || '');
+        } else {
+            sectorMatch = u.sector === filterSector;
+        }
 
         let categoryMatch = true;
         if (filterCategory === 'OFICIAIS') categoryMatch = u.rank ? isOficial(u.rank) : false;
@@ -173,6 +184,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                     className={`w-full h-full border rounded-2xl px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'} ${filterSector === 'SEM SETOR' ? (isDarkMode ? 'text-red-400 border-red-900/50 bg-red-400/10' : 'text-red-500 border-red-200 bg-red-50') : ''}`}
                                 >
                                     <option value="TODOS">Todos os Setores</option>
+                                    <option value="TODOS GSD-SP">🔵 TODOS GSD-SP</option>
                                     <option value="SEM SETOR">⚠ SEM SETOR (Não Alocados)</option>
                                     {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
                                 </select>
