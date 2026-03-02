@@ -82,14 +82,34 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     const totalGraduados = baseFilteredList.filter(u => u.rank && isGraduado(u.rank)).length;
     const totalPracas = baseFilteredList.filter(u => u.rank && isPraca(u.rank)).length;
 
-    // Final list also filters by category
+    // Rank Priority for sorting (Highest to Lowest)
+    const getRankPriority = (rank: string) => {
+        const priorities: Record<string, number> = {
+            'TB': 1, 'MB': 2, 'BR': 3,
+            'CEL': 4, 'Coronel': 4, 'CL': 4,
+            'TEN CEL': 5, 'TC': 5,
+            'MAJ': 6, 'MJ': 6,
+            'CAP': 7, 'CP': 7,
+            '1T': 8, '2T': 9, 'ASP': 10, 'AP': 10,
+            'SO': 11, '1S': 12, '2S': 13, '3S': 14,
+            'CB': 15, 'S1': 16, 'S2': 17
+        };
+        return priorities[rank] || 99;
+    };
+
+    // Final list also filters by category and SORTS by Rank Priority
     const filteredUsers = baseFilteredList.filter(u => {
         let categoryMatch = true;
         if (filterCategory === 'OFICIAIS') categoryMatch = u.rank ? isOficial(u.rank) : false;
         if (filterCategory === 'GRADUADOS') categoryMatch = u.rank ? isGraduado(u.rank) : false;
         if (filterCategory === 'PRAÇAS') categoryMatch = u.rank ? isPraca(u.rank) : false;
         return categoryMatch;
-    }).sort((a, b) => a.name.localeCompare(b.name));
+    }).sort((a, b) => {
+        const priorityA = getRankPriority(a.rank || '');
+        const priorityB = getRankPriority(b.rank || '');
+        if (priorityA !== priorityB) return priorityA - priorityB;
+        return a.name.localeCompare(b.name);
+    });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
