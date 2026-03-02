@@ -209,8 +209,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                 >
                                     <option value="TODOS">Todos os Setores</option>
                                     <option value="TODOS GSD-SP">🔵 TODOS GSD-SP</option>
-                                    <option value="SEM SETOR">⚠ SEM SETOR (Não Alocados)</option>
                                     {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
+                                    <option value="SEM SETOR">⚠ SEM SETOR (Não Alocados)</option>
                                 </select>
                             </div>
                         </div>
