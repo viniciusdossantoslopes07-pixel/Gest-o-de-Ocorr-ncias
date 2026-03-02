@@ -346,10 +346,14 @@ const App: FC = () => {
 
   const handleLogin = async (username: string, password: string): Promise<boolean> => {
     try {
+      const cleanUsername = (username === 'admin' || username.startsWith('sop.'))
+        ? username
+        : username.replace(/\D/g, '');
+
       const { data, error } = await supabase
         .from('users')
         .select('*')
-        .eq('username', username)
+        .eq('username', cleanUsername)
         .eq('password', password)
         .single();
 
@@ -398,6 +402,7 @@ const App: FC = () => {
       };
 
       if (user.approved === false) {
+        // App.tsx handleLogin doesn't return string, but we can alert here
         alert('Seu cadastro está pendente de aprovação pelo Comandante.');
         return false;
       }
@@ -427,10 +432,14 @@ const App: FC = () => {
 
   const handleForcePasswordReset = async (username: string, newPassword: string): Promise<boolean> => {
     try {
+      const cleanUsername = (username === 'admin' || username.startsWith('sop.'))
+        ? username
+        : username.replace(/\D/g, '');
+
       const { data: user, error } = await supabase
         .from('users')
         .select('*')
-        .eq('username', username)
+        .eq('username', cleanUsername)
         .single();
 
       if (error || !user) return false;

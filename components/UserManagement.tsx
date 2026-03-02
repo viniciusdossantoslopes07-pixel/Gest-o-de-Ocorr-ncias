@@ -103,7 +103,11 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     const userData: User = {
       ...formData,
       id: editingUserId || Math.random().toString(36).substr(2, 9),
-      email: formData.email || `${formData.username}@secureguard.mil.br`,
+      username: (formData.username === 'admin' || formData.username.startsWith('sop.'))
+        ? formData.username
+        : formData.username.replace(/\D/g, ''),
+      saram: formData.saram.replace(/\D/g, ''),
+      email: formData.email || `${formData.username.replace(/\D/g, '')}@secureguard.mil.br`,
       accessLevel: formData.accessLevel, // Always save accessLevel (N0 default)
       pending_password_reset: isStandardReset ? false : formData.pending_password_reset,
       reset_password_at_login: isStandardReset ? true : formData.reset_password_at_login,
@@ -348,8 +352,8 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                           }
                         }}
                         className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.password === '123456'
-                            ? 'bg-amber-100 text-amber-700 border-2 border-amber-200'
-                            : isDarkMode ? 'bg-slate-900 border border-slate-700 text-blue-400 hover:bg-slate-800' : 'bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100'
+                          ? 'bg-amber-100 text-amber-700 border-2 border-amber-200'
+                          : isDarkMode ? 'bg-slate-900 border border-slate-700 text-blue-400 hover:bg-slate-800' : 'bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100'
                           }`}
                       >
                         <Key className="w-4 h-4" />

@@ -119,7 +119,11 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
           }
         }
       } else {
-        const successRes = await onLogin(username, password);
+        const cleanUsername = (username === 'admin' || username.startsWith('sop.'))
+          ? username
+          : username.replace(/\D/g, '');
+
+        const successRes = await onLogin(cleanUsername, password);
         if (successRes === 'REQUIRES_PASSWORD_RESET') {
           setView('force-password-reset');
           setPassword(''); // limpa a senha pra ele digitar a nova
@@ -129,7 +133,11 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
 
         if (successRes === true) {
           // After successful login, check if biometrics should be offered
-          const { data: userData } = await supabase.from('users').select('id, name, saram, biometric_credentials_id').eq('username', username).single();
+          const { data: userData } = await supabase
+            .from('users')
+            .select('id, name, saram, biometric_credentials_id')
+            .eq('username', cleanUsername)
+            .single();
 
           if (userData && !userData.biometric_credentials_id && isWebAuthnSupported()) {
             setLastLoggedInUser(userData);
@@ -138,7 +146,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
           }
 
           // If already has biometrics or not supported, just save saram for convenience
-          localStorage.setItem('gsdsp_last_saram', username);
+          localStorage.setItem('gsdsp_last_saram', cleanUsername);
         } else {
           setError('Acesso negado. Verifique credenciais ou status de aprovação.');
         }
