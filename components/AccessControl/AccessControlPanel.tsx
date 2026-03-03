@@ -128,7 +128,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 query = query.eq('vehicle_plate', value.trim().toUpperCase());
             }
 
-            const { data, error } = await query;
+            const { data, error } = await query.limit(5); // Apenas o último registroé necessário para auto-fill
 
             if (data && data.length > 0) {
                 const latest = data[0];
@@ -189,7 +189,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 query = query.eq('guard_gate', filterGate);
             }
 
-            const { data, error } = await query;
+            const { data, error } = await query.limit(200);
             if (error) throw error;
             setRecords(data || []);
         } catch (err) {

@@ -377,12 +377,18 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             if (data) setUserDestinations(data);
         };
         fetchDestinations();
-        const channel = supabase.channel('destinations_changes')
+
+        // Debounce para evitar múltiplos fetchs quando o Destinômetro salva
+        // vários registros em sequência (ex: férias de 5 dias = 5 eventos)
+        let destFetchTimeout: ReturnType<typeof setTimeout>;
+        const channel = supabase.channel('destinations_changes_v2')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'user_destinations' }, () => {
-                fetchDestinations();
+                clearTimeout(destFetchTimeout);
+                destFetchTimeout = setTimeout(fetchDestinations, 2000);
             })
             .subscribe();
         return () => {
+            clearTimeout(destFetchTimeout);
             supabase.removeChannel(channel);
         };
     }, [currentWeek]);

@@ -187,19 +187,25 @@ const App: FC = () => {
   useEffect(() => {
     if (!currentUser || currentUser.role === UserRole.PUBLIC) return;
 
-    // Fetch initial data for attendance and justifications
+    // Fetch inicial de presenças (últimos 60 dias)
     const fetchAttendanceData = async () => {
       const sixtyDaysAgo = new Date();
       sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
       const dateFilter = sixtyDaysAgo.toISOString().split('T')[0];
 
-      const { data: attendanceData } = await supabase
-        .from('daily_attendance')
-        .select('*, attendance_records(*)')
-        .gt('date', dateFilter);
+      const [attendanceRes, justificationsRes] = await Promise.all([
+        supabase
+          .from('daily_attendance')
+          .select('*, attendance_records(*)')
+          .gt('date', dateFilter),
+        supabase
+          .from('absence_justifications')
+          .select('*')
+          .gt('date', dateFilter)
+      ]);
 
-      if (attendanceData) {
-        setAttendanceHistory(attendanceData.map(a => ({
+      if (attendanceRes.data) {
+        setAttendanceHistory(attendanceRes.data.map(a => ({
           id: a.id,
           date: a.date,
           sector: a.sector,
@@ -220,13 +226,8 @@ const App: FC = () => {
         })));
       }
 
-      const { data: justificationsData } = await supabase
-        .from('absence_justifications')
-        .select('*')
-        .gt('date', dateFilter);
-
-      if (justificationsData) {
-        setAbsenceJustifications(justificationsData.map(j => ({
+      if (justificationsRes.data) {
+        setAbsenceJustifications(justificationsRes.data.map(j => ({
           id: j.id,
           attendanceId: j.attendance_id,
           militarId: j.militar_id,
@@ -247,26 +248,34 @@ const App: FC = () => {
 
     fetchAttendanceData();
 
-    // Debounce structure to avoid spamming the database with full table reads
-    // when bulk updates happen (e.g., 50 rows inserted = 50 realtime events in a millisecond)
+    // === OTIMIZAÇÃO CRÍTICA ===
+    // Debounce de 3s (era 500ms) para agrupar eventos em massa de uma vez só
+    // (ex: salvar 30 presenças de uma vez disparava 30 fetchs antes)
     let fetchTimeout: ReturnType<typeof setTimeout>;
     const debouncedFetchAttendance = () => {
       clearTimeout(fetchTimeout);
-      fetchTimeout = setTimeout(() => {
-        fetchAttendanceData();
-      }, 500); // Wait 500ms after the last event before fetching
+      fetchTimeout = setTimeout(fetchAttendanceData, 3000);
     };
 
-    // Set up Realtime Subscriptions
-    const attendanceChannel = supabase.channel('attendance_changes')
+    // Apenas escutar daily_attendance (não attendance_records) para evitar
+    // eventos em cascata. O attendance_records é carregado via JOIN no fetch.
+    const attendanceChannel = supabase.channel('attendance_changes_v2')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'daily_attendance' }, debouncedFetchAttendance)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_records' }, debouncedFetchAttendance)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'absence_justifications' }, debouncedFetchAttendance)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_destinations' }, debouncedFetchAttendance)
+      .subscribe();
+
+    // Justificativas em canal separado de baixa frequência
+    const justificationsChannel = supabase.channel('justifications_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'absence_justifications' }, () => {
+        clearTimeout(fetchTimeout);
+        fetchTimeout = setTimeout(fetchAttendanceData, 5000);
+      })
       .subscribe();
 
     return () => {
       clearTimeout(fetchTimeout);
       supabase.removeChannel(attendanceChannel);
+      supabase.removeChannel(justificationsChannel);
     };
   }, [currentUser]);
 
@@ -285,12 +294,13 @@ const App: FC = () => {
     }
   };
 
-  // Fetch Mission Requests (for Requester or SOP)
+  // Fetch Mission Requests — escuta apenas currentUser, não activeTab
+  // OTIMIZAÇÃO: remoção de activeTab das dependências eliminava um fetch a cada troca de aba
   useEffect(() => {
     if (currentUser && (canRequestMission || canManageMissions)) {
       fetchMissionRequests();
     }
-  }, [currentUser, activeTab, canRequestMission, canManageMissions]);
+  }, [currentUser]);
 
   const fetchMissionRequests = async () => {
     const { data, error } = await supabase
@@ -449,13 +459,9 @@ const App: FC = () => {
       localStorage.setItem('gsdsp_last_saram', username);
       setActiveTab('home');
 
-      if (hasPermission(user, PERMISSIONS.MANAGE_USERS) ||
-        hasPermission(user, PERMISSIONS.MANAGE_PERSONNEL) ||
-        hasPermission(user, PERMISSIONS.VIEW_PERSONNEL) ||
-        hasPermission(user, PERMISSIONS.VIEW_DAILY_ATTENDANCE)) {
-        fetchUsers();
-      }
-
+      // OTIMIZAÇÃO: fetchUsers não é chamado aqui mais, o useEffect nos
+      // componentes que dependem de `currentUser` cuidará do fetch de forma
+      // centralizada e deduplicada.
       return true;
     } catch (err) {
       console.error('Login error:', err);
