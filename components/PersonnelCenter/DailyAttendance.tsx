@@ -650,21 +650,53 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             const key = `${dateToSign}-${callToSign}-${selectedSector}`;
             const signatureInfo = { signedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`, signedAt: new Date().toISOString() };
             setSignedDates(prev => ({ ...prev, [key]: signatureInfo }));
-            const sectorUsers = users.filter(u => u.sector === selectedSector);
+            const sectorUsers = users.filter(u => u.sector === selectedSector && u.active !== false);
             const existing = attendanceHistory.find(a => a.date === dateToSign && a.callType === callToSign && a.sector === selectedSector);
             let attendanceToSave: DailyAttendance;
             if (existing) {
                 attendanceToSave = {
                     ...existing,
                     records: sectorUsers.map(u => {
+                        // Prioridade: 1) O que está no weeklyGrid (o que o operador vê na tela)
+                        //             2) O existingRecord do banco (fallback para usuários não na grade)
+                        //             3) 'P' como último fallback
+                        const gridStatus = weeklyGrid[u.id]?.[dateToSign]?.[callToSign];
                         const existingRecord = existing.records.find(r => r.militarId === u.id);
-                        return { militarId: u.id, militarName: u.warName || u.name, militarRank: u.rank, saram: u.saram, status: existingRecord?.status || weeklyGrid[u.id]?.[dateToSign]?.[callToSign] || 'P', timestamp: existingRecord?.timestamp || new Date().toISOString() };
+                        const finalStatus = gridStatus || existingRecord?.status || 'P';
+                        return {
+                            militarId: u.id,
+                            militarName: u.warName || u.name,
+                            militarRank: u.rank,
+                            saram: u.saram,
+                            status: finalStatus,
+                            timestamp: new Date().toISOString()
+                        };
                     }),
-                    signedBy: signatureInfo.signedBy, signedAt: signatureInfo.signedAt, responsible: signatureInfo.signedBy
+                    signedBy: signatureInfo.signedBy,
+                    signedAt: signatureInfo.signedAt,
+                    responsible: signatureInfo.signedBy
                 };
             } else {
-                const records: AttendanceRecord[] = sectorUsers.map(u => ({ militarId: u.id, militarName: u.warName || u.name, militarRank: u.rank, saram: u.saram, status: weeklyGrid[u.id]?.[dateToSign]?.[callToSign] || 'P', timestamp: new Date().toISOString() }));
-                attendanceToSave = { id: Math.random().toString(36).substr(2, 9), date: dateToSign, callType: callToSign, sector: selectedSector, records, signedBy: signatureInfo.signedBy, signedAt: signatureInfo.signedAt, responsible: signatureInfo.signedBy, createdAt: new Date().toISOString() };
+                // Registro não existe ainda: cria um novo com base na grade visual
+                const records: AttendanceRecord[] = sectorUsers.map(u => ({
+                    militarId: u.id,
+                    militarName: u.warName || u.name,
+                    militarRank: u.rank,
+                    saram: u.saram,
+                    status: weeklyGrid[u.id]?.[dateToSign]?.[callToSign] || 'P',
+                    timestamp: new Date().toISOString()
+                }));
+                attendanceToSave = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    date: dateToSign,
+                    callType: callToSign,
+                    sector: selectedSector,
+                    records,
+                    signedBy: signatureInfo.signedBy,
+                    signedAt: signatureInfo.signedAt,
+                    responsible: signatureInfo.signedBy,
+                    createdAt: new Date().toISOString()
+                };
             }
             onSaveAttendance(attendanceToSave);
             setShowPasswordModal(false);

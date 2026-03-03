@@ -98,7 +98,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                     `)
                     .eq('id_usuario', targetUserId),
 
-                // Assiduidade (Chamada)
+                // Assiduidade (Chamada) - limitada aos últimos 6 meses para não sobrecarregar o banco
                 supabase
                     .from('attendance_records')
                     .select(`
@@ -111,6 +111,8 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                         )
                     `)
                     .eq('saram', userSaramStr)
+                    .order('timestamp', { ascending: false })
+                    .limit(500)
             ]);
 
             // Verificação de erros individuais
