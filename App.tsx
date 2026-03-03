@@ -242,7 +242,6 @@ const App: FC = () => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'daily_attendance' }, () => fetchAttendanceData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_records' }, () => fetchAttendanceData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'absence_justifications' }, () => fetchAttendanceData())
-      // .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => fetchUsers()) // Temporariamente desativado para evitar loops
       .subscribe();
 
     return () => {

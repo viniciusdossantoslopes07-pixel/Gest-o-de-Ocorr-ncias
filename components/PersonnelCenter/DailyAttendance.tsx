@@ -220,7 +220,7 @@ const SectorPicker: FC<{
                         }}
                     />
                     <div
-                        className={`fixed z-[9999] w-64 p-3 rounded-2xl border shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black' : 'bg-white border-slate-200 shadow-slate-200/50'
+                        className={`fixed z-[100000] w-64 p-3 rounded-2xl border shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black' : 'bg-white border-slate-200 shadow-slate-200/50'
                             }`}
                         style={{
                             top: `${position.top}px`,
