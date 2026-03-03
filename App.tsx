@@ -247,19 +247,28 @@ const App: FC = () => {
 
     fetchAttendanceData();
 
+    // Debounce structure to avoid spamming the database with full table reads
+    // when bulk updates happen (e.g., 50 rows inserted = 50 realtime events in a millisecond)
+    let fetchTimeout: ReturnType<typeof setTimeout>;
+    const debouncedFetchAttendance = () => {
+      clearTimeout(fetchTimeout);
+      fetchTimeout = setTimeout(() => {
+        fetchAttendanceData();
+      }, 500); // Wait 500ms after the last event before fetching
+    };
+
     // Set up Realtime Subscriptions
     const attendanceChannel = supabase.channel('attendance_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'daily_attendance' }, () => fetchAttendanceData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_records' }, () => fetchAttendanceData())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'absence_justifications' }, () => fetchAttendanceData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'daily_attendance' }, debouncedFetchAttendance)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_records' }, debouncedFetchAttendance)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'absence_justifications' }, debouncedFetchAttendance)
       .subscribe();
 
     return () => {
+      clearTimeout(fetchTimeout);
       supabase.removeChannel(attendanceChannel);
     };
   }, [currentUser]);
-
-
 
   const toggleTheme = () => setIsDarkMode(prev => !prev);
 
