@@ -74,6 +74,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
     const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [sendingFromPrint, setSendingFromPrint] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const printDocRef = useRef<HTMLDivElement>(null);
 
     const isAdmin = user?.role === 'Gestor Master / OSD' || user?.role === 'Comandante OM' || (user?.sector && user.sector.includes('SOP'));
@@ -99,12 +100,34 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
     };
 
     const vagasOcupadas = (() => {
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        const today = new Date().toISOString().split('T')[0];
         return (isAdmin ? allRequests : requests).filter(r =>
             r.status === 'Aprovado' && r.inicio <= today && r.termino > today
         ).length;
     })();
     const vagasDisponiveis = TOTAL_VAGAS - vagasOcupadas;
+
+    // Busca inteligente — filtra em tempo real
+    const applySearch = (list: ParkingRequest[]) => {
+        const q = searchQuery.toLowerCase().trim();
+        if (!q) return list;
+        return list.filter(r => {
+            const plate = (r.vehicle?.placa || r.ext_placa || '').toLowerCase();
+            const model = (r.vehicle?.marca_modelo || r.ext_marca_modelo || '').toLowerCase();
+            const auth = String(r.numero_autorizacao || '');
+            return (
+                r.nome_completo.toLowerCase().includes(q) ||
+                r.posto_graduacao.toLowerCase().includes(q) ||
+                (r.om || '').toLowerCase().includes(q) ||
+                (r.telefone || '').toLowerCase().includes(q) ||
+                plate.includes(q) ||
+                model.includes(q) ||
+                auth.includes(q)
+            );
+        });
+    };
+    const filteredAllRequests = applySearch(allRequests);
+    const filteredRequests = applySearch(requests);
 
     // Aprovar / Rejeitar
     const handleApprove = (id: string) => {
@@ -330,13 +353,42 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                     )}
 
                     <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><List className="w-3 h-3" /> {isAdmin ? 'Todas as Solicitações' : 'Minhas Solicitações'}</h3>
+
+                    {/* Campo de Busca Inteligente */}
+                    <div className={`relative flex items-center rounded-xl border transition-all ${dk ? 'bg-slate-800/60 border-slate-700 focus-within:border-blue-500' : 'bg-white border-slate-200 focus-within:border-blue-400 focus-within:shadow-md'}`}>
+                        <Search className={`absolute left-3 w-4 h-4 pointer-events-none ${dk ? 'text-slate-500' : 'text-slate-400'}`} />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            placeholder="Buscar por nome, placa, OM, autorização..."
+                            className={`w-full pl-9 pr-9 py-2.5 bg-transparent text-xs font-medium rounded-xl focus:outline-none ${dk ? 'text-white placeholder:text-slate-500' : 'text-slate-700 placeholder:text-slate-400'}`}
+                        />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className={`absolute right-3 rounded-full p-0.5 transition-colors ${dk ? 'text-slate-500 hover:text-white' : 'text-slate-400 hover:text-slate-600'}`}
+                                title="Limpar busca"
+                            >
+                                <XCircle className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+                    {searchQuery && (
+                        <p className={`text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-400'}`}>
+                            {(isAdmin ? filteredAllRequests.filter(r => r.status !== 'Pendente') : filteredRequests).length} resultado(s) encontrado(s)
+                        </p>
+                    )}
+
                     <div className={`border rounded-xl p-3 text-xs font-bold text-center ${dk ? 'bg-blue-900/20 border-blue-800/30 text-blue-300' : 'bg-blue-50 border-blue-200 text-blue-700'}`}>
                         Para realizar novas solicitações, utilize a tela inicial do sistema.
                     </div>
-                    {(isAdmin ? allRequests.filter(r => r.status !== 'Pendente') : requests).length === 0 && (
-                        <div className="text-center py-8 text-sm text-slate-400">Nenhuma solicitação registrada.</div>
+                    {(isAdmin ? filteredAllRequests.filter(r => r.status !== 'Pendente') : filteredRequests).length === 0 && (
+                        <div className="text-center py-8 text-sm text-slate-400">
+                            {searchQuery ? `Nenhum resultado para "${searchQuery}".` : 'Nenhuma solicitação registrada.'}
+                        </div>
                     )}
-                    {(isAdmin ? allRequests.filter(r => r.status !== 'Pendente') : requests).map(req => {
+                    {(isAdmin ? filteredAllRequests.filter(r => r.status !== 'Pendente') : filteredRequests).map(req => {
                         const vName = req.vehicle?.marca_modelo || req.ext_marca_modelo || '—';
                         const vPlate = req.vehicle?.placa || req.ext_placa || '';
                         const isSending = sendingEmailId === req.id;
