@@ -303,7 +303,7 @@ export default function ParkingStatistics({ dk = false }: { dk?: boolean }) {
                             <YAxis domain={[0, TOTAL_VAGAS]} tick={{ fontSize: 10, fill: axisFill }} axisLine={false} tickLine={false} />
                             <Tooltip
                                 contentStyle={tooltipStyle}
-                                formatter={(value: number, name: string) => [value, name === 'ocupadas' ? 'Ocupadas' : 'Livres']}
+                                formatter={(value: number, name: string) => [value, name === 'Ocupadas' ? 'Ocupadas' : 'Livres']}
                             />
                             <Area type="monotone" dataKey="ocupadas" stroke="#ef4444" strokeWidth={2} fill="url(#gradOcupadas)" name="Ocupadas" />
                             <Area type="monotone" dataKey="livres" stroke="#10b981" strokeWidth={2} fill="url(#gradLivres)" name="Livres" />
