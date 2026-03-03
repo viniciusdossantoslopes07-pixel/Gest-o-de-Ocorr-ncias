@@ -185,9 +185,14 @@ const App: FC = () => {
   useEffect(() => {
     // Fetch initial data for attendance and justifications
     const fetchAttendanceData = async () => {
+      const sixtyDaysAgo = new Date();
+      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+      const dateFilter = sixtyDaysAgo.toISOString().split('T')[0];
+
       const { data: attendanceData } = await supabase
         .from('daily_attendance')
-        .select('*, attendance_records(*)');
+        .select('*, attendance_records(*)')
+        .gt('date', dateFilter);
 
       if (attendanceData) {
         setAttendanceHistory(attendanceData.map(a => ({
@@ -213,7 +218,8 @@ const App: FC = () => {
 
       const { data: justificationsData } = await supabase
         .from('absence_justifications')
-        .select('*');
+        .select('*')
+        .gt('date', dateFilter);
 
       if (justificationsData) {
         setAbsenceJustifications(justificationsData.map(j => ({
