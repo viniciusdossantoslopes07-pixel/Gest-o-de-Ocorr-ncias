@@ -1,9 +1,9 @@
 
 import { useState, useEffect, useRef, FC, Fragment, useMemo } from 'react';
 import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '../../types';
-import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, SETORES, DISPLAY_SECTORS, RANKS } from '../../constants';
+import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, SETORES, DISPLAY_SECTORS, RANKS, getRankPriority } from '../../constants';
 import { hasPermission, PERMISSIONS } from '../../constants/permissions';
-import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint, BarChart3, MoveHorizontal } from 'lucide-react';
+import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint, BarChart3, MoveHorizontal, ShieldCheck } from 'lucide-react';
 import ForceMapDashboard from './ForceMapDashboard';
 import { authenticateBiometrics } from '../../services/webauthn';
 import { supabase } from '../../services/supabase';
@@ -598,6 +598,36 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         setTimeout(() => window.print(), 300);
     };
 
+    const handleApplyMilitarySorting = () => {
+        if (!confirm('Deseja organizar o setor por ordem de antiguidade militar? Isso redefinirá a ordem manual atual.')) return;
+
+        // Clone users to sort
+        const sorted = [...filteredUsers].sort((a, b) => {
+            // 1. Rank Priority
+            const priorityA = getRankPriority(a.rank || '');
+            const priorityB = getRankPriority(b.rank || '');
+            if (priorityA !== priorityB) return priorityA - priorityB;
+
+            // 2. Promotion Date (Older promotion = more senior)
+            const promA = a.last_promotion_date || '9999-12-31';
+            const promB = b.last_promotion_date || '9999-12-31';
+            if (promA !== promB) return promA.localeCompare(promB);
+
+            // 3. Enlistment Date (Older = more senior)
+            const enlistA = a.enlistment_date || '9999-12-31';
+            const enlistB = b.enlistment_date || '9999-12-31';
+            if (enlistA !== enlistB) return enlistA.localeCompare(enlistB);
+
+            // 4. Name
+            return (a.warName || a.name).localeCompare(b.warName || b.name);
+        });
+
+        // Map to sequence
+        const updatedUsers = sorted.map((user, idx) => ({ ...user, displayOrder: idx }));
+        onReorderUsers(updatedUsers);
+        alert('Setor organizado por antiguidade com sucesso!');
+    };
+
     return (
         <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 pb-20" >
             {/* Sub-Tabs Navigation — FIRST */}
@@ -667,6 +697,15 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                         className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20 active:scale-95"
                                     >
                                         <UserPlus className="w-4 h-4" /> Incluir militar
+                                    </button>
+                                )}
+                                {canManage && (
+                                    <button
+                                        onClick={handleApplyMilitarySorting}
+                                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${isDarkMode ? 'bg-indigo-900/20 border-indigo-500/30 text-indigo-400 hover:bg-indigo-900/40' : 'bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100'}`}
+                                        title="Organizar por Posto e Promoção"
+                                    >
+                                        <ShieldCheck className="w-4 h-4" /> Ordenar por Posto
                                     </button>
                                 )}
                                 <button

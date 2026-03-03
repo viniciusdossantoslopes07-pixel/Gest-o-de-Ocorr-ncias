@@ -1,6 +1,6 @@
 import React, { useState, FC } from 'react';
 import { User, UserRole } from '../../types';
-import { RANKS, SETORES } from '../../constants';
+import { RANKS, SETORES, getRankPriority } from '../../constants';
 import { UserPlus, Search, Edit2, Trash2, Shield, User as UserIcon, Hash, Building2, Users, AlertTriangle, XCircle, Briefcase } from 'lucide-react';
 
 interface PersonnelManagementProps {
@@ -81,21 +81,6 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     const totalOficiais = baseFilteredList.filter(u => u.rank && isOficial(u.rank)).length;
     const totalGraduados = baseFilteredList.filter(u => u.rank && isGraduado(u.rank)).length;
     const totalPracas = baseFilteredList.filter(u => u.rank && isPraca(u.rank)).length;
-
-    // Rank Priority for sorting (Highest to Lowest)
-    const getRankPriority = (rank: string) => {
-        const priorities: Record<string, number> = {
-            'TB': 1, 'MB': 2, 'BR': 3,
-            'CEL': 4, 'Coronel': 4, 'CL': 4,
-            'TEN CEL': 5, 'TC': 5,
-            'MAJ': 6, 'MJ': 6,
-            'CAP': 7, 'CP': 7,
-            '1T': 8, '2T': 9, 'ASP': 10, 'AP': 10,
-            'SO': 11, '1S': 12, '2S': 13, '3S': 14,
-            'CB': 15, 'S1': 16, 'S2': 17
-        };
-        return priorities[rank] || 99;
-    };
 
     // Final list also filters by category and SORTS by Rank Priority
     const filteredUsers = baseFilteredList.filter(u => {

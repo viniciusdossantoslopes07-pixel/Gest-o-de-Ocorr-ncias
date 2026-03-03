@@ -72,6 +72,20 @@ export const RANKS = [
   'SO', '1S', '2S', '3S', 'CB', 'S1', 'S2'
 ];
 
+export const getRankPriority = (rank: string) => {
+  const priorities: Record<string, number> = {
+    'TB': 1, 'MB': 2, 'BR': 3,
+    'CEL': 4, 'Coronel': 4, 'CL': 4,
+    'TEN CEL': 5, 'TC': 5,
+    'MAJ': 6, 'MJ': 6,
+    'CAP': 7, 'CP': 7,
+    '1T': 8, '2T': 9, 'ASP': 10, 'AP': 10,
+    'SO': 11, '1S': 12, '2S': 13, '3S': 14,
+    'CB': 15, 'S1': 16, 'S2': 17
+  };
+  return priorities[rank] || 99;
+};
+
 export const SETORES = [
   'BASP', 'SOP', 'SAP', 'EPA-SEÇÃO', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA', 'EQP DE SERVIÇO'
 ];
