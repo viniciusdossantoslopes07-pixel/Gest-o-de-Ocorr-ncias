@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useRef, FC, Fragment, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '../../types';
 import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, SETORES, DISPLAY_SECTORS, RANKS, getRankPriority } from '../../constants';
 import { hasPermission, PERMISSIONS } from '../../constants/permissions';
@@ -105,10 +106,10 @@ const StatusPicker: FC<{
                 {isPlanned && <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white dark:border-slate-900 animate-pulse" title="Planejado pelo militar" />}
             </button>
 
-            {isOpen && !disabled && (
+            {isOpen && !disabled && createPortal(
                 <>
                     <div
-                        className="fixed inset-0 z-[120] cursor-default bg-black/5 backdrop-blur-[0.5px]"
+                        className="fixed inset-0 z-[9998] cursor-default bg-black/5 backdrop-blur-[0.5px]"
                         onClick={(e) => {
                             e.stopPropagation();
                             setIsOpen(false);
@@ -116,7 +117,7 @@ const StatusPicker: FC<{
                     />
 
                     <div
-                        className={`fixed z-[121] w-56 p-3 rounded-2xl border shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-900 border-slate-700 shadow-black' : 'bg-white border-slate-200 shadow-slate-200/50'
+                        className={`fixed z-[9999] w-56 p-3 rounded-2xl border shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-900 border-slate-700 shadow-black' : 'bg-white border-slate-200 shadow-slate-200/50'
                             }`}
                         style={{
                             top: `${position.top}px`,
@@ -151,7 +152,8 @@ const StatusPicker: FC<{
                             ))}
                         </div>
                     </div>
-                </>
+                </>,
+                document.body
             )}
         </div>
     );
@@ -208,17 +210,17 @@ const SectorPicker: FC<{
                 <MoveHorizontal className="w-3.5 h-3.5" />
             </button>
 
-            {isOpen && (
+            {isOpen && createPortal(
                 <>
                     <div
-                        className="fixed inset-0 z-[120] cursor-default bg-black/5 backdrop-blur-[0.5px]"
+                        className="fixed inset-0 z-[9998] cursor-default bg-black/5 backdrop-blur-[0.5px]"
                         onClick={(e) => {
                             e.stopPropagation();
                             setIsOpen(false);
                         }}
                     />
                     <div
-                        className={`fixed z-[121] w-64 p-3 rounded-2xl border shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black' : 'bg-white border-slate-200 shadow-slate-200/50'
+                        className={`fixed z-[9999] w-64 p-3 rounded-2xl border shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black' : 'bg-white border-slate-200 shadow-slate-200/50'
                             }`}
                         style={{
                             top: `${position.top}px`,
@@ -251,7 +253,8 @@ const SectorPicker: FC<{
                             ))}
                         </div>
                     </div>
-                </>
+                </>,
+                document.body
             )}
         </div>
     );
