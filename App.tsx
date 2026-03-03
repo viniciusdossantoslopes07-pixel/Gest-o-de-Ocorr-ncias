@@ -153,8 +153,10 @@ const App: FC = () => {
   }, []);
 
   useEffect(() => {
-    fetchOccurrences();
-  }, []);
+    if (currentUser && currentUser.role !== UserRole.PUBLIC) {
+      fetchOccurrences();
+    }
+  }, [currentUser]);
 
   // Fetch users when session is restored from localStorage (page refresh)
   useEffect(() => {
@@ -166,7 +168,7 @@ const App: FC = () => {
         fetchUsers();
       }
     }
-  }, []);
+  }, [currentUser]);
 
   // Theme Persistence & Class Toggling
   useEffect(() => {
@@ -183,6 +185,8 @@ const App: FC = () => {
 
 
   useEffect(() => {
+    if (!currentUser || currentUser.role === UserRole.PUBLIC) return;
+
     // Fetch initial data for attendance and justifications
     const fetchAttendanceData = async () => {
       const sixtyDaysAgo = new Date();
@@ -253,7 +257,7 @@ const App: FC = () => {
     return () => {
       supabase.removeChannel(attendanceChannel);
     };
-  }, []);
+  }, [currentUser]);
 
 
 
