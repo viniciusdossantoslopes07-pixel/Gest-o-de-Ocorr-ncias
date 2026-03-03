@@ -325,7 +325,7 @@ export default function ParkingStatistics({ dk = false }: { dk?: boolean }) {
                             <Tooltip
                                 contentStyle={tooltipStyle}
                                 cursor={{ fill: dk ? '#1e293b' : '#f8fafc' }}
-                                formatter={(value: number, name: string) => [value, name === 'ocupadas' ? 'Ocupadas' : 'Livres']}
+                                formatter={(value: number, name: string) => [value, name === 'Ocupadas' ? 'Ocupadas' : 'Livres']}
                             />
                             <Bar dataKey="ocupadas" stackId="a" fill="#ef4444" radius={[0, 0, 0, 0]} name="Ocupadas" />
                             <Bar dataKey="livres" stackId="a" fill="#10b981" radius={[4, 4, 0, 0]} name="Livres" />
