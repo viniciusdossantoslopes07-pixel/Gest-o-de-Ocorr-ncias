@@ -661,7 +661,8 @@ const App: FC = () => {
       .from('users')
       .update({
         username: updatedUser.username,
-        password: updatedUser.password, // Be careful here, usually separate endpoint
+        // Only update password if explicitly provided and not empty
+        ...(updatedUser.password ? { password: updatedUser.password } : {}),
         name: updatedUser.name,
         role: updatedUser.role,
         email: updatedUser.email,

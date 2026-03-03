@@ -135,7 +135,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     setFormData({
       name: user.name,
       username: user.username,
-      password: user.password || '',
+      password: '', // Always start empty on edit to avoid sending current (hidden) password
       rank: user.rank,
       saram: user.saram,
       cpf: user.cpf || '',
