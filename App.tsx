@@ -362,18 +362,32 @@ const App: FC = () => {
     }
   };
 
+  // Helper para prevenir pools estagnados caso a API não responda
+  const withTimeout = <T,>(promise: Promise<T>, ms: number = 10000, errorMsg: string = 'A API demorou muito para responder'): Promise<T> => {
+    return Promise.race([
+      promise,
+      new Promise<T>((_, reject) => setTimeout(() => reject(new Error(errorMsg)), ms))
+    ]);
+  };
+
   const handleLogin = async (username: string, password: string): Promise<boolean> => {
     try {
       const cleanUsername = (username === 'admin' || username.startsWith('sop.'))
         ? username
         : username.replace(/\D/g, '');
 
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('username', cleanUsername)
-        .eq('password', password)
-        .single();
+      const { data, error } = await withTimeout<any>(
+        Promise.resolve(
+          supabase
+            .from('users')
+            .select('*')
+            .eq('username', cleanUsername)
+            .eq('password', password)
+            .single()
+        ),
+        8000,
+        'O servidor não respondeu a tempo. Tente novamente.'
+      );
 
       if (error || !data) {
         return false;
@@ -1233,97 +1247,124 @@ const App: FC = () => {
               absenceJustifications={absenceJustifications}
               isDarkMode={isDarkMode}
               onSaveAttendance={async (a) => {
-                // Determine if we need to insert or update the daily_attendance record
-                const { data: existingAttendance } = await supabase
-                  .from('daily_attendance')
-                  .select('id')
-                  .eq('date', a.date)
-                  .eq('sector', a.sector)
-                  .eq('call_type', a.callType)
-                  .limit(1);
-
-                let attendanceId = existingAttendance?.[0]?.id;
-
-                const headerData = {
-                  date: a.date,
-                  sector: a.sector,
-                  call_type: a.callType,
-                  responsible: a.responsible,
-                  signed_at: a.signedAt,
-                  signed_by: a.signedBy,
-                  observacao: a.observacao // New field
-                };
-
-                if (!attendanceId) {
-                  const { data: newAtt, error: attErr } = await supabase
-                    .from('daily_attendance')
-                    .insert([headerData])
-                    .select()
-                    .single();
-
-                  if (attErr) {
-                    // Possible race condition
-                    const { data: retryAtt } = await supabase
-                      .from('daily_attendance')
-                      .select('id')
-                      .eq('date', a.date)
-                      .eq('sector', a.sector)
-                      .eq('call_type', a.callType)
-                      .limit(1);
-
-                    if (retryAtt && retryAtt.length > 0) {
-                      attendanceId = retryAtt[0].id;
-                    } else {
-                      console.error('Error saving attendance header:', attErr);
-                      return;
-                    }
-                  } else {
-                    attendanceId = newAtt.id;
-                  }
-                } else {
-                  const { error: updateError } = await supabase
-                    .from('daily_attendance')
-                    .update(headerData)
-                    .eq('id', attendanceId);
-
-                  if (updateError) console.error('Error updating attendance header:', updateError);
-                }
-
-                if (!attendanceId) return;
-
-                // BATCH UPSERT for records - much more efficient
-                const recordsToUpsert = a.records.map(record => ({
-                  attendance_id: attendanceId,
-                  militar_id: record.militarId,
-                  militar_name: record.militarName,
-                  militar_rank: record.militarRank,
-                  saram: record.saram,
-                  status: record.status,
-                  timestamp: record.timestamp
-                }));
-
-                const { error: batchErr } = await supabase
-                  .from('attendance_records')
-                  .upsert(recordsToUpsert, { onConflict: 'attendance_id, militar_id' });
-
-                if (batchErr) console.error('Error batch saving attendance records:', batchErr);
-
-                // Atualização otimista: atualizar estado local imediatamente
+                // Atualização otimista: atualizar estado local imediatamente para evitar race conditions em cliques rápidos
                 setAttendanceHistory(prev => {
                   const idx = prev.findIndex(
                     x => x.date === a.date && x.sector === a.sector && x.callType === a.callType
                   );
-                  const updated: DailyAttendance = {
-                    ...a,
-                    id: attendanceId!
-                  };
                   if (idx >= 0) {
                     const next = [...prev];
-                    next[idx] = updated;
+                    next[idx] = { ...a, id: next[idx].id || a.id };
                     return next;
                   }
-                  return [...prev, updated];
+                  return [...prev, a];
                 });
+
+                const withTimeout = <T,>(promise: Promise<T>, ms: number = 8000, errorMsg: string = 'A API demorou muito para responder'): Promise<T> => {
+                  return Promise.race([
+                    promise,
+                    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(errorMsg)), ms))
+                  ]);
+                };
+
+                try {
+                  // Determine if we need to insert or update the daily_attendance record
+                  const { data: existingAttendance } = await withTimeout<any>(Promise.resolve(supabase
+                    .from('daily_attendance')
+                    .select('id')
+                    .eq('date', a.date)
+                    .eq('sector', a.sector)
+                    .eq('call_type', a.callType)
+                    .limit(1)
+                  ));
+
+                  let attendanceId = existingAttendance?.[0]?.id;
+
+                  const headerData = {
+                    date: a.date,
+                    sector: a.sector,
+                    call_type: a.callType,
+                    responsible: a.responsible,
+                    signed_at: a.signedAt,
+                    signed_by: a.signedBy,
+                    observacao: a.observacao
+                  };
+
+                  if (!attendanceId) {
+                    const { data: newAtt, error: attErr } = await withTimeout<any>(Promise.resolve(supabase
+                      .from('daily_attendance')
+                      .insert([headerData])
+                      .select()
+                      .single()
+                    ));
+
+                    if (attErr) {
+                      const { data: retryAtt } = await withTimeout<any>(Promise.resolve(supabase
+                        .from('daily_attendance')
+                        .select('id')
+                        .eq('date', a.date)
+                        .eq('sector', a.sector)
+                        .eq('call_type', a.callType)
+                        .limit(1)
+                      ));
+
+                      if (retryAtt && retryAtt.length > 0) {
+                        attendanceId = retryAtt[0].id;
+                      } else {
+                        console.error('Error saving attendance header:', attErr);
+                        return;
+                      }
+                    } else {
+                      attendanceId = newAtt.id;
+                    }
+                  } else {
+                    const { error: updateError } = await withTimeout<any>(Promise.resolve(supabase
+                      .from('daily_attendance')
+                      .update(headerData)
+                      .eq('id', attendanceId)
+                    ));
+
+                    if (updateError) console.error('Error updating attendance header:', updateError);
+                  }
+
+                  if (!attendanceId) return;
+
+                  // BATCH UPSERT for records
+                  const recordsToUpsert = a.records.map(record => ({
+                    attendance_id: attendanceId,
+                    militar_id: record.militarId,
+                    militar_name: record.militarName,
+                    militar_rank: record.militarRank,
+                    saram: record.saram,
+                    status: record.status,
+                    timestamp: record.timestamp
+                  }));
+
+                  const { error: batchErr } = await withTimeout<any>(Promise.resolve(supabase
+                    .from('attendance_records')
+                    .upsert(recordsToUpsert, { onConflict: 'attendance_id, militar_id' })
+                  ));
+
+                  if (batchErr) console.error('Error batch saving attendance records:', batchErr);
+
+                  // Se o ID foi recém-criado, patch no local state
+                  if (!existingAttendance?.[0]?.id) {
+                    setAttendanceHistory(prev => {
+                      const idx = prev.findIndex(
+                        x => x.date === a.date && x.sector === a.sector && x.callType === a.callType
+                      );
+                      if (idx >= 0 && prev[idx].id !== attendanceId) {
+                        const next = [...prev];
+                        next[idx] = { ...next[idx], id: attendanceId };
+                        return next;
+                      }
+                      return prev;
+                    });
+                  }
+
+                } catch (e) {
+                  console.error('Timeout or fail on SaveAttendance:', e);
+                }
               }}
               onSaveJustification={async (j) => {
                 const { error } = await supabase
