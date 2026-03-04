@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../services/supabase';
 import { Plus, Edit2, Trash2, Search, Package, BarChart3 } from 'lucide-react';
 import { MATERIAL_TYPES, GESTAO_MATERIAL_SETORES } from '../constants';
@@ -155,26 +155,47 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
         }
     };
 
-    const totals = items.reduce((acc, item) => ({
-        entrada: acc.entrada + (item.entrada || 0),
-        saida: acc.saida + (item.saida || 0),
-        disponivel: acc.disponivel + (item.entrada - item.saida),
-        tipos: {
-            ...acc.tipos,
-            [item.tipo_de_material || 'Outros']: (acc.tipos[item.tipo_de_material || 'Outros'] || 0) + (item.entrada - item.saida)
+    const totals = useMemo(() => {
+        let entrada = 0;
+        let saida = 0;
+        let disponivel = 0;
+        const tipos: Record<string, number> = {};
+
+        // Loop otimizado sem spread operator no acumulador (O(N))
+        for (const item of items) {
+            const itemEntrada = item.entrada || 0;
+            const itemSaida = item.saida || 0;
+            const itemDisp = itemEntrada - itemSaida;
+            const tipo = item.tipo_de_material || 'Outros';
+
+            entrada += itemEntrada;
+            saida += itemSaida;
+            disponivel += itemDisp;
+
+            if (tipos[tipo]) {
+                tipos[tipo] += itemDisp;
+            } else {
+                tipos[tipo] = itemDisp;
+            }
         }
-    }), { entrada: 0, saida: 0, disponivel: 0, tipos: {} as Record<string, number> });
 
-    const filteredItems = items.filter(i => {
-        const matchesSearch = i.material.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            i.tipo_de_material?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            i.setor?.toLowerCase().includes(searchTerm.toLowerCase());
+        return { entrada, saida, disponivel, tipos };
+    }, [items]);
 
-        const matchesCategory = filterCategory === '' || i.tipo_de_material === filterCategory;
-        const matchesSector = filterSector === '' || i.setor === filterSector;
+    const filteredItems = useMemo(() => {
+        const searchLower = searchTerm.toLowerCase();
+        return items.filter(i => {
+            const matchesSearch =
+                i.material.toLowerCase().includes(searchLower) ||
+                i.tipo_de_material?.toLowerCase().includes(searchLower) ||
+                i.setor?.toLowerCase().includes(searchLower);
 
-        return matchesSearch && matchesCategory && matchesSector;
-    });
+            const matchesCategory = filterCategory === '' || i.tipo_de_material === filterCategory;
+            const matchesSector = filterSector === '' || i.setor === filterSector;
+
+            return matchesSearch && matchesCategory && matchesSector;
+        });
+    }, [items, searchTerm, filterCategory, filterSector]);
 
     return (
         <div className="space-y-3 animate-fade-in relative">

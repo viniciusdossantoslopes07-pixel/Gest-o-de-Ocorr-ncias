@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../services/supabase';
 import { MaterialLoan } from '../types';
 import { Package, Search, Filter, CheckCircle, XCircle, Clock, Calendar, User, Truck, AlertTriangle, AlertCircle } from 'lucide-react';
@@ -101,13 +101,16 @@ const MaterialDashboard: React.FC<MaterialDashboardProps> = ({ isDarkMode = fals
         }
     };
 
-    const filteredLoans = loans.filter(loan => {
-        const matchesStatus = filterStatus === 'ALL' || loan.status === filterStatus;
-        const matchesSearch =
-            (loan.item?.name.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-            (loan.requester?.name.toLowerCase().includes(searchTerm.toLowerCase()) || '');
-        return matchesStatus && matchesSearch;
-    });
+    const filteredLoans = useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return loans.filter(loan => {
+            const matchesStatus = filterStatus === 'ALL' || loan.status === filterStatus;
+            const matchesSearch =
+                (loan.item?.name.toLowerCase().includes(lowerSearch) || '') ||
+                (loan.requester?.name.toLowerCase().includes(lowerSearch) || '');
+            return matchesStatus && matchesSearch;
+        });
+    }, [loans, filterStatus, searchTerm]);
 
     const getStatusIcon = (status: string) => {
         switch (status) {
@@ -120,13 +123,16 @@ const MaterialDashboard: React.FC<MaterialDashboardProps> = ({ isDarkMode = fals
         }
     };
 
-    const sortedLoans = filteredLoans.sort((a, b) => {
-        const isOverdueA = a.expectedReturnDate && new Date(a.expectedReturnDate) < new Date() && (a.status === 'RETIRADO' || a.status === 'APROVADA');
-        const isOverdueB = b.expectedReturnDate && new Date(b.expectedReturnDate) < new Date() && (b.status === 'RETIRADO' || b.status === 'APROVADA');
-        if (isOverdueA && !isOverdueB) return -1;
-        if (!isOverdueA && isOverdueB) return 1;
-        return new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime();
-    });
+    const sortedLoans = useMemo(() => {
+        const now = new Date();
+        return [...filteredLoans].sort((a, b) => { // Importante copiar o array com [...filteredLoans] antes de sort que muta o array original
+            const isOverdueA = a.expectedReturnDate && new Date(a.expectedReturnDate) < now && (a.status === 'RETIRADO' || a.status === 'APROVADA');
+            const isOverdueB = b.expectedReturnDate && new Date(b.expectedReturnDate) < now && (b.status === 'RETIRADO' || b.status === 'APROVADA');
+            if (isOverdueA && !isOverdueB) return -1;
+            if (!isOverdueA && isOverdueB) return 1;
+            return new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime();
+        });
+    }, [filteredLoans]);
 
     return (
         <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
