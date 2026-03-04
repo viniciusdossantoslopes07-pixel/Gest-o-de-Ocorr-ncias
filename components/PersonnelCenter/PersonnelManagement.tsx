@@ -1,6 +1,7 @@
 import React, { useState, FC } from 'react';
 import { User, UserRole } from '../../types';
-import { RANKS, SETORES, getRankPriority } from '../../constants';
+import { RANKS, getRankPriority } from '../../constants';
+import { useSectors } from '../../contexts/SectorsContext';
 import { UserPlus, Search, Edit2, Trash2, Shield, User as UserIcon, Hash, Building2, Users, AlertTriangle, XCircle, Briefcase } from 'lucide-react';
 
 interface PersonnelManagementProps {
@@ -20,13 +21,14 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     const [showInactive, setShowInactive] = useState(false);
     const [showFunctional, setShowFunctional] = useState(false);
 
+    const { sectorNames } = useSectors();
     const [formData, setFormData] = useState({
         name: '',
         warName: '',
         rank: '',
         saram: '',
         cpf: '',
-        sector: SETORES[0],
+        sector: '',
         role: UserRole.OPERATIONAL,
         specialty: '',
         class_year: '',
@@ -104,7 +106,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
         } else {
             onAddPersonnel(formData);
         }
-        setFormData({ name: '', warName: '', rank: '', saram: '', cpf: '', sector: SETORES[0], role: UserRole.OPERATIONAL });
+        setFormData({ name: '', warName: '', rank: '', saram: '', cpf: '', sector: '', role: UserRole.OPERATIONAL });
         setIsAdding(false);
     };
 
@@ -194,7 +196,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                 >
                                     <option value="TODOS">Todos os Setores</option>
                                     <option value="TODOS GSD-SP">🔵 TODOS GSD-SP</option>
-                                    {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
+                                    {sectorNames.map(s => <option key={s} value={s}>{s}</option>)}
                                     <option value="SEM SETOR">⚠ SEM SETOR (Não Alocados)</option>
                                 </select>
                             </div>
@@ -315,7 +317,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                 onChange={e => setFormData({ ...formData, sector: e.target.value })}
                                 className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
                             >
-                                {SETORES.map(s => <option key={s} value={s} className={isDarkMode ? 'bg-slate-900' : ''}>{s}</option>)}
+                                {sectorNames.map(s => <option key={s} value={s} className={isDarkMode ? 'bg-slate-900' : ''}>{s}</option>)}
                             </select>
                         </div>
 

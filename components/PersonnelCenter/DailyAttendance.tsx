@@ -2,7 +2,8 @@
 import { useState, useEffect, useRef, FC, Fragment, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '../../types';
-import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, SETORES, DISPLAY_SECTORS, RANKS, getRankPriority } from '../../constants';
+import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, RANKS, getRankPriority } from '../../constants';
+import { useSectors } from '../../contexts/SectorsContext';
 import { hasPermission, PERMISSIONS } from '../../constants/permissions';
 import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint, BarChart3, MoveHorizontal, ShieldCheck } from 'lucide-react';
 import ForceMapDashboard from './ForceMapDashboard';
@@ -164,7 +165,8 @@ const SectorPicker: FC<{
     currentSector: string;
     onMove: (userId: string, targetSector: string) => void;
     isDarkMode?: boolean;
-}> = ({ user, currentSector, onMove, isDarkMode }) => {
+    displaySectors: string[];
+}> = ({ user, currentSector, onMove, isDarkMode, displaySectors }) => {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -233,7 +235,7 @@ const SectorPicker: FC<{
                             <MoveHorizontal className="w-3.5 h-3.5" /> Mover para:
                         </div>
                         <div className="flex flex-col gap-1.5 max-h-64 overflow-y-auto custom-scrollbar pr-1">
-                            {DISPLAY_SECTORS.filter(s => s.trim() !== currentSector.trim()).map(s => (
+                            {displaySectors.filter(s => s.trim() !== currentSector.trim()).map(s => (
                                 <button
                                     key={s}
                                     type="button"
@@ -287,8 +289,16 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     absenceJustifications,
     isDarkMode = false
 }) => {
-    const [selectedSector, setSelectedSector] = useState(DISPLAY_SECTORS[0]);
+    const { displaySectors, sectorNames } = useSectors();
+    const [selectedSector, setSelectedSector] = useState('');
     const [callType, setCallType] = useState<CallTypeCode>('INICIO');
+
+    // Inicializa selectedSector assim que os setores carregarem do banco
+    useEffect(() => {
+        if (displaySectors.length > 0 && !selectedSector) {
+            setSelectedSector(displaySectors[0]);
+        }
+    }, [displaySectors, selectedSector]);
     const [searchTerm, setSearchTerm] = useState('');
     const [signedDates, setSignedDates] = useState<Record<string, { signedBy: string, signedAt: string }>>({});
     const [userDestinations, setUserDestinations] = useState<any[]>([]);
@@ -349,7 +359,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     // Move states
     const [showMoveModal, setShowMoveModal] = useState(false);
     const [soldierToMove, setSoldierToMove] = useState<User | null>(null);
-    const [targetSector, setTargetSector] = useState(SETORES[0]);
+    const [targetSector, setTargetSector] = useState('');
 
     // Filtragem de contas funcionais
     const realPersonnel = useMemo(() =>
@@ -520,7 +530,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         const signatureInfo = { signedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`, signedAt: new Date().toISOString() };
         const calls: CallTypeCode[] = ['INICIO', 'TERMINO'];
         for (const date of dates) {
-            for (const sector of DISPLAY_SECTORS) {
+            for (const sector of displaySectors) {
                 const sectorUsers = users.filter(u => u.sector === sector && u.active !== false);
                 for (const type of calls) {
                     const existing = attendanceHistory.find(a => a.date === date && a.callType === type && a.sector === sector);
@@ -543,7 +553,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const handleRestoreWorkDay = async (dates: string[]) => {
         const calls: CallTypeCode[] = ['INICIO', 'TERMINO'];
         for (const date of dates) {
-            for (const sector of DISPLAY_SECTORS) {
+            for (const sector of displaySectors) {
                 const sectorUsers = users.filter(u => u.sector === sector && u.active !== false);
                 for (const type of calls) {
                     const existing = attendanceHistory.find(a => a.date === date && a.callType === type && a.sector === sector);
@@ -891,7 +901,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 onChange={(e) => setSelectedSector(e.target.value)}
                                 className={`border-2 rounded-xl px-4 py-2.5 text-xs font-black focus:ring-4 focus:ring-blue-500/10 outline-none transition-all md:w-[220px] cursor-pointer ${isDarkMode ? 'bg-slate-800 border-slate-700/50 text-slate-200' : 'bg-white border-indigo-100/50 text-slate-700'}`}
                             >
-                                {DISPLAY_SECTORS.map(s => <option key={s} value={s}>{s}</option>)}
+                                {displaySectors.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
                             <div className="relative flex-1 group">
                                 <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isDarkMode ? 'text-slate-500 group-focus-within:text-blue-400' : 'text-slate-400'}`} />
@@ -975,6 +985,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                                         currentSector={selectedSector}
                                                                         onMove={onMoveUser}
                                                                         isDarkMode={isDarkMode}
+                                                                        displaySectors={displaySectors}
                                                                     />
                                                                 )}
                                                                 {canManage && (

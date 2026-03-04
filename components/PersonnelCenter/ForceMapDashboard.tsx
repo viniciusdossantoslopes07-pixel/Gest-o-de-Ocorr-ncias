@@ -1,7 +1,8 @@
 
 import { useState, useMemo, FC } from 'react';
 import { DailyAttendance, User } from '../../types';
-import { PRESENCE_STATUS, SETORES, DISPLAY_SECTORS, RANKS } from '../../constants';
+import { PRESENCE_STATUS, RANKS } from '../../constants';
+import { useSectors } from '../../contexts/SectorsContext';
 import {
     BarChart3, Users, CheckCircle, AlertTriangle, ExternalLink, ShieldAlert,
     Clock, Filter, TrendingUp, TrendingDown, Minus, UserX, Shield, Award,
@@ -47,6 +48,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const [showAbsentList, setShowAbsentList] = useState(false);
     const [expandedSector, setExpandedSector] = useState<string | null>(null);
     const [isPrinting, setIsPrinting] = useState(false);
+    const { displaySectors } = useSectors();
 
     // Previous day for delta comparison
     const previousDate = useMemo(() => {
@@ -185,7 +187,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         const activeAndInRoster = users.filter(u =>
             u.active !== false &&
             !u.is_functional &&
-            DISPLAY_SECTORS.includes(u.sector)
+            displaySectors.includes(u.sector)
         );
 
         const sectorFiltered = selectedSector === 'TODOS'
@@ -195,7 +197,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 : activeAndInRoster.filter(u => u.sector === selectedSector);
 
         return filterUsersByRank(sectorFiltered);
-    }, [users, selectedSector, rankFilter]);
+    }, [users, selectedSector, rankFilter, displaySectors]);
 
     const relevantUserIds = new Set(relevantUsers.map(u => u.id));
     const allRecords = Array.from(currentRecordsMap.values()).filter(r => relevantUserIds.has(r.militarId));
@@ -276,9 +278,9 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     // Sector breakdown
     const sectorBreakdown = useMemo(() => {
         const sectors = selectedSector === 'TODOS'
-            ? DISPLAY_SECTORS
+            ? displaySectors
             : selectedSector === 'GSD-SP'
-                ? DISPLAY_SECTORS.filter(s => s !== 'BASP')
+                ? displaySectors.filter(s => s !== 'BASP')
                 : [selectedSector];
 
         return sectors.map(sector => {
@@ -444,7 +446,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                 options={[
                                     { label: 'Todos Setores', value: 'TODOS' },
                                     { label: 'GSD-SP', value: 'GSD-SP' },
-                                    ...DISPLAY_SECTORS.map(s => ({ label: s, value: s }))
+                                    ...displaySectors.map(s => ({ label: s, value: s }))
                                 ]}
                             />
                         </div>
@@ -788,7 +790,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                         </div>
                         <h3 className="text-sm font-black tracking-tight mb-4 uppercase">Controle de Assinaturas</h3>
                         <div className="space-y-3 relative z-10">
-                            {(selectedSector === 'GSD-SP' ? DISPLAY_SECTORS.filter(s => s !== 'BASP') : DISPLAY_SECTORS).map(sector => {
+                            {(selectedSector === 'GSD-SP' ? displaySectors.filter(s => s !== 'BASP') : displaySectors).map(sector => {
                                 const sectorCalls = attendanceHistory?.filter(a =>
                                     a.date === selectedDate && a.sector === sector && !!a.signedBy
                                 ) || [];

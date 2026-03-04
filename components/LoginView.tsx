@@ -1,7 +1,8 @@
 
 import { useState, type FC, type FormEvent } from 'react';
 import { User } from '../types';
-import { RANKS, SETORES } from '../constants';
+import { RANKS } from '../constants';
+import { useSectors } from '../contexts/SectorsContext';
 import { ShieldCheck, ArrowRight, Lock, User as UserIcon, Megaphone, Fingerprint, Car, Send, CheckCircle, X } from 'lucide-react';
 import { isWebAuthnSupported, registerBiometrics, authenticateBiometrics } from '../services/webauthn';
 import { supabase } from '../services/supabase';
@@ -17,6 +18,7 @@ interface LoginViewProps {
 }
 
 const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, onRequestPasswordReset, onForcePasswordReset, isDarkMode }) => {
+  const { sectorNames } = useSectors();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -287,7 +289,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">6. Setor</label>
                   <select required className={`w-full ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'} rounded-xl p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`} value={regData.sector} onChange={e => setRegData({ ...regData, sector: e.target.value })}>
                     <option value="">Selecione...</option>
-                    {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
+                    {sectorNames.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
 

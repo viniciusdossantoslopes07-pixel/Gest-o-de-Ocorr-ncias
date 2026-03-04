@@ -1,9 +1,11 @@
 
 import { useState, useEffect, useMemo, type FC, type FormEvent } from 'react';
 import { User, UserRole } from '../types';
-import { RANKS, SETORES } from '../constants';
+import { RANKS } from '../constants';
+import { useSectors } from '../contexts/SectorsContext';
 import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown, ShieldCheck, Settings, Search, X, Users, Briefcase } from 'lucide-react';
 import PermissionManagement from './PermissionManagement';
+import SectorManagement from './SectorManagement';
 
 interface UserManagementProps {
   users: User[];
@@ -17,7 +19,8 @@ interface UserManagementProps {
 }
 
 const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdateUser, onDeleteUser, onPermanentDeleteUser, onRefreshUsers, currentUser, isDarkMode }) => {
-  const [activeTab, setActiveTab] = useState<'users' | 'permissions'>('users');
+  const { sectorNames } = useSectors();
+  const [activeTab, setActiveTab] = useState<'users' | 'permissions' | 'sectors'>('users');
   const initialFormState = {
     name: '',
     username: '',
@@ -194,6 +197,12 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
           >
             Permissões
           </button>
+          <button
+            onClick={() => setActiveTab('sectors')}
+            className={`flex-1 md:flex-none px-4 md:px-8 py-2 md:py-3 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'sectors' ? (isDarkMode ? 'bg-slate-700 text-blue-400 shadow-lg' : 'bg-white text-blue-600 shadow-md') : 'text-slate-500 hover:text-slate-800'}`}
+          >
+            Setores
+          </button>
         </div>
       </div>
 
@@ -303,7 +312,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                   </label>
                   <select required className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.sector} onChange={e => setFormData({ ...formData, sector: e.target.value })}>
                     <option value="">Selecione...</option>
-                    {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
+                    {sectorNames.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
 
@@ -790,6 +799,16 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
             onUpdateUser={async (u) => { await onUpdateUser(u); }}
             currentAdmin={currentUser}
             isDarkMode={isDarkMode}
+          />
+        </div>
+      )}
+
+      {activeTab === 'sectors' && (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <SectorManagement
+            currentUser={currentUser}
+            isDarkMode={isDarkMode}
+            users={users}
           />
         </div>
       )}
