@@ -852,43 +852,75 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase">SARAM do Militar</label>
-                            <input
-                                type="text"
-                                value={directSaram}
-                                onChange={(e) => setDirectSaram(e.target.value)}
-                                placeholder="Digite o SARAM..."
-                                className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none transition-colors ${isDarkMode ? 'bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:bg-slate-900 focus:border-blue-500' : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white'}`}
-                            />
-                            {isSearchingSaram && <p className="text-[10px] font-bold text-blue-500 mt-1 animate-pulse">Buscando militar...</p>}
-                            {foundUser && !foundUser.isExternal && <p className="text-[10px] font-bold text-green-600 mt-1">✓ {foundUser.rank} {foundUser.war_name || foundUser.name}</p>}
-                            {foundUser && foundUser.isExternal && <p className="text-[10px] font-bold text-emerald-500 mt-1">✓ {foundUser.rank} {foundUser.war_name} (Externo)</p>}
+                    {/* Bloco do Militar OM (SARAM isolado) */}
+                    {!isExternalMilitar && (
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase">SARAM do Militar</label>
+                                <input
+                                    type="text"
+                                    value={directSaram}
+                                    onChange={(e) => setDirectSaram(e.target.value)}
+                                    placeholder="Digite o SARAM..."
+                                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none transition-colors ${isDarkMode ? 'bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:bg-slate-900 focus:border-blue-500' : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white'}`}
+                                />
+                                {isSearchingSaram && <p className="text-[10px] font-bold text-blue-500 mt-1 animate-pulse">Buscando militar...</p>}
+                                {foundUser && <p className="text-[10px] font-bold text-green-600 mt-1">✓ {foundUser.rank} {foundUser.war_name || foundUser.name}</p>}
+                                {!isSearchingSaram && directSaram.length >= 4 && !foundUser && <p className="text-[10px] font-bold text-red-500 mt-1">✗ Militar não encontrado</p>}
+                            </div>
                         </div>
+                    )}
 
-                        {isExternalMilitar && (
-                            <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-xl border border-dashed border-emerald-500/50 bg-emerald-50/10 dark:bg-emerald-900/10">
+                    {/* Bloco do Militar Externo (SARAM integrado ao bloco verde) */}
+                    {isExternalMilitar && (
+                        <div className={`p-5 rounded-xl border-2 border-dashed ${foundUser ? 'border-emerald-500/70' : 'border-emerald-500/30'} ${isDarkMode ? 'bg-emerald-900/10' : 'bg-emerald-50/40'} space-y-4`}>
+                            <div className="flex items-center justify-between">
+                                <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                                    Dados do Militar Externo
+                                </p>
+                                {foundUser?.isExternal && (
+                                    <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">
+                                        ✓ Cadastro encontrado — campos auto-preenchidos
+                                    </span>
+                                )}
+                                {!isSearchingSaram && directSaram.length >= 4 && !foundUser && (
+                                    <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-1 rounded-lg">
+                                        ＋ Novo cadastro será criado
+                                    </span>
+                                )}
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400 uppercase">Posto/Graduação</label>
+                                    <label className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400 uppercase">SARAM</label>
+                                    <input
+                                        type="text"
+                                        value={directSaram}
+                                        onChange={(e) => setDirectSaram(e.target.value)}
+                                        placeholder="SARAM (opcional)"
+                                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold outline-none transition-colors ${isDarkMode ? 'bg-slate-900/80 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-800'}`}
+                                    />
+                                    {isSearchingSaram && <p className="text-[10px] font-bold text-emerald-500 mt-1 animate-pulse">Buscando...</p>}
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400 uppercase">Posto/Grad.</label>
                                     <select
                                         value={extRank}
                                         onChange={(e) => setExtRank(e.target.value)}
                                         className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold text-sm outline-none transition-colors ${isDarkMode ? 'bg-slate-900/80 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
                                     >
-                                        {['Cel', 'TC', 'Maj', 'Cap', '1º Ten', '2º Ten', 'Asp', 'SO', '1º Sgt', '2º Sgt', '3º Sgt', 'Cb', 'S1', 'S2', 'CV'].map(r => (
+                                        {['Cel', 'TC', 'Maj', 'Cap', '1º Ten', '2º Ten', 'Asp', 'SO', '1º Sgt', '2º Sgt', '3º Sgt', 'Cb', 'S1', 'S2', 'CV', 'Paisano'].map(r => (
                                             <option key={r} value={r}>{r}</option>
                                         ))}
                                     </select>
                                 </div>
                                 <div className="space-y-1 md:col-span-2">
-                                    <label className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400 uppercase">Nome de Guerra</label>
+                                    <label className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400 uppercase">Nome de Guerra <span className="text-red-400">*</span></label>
                                     <input
                                         type="text"
                                         value={extWarName}
                                         onChange={(e) => setExtWarName(e.target.value)}
-                                        placeholder="Nome de Guerra (OBRIGATÓRIO)"
-                                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold outline-none uppercase transition-colors ${isDarkMode ? 'bg-slate-900/80 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-800'}`}
+                                        placeholder="Nome de Guerra (obrigatório)"
+                                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold outline-none uppercase transition-colors ${isDarkMode ? 'bg-slate-900/80 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-800'} ${!extWarName ? 'border-red-400/50' : ''}`}
                                     />
                                 </div>
                                 <div className="space-y-1">
@@ -902,7 +934,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                     />
                                 </div>
                                 <div className="space-y-1 md:col-span-2">
-                                    <label className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400 uppercase">Telefone de Contato</label>
+                                    <label className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400 uppercase">Tel. de Contato</label>
                                     <input
                                         type="text"
                                         value={extContact}
@@ -912,7 +944,11 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                     />
                                 </div>
                             </div>
-                        )}
+                        </div>
+                    )}
+
+                    {/* Linha separadora e campos de material compartilhados */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 
                         <div className="md:col-span-2 space-y-1 relative" ref={materialDropdownRef}>
                             <label className="text-[10px] font-bold text-slate-400 uppercase">Buscar Material</label>
@@ -987,7 +1023,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                         <div className="md:col-span-4 flex flex-col md:flex-row gap-4 items-end mt-2">
                             <button
                                 onClick={addItem}
-                                disabled={!directMaterialId || !foundUser}
+                                disabled={!directMaterialId || (!isExternalMilitar && !foundUser) || (isExternalMilitar && !extWarName)}
                                 className={`px-6 h-[50px] rounded-xl font-black transition-all flex items-center justify-center gap-2 uppercase text-xs tracking-widest disabled:opacity-50 disabled:cursor-not-allowed ${isDarkMode ? 'bg-slate-700 text-white hover:bg-slate-600 border border-slate-600' : 'bg-slate-800 text-white hover:bg-slate-900 shadow-md'}`}
                             >
                                 <Plus className="w-5 h-5" /> Adicionar
@@ -995,7 +1031,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                             <div className="flex-1"></div>
                             <button
                                 onClick={handleDirectRelease}
-                                disabled={actionLoading === 'direct' || (!selectedItems.length && (!foundUser || !directMaterialId))}
+                                disabled={actionLoading === 'direct' || (!selectedItems.length && !directMaterialId) || (isExternalMilitar && !extWarName)}
                                 className={`min-w-[200px] h-[50px] text-white rounded-xl font-black transition-all shadow-lg text-sm uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-500 shadow-blue-500/20`}
                             >
                                 {actionLoading === 'direct' ? 'Processando...' : 'Confirmar Cautela'}
