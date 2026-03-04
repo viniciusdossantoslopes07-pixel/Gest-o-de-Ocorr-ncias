@@ -7,7 +7,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Ba
 interface LoanRequest {
     id: string;
     id_material: string;
-    id_usuario: string;
+    id_usuario: string | null;
+    id_usuario_externo?: string | null;
     status: string;
     observacao: string;
     quantidade?: number;
@@ -63,6 +64,12 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     const [directQuantity, setDirectQuantity] = useState(1);
     const [isSearchingSaram, setIsSearchingSaram] = useState(false);
     const [foundUser, setFoundUser] = useState<any>(null);
+    const [isExternalMilitar, setIsExternalMilitar] = useState(false);
+    const [extRank, setExtRank] = useState('SD');
+    const [extWarName, setExtWarName] = useState('');
+    const [extUnit, setExtUnit] = useState('');
+    const [extContact, setExtContact] = useState('');
+
     const [materialSearch, setMaterialSearch] = useState('');
     const [isMaterialDropdownOpen, setIsMaterialDropdownOpen] = useState(false);
     const [selectedItems, setSelectedItems] = useState<{ id_material: string, material: string, quantidade: number, endereco?: string, id_loan?: string }[]>([]);
@@ -157,7 +164,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
         const { data: rawData, error } = await supabase
             .from('movimentacao_cautela')
             .select(`
-                id, id_material, id_usuario, status, observacao, quantidade, 
+                id, id_material, id_usuario, id_usuario_externo, status, observacao, quantidade, 
                 autorizado_por, entregue_por, recebido_por, created_at,
                 material:gestao_estoque(material, tipo_de_material, qtdisponivel, endereco)
             `)
@@ -170,27 +177,43 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
         }
 
         if (rawData && rawData.length > 0) {
-            const userIds = Array.from(new Set(rawData.map(r => r.id_usuario)));
-            const { data: userData, error: userError } = await supabase
-                .from('users')
-                .select('id, rank, war_name, name, saram')
-                .in('id', userIds);
+            const userIds = Array.from(new Set(rawData.map(r => r.id_usuario).filter(Boolean)));
+            const extUserIds = Array.from(new Set(rawData.map(r => r.id_usuario_externo).filter(Boolean)));
 
-            if (userError) {
-                console.error('Error fetching users for labels:', userError);
-                setRequests(rawData);
-            } else {
-                const userMap = (userData || []).reduce((acc: any, u) => {
-                    acc[u.id] = { rank: u.rank, war_name: u.war_name || u.name, saram: u.saram };
-                    return acc;
-                }, {});
+            let userMap: any = {};
+            let extUserMap: any = {};
 
-                const enrichedData = rawData.map(r => ({
-                    ...r,
-                    solicitante: userMap[r.id_usuario]
-                }));
-                setRequests(enrichedData);
+            if (userIds.length > 0) {
+                const { data: userData, error: userError } = await supabase
+                    .from('users')
+                    .select('id, rank, war_name, name, saram')
+                    .in('id', userIds);
+                if (!userError) {
+                    userMap = (userData || []).reduce((acc: any, u) => {
+                        acc[u.id] = { rank: u.rank, war_name: u.war_name || u.name, saram: u.saram };
+                        return acc;
+                    }, {});
+                }
             }
+
+            if (extUserIds.length > 0) {
+                const { data: extData, error: extError } = await supabase
+                    .from('external_users_cautela')
+                    .select('id, rank, war_name, saram, unit')
+                    .in('id', extUserIds);
+                if (!extError) {
+                    extUserMap = (extData || []).reduce((acc: any, u) => {
+                        acc[u.id] = { rank: u.rank, war_name: `${u.war_name} (${u.unit || 'Ext'})`, saram: u.saram, isExternal: true };
+                        return acc;
+                    }, {});
+                }
+            }
+
+            const enrichedData = rawData.map(r => ({
+                ...r,
+                solicitante: r.id_usuario_externo ? extUserMap[r.id_usuario_externo] : userMap[r.id_usuario!]
+            }));
+            setRequests(enrichedData);
         } else {
             setRequests([]);
         }
@@ -210,16 +233,34 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
 
     const handleSaramSearch = async () => {
         setIsSearchingSaram(true);
-        const { data } = await supabase
-            .from('users')
-            .select('id, name, rank, war_name, password')
-            .eq('saram', directSaram.replace(/\D/g, ''))
-            .single();
+        if (isExternalMilitar) {
+            const { data } = await supabase
+                .from('external_users_cautela')
+                .select('id, rank, war_name, unit, contact')
+                .eq('saram', directSaram.replace(/\D/g, ''))
+                .single();
 
-        if (data) {
-            setFoundUser(data);
+            if (data) {
+                setFoundUser({ ...data, isExternal: true });
+                setExtRank(data.rank);
+                setExtWarName(data.war_name);
+                setExtUnit(data.unit || '');
+                setExtContact(data.contact || '');
+            } else {
+                setFoundUser(null);
+            }
         } else {
-            setFoundUser(null);
+            const { data } = await supabase
+                .from('users')
+                .select('id, name, rank, war_name, password')
+                .eq('saram', directSaram.replace(/\D/g, ''))
+                .single();
+
+            if (data) {
+                setFoundUser(data);
+            } else {
+                setFoundUser(null);
+            }
         }
         setIsSearchingSaram(false);
     };
@@ -251,49 +292,115 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     const handleSaramBlur = async () => {
         if (directSaram.length < 4) return;
         setIsSearchingSaram(true);
-        const { data } = await supabase
-            .from('users')
-            .select('id, name, rank, war_name')
-            .eq('saram', directSaram)
-            .single();
 
-        if (data) {
-            setFoundUser(data);
+        if (isExternalMilitar) {
+            const { data } = await supabase.from('external_users_cautela').select('id, rank, war_name').eq('saram', directSaram).single();
+            if (data) setFoundUser({ ...data, isExternal: true });
         } else {
-            alert('Militar não encontrado com este SARAM.');
+            const { data } = await supabase
+                .from('users')
+                .select('id, name, rank, war_name')
+                .eq('saram', directSaram)
+                .single();
+
+            if (data) {
+                setFoundUser(data);
+            } else {
+                alert('Militar não encontrado com este SARAM.');
+            }
         }
         setIsSearchingSaram(false);
     };
 
+    const processExternalRelease = async () => {
+        setActionLoading('direct');
+        try {
+            let externalUserId = foundUser?.id;
+
+            if (!externalUserId) {
+                const { data: newUser, error: extError } = await supabase.from('external_users_cautela').insert({
+                    saram: directSaram.replace(/\D/g, ''),
+                    rank: extRank,
+                    war_name: extWarName,
+                    unit: extUnit,
+                    contact: extContact
+                }).select('id').single();
+
+                if (extError) throw extError;
+                externalUserId = newUser.id;
+            }
+
+            const userName = `${user.rank || ''} ${user.war_name || user.name}`.trim();
+            const militaryName = `${extRank} ${extWarName} (Externo)`.trim();
+            const now = new Date().toISOString();
+
+            const itemsToProcess = selectedItems.length > 0 ? selectedItems : [{
+                id_material: directMaterialId,
+                material: inventory.find(i => i.id === directMaterialId)?.material || '',
+                quantidade: directQuantity
+            }];
+
+            const inserts = itemsToProcess.map(item => ({
+                id_material: item.id_material,
+                id_usuario_externo: externalUserId,
+                status: 'Em Uso',
+                quantidade: item.quantidade,
+                autorizado_por: userName,
+                entregue_por: userName,
+                observacao: `[OM Externa: ${extUnit}] Liberado por ${userName} em ${new Date().toLocaleString()}`,
+                created_at: now
+            }));
+
+            const { error } = await supabase.from('movimentacao_cautela').insert(inserts);
+            if (error) throw error;
+
+            for (const item of itemsToProcess) {
+                if (item.id_material) await updateInventoryStock(item.id_material, item.quantidade, 'release');
+            }
+
+            fetchRequests();
+            fetchInventory();
+
+            setSelectedItems([]);
+            setDirectMaterialId('');
+            setMaterialSearch('');
+            setDirectSaram('');
+            setExtWarName('');
+            setExtUnit('');
+            setExtContact('');
+            setFoundUser(null);
+            setShowDirectRelease(false);
+
+            alert('Material liberado para militar externo com sucesso!');
+        } catch (err) {
+            console.error('Erro na cautela externa:', err);
+            alert('Ocorreu um erro ao registrar a cautela para militar externo.');
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
     const handleDirectRelease = async () => {
         // If no items selected but inputs are filled, try to add the current input item
-        if (selectedItems.length === 0 && directMaterialId && foundUser) {
+        if (selectedItems.length === 0 && directMaterialId) {
             const mat = inventory.find(i => i.id === directMaterialId);
             if (mat) {
-                const singleItem = {
-                    id_material: directMaterialId,
-                    material: mat.material,
-                    quantidade: directQuantity
-                };
-                // Proceed with this single item
-                setSelectedItems([singleItem]);
-                // We need to wait for state update? No, we can pass it directly or rely on state in next render.
-                // Actually, state updates are async. Better to refactor to pass items to signature flow explicitly?
-                // The signature flow uses 'selectedItems' from state. 
-                // A safer way is to update state AND set a flag or just temporarily use a local variable if modifying signature logic.
-                // But confirmSignature reads from selectedItems state.
-                // Pre-add the item to selectedItems for the signature modal to see
-                setSelectedItems([singleItem]);
-                // We also need to ensure the state is treated as valid for the next step.
-                // React state updates are async, so we might need a small delay or refactor confirmSignature to use local vars if needed.
-                // However, the modal opening is what matters here.
+                setSelectedItems([{ id_material: directMaterialId, material: mat.material, quantidade: directQuantity }]);
             }
-        } else if (!foundUser || selectedItems.length === 0) {
-            alert('Selecione um militar válido e pelo menos um material.');
+        }
+
+        const validUser = foundUser || (isExternalMilitar && directSaram && extRank && extWarName);
+        if (!validUser) {
+            alert('Selecione/cadastre um militar válido e preencha os campos obrigatórios.');
             return;
         }
-        setSignatureAction('release');
-        setShowSignatureModal(true);
+
+        if (isExternalMilitar) {
+            processExternalRelease();
+        } else {
+            setSignatureAction('release');
+            setShowSignatureModal(true);
+        }
     };
 
 
@@ -730,6 +837,21 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                         <div className={`w-2.5 h-2.5 rounded-full shadow-lg bg-blue-500`}></div>
                         Nova Movimentação de Cautela (Saída Rápida)
                     </h2>
+                    <div className="flex gap-4 mb-4 border-b border-slate-200 dark:border-slate-700 pb-4">
+                        <button
+                            onClick={() => { setIsExternalMilitar(false); setFoundUser(null); setDirectSaram(''); }}
+                            className={`px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${!isExternalMilitar ? (isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-600 text-white') : (isDarkMode ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-500 hover:bg-slate-100')}`}
+                        >
+                            Militar da OM
+                        </button>
+                        <button
+                            onClick={() => { setIsExternalMilitar(true); setFoundUser(null); setDirectSaram(''); }}
+                            className={`px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${isExternalMilitar ? (isDarkMode ? 'bg-emerald-600 text-white' : 'bg-emerald-600 text-white') : (isDarkMode ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-500 hover:bg-slate-100')}`}
+                        >
+                            Militar Externo
+                        </button>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div className="space-y-1">
                             <label className="text-[10px] font-bold text-slate-400 uppercase">SARAM do Militar</label>
@@ -741,8 +863,57 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                 className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none transition-colors ${isDarkMode ? 'bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:bg-slate-900 focus:border-blue-500' : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white'}`}
                             />
                             {isSearchingSaram && <p className="text-[10px] font-bold text-blue-500 mt-1 animate-pulse">Buscando militar...</p>}
-                            {foundUser && <p className="text-[10px] font-bold text-green-600 mt-1">✓ {foundUser.rank} {foundUser.war_name || foundUser.name}</p>}
+                            {foundUser && !foundUser.isExternal && <p className="text-[10px] font-bold text-green-600 mt-1">✓ {foundUser.rank} {foundUser.war_name || foundUser.name}</p>}
+                            {foundUser && foundUser.isExternal && <p className="text-[10px] font-bold text-emerald-500 mt-1">✓ {foundUser.rank} {foundUser.war_name} (Externo)</p>}
                         </div>
+
+                        {isExternalMilitar && (
+                            <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-xl border border-dashed border-emerald-500/50 bg-emerald-50/10 dark:bg-emerald-900/10">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400 uppercase">Posto/Graduação</label>
+                                    <select
+                                        value={extRank}
+                                        onChange={(e) => setExtRank(e.target.value)}
+                                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold text-sm outline-none transition-colors ${isDarkMode ? 'bg-slate-900/80 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
+                                    >
+                                        {['Cel', 'TC', 'Maj', 'Cap', '1º Ten', '2º Ten', 'Asp', 'SO', '1º Sgt', '2º Sgt', '3º Sgt', 'Cb', 'S1', 'S2', 'CV'].map(r => (
+                                            <option key={r} value={r}>{r}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="space-y-1 md:col-span-2">
+                                    <label className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400 uppercase">Nome de Guerra</label>
+                                    <input
+                                        type="text"
+                                        value={extWarName}
+                                        onChange={(e) => setExtWarName(e.target.value)}
+                                        placeholder="Nome de Guerra (OBRIGATÓRIO)"
+                                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold outline-none uppercase transition-colors ${isDarkMode ? 'bg-slate-900/80 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-800'}`}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400 uppercase">OM de Origem</label>
+                                    <input
+                                        type="text"
+                                        value={extUnit}
+                                        onChange={(e) => setExtUnit(e.target.value)}
+                                        placeholder="Ex: PAME-RJ"
+                                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold outline-none uppercase transition-colors ${isDarkMode ? 'bg-slate-900/80 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-800'}`}
+                                    />
+                                </div>
+                                <div className="space-y-1 md:col-span-2">
+                                    <label className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400 uppercase">Telefone de Contato</label>
+                                    <input
+                                        type="text"
+                                        value={extContact}
+                                        onChange={(e) => setExtContact(e.target.value)}
+                                        placeholder="Opcional"
+                                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold outline-none transition-colors ${isDarkMode ? 'bg-slate-900/80 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-800'}`}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                         <div className="md:col-span-2 space-y-1 relative" ref={materialDropdownRef}>
                             <label className="text-[10px] font-bold text-slate-400 uppercase">Buscar Material</label>
                             <div className="relative">
@@ -1152,7 +1323,8 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                                 ))}
                                             </Pie>
                                             <Tooltip
-                                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '10px', fontWeight: 'bold' }}
+                                                contentStyle={{ backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', color: isDarkMode ? '#f8fafc' : '#0f172a', borderRadius: '12px', border: isDarkMode ? '1px solid #334155' : 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '10px', fontWeight: 'bold' }}
+                                                itemStyle={{ color: isDarkMode ? '#f8fafc' : '#0f172a' }}
                                             />
                                         </PieChart>
                                     </ResponsiveContainer>
@@ -1189,8 +1361,9 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                                 width={100}
                                             />
                                             <Tooltip
-                                                cursor={{ fill: '#f8fafc' }}
-                                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold' }}
+                                                cursor={{ fill: isDarkMode ? '#334155' : '#f8fafc' }}
+                                                contentStyle={{ backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', color: isDarkMode ? '#f8fafc' : '#0f172a', borderRadius: '12px', border: isDarkMode ? '1px solid #334155' : 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold' }}
+                                                itemStyle={{ color: isDarkMode ? '#f8fafc' : '#0f172a' }}
                                             />
                                             <Bar
                                                 dataKey="value"
