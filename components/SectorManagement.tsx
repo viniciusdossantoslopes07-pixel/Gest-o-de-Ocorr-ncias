@@ -2,7 +2,7 @@ import { useState, FC } from 'react';
 import { useSectors } from '../contexts/SectorsContext';
 import { hasPermission, PERMISSIONS } from '../constants/permissions';
 import { User } from '../types';
-import { Plus, Trash2, Settings2, AlertTriangle, X, CheckCircle, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Settings2, AlertTriangle, X, CheckCircle, Loader2, GripVertical } from 'lucide-react';
 import { supabase } from '../services/supabase';
 
 interface SectorManagementProps {
@@ -12,13 +12,18 @@ interface SectorManagementProps {
 }
 
 const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode = false, users }) => {
-    const { sectors, addSector, removeSector, loading } = useSectors();
+    const { sectors, addSector, removeSector, reorderSectors, loading } = useSectors();
     const [newSectorName, setNewSectorName] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [addError, setAddError] = useState('');
     const [addSuccess, setAddSuccess] = useState('');
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+    // DnD States
+    const [draggedId, setDraggedId] = useState<string | null>(null);
+    const [dragOverId, setDragOverId] = useState<string | null>(null);
+    const [isReordering, setIsReordering] = useState(false);
 
     const canManage = hasPermission(currentUser, PERMISSIONS.MANAGE_PERSONNEL);
     const dk = isDarkMode;
@@ -57,6 +62,52 @@ const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode =
         setDeletingId(null);
         setConfirmDeleteId(null);
         if (error) alert(`Erro ao remover setor: ${error}`);
+    };
+
+    const handleDragStart = (e: React.DragEvent, id: string) => {
+        setDraggedId(id);
+        // Pequeno timeout para o item arrastável não ficar invisível sob o cursor
+        setTimeout(() => e.target && (e.target as HTMLElement).classList.add('opacity-50'), 0);
+    };
+
+    const handleDragOver = (e: React.DragEvent, id: string) => {
+        e.preventDefault(); // necessário para permitir drop
+        if (id !== dragOverId) setDragOverId(id);
+    };
+
+    const handleDragEnd = (e: React.DragEvent) => {
+        (e.target as HTMLElement).classList.remove('opacity-50');
+        setDraggedId(null);
+        setDragOverId(null);
+    };
+
+    const handleDrop = async (e: React.DragEvent, targetId: string) => {
+        e.preventDefault();
+        if (!draggedId || draggedId === targetId) {
+            handleDragEnd(e);
+            return;
+        }
+
+        const oldIndex = sectors.findIndex(s => s.id === draggedId);
+        const newIndex = sectors.findIndex(s => s.id === targetId);
+
+        if (oldIndex === -1 || newIndex === -1) {
+            handleDragEnd(e);
+            return;
+        }
+
+        const newSectors = [...sectors];
+        const [movedSector] = newSectors.splice(oldIndex, 1);
+        newSectors.splice(newIndex, 0, movedSector);
+
+        const newOrderIds = newSectors.map(s => s.id);
+
+        setIsReordering(true);
+        handleDragEnd(e);
+
+        const { error } = await reorderSectors(newOrderIds);
+        setIsReordering(false);
+        if (error) alert(`Erro ao reordenar: ${error}`);
     };
 
     const getUsersInSector = (sectorName: string) =>
@@ -128,7 +179,7 @@ const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode =
                     </span>
                 </div>
 
-                {loading ? (
+                {loading || isReordering ? (
                     <div className="flex items-center justify-center py-12">
                         <Loader2 className={`w-6 h-6 animate-spin ${dk ? 'text-slate-500' : 'text-slate-300'}`} />
                     </div>
@@ -140,8 +191,20 @@ const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode =
                             const isConfirming = confirmDeleteId === sector.id;
 
                             return (
-                                <div key={sector.id} className={`flex items-center justify-between px-6 py-4 transition-colors ${dk ? 'hover:bg-slate-700/20' : 'hover:bg-slate-50/50'}`}>
+                                <div
+                                    key={sector.id}
+                                    draggable
+                                    onDragStart={(e) => handleDragStart(e, sector.id)}
+                                    onDragOver={(e) => handleDragOver(e, sector.id)}
+                                    onDragEnd={handleDragEnd}
+                                    onDrop={(e) => handleDrop(e, sector.id)}
+                                    className={`flex items-center justify-between px-6 py-4 transition-colors cursor-move 
+                                        ${dk ? 'hover:bg-slate-700/20' : 'hover:bg-slate-50/50'}
+                                        ${dragOverId === sector.id ? (dk ? 'bg-slate-700/50 border-t-2 border-blue-500' : 'bg-slate-100 border-t-2 border-blue-500') : ''}
+                                    `}
+                                >
                                     <div className="flex items-center gap-4">
+                                        <GripVertical className={`w-4 h-4 ${dk ? 'text-slate-600' : 'text-slate-400'}`} />
                                         <div className={`w-2 h-2 rounded-full ${sector.hidden_from_attendance ? 'bg-amber-400' : 'bg-emerald-500'}`} />
                                         <div>
                                             <p className={`text-sm font-black uppercase ${dk ? 'text-white' : 'text-slate-900'}`}>

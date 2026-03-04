@@ -24,6 +24,8 @@ interface SectorsContextValue {
     removeSector: (id: string) => Promise<{ error?: string }>;
     /** Recarrega setores do banco */
     refetch: () => Promise<void>;
+    /** Atualiza a ordem de exibição dos setores */
+    reorderSectors: (newOrderIds: string[]) => Promise<{ error?: string }>;
 }
 
 const SectorsContext = createContext<SectorsContextValue | null>(null);
@@ -115,6 +117,21 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
         return {};
     }, [sectors, fetchSectors]);
 
+    const reorderSectors = useCallback(async (newOrderIds: string[]): Promise<{ error?: string }> => {
+        // Atualização em lote (pequena quantidade, Promise.all é suficiente)
+        const promises = newOrderIds.map((id, index) =>
+            supabase.from('sectors').update({ display_order: index }).eq('id', id)
+        );
+
+        const results = await Promise.all(promises);
+        const error = results.find(r => r.error)?.error;
+
+        if (error) return { error: error.message };
+
+        await fetchSectors();
+        return {};
+    }, [fetchSectors]);
+
     const displaySectors = sectors
         .filter(s => !s.hidden_from_attendance)
         .map(s => s.name);
@@ -129,6 +146,7 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
             loading,
             addSector,
             removeSector,
+            reorderSectors,
             refetch: fetchSectors
         }}>
             {children}
