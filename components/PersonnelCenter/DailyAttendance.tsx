@@ -315,6 +315,9 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     const [weeklyGrid, setWeeklyGrid] = useState<Record<string, Record<string, Record<string, string>>>>({});
     const [attendanceRecords, setAttendanceRecords] = useState<Record<string, string>>({});
+    // Ref para guardar alterações locais pendentes (não confirmadas pelo banco ainda)
+    // Chave: `${userId}|${date}|${callType}`, Valor: status escolhido
+    const localOverridesRef = useRef<Map<string, string>>(new Map());
     const [openNoWorkMenu, setOpenNoWorkMenu] = useState<string | null>(null);
     const [showManageWeekModal, setShowManageWeekModal] = useState(false);
     const [selectedDaysForNoWork, setSelectedDaysForNoWork] = useState<string[]>([]);
@@ -460,10 +463,27 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 });
             }
         });
+
+        // Aplicar overrides locais pendentes para evitar que alterações não confirmadas sejam sobrescritas
+        localOverridesRef.current.forEach((status, key) => {
+            const parts = key.split('|');
+            if (parts.length < 3) return;
+            const [uid, dateKey, ctKey] = parts;
+            if (!grid[uid]) grid[uid] = {};
+            if (!grid[uid][dateKey]) grid[uid][dateKey] = {};
+            grid[uid][dateKey][ctKey] = status;
+            // Remove flag de planejado se foi alterado manualmente
+            delete grid[uid][dateKey]['IS_PLANNED'];
+        });
+
         setWeeklyGrid(grid);
     }, [currentWeek, attendanceHistory, selectedSector, userDestinations, signedDates, filteredUsers]);
 
     const handleWeeklyChange = (userId: string, date: string, callType: string, status: string) => {
+        // Registrar override local ANTES de qualquer outro update para evitar race condition
+        const overrideKey = `${userId}|${date}|${callType}`;
+        localOverridesRef.current.set(overrideKey, status);
+
         setWeeklyGrid(prev => {
             const userDays = prev[userId] || {};
             const dayCalls = userDays[date] || {};
@@ -705,6 +725,13 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 };
             }
             onSaveAttendance(attendanceToSave);
+            // Limpar overrides do dia assinado (banco agora é a fonte de verdade)
+            localOverridesRef.current.forEach((_status, key) => {
+                const parts = key.split('|');
+                if (parts.length >= 3 && parts[1] === dateToSign && parts[2] === callToSign) {
+                    localOverridesRef.current.delete(key);
+                }
+            });
             setShowPasswordModal(false);
             setDateToSign(null); setCallToSign(null); setPasswordInput('');
             alert(`${CALL_TYPES[callToSign]} assinada com sucesso!`);
