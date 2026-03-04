@@ -47,6 +47,7 @@ export default function ParkingStatistics({ dk = false }: { dk?: boolean }) {
         return d.toISOString().split('T')[0];
     });
     const [showFilters, setShowFilters] = useState(true);
+    const [activeQuickFilter, setActiveQuickFilter] = useState<string | null>('30_0'); // Default: Últimos 30 dias
 
     useEffect(() => {
         fetchStatistics();
@@ -60,13 +61,14 @@ export default function ParkingStatistics({ dk = false }: { dk?: boolean }) {
     };
 
     // Quick filters
-    const setQuickFilter = (days: number, future: number = 0) => {
+    const setQuickFilter = (days: number, future: number = 0, filterId: string) => {
         const start = new Date();
         start.setDate(start.getDate() - days);
         setFilterStart(start.toISOString().split('T')[0]);
         const end = new Date();
         end.setDate(end.getDate() + future);
         setFilterEnd(end.toISOString().split('T')[0]);
+        setActiveQuickFilter(filterId);
     };
 
     // --- CORE: Compute occupation for any given date ---
@@ -229,12 +231,12 @@ export default function ParkingStatistics({ dk = false }: { dk?: boolean }) {
                 {showFilters && (
                     <div className="p-3 space-y-3 animate-fade-in">
                         <div className="flex flex-wrap gap-2">
-                            <button onClick={() => setQuickFilter(0, 0)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${dk ? 'bg-blue-900/30 text-blue-400 hover:bg-blue-900/50' : 'bg-blue-100 hover:bg-blue-200 text-blue-700'}`}>Hoje</button>
-                            <button onClick={() => setQuickFilter(7, 0)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${dk ? 'bg-slate-700/50 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}>Últimos 7 dias</button>
-                            <button onClick={() => setQuickFilter(30, 0)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${dk ? 'bg-slate-700/50 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}>Últimos 30 dias</button>
-                            <button onClick={() => setQuickFilter(90, 0)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${dk ? 'bg-slate-700/50 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}>Últimos 90 dias</button>
-                            <button onClick={() => setQuickFilter(0, 30)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${dk ? 'bg-blue-900/20 text-blue-400 hover:bg-blue-900/40' : 'bg-blue-50 hover:bg-blue-100 text-blue-600'}`}>Próximos 30 dias</button>
-                            <button onClick={() => setQuickFilter(30, 30)} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${dk ? 'bg-violet-900/20 text-violet-400 hover:bg-violet-900/40' : 'bg-violet-50 hover:bg-violet-100 text-violet-600'}`}>Período Completo (±30d)</button>
+                            <button onClick={() => setQuickFilter(0, 0, '0_0')} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${activeQuickFilter === '0_0' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' : dk ? 'bg-blue-900/30 text-blue-400 hover:bg-blue-900/50' : 'bg-blue-100 hover:bg-blue-200 text-blue-700'}`}>Hoje</button>
+                            <button onClick={() => setQuickFilter(7, 0, '7_0')} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${activeQuickFilter === '7_0' ? 'bg-slate-600 text-white shadow-md shadow-slate-600/20' : dk ? 'bg-slate-700/50 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}>Últimos 7 dias</button>
+                            <button onClick={() => setQuickFilter(30, 0, '30_0')} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${activeQuickFilter === '30_0' ? 'bg-slate-600 text-white shadow-md shadow-slate-600/20' : dk ? 'bg-slate-700/50 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}>Últimos 30 dias</button>
+                            <button onClick={() => setQuickFilter(90, 0, '90_0')} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${activeQuickFilter === '90_0' ? 'bg-slate-600 text-white shadow-md shadow-slate-600/20' : dk ? 'bg-slate-700/50 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}>Últimos 90 dias</button>
+                            <button onClick={() => setQuickFilter(0, 30, '0_30')} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${activeQuickFilter === '0_30' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' : dk ? 'bg-blue-900/20 text-blue-400 hover:bg-blue-900/40' : 'bg-blue-50 hover:bg-blue-100 text-blue-600'}`}>Próximos 30 dias</button>
+                            <button onClick={() => setQuickFilter(30, 30, '30_30')} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors ${activeQuickFilter === '30_30' ? 'bg-violet-600 text-white shadow-md shadow-violet-600/20' : dk ? 'bg-violet-900/20 text-violet-400 hover:bg-violet-900/40' : 'bg-violet-50 hover:bg-violet-100 text-violet-600'}`}>Período Completo (±30d)</button>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                             <div>
