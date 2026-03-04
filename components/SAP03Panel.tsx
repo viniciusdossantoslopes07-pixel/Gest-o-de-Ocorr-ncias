@@ -65,7 +65,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     const [isSearchingSaram, setIsSearchingSaram] = useState(false);
     const [foundUser, setFoundUser] = useState<any>(null);
     const [isExternalMilitar, setIsExternalMilitar] = useState(false);
-    const [extRank, setExtRank] = useState('SD');
+    const [extRank, setExtRank] = useState('Selecione');
     const [extWarName, setExtWarName] = useState('');
     const [extUnit, setExtUnit] = useState('');
     const [extContact, setExtContact] = useState('');
@@ -891,13 +891,13 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400 uppercase">SARAM</label>
+                                    <label className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400 uppercase">SARAM <span className="text-red-400">*</span></label>
                                     <input
                                         type="text"
                                         value={directSaram}
                                         onChange={(e) => setDirectSaram(e.target.value)}
-                                        placeholder="SARAM (opcional)"
-                                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold outline-none transition-colors ${isDarkMode ? 'bg-slate-900/80 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-800'}`}
+                                        placeholder="SARAM (obrigatório)"
+                                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold outline-none transition-colors ${isDarkMode ? 'bg-slate-900/80 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-800'} ${!directSaram ? 'border-red-400/50' : ''}`}
                                     />
                                     {isSearchingSaram && <p className="text-[10px] font-bold text-emerald-500 mt-1 animate-pulse">Buscando...</p>}
                                 </div>
@@ -908,7 +908,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                         onChange={(e) => setExtRank(e.target.value)}
                                         className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold text-sm outline-none transition-colors ${isDarkMode ? 'bg-slate-900/80 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
                                     >
-                                        {['Cel', 'TC', 'Maj', 'Cap', '1º Ten', '2º Ten', 'Asp', 'SO', '1º Sgt', '2º Sgt', '3º Sgt', 'Cb', 'S1', 'S2', 'CV', 'Paisano'].map(r => (
+                                        {['Selecione', 'TB', 'MB', 'BR', 'CEL', 'TEN CEL', 'MAJ', 'CAP', '1T', '2T', 'ASP', 'SO', '1S', '2S', '3S', 'CB', 'S1', 'S2'].map(r => (
                                             <option key={r} value={r}>{r}</option>
                                         ))}
                                     </select>
@@ -934,13 +934,13 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                     />
                                 </div>
                                 <div className="space-y-1 md:col-span-2">
-                                    <label className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400 uppercase">Tel. de Contato</label>
+                                    <label className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400 uppercase">Tel. de Contato <span className="text-red-400">*</span></label>
                                     <input
                                         type="text"
                                         value={extContact}
                                         onChange={(e) => setExtContact(e.target.value)}
-                                        placeholder="Opcional"
-                                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold outline-none transition-colors ${isDarkMode ? 'bg-slate-900/80 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-800'}`}
+                                        placeholder="Telefone de contato (obrigatório)"
+                                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold outline-none transition-colors ${isDarkMode ? 'bg-slate-900/80 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-800'} ${!extContact ? 'border-red-400/50' : ''}`}
                                     />
                                 </div>
                             </div>
@@ -1023,7 +1023,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                         <div className="md:col-span-4 flex flex-col md:flex-row gap-4 items-end mt-2">
                             <button
                                 onClick={addItem}
-                                disabled={!directMaterialId || (!isExternalMilitar && !foundUser) || (isExternalMilitar && !extWarName)}
+                                disabled={!directMaterialId || (!isExternalMilitar && !foundUser) || (isExternalMilitar && (!extWarName || !directSaram || !extContact))}
                                 className={`px-6 h-[50px] rounded-xl font-black transition-all flex items-center justify-center gap-2 uppercase text-xs tracking-widest disabled:opacity-50 disabled:cursor-not-allowed ${isDarkMode ? 'bg-slate-700 text-white hover:bg-slate-600 border border-slate-600' : 'bg-slate-800 text-white hover:bg-slate-900 shadow-md'}`}
                             >
                                 <Plus className="w-5 h-5" /> Adicionar
@@ -1031,7 +1031,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                             <div className="flex-1"></div>
                             <button
                                 onClick={handleDirectRelease}
-                                disabled={actionLoading === 'direct' || (!selectedItems.length && !directMaterialId) || (isExternalMilitar && !extWarName)}
+                                disabled={actionLoading === 'direct' || (!selectedItems.length && !directMaterialId) || (isExternalMilitar && (!extWarName || !directSaram || !extContact))}
                                 className={`min-w-[200px] h-[50px] text-white rounded-xl font-black transition-all shadow-lg text-sm uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-500 shadow-blue-500/20`}
                             >
                                 {actionLoading === 'direct' ? 'Processando...' : 'Confirmar Cautela'}
