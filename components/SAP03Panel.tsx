@@ -85,6 +85,8 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     const [signaturePassword, setSignaturePassword] = useState('');
     const [signatureAction, setSignatureAction] = useState<'release' | 'approve' | 'return' | 'update_release' | 'update_return'>('release');
     const [signatureRequestId, setSignatureRequestId] = useState<string | string[] | null>(null);
+    const [isExternalSignature, setIsExternalSignature] = useState(false);
+    const [externalUserSaram, setExternalUserSaram] = useState('');
 
     // Handle Escape key to close modal
     useEffect(() => {
@@ -268,44 +270,25 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     const startSignatureFlow = async (requestId: string | string[], userId: string | null, action: 'update_release' | 'update_return', idUsuarioExterno?: string | null) => {
         setSignatureRequestId(requestId);
         try {
-            // Militar Externo: não tem senha, confirmar pelo operador logado
+            // Militar Externo: abre o modal pedindo o SARAM como senha
             if (!userId && idUsuarioExterno) {
                 const { data: extUser } = await supabase
                     .from('external_users_cautela')
-                    .select('id, rank, war_name, unit, contact')
+                    .select('id, rank, war_name, saram, unit, contact')
                     .eq('id', idUsuarioExterno)
                     .single();
 
-                const extName = extUser ? `${extUser.rank} ${extUser.war_name}` : 'Militar Externo';
-                const operatorName = `${user.rank || ''} ${user.war_name || user.name}`.trim();
-
-                const confirmed = window.confirm(
-                    `Confirmar recebimento de material de:\n\n${extName}\n\nOperador responsável: ${operatorName}\n\nO material será registrado como devolvido.`
-                );
-
-                if (confirmed) {
-                    setActionLoading('signature');
-                    const ids = Array.isArray(requestId) ? requestId : [requestId];
-                    const { error } = await supabase
-                        .from('movimentacao_cautela')
-                        .update({
-                            status: 'Concluído',
-                            recebido_por: operatorName,
-                            observacao: `Recebimento confirmado por ${operatorName} em ${new Date().toLocaleString()} (Militar Externo)`
-                        })
-                        .in('id', ids);
-                    if (error) throw error;
-
-                    // Atualizar estoque
-                    for (const id of ids) {
-                        const { data: loan } = await supabase.from('movimentacao_cautela').select('id_material, quantidade').eq('id', id).single();
-                        if (loan) await updateInventoryStock(loan.id_material, loan.quantidade || 1, 'return');
-                    }
-
-                    alert('Material recebido com sucesso!');
-                    fetchRequests();
+                if (!extUser) {
+                    alert('Dados do militar externo não encontrados.');
+                    return;
                 }
-                setActionLoading(null);
+
+                setFoundUser({ ...extUser, isExternal: true });
+                setExternalUserSaram(extUser.saram || '');
+                setIsExternalSignature(true);
+                setSignatureAction(action);
+                setSignatureRequestId(requestId);
+                setShowSignatureModal(true);
                 return;
             }
 
@@ -318,6 +301,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
 
             if (data) {
                 setFoundUser(data);
+                setIsExternalSignature(false);
                 setSignatureRequestId(requestId);
                 setSignatureAction(action);
                 setShowSignatureModal(true);
@@ -475,15 +459,25 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     };
 
     const confirmSignature = async () => {
-        if (!foundUser || signaturePassword !== foundUser.password) {
-            alert('Senha incorreta!');
-            return;
+        // Validação: externa usa SARAM como senha, interna usa password
+        if (isExternalSignature) {
+            if (!signaturePassword || signaturePassword !== externalUserSaram) {
+                alert('SARAM incorreto! Digite o SARAM exato do militar para confirmar a devolução.');
+                return;
+            }
+        } else {
+            if (!foundUser || signaturePassword !== foundUser.password) {
+                alert('Senha incorreta!');
+                return;
+            }
         }
 
         setActionLoading('signature');
         try {
             const userName = `${user.rank || ''} ${user.war_name || user.name}`.trim();
-            const militaryName = `${foundUser.rank} ${foundUser.war_name || foundUser.name}`.trim();
+            const militaryName = isExternalSignature
+                ? `${foundUser.rank} ${foundUser.war_name} (Ext)`.trim()
+                : `${foundUser.rank} ${foundUser.war_name || foundUser.name}`.trim();
             const now = new Date().toISOString();
 
             if (signatureAction === 'release') {
@@ -1729,6 +1723,8 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                 onClick={() => {
                                     setShowSignatureModal(false);
                                     setSignaturePassword('');
+                                    setIsExternalSignature(false);
+                                    setExternalUserSaram('');
                                 }}
                                 className={`absolute top-6 right-6 p-2 rounded-full transition-all ${isDarkMode ? 'bg-slate-700 text-slate-400 hover:text-white' : 'bg-slate-50 text-slate-300 hover:text-slate-500'}`}
                             >
@@ -1736,44 +1732,59 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                             </button>
 
                             <div className="text-center space-y-4">
-                                <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl transform -rotate-3 ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-600 text-white'}`}>
+                                <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl transform -rotate-3 ${isExternalSignature ? (isDarkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-600 text-white') : (isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-600 text-white')}`}>
                                     <ShieldCheck className="w-10 h-10" />
                                 </div>
-                                <h2 className={`text-2xl font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Assinatura Digital</h2>
-                                <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Validação de Identidade Criptográfica</p>
+                                <h2 className={`text-2xl font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                                    {isExternalSignature ? 'Confirmação de Devolução' : 'Assinatura Digital'}
+                                </h2>
+                                <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">
+                                    {isExternalSignature ? 'Militar Externo — usar SARAM como confirmação' : 'Validação de Identidade Criptográfica'}
+                                </p>
                             </div>
 
-                            <div className={`p-6 rounded-2xl border flex items-center gap-5 transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-700 shadow-inner' : 'bg-slate-50 border-slate-100 shadow-sm'}`}>
-                                <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center font-black text-white shadow-lg border-2 border-white/20">
+                            <div className={`p-6 rounded-2xl border flex items-center gap-5 transition-all ${isExternalSignature ? (isDarkMode ? 'bg-emerald-900/20 border-emerald-700/40' : 'bg-emerald-50 border-emerald-100') : (isDarkMode ? 'bg-slate-900/50 border-slate-700 shadow-inner' : 'bg-slate-50 border-slate-100 shadow-sm')}`}>
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center font-black text-white shadow-lg border-2 border-white/20 text-xs ${isExternalSignature ? 'bg-emerald-500' : 'bg-blue-500'}`}>
                                     {foundUser.rank}
                                 </div>
                                 <div>
                                     <p className={`font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{foundUser.war_name || foundUser.name}</p>
-                                    <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Militar Responsável</p>
+                                    <p className={`text-[10px] font-black uppercase tracking-widest ${isExternalSignature ? 'text-emerald-500' : 'text-blue-500'}`}>
+                                        {isExternalSignature ? `Militar Externo — ${foundUser.unit || ''}` : 'Militar Responsável'}
+                                    </p>
                                 </div>
                             </div>
 
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-slate-500 uppercase flex items-center gap-2 mb-1 tracking-widest pl-1">
-                                    <Lock className="w-3 h-3 text-blue-500" /> Senha do Sistema
+                                    <Lock className={`w-3 h-3 ${isExternalSignature ? 'text-emerald-500' : 'text-blue-500'}`} />
+                                    {isExternalSignature ? 'SARAM do Militar (confirma a devolução)' : 'Senha do Sistema'}
                                 </label>
+                                {isExternalSignature && (
+                                    <p className={`text-[10px] font-bold px-3 py-2 rounded-xl mb-2 ${isDarkMode ? 'bg-emerald-900/30 text-emerald-400' : 'bg-emerald-50 text-emerald-700'}`}>
+                                        O militar externo deve digitar seu SARAM para confirmar a entrega do material.
+                                    </p>
+                                )}
                                 <input
                                     autoFocus
-                                    type="password"
+                                    type={isExternalSignature ? 'text' : 'password'}
                                     value={signaturePassword}
                                     onChange={(e) => setSignaturePassword(e.target.value)}
+                                    placeholder={isExternalSignature ? 'Digite o SARAM...' : ''}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') confirmSignature();
                                         if (e.key === 'Escape') {
                                             setShowSignatureModal(false);
                                             setSignaturePassword('');
+                                            setIsExternalSignature(false);
+                                            setExternalUserSaram('');
                                         }
                                     }}
-                                    className={`w-full px-6 py-5 border rounded-2xl font-black outline-none text-center tracking-[1em] text-xl transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:ring-blue-500/50 focus:ring-4' : 'bg-slate-50 border-slate-200 text-slate-900 focus:ring-blue-500/20 focus:ring-4'}`}
+                                    className={`w-full px-6 py-5 border rounded-2xl font-black outline-none text-center ${isExternalSignature ? 'tracking-widest text-lg' : 'tracking-[1em] text-xl'} transition-all ${isExternalSignature ? (isDarkMode ? 'bg-slate-900 border-emerald-700/50 text-white focus:ring-emerald-500/50 focus:ring-4' : 'bg-slate-50 border-emerald-200 text-slate-900 focus:ring-emerald-500/20 focus:ring-4') : (isDarkMode ? 'bg-slate-900 border-slate-700 text-white focus:ring-blue-500/50 focus:ring-4' : 'bg-slate-50 border-slate-200 text-slate-900 focus:ring-blue-500/20 focus:ring-4')}`}
                                 />
                             </div>
 
-                            {localStorage.getItem('gsdsp_biometric_id') && (
+                            {!isExternalSignature && localStorage.getItem('gsdsp_biometric_id') && (
                                 <button
                                     onClick={async () => {
                                         try {
@@ -1805,9 +1816,9 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                             <button
                                 onClick={confirmSignature}
                                 disabled={!signaturePassword || actionLoading === 'signature'}
-                                className="w-full h-[50px] bg-blue-600 text-white rounded-xl font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 uppercase text-xs tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                                className={`w-full h-[50px] text-white rounded-xl font-black transition-all shadow-lg uppercase text-xs tracking-widest disabled:opacity-50 disabled:cursor-not-allowed ${isExternalSignature ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'}`}
                             >
-                                {actionLoading === 'signature' ? 'Assinando...' : 'Confirmar Assinatura'}
+                                {actionLoading === 'signature' ? 'Confirmando...' : (isExternalSignature ? 'Confirmar Devolução' : 'Confirmar Assinatura')}
                             </button>
                         </div>
                     </div>
