@@ -132,38 +132,6 @@ export default function SideMenu({
                                 <MenuItem id="destinometro" label="Destinômetro" icon={MapPin} onClick={onOpenDestinometro} />
                             </div>
 
-                            {/* Material Section */}
-                            {canViewMaterialPanel && (
-                                <div className="space-y-1">
-                                    {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Central de Material</h3>}
-                                    <button
-                                        onClick={() => !isCollapsed && setIsMaterialMenuOpen(!isMaterialMenuOpen)}
-                                        className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/80 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <Package className="w-5 h-5 shrink-0" />
-                                            {!isCollapsed && <span className="text-sm font-bold">Painel de Material</span>}
-                                        </div>
-                                        {!isCollapsed && (
-                                            <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isMaterialMenuOpen ? 'rotate-90' : ''}`} />
-                                        )}
-                                    </button>
-                                    {(!isCollapsed && isMaterialMenuOpen) && (
-                                        <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
-                                            <MenuItem id="my-material-loans" label="Minhas Cautelas" icon={Package} />
-                                            {canRequestMaterial && <MenuItem id="request-material" label="Solicitar Material" icon={PlusCircle} />}
-                                            {canManageMaterial && (
-                                                <>
-                                                    <div className="my-2 border-t border-slate-800" />
-                                                    <MenuItem id="material-approvals" label="Material e Cautela" icon={ShieldCheck} />
-                                                    <MenuItem id="inventory-management" label="Gestão de Estoque" icon={LayoutDashboard} />
-                                                </>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
                             {/* Personnel Section */}
                             {canViewPersonnel && (
                                 <div className="space-y-1">
@@ -238,6 +206,37 @@ export default function SideMenu({
                                             {hasPermission(currentUser, PERMISSIONS.VIEW_SERVICE_QUEUE) && <MenuItem id="kanban" label="Fila de Serviço" icon={LayoutDashboard} />}
                                             <MenuItem id="dashboard" label="Estatísticas BI" icon={BarChart3} />
                                             <MenuItem id="list" label="Arquivo Geral" icon={FileText} />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                            {/* Material Section */}
+                            {canViewMaterialPanel && (
+                                <div className="space-y-1">
+                                    {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Central de Material</h3>}
+                                    <button
+                                        onClick={() => !isCollapsed && setIsMaterialMenuOpen(!isMaterialMenuOpen)}
+                                        className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/80 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <Package className="w-5 h-5 shrink-0" />
+                                            {!isCollapsed && <span className="text-sm font-bold">Painel de Material</span>}
+                                        </div>
+                                        {!isCollapsed && (
+                                            <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isMaterialMenuOpen ? 'rotate-90' : ''}`} />
+                                        )}
+                                    </button>
+                                    {(!isCollapsed && isMaterialMenuOpen) && (
+                                        <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
+                                            <MenuItem id="my-material-loans" label="Minhas Cautelas" icon={Package} />
+                                            {canRequestMaterial && <MenuItem id="request-material" label="Solicitar Material" icon={PlusCircle} />}
+                                            {canManageMaterial && (
+                                                <>
+                                                    <div className="my-2 border-t border-slate-800" />
+                                                    <MenuItem id="material-approvals" label="Material e Cautela" icon={ShieldCheck} />
+                                                    <MenuItem id="inventory-management" label="Gestão de Estoque" icon={LayoutDashboard} />
+                                                </>
+                                            )}
                                         </div>
                                     )}
                                 </div>
