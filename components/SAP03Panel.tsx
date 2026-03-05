@@ -26,6 +26,8 @@ interface LoanRequest {
         rank: string;
         war_name: string;
         saram: string;
+        contact?: string;
+        isExternal?: boolean;
     };
 }
 
@@ -201,11 +203,11 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             if (extUserIds.length > 0) {
                 const { data: extData, error: extError } = await supabase
                     .from('external_users_cautela')
-                    .select('id, rank, war_name, saram, unit')
+                    .select('id, rank, war_name, saram, unit, contact')
                     .in('id', extUserIds);
                 if (!extError) {
                     extUserMap = (extData || []).reduce((acc: any, u) => {
-                        acc[u.id] = { rank: u.rank, war_name: `${u.war_name} (${u.unit || 'Ext'})`, saram: u.saram, isExternal: true };
+                        acc[u.id] = { rank: u.rank, war_name: `${u.war_name} (${u.unit || 'Ext'})`, saram: u.saram, contact: u.contact, isExternal: true };
                         return acc;
                     }, {});
                 }
@@ -1505,7 +1507,24 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                         </div>
                                         <p className="text-xs text-slate-500 font-medium">
                                             Solicitante: <span className={`font-black uppercase ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{req.solicitante ? `${req.solicitante.rank} ${req.solicitante.war_name}` : `ID: ${req.id_usuario}`}</span>
+                                            {req.solicitante?.isExternal && (
+                                                <span className="ml-2 text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-500 font-black uppercase tracking-widest border border-emerald-500/20">EXT</span>
+                                            )}
                                         </p>
+                                        {req.solicitante?.isExternal && (
+                                            <div className="flex flex-wrap items-center gap-3 mt-1.5">
+                                                {req.solicitante.saram && (
+                                                    <span className={`text-[10px] font-black flex items-center gap-1 px-2 py-0.5 rounded-lg ${isDarkMode ? 'bg-slate-700 text-emerald-400' : 'bg-emerald-50 text-emerald-700'}`}>
+                                                        🪪 SARAM: {req.solicitante.saram}
+                                                    </span>
+                                                )}
+                                                {req.solicitante.contact && (
+                                                    <span className={`text-[10px] font-black flex items-center gap-1 px-2 py-0.5 rounded-lg ${isDarkMode ? 'bg-slate-700 text-blue-400' : 'bg-blue-50 text-blue-700'}`}>
+                                                        📞 {req.solicitante.contact}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
                                         {req.material?.endereco && (
                                             <p className="text-[10px] text-amber-500 font-black flex items-center gap-1.5 mt-1.5 uppercase tracking-wide">
                                                 <MapPin className="w-3 h-3" /> {req.material.endereco}
