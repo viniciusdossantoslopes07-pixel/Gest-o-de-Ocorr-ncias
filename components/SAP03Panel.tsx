@@ -1205,7 +1205,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                             const firstReq = requests.find(r => r.id === firstId);
                                             if (firstReq) {
                                                 const action = activeTab === 'Solicitações' ? 'update_release' : 'update_return';
-                                                startSignatureFlow(selectedBatchIds, firstReq.id_usuario, action);
+                                                startSignatureFlow(selectedBatchIds, firstReq.id_usuario, action, firstReq.id_usuario_externo);
                                             }
                                         }}
                                         className={`px-4 py-2 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${activeTab === 'Solicitações' ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/20' : 'bg-emerald-600 hover:bg-emerald-700'}`}
