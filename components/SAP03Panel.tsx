@@ -184,34 +184,25 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             const userIds = Array.from(new Set(rawData.map(r => r.id_usuario).filter(Boolean)));
             const extUserIds = Array.from(new Set(rawData.map(r => r.id_usuario_externo).filter(Boolean)));
 
-            let userMap: any = {};
-            let extUserMap: any = {};
+            // Busca paralela: usuarios internos e externos ao mesmo tempo
+            const [userResult, extUserResult] = await Promise.all([
+                userIds.length > 0
+                    ? supabase.from('users').select('id, rank, war_name, name, saram').in('id', userIds)
+                    : Promise.resolve({ data: [], error: null }),
+                extUserIds.length > 0
+                    ? supabase.from('external_users_cautela').select('id, rank, war_name, saram, unit, contact').in('id', extUserIds)
+                    : Promise.resolve({ data: [], error: null })
+            ]);
 
-            if (userIds.length > 0) {
-                const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .select('id, rank, war_name, name, saram')
-                    .in('id', userIds);
-                if (!userError) {
-                    userMap = (userData || []).reduce((acc: any, u) => {
-                        acc[u.id] = { rank: u.rank, war_name: u.war_name || u.name, saram: u.saram };
-                        return acc;
-                    }, {});
-                }
-            }
+            const userMap = (userResult.data || []).reduce((acc: any, u: any) => {
+                acc[u.id] = { rank: u.rank, war_name: u.war_name || u.name, saram: u.saram };
+                return acc;
+            }, {});
 
-            if (extUserIds.length > 0) {
-                const { data: extData, error: extError } = await supabase
-                    .from('external_users_cautela')
-                    .select('id, rank, war_name, saram, unit, contact')
-                    .in('id', extUserIds);
-                if (!extError) {
-                    extUserMap = (extData || []).reduce((acc: any, u) => {
-                        acc[u.id] = { rank: u.rank, war_name: `${u.war_name} (${u.unit || 'Ext'})`, saram: u.saram, contact: u.contact, isExternal: true };
-                        return acc;
-                    }, {});
-                }
-            }
+            const extUserMap = (extUserResult.data || []).reduce((acc: any, u: any) => {
+                acc[u.id] = { rank: u.rank, war_name: `${u.war_name} (${u.unit || 'Ext'})`, saram: u.saram, contact: u.contact, isExternal: true };
+                return acc;
+            }, {});
 
             const enrichedData = rawData.map(r => ({
                 ...r,
@@ -1107,33 +1098,52 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                 </div>
             )}
 
-            {/* Tabs Modernizadas */}
-            <div className={`flex p-1.5 rounded-2xl w-full md:w-fit self-start border flex-wrap gap-1 shadow-sm ${isDarkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-100/50 border-slate-200'}`}>
-                {(['Solicitações', 'Em Uso', 'Histórico'] as const).map(tab => (
-                    <button
-                        key={tab}
-                        onClick={() => {
-                            setActiveTab(tab);
-                            setSelectedBatchIds([]);
-                            if (tab !== 'Histórico') {
-                                setHistoryFilterDay('');
-                                setHistoryFilterMonth('');
-                                setHistoryFilterYear('');
-                            }
-                        }}
-                        className={`flex-1 md:flex-none px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap flex items-center justify-center gap-2.5 ${activeTab === tab ? (isDarkMode ? 'bg-slate-800 text-blue-400 shadow-lg border border-slate-700' : 'bg-white text-blue-700 shadow-md border border-slate-100') : 'text-slate-500 hover:text-slate-400 transparent'}`}
-                    >
-                        {tab}
-                        <span className={`px-2 py-0.5 rounded-lg text-xs font-black ${activeTab === tab ? (isDarkMode ? 'bg-blue-600/20 text-blue-400' : 'bg-blue-50 text-blue-600') : (isDarkMode ? 'bg-slate-800 text-slate-500' : 'bg-slate-200 text-slate-500')}`}>
-                            {requests.filter(req => {
-                                if (tab === 'Solicitações') return ['Pendente', 'Aprovado'].includes(req.status);
-                                if (tab === 'Em Uso') return req.status === 'Em Uso';
-                                if (tab === 'Histórico') return ['Concluído', 'Rejeitado'].includes(req.status);
-                                return false;
-                            }).length}
-                        </span>
-                    </button>
-                ))}
+            {/* Tabs Premium — Cards com métricas */}
+            <div className="grid grid-cols-3 gap-3">
+                {(['Solicitações', 'Em Uso', 'Histórico'] as const).map(tab => {
+                    const count = requests.filter(req => {
+                        if (tab === 'Solicitações') return ['Pendente', 'Aprovado'].includes(req.status);
+                        if (tab === 'Em Uso') return req.status === 'Em Uso';
+                        if (tab === 'Histórico') return ['Concluído', 'Rejeitado'].includes(req.status);
+                        return false;
+                    }).length;
+                    const isActive = activeTab === tab;
+                    const colors = {
+                        'Solicitações': { active: 'from-amber-500 to-orange-500', icon: '📋', dot: 'bg-amber-400' },
+                        'Em Uso': { active: 'from-blue-600 to-blue-500', icon: '📦', dot: 'bg-blue-400' },
+                        'Histórico': { active: 'from-slate-600 to-slate-500', icon: '🗂️', dot: 'bg-slate-400' },
+                    }[tab];
+                    return (
+                        <button
+                            key={tab}
+                            onClick={() => {
+                                setActiveTab(tab);
+                                setSelectedBatchIds([]);
+                                if (tab !== 'Histórico') {
+                                    setHistoryFilterDay('');
+                                    setHistoryFilterMonth('');
+                                    setHistoryFilterYear('');
+                                }
+                            }}
+                            className={`relative flex flex-col items-start p-4 rounded-2xl border transition-all duration-200 overflow-hidden text-left ${isActive
+                                    ? `bg-gradient-to-br ${colors.active} text-white border-transparent shadow-lg`
+                                    : isDarkMode
+                                        ? 'bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-600 hover:bg-slate-800'
+                                        : 'bg-white border-slate-100 text-slate-500 hover:border-slate-200 shadow-sm hover:shadow-md'
+                                }`}
+                        >
+                            {isActive && <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_white,_transparent)]" />}
+                            <div className="flex items-center justify-between w-full mb-2">
+                                <span className="text-lg">{colors.icon}</span>
+                                {count > 0 && !isActive && <span className={`w-2 h-2 rounded-full ${colors.dot} animate-pulse`} />}
+                            </div>
+                            <p className={`text-2xl font-black tracking-tight leading-none mb-1 ${isActive ? 'text-white' : (isDarkMode ? 'text-white' : 'text-slate-800')}`}>
+                                {count}
+                            </p>
+                            <p className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-white/80' : ''}`}>{tab}</p>
+                        </button>
+                    );
+                })}
             </div>
 
             {/* Search and Batch Actions */}
