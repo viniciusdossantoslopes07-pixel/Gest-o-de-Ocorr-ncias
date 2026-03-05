@@ -1126,10 +1126,10 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                 }
                             }}
                             className={`relative flex flex-col items-start p-4 rounded-2xl border transition-all duration-200 overflow-hidden text-left ${isActive
-                                    ? `bg-gradient-to-br ${colors.active} text-white border-transparent shadow-lg`
-                                    : isDarkMode
-                                        ? 'bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-600 hover:bg-slate-800'
-                                        : 'bg-white border-slate-100 text-slate-500 hover:border-slate-200 shadow-sm hover:shadow-md'
+                                ? `bg-gradient-to-br ${colors.active} text-white border-transparent shadow-lg`
+                                : isDarkMode
+                                    ? 'bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-600 hover:bg-slate-800'
+                                    : 'bg-white border-slate-100 text-slate-500 hover:border-slate-200 shadow-sm hover:shadow-md'
                                 }`}
                         >
                             {isActive && <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_white,_transparent)]" />}
@@ -1146,91 +1146,6 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                 })}
             </div>
 
-            {/* Search and Batch Actions */}
-            {
-                (activeTab === 'Em Uso' || activeTab === 'Histórico' || activeTab === 'Solicitações') && (
-                    <div className={`flex flex-col md:flex-row gap-6 items-center justify-between p-6 rounded-[2rem] border animate-scale-in mb-6 ${isDarkMode ? 'bg-slate-800/40 border-slate-700 shadow-none' : 'bg-blue-50/50 border-blue-100 shadow-sm shadow-blue-100/20'}`}>
-                        <div className="flex-1 w-full flex flex-col md:flex-row gap-4 items-center">
-                            <div className="relative w-full md:w-96 flex-1">
-                                <input
-                                    type="text"
-                                    placeholder="Buscar por SARAM, Nome do Militar ou Item..."
-                                    value={inUseSearch}
-                                    onChange={(e) => setInUseSearch(e.target.value)}
-                                    className={`w-full pl-12 pr-4 py-3 border rounded-xl outline-none text-sm font-bold transition-all focus:ring-2 focus:ring-blue-500 shadow-inner ${isDarkMode ? 'bg-slate-900/80 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
-                                />
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                            </div>
-
-                        </div>
-
-                        {(activeTab === 'Em Uso' || activeTab === 'Solicitações') && (
-                            <div className="flex items-center gap-4 w-full md:w-auto">
-                                <label className={`flex items-center gap-2 cursor-pointer group px-4 py-2 rounded-xl border transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-white border-slate-200'}`}>
-                                    <input
-                                        type="checkbox"
-                                        className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-30"
-                                        checked={(() => {
-                                            const selectableRequests = filteredRequests.filter(r => (activeTab === 'Em Uso' || activeTab === 'Solicitações'));
-                                            if (selectableRequests.length === 0) return false;
-
-                                            // Se já tem seleção, o "Selecionar Tudo" deve se referir apenas ao usuário já selecionado
-                                            if (selectedBatchIds.length > 0) {
-                                                const firstId = selectedBatchIds[0];
-                                                const firstReq = requests.find(r => r.id === firstId);
-                                                const userItems = selectableRequests.filter(r => r.id_usuario === firstReq?.id_usuario);
-                                                return selectedBatchIds.length === userItems.length;
-                                            }
-
-                                            return false;
-                                        })()}
-                                        onChange={(e) => {
-                                            if (e.target.checked) {
-                                                const selectable = filteredRequests.filter(r => (activeTab === 'Em Uso' || activeTab === 'Solicitações'));
-                                                if (selectable.length > 0) {
-                                                    // Se não tem nada selecionado, seleciona todos do primeiro usuário da lista
-                                                    // Se já tem seleção, seleciona todos do usuário já selecionado
-                                                    const targetUserId = selectedBatchIds.length > 0
-                                                        ? requests.find(r => r.id === selectedBatchIds[0])?.id_usuario
-                                                        : selectable[0].id_usuario;
-
-                                                    const idsToSelect = selectable
-                                                        .filter(r => r.id_usuario === targetUserId)
-                                                        .map(r => r.id);
-                                                    setSelectedBatchIds(idsToSelect);
-                                                }
-                                            }
-                                            else setSelectedBatchIds([]);
-                                        }}
-                                    />
-                                    <span className="text-sm font-bold text-slate-600 group-hover:text-blue-600 whitespace-nowrap">
-                                        {selectedBatchIds.length > 0 ? (
-                                            `Selecionar todos de ${requests.find(r => r.id === selectedBatchIds[0])?.solicitante?.war_name || '... '}`
-                                        ) : "Selecionar Tudo (por usuário)"}
-                                    </span>
-                                </label>
-
-                                {selectedBatchIds.length > 0 && (
-                                    <button
-                                        onClick={() => {
-                                            const firstId = selectedBatchIds[0];
-                                            const firstReq = requests.find(r => r.id === firstId);
-                                            if (firstReq) {
-                                                const action = activeTab === 'Solicitações' ? 'update_release' : 'update_return';
-                                                startSignatureFlow(selectedBatchIds, firstReq.id_usuario, action, firstReq.id_usuario_externo);
-                                            }
-                                        }}
-                                        className={`px-4 py-2 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${activeTab === 'Solicitações' ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/20' : 'bg-emerald-600 hover:bg-emerald-700'}`}
-                                    >
-                                        {activeTab === 'Solicitações' ? <Package className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
-                                        {activeTab === 'Solicitações' ? 'Entregar Selecionados' : 'Receber Selecionados'} ({selectedBatchIds.length})
-                                    </button>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                )
-            }
 
             {/* Filtros Analíticos (Histórico e Em Uso) */}
             {(activeTab === 'Histórico' || activeTab === 'Em Uso') && (
@@ -1466,6 +1381,78 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                 </div>
                             </div>
                         </div>
+                    </div>
+                )
+            }
+
+            {/* Search and Batch Actions — abaixo dos gráficos */}
+            {
+                (activeTab === 'Em Uso' || activeTab === 'Histórico' || activeTab === 'Solicitações') && (
+                    <div className={`flex flex-col md:flex-row gap-4 items-center justify-between p-4 rounded-2xl border animate-scale-in ${isDarkMode ? 'bg-slate-800/40 border-slate-700' : 'bg-blue-50/50 border-blue-100 shadow-sm'}`}>
+                        <div className="relative flex-1 w-full">
+                            <input
+                                type="text"
+                                placeholder="Buscar por SARAM, Nome do Militar ou Item..."
+                                value={inUseSearch}
+                                onChange={(e) => setInUseSearch(e.target.value)}
+                                className={`w-full pl-11 pr-4 py-2.5 border rounded-xl outline-none text-sm font-bold transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900/80 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
+                            />
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        </div>
+
+                        {(activeTab === 'Em Uso' || activeTab === 'Solicitações') && (
+                            <div className="flex items-center gap-3 shrink-0">
+                                <label className={`flex items-center gap-2 cursor-pointer group px-3 py-2 rounded-xl border transition-all text-sm ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-white border-slate-200'}`}>
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-30"
+                                        checked={(() => {
+                                            const selectableRequests = filteredRequests.filter(r => (activeTab === 'Em Uso' || activeTab === 'Solicitações'));
+                                            if (selectableRequests.length === 0) return false;
+                                            if (selectedBatchIds.length > 0) {
+                                                const firstId = selectedBatchIds[0];
+                                                const firstReq = requests.find(r => r.id === firstId);
+                                                const userItems = selectableRequests.filter(r => r.id_usuario === firstReq?.id_usuario);
+                                                return selectedBatchIds.length === userItems.length;
+                                            }
+                                            return false;
+                                        })()}
+                                        onChange={(e) => {
+                                            if (e.target.checked) {
+                                                const selectable = filteredRequests.filter(r => (activeTab === 'Em Uso' || activeTab === 'Solicitações'));
+                                                if (selectable.length > 0) {
+                                                    const targetUserId = selectedBatchIds.length > 0
+                                                        ? requests.find(r => r.id === selectedBatchIds[0])?.id_usuario
+                                                        : selectable[0].id_usuario;
+                                                    const idsToSelect = selectable.filter(r => r.id_usuario === targetUserId).map(r => r.id);
+                                                    setSelectedBatchIds(idsToSelect);
+                                                }
+                                            } else setSelectedBatchIds([]);
+                                        }}
+                                    />
+                                    <span className="font-bold text-slate-600 group-hover:text-blue-600 whitespace-nowrap">
+                                        {selectedBatchIds.length > 0
+                                            ? `Todos de ${requests.find(r => r.id === selectedBatchIds[0])?.solicitante?.war_name || '...'}`
+                                            : 'Sel. por usuário'}
+                                    </span>
+                                </label>
+                                {selectedBatchIds.length > 0 && (
+                                    <button
+                                        onClick={() => {
+                                            const firstReq = requests.find(r => r.id === selectedBatchIds[0]);
+                                            if (firstReq) {
+                                                const action = activeTab === 'Solicitações' ? 'update_release' : 'update_return';
+                                                startSignatureFlow(selectedBatchIds, firstReq.id_usuario, action, firstReq.id_usuario_externo);
+                                            }
+                                        }}
+                                        className={`px-4 py-2 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${activeTab === 'Solicitações' ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/20' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                                    >
+                                        {activeTab === 'Solicitações' ? <Package className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                                        {activeTab === 'Solicitações' ? 'Entregar' : 'Receber'} ({selectedBatchIds.length})
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </div>
                 )
             }
