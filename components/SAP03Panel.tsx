@@ -1549,48 +1549,63 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                             </div>
 
                             {expandedRequestId === req.id && (
-                                <div className={`px-6 pb-8 pt-0 border-t animate-fade-in ${isDarkMode ? 'border-slate-700' : 'border-slate-50'}`}>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8">
-                                        <div className="col-span-2 space-y-6">
-                                            <div className={`p-6 rounded-2xl border space-y-6 ${isDarkMode ? 'bg-slate-900/50 border-slate-700 shadow-inner' : 'bg-slate-50 border-slate-100 shadow-sm'}`}>
-                                                <h4 className="text-[10px] font-black text-slate-400 flex items-center gap-2 border-b border-slate-200 pb-3 uppercase tracking-widest pl-1">
-                                                    <ShieldCheck className="w-4 h-4 text-blue-500" />
-                                                    Cadeia de Responsabilidade
-                                                </h4>
-                                                <div className="grid grid-cols-2 gap-6 pl-1">
-                                                    <div>
-                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Autorizado Por</p>
-                                                        <p className={`text-sm font-black uppercase ${isDarkMode ? 'text-white' : 'text-slate-700'}`}>{req.autorizado_por || '---'}</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Entregue Por</p>
-                                                        <p className={`text-sm font-black uppercase ${isDarkMode ? 'text-white' : 'text-slate-700'}`}>{req.entregue_por || '---'}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            {req.observacao && (
-                                                <div className="space-y-2">
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Observações Técnicas</p>
-                                                    <div className={`text-sm p-5 rounded-2xl border italic font-medium leading-relaxed ${isDarkMode ? 'bg-blue-500/10 border-blue-500/30 text-blue-200' : 'bg-blue-50/50 border-blue-100 text-blue-700'}`}>"{req.observacao}"</div>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="space-y-4">
-                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2">Ações Operacionais</h4>
-                                            {req.status === 'Pendente' && (
-                                                <>
-                                                    <button onClick={(e) => { e.stopPropagation(); startSignatureFlow(req.id, req.id_usuario, 'update_release'); }} className="w-full px-5 py-4 bg-blue-600 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-blue-500/20 active:scale-95 transition-all">Entregar Material com Senha do Solicitante</button>
-                                                    <button onClick={(e) => { e.stopPropagation(); handleDeleteRequest(req.id); }} className="w-full px-5 py-3 border-2 border-red-500 text-red-500 hover:bg-red-50 rounded-xl font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all">Excluir Solicitação (Não Compareceu)</button>
-                                                </>
-                                            )}
-                                            {req.status === 'Pendente Devolução' && (
-                                                <button onClick={(e) => { e.stopPropagation(); handleRejectReturn(req); }} className="w-full px-5 py-4 bg-red-500 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-red-500/20 active:scale-95 transition-all">Rejeitar Devolução</button>
-                                            )}
-                                            {(req.status === 'Em Uso' || req.status === 'Pendente Devolução') && (
-                                                <button onClick={(e) => { e.stopPropagation(); startSignatureFlow(req.id, req.id_usuario, 'update_return'); }} className="w-full px-5 py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">Receber Material</button>
-                                            )}
-                                            <button onClick={(e) => { e.stopPropagation(); setSelectedRequest(req); }} className={`w-full px-5 py-4 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg active:scale-95 transition-all ${isDarkMode ? 'bg-slate-700 text-white shadow-none border border-slate-600' : 'bg-slate-800 text-white shadow-slate-900/20'}`}>Visualizar Cupom Digital</button>
-                                        </div>
+                                <div className={`px-5 py-4 border-t animate-fade-in ${isDarkMode ? 'border-slate-700/60' : 'border-slate-100'}`}>
+                                    {/* Cadeia de responsabilidade em linha */}
+                                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                                        {req.autorizado_por && (
+                                            <span className={`flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide ${isDarkMode ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
+                                                <ShieldCheck className="w-3 h-3" /> {req.autorizado_por}
+                                            </span>
+                                        )}
+                                        {req.autorizado_por && req.entregue_por && <span className="text-slate-400 text-xs">→</span>}
+                                        {req.entregue_por && (
+                                            <span className={`flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide ${isDarkMode ? 'bg-blue-500/15 text-blue-400 border border-blue-500/20' : 'bg-blue-50 text-blue-700 border border-blue-200'}`}>
+                                                <Truck className="w-3 h-3" /> {req.entregue_por}
+                                            </span>
+                                        )}
+                                        {req.entregue_por && req.recebido_por && <span className="text-slate-400 text-xs">→</span>}
+                                        {req.recebido_por && (
+                                            <span className={`flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide ${isDarkMode ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`}>
+                                                <CheckCircle className="w-3 h-3" /> {req.recebido_por}
+                                            </span>
+                                        )}
+                                        {!req.autorizado_por && !req.entregue_por && !req.recebido_por && (
+                                            <span className="text-[10px] text-slate-400 italic">Sem movimentação registrada</span>
+                                        )}
+                                    </div>
+
+                                    {/* Observação compacta */}
+                                    {req.observacao && (
+                                        <p className={`text-[10px] italic leading-snug mb-3 px-3 py-2 rounded-xl truncate ${isDarkMode ? 'bg-slate-900/50 text-slate-400' : 'bg-slate-50 text-slate-500'}`} title={req.observacao}>
+                                            "{req.observacao}"
+                                        </p>
+                                    )}
+
+                                    {/* Botões ação inline */}
+                                    <div className="flex flex-wrap gap-2" onClick={e => e.stopPropagation()}>
+                                        {req.status === 'Pendente' && (
+                                            <>
+                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_release')} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-black text-[10px] uppercase tracking-wide transition-all">
+                                                    Entregar
+                                                </button>
+                                                <button onClick={() => handleDeleteRequest(req.id)} className="px-3 py-1.5 border border-red-400 text-red-500 hover:bg-red-50 rounded-lg font-black text-[10px] uppercase tracking-wide transition-all">
+                                                    Cancelar
+                                                </button>
+                                            </>
+                                        )}
+                                        {req.status === 'Pendente Devolução' && (
+                                            <button onClick={() => handleRejectReturn(req)} className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg font-black text-[10px] uppercase tracking-wide transition-all">
+                                                Rejeitar
+                                            </button>
+                                        )}
+                                        {(req.status === 'Em Uso' || req.status === 'Pendente Devolução') && (
+                                            <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return', req.id_usuario_externo)} className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-black text-[10px] uppercase tracking-wide transition-all">
+                                                Receber
+                                            </button>
+                                        )}
+                                        <button onClick={() => setSelectedRequest(req)} className={`px-3 py-1.5 rounded-lg font-black text-[10px] uppercase tracking-wide transition-all border ${isDarkMode ? 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'}`}>
+                                            Cupom
+                                        </button>
                                     </div>
                                 </div>
                             )}
