@@ -265,9 +265,51 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
         setIsSearchingSaram(false);
     };
 
-    const startSignatureFlow = async (requestId: string | string[], userId: string, action: 'update_release' | 'update_return') => {
+    const startSignatureFlow = async (requestId: string | string[], userId: string | null, action: 'update_release' | 'update_return', idUsuarioExterno?: string | null) => {
         setSignatureRequestId(requestId);
         try {
+            // Militar Externo: não tem senha, confirmar pelo operador logado
+            if (!userId && idUsuarioExterno) {
+                const { data: extUser } = await supabase
+                    .from('external_users_cautela')
+                    .select('id, rank, war_name, unit, contact')
+                    .eq('id', idUsuarioExterno)
+                    .single();
+
+                const extName = extUser ? `${extUser.rank} ${extUser.war_name}` : 'Militar Externo';
+                const operatorName = `${user.rank || ''} ${user.war_name || user.name}`.trim();
+
+                const confirmed = window.confirm(
+                    `Confirmar recebimento de material de:\n\n${extName}\n\nOperador responsável: ${operatorName}\n\nO material será registrado como devolvido.`
+                );
+
+                if (confirmed) {
+                    setActionLoading('signature');
+                    const ids = Array.isArray(requestId) ? requestId : [requestId];
+                    const { error } = await supabase
+                        .from('movimentacao_cautela')
+                        .update({
+                            status: 'Concluído',
+                            recebido_por: operatorName,
+                            observacao: `Recebimento confirmado por ${operatorName} em ${new Date().toLocaleString()} (Militar Externo)`
+                        })
+                        .in('id', ids);
+                    if (error) throw error;
+
+                    // Atualizar estoque
+                    for (const id of ids) {
+                        const { data: loan } = await supabase.from('movimentacao_cautela').select('id_material, quantidade').eq('id', id).single();
+                        if (loan) await updateInventoryStock(loan.id_material, loan.quantidade || 1, 'return');
+                    }
+
+                    alert('Material recebido com sucesso!');
+                    fetchRequests();
+                }
+                setActionLoading(null);
+                return;
+            }
+
+            // Militar Interno: fluxo normal com senha
             const { data } = await supabase
                 .from('users')
                 .select('id, name, rank, war_name, password')
@@ -284,6 +326,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             }
         } catch (err) {
             console.error('Error starting signature flow:', err);
+            alert('Erro ao processar: ' + (err as any).message);
         } finally {
             setActionLoading(null);
         }
@@ -1482,10 +1525,10 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                                 <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_release')} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm">Entregar Material</button>
                                             )}
                                             {req.status === 'Pendente Devolução' && (
-                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return')} className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold text-sm">Receber Material</button>
+                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return', req.id_usuario_externo)} className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold text-sm">Receber Material</button>
                                             )}
                                             {req.status === 'Em Uso' && (
-                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return')} className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold text-sm">Receber Material</button>
+                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return', req.id_usuario_externo)} className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold text-sm">Receber Material</button>
                                             )}
                                         </div>
                                     </div>
