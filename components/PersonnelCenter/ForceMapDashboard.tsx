@@ -54,6 +54,8 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const [showAbsentList, setShowAbsentList] = useState(false);
     const [expandedSector, setExpandedSector] = useState<string | null>(null);
     const [isPrinting, setIsPrinting] = useState(false);
+    const [showBaspGroup, setShowBaspGroup] = useState(true);
+    const [showGsdGroup, setShowGsdGroup] = useState(true);
     const { displaySectors } = useSectors();
 
     // Previous day for delta comparison
@@ -801,37 +803,101 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                             <ShieldAlert className="w-28 h-28" />
                         </div>
                         <h3 className="text-sm font-black tracking-tight mb-4 uppercase">Controle de Assinaturas</h3>
-                        <div className="space-y-3 relative z-10">
-                            {(selectedSector === 'GSD-SP'
-                                ? GSD_SP_SECTORS.filter(s => displaySectors.includes(s))
-                                : selectedSector === 'BASP'
-                                    ? BASP_SECTORS.filter(s => displaySectors.includes(s))
-                                    : displaySectors
-                            ).map(sector => {
-                                const sectorCalls = attendanceHistory?.filter(a =>
-                                    a.date === selectedDate && a.sector === sector && !!a.signedBy
-                                ) || [];
-                                const hasInicio = sectorCalls.some(c => c.callType === 'INICIO');
-                                const hasTermino = sectorCalls.some(c => c.callType === 'TERMINO');
+                        <div className="space-y-2 relative z-10">
+                            {(() => {
+                                // Determinar quais setores mostrar com base no filtro
+                                const isFiltered = selectedSector === 'GSD-SP' || selectedSector === 'BASP';
 
-                                return (
-                                    <div key={sector} className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl p-3">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-2 h-2 rounded-full ${hasTermino ? 'bg-emerald-400' : hasInicio ? 'bg-amber-400' : 'bg-red-400'} shadow-[0_0_8px_rgba(52,211,153,0.5)]`} />
-                                            <div>
-                                                <p className="text-[10px] font-black text-white uppercase tracking-widest">{sector}</p>
-                                                <p className="text-[9px] text-slate-400 font-bold uppercase">
-                                                    {hasTermino ? 'Expediente Encerrado' : hasInicio ? '1ª Chamada Assinada' : 'Nenhuma Chamada'}
-                                                </p>
+                                // Grupos de setores
+                                const baspList = BASP_SECTORS.filter(s => displaySectors.includes(s));
+                                const gsdList = GSD_SP_SECTORS.filter(s => displaySectors.includes(s));
+
+                                const renderSectorRow = (sector: string) => {
+                                    const sectorCalls = attendanceHistory?.filter(a =>
+                                        a.date === selectedDate && a.sector === sector && !!a.signedBy
+                                    ) || [];
+                                    const hasInicio = sectorCalls.some(c => c.callType === 'INICIO');
+                                    const hasTermino = sectorCalls.some(c => c.callType === 'TERMINO');
+                                    return (
+                                        <div key={sector} className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl p-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-2 h-2 rounded-full ${hasTermino ? 'bg-emerald-400' : hasInicio ? 'bg-amber-400' : 'bg-red-400'} shadow-[0_0_8px_rgba(52,211,153,0.5)]`} />
+                                                <div>
+                                                    <p className="text-[10px] font-black text-white uppercase tracking-widest">{sector}</p>
+                                                    <p className="text-[9px] text-slate-400 font-bold uppercase">
+                                                        {hasTermino ? 'Expediente Encerrado' : hasInicio ? '1ª Chamada Assinada' : 'Nenhuma Chamada'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-1">
+                                                <div className={`w-4 h-4 rounded-md flex items-center justify-center text-[8px] font-black ${hasInicio ? 'bg-emerald-500/30 text-emerald-300' : 'bg-white/5 text-white/20'}`}>1ª</div>
+                                                <div className={`w-4 h-4 rounded-md flex items-center justify-center text-[8px] font-black ${hasTermino ? 'bg-emerald-500/30 text-emerald-300' : 'bg-white/5 text-white/20'}`}>2ª</div>
                                             </div>
                                         </div>
-                                        <div className="flex gap-1">
-                                            <div className={`w-4 h-4 rounded-md flex items-center justify-center text-[8px] font-black ${hasInicio ? 'bg-emerald-500/30 text-emerald-300' : 'bg-white/5 text-white/20'}`}>1ª</div>
-                                            <div className={`w-4 h-4 rounded-md flex items-center justify-center text-[8px] font-black ${hasTermino ? 'bg-emerald-500/30 text-emerald-300' : 'bg-white/5 text-white/20'}`}>2ª</div>
-                                        </div>
-                                    </div>
+                                    );
+                                };
+
+                                // Se filtro é específico (GSD-SP ou BASP), mostra lista simples
+                                if (isFiltered) {
+                                    const list = selectedSector === 'GSD-SP' ? gsdList : baspList;
+                                    return list.map(renderSectorRow);
+                                }
+
+                                // Filtro TODOS: mostrar grupos colapsáveis
+                                return (
+                                    <>
+                                        {/* Grupo BASP */}
+                                        {baspList.length > 0 && (
+                                            <div>
+                                                <button
+                                                    onClick={() => setShowBaspGroup(v => !v)}
+                                                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition-all mb-1"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">BASP</span>
+                                                        <span className="text-[9px] font-bold text-amber-400/60">{baspList.length} setores</span>
+                                                    </div>
+                                                    <ChevronDown className={`w-3.5 h-3.5 text-amber-400 transition-transform duration-200 ${showBaspGroup ? '' : '-rotate-90'}`} />
+                                                </button>
+                                                {showBaspGroup && (
+                                                    <div className="space-y-1.5 pl-1">
+                                                        {baspList.map(renderSectorRow)}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Grupo GSD-SP */}
+                                        {gsdList.length > 0 && (
+                                            <div>
+                                                <button
+                                                    onClick={() => setShowGsdGroup(v => !v)}
+                                                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all mb-1"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-300">GSD-SP</span>
+                                                        <span className="text-[9px] font-bold text-blue-400/60">{gsdList.length} setores</span>
+                                                    </div>
+                                                    <ChevronDown className={`w-3.5 h-3.5 text-blue-400 transition-transform duration-200 ${showGsdGroup ? '' : '-rotate-90'}`} />
+                                                </button>
+                                                {showGsdGroup && (
+                                                    <div className="space-y-1.5 pl-1">
+                                                        {gsdList.map(renderSectorRow)}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Setores fora dos dois grupos */}
+                                        {displaySectors
+                                            .filter(s => !BASP_SECTORS.includes(s) && !GSD_SP_SECTORS.includes(s))
+                                            .map(renderSectorRow)
+                                        }
+                                    </>
                                 );
-                            })}
+                            })()}
                         </div>
                     </div>
                 </div>
