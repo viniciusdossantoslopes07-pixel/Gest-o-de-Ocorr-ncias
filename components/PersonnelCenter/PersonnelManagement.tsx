@@ -65,7 +65,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
         } else if (filterSector === 'SEM SETOR') {
             sectorMatch = !u.sector || u.sector === 'SEM SETOR';
         } else if (filterSector === 'TODOS GSD-SP') {
-            const gsdSectors = ['SOP', 'SAP', 'EPA-SEÇÃO', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'];
+            const gsdSectors = ['EP', 'EIE', 'EI', 'SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'];
             sectorMatch = gsdSectors.includes(u.sector || '');
         } else {
             sectorMatch = u.sector === filterSector;

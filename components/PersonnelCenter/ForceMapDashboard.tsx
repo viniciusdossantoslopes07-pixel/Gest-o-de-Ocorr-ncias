@@ -21,6 +21,9 @@ const OFICIAIS = ['ASP', '2T', '1T', 'CAP', 'MAJ', 'TEN CEL', 'CEL', 'BR', 'MB',
 const GRADUADOS = ['3S', '2S', '1S', 'SO'];
 const PRACAS = ['S2', 'S1', 'CB'];
 
+// Setores fixos que pertencem ao GSD-SP (Central de Pessoal)
+const GSD_SP_SECTORS = ['EP', 'EIE', 'EI', 'SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'];
+
 // Status grouping for manager view
 const STATUS_GROUPS = {
     PRESENTES: { codes: ['P', 'INST'], label: 'Presentes', color: 'emerald', icon: CheckCircle },
@@ -105,7 +108,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         const filtered = attendanceHistory?.filter(a => {
             const matchesDate = a.date === date;
             let matchesSector = true;
-            if (selectedSector === 'GSD-SP') matchesSector = a.sector !== 'BASP';
+            if (selectedSector === 'GSD-SP') matchesSector = GSD_SP_SECTORS.includes(a.sector);
             else if (selectedSector !== 'TODOS') matchesSector = a.sector === selectedSector;
             const isSigned = !!a.signedBy;
 
@@ -193,7 +196,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         const sectorFiltered = selectedSector === 'TODOS'
             ? activeAndInRoster
             : selectedSector === 'GSD-SP'
-                ? activeAndInRoster.filter(u => u.sector !== 'BASP')
+                ? activeAndInRoster.filter(u => GSD_SP_SECTORS.includes(u.sector))
                 : activeAndInRoster.filter(u => u.sector === selectedSector);
 
         return filterUsersByRank(sectorFiltered);
@@ -280,7 +283,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         const sectors = selectedSector === 'TODOS'
             ? displaySectors
             : selectedSector === 'GSD-SP'
-                ? displaySectors.filter(s => s !== 'BASP')
+                ? GSD_SP_SECTORS.filter(s => displaySectors.includes(s))
                 : [selectedSector];
 
         return sectors.map(sector => {
@@ -790,7 +793,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                         </div>
                         <h3 className="text-sm font-black tracking-tight mb-4 uppercase">Controle de Assinaturas</h3>
                         <div className="space-y-3 relative z-10">
-                            {(selectedSector === 'GSD-SP' ? displaySectors.filter(s => s !== 'BASP') : displaySectors).map(sector => {
+                            {(selectedSector === 'GSD-SP' ? GSD_SP_SECTORS.filter(s => displaySectors.includes(s)) : displaySectors).map(sector => {
                                 const sectorCalls = attendanceHistory?.filter(a =>
                                     a.date === selectedDate && a.sector === sector && !!a.signedBy
                                 ) || [];
