@@ -110,13 +110,14 @@ const Destinometro: React.FC<DestinometroProps> = ({ user, onClose, isDarkMode }
         try {
             const { error } = await supabase
                 .from('user_destinations')
-                .insert({
+                .upsert({
                     user_id: user.id,
                     saram: user.saram,
                     start_date: startDate,
                     end_date: endDate,
                     status: 'FE',
-                });
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'user_id,start_date' });
 
             if (error) throw error;
 
