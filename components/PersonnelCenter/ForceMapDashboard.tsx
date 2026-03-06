@@ -834,7 +834,11 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     emMissao={getCount(allRecords, ['MIS'])}
                     prontidao={prontidao}
                     statusBreakdown={statusBreakdown}
-                    sectorBreakdown={sectorBreakdown}
+                    sectorBreakdown={
+                        selectedSector === 'GSD-SP'
+                            ? sectorBreakdown.filter(s => GSD_SP_SECTORS.includes(s.sector))
+                            : sectorBreakdown
+                    }
                     onClose={() => setIsPrinting(false)}
                 />
             )}
