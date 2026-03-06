@@ -65,8 +65,11 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
         } else if (filterSector === 'SEM SETOR') {
             sectorMatch = !u.sector || u.sector === 'SEM SETOR';
         } else if (filterSector === 'TODOS GSD-SP') {
-            const gsdSectors = ['EP', 'EIE', 'EI', 'SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'];
+            const gsdSectors = ['SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'];
             sectorMatch = gsdSectors.includes(u.sector || '');
+        } else if (filterSector === 'TODOS BASP') {
+            const baspSectors = ['EP', 'EIE', 'EI', 'BASP'];
+            sectorMatch = baspSectors.includes(u.sector || '');
         } else {
             sectorMatch = u.sector === filterSector;
         }
@@ -196,6 +199,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                 >
                                     <option value="TODOS">Todos os Setores</option>
                                     <option value="TODOS GSD-SP">🔵 TODOS GSD-SP</option>
+                                    <option value="TODOS BASP">🟡 TODOS BASP</option>
                                     {sectorNames.map(s => <option key={s} value={s}>{s}</option>)}
                                     <option value="SEM SETOR">⚠ SEM SETOR (Não Alocados)</option>
                                 </select>
