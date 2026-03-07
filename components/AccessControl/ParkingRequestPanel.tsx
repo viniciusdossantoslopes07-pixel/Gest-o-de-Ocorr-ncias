@@ -180,22 +180,45 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
     const handleReject = async (id: string) => {
         if (!id) { alert("Erro: ID da solicitação inválido."); return; }
+
+        const motivo = window.prompt('Informe o motivo da rejeição (será enviado por e-mail ao solicitante):');
+        if (motivo === null) return; // Usuário cancelou
+        if (!motivo.trim()) { alert('É necessário informar o motivo da rejeição.'); return; }
+
         setIsProcessing(true);
         try {
+            const rejeitadoPor = `${user.rank || ''} ${user.war_name || user.name || 'Desconhecido'}`.trim();
             const updatePayload = {
                 status: 'Rejeitado',
-                aprovado_por: `${user.rank || ''} ${user.war_name || user.name || 'Desconhecido'}`.trim()
+                observacao: motivo.trim(),
+                aprovado_por: rejeitadoPor
             };
 
             const { data, error } = await supabase.from('parking_requests')
                 .update(updatePayload)
                 .eq('id', id)
-                .select();
+                .select('*, vehicle:parking_vehicles(*)');
 
             if (error) throw error;
 
             if (!data || data.length === 0) {
                 alert("ALERTA DE DEPURAÇÃO: O comando foi enviado, mas o banco de dados ignorou a atualização (0 linhas afetadas).");
+            }
+
+            // Enviar e-mail com o motivo da rejeição, se houver e-mail cadastrado
+            const req = data?.[0];
+            if (req?.email) {
+                await notificationService.sendParkingRejectionNotification({
+                    militarEmail: req.email,
+                    militarName: req.nome_completo,
+                    vehicleModel: req.vehicle?.marca_modelo || req.ext_marca_modelo || '—',
+                    plate: req.vehicle?.placa || req.ext_placa || '—',
+                    rejectionReason: motivo.trim(),
+                    rejectedBy: rejeitadoPor
+                });
+                alert('Solicitação rejeitada. E-mail com o motivo enviado ao solicitante.');
+            } else {
+                alert('Solicitação rejeitada. ( E-mail do solicitante não cadastrado — notificação não enviada. )');
             }
 
             setAnalysingRequest(null);
@@ -413,12 +436,14 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                 <p className={`text-[10px] sm:text-xs ${textMuted}`}>{new Date(req.inicio + 'T00:00:00').toLocaleDateString('pt-BR')} → {new Date(req.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
 
                                 <div className={`flex gap-2 pt-1 border-t mt-2 ${dk ? 'border-slate-700' : 'border-slate-50'}`} onClick={(e) => e.stopPropagation()}>
-                                    <button
-                                        onClick={() => setPrintRequest(req)}
-                                        className={`flex-1 py-1.5 border rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${dk ? 'bg-blue-900/20 text-blue-400 border-blue-800/30 hover:bg-blue-900/40' : 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100'}`}
-                                    >
-                                        <Download className="w-3.5 h-3.5" /> Baixar
-                                    </button>
+                                    {req.status !== 'Rejeitado' && (
+                                        <button
+                                            onClick={() => setPrintRequest(req)}
+                                            className={`flex-1 py-1.5 border rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${dk ? 'bg-blue-900/20 text-blue-400 border-blue-800/30 hover:bg-blue-900/40' : 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100'}`}
+                                        >
+                                            <Download className="w-3.5 h-3.5" /> Baixar
+                                        </button>
+                                    )}
 
                                     {req.status === 'Aprovado' && (
                                         <button
@@ -709,28 +734,55 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
                         {/* Footer do Cupom */}
                         <div className="bg-slate-50 p-4 border-t border-dashed border-slate-200 flex gap-2">
-                            <button
-                                onClick={() => {
-                                    setPrintRequest(showingCoupon);
-                                    setShowingCoupon(null);
-                                }}
-                                className="flex-1 bg-white border border-slate-200 py-2.5 rounded-xl font-bold text-xs text-slate-600 hover:bg-slate-100 transition-all flex items-center justify-center gap-2"
-                            >
-                                <Printer className="w-4 h-4" /> Imprimir
-                            </button>
-                            <button
-                                onClick={() => handleSendEmail(showingCoupon)}
-                                disabled={sendingEmailId === showingCoupon.id}
-                                className="flex-1 bg-blue-600 py-2.5 rounded-xl font-bold text-xs text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
-                            >
-                                {sendingEmailId === showingCoupon.id ? (
-                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                ) : (
-                                    <>
-                                        <Send className="w-4 h-4" /> Enviar
-                                    </>
-                                )}
-                            </button>
+                            {showingCoupon.status !== 'Rejeitado' && (
+                                <button
+                                    onClick={() => {
+                                        setPrintRequest(showingCoupon);
+                                        setShowingCoupon(null);
+                                    }}
+                                    className="flex-1 bg-white border border-slate-200 py-2.5 rounded-xl font-bold text-xs text-slate-600 hover:bg-slate-100 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <Printer className="w-4 h-4" /> Imprimir
+                                </button>
+                            )}
+                            {showingCoupon.status === 'Rejeitado' ? (
+                                <button
+                                    onClick={async () => {
+                                        if (!showingCoupon.email) { alert('E-mail do solicitante não encontrado.'); return; }
+                                        setSendingEmailId(showingCoupon.id);
+                                        const ok = await notificationService.sendParkingRejectionNotification({
+                                            militarEmail: showingCoupon.email,
+                                            militarName: showingCoupon.nome_completo,
+                                            vehicleModel: showingCoupon.vehicle?.marca_modelo || showingCoupon.ext_marca_modelo || '—',
+                                            plate: showingCoupon.vehicle?.placa || showingCoupon.ext_placa || '—',
+                                            rejectionReason: showingCoupon.observacao || 'Não especificado',
+                                            rejectedBy: showingCoupon.aprovado_por || 'SOP-03'
+                                        });
+                                        setSendingEmailId(null);
+                                        alert(ok ? 'E-mail de rejeição enviado com sucesso!' : 'Falha ao enviar e-mail. Tente novamente.');
+                                    }}
+                                    disabled={sendingEmailId === showingCoupon.id}
+                                    className="flex-1 bg-red-600 py-2.5 rounded-xl font-bold text-xs text-white hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                                >
+                                    {sendingEmailId === showingCoupon.id ? (
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        <><Send className="w-4 h-4" /> Enviar Rejeição</>
+                                    )}
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => handleSendEmail(showingCoupon)}
+                                    disabled={sendingEmailId === showingCoupon.id}
+                                    className="flex-1 bg-blue-600 py-2.5 rounded-xl font-bold text-xs text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+                                >
+                                    {sendingEmailId === showingCoupon.id ? (
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        <><Send className="w-4 h-4" /> Enviar</>
+                                    )}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

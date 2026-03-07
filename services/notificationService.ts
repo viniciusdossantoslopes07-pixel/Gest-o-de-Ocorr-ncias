@@ -23,6 +23,15 @@ interface ParkingNotificationData {
     attachments?: any[];
 }
 
+interface ParkingRejectionData {
+    militarEmail: string;
+    militarName: string;
+    vehicleModel: string;
+    plate: string;
+    rejectionReason: string;
+    rejectedBy: string;
+}
+
 export const notificationService = {
     /**
      * Envia notificação por e-mail para um militar escalado em uma missão.
@@ -102,6 +111,46 @@ export const notificationService = {
             return true;
         } catch (error) {
             console.error('[Notification] Erro ao enviar e-mail de estacionamento:', error);
+            return false;
+        }
+    },
+
+    /**
+     * Envia notificação de rejeição de solicitação de estacionamento por e-mail.
+     * Não anexa nenhum documento — apenas informa o motivo da rejeição.
+     */
+    async sendParkingRejectionNotification(data: ParkingRejectionData): Promise<boolean> {
+        const { militarEmail, militarName, vehicleModel, plate, rejectionReason, rejectedBy } = data;
+
+        if (!militarEmail) {
+            console.warn(`[Notification] Falha ao enviar e-mail de rejeição: E-mail não fornecido.`);
+            return false;
+        }
+
+        const subject = `Solicitação de Estacionamento BASP — Não Aprovada`;
+        const html = `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                <h2 style="color: #ef4444;">Solicitação de Estacionamento Não Aprovada</h2>
+                <p>Olá, <strong>${militarName}</strong>.</p>
+                <p>Infelizmente, sua solicitação de estacionamento na BASP foi <strong>REJEITADA</strong>.</p>
+                <div style="background: #fef2f2; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #fecaca;">
+                    <p>🚗 <strong>Veículo:</strong> ${vehicleModel} (${plate})</p>
+                    <p>❌ <strong>Motivo da Rejeição:</strong> ${rejectionReason}</p>
+                </div>
+                <p>Em caso de dúvidas, entre em contato com a SOP-03 do GSD-SP.</p>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+                <p style="font-size: 12px; color: #64748b;">Atenciosamente,<br><strong>${rejectedBy}</strong><br>SOP-03 - GSD-SP</p>
+            </div>
+        `;
+
+        try {
+            const { error } = await supabase.functions.invoke('send-email', {
+                body: { to: militarEmail, subject, html }
+            });
+            if (error) throw error;
+            return true;
+        } catch (error) {
+            console.error('[Notification] Erro ao enviar e-mail de rejeição:', error);
             return false;
         }
     }
