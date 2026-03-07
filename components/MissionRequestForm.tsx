@@ -119,8 +119,8 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
     };
 
     return (
-        <form onSubmit={(e) => handleSubmit(e, false)} className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} w-full h-full sm:h-auto sm:rounded-2xl shadow-xl border overflow-hidden sm:max-h-[90vh] flex flex-col`}>
-            <div className={`${isDarkMode ? 'bg-slate-800 border-b border-slate-700' : 'bg-slate-900'} p-4 sm:p-6 text-white flex justify-between items-center shrink-0`}>
+        <form onSubmit={(e) => handleSubmit(e, false)} className={`glass-panel w-full h-full sm:h-auto sm:rounded-2xl shadow-xl overflow-hidden sm:max-h-[90vh] flex flex-col`}>
+            <div className={`bg-slate-900/60 border-b border-white/10 backdrop-blur-xl p-4 sm:p-6 text-white flex justify-between items-center shrink-0`}>
                 <div className="min-w-0">
                     <h2 className="text-lg sm:text-xl font-bold truncate">{initialData ? 'Editar Solicitação' : 'Solicitação de Missão'}</h2>
                     <p className="text-slate-400 text-[10px] sm:text-xs mt-0.5 sm:mt-1 truncate">GSD-SP - Gestão de Operações</p>
@@ -145,7 +145,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                     value={formData.saram}
                                     onChange={e => setFormData({ ...formData, saram: e.target.value })}
                                     onBlur={handleSaramBlur}
-                                    className={`w-full pl-3 pr-10 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
+                                    className={`w-full pl-3 pr-10 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                     placeholder="Digite..."
                                 />
                                 <button
@@ -162,7 +162,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                             <select
                                 value={formData.posto}
                                 onChange={e => setFormData({ ...formData, posto: e.target.value })}
-                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
+                                className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 required
                             >
                                 <option value="">Selecione</option>
@@ -175,7 +175,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                 type="text"
                                 value={formData.nome_guerra}
                                 onChange={e => setFormData({ ...formData, nome_guerra: e.target.value })}
-                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
+                                className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 required
                             />
                         </div>
@@ -184,7 +184,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                             <select
                                 value={formData.setor}
                                 onChange={e => setFormData({ ...formData, setor: e.target.value })}
-                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
+                                className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 required
                             >
                                 <option value="">Selecione</option>
@@ -207,7 +207,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                             <select
                                 value={formData.tipo_missao}
                                 onChange={e => setFormData({ ...formData, tipo_missao: e.target.value })}
-                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
+                                className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 required
                             >
                                 {TIPOS_MISSAO.map(t => <option key={t} value={t}>{t}</option>)}
@@ -222,7 +222,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                 type="date"
                                 value={formData.data}
                                 onChange={e => setFormData({ ...formData, data: e.target.value })}
-                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
+                                className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 required
                             />
                         </div>
@@ -236,7 +236,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                     type="time"
                                     value={formData.inicio}
                                     onChange={e => setFormData({ ...formData, inicio: e.target.value })}
-                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
+                                    className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                     required
                                 />
                             </div>
@@ -248,7 +248,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                     type="time"
                                     value={formData.termino}
                                     onChange={e => setFormData({ ...formData, termino: e.target.value })}
-                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
+                                    className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                     required
                                 />
                             </div>
@@ -261,7 +261,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                 value={formData.local}
                                 onChange={e => setFormData({ ...formData, local: e.target.value })}
                                 placeholder="Ex: Pátio de Aeronaves / Ala 13"
-                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
+                                className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 required
                             />
                         </div>
@@ -295,7 +295,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                     type="text"
                                     value={formData.responsavel.nome}
                                     onChange={e => setFormData({ ...formData, responsavel: { ...formData.responsavel, nome: e.target.value } })}
-                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-600 bg-slate-700 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
+                                    className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 />
                             </div>
                             <div>
@@ -304,7 +304,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                     type="text"
                                     value={formData.responsavel.om}
                                     onChange={e => setFormData({ ...formData, responsavel: { ...formData.responsavel, om: e.target.value } })}
-                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-600 bg-slate-700 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
+                                    className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 />
                             </div>
                             <div>
@@ -314,7 +314,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                     inputMode="numeric"
                                     value={formData.responsavel.telefone}
                                     onChange={e => setFormData({ ...formData, responsavel: { ...formData.responsavel, telefone: e.target.value.replace(/\D/g, '') } })}
-                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-600 bg-slate-700 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
+                                    className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 />
                             </div>
                         </div>
@@ -339,7 +339,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                 onChange={e => setFormData({ ...formData, efetivo: e.target.value })}
                                 placeholder="Ex: 1 Sgt, 2 Cabos e 4 Soldados para isolamento..."
                                 rows={3}
-                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none`}
+                                className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none`}
                                 required
                             />
                         </div>
@@ -349,7 +349,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                                 { id: 'descaracterizada', label: 'VTR DESCARACTERIZADA' },
                                 { id: 'caminhao_tropa', label: 'CAMINHÃO TROPA' }
                             ].map(vtr => (
-                                <div key={vtr.id} className={`flex items-center gap-3 p-3 border ${isDarkMode ? 'border-slate-700 hover:bg-slate-800' : 'border-slate-200 hover:bg-slate-50'} rounded-xl transition-colors`}>
+                                <div key={vtr.id} className={`flex items-center gap-3 p-3 border ${isDarkMode ? 'border-slate-700 hover:bg-slate-800/50' : 'border-slate-200 hover:bg-blue-50'} rounded-xl transition-colors`}>
                                     <label className="flex flex-1 items-center gap-2 cursor-pointer">
                                         <input
                                             type="checkbox"
@@ -415,7 +415,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                 </div>
             </div>
 
-            <div className={`p-4 sm:p-6 border-t ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'} flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 shrink-0`}>
+            <div className={`p-4 sm:p-6 border-t glass-panel flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 shrink-0`}>
                 <button
                     type="submit"
                     className="w-full sm:w-auto bg-blue-600 px-8 py-3 rounded-xl font-bold text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 transition-all active:scale-95 order-1 sm:order-3"

@@ -43,11 +43,11 @@ const DESTINATIONS = [
 export default function AccessControlPanel({ user, isDarkMode = false }: AccessControlPanelProps) {
     // Dark mode helpers
     const dk = isDarkMode;
-    const card = dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-200';
-    const cardSm = dk ? 'bg-slate-800/60 border-slate-700' : 'bg-white border-slate-200';
+    const card = 'glass-panel';
+    const cardSm = 'glass-panel';
     const surfaceBg = dk ? 'bg-slate-700/60' : 'bg-slate-50';
     const surfaceBorder = dk ? 'border-slate-600' : 'border-slate-100';
-    const inputCls = dk ? 'bg-slate-700/60 border-slate-600 text-white placeholder:text-slate-500 focus:ring-blue-500/30 focus:border-blue-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:ring-blue-100 focus:border-blue-500';
+    const inputCls = 'glass-input';
     const textPrimary = dk ? 'text-white' : 'text-slate-900';
     const textSecondary = dk ? 'text-slate-300' : 'text-slate-600';
     const textMuted = dk ? 'text-slate-400' : 'text-slate-500';
@@ -509,11 +509,11 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
             {activeTab === 'registrar' && (
                 <div className="space-y-4 animate-fade-in">
                     {/* 1. Registration Card */}
-                    <div className={`rounded-2xl shadow-xl border-t-4 ${dk ? 'bg-slate-800/80' : 'bg-white'} ${selectedGate === 'PORTÃO G1' ? 'border-t-blue-500' :
+                    <div className={`glass-panel border-t-4 ${selectedGate === 'PORTÃO G1' ? 'border-t-blue-500' :
                         selectedGate === 'PORTÃO G2' ? 'border-t-emerald-500' : 'border-t-amber-500'
                         }`}>
                         {/* Header: Title + Gate Selectors */}
-                        <div className={`p-3 border-b flex flex-wrap items-center justify-between gap-3 ${dk ? 'bg-slate-700/50 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                        <div className={`p-3 border-b flex flex-wrap items-center justify-between gap-3 border-white/10 bg-black/10`}>
                             <div className="flex items-center gap-3">
                                 <div className={`p-2 rounded-lg ${selectedGate === 'PORTÃO G1' ? 'bg-blue-100 text-blue-600' :
                                     selectedGate === 'PORTÃO G2' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
@@ -729,7 +729,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                     </div>
 
                     {/* 1.5. Daily Summary (Restored) */}
-                    <div className={`rounded-xl border shadow-sm overflow-hidden mb-4 ${card}`}>
+                    <div className={`glass-panel overflow-hidden mb-4 p-0`}>
                         <button
                             onClick={() => setShowStats(!showStats)}
                             className={`flex-1 flex items-center justify-between p-2.5 transition-colors ${dk ? 'bg-slate-700/40 hover:bg-slate-700/60' : 'bg-slate-50 hover:bg-slate-100'}`}
@@ -795,7 +795,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                     </div>
 
                     {/* 2. History List (Compact) */}
-                    <div className={`rounded-xl shadow-sm border overflow-hidden ${card}`}>
+                    <div className={`glass-panel overflow-hidden p-0`}>
                         <div className={`p-3 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
                             <span className={`text-xs font-black uppercase flex items-center gap-2 ${textSecondary}`}>
                                 <History className="w-3.5 h-3.5" /> Últimos Acessos (Hoje)

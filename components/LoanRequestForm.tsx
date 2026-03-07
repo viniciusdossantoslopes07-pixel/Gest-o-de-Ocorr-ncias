@@ -132,7 +132,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, isDarkMode, onS
     );
 
     return (
-        <div className={`w-full h-full sm:h-auto sm:rounded-3xl shadow-2xl overflow-hidden sm:max-w-[90vw] 2xl:max-w-[1800px] mx-auto border animate-fade-in flex flex-col max-h-[100dvh] sm:max-h-[85vh] relative ${isDarkMode ? 'bg-slate-900/60 border-slate-800/50 backdrop-blur-xl text-white' : 'bg-slate-50 border-white/20 text-slate-900'}`}>
+        <div className={`glass-panel w-full h-full sm:h-auto sm:rounded-3xl shadow-2xl overflow-hidden sm:max-w-[90vw] 2xl:max-w-[1800px] mx-auto animate-fade-in flex flex-col max-h-[100dvh] sm:max-h-[85vh] relative p-0`}>
             {/* Header com Gradient Premium */}
             <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 px-4 py-4 sm:px-10 sm:py-8 flex items-center justify-between shrink-0 shadow-lg relative z-10">
                 <div className="flex items-center gap-3 sm:gap-6">
@@ -164,7 +164,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, isDarkMode, onS
                             <input
                                 type="text"
                                 placeholder="Buscar material..."
-                                className={`w-full pl-10 pr-4 py-3 text-sm border-none rounded-lg focus:ring-0 transition-all outline-none font-medium placeholder:text-slate-500 uppercase ${isDarkMode ? 'bg-slate-800 text-white' : 'bg-white text-slate-900'}`}
+                                className={`w-full pl-10 pr-4 py-3 text-sm rounded-lg focus:ring-0 transition-all outline-none font-medium placeholder:text-slate-500 uppercase glass-input`}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -189,7 +189,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, isDarkMode, onS
                                 const isAdded = selectedBatch.some(i => i.id_material === item.id);
 
                                 return (
-                                    <div key={item.id} className={`group relative flex flex-col p-5 border-2 rounded-2xl transition-all duration-300 ${isAdded ? 'border-blue-500 shadow-xl shadow-blue-500/10' : (isDarkMode ? 'bg-slate-800/50 border-slate-700/50 hover:border-blue-500/50' : 'bg-white border-slate-100 hover:border-blue-200 shadow-sm')}`}>
+                                    <div key={item.id} className={`group relative flex flex-col p-5 rounded-2xl transition-all duration-300 glass-card ${isAdded ? 'ring-2 ring-blue-500 shadow-xl shadow-blue-500/10' : ''}`}>
                                         {/* Status Badge */}
                                         <div className="flex items-center justify-between mb-4">
                                             <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${hasStock ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
@@ -258,7 +258,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, isDarkMode, onS
                 </div>
 
                 {/* Painel Lateral - Carrinho de Itens (Desktop) */}
-                <div className={`hidden md:flex w-80 lg:w-96 p-6 h-full flex-col shadow-[-15px_0_40px_rgba(0,0,0,0.03)] border-l relative z-20 ${isDarkMode ? 'bg-slate-900/60 border-slate-800/50 backdrop-blur-xl' : 'bg-white border-slate-100'}`}>
+                <div className={`hidden md:flex w-80 lg:w-96 p-6 h-full flex-col shadow-[-15px_0_40px_rgba(0,0,0,0.03)] border-l relative z-20 glass-panel bg-opacity-50`}>
                     <div className="flex items-center justify-between mb-8 shrink-0">
                         <div className="flex items-center gap-3">
                             <div className="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-600/20">
@@ -360,7 +360,7 @@ const LoanRequestForm: React.FC<LoanRequestFormProps> = ({ user, isDarkMode, onS
             {/* Modal de Carrinho Mobile */}
             {showCartMobile && (
                 <div className="md:hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[110] animate-fade-in flex items-end p-4" onClick={() => setShowCartMobile(false)}>
-                    <div className={`w-full max-h-[70vh] rounded-[2rem] p-6 lg:p-8 flex flex-col animate-slide-up shadow-2xl border ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`} onClick={e => e.stopPropagation()}>
+                    <div className={`w-full max-h-[70vh] rounded-[2rem] p-6 lg:p-8 flex flex-col animate-slide-up shadow-2xl glass-panel`} onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-8">
                             <h3 className={`font-black uppercase text-xs tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Itens da Cautela</h3>
                             <button onClick={() => setShowCartMobile(false)} className={`p-2 rounded-full ${isDarkMode ? 'bg-slate-700 text-white' : 'bg-slate-100'}`}><X className="w-4 h-4" /></button>

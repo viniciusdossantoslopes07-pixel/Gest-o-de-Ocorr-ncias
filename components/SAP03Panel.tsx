@@ -3,6 +3,7 @@ import { supabase } from '../services/supabase';
 import { Package, CheckCircle, XCircle, Clock, Truck, ShieldCheck, AlertCircle, Lock, Plus, Trash2, ChevronDown, ChevronUp, BarChart3, PieChart as PieIcon, History, Fingerprint, MapPin, LayoutGrid, Search, FileText, QrCode, UploadCloud, X, Download, Filter } from 'lucide-react';
 import { authenticateBiometrics } from '../services/webauthn';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import RejectionModal from './RejectionModal';
 
 interface LoanRequest {
     id: string;
@@ -42,6 +43,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [selectedRequest, setSelectedRequest] = useState<LoanRequest | null>(null);
+    const [requestToReject, setRequestToReject] = useState<LoanRequest | null>(null);
     const [activeTab, setActiveTab] = useState<'Solicitações' | 'Em Uso' | 'Histórico'>('Solicitações');
 
     const [historyFilterDay, setHistoryFilterDay] = useState('');
@@ -691,10 +693,13 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     };
 
     const handleRejectReturn = async (request: LoanRequest) => {
-        const obs = prompt('Motivo da rejeição (Isso pode implicar perda de material):');
-        if (obs === null) return;
-        const isLoss = confirm('Isso configura perda/baixa de material? (Clique em OK para sim, Cancelar para rejeição simples sem baixa)');
-        await updateStatus(request.id, 'Rejeitado', obs, isLoss, request.id_material, request.quantidade);
+        setRequestToReject(request);
+    };
+
+    const confirmRejection = async (obs: string, isLoss: boolean) => {
+        if (!requestToReject) return;
+        await updateStatus(requestToReject.id, 'Rejeitado', obs, isLoss, requestToReject.id_material, requestToReject.quantidade);
+        setRequestToReject(null);
     };
 
     const handleDeleteRequest = async (id: string) => {
@@ -1294,7 +1299,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                         )}
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className={`p-6 rounded-[2rem] border shadow-sm flex flex-col justify-center ${isDarkMode ? 'bg-slate-800/40 border-slate-700 shadow-none' : 'bg-white border-slate-100 shadow-sm'}`}>
+                            <div className={`p-6 rounded-[2rem] flex flex-col justify-center glass-panel`}>
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-blue-600/20 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
                                         <History className="w-6 h-6" />
@@ -1340,7 +1345,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                 </div>
                             </div>
 
-                            <div className={`md:col-span-2 p-6 rounded-[2rem] border shadow-sm min-h-[200px] ${isDarkMode ? 'bg-slate-800/40 border-slate-700 shadow-none' : 'bg-white border-slate-100 shadow-sm'}`}>
+                            <div className={`md:col-span-2 p-6 rounded-[2rem] min-h-[200px] glass-panel`}>
                                 <div className="flex items-center justify-between mb-4">
                                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <BarChart3 className="w-4 h-4 text-blue-500" />
@@ -1388,14 +1393,14 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             {/* Search and Batch Actions — abaixo dos gráficos */}
             {
                 (activeTab === 'Em Uso' || activeTab === 'Histórico' || activeTab === 'Solicitações') && (
-                    <div className={`flex flex-col md:flex-row gap-4 items-center justify-between p-4 rounded-2xl border animate-scale-in ${isDarkMode ? 'bg-slate-800/40 border-slate-700' : 'bg-blue-50/50 border-blue-100 shadow-sm'}`}>
+                    <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 rounded-2xl animate-scale-in glass-panel">
                         <div className="relative flex-1 w-full">
                             <input
                                 type="text"
                                 placeholder="Buscar por SARAM, Nome do Militar ou Item..."
                                 value={inUseSearch}
                                 onChange={(e) => setInUseSearch(e.target.value)}
-                                className={`w-full pl-11 pr-4 py-2.5 border rounded-xl outline-none text-sm font-bold transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900/80 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
+                                className="w-full pl-11 pr-4 py-2.5 rounded-xl font-bold glass-input"
                             />
                             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         </div>
@@ -1467,7 +1472,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                     </div>
                 ) : (
                     filteredRequests.map(req => (
-                        <div key={req.id} className={`rounded-2xl border transition-all duration-300 ${expandedRequestId === req.id ? (isDarkMode ? 'border-blue-500 bg-slate-800 shadow-2xl shadow-blue-500/10' : 'border-blue-300 ring-4 ring-blue-50 bg-white shadow-xl') : (isDarkMode ? 'bg-slate-800/60 border-slate-700 hover:border-slate-600' : 'bg-white border-slate-100 shadow-sm hover:border-blue-100')}`}>
+                        <div key={req.id} className={`rounded-2xl transition-all duration-300 glass-card ${expandedRequestId === req.id ? 'ring-2 ring-blue-500 shadow-blue-500/20 shadow-xl' : 'hover:border-blue-300'}`}>
                             <div className="p-6 flex flex-col md:flex-row gap-6 items-start md:items-center cursor-pointer" onClick={() => setExpandedRequestId(expandedRequestId === req.id ? null : req.id)}>
                                 {(activeTab === 'Em Uso' || (activeTab === 'Solicitações' && (req.status === 'Pendente' || req.status === 'Aprovado'))) && (
                                     <div className="shrink-0" onClick={e => e.stopPropagation()}>
@@ -1854,6 +1859,17 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                         </div>
                     </div>
                 )}
+
+            {/* Modal de Rejeição */}
+            <RejectionModal
+                isOpen={!!requestToReject}
+                onClose={() => setRequestToReject(null)}
+                onConfirm={confirmRejection}
+                requireLossConfirmation={true}
+                isDarkMode={isDarkMode}
+                title="Rejeitar Devolução"
+                description="Informe o motivo da recusa desta devolução. Caso o item tenha sido danificado ou extraviado, marque a opção de perda."
+            />
         </div>
     );
 };

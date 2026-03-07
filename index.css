@@ -42,13 +42,37 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Glassmorphism Utilities */
-.glass {
-  @apply backdrop-blur-xl bg-white/40 border border-white/20 shadow-xl shadow-slate-200/20;
+/* Glassmorphism System v1.3 */
+.glass-panel {
+  @apply backdrop-blur-2xl bg-white/[0.85] border border-white/50 shadow-2xl;
 }
 
-.dark .glass {
-  @apply bg-slate-900/40 border-white/5 shadow-none;
+.dark .glass-panel {
+  @apply bg-slate-900/[0.75] border-slate-700/50 shadow-2xl shadow-black/50;
+}
+
+.glass-card {
+  @apply backdrop-blur-xl bg-white/60 border border-white/40 shadow-lg shadow-slate-200/40;
+}
+
+.dark .glass-card {
+  @apply bg-slate-800/40 border-slate-700/40 shadow-lg shadow-black/20;
+}
+
+.glass-input {
+  @apply bg-white/50 border border-slate-200/50 backdrop-blur-md focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all text-slate-900 placeholder:text-slate-400;
+}
+
+.dark .glass-input {
+  @apply bg-slate-900/40 border-slate-800/50 text-white placeholder:text-slate-500 focus:bg-slate-900 focus:border-blue-500 focus:ring-blue-500/20;
+}
+
+.glass-button {
+  @apply bg-white/80 border border-slate-200/50 backdrop-blur-md hover:bg-white shadow-sm hover:shadow active:scale-95 transition-all text-slate-700 font-medium;
+}
+
+.dark .glass-button {
+  @apply bg-slate-800/60 border-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white shadow-none;
 }
 
 /* Premium Card & Table Styles */

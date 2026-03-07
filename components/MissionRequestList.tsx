@@ -3,6 +3,7 @@ import { Mission, User } from '../types';
 import { CheckCircle, XCircle, ArrowUpCircle, Clock, Calendar, MapPin, User as UserIcon, FileText, X, Eye, ChevronRight, Package, Filter, Users as UsersIcon } from 'lucide-react';
 import { formatViaturas } from '../utils/formatters';
 import MissionRequestCard from './MissionRequestCard';
+import RejectionModal from './RejectionModal';
 
 interface MissionRequestListProps {
     missions: Mission[];
@@ -25,19 +26,26 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
 }) => {
     const [filterStatus, setFilterStatus] = useState<string>('TODOS');
     const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
-    const [parecer, setParecer] = useState('');
+    const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
 
     const filteredMissions = missions.filter(m => filterStatus === 'TODOS' ? true : m.status === filterStatus);
 
     const handleAction = (decision: 'APROVADA' | 'REJEITADA' | 'ESCALONADA') => {
         if (!selectedMission || !onProcess) return;
-        if (decision === 'REJEITADA' && !parecer) {
-            alert('Para rejeitar, é necessário informar um motivo (parecer).');
+        if (decision === 'REJEITADA') {
+            setIsRejectionModalOpen(true);
             return;
         }
-        onProcess(selectedMission.id, decision, parecer);
+
+        onProcess(selectedMission.id, decision);
         setSelectedMission(null);
-        setParecer('');
+    };
+
+    const confirmRejection = (reason: string) => {
+        if (!selectedMission || !onProcess) return;
+        onProcess(selectedMission.id, 'REJEITADA', reason);
+        setIsRejectionModalOpen(false);
+        setSelectedMission(null);
     };
 
     const getStatusColor = (status: string) => {
@@ -201,70 +209,57 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
                                         </div>
                                     </div>
 
-                                    {/* Parecer (Só para gestão) */}
-                                    {onProcess && (selectedMission.status === 'PENDENTE' || selectedMission.status === 'ESCALONADA') && (
-                                        <div className="space-y-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-                                            <label className={`block text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Parecer Técnico / Observações</label>
-                                            <textarea
-                                                value={parecer}
-                                                onChange={e => setParecer(e.target.value)}
-                                                className={`w-full p-4 border rounded-2xl text-sm transition-all outline-none resize-none duration-200 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white focus:border-blue-500' : 'bg-slate-50 border-slate-200 focus:border-blue-500 focus:bg-white'}`}
-                                                rows={3}
-                                                placeholder="Justificativa técnica para decisão..."
-                                            />
+                                </div>
+
+                                {/* Ações */}
+                                <div className={`p-4 sm:p-6 pt-6 border-t space-y-3 ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
+                                    {onProcess && selectedMission.status === 'PENDENTE' && (
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button
+                                                onClick={() => handleAction('APROVADA')}
+                                                className="py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-emerald-500 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-emerald-600/20"
+                                            >
+                                                <CheckCircle className="w-4 h-4" /> Aprovar
+                                            </button>
+                                            <button
+                                                onClick={() => handleAction('REJEITADA')}
+                                                className="py-4 bg-red-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-red-500 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-red-600/20"
+                                            >
+                                                <XCircle className="w-4 h-4" /> Rejeitar
+                                            </button>
+                                            <button
+                                                onClick={() => handleAction('ESCALONADA')}
+                                                className="col-span-2 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-500 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-blue-600/20"
+                                            >
+                                                <ArrowUpCircle className="w-4 h-4" /> Escalonar
+                                            </button>
                                         </div>
                                     )}
 
-                                    {/* Ações */}
-                                    <div className={`pt-6 border-t space-y-3 ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
-                                        {onProcess && selectedMission.status === 'PENDENTE' && (
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <button
-                                                    onClick={() => handleAction('APROVADA')}
-                                                    className="py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-emerald-500 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-emerald-600/20"
-                                                >
-                                                    <CheckCircle className="w-4 h-4" /> Aprovar
-                                                </button>
-                                                <button
-                                                    onClick={() => handleAction('REJEITADA')}
-                                                    className="py-4 bg-red-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-red-500 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-red-600/20"
-                                                >
-                                                    <XCircle className="w-4 h-4" /> Rejeitar
-                                                </button>
-                                                <button
-                                                    onClick={() => handleAction('ESCALONADA')}
-                                                    className="col-span-2 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-500 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-blue-600/20"
-                                                >
-                                                    <ArrowUpCircle className="w-4 h-4" /> Escalonar
-                                                </button>
-                                            </div>
-                                        )}
-
-                                        {/* Botão de Ver Detalhes / Editar para o Usuário */}
-                                        {!onProcess && (
-                                            <button
-                                                onClick={() => setSelectedMission(null)} // Or open a more detailed card
-                                                className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 active:scale-95 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-                                            >
-                                                <Eye className="w-4 h-4" /> Ver Ficha Completa
-                                            </button>
-                                        )}
-
-                                        {selectedMission.status === 'APROVADA' && onGenerateOrder && (
-                                            <button
-                                                onClick={() => onGenerateOrder(selectedMission)}
-                                                className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-500 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-blue-600/20"
-                                            >
-                                                <FileText className="w-5 h-5" /> Gerar Ordem de Missão
-                                            </button>
-                                        )}
+                                    {/* Botão de Ver Detalhes / Editar para o Usuário */}
+                                    {!onProcess && (
                                         <button
-                                            onClick={() => setSelectedMission(null)}
-                                            className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all block lg:hidden ${isDarkMode ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-600'}`}
+                                            onClick={() => setSelectedMission(null)} // Or open a more detailed card
+                                            className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 active:scale-95 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                                         >
-                                            Voltar para Lista
+                                            <Eye className="w-4 h-4" /> Ver Ficha Completa
                                         </button>
-                                    </div>
+                                    )}
+
+                                    {selectedMission.status === 'APROVADA' && onGenerateOrder && (
+                                        <button
+                                            onClick={() => onGenerateOrder(selectedMission)}
+                                            className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-500 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-blue-600/20"
+                                        >
+                                            <FileText className="w-5 h-5" /> Gerar Ordem de Missão
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => setSelectedMission(null)}
+                                        className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all block lg:hidden ${isDarkMode ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-600'}`}
+                                    >
+                                        Voltar para Lista
+                                    </button>
                                 </div>
                             </>
                         ) : (
@@ -293,6 +288,16 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
                     isDarkMode={isDarkMode}
                 />
             )}
+
+            <RejectionModal
+                isOpen={isRejectionModalOpen}
+                onClose={() => setIsRejectionModalOpen(false)}
+                onConfirm={(reason) => confirmRejection(reason)}
+                isDarkMode={isDarkMode}
+                requireLossConfirmation={false}
+                title="Rejeitar Solicitação de Missão"
+                description="Por favor, informe um parecer ou motivo para a recusa desta missão. Esta mensagem será visível ao solicitante."
+            />
         </div>
     );
 };

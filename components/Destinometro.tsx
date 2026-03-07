@@ -132,8 +132,8 @@ const Destinometro: React.FC<DestinometroProps> = ({ user, onClose, isDarkMode }
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className={`w-full max-w-sm overflow-hidden rounded-[2rem] border shadow-2xl transition-all duration-500 ${isDarkMode ? 'bg-slate-900/95 border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900'} relative`}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px] animate-in fade-in duration-300">
+            <div className={`w-full max-w-sm overflow-hidden rounded-[2rem] shadow-2xl transition-all duration-500 glass-panel relative`}>
                 {/* Header */}
                 <div className="p-4 pb-3 flex items-center justify-between border-b border-white/5">
                     <div className="flex items-center gap-3">

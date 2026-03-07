@@ -217,19 +217,19 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
         onClose();
     };
 
-    const input = `w-full ${dk ? 'bg-slate-900 border-slate-700 text-white focus:bg-slate-900' : 'bg-slate-50 border-slate-200 focus:bg-white'} border rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all`;
+    const input = `w-full glass-input rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none transition-all`;
     const label = `text-xs font-black ${dk ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`;
-    const section = `${dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100'} p-3 sm:p-4 rounded-xl shadow-sm border space-y-3 sm:space-y-4`;
+    const section = `glass-panel p-3 sm:p-4 rounded-xl space-y-3 sm:space-y-4`;
     const sectionTitle = `text-[10px] font-black ${dk ? 'text-slate-500 border-slate-700' : 'text-slate-400 border-slate-100'} uppercase tracking-widest border-b pb-2 mb-2`;
 
     const today = new Date().toISOString().split('T')[0];
 
     return (
-        <div className={`fixed inset-0 z-[200] flex sm:items-center sm:justify-center ${dk ? 'bg-slate-950/80' : 'bg-white sm:bg-slate-900/60'} sm:backdrop-blur-md`}>
-            <div className={`w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-lg ${dk ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} sm:rounded-2xl shadow-2xl flex flex-col sm:border overflow-hidden`}>
+        <div className={`fixed inset-0 z-[200] flex sm:items-center sm:justify-center bg-slate-900/40 sm:backdrop-blur-sm animate-in fade-in duration-300`}>
+            <div className={`w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-lg glass-panel sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden`}>
 
                 {/* Header */}
-                <div className="bg-slate-900 p-3 sm:p-6 text-white flex justify-between items-center shrink-0 safe-top">
+                <div className="bg-slate-900/60 border-b border-white/10 backdrop-blur-xl p-3 sm:p-6 text-white flex justify-between items-center shrink-0 safe-top">
                     <div className="min-w-0">
                         <h2 className="text-base sm:text-lg sm:text-xl font-bold truncate flex items-center gap-2">
                             <Car className="w-5 h-5" />
@@ -248,7 +248,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                 </div>
 
                 {/* Conteúdo com Scroll */}
-                <div className={`flex-1 overflow-y-auto custom-scrollbar ${dk ? 'bg-slate-900' : 'bg-slate-50/50'}`}>
+                <div className={`flex-1 overflow-y-auto custom-scrollbar`}>
                     {parkSuccess ? (
                         <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-6 animate-in zoom-in-95 duration-300">
                             <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center shadow-lg shadow-emerald-100">
