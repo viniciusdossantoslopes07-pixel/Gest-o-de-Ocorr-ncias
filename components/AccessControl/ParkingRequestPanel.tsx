@@ -72,6 +72,9 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [passwordConfirm, setPasswordConfirm] = useState('');
     const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null);
+    // Modal de rejeição
+    const [rejectingRequestId, setRejectingRequestId] = useState<string | null>(null);
+    const [rejectMotivo, setRejectMotivo] = useState('');
     const [loading, setLoading] = useState(true);
     const [sendingFromPrint, setSendingFromPrint] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -178,34 +181,33 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
         }
     };
 
-    const handleReject = async (id: string) => {
-        if (!id) { alert("Erro: ID da solicitação inválido."); return; }
+    // Abre o modal de rejeição (não executa ainda)
+    const handleReject = (id: string) => {
+        if (!id) return;
+        setRejectingRequestId(id);
+        setRejectMotivo('');
+    };
 
-        const motivo = window.prompt('Informe o motivo da rejeição (será enviado por e-mail ao solicitante):');
-        if (motivo === null) return; // Usuário cancelou
-        if (!motivo.trim()) { alert('É necessário informar o motivo da rejeição.'); return; }
+    // Confirma a rejeição após o motivo ser preenchido no modal
+    const confirmReject = async () => {
+        if (!rejectingRequestId || !rejectMotivo.trim()) return;
 
         setIsProcessing(true);
         try {
             const rejeitadoPor = `${user.rank || ''} ${user.war_name || user.name || 'Desconhecido'}`.trim();
-            const updatePayload = {
-                status: 'Rejeitado',
-                observacao: motivo.trim(),
-                aprovado_por: rejeitadoPor
-            };
 
             const { data, error } = await supabase.from('parking_requests')
-                .update(updatePayload)
-                .eq('id', id)
+                .update({
+                    status: 'Rejeitado',
+                    observacao: rejectMotivo.trim(),
+                    aprovado_por: rejeitadoPor
+                })
+                .eq('id', rejectingRequestId)
                 .select('*, vehicle:parking_vehicles(*)');
 
             if (error) throw error;
 
-            if (!data || data.length === 0) {
-                alert("ALERTA DE DEPURAÇÃO: O comando foi enviado, mas o banco de dados ignorou a atualização (0 linhas afetadas).");
-            }
-
-            // Enviar e-mail com o motivo da rejeição, se houver e-mail cadastrado
+            // Enviar e-mail com o motivo da rejeição
             const req = data?.[0];
             if (req?.email) {
                 await notificationService.sendParkingRejectionNotification({
@@ -213,20 +215,19 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                     militarName: req.nome_completo,
                     vehicleModel: req.vehicle?.marca_modelo || req.ext_marca_modelo || '—',
                     plate: req.vehicle?.placa || req.ext_placa || '—',
-                    rejectionReason: motivo.trim(),
+                    rejectionReason: rejectMotivo.trim(),
                     rejectedBy: rejeitadoPor
                 });
-                alert('Solicitação rejeitada. E-mail com o motivo enviado ao solicitante.');
-            } else {
-                alert('Solicitação rejeitada. ( E-mail do solicitante não cadastrado — notificação não enviada. )');
             }
 
+            setRejectingRequestId(null);
+            setRejectMotivo('');
             setAnalysingRequest(null);
             await fetchAllRequests();
             await fetchMyRequests();
         } catch (err: any) {
-            console.error("Erro ao rejeitar:", err);
-            alert(`Erro crítico ao rejeitar: ${err.message || 'Erro desconhecido'}`);
+            console.error('Erro ao rejeitar:', err);
+            alert(`Erro ao rejeitar: ${err.message || 'Erro desconhecido'}`);
         } finally {
             setIsProcessing(false);
         }
@@ -482,6 +483,43 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                             <button onClick={() => setShowPasswordModal(false)} className={`flex-1 py-3 ${dk ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'} rounded-xl font-bold text-xs transition-all`}>Cancelar</button>
                             <button onClick={confirmApprove} disabled={!passwordConfirm || isProcessing} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 disabled:opacity-50 flex items-center justify-center gap-2">
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirmar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ========== Modal de Rejeição ========== */}
+            {rejectingRequestId && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[260] flex items-center justify-center p-4">
+                    <div className={`${dk ? 'bg-slate-900 border-slate-800' : 'bg-white'} w-full max-w-sm rounded-2xl shadow-2xl p-6 animate-in zoom-in-95 duration-200 border`}>
+                        <div className={`${dk ? 'bg-red-900/30' : 'bg-red-50'} w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4`}>
+                            <XCircle className={`w-6 h-6 ${dk ? 'text-red-400' : 'text-red-600'}`} />
+                        </div>
+                        <h3 className={`text-lg font-black text-center ${dk ? 'text-white' : 'text-slate-800'} mb-1`}>Rejeitar Solicitação</h3>
+                        <p className={`text-xs text-center ${dk ? 'text-slate-400' : 'text-slate-500'} mb-5`}>Informe o motivo. O solicitante receberá um e-mail com esta observação.</p>
+                        <textarea
+                            autoFocus
+                            rows={4}
+                            placeholder="Ex: Documentação incompleta, período já ocupado..."
+                            value={rejectMotivo}
+                            onChange={e => setRejectMotivo(e.target.value)}
+                            className={`w-full p-3 text-sm font-medium rounded-xl border resize-none outline-none focus:ring-2 focus:ring-red-500 transition-all mb-4 ${dk ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400'}`}
+                        />
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => { setRejectingRequestId(null); setRejectMotivo(''); }}
+                                disabled={isProcessing}
+                                className={`flex-1 py-3 rounded-xl font-bold text-xs transition-all ${dk ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'} disabled:opacity-50`}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={confirmReject}
+                                disabled={!rejectMotivo.trim() || isProcessing}
+                                className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold text-xs hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 disabled:opacity-40 flex items-center justify-center gap-2"
+                            >
+                                {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirmar Rejeição'}
                             </button>
                         </div>
                     </div>
