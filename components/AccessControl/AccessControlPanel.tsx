@@ -189,7 +189,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 query = query.eq('guard_gate', filterGate);
             }
 
-            const { data, error } = await query.limit(200);
+            const { data, error } = await query.limit(3000);
             if (error) throw error;
             setRecords(data || []);
         } catch (err) {
