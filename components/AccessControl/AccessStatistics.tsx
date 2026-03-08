@@ -100,8 +100,8 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
     const [loading, setLoading] = useState(true);
 
     // Date State
-    const [datePreset, setDatePreset] = useState<DatePreset>('7D');
-    const [dateStart, setDateStart] = useState(() => formatDate(subDays(new Date(), 6))); // Last 7 days including today
+    const [datePreset, setDatePreset] = useState<DatePreset>('TODAY');
+    const [dateStart, setDateStart] = useState(() => formatDate(new Date()));
     const [dateEnd, setDateEnd] = useState(() => formatDate(new Date()));
 
     // Filters
