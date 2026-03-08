@@ -222,7 +222,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
     const section = `glass-panel p-3 sm:p-4 rounded-xl space-y-3 sm:space-y-4`;
     const sectionTitle = `text-[10px] font-black ${dk ? 'text-slate-500 border-slate-700' : 'text-slate-400 border-slate-100'} uppercase tracking-widest border-b pb-2 mb-2`;
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
 
     return (
         <div className={`fixed inset-0 z-[200] flex sm:items-center sm:justify-center bg-slate-900/40 sm:backdrop-blur-sm animate-in fade-in duration-300`}>

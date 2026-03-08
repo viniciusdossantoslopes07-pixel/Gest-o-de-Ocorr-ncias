@@ -21,8 +21,8 @@ const Dashboard: FC<DashboardProps> = ({ occurrences, isDarkMode }) => {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [period, setPeriod] = useState<Period>('all');
   const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
-    start: new Date().toISOString().split('T')[0],
-    end: new Date().toISOString().split('T')[0]
+    start: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
+    end: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]
   });
 
   // Filter Logic

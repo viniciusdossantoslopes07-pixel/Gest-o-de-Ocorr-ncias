@@ -15,7 +15,7 @@ interface MissionOrderFormProps {
 
 const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel, currentUser, users, isDarkMode }) => {
     const [formData, setFormData] = useState({
-        date: order?.date || new Date().toISOString().split('T')[0],
+        date: order?.date || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
         isInternal: order?.isInternal ?? true,
         mission: order?.mission || '',
         location: order?.location || '',

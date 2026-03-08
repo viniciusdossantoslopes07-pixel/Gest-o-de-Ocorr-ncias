@@ -765,7 +765,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const handleSave = () => {
         if (!isSigned) { alert('Por favor, realize a assinatura digital antes de finalizar.'); return; }
         const records: AttendanceRecord[] = filteredUsers.map(u => ({ militarId: u.id, militarName: u.warName || u.name, militarRank: u.rank, status: attendanceRecords[u.id] || 'P', timestamp: new Date().toISOString() }));
-        const daily: DailyAttendance = { id: Math.random().toString(36).substr(2, 9), date: new Date().toISOString().split('T')[0], sector: selectedSector, callType: callType as CallTypeCode, records, responsible, signedAt: new Date().toISOString(), signedBy: currentUser.name, createdAt: new Date().toISOString() };
+        const daily: DailyAttendance = { id: Math.random().toString(36).substr(2, 9), date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0], sector: selectedSector, callType: callType as CallTypeCode, records, responsible, signedAt: new Date().toISOString(), signedBy: currentUser.name, createdAt: new Date().toISOString() };
         onSaveAttendance(daily);
         alert('Chamada salva e assinada com sucesso!');
     };

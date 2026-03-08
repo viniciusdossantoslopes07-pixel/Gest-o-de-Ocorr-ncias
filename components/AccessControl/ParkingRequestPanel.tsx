@@ -103,7 +103,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
     };
 
     const vagasOcupadas = (() => {
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
         return (isAdmin ? allRequests : requests).filter(r =>
             r.status === 'Aprovado' && r.inicio <= today && r.termino > today
         ).length;

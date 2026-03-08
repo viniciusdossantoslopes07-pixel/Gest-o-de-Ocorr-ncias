@@ -23,6 +23,10 @@ interface ParkingRequest {
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 const TOTAL_VAGAS = 32;
 
+const getLocalDate = (d: Date = new Date()) => {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
 export default function ParkingStatistics({ dk = false }: { dk?: boolean }) {
     const card = dk ? 'bg-slate-800/80 border-slate-700/50' : 'bg-white border-slate-200';
     const textPrimary = dk ? 'text-white' : 'text-slate-800';
@@ -39,12 +43,12 @@ export default function ParkingStatistics({ dk = false }: { dk?: boolean }) {
     const [filterStart, setFilterStart] = useState(() => {
         const d = new Date();
         d.setDate(d.getDate() - 30);
-        return d.toISOString().split('T')[0];
+        return getLocalDate(d);
     });
     const [filterEnd, setFilterEnd] = useState(() => {
         const d = new Date();
         d.setDate(d.getDate() + 30);
-        return d.toISOString().split('T')[0];
+        return getLocalDate(d);
     });
     const [showFilters, setShowFilters] = useState(true);
     const [activeQuickFilter, setActiveQuickFilter] = useState<string | null>('30_0'); // Default: Últimos 30 dias
@@ -64,10 +68,10 @@ export default function ParkingStatistics({ dk = false }: { dk?: boolean }) {
     const setQuickFilter = (days: number, future: number = 0, filterId: string) => {
         const start = new Date();
         start.setDate(start.getDate() - days);
-        setFilterStart(start.toISOString().split('T')[0]);
+        setFilterStart(getLocalDate(start));
         const end = new Date();
         end.setDate(end.getDate() + future);
-        setFilterEnd(end.toISOString().split('T')[0]);
+        setFilterEnd(getLocalDate(end));
         setActiveQuickFilter(filterId);
     };
 
@@ -79,7 +83,7 @@ export default function ParkingStatistics({ dk = false }: { dk?: boolean }) {
     };
 
     // --- TODAY ---
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDate();
     const vagasOcupadasHoje = getOccupationForDate(today);
 
     // --- FILTERED REQUESTS (by created_at within date range) ---
@@ -105,7 +109,7 @@ export default function ParkingStatistics({ dk = false }: { dk?: boolean }) {
             const d = new Date(start);
             d.setDate(d.getDate() + (i * step));
             if (d > end) break;
-            const dateStr = d.toISOString().split('T')[0];
+            const dateStr = getLocalDate(d);
             const occupied = getOccupationForDate(dateStr);
             result.push({
                 date: dateStr,
@@ -136,7 +140,7 @@ export default function ParkingStatistics({ dk = false }: { dk?: boolean }) {
         for (let i = 0; i <= 14; i++) {
             const d = new Date();
             d.setDate(d.getDate() + i);
-            const dateStr = d.toISOString().split('T')[0];
+            const dateStr = getLocalDate(d);
             const occupied = getOccupationForDate(dateStr);
             result.push({
                 date: dateStr,
@@ -183,7 +187,7 @@ export default function ParkingStatistics({ dk = false }: { dk?: boolean }) {
         for (let i = 29; i >= 0; i--) {
             const d = new Date();
             d.setDate(d.getDate() - i);
-            const dateStr = d.toISOString().split('T')[0];
+            const dateStr = getLocalDate(d);
             const count = requests.filter(r => r.created_at.startsWith(dateStr)).length;
             result.push({ date: d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }), count });
         }

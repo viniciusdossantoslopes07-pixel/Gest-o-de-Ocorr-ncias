@@ -23,7 +23,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
         nome_guerra: initialData?.dados_missao.nome_guerra || user.warName || user.name || '',
         setor: initialData?.dados_missao.setor || user.sector || '',
         tipo_missao: initialData?.dados_missao.tipo_missao || TIPOS_MISSAO[0],
-        data: initialData?.dados_missao.data || new Date().toISOString().split('T')[0],
+        data: initialData?.dados_missao.data || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
         inicio: initialData?.dados_missao.inicio || '08:00',
         termino: initialData?.dados_missao.termino || '17:00',
         local: initialData?.dados_missao.local || '',
