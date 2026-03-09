@@ -80,7 +80,7 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
     if (selectedEvent) {
         return (
             <div className={`p-5 rounded-2xl border ${card} animate-fade-in`}>
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
                     <button
                         onClick={() => setSelectedEvent(null)}
                         className={`text-sm font-bold uppercase transition-all px-4 py-2 rounded-xl ${dk ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`}
@@ -88,7 +88,7 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
                         ← Voltar para lista
                     </button>
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                         <button
                             onClick={() => handleStatusChange(selectedEvent.id, selectedEvent.status)}
                             className={`px-4 py-2 rounded-xl text-xs font-black uppercase shadow-sm transition-all ${selectedEvent.status === 'APPROVED' ? 'bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200'}`}

@@ -115,14 +115,14 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label className={`block text-[10px] font-bold uppercase mb-1.5 ${textMuted}`}>SARAM</label>
                             <input
                                 type="text"
                                 value={responsibleSaram}
                                 onChange={(e) => setResponsibleSaram(e.target.value)}
-                                placeholder="SARAM (Opcional)"
+                                placeholder="SARAM"
                                 maxLength={7}
                                 className={`w-full px-4 py-3 border rounded-xl font-bold uppercase outline-none focus:ring-2 transition-all ${inputTheme}`}
                             />
