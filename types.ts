@@ -301,6 +301,8 @@ export interface AccessEvent {
   location: string;
   address?: string;
   responsible_name: string;
+  responsible_saram?: string;
+  responsible_contact?: string;
   status: 'PENDING' | 'APPROVED';
   date: string;
   created_at?: string;

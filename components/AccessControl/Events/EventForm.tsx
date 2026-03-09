@@ -23,6 +23,8 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
     const [location, setLocation] = useState('');
     const [address, setAddress] = useState('');
     const [responsibleName, setResponsibleName] = useState('');
+    const [responsibleSaram, setResponsibleSaram] = useState('');
+    const [responsibleContact, setResponsibleContact] = useState('');
     const [date, setDate] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
@@ -78,6 +80,8 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
                 location,
                 address: location === 'Residencia do Morador' ? address : undefined,
                 responsible_name: responsibleName.toUpperCase(),
+                responsible_saram: responsibleSaram,
+                responsible_contact: responsibleContact,
                 date,
                 status: calculatedStatus,
                 registered_by: user.id
@@ -109,6 +113,30 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
                             placeholder="Ex: SGT SILVA"
                             className={`w-full px-4 py-3 border rounded-xl font-bold uppercase outline-none focus:ring-2 transition-all ${inputTheme}`}
                         />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className={`block text-[10px] font-bold uppercase mb-1.5 ${textMuted}`}>SARAM</label>
+                            <input
+                                type="text"
+                                value={responsibleSaram}
+                                onChange={(e) => setResponsibleSaram(e.target.value)}
+                                placeholder="SARAM (Opcional)"
+                                maxLength={7}
+                                className={`w-full px-4 py-3 border rounded-xl font-bold uppercase outline-none focus:ring-2 transition-all ${inputTheme}`}
+                            />
+                        </div>
+                        <div>
+                            <label className={`block text-[10px] font-bold uppercase mb-1.5 ${textMuted}`}>Contato</label>
+                            <input
+                                type="text"
+                                value={responsibleContact}
+                                onChange={(e) => setResponsibleContact(e.target.value)}
+                                placeholder="(11) 99999-9999"
+                                className={`w-full px-4 py-3 border rounded-xl font-bold uppercase outline-none focus:ring-2 transition-all ${inputTheme}`}
+                            />
+                        </div>
                     </div>
 
                     <div>
@@ -268,8 +296,8 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
                 onClick={handleSave}
                 disabled={submitting || guests.length === 0}
                 className={`w-full py-4 rounded-xl text-sm font-black flex items-center justify-center gap-2 uppercase tracking-wider shadow-lg transition-all ${guests.length === 0
-                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed border-none'
-                        : 'bg-emerald-500 hover:bg-emerald-600 text-white border-b-4 border-emerald-700 active:border-b-0 active:translate-y-1'
+                    ? 'bg-slate-300 text-slate-500 cursor-not-allowed border-none'
+                    : 'bg-emerald-500 hover:bg-emerald-600 text-white border-b-4 border-emerald-700 active:border-b-0 active:translate-y-1'
                     }`}
             >
                 {submitting ? (

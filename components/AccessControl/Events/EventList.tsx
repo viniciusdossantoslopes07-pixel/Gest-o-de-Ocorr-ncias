@@ -107,8 +107,15 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
                 <div className={`p-4 rounded-xl border mb-6 ${dk ? 'bg-slate-700/30 border-slate-600/50' : 'bg-slate-50 border-slate-200'}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
-                            <p className={`text-[10px] font-bold uppercase ${textMuted}`}>Responsável</p>
+                            <p className={`text-[10px] font-bold uppercase ${textMuted}`}>Responsável / Contato</p>
                             <p className={`font-black text-sm uppercase ${textPrimary}`}>{selectedEvent.responsible_name}</p>
+                            {(selectedEvent.responsible_saram || selectedEvent.responsible_contact) && (
+                                <p className={`text-[10px] mt-1 font-bold ${textSecondary}`}>
+                                    {selectedEvent.responsible_saram ? `SARAM: ${selectedEvent.responsible_saram}` : ''}
+                                    {selectedEvent.responsible_saram && selectedEvent.responsible_contact ? ' | ' : ''}
+                                    {selectedEvent.responsible_contact ? `CTT: ${selectedEvent.responsible_contact}` : ''}
+                                </p>
+                            )}
                         </div>
                         <div>
                             <p className={`text-[10px] font-bold uppercase ${textMuted}`}>Local</p>
@@ -125,8 +132,8 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
                             <p className={`text-[10px] font-bold uppercase ${textMuted}`}>Status / Convidados</p>
                             <div className="flex items-center gap-2 mt-0.5">
                                 <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${selectedEvent.status === 'APPROVED'
-                                        ? (dk ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-100 text-emerald-700')
-                                        : (dk ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-100 text-amber-700')
+                                    ? (dk ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-100 text-emerald-700')
+                                    : (dk ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-100 text-amber-700')
                                     }`}>
                                     {selectedEvent.status === 'APPROVED' ? 'Aprovado' : 'Pendente (Comando)'}
                                 </span>
@@ -228,8 +235,8 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
                         >
                             <div className="flex items-start justify-between mb-3">
                                 <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${event.status === 'APPROVED'
-                                        ? (dk ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-100 text-emerald-700')
-                                        : (dk ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-100 text-amber-700')
+                                    ? (dk ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-100 text-emerald-700')
+                                    : (dk ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-100 text-amber-700')
                                     }`}>
                                     {event.status === 'APPROVED' ? 'Aprovado' : 'Pendente'}
                                 </span>
