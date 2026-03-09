@@ -281,6 +281,28 @@ export interface AbsenceJustification {
   performedBy: string;
   timestamp: string;
   sector: string;
-  date: string;
   callType: string;
+}
+
+export interface EventGuest {
+  id: string;
+  event_id: string;
+  name: string;
+  cpf?: string;
+  age?: number;
+  has_vehicle?: boolean;
+  vehicle_plate?: string;
+  created_at?: string;
+}
+
+export interface AccessEvent {
+  id: string;
+  location: string;
+  address?: string;
+  responsible_name: string;
+  status: 'PENDING' | 'APPROVED';
+  date: string;
+  created_at?: string;
+  registered_by?: string;
+  guests?: EventGuest[];
 }

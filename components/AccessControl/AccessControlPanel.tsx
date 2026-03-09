@@ -8,6 +8,7 @@ import {
     History, Sparkles, ChevronUp, AlertCircle, BarChart3, List
 } from 'lucide-react';
 import AccessStatistics from './AccessStatistics';
+import EventControl from './Events/EventControl';
 import { Combobox } from '../Combobox';
 
 interface AccessControlPanelProps {
@@ -53,7 +54,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     const textMuted = dk ? 'text-slate-400' : 'text-slate-500';
     const hoverRow = dk ? 'hover:bg-slate-700/40' : 'hover:bg-slate-50';
     // Tab State
-    const [activeTab, setActiveTab] = useState<'registrar' | 'estatisticas' | 'busca'>('registrar');
+    const [activeTab, setActiveTab] = useState<'registrar' | 'eventos' | 'estatisticas' | 'busca'>('registrar');
     const [showStats, setShowStats] = useState(true);
     const [historyGateFilter, setHistoryGateFilter] = useState('');
 
@@ -483,6 +484,16 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                     Registrar
                 </button>
                 <button
+                    onClick={() => setActiveTab('eventos')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black uppercase tracking-wider rounded-lg transition-all ${activeTab === 'eventos'
+                        ? (dk ? 'bg-slate-600 text-white shadow-sm' : 'bg-white text-blue-600 shadow-sm')
+                        : (dk ? 'text-slate-400 hover:text-white hover:bg-slate-600/50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200/50')
+                        }`}
+                >
+                    <Calendar className="w-4 h-4" />
+                    Eventos
+                </button>
+                <button
                     onClick={() => setActiveTab('estatisticas')}
                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black uppercase tracking-wider rounded-lg transition-all ${activeTab === 'estatisticas'
                         ? (dk ? 'bg-slate-600 text-white shadow-sm' : 'bg-white text-blue-600 shadow-sm')
@@ -878,6 +889,11 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
             {/* TAB CONTENT: ESTATÍSTICAS */}
             {activeTab === 'estatisticas' && (
                 <AccessStatistics isDarkMode={isDarkMode} />
+            )}
+
+            {/* TAB CONTENT: EVENTOS */}
+            {activeTab === 'eventos' && (
+                <EventControl user={user} isDarkMode={isDarkMode} />
             )}
 
             {/* TAB CONTENT: BUSCA */}
