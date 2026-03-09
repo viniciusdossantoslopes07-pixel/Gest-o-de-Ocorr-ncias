@@ -22,6 +22,7 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
 
     const [location, setLocation] = useState('');
     const [address, setAddress] = useState('');
+    const [eventName, setEventName] = useState('');
     const [responsibleName, setResponsibleName] = useState('');
     const [responsibleSaram, setResponsibleSaram] = useState('');
     const [responsibleContact, setResponsibleContact] = useState('');
@@ -37,6 +38,16 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
     const [guestAge, setGuestAge] = useState('');
     const [guestHasVehicle, setGuestHasVehicle] = useState(false);
     const [guestPlate, setGuestPlate] = useState('');
+
+    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 11) value = value.slice(0, 11);
+
+        value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+        value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+
+        setResponsibleContact(value);
+    };
 
     const addGuest = () => {
         if (!guestName.trim()) {
@@ -77,6 +88,7 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
         setSubmitting(true);
         try {
             await eventService.createEvent({
+                name: eventName ? eventName.toUpperCase() : undefined,
                 location,
                 address: location === 'Residencia do Morador' ? address : undefined,
                 responsible_name: responsibleName.toUpperCase(),
@@ -105,6 +117,17 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
                 {/* Info Pessoal */}
                 <div className="space-y-4">
                     <div>
+                        <label className={`block text-[10px] font-bold uppercase mb-1.5 ${textMuted}`}>Nome do Evento (Opcional)</label>
+                        <input
+                            type="text"
+                            value={eventName}
+                            onChange={(e) => setEventName(e.target.value)}
+                            placeholder="Ex: ANIVERSÁRIO DO JOÃO"
+                            className={`w-full px-4 py-3 border rounded-xl font-bold uppercase outline-none focus:ring-2 transition-all ${inputTheme}`}
+                        />
+                    </div>
+
+                    <div>
                         <label className={`block text-[10px] font-bold uppercase mb-1.5 ${textMuted}`}>Responsável pelo Evento</label>
                         <input
                             type="text"
@@ -132,8 +155,9 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
                             <input
                                 type="text"
                                 value={responsibleContact}
-                                onChange={(e) => setResponsibleContact(e.target.value)}
+                                onChange={handlePhoneChange}
                                 placeholder="(11) 99999-9999"
+                                maxLength={15}
                                 className={`w-full px-4 py-3 border rounded-xl font-bold uppercase outline-none focus:ring-2 transition-all ${inputTheme}`}
                             />
                         </div>

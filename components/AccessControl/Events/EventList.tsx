@@ -107,8 +107,10 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
                 <div className={`p-4 rounded-xl border mb-6 ${dk ? 'bg-slate-700/30 border-slate-600/50' : 'bg-slate-50 border-slate-200'}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
-                            <p className={`text-[10px] font-bold uppercase ${textMuted}`}>Responsável / Contato</p>
-                            <p className={`font-black text-sm uppercase ${textPrimary}`}>{selectedEvent.responsible_name}</p>
+                            <p className={`text-[10px] font-bold uppercase ${textMuted}`}>Evento / Responsável</p>
+                            <p className={`font-black text-sm uppercase ${textPrimary}`}>
+                                {selectedEvent.name ? `${selectedEvent.name} - ` : ''}{selectedEvent.responsible_name}
+                            </p>
                             {(selectedEvent.responsible_saram || selectedEvent.responsible_contact) && (
                                 <p className={`text-[10px] mt-1 font-bold ${textSecondary}`}>
                                     {selectedEvent.responsible_saram ? `SARAM: ${selectedEvent.responsible_saram}` : ''}
@@ -247,7 +249,9 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
                                 </span>
                             </div>
 
-                            <h3 className={`font-black text-sm uppercase mb-1 ${textPrimary}`}>{event.responsible_name}</h3>
+                            <h3 className={`font-black text-sm uppercase mb-1 ${textPrimary}`}>
+                                {event.name ? `${event.name} - ` : ''}{event.responsible_name}
+                            </h3>
 
                             <div className="flex items-center gap-1.5 mb-4">
                                 <MapPin className={`w-3.5 h-3.5 ${dk ? 'text-slate-400' : 'text-slate-500'}`} />
