@@ -45,6 +45,7 @@ import PersonnelManagementView from './components/PersonnelCenter/PersonnelManag
 import AccessControlPanel from './components/AccessControl/AccessControlPanel';
 import AccessStatistics from './components/AccessControl/AccessStatistics';
 import ParkingRequestPanel from './components/AccessControl/ParkingRequestPanel';
+import EventControl from './components/AccessControl/Events/EventControl'; // Import
 import Destinometro from './components/Destinometro';
 import {
   STATUS_COLORS,
@@ -94,7 +95,7 @@ const App: FC = () => {
   });
   const [users, setUsers] = useState<User[]>([]);
   // Added 'settings' to activeTab type
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'access-control' | 'access-statistics' | 'parking-request'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'access-control' | 'access-statistics' | 'parking-request' | 'events'>('home');
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [attendanceHistory, setAttendanceHistory] = useState<DailyAttendance[]>([]);
   const [absenceJustifications, setAbsenceJustifications] = useState<AbsenceJustification[]>([]);
@@ -1122,7 +1123,8 @@ const App: FC = () => {
                                     activeTab === 'access-control' ? 'Acesso Visitantes' :
                                       activeTab === 'access-statistics' ? 'Estatísticas de Acesso' :
                                         activeTab === 'parking-request' ? 'Solicitação Estacionamento' :
-                                          activeTab === 'settings' ? 'Minhas Configurações' : 'Arquivo Digital'}
+                                          activeTab === 'events' ? 'Eventos Programados' :
+                                            activeTab === 'settings' ? 'Minhas Configurações' : 'Arquivo Digital'}
               </h2>
             </div>
 
@@ -1525,6 +1527,10 @@ const App: FC = () => {
 
           {activeTab === 'parking-request' && canViewAccessControl && (
             <ParkingRequestPanel user={currentUser} isDarkMode={isDarkMode} />
+          )}
+
+          {activeTab === 'events' && canViewAccessControl && currentUser && (
+            <EventControl user={currentUser} isDarkMode={isDarkMode} />
           )}
 
           {/* Legacy Profile tab mapped to Settings for now, or kept separate if needed. 

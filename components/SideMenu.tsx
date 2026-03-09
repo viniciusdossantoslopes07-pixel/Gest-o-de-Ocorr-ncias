@@ -5,7 +5,7 @@ import {
     Home, PlusCircle, ShieldCheck, ShieldAlert, Package,
     LayoutDashboard, FileText, LogOut, ChevronLeft, ChevronRight,
     User as UserIcon, Settings, HelpCircle, Moon, Sun, Lock, Siren, BarChart3,
-    ChevronUp, ChevronDown, Check, Settings2, DoorOpen, Car, MapPin
+    ChevronUp, ChevronDown, Check, Settings2, DoorOpen, Car, MapPin, CalendarDays
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { USER_FUNCTIONS, PERMISSIONS, hasPermission } from '../constants/permissions';
@@ -14,7 +14,7 @@ interface SideMenuProps {
     isOpen: boolean;
     onClose: () => void;
     activeTab: string;
-    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'material-statistics' | 'personnel-center' | 'daily-attendance' | 'personnel-management' | 'force-map' | 'access-control' | 'access-statistics' | 'parking-request'>>;
+    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'material-statistics' | 'personnel-center' | 'daily-attendance' | 'personnel-management' | 'force-map' | 'access-control' | 'access-statistics' | 'parking-request' | 'events'>>;
     currentUser: User;
     onLogout: () => void;
     onToggleTheme: () => void;
@@ -176,8 +176,8 @@ export default function SideMenu({
                                     {(!isCollapsed && isAccessControlOpen) && (
                                         <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
                                             <MenuItem id="access-control" label="Acesso Visitantes" icon={DoorOpen} />
-
                                             <MenuItem id="parking-request" label="Estacionamento" icon={Car} />
+                                            <MenuItem id="events" label="Eventos" icon={CalendarDays} />
                                         </div>
                                     )}
                                 </div>
