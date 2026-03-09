@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { User, AccessEvent } from '../../../types';
 import { eventService } from '../../../services/eventService';
-import { Calendar, MapPin, Users, ChevronRight, RefreshCw, Info, CalendarDays } from 'lucide-react';
+import { Calendar, MapPin, Users, ChevronRight, RefreshCw, Info, CalendarDays, Printer } from 'lucide-react';
+import EventPrintView from './EventPrintView';
 
 interface EventListProps {
     user: User;
@@ -20,6 +21,7 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
 
     // States para gerenciar os detalhes
     const [selectedEvent, setSelectedEvent] = useState<AccessEvent | null>(null);
+    const [isPrinting, setIsPrinting] = useState(false);
 
     useEffect(() => {
         fetchEvents();
@@ -89,6 +91,13 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
                     </button>
 
                     <div className="flex flex-col sm:flex-row gap-2">
+                        <button
+                            onClick={() => setIsPrinting(true)}
+                            className={`px-4 py-2 rounded-xl text-xs font-black uppercase shadow-sm flex items-center justify-center gap-2 transition-all ${dk ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}
+                        >
+                            <Printer className="w-4 h-4" />
+                            Imprimir Relação
+                        </button>
                         <button
                             onClick={() => handleStatusChange(selectedEvent.id, selectedEvent.status)}
                             className={`px-4 py-2 rounded-xl text-xs font-black uppercase shadow-sm transition-all ${selectedEvent.status === 'APPROVED' ? 'bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200'}`}
@@ -188,6 +197,13 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
                     <div className="text-center p-8 border rounded-xl border-dashed">
                         <p className={textMuted}>Nenhum convidado registrado para este evento.</p>
                     </div>
+                )}
+
+                {isPrinting && (
+                    <EventPrintView
+                        event={selectedEvent}
+                        onClose={() => setIsPrinting(false)}
+                    />
                 )}
             </div>
         );
