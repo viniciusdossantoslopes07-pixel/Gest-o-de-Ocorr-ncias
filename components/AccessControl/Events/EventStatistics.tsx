@@ -14,9 +14,9 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
     const textPrimary = dk ? 'text-white' : 'text-slate-900';
     const textSecondary = dk ? 'text-slate-300' : 'text-slate-600';
     const textMuted = dk ? 'text-slate-400' : 'text-slate-500';
-
     const [events, setEvents] = useState<AccessEvent[]>([]);
     const [loading, setLoading] = useState(true);
+    const [timeFilter, setTimeFilter] = useState<'hoje' | 'semana' | 'mes' | 'todos'>('todos');
 
     useEffect(() => {
         fetchData();
@@ -34,16 +34,47 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
         }
     };
 
+    // Filter Logic
+    const filteredEvents = useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay());
+
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+        return events.filter(e => {
+            if (timeFilter === 'todos') return true;
+            if (!e.date) return false;
+
+            const [year, month, day] = e.date.split('-').map(Number);
+            const eDate = new Date(year, month - 1, day);
+
+            if (timeFilter === 'hoje') {
+                return eDate.getTime() === today.getTime();
+            }
+            if (timeFilter === 'semana') {
+                return eDate.getTime() >= startOfWeek.getTime();
+            }
+            if (timeFilter === 'mes') {
+                return eDate.getTime() >= startOfMonth.getTime();
+            }
+            return true;
+        });
+    }, [events, timeFilter]);
+
     // 1. General Stats
-    const totalEvents = events.length;
-    const approvedEvents = events.filter(e => e.status === 'APPROVED').length;
-    const pendingEvents = events.filter(e => e.status === 'PENDING').length;
-    const totalGuests = events.reduce((acc, curr) => acc + (curr.guests?.length || 0), 0);
+    const totalEvents = filteredEvents.length;
+    const approvedEvents = filteredEvents.filter(e => e.status === 'APPROVED').length;
+    const pendingEvents = filteredEvents.filter(e => e.status === 'PENDING').length;
+    const totalGuests = filteredEvents.reduce((acc, curr) => acc + (curr.guests?.length || 0), 0);
+    const avgGuests = totalEvents > 0 ? Math.round(totalGuests / totalEvents) : 0;
 
     // 2. Locations Stats
     const locationStats = useMemo(() => {
         const counts: Record<string, number> = {};
-        events.forEach(e => {
+        filteredEvents.forEach(e => {
             counts[e.location] = (counts[e.location] || 0) + 1;
         });
         return Object.entries(counts)
@@ -55,7 +86,7 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
     // 3. Requesters Stats
     const requestersStats = useMemo(() => {
         const counts: Record<string, number> = {};
-        events.forEach(e => {
+        filteredEvents.forEach(e => {
             // Fallback in case responsible_name is undefined/null
             const responsible = e.responsible_name || 'NÃO INFORMADO';
             counts[responsible] = (counts[responsible] || 0) + 1;
@@ -64,7 +95,7 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
             .map(([name, count]) => ({ name, value: count }))
             .sort((a, b) => b.value - a.value)
             .slice(0, 5); // Traz os Top 5
-    }, [events]);
+    }, [filteredEvents]);
 
     const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'];
 
@@ -80,14 +111,31 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
                     </p>
                 </div>
 
-                <button
-                    onClick={fetchData}
-                    disabled={loading}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase transition-all shadow-sm ${dk ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
-                >
-                    <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-                    Atualizar Dados
-                </button>
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <div className={`flex p-1 rounded-xl shadow-inner ${dk ? 'bg-slate-900/50' : 'bg-slate-100'}`}>
+                        {(['hoje', 'semana', 'mes', 'todos'] as const).map((filter) => (
+                            <button
+                                key={filter}
+                                onClick={() => setTimeFilter(filter)}
+                                className={`px-4 py-2 rounded-lg text-xs font-black uppercase transition-all whitespace-nowrap ${timeFilter === filter
+                                    ? (dk ? 'bg-slate-700 text-white shadow-sm' : 'bg-white text-slate-900 shadow-sm')
+                                    : (dk ? 'text-slate-400 hover:text-white hover:bg-slate-800' : 'text-slate-500 hover:text-slate-800 hover:bg-white/50')
+                                    }`}
+                            >
+                                {filter === 'hoje' ? 'Hoje' : filter === 'semana' ? 'Semana' : filter === 'mes' ? 'Mês' : 'Todos'}
+                            </button>
+                        ))}
+                    </div>
+
+                    <button
+                        onClick={fetchData}
+                        disabled={loading}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase transition-all shadow-sm ${dk ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}
+                    >
+                        <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                        Atualizar
+                    </button>
+                </div>
             </div>
 
             {loading ? (
@@ -104,29 +152,35 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
             ) : (
                 <>
                     {/* KPI Cards */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                        <div className={`p-4 rounded-xl border relative overflow-hidden ${dk ? 'bg-blue-900/20 border-blue-800/30' : 'bg-blue-50 border-blue-100'}`}>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+                        <div className={`p-4 rounded-xl border relative overflow-hidden transition-all hover:scale-[1.02] ${dk ? 'bg-blue-900/20 border-blue-800/30' : 'bg-gradient-to-br from-blue-50 to-blue-100/50 border-blue-200 shadow-sm'}`}>
                             <CalendarDays className={`absolute -right-2 -bottom-2 w-16 h-16 opacity-10 ${dk ? 'text-blue-400' : 'text-blue-600'}`} />
-                            <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${dk ? 'text-blue-400' : 'text-blue-600'}`}>Total de Eventos</p>
-                            <p className={`text-2xl font-black ${dk ? 'text-blue-300' : 'text-blue-700'}`}>{totalEvents}</p>
+                            <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${dk ? 'text-blue-400' : 'text-blue-700'}`}>Total de Eventos</p>
+                            <p className={`text-2xl font-black ${dk ? 'text-blue-300' : 'text-blue-800'}`}>{totalEvents}</p>
                         </div>
 
-                        <div className={`p-4 rounded-xl border relative overflow-hidden ${dk ? 'bg-indigo-900/20 border-indigo-800/30' : 'bg-indigo-50 border-indigo-100'}`}>
+                        <div className={`p-4 rounded-xl border relative overflow-hidden transition-all hover:scale-[1.02] ${dk ? 'bg-indigo-900/20 border-indigo-800/30' : 'bg-gradient-to-br from-indigo-50 to-indigo-100/50 border-indigo-200 shadow-sm'}`}>
                             <Users className={`absolute -right-2 -bottom-2 w-16 h-16 opacity-10 ${dk ? 'text-indigo-400' : 'text-indigo-600'}`} />
-                            <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${dk ? 'text-indigo-400' : 'text-indigo-600'}`}>Total Pessoas</p>
-                            <p className={`text-2xl font-black ${dk ? 'text-indigo-300' : 'text-indigo-700'}`}>{totalGuests}</p>
+                            <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${dk ? 'text-indigo-400' : 'text-indigo-700'}`}>Total Convidados</p>
+                            <p className={`text-2xl font-black ${dk ? 'text-indigo-300' : 'text-indigo-800'}`}>{totalGuests}</p>
                         </div>
 
-                        <div className={`p-4 rounded-xl border relative overflow-hidden ${dk ? 'bg-emerald-900/20 border-emerald-800/30' : 'bg-emerald-50 border-emerald-100'}`}>
+                        <div className={`p-4 rounded-xl border relative overflow-hidden transition-all hover:scale-[1.02] ${dk ? 'bg-purple-900/20 border-purple-800/30' : 'bg-gradient-to-br from-purple-50 to-purple-100/50 border-purple-200 shadow-sm'}`}>
+                            <Users className={`absolute -right-2 -bottom-2 w-16 h-16 opacity-10 ${dk ? 'text-purple-400' : 'text-purple-600'}`} />
+                            <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${dk ? 'text-purple-400' : 'text-purple-700'}`}>Média p/ Evento</p>
+                            <p className={`text-2xl font-black ${dk ? 'text-purple-300' : 'text-purple-800'}`}>~{avgGuests}</p>
+                        </div>
+
+                        <div className={`p-4 rounded-xl border relative overflow-hidden transition-all hover:scale-[1.02] ${dk ? 'bg-emerald-900/20 border-emerald-800/30' : 'bg-gradient-to-br from-emerald-50 to-emerald-100/50 border-emerald-200 shadow-sm'}`}>
                             <CheckCircle className={`absolute -right-2 -bottom-2 w-16 h-16 opacity-10 ${dk ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                            <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${dk ? 'text-emerald-400' : 'text-emerald-600'}`}>Aprovados</p>
-                            <p className={`text-2xl font-black ${dk ? 'text-emerald-300' : 'text-emerald-700'}`}>{approvedEvents}</p>
+                            <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${dk ? 'text-emerald-400' : 'text-emerald-700'}`}>Aprovados</p>
+                            <p className={`text-2xl font-black ${dk ? 'text-emerald-300' : 'text-emerald-800'}`}>{approvedEvents}</p>
                         </div>
 
-                        <div className={`p-4 rounded-xl border relative overflow-hidden ${dk ? 'bg-amber-900/20 border-amber-800/30' : 'bg-amber-50 border-amber-100'}`}>
+                        <div className={`p-4 rounded-xl border relative overflow-hidden transition-all hover:scale-[1.02] ${dk ? 'bg-amber-900/20 border-amber-800/30' : 'bg-gradient-to-br from-amber-50 to-amber-100/50 border-amber-200 shadow-sm'}`}>
                             <Clock className={`absolute -right-2 -bottom-2 w-16 h-16 opacity-10 ${dk ? 'text-amber-400' : 'text-amber-600'}`} />
-                            <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${dk ? 'text-amber-400' : 'text-amber-600'}`}>Pendentes (Comando)</p>
-                            <p className={`text-2xl font-black ${dk ? 'text-amber-300' : 'text-amber-700'}`}>{pendingEvents}</p>
+                            <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${dk ? 'text-amber-400' : 'text-amber-700'}`}>Pendentes (Comando)</p>
+                            <p className={`text-2xl font-black ${dk ? 'text-amber-300' : 'text-amber-800'}`}>{pendingEvents}</p>
                         </div>
                     </div>
 
@@ -187,12 +241,20 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
                                         const percent = (req.value / maxStr) * 100;
 
                                         return (
-                                            <div key={idx} className="relative">
-                                                <div className="flex justify-between items-center mb-1 relative z-10">
-                                                    <span className={`text-xs font-bold uppercase truncate pr-4 ${textPrimary}`}>{req.name}</span>
-                                                    <span className={`text-[10px] font-black ${dk ? 'text-slate-400' : 'text-slate-500'}`}>{req.value} Eventos</span>
+                                            <div key={idx} className="relative group">
+                                                <div className="flex justify-between items-center mb-1 relative z-10 opacity-90 group-hover:opacity-100 transition-opacity">
+                                                    <div className="flex items-center gap-2 overflow-hidden">
+                                                        <span className={`flex items-center justify-center w-5 h-5 rounded text-[10px] font-black ${idx === 0 ? 'bg-amber-400 text-amber-900' : idx === 1 ? 'bg-slate-300 text-slate-800' : idx === 2 ? 'bg-amber-600 text-white' : dk ? 'bg-slate-800 text-slate-400' : 'bg-slate-200 text-slate-500'}`}>
+                                                            {idx + 1}º
+                                                        </span>
+                                                        <span className={`text-xs font-bold uppercase truncate ${textPrimary}`}>{req.name}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1">
+                                                        <span className={`text-sm font-black ${COLORS[idx % COLORS.length]}`} style={{ color: COLORS[idx % COLORS.length] }}>{req.value}</span>
+                                                        <span className={`text-[10px] font-black uppercase ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Evts</span>
+                                                    </div>
                                                 </div>
-                                                <div className={`w-full h-2 rounded-full overflow-hidden ${dk ? 'bg-slate-600' : 'bg-slate-200'}`}>
+                                                <div className={`w-full h-1.5 rounded-full overflow-hidden ${dk ? 'bg-slate-800' : 'bg-slate-100'}`}>
                                                     <div
                                                         className="h-full rounded-full transition-all duration-1000 ease-out"
                                                         style={{
