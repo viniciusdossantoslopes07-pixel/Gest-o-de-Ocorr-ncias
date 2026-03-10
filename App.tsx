@@ -1170,6 +1170,7 @@ const App: FC = () => {
                 user={currentUser}
                 onCancel={() => isPublic ? handleLogout() : setActiveTab('home')}
                 initialCategory={initialCategory}
+                isDarkMode={isDarkMode}
                 onSubmit={async (data) => {
                   const newOccStub = {
                     ...data,
