@@ -528,79 +528,79 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
             {/* Modal de Análise */}
             {analysingRequest && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-                    <div className={`${dk ? 'bg-slate-900 border-slate-800' : 'bg-white'} w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200`}>
-                        <div className="bg-slate-900 p-4 flex justify-between items-center shrink-0">
-                            <h2 className="text-white font-bold flex items-center gap-2"><Eye className="w-5 h-5" /> Análise de Solicitação</h2>
-                            <button onClick={() => setAnalysingRequest(null)} className="text-white/50 hover:text-white"><XCircle className="w-6 h-6" /></button>
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-2 sm:p-4">
+                    <div className={`${dk ? 'bg-slate-900 border-slate-800' : 'bg-white'} w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] sm:max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200`}>
+                        <div className="bg-slate-900 p-3 sm:p-4 flex justify-between items-center shrink-0">
+                            <h2 className="text-white font-bold flex items-center gap-2 text-sm sm:text-base"><Eye className="w-4 h-4 sm:w-5 sm:h-5" /> Análise de Solicitação</h2>
+                            <button onClick={() => setAnalysingRequest(null)} className="text-white/50 hover:text-white"><XCircle className="w-5 h-5 sm:w-6 sm:h-6" /></button>
                         </div>
-                        <div className="p-6 overflow-y-auto custom-scrollbar space-y-6">
+                        <div className="p-4 sm:p-6 overflow-y-auto custom-scrollbar space-y-4 sm:space-y-6">
                             {/* Dados do Solicitante */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                 <div className="min-w-0">
-                                    <p className={`text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-400'} uppercase`}>Solicitante</p>
-                                    <p className={`font-black ${dk ? 'text-white' : 'text-slate-800'} truncate`}>{analysingRequest.nome_completo}</p>
-                                    <p className={`text-xs ${dk ? 'text-slate-400' : 'text-slate-500'} truncate`}>{analysingRequest.posto_graduacao} • {analysingRequest.forca} • {analysingRequest.tipo_pessoa}</p>
+                                    <p className={`text-[9px] sm:text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-400'} uppercase`}>Solicitante</p>
+                                    <p className={`font-black text-sm sm:text-base ${dk ? 'text-white' : 'text-slate-800'} truncate`}>{analysingRequest.nome_completo}</p>
+                                    <p className={`text-[11px] sm:text-xs ${dk ? 'text-slate-400' : 'text-slate-500'} truncate`}>{analysingRequest.posto_graduacao} • {analysingRequest.forca} • {analysingRequest.tipo_pessoa}</p>
                                 </div>
                                 <div className="min-w-0">
-                                    <p className={`text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-400'} uppercase`}>Contato</p>
-                                    <p className={`font-bold ${dk ? 'text-slate-300' : 'text-slate-700'} truncate`}>{analysingRequest.telefone}</p>
-                                    <p className={`text-xs ${dk ? 'text-slate-400' : 'text-slate-500'} truncate`}>{analysingRequest.email}</p>
+                                    <p className={`text-[9px] sm:text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-400'} uppercase`}>Contato</p>
+                                    <p className={`font-bold text-sm sm:text-base ${dk ? 'text-slate-300' : 'text-slate-700'} truncate`}>{analysingRequest.telefone}</p>
+                                    <p className={`text-[11px] sm:text-xs ${dk ? 'text-slate-400' : 'text-slate-500'} truncate`}>{analysingRequest.email}</p>
                                 </div>
                             </div>
 
                             {/* Dados do Veículo */}
-                            <div className={`${dk ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'} p-4 rounded-xl border`}>
-                                <p className={`text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-400'} uppercase mb-3`}>Veículo</p>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                                    <div className="min-w-0"><p className={`text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-500'} uppercase tracking-wider`}>Marca/Modelo</p><p className={`font-black ${dk ? 'text-white' : 'text-slate-800'} text-xs sm:text-sm truncate`}>{analysingRequest.vehicle?.marca_modelo || analysingRequest.ext_marca_modelo}</p></div>
-                                    <div className="min-w-0"><p className={`text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-500'} uppercase tracking-wider`}>Placa</p><p className={`font-black ${dk ? 'text-white' : 'text-slate-800'} text-xs sm:text-sm truncate`}>{analysingRequest.vehicle?.placa || analysingRequest.ext_placa}</p></div>
-                                    <div className="min-w-0"><p className={`text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-500'} uppercase tracking-wider`}>Cor</p><p className={`font-black ${dk ? 'text-white' : 'text-slate-800'} text-xs sm:text-sm truncate`}>{analysingRequest.vehicle?.cor || analysingRequest.ext_cor}</p></div>
+                            <div className={`${dk ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'} p-3 sm:p-4 rounded-xl border`}>
+                                <p className={`text-[9px] sm:text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-400'} uppercase mb-2 sm:mb-3`}>Veículo</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
+                                    <div className="min-w-0 flex flex-row sm:flex-col justify-between sm:justify-start items-center sm:items-start"><p className={`text-[9px] sm:text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-500'} uppercase tracking-wider`}>Marca/Mod.</p><p className={`font-black ${dk ? 'text-white' : 'text-slate-800'} text-xs sm:text-sm truncate`}>{analysingRequest.vehicle?.marca_modelo || analysingRequest.ext_marca_modelo}</p></div>
+                                    <div className="min-w-0 flex flex-row sm:flex-col justify-between sm:justify-start items-center sm:items-start"><p className={`text-[9px] sm:text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-500'} uppercase tracking-wider`}>Placa</p><p className={`font-black ${dk ? 'text-white' : 'text-slate-800'} text-xs sm:text-sm truncate`}>{analysingRequest.vehicle?.placa || analysingRequest.ext_placa}</p></div>
+                                    <div className="min-w-0 flex flex-row sm:flex-col justify-between sm:justify-start items-center sm:items-start"><p className={`text-[9px] sm:text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-500'} uppercase tracking-wider`}>Cor</p><p className={`font-black ${dk ? 'text-white' : 'text-slate-800'} text-xs sm:text-sm truncate`}>{analysingRequest.vehicle?.cor || analysingRequest.ext_cor}</p></div>
                                 </div>
                             </div>
 
                             {/* Período */}
                             <div>
-                                <p className={`text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-400'} uppercase`}>Período Solicitado</p>
-                                <p className={`font-bold ${dk ? 'text-slate-200' : 'text-slate-800'}`}>{new Date(analysingRequest.inicio + 'T00:00:00').toLocaleDateString('pt-BR')} até {new Date(analysingRequest.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+                                <p className={`text-[9px] sm:text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-400'} uppercase`}>Período Solicitado</p>
+                                <p className={`font-bold text-xs sm:text-base ${dk ? 'text-slate-200' : 'text-slate-800'}`}>{new Date(analysingRequest.inicio + 'T00:00:00').toLocaleDateString('pt-BR')} até {new Date(analysingRequest.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
                             </div>
 
                             {/* Documentos */}
                             <div>
-                                <p className={`text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-400'} uppercase mb-2`}>Documentos Anexados</p>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <p className={`text-[9px] sm:text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-400'} uppercase mb-1.5 sm:mb-2`}>Documentos Anexados</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
                                     {analysingRequest.identidade_url ? (
-                                        <a href={analysingRequest.identidade_url} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-2 p-3 ${dk ? 'bg-blue-900/20 text-blue-400 border-blue-800/30' : 'bg-blue-50 text-blue-700 border-blue-200'} rounded-xl border hover:opacity-80 transition-opacity font-bold text-xs`}>
-                                            <FileText className="w-4 h-4" /> Ver Identidade
+                                        <a href={analysingRequest.identidade_url} target="_blank" rel="noopener noreferrer" className={`flex items-center justify-center sm:justify-start gap-2 p-2 sm:p-3 ${dk ? 'bg-blue-900/20 text-blue-400 border-blue-800/30' : 'bg-blue-50 text-blue-700 border-blue-200'} rounded-xl border hover:opacity-80 transition-opacity font-bold text-[11px] sm:text-xs`}>
+                                            <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Ver Identidade
                                         </a>
-                                    ) : <span className={`text-xs ${dk ? 'text-slate-600 border-slate-800 bg-slate-800/50' : 'text-slate-400 border-slate-100 bg-slate-50'} italic p-2 border rounded-xl text-center`}>Identidade não anexada</span>}
+                                    ) : <span className={`text-[11px] sm:text-xs ${dk ? 'text-slate-600 border-slate-800 bg-slate-800/50' : 'text-slate-400 border-slate-100 bg-slate-50'} italic p-2 rounded-xl text-center border`}>Identidade não anexada</span>}
 
                                     {analysingRequest.cnh_url ? (
-                                        <a href={analysingRequest.cnh_url} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-2 p-3 ${dk ? 'bg-blue-900/20 text-blue-400 border-blue-800/30' : 'bg-blue-50 text-blue-700 border-blue-200'} rounded-xl border hover:opacity-80 transition-opacity font-bold text-xs`}>
-                                            <FileText className="w-4 h-4" /> Ver CNH
+                                        <a href={analysingRequest.cnh_url} target="_blank" rel="noopener noreferrer" className={`flex items-center justify-center sm:justify-start gap-2 p-2 sm:p-3 ${dk ? 'bg-blue-900/20 text-blue-400 border-blue-800/30' : 'bg-blue-50 text-blue-700 border-blue-200'} rounded-xl border hover:opacity-80 transition-opacity font-bold text-[11px] sm:text-xs`}>
+                                            <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Ver CNH
                                         </a>
-                                    ) : <span className={`text-xs ${dk ? 'text-slate-600 border-slate-800 bg-slate-800/50' : 'text-slate-400 border-slate-100 bg-slate-50'} italic p-2 border rounded-xl text-center`}>CNH não anexada</span>}
+                                    ) : <span className={`text-[11px] sm:text-xs ${dk ? 'text-slate-600 border-slate-800 bg-slate-800/50' : 'text-slate-400 border-slate-100 bg-slate-50'} italic p-2 rounded-xl text-center border`}>CNH não anexada</span>}
 
                                     {analysingRequest.crlv_url ? (
-                                        <a href={analysingRequest.crlv_url} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-2 p-3 ${dk ? 'bg-blue-900/20 text-blue-400 border-blue-800/30' : 'bg-blue-50 text-blue-700 border-blue-200'} rounded-xl border hover:opacity-80 transition-opacity font-bold text-xs`}>
-                                            <FileText className="w-4 h-4" /> Ver CRLV
+                                        <a href={analysingRequest.crlv_url} target="_blank" rel="noopener noreferrer" className={`flex items-center justify-center sm:justify-start gap-2 p-2 sm:p-3 ${dk ? 'bg-blue-900/20 text-blue-400 border-blue-800/30' : 'bg-blue-50 text-blue-700 border-blue-200'} rounded-xl border hover:opacity-80 transition-opacity font-bold text-[11px] sm:text-xs`}>
+                                            <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Ver CRLV
                                         </a>
-                                    ) : <span className={`text-xs ${dk ? 'text-slate-600 border-slate-800 bg-slate-800/50' : 'text-slate-400 border-slate-100 bg-slate-50'} italic p-2 border rounded-xl text-center`}>CRLV não anexado</span>}
+                                    ) : <span className={`text-[11px] sm:text-xs ${dk ? 'text-slate-600 border-slate-800 bg-slate-800/50' : 'text-slate-400 border-slate-100 bg-slate-50'} italic p-2 rounded-xl text-center border`}>CRLV não anexado</span>}
                                 </div>
                             </div>
 
                             {analysingRequest.observacao && (
-                                <div className={`${dk ? 'bg-amber-900/20 border-amber-800/30 text-amber-500' : 'bg-amber-50 border-amber-100 text-amber-800'} p-3 rounded-xl border text-xs italic`}>
+                                <div className={`${dk ? 'bg-amber-900/20 border-amber-800/30 text-amber-500' : 'bg-amber-50 border-amber-100 text-amber-800'} p-2 sm:p-3 rounded-xl border text-[11px] sm:text-xs italic`}>
                                     <strong>Observação:</strong> "{analysingRequest.observacao}"
                                 </div>
                             )}
                         </div>
 
-                        <div className={`p-4 ${dk ? 'bg-slate-900/50 border-slate-800' : 'bg-slate-50 border-slate-200'} border-t flex gap-3 justify-end shrink-0`}>
-                            <button disabled={isProcessing} onClick={() => handleReject(analysingRequest.id)} className={`px-6 py-3 ${dk ? 'bg-red-900/20 text-red-400 hover:bg-red-900/30' : 'bg-red-100 text-red-700 hover:bg-red-200'} rounded-xl font-bold transition-all flex items-center gap-2 outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50`}>
+                        <div className={`p-3 sm:p-4 ${dk ? 'bg-slate-900/50 border-slate-800' : 'bg-slate-50 border-slate-200'} border-t flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end shrink-0`}>
+                            <button disabled={isProcessing} onClick={() => handleReject(analysingRequest.id)} className={`w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3 ${dk ? 'bg-red-900/20 text-red-400 hover:bg-red-900/30' : 'bg-red-100 text-red-700 hover:bg-red-200'} rounded-xl font-bold transition-all flex justify-center items-center gap-2 outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 text-[11px] sm:text-sm`}>
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />} Rejeitar
                             </button>
-                            <button disabled={isProcessing} onClick={() => handleApprove(analysingRequest.id)} className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all flex items-center gap-2 outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50">
+                            <button disabled={isProcessing} onClick={() => handleApprove(analysingRequest.id)} className={`w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all flex justify-center items-center gap-2 outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 text-[11px] sm:text-sm`}>
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />} Aprovar
                             </button>
                         </div>
