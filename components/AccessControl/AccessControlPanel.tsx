@@ -980,7 +980,9 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                 ))}
                             </div>
                         </div>
-                    </div>
+                        </div> {/* clse flex-col md:flex-row gap-3 */}
+                    </div> {/* close Filters Panel */}
+                    </div> {/* close card wrapper */}
 
                     {!searchQuery && !searchStartDate && !searchEndDate ? (
                         <p className="text-xs text-slate-400 font-medium px-1 text-center py-2">
