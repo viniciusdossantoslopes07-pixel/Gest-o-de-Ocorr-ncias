@@ -103,8 +103,29 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     // Search Filters
     const [searchStartDate, setSearchStartDate] = useState('');
     const [searchEndDate, setSearchEndDate] = useState('');
+    const [activeQuickDate, setActiveQuickDate] = useState<number | null | undefined>(null);
     const [searchFilterType, setSearchFilterType] = useState<'all' | 'Pedestre' | 'Veículo'>('all');
     const [searchFilterCategory, setSearchFilterCategory] = useState<'all' | 'Entrada' | 'Saída'>('all');
+
+    const handleQuickDate = (days: number | null) => {
+        setActiveQuickDate(days);
+        if (days === null) {
+            setSearchStartDate('');
+            setSearchEndDate('');
+            return;
+        }
+        const end = new Date();
+        const start = new Date();
+        start.setDate(start.getDate() - days);
+        setSearchEndDate(end.toISOString().split('T')[0]);
+        setSearchStartDate(start.toISOString().split('T')[0]);
+    };
+
+    const handleCustomDateChange = (type: 'start' | 'end', value: string) => {
+        setActiveQuickDate(undefined);
+        if (type === 'start') setSearchStartDate(value);
+        else setSearchEndDate(value);
+    };
 
     useEffect(() => {
         if (activeTab === 'registrar') {
@@ -901,10 +922,31 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                         </div>
 
                         {/* Filters Panel */}
-                        <div className="flex flex-col md:flex-row gap-4 pt-2">
-                            {/* Date Range */}
-                            <div className={`flex gap-2 items-center p-2 rounded-xl border ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-                                <span className={`text-[10px] font-black uppercase pl-2 whitespace-nowrap ${textMuted}`}>Tipo:</span>
+                        <div className="flex flex-col gap-3 pt-2">
+                            {/* Date Filters Row */}
+                            <div className="flex flex-col md:flex-row gap-3">
+                                {/* Quick Date Filters */}
+                                <div className={`flex gap-1.5 items-center p-2 rounded-xl border overflow-x-auto ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
+                                    <span className={`text-[10px] font-black uppercase pl-2 whitespace-nowrap hidden sm:inline-block ${textMuted}`}>Período:</span>
+                                    <button onClick={() => handleQuickDate(0)} className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${activeQuickDate === 0 ? 'bg-blue-600 text-white shadow-sm' : (dk ? 'bg-slate-600 text-slate-300 hover:bg-slate-500 border border-slate-500' : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-200')}`}>Hoje</button>
+                                    <button onClick={() => handleQuickDate(7)} className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${activeQuickDate === 7 ? 'bg-blue-600 text-white shadow-sm' : (dk ? 'bg-slate-600 text-slate-300 hover:bg-slate-500 border border-slate-500' : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-200')}`}>7 Dias</button>
+                                    <button onClick={() => handleQuickDate(30)} className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${activeQuickDate === 30 ? 'bg-blue-600 text-white shadow-sm' : (dk ? 'bg-slate-600 text-slate-300 hover:bg-slate-500 border border-slate-500' : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-200')}`}>30 Dias</button>
+                                    <button onClick={() => handleQuickDate(null)} className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${activeQuickDate === null ? 'bg-slate-800 text-white shadow-sm' : (dk ? 'bg-slate-600 text-slate-300 hover:bg-slate-500 border border-slate-500' : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-200')}`}>Tudo</button>
+                                </div>
+
+                                {/* Custom Date Inputs */}
+                                <div className={`flex gap-2 items-center p-2 rounded-xl border flex-1 ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
+                                    <Calendar className={`w-4 h-4 ml-2 min-w-[16px] ${textMuted}`} />
+                                    <input type="date" value={searchStartDate} onChange={(e) => handleCustomDateChange('start', e.target.value)} className={`flex-1 bg-transparent text-xs font-bold outline-none uppercase min-w-[110px] ${dk ? 'text-white color-scheme-dark' : 'text-slate-700'}`} style={{ colorScheme: dk ? 'dark' : 'normal' }} />
+                                    <span className={`text-[10px] font-black ${textMuted}`}>ATÉ</span>
+                                    <input type="date" value={searchEndDate} onChange={(e) => handleCustomDateChange('end', e.target.value)} className={`flex-1 bg-transparent text-xs font-bold outline-none uppercase min-w-[110px] ${dk ? 'text-white color-scheme-dark' : 'text-slate-700'}`} style={{ colorScheme: dk ? 'dark' : 'normal' }} />
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col md:flex-row gap-3">
+                                {/* Type Filter */}
+                                <div className={`flex gap-2 items-center p-2 rounded-xl border ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
+                                    <span className={`text-[10px] font-black uppercase pl-2 whitespace-nowrap ${textMuted}`}>Tipo:</span>
                                 {(['all', 'Pedestre', 'Veículo'] as const).map(type => (
                                     <button
                                         key={type}
