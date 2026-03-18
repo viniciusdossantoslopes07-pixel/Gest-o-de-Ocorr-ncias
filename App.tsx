@@ -730,9 +730,13 @@ const App: FC = () => {
         rc: updatedUser.rc,
         workplace: updatedUser.workplace,
         emergency_contact: updatedUser.emergency_contact || (updatedUser as any).emergencyContact,
-        pending_password_reset: updatedUser.pending_password_reset,
-        reset_password_at_login: updatedUser.reset_password_at_login,
-        password_status: updatedUser.password_status,
+        // Proteger campos de senha: só enviar se explicitamente definidos (não undefined)
+        ...(updatedUser.pending_password_reset !== undefined
+            ? { pending_password_reset: updatedUser.pending_password_reset } : {}),
+        ...(updatedUser.reset_password_at_login !== undefined
+            ? { reset_password_at_login: updatedUser.reset_password_at_login } : {}),
+        ...(updatedUser.password_status !== undefined
+            ? { password_status: updatedUser.password_status } : {}),
         is_functional: updatedUser.is_functional
       })
       .eq('id', updatedUser.id);

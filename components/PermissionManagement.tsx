@@ -160,7 +160,7 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
         try {
             // CENTRALIZED ADMIN LOGIC
             let newRole = UserRole.OPERATIONAL;
-            let newAccessLevel = selectedUser.accessLevel;
+            let newAccessLevel: string = selectedUser.accessLevel || 'N1';
 
             if (selectedFunction === 'ADMIN_TOTAL') {
                 newRole = UserRole.ADMIN;
@@ -175,15 +175,32 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
                 }
             }
 
-            const updatedUser: User = {
+            // CORREÇÃO: Atualizar APENAS campos de permissão no banco
+            // Isso evita sobrescrever campos de senha (password, reset_password_at_login, etc.)
+            const { error } = await supabase
+                .from('users')
+                .update({
+                    function_id: selectedFunction,
+                    custom_permissions: userPermissions,
+                    role: newRole,
+                    access_level: newAccessLevel
+                })
+                .eq('id', selectedUser.id);
+
+            if (error) throw error;
+
+            // Atualizar estado local via callback de refresh
+            if (onRefreshUsers) onRefreshUsers();
+
+            // Atualizar o selectedUser local para refletir as mudanças na UI
+            setSelectedUser({
                 ...selectedUser,
                 functionId: selectedFunction,
                 customPermissions: userPermissions,
                 role: newRole,
-                accessLevel: newAccessLevel
-            };
+                accessLevel: newAccessLevel as any
+            });
 
-            await onUpdateUser(updatedUser);
             alert('Permissões e Nível de Acesso atualizados com sucesso!');
         } catch (error) {
             console.error('Erro ao salvar permissões:', error);
