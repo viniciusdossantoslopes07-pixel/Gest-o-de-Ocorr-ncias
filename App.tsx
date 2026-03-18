@@ -507,19 +507,56 @@ const App: FC = () => {
       if (resetError) return false;
 
       // Log the user in
-      user.password = newPassword;
-      user.reset_password_at_login = false;
-      user.password_status = 'ACTIVE';
+      const mappedUser: User = {
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        role: user.role as UserRole,
+        email: user.email,
+        rank: user.rank,
+        saram: user.saram,
+        sector: user.sector,
+        accessLevel: user.access_level,
+        approved: user.approved,
+        password: newPassword,
+        warName: user.war_name,
+        militarId: user.militar_id,
+        phoneNumber: user.phone_number,
+        cpf: user.cpf,
+        displayOrder: user.display_order,
+        menu_order: user.menu_order,
+        home_order: user.home_order,
+        pending_password_reset: user.pending_password_reset,
+        reset_password_at_login: false,
+        password_status: 'ACTIVE',
+        photo_url: user.photo_url,
+        functionId: user.function_id,
+        customPermissions: user.custom_permissions,
+        biometric_credentials_id: user.biometric_credentials_id,
+        active: user.active,
+        specialty: user.specialty,
+        class_year: user.class_year,
+        service: user.service,
+        address: user.address,
+        enlistment_date: user.enlistment_date,
+        presentation_date: user.presentation_date,
+        last_promotion_date: user.last_promotion_date,
+        military_identity: user.military_identity,
+        rc: user.rc,
+        workplace: user.workplace,
+        emergency_contact: user.emergency_contact,
+        is_functional: !!user.is_functional
+      };
 
-      setCurrentUser(user as User);
-      localStorage.setItem('gsdsp_user_session', JSON.stringify(user));
+      setCurrentUser(mappedUser);
+      localStorage.setItem('gsdsp_user_session', JSON.stringify(mappedUser));
       localStorage.setItem('gsdsp_last_saram', username);
       setActiveTab('home');
 
-      if (hasPermission(user as User, PERMISSIONS.MANAGE_USERS) ||
-        hasPermission(user as User, PERMISSIONS.MANAGE_PERSONNEL) ||
-        hasPermission(user as User, PERMISSIONS.VIEW_PERSONNEL) ||
-        hasPermission(user as User, PERMISSIONS.VIEW_DAILY_ATTENDANCE)) {
+      if (hasPermission(mappedUser, PERMISSIONS.MANAGE_USERS) ||
+        hasPermission(mappedUser, PERMISSIONS.MANAGE_PERSONNEL) ||
+        hasPermission(mappedUser, PERMISSIONS.VIEW_PERSONNEL) ||
+        hasPermission(mappedUser, PERMISSIONS.VIEW_DAILY_ATTENDANCE)) {
         fetchUsers();
       }
 
