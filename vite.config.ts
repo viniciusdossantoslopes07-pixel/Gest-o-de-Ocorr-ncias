@@ -19,6 +19,22 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(__dirname, '.'),
       }
+    },
+    build: {
+      // Otimização v1.4: Code Splitting por vendor
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom'],
+            'vendor-supabase': ['@supabase/supabase-js'],
+            'vendor-charts': ['recharts'],
+            'vendor-icons': ['lucide-react'],
+            'vendor-pdf': ['jspdf', 'html2canvas-pro'],
+          }
+        }
+      },
+      // Aumentar limite de aviso de chunk (SAP03Panel é 125KB)
+      chunkSizeWarningLimit: 600,
     }
   };
 });

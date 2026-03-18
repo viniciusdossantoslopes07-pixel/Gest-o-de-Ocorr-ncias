@@ -1,59 +1,66 @@
-// SAP-03 Painel v1.1 - Forçando Deploy 15/02/2026
-import { useState, useEffect, FC } from 'react';
+// Guardião GSD-SP v1.4.0 - Otimização Geral
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense, FC } from 'react';
 import { supabase } from './services/supabase';
 import {
   Menu,
   ShieldAlert,
   Search,
-  ChevronLeft,
-  ChevronRight,
-  Check,
-  Settings2,
-  MapPin
+  Loader2
 } from 'lucide-react';
-import MissionRequestForm from './components/MissionRequestForm';
-import MissionRequestList from './components/MissionRequestList';
 import { Occurrence, User, UserRole, Status, Urgency, MissionOrder, Mission, DailyAttendance, AbsenceJustification, UserFunction } from './types';
 import { USER_FUNCTIONS, PERMISSIONS, hasPermission } from './constants/permissions';
-import Dashboard from './components/Dashboard';
-import OccurrenceForm from './components/OccurrenceForm';
-import OccurrenceDetail from './components/OccurrenceDetail';
-import HomeView from './components/HomeView';
-import KanbanBoard from './components/KanbanBoard';
-import LoginView from './components/LoginView';
-import UserManagement from './components/UserManagement';
-import MissionDashboard from './components/MissionDashboard';
-import UserProfile from './components/UserProfile';
-import MissionOrderList from './components/MissionOrderList';
-import MissionOrderForm from './components/MissionOrderForm';
-import { InventoryManager } from './components/InventoryManager'; // Import
-import SideMenu from './components/SideMenu'; // Import SideMenu
-import SettingsView from './components/SettingsView'; // Import SettingsView
-import FAQModal from './components/FAQModal';
-import SuggestionsModal from './components/SuggestionsModal';
-import UserMenu from './components/UserMenu'; // Import UserMenu
-
-import { SAP03Panel } from './components/SAP03Panel';
-import LoanRequestForm from './components/LoanRequestForm';
-import MaterialDashboard from './components/MaterialDashboard';
 import { formatViaturas } from './utils/formatters';
-import MissionManager from './components/MissionManager';
-import { MyMaterialLoans } from './components/MyMaterialLoans';
-import MeuPlanoView from './components/MeuPlanoView';
-import DailyAttendanceView from './components/PersonnelCenter/DailyAttendance';
-import PersonnelManagementView from './components/PersonnelCenter/PersonnelManagement';
-import AccessControlPanel from './components/AccessControl/AccessControlPanel';
-import AccessStatistics from './components/AccessControl/AccessStatistics';
-import ParkingRequestPanel from './components/AccessControl/ParkingRequestPanel';
-import EventControl from './components/AccessControl/Events/EventControl'; // Import
-import Destinometro from './components/Destinometro';
 import {
   STATUS_COLORS,
-  OCCURRENCE_CATEGORIES,
-  TYPES_BY_CATEGORY,
   URGENCY_COLORS,
   RANKS,
 } from './constants';
+
+// Componentes críticos do layout (carregamento imediato)
+import LoginView from './components/LoginView';
+import HomeView from './components/HomeView';
+import SideMenu from './components/SideMenu';
+import UserMenu from './components/UserMenu';
+
+// Lazy Loading: Componentes carregados sob demanda por aba
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const OccurrenceForm = lazy(() => import('./components/OccurrenceForm'));
+const OccurrenceDetail = lazy(() => import('./components/OccurrenceDetail'));
+const KanbanBoard = lazy(() => import('./components/KanbanBoard'));
+const UserManagement = lazy(() => import('./components/UserManagement'));
+const UserProfile = lazy(() => import('./components/UserProfile'));
+const SettingsView = lazy(() => import('./components/SettingsView'));
+const MeuPlanoView = lazy(() => import('./components/MeuPlanoView'));
+const MissionRequestForm = lazy(() => import('./components/MissionRequestForm'));
+const MissionRequestList = lazy(() => import('./components/MissionRequestList'));
+const MissionDashboard = lazy(() => import('./components/MissionDashboard'));
+const MissionManager = lazy(() => import('./components/MissionManager'));
+const MissionOrderList = lazy(() => import('./components/MissionOrderList'));
+const MissionOrderForm = lazy(() => import('./components/MissionOrderForm'));
+const InventoryManager = lazy(() => import('./components/InventoryManager').then(m => ({ default: m.InventoryManager })));
+const SAP03Panel = lazy(() => import('./components/SAP03Panel').then(m => ({ default: m.SAP03Panel })));
+const LoanRequestForm = lazy(() => import('./components/LoanRequestForm'));
+const MaterialDashboard = lazy(() => import('./components/MaterialDashboard'));
+const MyMaterialLoans = lazy(() => import('./components/MyMaterialLoans').then(m => ({ default: m.MyMaterialLoans })));
+const DailyAttendanceView = lazy(() => import('./components/PersonnelCenter/DailyAttendance'));
+const PersonnelManagementView = lazy(() => import('./components/PersonnelCenter/PersonnelManagement'));
+const AccessControlPanel = lazy(() => import('./components/AccessControl/AccessControlPanel'));
+const AccessStatistics = lazy(() => import('./components/AccessControl/AccessStatistics'));
+const ParkingRequestPanel = lazy(() => import('./components/AccessControl/ParkingRequestPanel'));
+const EventControl = lazy(() => import('./components/AccessControl/Events/EventControl'));
+const Destinometro = lazy(() => import('./components/Destinometro'));
+const FAQModal = lazy(() => import('./components/FAQModal'));
+const SuggestionsModal = lazy(() => import('./components/SuggestionsModal'));
+
+// Fallback de carregamento para Suspense
+const LazyFallback = () => (
+  <div className="flex items-center justify-center py-20">
+    <div className="flex flex-col items-center gap-3">
+      <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Carregando módulo...</span>
+    </div>
+  </div>
+);
 
 const DEFAULT_ADMIN: User = {
   id: 'root',
@@ -124,29 +131,33 @@ const App: FC = () => {
     return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
   });
 
-  // Access Control
+  // Access Control (memoizado para evitar recálculo a cada render)
   const isAdmin = currentUser?.role === UserRole.ADMIN;
   const isOM = currentUser?.accessLevel === 'OM';
   const isPublic = currentUser?.role === UserRole.PUBLIC;
 
-  // RBAC para Missões
-  const rankIndex = currentUser ? RANKS.indexOf(currentUser.rank) : -1;
-  const minRankIndex = RANKS.indexOf("3S");
-  const canRequestMission = !!currentUser && ((rankIndex >= 0 && rankIndex <= minRankIndex) || hasPermission(currentUser, PERMISSIONS.REQUEST_MISSION));
+  // RBAC memoizado — só recalcula quando currentUser muda
+  const permissions = useMemo(() => {
+    const rankIndex = currentUser ? RANKS.indexOf(currentUser.rank) : -1;
+    const minRankIndex = RANKS.indexOf("3S");
+    return {
+      canRequestMission: !!currentUser && ((rankIndex >= 0 && rankIndex <= minRankIndex) || hasPermission(currentUser, PERMISSIONS.REQUEST_MISSION)),
+      canManageMissions: hasPermission(currentUser, PERMISSIONS.MANAGE_MISSIONS) || hasPermission(currentUser, PERMISSIONS.APPROVE_MISSION),
+      canManageUsers: hasPermission(currentUser, PERMISSIONS.MANAGE_USERS),
+      canManageMaterial: hasPermission(currentUser, PERMISSIONS.MANAGE_MATERIAL),
+      canRequestMaterial: hasPermission(currentUser, PERMISSIONS.REQUEST_MATERIAL),
+      canViewMaterialPanel: hasPermission(currentUser, PERMISSIONS.VIEW_MATERIAL_PANEL),
+      canManagePersonnel: hasPermission(currentUser, PERMISSIONS.MANAGE_PERSONNEL),
+      canViewAttendance: hasPermission(currentUser, PERMISSIONS.VIEW_DAILY_ATTENDANCE),
+      canViewPersonnel: hasPermission(currentUser, PERMISSIONS.VIEW_PERSONNEL),
+      canViewAccessControl: hasPermission(currentUser, PERMISSIONS.VIEW_ACCESS_CONTROL),
+      canManageOccurrences: hasPermission(currentUser, PERMISSIONS.MANAGE_OCCURRENCES),
+      canViewServiceQueue: hasPermission(currentUser, PERMISSIONS.VIEW_SERVICE_QUEUE),
+      canViewDashboard: hasPermission(currentUser, PERMISSIONS.VIEW_DASHBOARD),
+    };
+  }, [currentUser]);
 
-  // RBAC unificado via Permissões (Independente de Setor)
-  const canManageMissions = hasPermission(currentUser, PERMISSIONS.MANAGE_MISSIONS) || hasPermission(currentUser, PERMISSIONS.APPROVE_MISSION);
-  const canManageUsers = hasPermission(currentUser, PERMISSIONS.MANAGE_USERS);
-  const canManageMaterial = hasPermission(currentUser, PERMISSIONS.MANAGE_MATERIAL);
-  const canRequestMaterial = hasPermission(currentUser, PERMISSIONS.REQUEST_MATERIAL);
-  const canViewMaterialPanel = hasPermission(currentUser, PERMISSIONS.VIEW_MATERIAL_PANEL);
-  const canManagePersonnel = hasPermission(currentUser, PERMISSIONS.MANAGE_PERSONNEL);
-  const canViewAttendance = hasPermission(currentUser, PERMISSIONS.VIEW_DAILY_ATTENDANCE);
-  const canViewPersonnel = hasPermission(currentUser, PERMISSIONS.VIEW_PERSONNEL);
-  const canViewAccessControl = hasPermission(currentUser, PERMISSIONS.VIEW_ACCESS_CONTROL);
-  const canManageOccurrences = hasPermission(currentUser, PERMISSIONS.MANAGE_OCCURRENCES);
-  const canViewServiceQueue = hasPermission(currentUser, PERMISSIONS.VIEW_SERVICE_QUEUE);
-  const canViewDashboard = hasPermission(currentUser, PERMISSIONS.VIEW_DASHBOARD);
+  const { canRequestMission, canManageMissions, canManageUsers, canManageMaterial, canRequestMaterial, canViewMaterialPanel, canManagePersonnel, canViewAttendance, canViewPersonnel, canViewAccessControl, canManageOccurrences, canViewServiceQueue, canViewDashboard } = permissions;
 
 
   useEffect(() => {
@@ -1147,6 +1158,7 @@ const App: FC = () => {
 
         <div className="p-3 lg:p-6 flex-1 overflow-y-auto custom-scrollbar relative z-0">
           {/* --- CONTENT AREA START --- */}
+          <Suspense fallback={<LazyFallback />}>
 
           {activeTab === 'home' && (
             <HomeView
@@ -1741,41 +1753,44 @@ const App: FC = () => {
             </div>
           )}
 
+          </Suspense>
           {/* --- CONTENT AREA END --- */}
         </div>
       </main >
 
-      {selectedOccurrence && (
-        <OccurrenceDetail
-          occurrence={selectedOccurrence}
-          user={currentUser}
-          onClose={() => setSelectedOccurrence(null)}
-          onUpdateStatus={handleUpdateStatus}
-          onUpdateOccurrence={handleUpdateOccurrence}
-          users={users}
-        />
-      )}
+      <Suspense fallback={null}>
+        {selectedOccurrence && (
+          <OccurrenceDetail
+            occurrence={selectedOccurrence}
+            user={currentUser}
+            onClose={() => setSelectedOccurrence(null)}
+            onUpdateStatus={handleUpdateStatus}
+            onUpdateOccurrence={handleUpdateOccurrence}
+            users={users}
+          />
+        )}
 
-      {/* FAQ Modal */}
-      {showFAQ && <FAQModal onClose={() => setShowFAQ(false)} />}
+        {/* FAQ Modal */}
+        {showFAQ && <FAQModal onClose={() => setShowFAQ(false)} />}
 
-      {/* Suggestions Modal */}
-      {showSuggestions && currentUser && (
-        <SuggestionsModal
-          user={currentUser}
-          isOpen={showSuggestions}
-          onClose={() => setShowSuggestions(false)}
-          isAdmin={isAdmin || isOM}
-        />
-      )}
+        {/* Suggestions Modal */}
+        {showSuggestions && currentUser && (
+          <SuggestionsModal
+            user={currentUser}
+            isOpen={showSuggestions}
+            onClose={() => setShowSuggestions(false)}
+            isAdmin={isAdmin || isOM}
+          />
+        )}
 
-      {showDestinometro && currentUser && (
-        <Destinometro
-          user={currentUser}
-          onClose={() => setShowDestinometro(false)}
-          isDarkMode={isDarkMode}
-        />
-      )}
+        {showDestinometro && currentUser && (
+          <Destinometro
+            user={currentUser}
+            onClose={() => setShowDestinometro(false)}
+            isDarkMode={isDarkMode}
+          />
+        )}
+      </Suspense>
 
     </div>
   );

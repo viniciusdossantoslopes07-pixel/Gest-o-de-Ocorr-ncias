@@ -1,9 +1,13 @@
 {
     "name": "Guardião GSD-SP",
     "short_name": "Guardião",
+    "description": "Sistema integrado de gestão militar para Guarda, Segurança e Defesa",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#ffffff",
+    "orientation": "any",
+    "scope": "/",
+    "lang": "pt-BR",
+    "background_color": "#020617",
     "theme_color": "#0f172a",
     "icons": [
         {
