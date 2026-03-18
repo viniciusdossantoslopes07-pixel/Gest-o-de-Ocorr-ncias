@@ -904,6 +904,55 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
             {/* TAB CONTENT: BUSCA */}
             {activeTab === 'busca' && (
                 <div className="space-y-4 animate-fade-in">
+                    {/* Header Global c/ Filtros de Data */}
+                    <div className="flex flex-col lg:flex-row gap-4 lg:items-center justify-between mb-2">
+                        <div>
+                            <h2 className={`text-xl sm:text-2xl font-bold flex items-center gap-2 ${textPrimary}`}>
+                                <Search className="w-6 h-6 text-blue-600" />
+                                Busca Avançada
+                            </h2>
+                            <p className={`text-sm ${textMuted}`}>Histórico de acesso e rastreamento de dados.</p>
+                        </div>
+                        
+                        <div className={`flex flex-col sm:flex-row gap-2 p-1 rounded-xl border shadow-sm ${dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                            {([
+                                { label: 'Hoje', value: 0 },
+                                { label: '7 Dias', value: 7 },
+                                { label: '30 Dias', value: 30 },
+                                { label: 'Tudo', value: null }
+                            ] as const).map(preset => (
+                                <button
+                                    key={String(preset.value)}
+                                    onClick={() => handleQuickDate(preset.value)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeQuickDate === preset.value
+                                        ? (dk ? 'bg-blue-900/40 text-blue-400 shadow-sm' : 'bg-blue-100 text-blue-700 shadow-sm')
+                                        : (dk ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-500 hover:bg-slate-50')
+                                        }`}
+                                >
+                                    {preset.label}
+                                </button>
+                            ))}
+                            <div className={`w-px mx-1 hidden sm:block ${dk ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                            <div className="flex items-center gap-2 px-2">
+                                <input
+                                    type="date"
+                                    value={searchStartDate}
+                                    onChange={(e) => handleCustomDateChange('start', e.target.value)}
+                                    className={`bg-transparent text-xs font-bold outline-none w-24 ${dk ? 'text-slate-200 color-scheme-dark' : 'text-slate-700'}`}
+                                    style={{ colorScheme: dk ? 'dark' : 'normal' }}
+                                />
+                                <span className={`text-xs ${dk ? 'text-slate-500' : 'text-slate-300'}`}>à</span>
+                                <input
+                                    type="date"
+                                    value={searchEndDate}
+                                    onChange={(e) => handleCustomDateChange('end', e.target.value)}
+                                    className={`bg-transparent text-xs font-bold outline-none w-24 ${dk ? 'text-slate-200 color-scheme-dark' : 'text-slate-700'}`}
+                                    style={{ colorScheme: dk ? 'dark' : 'normal' }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
                     <div className={`p-4 md:p-6 rounded-2xl shadow-sm border space-y-4 ${card}`}>
                         {/* Search Input */}
                         <div className="relative">
@@ -923,26 +972,6 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
 
                         {/* Filters Panel */}
                         <div className="flex flex-col gap-3 pt-2">
-                            {/* Date Filters Row */}
-                            <div className="flex flex-col md:flex-row gap-3">
-                                {/* Quick Date Filters */}
-                                <div className={`flex gap-1.5 items-center p-2 rounded-xl border overflow-x-auto ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-                                    <span className={`text-[10px] font-black uppercase pl-2 whitespace-nowrap hidden sm:inline-block ${textMuted}`}>Período:</span>
-                                    <button onClick={() => handleQuickDate(0)} className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${activeQuickDate === 0 ? 'bg-blue-600 text-white shadow-sm' : (dk ? 'bg-slate-600 text-slate-300 hover:bg-slate-500 border border-slate-500' : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-200')}`}>Hoje</button>
-                                    <button onClick={() => handleQuickDate(7)} className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${activeQuickDate === 7 ? 'bg-blue-600 text-white shadow-sm' : (dk ? 'bg-slate-600 text-slate-300 hover:bg-slate-500 border border-slate-500' : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-200')}`}>7 Dias</button>
-                                    <button onClick={() => handleQuickDate(30)} className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${activeQuickDate === 30 ? 'bg-blue-600 text-white shadow-sm' : (dk ? 'bg-slate-600 text-slate-300 hover:bg-slate-500 border border-slate-500' : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-200')}`}>30 Dias</button>
-                                    <button onClick={() => handleQuickDate(null)} className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${activeQuickDate === null ? 'bg-slate-800 text-white shadow-sm' : (dk ? 'bg-slate-600 text-slate-300 hover:bg-slate-500 border border-slate-500' : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-200')}`}>Tudo</button>
-                                </div>
-
-                                {/* Custom Date Inputs */}
-                                <div className={`flex gap-2 items-center p-2 rounded-xl border flex-1 ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-                                    <Calendar className={`w-4 h-4 ml-2 min-w-[16px] ${textMuted}`} />
-                                    <input type="date" value={searchStartDate} onChange={(e) => handleCustomDateChange('start', e.target.value)} className={`flex-1 bg-transparent text-xs font-bold outline-none uppercase min-w-[110px] ${dk ? 'text-white color-scheme-dark' : 'text-slate-700'}`} style={{ colorScheme: dk ? 'dark' : 'normal' }} />
-                                    <span className={`text-[10px] font-black ${textMuted}`}>ATÉ</span>
-                                    <input type="date" value={searchEndDate} onChange={(e) => handleCustomDateChange('end', e.target.value)} className={`flex-1 bg-transparent text-xs font-bold outline-none uppercase min-w-[110px] ${dk ? 'text-white color-scheme-dark' : 'text-slate-700'}`} style={{ colorScheme: dk ? 'dark' : 'normal' }} />
-                                </div>
-                            </div>
-
                             <div className="flex flex-col md:flex-row gap-3">
                                 {/* Type Filter */}
                                 <div className={`flex gap-2 items-center p-2 rounded-xl border ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
@@ -960,7 +989,6 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                     </button>
                                 ))}
                             </div>
-                        </div>
 
                         {/* Category Filters */}
                         <div className={`flex gap-2 items-center p-2 rounded-xl border overflow-x-auto ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
