@@ -189,7 +189,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             // Busca paralela: usuarios internos e externos ao mesmo tempo
             const [userResult, extUserResult] = await Promise.all([
                 userIds.length > 0
-                    ? supabase.from('users').select('id, rank, war_name, name, saram').in('id', userIds)
+                    ? supabase.from('users').select('id, rank, war_name, name, saram, phone_number').in('id', userIds)
                     : Promise.resolve({ data: [], error: null }),
                 extUserIds.length > 0
                     ? supabase.from('external_users_cautela').select('id, rank, war_name, saram, unit, contact').in('id', extUserIds)
@@ -197,7 +197,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             ]);
 
             const userMap = (userResult.data || []).reduce((acc: any, u: any) => {
-                acc[u.id] = { rank: u.rank, war_name: u.war_name || u.name, saram: u.saram };
+                acc[u.id] = { rank: u.rank, war_name: u.war_name || u.name, saram: u.saram, contact: u.phone_number };
                 return acc;
             }, {});
 
@@ -1502,7 +1502,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                                 <span className="ml-2 text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-500 font-black uppercase tracking-widest border border-emerald-500/20">EXT</span>
                                             )}
                                         </p>
-                                        {req.solicitante?.isExternal && (
+                                        {(req.solicitante?.saram || req.solicitante?.contact) && (
                                             <div className="flex flex-wrap items-center gap-3 mt-1.5">
                                                 {req.solicitante.saram && (
                                                     <span className={`text-[10px] font-black flex items-center gap-1 px-2 py-0.5 rounded-lg ${isDarkMode ? 'bg-slate-700 text-emerald-400' : 'bg-emerald-50 text-emerald-700'}`}>
