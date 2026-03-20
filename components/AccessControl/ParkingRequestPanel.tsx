@@ -92,6 +92,19 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
         fetchData();
     }, []);
 
+    // Fechar modais com Escape
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                if (printRequest) setPrintRequest(null);
+                if (showingCoupon) setShowingCoupon(null);
+                if (analysingRequest) setAnalysingRequest(null);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [printRequest, showingCoupon, analysingRequest]);
+
     const fetchMyRequests = async () => {
         const { data } = await supabase.from('parking_requests').select('*, vehicle:parking_vehicles(*)').eq('user_id', user.id).order('created_at', { ascending: false });
         if (data) setRequests(data);
@@ -245,20 +258,40 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
         setSendingFromPrint(true);
         try {
-            // Oculta os elementos .no-print antes da captura
-            const noPrintEls = printDocRef.current.querySelectorAll('.no-print');
+            const element = printDocRef.current;
+            if (!element) return;
+
+            // Criar clone off-screen para evitar problemas com transform: scale
+            const clone = element.cloneNode(true) as HTMLElement;
+            
+            // Ocultar .no-print no clone
+            const noPrintEls = clone.querySelectorAll('.no-print');
             noPrintEls.forEach(el => (el as HTMLElement).style.display = 'none');
 
-            // Captura o HTML exato do documento renderizado
-            const canvas = await html2canvas(printDocRef.current, {
-                scale: 1.5,
-                useCORS: true,
-                allowTaint: true,
-                backgroundColor: '#ffffff',
-            });
+            // Estilizar clone offscreen
+            clone.style.position = 'absolute';
+            clone.style.top = '-9999px';
+            clone.style.left = '-9999px';
+            clone.style.width = '210mm'; // Largura exata A4
+            clone.style.height = 'auto';
+            clone.style.transform = 'none';
+            clone.style.opacity = '1';
+            clone.style.visibility = 'visible';
+            
+            document.body.appendChild(clone);
 
-            // Restaura os elementos ocultos
-            noPrintEls.forEach(el => (el as HTMLElement).style.display = '');
+            // Captura o clone
+            let canvas;
+            try {
+                canvas = await html2canvas(clone, {
+                    scale: 1.5,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                });
+            } finally {
+                document.body.removeChild(clone);
+            }
 
             // Converte o canvas em imagem JPEG (mais leve) e coloca em um PDF A4
             const imgData = canvas.toDataURL('image/jpeg', 0.85);
@@ -639,7 +672,14 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                             <XCircle className="w-6 h-6 sm:w-5 sm:h-5" /> <span className="hidden sm:inline">Fechar Visualização</span>
                         </button>
 
-                        <div className="relative w-full flex justify-center a4-scale-wrapper animate-in fade-in zoom-in-95 duration-200 mt-4 sm:mt-0">
+                        <div 
+                            className="relative w-full flex justify-center a4-scale-wrapper animate-in fade-in zoom-in-95 duration-200 mt-4 sm:mt-0"
+                            onClick={(e) => {
+                                if (e.target === e.currentTarget) {
+                                    setPrintRequest(null);
+                                }
+                            }}
+                        >
                             {/* Folha A4 */}
                             <div ref={printDocRef} className="relative bg-white w-[210mm] min-w-[210mm] min-h-[297mm] h-fit shadow-2xl p-10 sm:p-12 font-serif text-black print-container flex flex-col justify-between overflow-hidden">
                                 <div>
