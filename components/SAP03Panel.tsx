@@ -208,7 +208,8 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
 
             const enrichedData = rawData.map(r => ({
                 ...r,
-                solicitante: r.id_usuario_externo ? extUserMap[r.id_usuario_externo] : userMap[r.id_usuario!]
+                solicitante: r.id_usuario_externo ? extUserMap[r.id_usuario_externo] : userMap[r.id_usuario!],
+                _parsedDate: new Date(r.created_at)
             }));
             setRequests(enrichedData);
         } else {
@@ -717,83 +718,73 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
         }
     };
 
-    const filteredRequests = requests.filter(req => {
-        let matchesTab = false;
-        if (activeTab === 'Solicitações') matchesTab = ['Pendente', 'Aprovado'].includes(req.status);
-        else if (activeTab === 'Em Uso') matchesTab = req.status === 'Em Uso';
-        else if (activeTab === 'Histórico') matchesTab = ['Concluído', 'Rejeitado'].includes(req.status);
+    const filteredRequests = React.useMemo(() => {
+        const searchObj = inUseSearch ? inUseSearch.toLowerCase().trim() : '';
+        
+        return requests.filter(req => {
+            let matchesTab = false;
+            if (activeTab === 'Solicitações') matchesTab = ['Pendente', 'Aprovado'].includes(req.status);
+            else if (activeTab === 'Em Uso') matchesTab = req.status === 'Em Uso';
+            else if (activeTab === 'Histórico') matchesTab = ['Concluído', 'Rejeitado'].includes(req.status);
 
-        if (!matchesTab) return false;
+            if (!matchesTab) return false;
 
-        if (inUseSearch) {
-            const saram = req.solicitante?.saram?.toLowerCase() || '';
-            const name = req.solicitante?.war_name?.toLowerCase() || '';
-            const material = req.material?.material?.toLowerCase() || '';
-            const searchObj = inUseSearch.toLowerCase();
-            if (!(saram.includes(searchObj) || name.includes(searchObj) || material.includes(searchObj))) {
-                return false;
+            if (searchObj) {
+                const saram = req.solicitante?.saram?.toLowerCase() || '';
+                const name = req.solicitante?.war_name?.toLowerCase() || '';
+                const material = req.material?.material?.toLowerCase() || '';
+                if (!(saram.includes(searchObj) || name.includes(searchObj) || material.includes(searchObj))) {
+                    return false;
+                }
             }
-        }
 
-        const reqDate = new Date(req.created_at);
+            const reqDate = (req as any)._parsedDate || new Date(req.created_at);
 
-        if (activeTab === 'Em Uso') {
-            // Filtro de Data
-            if (inUseFilterYear && reqDate.getFullYear().toString() !== inUseFilterYear) return false;
-            if (inUseFilterMonth && (reqDate.getMonth() + 1).toString() !== inUseFilterMonth) return false;
-            if (inUseFilterDay && reqDate.getDate().toString() !== inUseFilterDay) return false;
+            if (activeTab === 'Em Uso') {
+                if (inUseFilterYear && reqDate.getFullYear().toString() !== inUseFilterYear) return false;
+                if (inUseFilterMonth && (reqDate.getMonth() + 1).toString() !== inUseFilterMonth) return false;
+                if (inUseFilterDay && reqDate.getDate().toString() !== inUseFilterDay) return false;
+                if (inUseFilterCategory && req.material?.tipo_de_material !== inUseFilterCategory) return false;
 
-            // Filtro de Categoria
-            if (inUseFilterCategory && req.material?.tipo_de_material !== inUseFilterCategory) return false;
+                if (inUseTimeRange !== 'all') {
+                    const now = new Date();
+                    const diffTime = Math.abs(now.getTime() - reqDate.getTime());
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            // Filtro de Range de Tempo
-            if (inUseTimeRange !== 'all') {
-                const now = new Date();
-                const diffTime = Math.abs(now.getTime() - reqDate.getTime());
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                if (inUseTimeRange === 'today' && reqDate.toDateString() !== now.toDateString()) return false;
-                if (inUseTimeRange === '7days' && diffDays > 7) return false;
-                if (inUseTimeRange === '30days' && diffDays > 30) return false;
+                    if (inUseTimeRange === 'today' && reqDate.toDateString() !== now.toDateString()) return false;
+                    if (inUseTimeRange === '7days' && diffDays > 7) return false;
+                    if (inUseTimeRange === '30days' && diffDays > 30) return false;
+                }
             }
-        }
 
-        if (activeTab === 'Histórico') {
-            const reqDate = new Date(req.created_at);
+            if (activeTab === 'Histórico') {
+                if (historyFilterYear && reqDate.getFullYear().toString() !== historyFilterYear) return false;
+                if (historyFilterMonth && (reqDate.getMonth() + 1).toString() !== historyFilterMonth) return false;
+                if (historyFilterDay && reqDate.getDate().toString() !== historyFilterDay) return false;
+                if (historyFilterCategory && req.material?.tipo_de_material !== historyFilterCategory) return false;
+                if (historyFilterStatus !== 'ALL' && req.status !== historyFilterStatus) return false;
 
-            // Filtro de Data (Dia/Mês/Ano)
-            if (historyFilterYear && reqDate.getFullYear().toString() !== historyFilterYear) return false;
-            if (historyFilterMonth && (reqDate.getMonth() + 1).toString() !== historyFilterMonth) return false;
-            if (historyFilterDay && reqDate.getDate().toString() !== historyFilterDay) return false;
+                if (historyTimeRange !== 'all') {
+                    const now = new Date();
+                    const diffTime = Math.abs(now.getTime() - reqDate.getTime());
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            // Filtro de Categoria
-            if (historyFilterCategory && req.material?.tipo_de_material !== historyFilterCategory) return false;
-
-            // Filtro de Status
-            if (historyFilterStatus !== 'ALL' && req.status !== historyFilterStatus) return false;
-
-            // Filtro de Range de Tempo
-            if (historyTimeRange !== 'all') {
-                const now = new Date();
-                const diffTime = Math.abs(now.getTime() - reqDate.getTime());
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                if (historyTimeRange === 'today' && reqDate.toDateString() !== now.toDateString()) return false;
-                if (historyTimeRange === '7days' && diffDays > 7) return false;
-                if (historyTimeRange === '30days' && diffDays > 30) return false;
+                    if (historyTimeRange === 'today' && reqDate.toDateString() !== now.toDateString()) return false;
+                    if (historyTimeRange === '7days' && diffDays > 7) return false;
+                    if (historyTimeRange === '30days' && diffDays > 30) return false;
+                }
             }
-        }
 
-        return true;
-    });
+            return true;
+        });
+    }, [requests, activeTab, inUseSearch, inUseFilterYear, inUseFilterMonth, inUseFilterDay, inUseFilterCategory, inUseTimeRange, historyFilterYear, historyFilterMonth, historyFilterDay, historyFilterCategory, historyFilterStatus, historyTimeRange]);
 
-    const getHistoryStats = () => {
-        if (activeTab !== 'Histórico') return null;
+    const historyStats = React.useMemo(() => {
+        if (activeTab !== 'Histórico') return { totalItems: 0, chartData: [], COLORS: [] };
 
         const stats: { [key: string]: number } = {};
         let totalItems = 0;
 
-        // Se houver busca ou filtros de data ativos, usamos os filtrados, senão mostramos o geral do histórico
         const dataToAnalyze = (inUseSearch || historyFilterYear || historyFilterMonth || historyFilterDay || historyFilterCategory || historyFilterStatus !== 'ALL' || historyTimeRange !== 'all')
             ? filteredRequests
             : requests.filter(r => ['Concluído', 'Rejeitado'].includes(r.status));
@@ -806,14 +797,12 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
         });
 
         const chartData = Object.entries(stats).map(([name, value]) => ({ name, value }))
-            .sort((a, b) => b.value - a.value); // Ordenar os mais usados
+            .sort((a, b) => b.value - a.value);
 
         const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#475569'];
 
         return { totalItems, chartData, COLORS };
-    };
-
-    const historyStats = getHistoryStats();
+    }, [activeTab, inUseSearch, historyFilterYear, historyFilterMonth, historyFilterDay, historyFilterCategory, historyFilterStatus, historyTimeRange, filteredRequests, requests]);
 
     const searchedSoldier = activeTab === 'Histórico' && inUseSearch && filteredRequests.length > 0
         ? filteredRequests.find(r => r.solicitante?.saram === inUseSearch || r.solicitante?.war_name?.toLowerCase().includes(inUseSearch.toLowerCase()))?.solicitante
