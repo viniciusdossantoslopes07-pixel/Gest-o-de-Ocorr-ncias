@@ -342,29 +342,25 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
     // ========== MAIN VIEW ==========
     return (
         <div className="space-y-4 animate-fade-in relative min-h-screen">
-            {/* Header Premium */}
-            <div className={`relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-4 p-5 sm:p-6 rounded-[2rem] shadow-xl border transition-all ${dk ? 'bg-slate-900/60 border-slate-700/50 backdrop-blur-xl' : 'bg-white border-blue-100/50'}`}>
-                {/* Background Decorativo */}
-                <div className={`absolute -right-20 -top-20 w-64 h-64 rounded-full blur-3xl opacity-20 pointer-events-none ${dk ? 'bg-blue-600' : 'bg-blue-400'}`}></div>
-                <div className={`absolute -left-10 -bottom-10 w-40 h-40 rounded-full blur-2xl opacity-10 pointer-events-none ${dk ? 'bg-indigo-600' : 'bg-indigo-400'}`}></div>
-
-                <div className="flex items-center gap-4 relative z-10 w-full sm:w-auto">
-                    <div className={`p-4 rounded-[1.5rem] shadow-lg ${dk ? 'bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border border-blue-700/30' : 'bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100'}`}>
+            {/* Header Módulo */}
+            <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 p-5 sm:p-6 rounded-2xl border transition-all ${dk ? 'bg-slate-900 border-slate-800 shadow-lg' : 'bg-white border-slate-200 shadow-sm'}`}>
+                <div className="flex items-center gap-4 w-full sm:w-auto">
+                    <div className={`p-4 rounded-xl ${dk ? 'bg-blue-900/30' : 'bg-blue-50'}`}>
                         <Car className={`w-6 h-6 sm:w-8 sm:h-8 ${dk ? 'text-blue-400' : 'text-blue-600'}`} />
                     </div>
                     <div>
                         <h2 className={`text-xl sm:text-2xl font-black tracking-tight leading-tight ${dk ? 'text-white' : 'text-slate-900'}`}>
                             Estacionamento <span className={dk ? 'text-blue-400' : 'text-blue-600'}>BASP</span>
                         </h2>
-                        <p className={`text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] mt-1 ${dk ? 'text-slate-400' : 'text-slate-500'}`}>
-                            Gestão de Vagas Premium
+                        <p className={`text-[10px] sm:text-xs font-bold uppercase mt-1 ${dk ? 'text-slate-400' : 'text-slate-500'}`}>
+                            Gestão de Estacionamento
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3 w-full sm:w-auto relative z-10">
-                    <div className={`flex flex-col justify-center items-center px-6 py-2.5 rounded-[1.25rem] border shadow-sm transition-all ${vagasDisponiveis > 5 ? (dk ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700') : vagasDisponiveis > 0 ? (dk ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-amber-50 border-amber-200 text-amber-700') : (dk ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-red-50 border-red-200 text-red-700')}`}>
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80 mb-0.5">Disponíveis</span>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className={`flex flex-col justify-center items-center px-6 py-2.5 rounded-xl border transition-all ${vagasDisponiveis > 5 ? (dk ? 'bg-emerald-900/20 border-emerald-800 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700') : vagasDisponiveis > 0 ? (dk ? 'bg-amber-900/20 border-amber-800 text-amber-500' : 'bg-amber-50 border-amber-200 text-amber-700') : (dk ? 'bg-red-900/20 border-red-800 text-red-500' : 'bg-red-50 border-red-200 text-red-700')}`}>
+                        <span className="text-[10px] font-bold uppercase opacity-80 mb-0.5">Disponíveis</span>
                         <div className="flex items-baseline gap-1">
                             <span className="text-xl font-black leading-none">{vagasDisponiveis}</span>
                             <span className="text-sm font-bold opacity-60">/ {TOTAL_VAGAS}</span>
@@ -373,12 +369,12 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                 </div>
             </div>
 
-            {/* Tabs Segmented Control Premium */}
-            <div className={`flex w-full md:w-fit gap-1 p-1.5 rounded-[1.25rem] border transition-all mx-auto sm:mx-0 shadow-sm ${dk ? 'bg-slate-800/80 border-slate-700/50 backdrop-blur-md' : 'bg-slate-100/80 border-slate-200/50'}`}>
+            {/* Tabs Segmented Control */}
+            <div className={`flex w-full md:w-fit gap-1 p-1.5 rounded-xl border mx-auto sm:mx-0 ${dk ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
                 {tabs.map(t => (
                     <button key={t.id} onClick={() => setActiveTab(t.id)}
-                        className={`flex-1 md:flex-none py-2.5 px-4 sm:px-8 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] transition-all duration-300 flex items-center justify-center gap-2 ${activeTab === t.id ? (dk ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40 scale-100' : 'bg-white text-blue-700 shadow-md border border-slate-200/50 scale-100') : (dk ? 'text-slate-400 hover:text-white hover:bg-slate-700/50 scale-95' : 'text-slate-500 hover:text-slate-800 hover:bg-white/50 scale-95')}`}>
-                        <t.icon className={`w-4 h-4 transition-transform duration-300 ${activeTab === t.id ? 'scale-110' : 'scale-100'}`} /> 
+                        className={`flex-1 md:flex-none py-2.5 px-4 sm:px-8 rounded-lg text-[10px] sm:text-xs font-black uppercase transition-all flex items-center justify-center gap-2 ${activeTab === t.id ? (dk ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 shadow-sm') : (dk ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-800')} `}>
+                        <t.icon className={`w-4 h-4`} /> 
                         <span className="truncate">{t.label}</span>
                     </button>
                 ))}
@@ -391,48 +387,47 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
             {/* ========== TAB: Gerenciar Solicitações ========== */}
             {activeTab === 'gerenciar' && (
-                <div className="space-y-3">
+                <div className="space-y-4">
                     {/* Admin: pendentes */}
                     {isAdmin && allRequests.filter(r => r.status === 'Pendente').length > 0 && (
                         <div className="space-y-3 mb-6">
-                            <h3 className={`text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] flex items-center gap-2 mb-3 ${dk ? 'text-amber-500' : 'text-amber-600'}`}>
+                            <h3 className={`text-[10px] sm:text-xs font-black uppercase flex items-center gap-2 mb-3 ${dk ? 'text-amber-500' : 'text-amber-600'}`}>
                                 <div className="p-1.5 rounded-lg bg-amber-500/20"><Clock className="w-3.5 h-3.5" /></div> Pendentes de Aprovação
                             </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                            <div className="flex flex-col gap-3">
                                 {allRequests.filter(r => r.status === 'Pendente').map(req => {
                                     const vName = req.vehicle?.marca_modelo || req.ext_marca_modelo || '—';
                                     const vPlate = req.vehicle?.placa || req.ext_placa || '';
                                     return (
-                                        <div key={req.id} className={`group relative rounded-[1.25rem] border p-4 sm:p-5 flex flex-col gap-3 transition-all hover:shadow-lg hover:-translate-y-0.5 ${dk ? 'bg-gradient-to-br from-amber-900/20 to-slate-900/40 border-amber-700/30' : 'bg-gradient-to-br from-amber-50 to-white border-amber-200'}`}>
-                                            <div className="flex items-start justify-between gap-3">
-                                                <div className="min-w-0 flex-1">
-                                                    <p className={`font-black text-xs sm:text-sm uppercase tracking-tight truncate ${textPrimary}`}>{req.nome_completo}</p>
-                                                    <p className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-widest truncate mt-0.5 ${dk ? 'text-amber-400/80' : 'text-amber-700/80'}`}>{req.posto_graduacao} • {req.forca}</p>
-                                                </div>
-                                                <div className="shrink-0 relative">
-                                                    <span className={`px-2.5 py-1 text-[9px] font-black uppercase tracking-widest rounded-lg flex items-center gap-1.5 ${dk ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.1)]' : 'bg-amber-100/80 text-amber-700 border border-amber-200'}`}>
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> Pendente
+                                        <div key={req.id} className={`rounded-xl border p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all ${dk ? 'bg-slate-800 border-amber-700/50' : 'bg-white border-amber-200'}`}>
+                                            <div className="flex-1 w-full">
+                                                <div className="flex items-center justify-between gap-3 mb-2">
+                                                    <div>
+                                                        <p className={`font-black text-xs sm:text-sm uppercase truncate ${textPrimary}`}>{req.nome_completo}</p>
+                                                        <p className={`text-[10px] sm:text-[11px] font-bold uppercase truncate ${dk ? 'text-slate-400' : 'text-slate-500'}`}>{req.posto_graduacao} • {req.forca}</p>
+                                                    </div>
+                                                    <span className={`px-2 py-1 text-[9px] font-black uppercase rounded-lg shrink-0 ${dk ? 'bg-amber-900/40 text-amber-500' : 'bg-amber-100 text-amber-700'}`}>
+                                                        Pendente
                                                     </span>
                                                 </div>
-                                            </div>
 
-                                            <div className={`grid grid-cols-2 gap-2 p-3 rounded-xl border ${dk ? 'bg-slate-900/50 border-slate-700/50' : 'bg-white/50 border-slate-200/50'}`}>
-                                                <div>
-                                                    <p className={`text-[8px] font-black uppercase tracking-widest mb-0.5 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Veículo</p>
-                                                    <p className={`text-[10px] sm:text-xs font-bold truncate tracking-tight ${dk ? 'text-slate-300' : 'text-slate-700'}`}>{vName}</p>
-                                                    <p className={`text-[9px] sm:text-[10px] font-black mt-0.5 ${dk ? 'text-slate-400' : 'text-slate-500'}`}>{vPlate}</p>
+                                                <div className="grid grid-cols-2 gap-4 mt-3">
+                                                    <div>
+                                                        <p className={`text-[9px] font-bold uppercase ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Veículo</p>
+                                                        <p className={`text-[10px] sm:text-xs font-bold truncate ${dk ? 'text-slate-300' : 'text-slate-700'}`}>{vName} — {vPlate}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className={`text-[9px] font-bold uppercase ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Período</p>
+                                                        <p className={`text-[10px] sm:text-xs font-bold ${dk ? 'text-slate-300' : 'text-slate-700'}`}>{new Date(req.inicio + 'T00:00:00').toLocaleDateString('pt-BR')} → {new Date(req.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+                                                    </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <p className={`text-[8px] font-black uppercase tracking-widest mb-0.5 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Período</p>
-                                                    <p className={`text-[10px] sm:text-[11px] font-bold ${dk ? 'text-slate-300' : 'text-slate-700'}`}>{new Date(req.inicio + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} → {new Date(req.termino + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</p>
-                                                </div>
-                                            </div>
 
-                                            {req.observacao && <p className={`text-[10px] italic line-clamp-1 border-l-2 pl-2 ${dk ? 'border-amber-500/30 text-slate-400' : 'border-amber-300 text-slate-500'}`}>"{req.observacao}"</p>}
+                                                {req.observacao && <p className={`text-[10px] italic mt-2 ${dk ? 'text-slate-400' : 'text-slate-500'}`}>"{req.observacao}"</p>}
+                                            </div>
                                             
-                                            <div className="pt-2 mt-auto">
-                                                <button onClick={() => setAnalysingRequest(req)} className="w-full py-2.5 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:bg-blue-500 active:scale-95 transition-all shadow-lg shadow-blue-900/20">
-                                                    <Eye className="w-3.5 h-3.5" /> Analisar Solicitação
+                                            <div className="shrink-0 w-full sm:w-auto">
+                                                <button onClick={() => setAnalysingRequest(req)} className="w-full sm:w-auto px-6 py-2 bg-blue-600 text-white rounded-lg font-bold text-[10px] uppercase flex items-center justify-center gap-2 hover:bg-blue-500 transition-all">
+                                                    <Eye className="w-3.5 h-3.5" /> Analisar
                                                 </button>
                                             </div>
                                         </div>
@@ -497,7 +492,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+                    <div className="flex flex-col gap-4 mt-6">
                         {(isAdmin ? filteredAllRequests.filter(r => r.status !== 'Pendente') : filteredRequests).map(req => {
                             const vName = req.vehicle?.marca_modelo || req.ext_marca_modelo || '—';
                             const vPlate = req.vehicle?.placa || req.ext_placa || '';
@@ -508,19 +503,19 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                             return (
                                 <div
                                     key={req.id}
-                                    className={`group flex flex-col justify-between rounded-[1.5rem] border p-5 cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${dk
-                                        ? (isAproved ? 'bg-slate-800/40 border-emerald-900/30 hover:bg-slate-800/80 hover:border-emerald-700/50' : isRejected ? 'bg-red-950/20 border-red-900/30 hover:bg-slate-800/80 hover:border-red-700/50' : 'bg-slate-800/40 border-slate-700/50 hover:bg-slate-800/80 hover:border-slate-600')
-                                        : (isAproved ? 'bg-white border-slate-200 hover:border-emerald-200' : isRejected ? 'bg-white border-slate-200 hover:border-red-200' : 'bg-white border-slate-200 hover:border-blue-200')
+                                    className={`group flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl border p-4 sm:p-5 cursor-pointer transition-all hover:bg-slate-50 ${dk
+                                        ? (isAproved ? 'bg-slate-800 border-emerald-900/50 hover:bg-slate-800/80 hover:border-emerald-700' : isRejected ? 'bg-slate-800 border-red-900/50 hover:bg-slate-800/80 hover:border-red-700' : 'bg-slate-800 border-slate-700/50 hover:bg-slate-800/80 hover:border-slate-600')
+                                        : (isAproved ? 'bg-white border-emerald-200/50 hover:border-emerald-300' : isRejected ? 'bg-white border-red-200/50 hover:border-red-300' : 'bg-white border-slate-200 hover:border-blue-200')
                                         }`}
                                     onClick={() => setShowingCoupon(req)}
                                 >
-                                    <div className="space-y-4">
+                                    <div className="flex-1 w-full space-y-4">
                                         <div className="flex items-start justify-between gap-2">
                                             <div className="min-w-0 pr-2">
-                                                <p className={`font-black text-sm uppercase tracking-tight truncate ${textPrimary}`}>{req.nome_completo}</p>
-                                                <p className={`text-[10px] font-bold uppercase tracking-widest truncate mt-1 ${isAproved ? 'text-emerald-500/80' : isRejected ? 'text-red-500/80' : textMuted}`}>{req.posto_graduacao} • {req.forca}</p>
+                                                <p className={`font-black text-sm uppercase truncate ${textPrimary}`}>{req.nome_completo}</p>
+                                                <p className={`text-[10px] sm:text-xs font-bold uppercase truncate mt-1 ${isAproved ? 'text-emerald-500' : isRejected ? 'text-red-500' : textMuted}`}>{req.posto_graduacao} • {req.forca}</p>
                                             </div>
-                                            <div className={`shrink-0 px-2 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-sm ${isAproved ? (dk ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border-emerald-200') : isRejected ? (dk ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-red-50 text-red-700 border-red-200') : (dk ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-amber-50 text-amber-700 border-amber-200')}`}>
+                                            <div className={`shrink-0 px-2 py-1 rounded-lg text-[9px] font-black uppercase flex items-center gap-1.5 ${isAproved ? (dk ? 'bg-emerald-900/40 text-emerald-500' : 'bg-emerald-100 text-emerald-700') : isRejected ? (dk ? 'bg-red-900/40 text-red-500' : 'bg-red-100 text-red-700') : (dk ? 'bg-amber-900/40 text-amber-500' : 'bg-amber-100 text-amber-700')}`}>
                                                 {isAproved && <CheckCircle2 className="w-3 h-3" />}
                                                 {isRejected && <XCircle className="w-3 h-3" />}
                                                 {!isAproved && !isRejected && <Clock className="w-3 h-3" />}
@@ -528,33 +523,32 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                             </div>
                                         </div>
                                         
-                                        <div className={`p-3 rounded-xl flex items-center justify-between border ${dk ? 'bg-slate-900/50 border-slate-700/50' : 'bg-slate-50 border-slate-100'}`}>
-                                            <div className="min-w-0">
-                                                <p className={`text-[9px] font-black uppercase tracking-widest mb-0.5 ${textMuted}`}>Placa / Modelo</p>
-                                                <p className={`font-black text-xs sm:text-sm tracking-tight truncate ${isAproved ? (dk ? 'text-emerald-50' : 'text-emerald-950') : (dk ? 'text-slate-200' : 'text-slate-800')}`}>{vPlate}</p>
-                                                <p className={`text-[10px] font-bold truncate mt-0.5 ${textMuted}`}>{vName}</p>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-center border-t pt-4 ${dk ? 'border-slate-700' : 'border-slate-100'}">
+                                            <div>
+                                                <p className={`text-[9px] font-bold uppercase mb-0.5 ${textMuted}`}>Placa</p>
+                                                <p className={`font-black text-xs sm:text-sm tracking-tight truncate ${dk ? 'text-slate-300' : 'text-slate-700'}`}>{vPlate}</p>
                                             </div>
-                                            <div className={`p-2 rounded-lg shrink-0 ${isAproved ? (dk ? 'bg-emerald-500/20' : 'bg-emerald-100/50') : (dk ? 'bg-slate-800' : 'bg-white shadow-sm border')}`}>
-                                                <Car className={`w-5 h-5 ${isAproved ? (dk ? 'text-emerald-400' : 'text-emerald-600') : (dk ? 'text-slate-500' : 'text-slate-400')}`} />
+                                            <div className="hidden md:block">
+                                                <p className={`text-[9px] font-bold uppercase mb-0.5 ${textMuted}`}>Veículo</p>
+                                                <p className={`text-[10px] sm:text-xs font-bold truncate ${dk ? 'text-slate-400' : 'text-slate-600'}`}>{vName}</p>
                                             </div>
-                                        </div>
-
-                                        <div>
-                                            <p className={`text-[9px] font-black uppercase tracking-widest mb-1 ${textMuted}`}>Validade da Autorização</p>
-                                            <div className={`flex items-center gap-2 text-xs font-bold ${dk ? 'text-slate-300' : 'text-slate-700'}`}>
-                                                <Calendar className="w-3.5 h-3.5 opacity-50" />
-                                                <span>{new Date(req.inicio + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
-                                                <ChevronRight className="w-3 h-3 opacity-30 mx-1" />
-                                                <span>{new Date(req.termino + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
+                                            <div className="col-span-1 md:col-span-2">
+                                                <p className={`text-[9px] font-bold uppercase mb-1 ${textMuted}`}>Validade da Autorização</p>
+                                                <div className={`flex items-center gap-2 text-[10px] sm:text-xs font-bold ${dk ? 'text-slate-400' : 'text-slate-600'}`}>
+                                                    <Calendar className="w-3.5 h-3.5" />
+                                                    <span>{new Date(req.inicio + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
+                                                    <ChevronRight className="w-3 h-3 mx-1" />
+                                                    <span>{new Date(req.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className={`flex gap-2 pt-4 mt-4 border-t ${dk ? 'border-slate-700/50' : 'border-slate-100'}`} onClick={(e) => e.stopPropagation()}>
+                                    <div className="shrink-0 w-full sm:w-auto flex sm:flex-col gap-2 pt-4 sm:pt-0 mt-4 sm:mt-0 sm:pl-4 border-t sm:border-t-0 sm:border-l ${dk ? 'border-slate-700' : 'border-slate-200'}" onClick={(e) => e.stopPropagation()}>
                                         {req.status !== 'Rejeitado' && (
                                             <button
                                                 onClick={() => setPrintRequest(req)}
-                                                className={`flex-1 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 ${isAproved ? (dk ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20 hover:bg-emerald-500' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200') : (dk ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20 hover:bg-blue-500' : 'bg-blue-50 text-blue-700 hover:bg-blue-100')}`}
+                                                className={`flex-1 sm:flex-none px-4 py-2.5 rounded-lg font-bold text-[10px] uppercase flex items-center justify-center gap-2 transition-all ${isAproved ? (dk ? 'bg-emerald-900/30 text-emerald-400 hover:bg-emerald-900/50' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100') : (dk ? 'bg-blue-900/30 text-blue-400 hover:bg-blue-900/50' : 'bg-blue-50 text-blue-700 hover:bg-blue-100')}`}
                                             >
                                                 <Download className="w-4 h-4" /> Baixar PDF
                                             </button>
@@ -564,10 +558,10 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                             <button
                                                 onClick={() => handleSendEmail(req)}
                                                 disabled={isSending}
-                                                className={`w-12 flex-shrink-0 flex items-center justify-center rounded-xl transition-all hover:scale-[1.02] active:scale-95 ${isSending ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : (dk ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-md')}`}
+                                                className={`w-full sm:w-auto px-4 py-2.5 flex items-center justify-center rounded-lg font-bold text-[10px] uppercase gap-2 transition-all ${isSending ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : (dk ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-slate-900 text-white hover:bg-slate-800')}`}
                                                 title="Enviar por e-mail"
                                             >
-                                                {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                                                {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Mail className="w-4 h-4" /> Enviar</>}
                                             </button>
                                         )}
                                     </div>
@@ -578,11 +572,11 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                 </div>
             )}
 
-            {/* Modal de Confirmação de Senha Premium */}
+            {/* Modal de Confirmação de Senha */}
             {showPasswordModal && (
-                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xl z-[250] flex items-center justify-center p-4">
-                    <div className={`${dk ? 'bg-slate-900/90 border-slate-700/50 shadow-blue-900/20' : 'bg-white/90 border-white shadow-xl'} w-full max-w-sm rounded-[2rem] border backdrop-blur-3xl p-8 animate-in zoom-in-95 duration-300`}>
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner ${dk ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
+                <div className="fixed inset-0 bg-slate-900/60 z-[250] flex items-center justify-center p-4">
+                    <div className={`${dk ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200 shadow-xl'} w-full max-w-sm rounded-[2rem] border p-8 animate-in zoom-in-95 duration-200`}>
+                        <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 ${dk ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
                             <Lock className="w-8 h-8" />
                         </div>
                         <h3 className={`text-xl font-black text-center tracking-tight mb-2 ${dk ? 'text-white' : 'text-slate-900'}`}>Aprovação Segura</h3>
@@ -594,11 +588,11 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                 placeholder="Sua senha secreta"
                                 value={passwordConfirm}
                                 onChange={(e) => setPasswordConfirm(e.target.value)}
-                                className={`w-full px-5 py-4 ${dk ? 'bg-slate-950/50 border-slate-700/50 text-white focus:border-blue-500/50 focus:ring-blue-500/20' : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-blue-400 focus:ring-blue-400/20'} border-2 rounded-2xl text-center font-black tracking-widest focus:outline-none focus:ring-4 transition-all`}
+                                className={`w-full px-5 py-4 ${dk ? 'bg-slate-950/50 border-slate-700/50 text-white focus:border-blue-500/50' : 'bg-slate-50 border-slate-200 text-slate-800 focus:border-blue-400'} border-2 rounded-2xl text-center font-black focus:outline-none transition-all`}
                             />
                             <div className="flex gap-3">
-                                <button onClick={() => setShowPasswordModal(false)} className={`flex-1 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${dk ? 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'}`}>Cancelar</button>
-                                <button onClick={confirmApprove} disabled={!passwordConfirm || isProcessing} className="flex-1 py-3.5 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/30 disabled:opacity-50 disabled:shadow-none flex items-center justify-center gap-2">
+                                <button onClick={() => setShowPasswordModal(false)} className={`flex-1 py-3.5 rounded-xl font-black text-[10px] uppercase transition-all ${dk ? 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'}`}>Cancelar</button>
+                                <button onClick={confirmApprove} disabled={!passwordConfirm || isProcessing} className="flex-1 py-3.5 bg-blue-600 text-white rounded-xl font-black text-[10px] uppercase hover:bg-blue-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
                                     {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Autorizar'}
                                 </button>
                             </div>
@@ -607,11 +601,11 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                 </div>
             )}
 
-            {/* ========== Modal de Rejeição Premium ========== */}
+            {/* ========== Modal de Rejeição ========== */}
             {rejectingRequestId && (
-                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xl z-[260] flex items-center justify-center p-4">
-                    <div className={`${dk ? 'bg-slate-900/90 border-slate-700/50 shadow-red-900/20' : 'bg-white/90 border-white shadow-xl'} w-full max-w-sm rounded-[2rem] border backdrop-blur-3xl p-8 animate-in zoom-in-95 duration-300`}>
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner ${dk ? 'bg-red-500/20 text-red-400' : 'bg-red-50 text-red-600'}`}>
+                <div className="fixed inset-0 bg-slate-900/60 z-[260] flex items-center justify-center p-4">
+                    <div className={`${dk ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200 shadow-xl'} w-full max-w-sm rounded-[2rem] border p-8 animate-in zoom-in-95 duration-200`}>
+                        <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 ${dk ? 'bg-red-900/30 text-red-500' : 'bg-red-50 text-red-600'}`}>
                             <XCircle className="w-8 h-8" />
                         </div>
                         <h3 className={`text-xl font-black text-center tracking-tight mb-2 ${dk ? 'text-white' : 'text-slate-900'}`}>Rejeitar Solicitação</h3>
@@ -624,20 +618,20 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                 placeholder="Descreva o motivo (ex: Documento X inválido)..."
                                 value={rejectMotivo}
                                 onChange={e => setRejectMotivo(e.target.value)}
-                                className={`w-full px-5 py-4 font-medium rounded-2xl border-2 resize-none outline-none focus:ring-4 transition-all ${dk ? 'bg-slate-950/50 border-slate-700/50 text-white placeholder:text-slate-600 focus:border-red-500/50 focus:ring-red-500/20' : 'bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-red-400 focus:ring-red-400/20'}`}
+                                className={`w-full px-5 py-4 font-medium rounded-2xl border-2 resize-none outline-none transition-all ${dk ? 'bg-slate-950/50 border-slate-700/50 text-white placeholder:text-slate-600 focus:border-red-500/50' : 'bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-red-400'}`}
                             />
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => { setRejectingRequestId(null); setRejectMotivo(''); }}
                                     disabled={isProcessing}
-                                    className={`flex-1 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${dk ? 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'} disabled:opacity-50`}
+                                    className={`flex-1 py-3.5 rounded-xl font-black text-[10px] uppercase transition-all ${dk ? 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'} disabled:opacity-50`}
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     onClick={confirmReject}
                                     disabled={!rejectMotivo.trim() || isProcessing}
-                                    className="flex-1 py-3.5 bg-red-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-500 transition-all shadow-lg shadow-red-600/30 disabled:opacity-40 disabled:shadow-none flex items-center justify-center gap-2"
+                                    className="flex-1 py-3.5 bg-red-600 text-white rounded-xl font-black text-[10px] uppercase hover:bg-red-500 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
                                 >
                                     {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirmar'}
                                 </button>
@@ -647,19 +641,19 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                 </div>
             )}
 
-            {/* Modal de Análise Premium */}
+            {/* Modal de Análise */}
             {analysingRequest && (
-                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xl z-[200] flex items-center justify-center p-3 sm:p-5">
-                    <div className={`${dk ? 'bg-slate-900/90 border-slate-700/50' : 'bg-white/95 border-white'} w-full max-w-2xl rounded-[2rem] border shadow-2xl backdrop-blur-3xl overflow-hidden max-h-[95vh] sm:max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-300`}>
+                <div className="fixed inset-0 bg-slate-900/60 z-[200] flex items-center justify-center p-3 sm:p-5">
+                    <div className={`${dk ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'} w-full max-w-2xl rounded-[2rem] border shadow-2xl overflow-hidden max-h-[95vh] sm:max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200`}>
                         {/* Header do Modal */}
                         <div className={`p-5 sm:p-6 flex justify-between items-center shrink-0 border-b ${dk ? 'border-slate-800 bg-slate-900/50' : 'border-slate-100 bg-slate-50/50'}`}>
                             <div className="flex items-center gap-3">
-                                <div className={`p-2.5 rounded-xl ${dk ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
+                                <div className={`p-2.5 rounded-xl ${dk ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
                                     <Eye className="w-5 h-5" />
                                 </div>
                                 <div>
                                     <h2 className={`font-black text-lg sm:text-xl tracking-tight leading-tight ${dk ? 'text-white' : 'text-slate-900'}`}>Análise de Solicitação</h2>
-                                    <p className={`text-[10px] font-bold uppercase tracking-widest ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Estacionamento BASP</p>
+                                    <p className={`text-[10px] font-bold uppercase ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Estacionamento BASP</p>
                                 </div>
                             </div>
                             <button onClick={() => setAnalysingRequest(null)} className={`p-2 rounded-full transition-colors ${dk ? 'text-slate-500 hover:text-white hover:bg-slate-800' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`}>
@@ -673,17 +667,17 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                             {/* Grid Superior: Militar e Contato */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                 <div className={`p-5 rounded-2xl border ${dk ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white border-slate-200'}`}>
-                                    <p className={`text-[9px] font-black uppercase tracking-widest mb-1 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Identificação do Militar</p>
-                                    <p className={`font-black text-lg sm:text-xl uppercase tracking-tight truncate ${dk ? 'text-white' : 'text-slate-900'}`}>{analysingRequest.nome_completo}</p>
+                                    <p className={`text-[9px] font-black uppercase mb-1 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Identificação do Militar</p>
+                                    <p className={`font-black text-lg sm:text-xl uppercase truncate ${dk ? 'text-white' : 'text-slate-900'}`}>{analysingRequest.nome_completo}</p>
                                     <div className="mt-2 flex flex-wrap gap-2">
-                                        <span className={`px-2 py-1 text-[9px] font-black uppercase tracking-widest rounded-md ${dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>{analysingRequest.posto_graduacao}</span>
-                                        <span className={`px-2 py-1 text-[9px] font-black uppercase tracking-widest rounded-md ${dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>{analysingRequest.forca}</span>
+                                        <span className={`px-2 py-1 text-[9px] font-black uppercase rounded-md ${dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>{analysingRequest.posto_graduacao}</span>
+                                        <span className={`px-2 py-1 text-[9px] font-black uppercase rounded-md ${dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>{analysingRequest.forca}</span>
                                     </div>
                                 </div>
 
                                 <div className={`p-5 rounded-2xl border flex flex-col justify-center ${dk ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white border-slate-200'}`}>
-                                    <p className={`text-[9px] font-black uppercase tracking-widest mb-1 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Contato Principal</p>
-                                    <p className={`font-black text-base sm:text-lg tracking-tight ${dk ? 'text-blue-400' : 'text-blue-600'}`}>{analysingRequest.telefone}</p>
+                                    <p className={`text-[9px] font-black uppercase mb-1 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Contato Principal</p>
+                                    <p className={`font-black text-base sm:text-lg ${dk ? 'text-blue-400' : 'text-blue-600'}`}>{analysingRequest.telefone}</p>
                                     <p className={`text-xs font-bold mt-1 truncate ${dk ? 'text-slate-400' : 'text-slate-500'}`}>{analysingRequest.email}</p>
                                 </div>
                             </div>
@@ -691,21 +685,21 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                             {/* Detalhes do Veículo e Período */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                                 <div className={`md:col-span-2 p-5 rounded-2xl border ${dk ? 'bg-slate-800/50 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
-                                    <p className={`text-[9px] font-black uppercase tracking-widest mb-3 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Detalhes do Veículo</p>
+                                    <p className={`text-[9px] font-black uppercase mb-3 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Detalhes do Veículo</p>
                                     <div className="flex items-center gap-4 sm:gap-6">
                                         <div className={`p-4 rounded-[1.25rem] shrink-0 border ${dk ? 'bg-slate-900/80 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
                                             <Car className={`w-6 h-6 sm:w-8 sm:h-8 ${dk ? 'text-slate-400' : 'text-slate-300'}`} />
                                         </div>
                                         <div className="grid grid-cols-2 gap-x-6 gap-y-2 flex-1">
-                                            <div className="min-w-0"><p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-wider ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Placa</p><p className={`font-black uppercase tracking-tight text-sm sm:text-base ${dk ? 'text-white' : 'text-slate-800'} truncate`}>{analysingRequest.vehicle?.placa || analysingRequest.ext_placa}</p></div>
-                                            <div className="min-w-0"><p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-wider ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Cor</p><p className={`font-black uppercase tracking-tight text-sm sm:text-base ${dk ? 'text-white' : 'text-slate-800'} truncate`}>{analysingRequest.vehicle?.cor || analysingRequest.ext_cor}</p></div>
-                                            <div className="min-w-0 col-span-2"><p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-wider ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Marca / Modelo</p><p className={`font-black uppercase tracking-tight text-sm sm:text-base ${dk ? 'text-white' : 'text-slate-800'} truncate`}>{analysingRequest.vehicle?.marca_modelo || analysingRequest.ext_marca_modelo}</p></div>
+                                            <div className="min-w-0"><p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-wider ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Placa</p><p className={`font-black uppercase text-sm sm:text-base ${dk ? 'text-white' : 'text-slate-800'} truncate`}>{analysingRequest.vehicle?.placa || analysingRequest.ext_placa}</p></div>
+                                            <div className="min-w-0"><p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-wider ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Cor</p><p className={`font-black uppercase text-sm sm:text-base ${dk ? 'text-white' : 'text-slate-800'} truncate`}>{analysingRequest.vehicle?.cor || analysingRequest.ext_cor}</p></div>
+                                            <div className="min-w-0 col-span-2"><p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-wider ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Marca / Modelo</p><p className={`font-black uppercase text-sm sm:text-base ${dk ? 'text-white' : 'text-slate-800'} truncate`}>{analysingRequest.vehicle?.marca_modelo || analysingRequest.ext_marca_modelo}</p></div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className={`p-5 rounded-2xl border flex flex-col justify-center ${dk ? 'bg-slate-800/50 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
-                                    <p className={`text-[9px] font-black uppercase tracking-widest mb-2 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Período Solicitado</p>
+                                    <p className={`text-[9px] font-black uppercase mb-2 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Período Solicitado</p>
                                     <div className="space-y-2">
                                         <div className={`flex justify-between items-center p-2 rounded-lg ${dk ? 'bg-slate-900/50' : 'bg-white shadow-sm'}`}><span className={`text-[10px] uppercase font-bold ${dk ? 'text-slate-500' : 'text-slate-400'}`}>De</span><span className={`text-xs font-black ${dk ? 'text-slate-200' : 'text-slate-700'}`}>{new Date(analysingRequest.inicio + 'T00:00:00').toLocaleDateString('pt-BR')}</span></div>
                                         <div className={`flex justify-between items-center p-2 rounded-lg ${dk ? 'bg-slate-900/50' : 'bg-white shadow-sm'}`}><span className={`text-[10px] uppercase font-bold ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Até</span><span className={`text-xs font-black ${dk ? 'text-slate-200' : 'text-slate-700'}`}>{new Date(analysingRequest.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</span></div>
@@ -715,7 +709,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
                             {/* Documentos */}
                             <div>
-                                <p className={`text-[9px] font-black uppercase tracking-[0.2em] mb-3 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Documentos Anexos</p>
+                                <p className={`text-[9px] font-black uppercase mb-3 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Documentos Anexos</p>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     {[
                                         { url: analysingRequest.identidade_url, label: 'Identidade Milit.', icon: FileText },
@@ -723,17 +717,14 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                         { url: analysingRequest.crlv_url, label: 'CRLV do Veículo', icon: FileText }
                                     ].map((doc, idx) => (
                                         doc.url ? (
-                                            <a key={idx} href={doc.url} target="_blank" rel="noopener noreferrer" className={`group relative overflow-hidden flex items-center justify-center p-4 rounded-[1.25rem] border transition-all hover:-translate-y-1 hover:shadow-lg ${dk ? 'bg-gradient-to-br from-blue-900/20 to-blue-900/5 border-blue-800/40 hover:border-blue-700/60' : 'bg-gradient-to-br from-blue-50 to-white border-blue-200 hover:border-blue-300 shadow-sm'}`}>
-                                                <div className={`absolute top-0 right-0 w-16 h-16 rounded-full blur-xl opacity-20 transition-all group-hover:opacity-40 ${dk ? 'bg-blue-400' : 'bg-blue-300'}`}></div>
-                                                <div className="flex flex-col items-center gap-2 relative z-10">
-                                                    <doc.icon className={`w-6 h-6 sm:w-8 sm:h-8 ${dk ? 'text-blue-400' : 'text-blue-500'}`} />
-                                                    <span className={`font-black text-[10px] sm:text-xs uppercase tracking-widest ${dk ? 'text-blue-300' : 'text-blue-700'}`}>{doc.label}</span>
-                                                </div>
+                                            <a key={idx} href={doc.url} target="_blank" rel="noopener noreferrer" className={`group flex flex-col items-center justify-center p-4 rounded-[1.25rem] border transition-all hover:-translate-y-1 ${dk ? 'bg-slate-900 border-blue-900/40 hover:border-blue-700/60 hover:bg-slate-800' : 'bg-blue-50/50 border-blue-200 hover:border-blue-300 hover:shadow-sm'}`}>
+                                                <doc.icon className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 ${dk ? 'text-blue-400' : 'text-blue-500'}`} />
+                                                <span className={`font-black text-[10px] sm:text-xs uppercase ${dk ? 'text-blue-300' : 'text-blue-700'}`}>{doc.label}</span>
                                             </a>
                                         ) : (
                                             <div key={idx} className={`flex flex-col items-center justify-center p-4 rounded-[1.25rem] border border-dashed ${dk ? 'bg-slate-800/30 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                                                 <XCircle className={`w-6 h-6 mb-2 opacity-20 ${dk ? 'text-white' : 'text-slate-500'}`} />
-                                                <span className={`font-bold text-[10px] uppercase tracking-widest ${dk ? 'text-slate-600' : 'text-slate-400'}`}>Sem Anexo</span>
+                                                <span className={`font-bold text-[10px] uppercase ${dk ? 'text-slate-600' : 'text-slate-400'}`}>Sem Anexo</span>
                                             </div>
                                         )
                                     ))}
@@ -741,12 +732,11 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                             </div>
 
                             {analysingRequest.observacao && (
-                                <div className={`relative overflow-hidden p-4 sm:p-5 rounded-2xl border ${dk ? 'bg-amber-900/10 border-amber-800/30' : 'bg-amber-50/50 border-amber-200/60'}`}>
-                                    <div className={`absolute -left-20 -top-20 w-40 h-40 blur-3xl rounded-full opacity-20 pointer-events-none ${dk ? 'bg-amber-500' : 'bg-amber-400'}`}></div>
-                                    <div className="relative z-10 flex gap-3">
+                                <div className={`p-4 sm:p-5 rounded-2xl border ${dk ? 'bg-amber-900/10 border-amber-800/30' : 'bg-amber-50/50 border-amber-200/60'}`}>
+                                    <div className="flex gap-3">
                                         <Info className={`w-5 h-5 shrink-0 mt-0.5 ${dk ? 'text-amber-500' : 'text-amber-600'}`} />
                                         <div>
-                                            <p className={`text-[9px] font-black uppercase tracking-widest mb-1 ${dk ? 'text-amber-500/80' : 'text-amber-600/80'}`}>Observação do Solicitante</p>
+                                            <p className={`text-[9px] font-black uppercase mb-1 ${dk ? 'text-amber-500/80' : 'text-amber-600/80'}`}>Observação do Solicitante</p>
                                             <p className={`text-xs sm:text-sm font-bold italic leading-relaxed ${dk ? 'text-amber-100' : 'text-amber-900'}`}>"{analysingRequest.observacao}"</p>
                                         </div>
                                     </div>
@@ -759,14 +749,14 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                             <button
                                 disabled={isProcessing}
                                 onClick={() => handleReject(analysingRequest.id)}
-                                className={`w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl font-black text-[11px] sm:text-xs uppercase tracking-widest transition-all shadow-md flex justify-center items-center gap-2 outline-none disabled:opacity-50 ${dk ? 'bg-slate-800 text-red-400 border border-slate-700 hover:bg-red-950/40 hover:border-red-900' : 'bg-white text-red-600 border border-slate-200 hover:bg-red-50 hover:border-red-200'}`}
+                                className={`w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl font-black text-[11px] sm:text-xs uppercase transition-all flex justify-center items-center gap-2 outline-none disabled:opacity-50 ${dk ? 'bg-slate-800 text-red-400 hover:bg-slate-700 hover:text-red-300' : 'bg-white text-red-600 border border-slate-200 hover:bg-slate-50'}`}
                             >
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4 sm:w-5 sm:h-5" />} Rejeitar
                             </button>
                             <button
                                 disabled={isProcessing}
                                 onClick={() => handleApprove(analysingRequest.id)}
-                                className="w-full sm:w-auto px-6 py-3.5 sm:px-10 sm:py-4 bg-emerald-600 text-white rounded-xl font-black text-[11px] sm:text-xs uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-600/30 flex justify-center items-center gap-2 outline-none disabled:opacity-50 disabled:shadow-none"
+                                className="w-full sm:w-auto px-6 py-3.5 sm:px-10 sm:py-4 bg-emerald-600 text-white rounded-xl font-black text-[11px] sm:text-xs uppercase hover:bg-emerald-500 transition-all flex justify-center items-center gap-2 outline-none disabled:opacity-50"
                             >
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />} Aprovar Vaga
                             </button>
