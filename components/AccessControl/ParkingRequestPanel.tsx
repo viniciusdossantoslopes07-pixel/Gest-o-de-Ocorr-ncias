@@ -99,11 +99,16 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                 if (printRequest) setPrintRequest(null);
                 if (showingCoupon) setShowingCoupon(null);
                 if (analysingRequest) setAnalysingRequest(null);
+                if (showPasswordModal) setShowPasswordModal(false);
+                if (rejectingRequestId) {
+                    setRejectingRequestId(null);
+                    setRejectMotivo('');
+                }
             }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [printRequest, showingCoupon, analysingRequest]);
+    }, [printRequest, showingCoupon, analysingRequest, showPasswordModal, rejectingRequestId]);
 
     const fetchMyRequests = async () => {
         const { data } = await supabase.from('parking_requests').select('*, vehicle:parking_vehicles(*)').eq('user_id', user.id).order('created_at', { ascending: false });
@@ -399,7 +404,11 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                     const vName = req.vehicle?.marca_modelo || req.ext_marca_modelo || '—';
                                     const vPlate = req.vehicle?.placa || req.ext_placa || '';
                                     return (
-                                        <div key={req.id} className={`rounded-xl border p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all ${dk ? 'bg-slate-800 border-amber-700/50' : 'bg-white border-amber-200'}`}>
+                                        <div 
+                                            key={req.id} 
+                                            onClick={() => setAnalysingRequest(req)}
+                                            className={`rounded-xl border p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all cursor-pointer group ${dk ? 'bg-slate-800 border-amber-700/50 hover:border-amber-500 hover:bg-slate-800/80' : 'bg-white border-amber-200 hover:border-amber-400 hover:shadow-md'}`}
+                                        >
                                             <div className="flex-1 w-full">
                                                 <div className="flex items-center justify-between gap-3 mb-2">
                                                     <div>
@@ -426,7 +435,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                             </div>
                                             
                                             <div className="shrink-0 w-full sm:w-auto">
-                                                <button onClick={() => setAnalysingRequest(req)} className="w-full sm:w-auto px-6 py-2 bg-blue-600 text-white rounded-lg font-bold text-[10px] uppercase flex items-center justify-center gap-2 hover:bg-blue-500 transition-all">
+                                                <button className={`w-full sm:w-auto px-6 py-2 rounded-lg font-bold text-[10px] uppercase flex items-center justify-center gap-2 transition-all ${dk ? 'bg-blue-600/20 text-blue-400 group-hover:bg-blue-600 group-hover:text-white' : 'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white'}`}>
                                                     <Eye className="w-3.5 h-3.5" /> Analisar
                                                 </button>
                                             </div>
@@ -574,7 +583,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
             {/* Modal de Confirmação de Senha */}
             {showPasswordModal && (
-                <div className="fixed inset-0 bg-slate-900/60 z-[250] flex items-center justify-center p-4">
+                <div className="fixed inset-0 bg-slate-900/60 z-[250] flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) setShowPasswordModal(false); }}>
                     <div className={`${dk ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200 shadow-xl'} w-full max-w-sm rounded-[2rem] border p-8 animate-in zoom-in-95 duration-200`}>
                         <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 ${dk ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
                             <Lock className="w-8 h-8" />
@@ -603,7 +612,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
             {/* ========== Modal de Rejeição ========== */}
             {rejectingRequestId && (
-                <div className="fixed inset-0 bg-slate-900/60 z-[260] flex items-center justify-center p-4">
+                <div className="fixed inset-0 bg-slate-900/60 z-[260] flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) { setRejectingRequestId(null); setRejectMotivo(''); } }}>
                     <div className={`${dk ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200 shadow-xl'} w-full max-w-sm rounded-[2rem] border p-8 animate-in zoom-in-95 duration-200`}>
                         <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 ${dk ? 'bg-red-900/30 text-red-500' : 'bg-red-50 text-red-600'}`}>
                             <XCircle className="w-8 h-8" />
@@ -643,8 +652,8 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
             {/* Modal de Análise */}
             {analysingRequest && (
-                <div className="fixed inset-0 bg-slate-900/60 z-[200] flex items-center justify-center p-2 sm:p-4">
-                    <div className={`${dk ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'} w-full max-w-2xl rounded-[1.5rem] border shadow-2xl overflow-hidden max-h-[90vh] sm:max-h-[85vh] flex flex-col animate-in zoom-in-95 duration-200`}>
+                <div className="fixed inset-0 bg-slate-900/60 z-[200] flex items-center justify-center p-4 sm:p-6" onClick={(e) => { if (e.target === e.currentTarget) setAnalysingRequest(null); }}>
+                    <div className={`${dk ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'} w-full max-w-2xl rounded-[1.5rem] border shadow-2xl overflow-hidden max-h-[85vh] flex flex-col animate-in zoom-in-95 duration-200`}>
                         {/* Header do Modal */}
                         <div className={`p-4 flex justify-between items-center shrink-0 border-b ${dk ? 'border-slate-800 bg-slate-900/50' : 'border-slate-100 bg-slate-50/50'}`}>
                             <div className="flex items-center gap-3">
