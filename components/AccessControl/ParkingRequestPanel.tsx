@@ -643,88 +643,88 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
             {/* Modal de Análise */}
             {analysingRequest && (
-                <div className="fixed inset-0 bg-slate-900/60 z-[200] flex items-center justify-center p-3 sm:p-5">
-                    <div className={`${dk ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'} w-full max-w-2xl rounded-[2rem] border shadow-2xl overflow-hidden max-h-[95vh] sm:max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200`}>
+                <div className="fixed inset-0 bg-slate-900/60 z-[200] flex items-center justify-center p-2 sm:p-4">
+                    <div className={`${dk ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'} w-full max-w-2xl rounded-[1.5rem] border shadow-2xl overflow-hidden max-h-[90vh] sm:max-h-[85vh] flex flex-col animate-in zoom-in-95 duration-200`}>
                         {/* Header do Modal */}
-                        <div className={`p-5 sm:p-6 flex justify-between items-center shrink-0 border-b ${dk ? 'border-slate-800 bg-slate-900/50' : 'border-slate-100 bg-slate-50/50'}`}>
+                        <div className={`p-4 flex justify-between items-center shrink-0 border-b ${dk ? 'border-slate-800 bg-slate-900/50' : 'border-slate-100 bg-slate-50/50'}`}>
                             <div className="flex items-center gap-3">
-                                <div className={`p-2.5 rounded-xl ${dk ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
+                                <div className={`p-2 rounded-xl ${dk ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
                                     <Eye className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h2 className={`font-black text-lg sm:text-xl tracking-tight leading-tight ${dk ? 'text-white' : 'text-slate-900'}`}>Análise de Solicitação</h2>
+                                    <h2 className={`font-black text-lg tracking-tight leading-tight ${dk ? 'text-white' : 'text-slate-900'}`}>Análise de Solicitação</h2>
                                     <p className={`text-[10px] font-bold uppercase ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Estacionamento BASP</p>
                                 </div>
                             </div>
                             <button onClick={() => setAnalysingRequest(null)} className={`p-2 rounded-full transition-colors ${dk ? 'text-slate-500 hover:text-white hover:bg-slate-800' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`}>
-                                <XCircle className="w-6 h-6 sm:w-7 sm:h-7" />
+                                <XCircle className="w-6 h-6" />
                             </button>
                         </div>
 
                         {/* Corpo da Análise */}
-                        <div className="p-5 sm:p-8 overflow-y-auto custom-scrollbar space-y-6 sm:space-y-8">
+                        <div className="p-4 sm:p-5 overflow-y-auto custom-scrollbar space-y-4 sm:space-y-5">
                             
                             {/* Grid Superior: Militar e Contato */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                                <div className={`p-5 rounded-2xl border ${dk ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white border-slate-200'}`}>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                                <div className={`p-4 rounded-xl border ${dk ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white border-slate-200'}`}>
                                     <p className={`text-[9px] font-black uppercase mb-1 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Identificação do Militar</p>
-                                    <p className={`font-black text-lg sm:text-xl uppercase truncate ${dk ? 'text-white' : 'text-slate-900'}`}>{analysingRequest.nome_completo}</p>
-                                    <div className="mt-2 flex flex-wrap gap-2">
-                                        <span className={`px-2 py-1 text-[9px] font-black uppercase rounded-md ${dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>{analysingRequest.posto_graduacao}</span>
-                                        <span className={`px-2 py-1 text-[9px] font-black uppercase rounded-md ${dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>{analysingRequest.forca}</span>
+                                    <p className={`font-black text-base sm:text-lg uppercase truncate ${dk ? 'text-white' : 'text-slate-900'}`}>{analysingRequest.nome_completo}</p>
+                                    <div className="mt-1.5 flex flex-wrap gap-2">
+                                        <span className={`px-2 py-0.5 text-[9px] font-black uppercase rounded-md ${dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>{analysingRequest.posto_graduacao}</span>
+                                        <span className={`px-2 py-0.5 text-[9px] font-black uppercase rounded-md ${dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>{analysingRequest.forca}</span>
                                     </div>
                                 </div>
 
-                                <div className={`p-5 rounded-2xl border flex flex-col justify-center ${dk ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white border-slate-200'}`}>
+                                <div className={`p-4 rounded-xl border flex flex-col justify-center ${dk ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white border-slate-200'}`}>
                                     <p className={`text-[9px] font-black uppercase mb-1 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Contato Principal</p>
-                                    <p className={`font-black text-base sm:text-lg ${dk ? 'text-blue-400' : 'text-blue-600'}`}>{analysingRequest.telefone}</p>
-                                    <p className={`text-xs font-bold mt-1 truncate ${dk ? 'text-slate-400' : 'text-slate-500'}`}>{analysingRequest.email}</p>
+                                    <p className={`font-black text-sm sm:text-base ${dk ? 'text-blue-400' : 'text-blue-600'}`}>{analysingRequest.telefone}</p>
+                                    <p className={`text-[11px] font-bold mt-0.5 truncate ${dk ? 'text-slate-400' : 'text-slate-500'}`}>{analysingRequest.email}</p>
                                 </div>
                             </div>
 
                             {/* Detalhes do Veículo e Período */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
-                                <div className={`md:col-span-2 p-5 rounded-2xl border ${dk ? 'bg-slate-800/50 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
-                                    <p className={`text-[9px] font-black uppercase mb-3 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Detalhes do Veículo</p>
-                                    <div className="flex items-center gap-4 sm:gap-6">
-                                        <div className={`p-4 rounded-[1.25rem] shrink-0 border ${dk ? 'bg-slate-900/80 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
-                                            <Car className={`w-6 h-6 sm:w-8 sm:h-8 ${dk ? 'text-slate-400' : 'text-slate-300'}`} />
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div className={`md:col-span-2 p-4 rounded-xl border ${dk ? 'bg-slate-800/50 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
+                                    <p className={`text-[9px] font-black uppercase mb-2 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Detalhes do Veículo</p>
+                                    <div className="flex items-center gap-3 sm:gap-4">
+                                        <div className={`p-3 rounded-xl shrink-0 border ${dk ? 'bg-slate-900/80 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                            <Car className={`w-5 h-5 sm:w-6 sm:h-6 ${dk ? 'text-slate-400' : 'text-slate-300'}`} />
                                         </div>
-                                        <div className="grid grid-cols-2 gap-x-6 gap-y-2 flex-1">
-                                            <div className="min-w-0"><p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-wider ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Placa</p><p className={`font-black uppercase text-sm sm:text-base ${dk ? 'text-white' : 'text-slate-800'} truncate`}>{analysingRequest.vehicle?.placa || analysingRequest.ext_placa}</p></div>
-                                            <div className="min-w-0"><p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-wider ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Cor</p><p className={`font-black uppercase text-sm sm:text-base ${dk ? 'text-white' : 'text-slate-800'} truncate`}>{analysingRequest.vehicle?.cor || analysingRequest.ext_cor}</p></div>
-                                            <div className="min-w-0 col-span-2"><p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-wider ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Marca / Modelo</p><p className={`font-black uppercase text-sm sm:text-base ${dk ? 'text-white' : 'text-slate-800'} truncate`}>{analysingRequest.vehicle?.marca_modelo || analysingRequest.ext_marca_modelo}</p></div>
+                                        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 flex-1">
+                                            <div className="min-w-0"><p className={`text-[8px] font-black uppercase tracking-wider ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Placa</p><p className={`font-black uppercase text-xs sm:text-sm ${dk ? 'text-white' : 'text-slate-800'} truncate`}>{analysingRequest.vehicle?.placa || analysingRequest.ext_placa}</p></div>
+                                            <div className="min-w-0"><p className={`text-[8px] font-black uppercase tracking-wider ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Cor</p><p className={`font-black uppercase text-xs sm:text-sm ${dk ? 'text-white' : 'text-slate-800'} truncate`}>{analysingRequest.vehicle?.cor || analysingRequest.ext_cor}</p></div>
+                                            <div className="min-w-0 col-span-2"><p className={`text-[8px] font-black uppercase tracking-wider ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Marca / Modelo</p><p className={`font-black uppercase text-xs sm:text-sm ${dk ? 'text-white' : 'text-slate-800'} truncate`}>{analysingRequest.vehicle?.marca_modelo || analysingRequest.ext_marca_modelo}</p></div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className={`p-5 rounded-2xl border flex flex-col justify-center ${dk ? 'bg-slate-800/50 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
+                                <div className={`p-4 rounded-xl border flex flex-col justify-center ${dk ? 'bg-slate-800/50 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
                                     <p className={`text-[9px] font-black uppercase mb-2 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Período Solicitado</p>
-                                    <div className="space-y-2">
-                                        <div className={`flex justify-between items-center p-2 rounded-lg ${dk ? 'bg-slate-900/50' : 'bg-white shadow-sm'}`}><span className={`text-[10px] uppercase font-bold ${dk ? 'text-slate-500' : 'text-slate-400'}`}>De</span><span className={`text-xs font-black ${dk ? 'text-slate-200' : 'text-slate-700'}`}>{new Date(analysingRequest.inicio + 'T00:00:00').toLocaleDateString('pt-BR')}</span></div>
-                                        <div className={`flex justify-between items-center p-2 rounded-lg ${dk ? 'bg-slate-900/50' : 'bg-white shadow-sm'}`}><span className={`text-[10px] uppercase font-bold ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Até</span><span className={`text-xs font-black ${dk ? 'text-slate-200' : 'text-slate-700'}`}>{new Date(analysingRequest.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</span></div>
+                                    <div className="space-y-1.5">
+                                        <div className={`flex justify-between items-center p-1.5 px-2 rounded-md ${dk ? 'bg-slate-900/50' : 'bg-white shadow-sm'}`}><span className={`text-[9px] uppercase font-bold ${dk ? 'text-slate-500' : 'text-slate-400'}`}>De</span><span className={`text-[11px] font-black ${dk ? 'text-slate-200' : 'text-slate-700'}`}>{new Date(analysingRequest.inicio + 'T00:00:00').toLocaleDateString('pt-BR')}</span></div>
+                                        <div className={`flex justify-between items-center p-1.5 px-2 rounded-md ${dk ? 'bg-slate-900/50' : 'bg-white shadow-sm'}`}><span className={`text-[9px] uppercase font-bold ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Até</span><span className={`text-[11px] font-black ${dk ? 'text-slate-200' : 'text-slate-700'}`}>{new Date(analysingRequest.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</span></div>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Documentos */}
                             <div>
-                                <p className={`text-[9px] font-black uppercase mb-3 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Documentos Anexos</p>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <p className={`text-[9px] font-black uppercase mb-2 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Documentos Anexos</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
                                     {[
                                         { url: analysingRequest.identidade_url, label: 'Identidade Milit.', icon: FileText },
                                         { url: analysingRequest.cnh_url, label: 'CNH do Condutor', icon: FileText },
                                         { url: analysingRequest.crlv_url, label: 'CRLV do Veículo', icon: FileText }
                                     ].map((doc, idx) => (
                                         doc.url ? (
-                                            <a key={idx} href={doc.url} target="_blank" rel="noopener noreferrer" className={`group flex flex-col items-center justify-center p-4 rounded-[1.25rem] border transition-all hover:-translate-y-1 ${dk ? 'bg-slate-900 border-blue-900/40 hover:border-blue-700/60 hover:bg-slate-800' : 'bg-blue-50/50 border-blue-200 hover:border-blue-300 hover:shadow-sm'}`}>
-                                                <doc.icon className={`w-6 h-6 sm:w-8 sm:h-8 mb-2 ${dk ? 'text-blue-400' : 'text-blue-500'}`} />
-                                                <span className={`font-black text-[10px] sm:text-xs uppercase ${dk ? 'text-blue-300' : 'text-blue-700'}`}>{doc.label}</span>
+                                            <a key={idx} href={doc.url} target="_blank" rel="noopener noreferrer" className={`group flex flex-col items-center justify-center p-3 rounded-xl border transition-all hover:-translate-y-0.5 ${dk ? 'bg-slate-900 border-blue-900/40 hover:border-blue-700/60 hover:bg-slate-800' : 'bg-blue-50/50 border-blue-200 hover:border-blue-300 hover:shadow-sm'}`}>
+                                                <doc.icon className={`w-5 h-5 mb-1.5 ${dk ? 'text-blue-400' : 'text-blue-500'}`} />
+                                                <span className={`font-black text-[9px] sm:text-[10px] uppercase ${dk ? 'text-blue-300' : 'text-blue-700'}`}>{doc.label}</span>
                                             </a>
                                         ) : (
-                                            <div key={idx} className={`flex flex-col items-center justify-center p-4 rounded-[1.25rem] border border-dashed ${dk ? 'bg-slate-800/30 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-                                                <XCircle className={`w-6 h-6 mb-2 opacity-20 ${dk ? 'text-white' : 'text-slate-500'}`} />
-                                                <span className={`font-bold text-[10px] uppercase ${dk ? 'text-slate-600' : 'text-slate-400'}`}>Sem Anexo</span>
+                                            <div key={idx} className={`flex flex-col items-center justify-center p-3 rounded-xl border border-dashed ${dk ? 'bg-slate-800/30 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                                                <XCircle className={`w-5 h-5 mb-1.5 opacity-20 ${dk ? 'text-white' : 'text-slate-500'}`} />
+                                                <span className={`font-bold text-[9px] uppercase ${dk ? 'text-slate-600' : 'text-slate-400'}`}>Sem Anexo</span>
                                             </div>
                                         )
                                     ))}
@@ -732,12 +732,12 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                             </div>
 
                             {analysingRequest.observacao && (
-                                <div className={`p-4 sm:p-5 rounded-2xl border ${dk ? 'bg-amber-900/10 border-amber-800/30' : 'bg-amber-50/50 border-amber-200/60'}`}>
-                                    <div className="flex gap-3">
-                                        <Info className={`w-5 h-5 shrink-0 mt-0.5 ${dk ? 'text-amber-500' : 'text-amber-600'}`} />
+                                <div className={`p-3 sm:p-4 rounded-xl border ${dk ? 'bg-amber-900/10 border-amber-800/30' : 'bg-amber-50/50 border-amber-200/60'}`}>
+                                    <div className="flex gap-2.5">
+                                        <Info className={`w-4 h-4 shrink-0 mt-0.5 ${dk ? 'text-amber-500' : 'text-amber-600'}`} />
                                         <div>
-                                            <p className={`text-[9px] font-black uppercase mb-1 ${dk ? 'text-amber-500/80' : 'text-amber-600/80'}`}>Observação do Solicitante</p>
-                                            <p className={`text-xs sm:text-sm font-bold italic leading-relaxed ${dk ? 'text-amber-100' : 'text-amber-900'}`}>"{analysingRequest.observacao}"</p>
+                                            <p className={`text-[8px] sm:text-[9px] font-black uppercase mb-0.5 ${dk ? 'text-amber-500/80' : 'text-amber-600/80'}`}>Observação do Solicitante</p>
+                                            <p className={`text-[11px] sm:text-xs font-bold italic leading-relaxed ${dk ? 'text-amber-100' : 'text-amber-900'}`}>"{analysingRequest.observacao}"</p>
                                         </div>
                                     </div>
                                 </div>
@@ -745,20 +745,20 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                         </div>
 
                         {/* Footer (Ações) */}
-                        <div className={`p-4 sm:p-5 border-t shrink-0 flex flex-col sm:flex-row gap-3 sm:gap-4 sm:justify-end ${dk ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+                        <div className={`p-3 sm:p-4 border-t shrink-0 flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end ${dk ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
                             <button
                                 disabled={isProcessing}
                                 onClick={() => handleReject(analysingRequest.id)}
-                                className={`w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl font-black text-[11px] sm:text-xs uppercase transition-all flex justify-center items-center gap-2 outline-none disabled:opacity-50 ${dk ? 'bg-slate-800 text-red-400 hover:bg-slate-700 hover:text-red-300' : 'bg-white text-red-600 border border-slate-200 hover:bg-slate-50'}`}
+                                className={`w-full sm:w-auto px-5 py-3 rounded-lg font-black text-[10px] sm:text-[11px] uppercase transition-all flex justify-center items-center gap-1.5 outline-none disabled:opacity-50 ${dk ? 'bg-slate-800 text-red-400 hover:bg-slate-700 hover:text-red-300' : 'bg-white text-red-600 border border-slate-200 hover:bg-slate-50'}`}
                             >
-                                {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4 sm:w-5 sm:h-5" />} Rejeitar
+                                {isProcessing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-4 h-4" />} Rejeitar
                             </button>
                             <button
                                 disabled={isProcessing}
                                 onClick={() => handleApprove(analysingRequest.id)}
-                                className="w-full sm:w-auto px-6 py-3.5 sm:px-10 sm:py-4 bg-emerald-600 text-white rounded-xl font-black text-[11px] sm:text-xs uppercase hover:bg-emerald-500 transition-all flex justify-center items-center gap-2 outline-none disabled:opacity-50"
+                                className="w-full sm:w-auto px-5 py-3 bg-emerald-600 text-white rounded-lg font-black text-[10px] sm:text-[11px] uppercase hover:bg-emerald-500 transition-all flex justify-center items-center gap-1.5 outline-none disabled:opacity-50"
                             >
-                                {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />} Aprovar Vaga
+                                {isProcessing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-4 h-4" />} Aprovar Vaga
                             </button>
                         </div>
                     </div>
