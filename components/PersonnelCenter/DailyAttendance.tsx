@@ -46,7 +46,7 @@ const getStatusColor = (status: string, isDarkMode: boolean) => {
 const STATUS_GROUPS = [
     { label: 'Serviço/Presença', codes: ['P', 'FE', 'ESV', 'SSV', 'MIS', 'INST', 'C-E'] },
     { label: 'Saúde/Faltas', codes: ['F', 'A', 'DPM', 'JS', 'INSP', 'DCH'] },
-    { label: 'Outros/Licenças', codes: ['LP', 'LM', 'NU', 'LT', 'NIL', 'DSV'] }
+    { label: 'Outros/Licenças', codes: ['LP', 'LM', 'NU', 'LT', 'DSV'] }
 ];
 
 const StatusPicker: FC<{
