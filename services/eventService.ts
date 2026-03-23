@@ -2,14 +2,28 @@ import { supabase } from './supabase';
 import { AccessEvent, EventGuest } from '../types';
 
 export const eventService = {
-    async getEvents(): Promise<AccessEvent[]> {
-        const { data, error } = await supabase
+    async getEvents(filter: 'upcoming' | 'history' | 'all' = 'all'): Promise<AccessEvent[]> {
+        // Obter data local no formato YYYY-MM-DD
+        const today = new Date();
+        const offset = today.getTimezoneOffset() * 60000;
+        const localDate = new Date(today.getTime() - offset).toISOString().split('T')[0];
+
+        let query = supabase
             .from('events')
             .select(`
         *,
         guests:event_guests(*)
-      `)
-            .order('date', { ascending: false });
+      `);
+
+        if (filter === 'upcoming') {
+            query = query.gte('date', localDate).order('date', { ascending: true });
+        } else if (filter === 'history') {
+            query = query.lt('date', localDate).order('date', { ascending: false });
+        } else {
+            query = query.order('date', { ascending: false });
+        }
+
+        const { data, error } = await query;
 
         if (error) {
             console.error('Erro ao buscar eventos:', error);
