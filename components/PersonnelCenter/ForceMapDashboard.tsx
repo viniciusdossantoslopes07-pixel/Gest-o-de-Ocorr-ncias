@@ -458,7 +458,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                 isDarkMode={dk}
                                 options={[
                                     { label: 'Todos Setores', value: 'TODOS' },
-                                    { label: 'GSD-SP', value: 'GSD-SP' },
+                                    { label: 'TODOS GSD-SP', value: 'GSD-SP' },
                                     { label: 'TODOS BASP', value: 'BASP' },
                                     ...displaySectors.map(s => ({ label: s, value: s }))
                                 ]}
