@@ -880,75 +880,75 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
             {/* Modal de Cupom Digital */}
             {showingCoupon && (
-                <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 sm:p-6">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setShowingCoupon(null)}></div>
-                    <div className="relative w-full max-w-[320px] bg-white rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                    <div className="relative w-full max-w-[320px] bg-white rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[85vh] flex flex-col">
                         {/* Header do Cupom */}
-                        <div className="bg-slate-900 p-6 text-center text-white relative">
+                        <div className="bg-slate-900 p-5 sm:p-6 text-center text-white relative shrink-0">
                             <div className="absolute top-4 right-4 cursor-pointer text-slate-400 hover:text-white" onClick={() => setShowingCoupon(null)}>
-                                <XCircle className="w-6 h-6" />
+                                <XCircle className="w-5 h-5 sm:w-6 sm:h-6" />
                             </div>
-                            <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-blue-600/20">
-                                <Car className="w-6 h-6 text-white" />
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg shadow-blue-600/20">
+                                <Car className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                             </div>
-                            <h4 className="text-sm font-black uppercase tracking-widest">Autorização Digital</h4>
-                            <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tight">Base Aérea de São Paulo</p>
+                            <h4 className="text-xs sm:text-sm font-black uppercase tracking-widest">Autorização Digital</h4>
+                            <p className="text-[9px] sm:text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tight">Base Aérea de São Paulo</p>
                         </div>
 
                         {/* Corpo do Cupom (Estilo Ticket) */}
-                        <div className="p-6 space-y-6 relative">
+                        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 relative flex-1 overflow-y-auto custom-scrollbar">
                             {/* Pontilhados laterais estilo cupom */}
-                            <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-900 rounded-full"></div>
-                            <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-900 rounded-full"></div>
+                            <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-900 rounded-full z-10"></div>
+                            <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-900 rounded-full z-10"></div>
 
                             <div className="text-center space-y-1">
                                 <p className="text-[10px] font-bold text-slate-400 uppercase">Solicitante</p>
-                                <p className="text-base font-black text-slate-800">{showingCoupon.nome_completo}</p>
-                                <p className="text-[11px] font-bold text-blue-600 uppercase">{showingCoupon.posto_graduacao} • {showingCoupon.om}</p>
+                                <p className="text-sm sm:text-base font-black text-slate-800">{showingCoupon.nome_completo}</p>
+                                <p className="text-[10px] sm:text-[11px] font-bold text-blue-600 uppercase">{showingCoupon.posto_graduacao} • {showingCoupon.om}</p>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-dashed border-slate-200">
-                                <div className="text-center border-r border-slate-200 pr-4">
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Veículo</p>
-                                    <p className="text-xs font-black text-slate-800 uppercase">{showingCoupon.vehicle?.marca_modelo || showingCoupon.ext_marca_modelo || '—'}</p>
-                                    <p className="text-[10px] font-bold text-slate-500 mt-0.5">{showingCoupon.vehicle?.placa || showingCoupon.ext_placa || '—'}</p>
+                            <div className="grid grid-cols-2 gap-3 sm:gap-4 bg-slate-50 p-3 sm:p-4 rounded-2xl border border-dashed border-slate-200">
+                                <div className="text-center border-r border-slate-200 pr-3 sm:pr-4">
+                                    <p className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase mb-1">Veículo</p>
+                                    <p className="text-[10px] sm:text-xs font-black text-slate-800 uppercase">{showingCoupon.vehicle?.marca_modelo || showingCoupon.ext_marca_modelo || '—'}</p>
+                                    <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 mt-0.5">{showingCoupon.vehicle?.placa || showingCoupon.ext_placa || '—'}</p>
                                 </div>
-                                <div className="text-center pl-4">
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Status</p>
-                                    <div className={`text-[10px] font-black uppercase inline-flex px-2 py-0.5 rounded-full ${showingCoupon.status === 'Aprovado' ? 'bg-emerald-100 text-emerald-600' : showingCoupon.status === 'Rejeitado' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>
+                                <div className="text-center pl-3 sm:pl-4">
+                                    <p className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase mb-1">Status</p>
+                                    <div className={`text-[9px] sm:text-[10px] font-black uppercase inline-flex px-2 py-0.5 rounded-full ${showingCoupon.status === 'Aprovado' ? 'bg-emerald-100 text-emerald-600' : showingCoupon.status === 'Rejeitado' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>
                                         {showingCoupon.status}
                                     </div>
-                                    <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase">Validado</p>
+                                    <p className="text-[8px] sm:text-[9px] font-bold text-slate-400 mt-1 uppercase">Validado</p>
                                 </div>
                             </div>
 
                             <div className="text-center space-y-3">
                                 <div className="flex flex-col items-center gap-1.5">
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase">Período de Validade</p>
-                                    <div className="flex items-center gap-3">
+                                    <p className="text-[8px] sm:text-[9px] font-bold text-slate-400 uppercase">Período de Validade</p>
+                                    <div className="flex items-center gap-2 sm:gap-3">
                                         <div className="text-center">
-                                            <p className="text-[11px] font-black text-slate-800">{new Date(showingCoupon.inicio + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</p>
-                                            <p className="text-[8px] font-bold text-slate-400 uppercase">Início</p>
+                                            <p className="text-[10px] sm:text-[11px] font-black text-slate-800">{new Date(showingCoupon.inicio + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</p>
+                                            <p className="text-[7px] sm:text-[8px] font-bold text-slate-400 uppercase">Início</p>
                                         </div>
                                         <TrendingUp className="w-3 h-3 text-slate-300" />
                                         <div className="text-center">
-                                            <p className="text-[11px] font-black text-slate-800">{new Date(showingCoupon.termino + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</p>
-                                            <p className="text-[8px] font-bold text-slate-400 uppercase">Fim</p>
+                                            <p className="text-[10px] sm:text-[11px] font-black text-slate-800">{new Date(showingCoupon.termino + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</p>
+                                            <p className="text-[7px] sm:text-[8px] font-bold text-slate-400 uppercase">Fim</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Responsável pela Aprovação */}
-                                <div className="mt-4 pt-4 border-t border-slate-100 border-dashed flex flex-col items-center gap-2">
-                                    <div className="w-full bg-slate-50 rounded-xl p-3 border border-slate-100 flex flex-col items-center gap-1">
-                                        <ShieldCheck className="w-5 h-5 text-emerald-600 mb-1" />
-                                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Aprovado por</p>
-                                        <p className="text-[11px] font-black text-slate-800 uppercase text-center leading-tight">
+                                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-100 border-dashed flex flex-col items-center gap-2">
+                                    <div className="w-full bg-slate-50 rounded-xl p-2 sm:p-3 border border-slate-100 flex flex-col items-center gap-1">
+                                        <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 mb-1" />
+                                        <p className="text-[7px] sm:text-[8px] font-bold text-slate-400 uppercase tracking-widest">Aprovado por</p>
+                                        <p className="text-[9px] sm:text-[11px] font-black text-slate-800 uppercase text-center leading-tight">
                                             {showingCoupon.aprovado_por || 'AUTORIDADE COMPETENTE'}
                                         </p>
-                                        <p className="text-[7px] text-slate-400 uppercase font-bold mt-1">SOP-03 • GSD-SP</p>
+                                        <p className="text-[6px] sm:text-[7px] text-slate-400 uppercase font-bold mt-1">SOP-03 • GSD-SP</p>
                                     </div>
-                                    <p className="text-[9px] font-mono text-slate-300 tracking-[0.2em] uppercase mt-1">
+                                    <p className="text-[8px] sm:text-[9px] font-mono text-slate-300 tracking-[0.2em] uppercase mt-1">
                                         AUTH-{showingCoupon.id.slice(0, 8).toUpperCase()}
                                     </p>
                                 </div>
@@ -956,16 +956,16 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                         </div>
 
                         {/* Footer do Cupom */}
-                        <div className="bg-slate-50 p-4 border-t border-dashed border-slate-200 flex gap-2">
+                        <div className="bg-slate-50 p-3 sm:p-4 border-t border-dashed border-slate-200 flex gap-2 shrink-0">
                             {showingCoupon.status !== 'Rejeitado' && (
                                 <button
                                     onClick={() => {
                                         setPrintRequest(showingCoupon);
                                         setShowingCoupon(null);
                                     }}
-                                    className="flex-1 bg-white border border-slate-200 py-2.5 rounded-xl font-bold text-xs text-slate-600 hover:bg-slate-100 transition-all flex items-center justify-center gap-2"
+                                    className="flex-1 bg-white border border-slate-200 py-2.5 rounded-xl font-bold text-[10px] sm:text-xs text-slate-600 hover:bg-slate-100 transition-all flex items-center justify-center gap-2"
                                 >
-                                    <Printer className="w-4 h-4" /> Imprimir
+                                    <Printer className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Imprimir
                                 </button>
                             )}
                             {showingCoupon.status === 'Rejeitado' ? (
@@ -985,12 +985,12 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                         alert(ok ? 'E-mail de rejeição enviado com sucesso!' : 'Falha ao enviar e-mail. Tente novamente.');
                                     }}
                                     disabled={sendingEmailId === showingCoupon.id}
-                                    className="flex-1 bg-red-600 py-2.5 rounded-xl font-bold text-xs text-white hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                                    className="flex-1 bg-red-600 py-2.5 rounded-xl font-bold text-[10px] sm:text-xs text-white hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
                                     {sendingEmailId === showingCoupon.id ? (
-                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                     ) : (
-                                        <><Send className="w-4 h-4" /> Enviar Rejeição</>
+                                        <><Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Enviar Rejeição</>
                                     )}
                                 </button>
                             ) : (
