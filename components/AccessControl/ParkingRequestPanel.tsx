@@ -111,12 +111,12 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
     }, [printRequest, showingCoupon, analysingRequest, showPasswordModal, rejectingRequestId]);
 
     const fetchMyRequests = async () => {
-        const { data } = await supabase.from('parking_requests').select('*, vehicle:parking_vehicles(*)').eq('user_id', user.id).order('created_at', { ascending: false });
+        const { data } = await supabase.from('parking_requests').select('*, vehicle:parking_vehicles(*)').eq('user_id', user.id).order('created_at', { ascending: false }).limit(500);
         if (data) setRequests(data);
     };
 
     const fetchAllRequests = async () => {
-        const { data } = await supabase.from('parking_requests').select('*, vehicle:parking_vehicles(*)').order('created_at', { ascending: false });
+        const { data } = await supabase.from('parking_requests').select('*, vehicle:parking_vehicles(*)').order('created_at', { ascending: false }).limit(500);
         if (data) setAllRequests(data);
     };
 

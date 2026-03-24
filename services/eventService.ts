@@ -16,11 +16,11 @@ export const eventService = {
       `);
 
         if (filter === 'upcoming') {
-            query = query.gte('date', localDate).order('date', { ascending: true });
+            query = query.gte('date', localDate).order('date', { ascending: true }).limit(200);
         } else if (filter === 'history') {
-            query = query.lt('date', localDate).order('date', { ascending: false });
+            query = query.lt('date', localDate).order('date', { ascending: false }).limit(100);
         } else {
-            query = query.order('date', { ascending: false });
+            query = query.order('date', { ascending: false }).limit(200);
         }
 
         const { data, error } = await query;
