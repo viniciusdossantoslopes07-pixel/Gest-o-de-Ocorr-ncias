@@ -885,9 +885,9 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
             {/* Modal de Cupom Digital */}
             {showingCoupon && (
-                <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 sm:p-6">
+                <div className="fixed inset-0 z-[300] flex items-start sm:items-center justify-center p-4 sm:p-6 pt-[15vh] sm:pt-6">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setShowingCoupon(null)}></div>
-                    <div className="relative w-full max-w-[320px] bg-white rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[85vh] flex flex-col">
+                    <div className="relative w-full max-w-[360px] bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[80vh] flex flex-col">
                         {/* Header do Cupom */}
                         <div className="bg-slate-900 p-5 sm:p-6 text-center text-white relative shrink-0">
                             <div className="absolute top-4 right-4 cursor-pointer text-slate-400 hover:text-white" onClick={() => setShowingCoupon(null)}>
