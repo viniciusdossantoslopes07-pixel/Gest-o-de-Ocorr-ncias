@@ -37,120 +37,111 @@ export default function FAQModal({ onClose }: FAQModalProps) {
                     <div className="bg-blue-50/50 border border-blue-100/50 p-4 rounded-2xl flex gap-3 items-start">
                         <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
                         <p className="text-xs font-medium text-blue-800 leading-relaxed">
-                            Bem-vindo ao guia de suporte integrado. Abaixo, você encontrará dicas essenciais para navegar pelos módulos de Missões, Pessoal, Logística e Inteligência do sistema.
+                            Bem-vindo ao guia de suporte integrado. O Guardião GSD-SP centraliza todas as operações críticas da unidade. Abaixo, você encontrará dicas e regras de negócio essenciais para navegar pelos módulos do sistema.
                         </p>
                     </div>
 
-                    {/* Topic 1: Pessoal (NEW) */}
-                    <section>
-                        <h3 className="flex items-center gap-3 text-lg font-black text-slate-900 mb-5">
-                            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
-                                <Users className="w-5 h-5" />
-                            </div>
-                            Gestão de Pessoal e Efetivo
-                        </h3>
-                        <div className="pl-12 space-y-4 text-slate-600 text-[13px] leading-relaxed">
-                            <div className="flex gap-3">
-                                <Calendar className="w-4 h-4 text-emerald-500 shrink-0" />
-                                <p><strong>Chamada Diária:</strong> Deve ser realizada em dois turnos (Início e Término). A <strong>assinatura digital</strong> bloqueia edições retroativas para garantir a integridade dos dados.</p>
-                            </div>
-                            <div className="flex gap-3">
-                                <Fingerprint className="w-4 h-4 text-emerald-500 shrink-0" />
-                                <p><strong>Perfil Militar:</strong> Na aba <em>Configurações</em>, mantenha seu <strong>RC, Identidade Militar e Contatos de Emergência</strong> atualizados. Isso é vital para a geração automática de documentos.</p>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Topic 2: Logística (NEW) */}
-                    <section>
-                        <h3 className="flex items-center gap-3 text-lg font-black text-slate-900 mb-5">
-                            <div className="p-2 bg-orange-50 text-orange-600 rounded-xl">
-                                <Package className="w-5 h-5" />
-                            </div>
-                            Logística e Material
-                        </h3>
-                        <div className="pl-12 space-y-4 text-slate-600 text-[13px] leading-relaxed">
-                            <div className="flex gap-3">
-                                <CheckCircle className="w-4 h-4 text-orange-500 shrink-0" />
-                                <p><strong>Cautela:</strong> Ao solicitar material, aguarde a aprovação do Almoxarifado. Você pode acompanhar o status em <em>"Minhas Cautelas"</em> no menu lateral.</p>
-                            </div>
-                            <div className="flex gap-3">
-                                <Info className="w-4 h-4 text-orange-500 shrink-0" />
-                                <p><strong>Devolução:</strong> Certifique-se de que o material foi devidamente "Recebido" pelo responsável para encerrar a pendência em seu nome.</p>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Topic 3: Missões (OMISS) */}
+                    {/* Topic 1: Pessoal and BI */}
                     <section>
                         <h3 className="flex items-center gap-3 text-lg font-black text-slate-900 mb-5">
                             <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
-                                <FileText className="w-5 h-5" />
+                                <Users className="w-5 h-5" />
                             </div>
-                            Ordens de Missão (OMISS)
+                            Pessoal e Mapa de Força
                         </h3>
                         <div className="pl-12 space-y-4 text-slate-600 text-[13px] leading-relaxed">
-                            <p className="font-bold text-indigo-700">Fluxo de Geração (4 Etapas):</p>
-                            <ol className="list-decimal pl-5 space-y-2 font-medium">
-                                <li><strong>Solicitação:</strong> Utilize o menu <em>"Solicitar Missão"</em> e preencha o itinerário.</li>
-                                <li><strong>Análise (SOP):</strong> A Seção de Operações avalia a viabilidade no <em>Painel de Gestão</em>.</li>
-                                <li><strong>Assinatura:</strong> O Chefe da SOP autentica o documento digitalmente com senha.</li>
-                                <li><strong>Execução:</strong> O Comandante da Missão reporta o início e fim pelo App.</li>
+                            <div className="flex gap-3">
+                                <CheckCircle className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
+                                <p><strong>Chamada Diária:</strong> Realizada em dois turnos (Início e Término do expediente). Toda atualização requer validação eletrônica e não pode ser desfeita retroativamente sem autorização superior.</p>
+                            </div>
+                            <div className="flex gap-3">
+                                <BarChart3 className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
+                                <p><strong>Mapa de Força (BI):</strong> Oferece visão em tempo real do efetivo pronto para missões. Integra dados de férias, licenças e afastamentos, garantindo transparência à Seção de Operações (SOP).</p>
+                            </div>
+                            <div className="flex gap-3">
+                                <Fingerprint className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
+                                <p><strong>Perfil Militar:</strong> Em Configurações, garanta que seu Registro Cadastral (RC), Identidade Militar e Tipo Sanguíneo estejam sempre atualizados. Esses dados alimentam as Ordens de Missão.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Topic 2: Operações e Missões */}
+                    <section>
+                        <h3 className="flex items-center gap-3 text-lg font-black text-slate-900 mb-5">
+                            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+                                <FileText className="w-5 h-5" />
+                            </div>
+                            Operações e Missões (OMISS)
+                        </h3>
+                        <div className="pl-12 space-y-4 text-slate-600 text-[13px] leading-relaxed">
+                            <div className="flex gap-3">
+                                <Activity className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                                <p><strong>Ciclo de Geração de OMISS:</strong></p>
+                            </div>
+                            <ol className="list-decimal pl-10 space-y-2 font-medium">
+                                <li><strong>Solicitação:</strong> O demandante informa área, destino, armamento e efetivo desejado.</li>
+                                <li><strong>Análise (SOP):</strong> A Seção de Operações aprova ou rejeita de acordo com as diretrizes de segurança.</li>
+                                <li><strong>Autorização:</strong> Somente usuários com privilégio máximo podem assinar o documento final digitalmente.</li>
+                                <li><strong>Execução:</strong> Em andamento, o status pode ser atualizado até a desmobilização da equipe.</li>
                             </ol>
                         </div>
                     </section>
 
-                    {/* Topic 4: Acesso (NEW) */}
+                    {/* Topic 3: Segurança e Acesso */}
                     <section>
                         <h3 className="flex items-center gap-3 text-lg font-black text-slate-900 mb-5">
                             <div className="p-2 bg-rose-50 text-rose-600 rounded-xl">
                                 <DoorOpen className="w-5 h-5" />
                             </div>
-                            Controle de Acesso
+                            Segurança e Acesso
                         </h3>
                         <div className="pl-12 space-y-4 text-slate-600 text-[13px] leading-relaxed">
                             <div className="flex gap-3">
-                                <CreditCard className="w-4 h-4 text-rose-500 shrink-0" />
-                                <p><strong>Visitantes:</strong> O registro preciso de entrada/saída é auditável. Use o módulo <em>Acesso Visitantes</em> para monitorar o fluxo de civis na Unidade.</p>
+                                <Shield className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                                <p><strong>Controle de Portões:</strong> Módulo exclusivo para a Guarda da Unidade. Registra de forma cirúrgica todas as entradas e saídas de pedestres e veículos em todos os portões (G1, G2, G3).</p>
                             </div>
                             <div className="flex gap-3">
-                                <Shield className="w-4 h-4 text-rose-500 shrink-0" />
-                                <p><strong>Estacionamento:</strong> Autorizações digitais geram <strong>QR Codes</strong> únicos que facilitam o controle nas guaritas via leitura óptica.</p>
+                                <CreditCard className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                                <p><strong>Identificação:</strong> Permite buscar instantaneamente pessoas e veículos por placa ou DOC para liberar o acesso recorrente sem recadastramento.</p>
                             </div>
                         </div>
                     </section>
 
-                    {/* Topic 5: Inteligência e BI (NEW) */}
+                    {/* Topic 4: Logística e Frota */}
                     <section>
                         <h3 className="flex items-center gap-3 text-lg font-black text-slate-900 mb-5">
-                            <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
-                                <BarChart3 className="w-5 h-5" />
+                            <div className="p-2 bg-orange-50 text-orange-600 rounded-xl">
+                                <Package className="w-5 h-5" />
                             </div>
-                            Inteligência e BI
+                            Material, Cautela e Frota
                         </h3>
                         <div className="pl-12 space-y-4 text-slate-600 text-[13px] leading-relaxed">
                             <div className="flex gap-3">
-                                <Activity className="w-4 h-4 text-blue-500 shrink-0" />
-                                <p><strong>Mapa de Força:</strong> Visualize a distribuição do efetivo em tempo real e identifique disponibilidades para missões imediatas no <em>Painel de Inteligência</em>.</p>
+                                <CheckCircle className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                                <p><strong>Cautela de Armamento/Material:</strong> Todas as solicitações passam pelo Almoxarifado/Reserva de Armamento. Nenhum item sai sem aprovação e nenhum pendente é encerrado sem o recebimento oficial no retorno.</p>
+                            </div>
+                            <div className="flex gap-3">
+                                <Info className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
+                                <p><strong>Gestão de Frota:</strong> Gerencia o parque de Viaturas Automóveis (VT). Fornece o acompanhamento do fluxo de abastecimento, cotas financeiras mensais por veículo e ordens de manobra.</p>
                             </div>
                         </div>
                     </section>
 
-                    {/* Topic 6: Security */}
+                    {/* Security Footer */}
                     <section className="bg-slate-50 p-6 rounded-[1.5rem] border border-slate-100">
                         <h3 className="flex items-center gap-2 text-md font-black text-slate-900 mb-4">
                             <Shield className="w-5 h-5 text-slate-700" />
-                            Segurança de Acesso
+                            Diretrizes de Segurança do Usuário
                         </h3>
                         <div className="space-y-3 text-slate-600 text-xs font-bold uppercase tracking-wider">
                             <div className="flex items-center gap-2">
-                                <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Senha mínima de 8 caracteres
+                                <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Criptografia de Dados (End-to-End)
                             </div>
                             <div className="flex items-center gap-2">
-                                <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Acesso biométrico disponível no mobile
+                                <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Autenticação Biométrica e FIDO2/WebAuthn
                             </div>
                             <div className="flex items-center gap-2">
-                                <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Login único por dispositivo simultâneo
+                                <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Login único de sessão concorrente
                             </div>
                         </div>
                     </section>
@@ -160,7 +151,7 @@ export default function FAQModal({ onClose }: FAQModalProps) {
                 {/* Footer: Glassmorphism */}
                 <div className="p-5 border-t border-slate-100 bg-slate-50/80 backdrop-blur-xl flex justify-between items-center">
                     <div className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">
-                        Versão 1.2.0 — Guardião GSD-SP
+                        Versão 1.4.0 — Guardião GSD-SP
                     </div>
                     <button onClick={onClose} className="px-8 py-3 bg-slate-900 text-white font-black text-[11px] uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all shadow-lg active:scale-95">
                         Fechar Guia
