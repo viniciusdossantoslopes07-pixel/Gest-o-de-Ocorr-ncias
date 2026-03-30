@@ -106,6 +106,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     const [activeQuickDate, setActiveQuickDate] = useState<number | null | undefined>(null);
     const [searchFilterType, setSearchFilterType] = useState<'all' | 'Pedestre' | 'Veículo'>('all');
     const [searchFilterCategory, setSearchFilterCategory] = useState<'all' | 'Entrada' | 'Saída'>('all');
+    const [searchFilterCharacteristic, setSearchFilterCharacteristic] = useState<string>('all');
 
     const handleQuickDate = (days: number | null) => {
         setActiveQuickDate(days);
@@ -263,6 +264,11 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 query = query.eq('access_category', searchFilterCategory);
             }
 
+            // Apply Characteristic Filter
+            if (searchFilterCharacteristic !== 'all') {
+                query = query.eq('characteristic', searchFilterCharacteristic);
+            }
+
             const { data, error } = await query.limit(50);
 
             if (error) throw error;
@@ -287,7 +293,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
             }
         }, 800);
         return () => clearTimeout(timer);
-    }, [searchQuery, activeTab, searchStartDate, searchEndDate, searchFilterType, searchFilterCategory]);
+    }, [searchQuery, activeTab, searchStartDate, searchEndDate, searchFilterType, searchFilterCategory, searchFilterCharacteristic]);
 
     const handleSubmit = async () => {
         if (!selectedGate) {
@@ -1022,6 +1028,25 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                             }`}
                                     >
                                         {cat === 'all' ? 'Todos' : cat}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Characteristic Filter */}
+                        <div className={`flex gap-2 items-center p-2 rounded-xl border overflow-x-auto ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
+                            <span className={`text-[10px] font-black uppercase pl-2 whitespace-nowrap ${textMuted}`}>Característica:</span>
+                            <div className="flex gap-1">
+                                {(['all', 'CIVIL', 'MILITAR', 'PRESTADOR', 'ENTREGADOR'] as const).map(char => (
+                                    <button
+                                        key={char}
+                                        onClick={() => setSearchFilterCharacteristic(char)}
+                                        className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${searchFilterCharacteristic === char
+                                            ? 'bg-amber-600 text-white shadow-sm'
+                                            : (dk ? 'bg-slate-600 text-slate-300 hover:bg-slate-500 border border-slate-500' : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-200')
+                                            }`}
+                                    >
+                                        {char === 'all' ? 'Todos' : char}
                                     </button>
                                 ))}
                             </div>
