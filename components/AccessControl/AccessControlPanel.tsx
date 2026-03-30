@@ -107,6 +107,12 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     const [searchFilterType, setSearchFilterType] = useState<'all' | 'Pedestre' | 'Veículo'>('all');
     const [searchFilterCategory, setSearchFilterCategory] = useState<'all' | 'Entrada' | 'Saída'>('all');
     const [searchFilterCharacteristic, setSearchFilterCharacteristic] = useState<string>('all');
+    const [searchLimit, setSearchLimit] = useState(100);
+
+    // Reseta o limite se os filtros mudarem
+    useEffect(() => {
+        setSearchLimit(100);
+    }, [searchQuery, searchStartDate, searchEndDate, searchFilterType, searchFilterCategory, searchFilterCharacteristic]);
 
     const handleQuickDate = (days: number | null) => {
         setActiveQuickDate(days);
@@ -269,7 +275,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 query = query.eq('characteristic', searchFilterCharacteristic);
             }
 
-            const { data, error } = await query.limit(50);
+            const { data, error } = await query.limit(Math.min(searchLimit, 20000));
 
             if (error) throw error;
             setSearchResults(data || []);
@@ -293,7 +299,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
             }
         }, 800);
         return () => clearTimeout(timer);
-    }, [searchQuery, activeTab, searchStartDate, searchEndDate, searchFilterType, searchFilterCategory, searchFilterCharacteristic]);
+    }, [searchQuery, activeTab, searchStartDate, searchEndDate, searchFilterType, searchFilterCategory, searchFilterCharacteristic, searchLimit]);
 
     const handleSubmit = async () => {
         if (!selectedGate) {
@@ -1174,6 +1180,22 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                         </tbody>
                                     </table>
                                 </div>
+
+                                {searchResults.length >= searchLimit && searchLimit < 20000 && (
+                                    <div className={`p-4 flex justify-center border-t ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
+                                        <button
+                                            onClick={() => setSearchLimit(prev => prev + 500)}
+                                            disabled={loadingSearch}
+                                            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase transition-all shadow-sm flex items-center gap-2 ${dk ? 'bg-slate-700 text-blue-400 hover:bg-slate-600' : 'bg-slate-100 text-blue-600 hover:bg-slate-200'}`}
+                                        >
+                                            {loadingSearch ? (
+                                                <><RefreshCw className="w-4 h-4 animate-spin" /> Carregando...</>
+                                            ) : (
+                                                <><Database className="w-4 h-4" /> Carregar mais 500 registros</>
+                                            )}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )
                     }
