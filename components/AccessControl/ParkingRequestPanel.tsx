@@ -661,8 +661,13 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                     <Eye className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h2 className={`font-black text-lg tracking-tight leading-tight ${dk ? 'text-white' : 'text-slate-900'}`}>Análise de Solicitação</h2>
-                                    <p className={`text-[10px] font-bold uppercase ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Estacionamento BASP</p>
+                                    <h2 className={`font-black text-lg tracking-tight leading-tight flex items-center gap-3 ${dk ? 'text-white' : 'text-slate-900'}`}>
+                                        Análise de Solicitação
+                                        <span className={`px-2 py-0.5 rounded border text-[10px] uppercase font-black tracking-widest ${dk ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-500'}`}>
+                                            #{analysingRequest.numero_autorizacao?.toString().padStart(6, '0') || analysingRequest.id.substring(0, 8)}
+                                        </span>
+                                    </h2>
+                                    <p className={`text-[10px] font-bold uppercase mt-0.5 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Estacionamento BASP</p>
                                 </div>
                             </div>
                             <button onClick={() => setAnalysingRequest(null)} className={`p-2 rounded-full transition-colors ${dk ? 'text-slate-500 hover:text-white hover:bg-slate-800' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`}>
