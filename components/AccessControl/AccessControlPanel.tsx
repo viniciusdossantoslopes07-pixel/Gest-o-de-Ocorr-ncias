@@ -58,12 +58,12 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     const [historyGateFilter, setHistoryGateFilter] = useState('');
 
     // Form state
-    const [selectedGate, setSelectedGate] = useState('PORTÃO G1');
+    const [selectedGate, setSelectedGate] = useState('');
     const [name, setName] = useState('');
     const [characteristic, setCharacteristic] = useState('');
     const [identification, setIdentification] = useState('');
-    const [accessMode, setAccessMode] = useState<'Pedestre' | 'Veículo'>('Veículo');
-    const [accessCategory, setAccessCategory] = useState<'Entrada' | 'Saída'>('Entrada');
+    const [accessMode, setAccessMode] = useState<'Pedestre' | 'Veículo' | ''>('');
+    const [accessCategory, setAccessCategory] = useState<'Entrada' | 'Saída' | ''>('');
     const [vehicleModel, setVehicleModel] = useState('');
     const [vehiclePlate, setVehiclePlate] = useState('');
     const [authorizer, setAuthorizer] = useState('');
@@ -290,6 +290,21 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     }, [searchQuery, activeTab, searchStartDate, searchEndDate, searchFilterType, searchFilterCategory]);
 
     const handleSubmit = async () => {
+        if (!selectedGate) {
+            alert('Por favor, selecione o portão (G1, G2 ou G3).');
+            return;
+        }
+
+        if (!accessCategory) {
+            alert('Por favor, selecione se é Entrada ou Saída.');
+            return;
+        }
+
+        if (!accessMode) {
+            alert('Por favor, selecione se é Pedestre ou Veículo.');
+            return;
+        }
+
         if (!name.trim()) {
             alert('Informe o nome.');
             return;
@@ -531,13 +546,15 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 <div className="space-y-4 animate-fade-in">
                     {/* 1. Registration Card */}
                     <div className={`glass-panel border-t-4 ${selectedGate === 'PORTÃO G1' ? 'border-t-blue-500' :
-                        selectedGate === 'PORTÃO G2' ? 'border-t-emerald-500' : 'border-t-amber-500'
+                        selectedGate === 'PORTÃO G2' ? 'border-t-emerald-500' :
+                        selectedGate === 'PORTÃO G3' ? 'border-t-amber-500' : 'border-t-slate-300'
                         }`}>
                         {/* Header: Title + Gate Selectors */}
                         <div className={`p-3 border-b flex flex-wrap items-center justify-between gap-3 border-white/10 bg-black/10`}>
                             <div className="flex items-center gap-3">
                                 <div className={`p-2 rounded-lg ${selectedGate === 'PORTÃO G1' ? 'bg-blue-100 text-blue-600' :
-                                    selectedGate === 'PORTÃO G2' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
+                                    selectedGate === 'PORTÃO G2' ? 'bg-emerald-100 text-emerald-600' :
+                                    selectedGate === 'PORTÃO G3' ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-400'
                                     }`}>
                                     <DoorOpen className="w-5 h-5" />
                                 </div>
@@ -731,18 +748,19 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                             {/* Submit Button */}
                             <button
                                 onClick={handleSubmit}
-                                disabled={submitting || !name.trim()}
+                                disabled={submitting || !name.trim() || !selectedGate || !accessCategory || !accessMode}
                                 className={`w-full py-3.5 rounded-xl font-black uppercase text-sm tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg border-b-4 active:border-b-0 active:translate-y-1 ${accessCategory === 'Entrada'
                                     ? 'bg-emerald-500 text-white border-emerald-700 hover:bg-emerald-600'
-                                    : 'bg-red-500 text-white border-red-700 hover:bg-red-600'
+                                    : accessCategory === 'Saída' ? 'bg-red-500 text-white border-red-700 hover:bg-red-600'
+                                    : 'bg-slate-500 text-white border-slate-700 hover:bg-slate-600'
                                     } disabled:opacity-40 disabled:cursor-not-allowed disabled:border-none`}
                             >
                                 {submitting ? (
                                     <RefreshCw className="w-5 h-5 animate-spin" />
                                 ) : (
                                     <>
-                                        {accessCategory === 'Entrada' ? <ArrowDownToLine className="w-4 h-4" /> : <ArrowUpFromLine className="w-4 h-4" />}
-                                        CONFIRMAR {accessCategory === 'Entrada' ? 'ENTRADA' : 'SAÍDA'}
+                                        {accessCategory === 'Entrada' ? <ArrowDownToLine className="w-4 h-4" /> : accessCategory === 'Saída' ? <ArrowUpFromLine className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                                        CONFIRMAR {accessCategory === 'Entrada' ? 'ENTRADA' : accessCategory === 'Saída' ? 'SAÍDA' : 'REGISTRO'}
                                     </>
                                 )}
                             </button>
