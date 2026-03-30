@@ -102,13 +102,13 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
 
         const itemData = {
             material: formData.material,
-            tipo_de_material: formData.tipo_de_material,
-            setor: formData.setor,
-            endereco: formData.endereco,
-            entrada: formData.entrada,
-            saida: formData.saida,
-            qtdisponivel: disponivelCalc
+            tipo_de_material: formData.tipo_de_material || null,
+            setor: formData.setor || null,
+            endereco: formData.endereco || null,
+            entrada: formData.entrada || 0,
+            saida: formData.saida || 0,
         };
+
 
         try {
             if (editingItem) {
