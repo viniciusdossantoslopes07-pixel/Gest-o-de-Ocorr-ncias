@@ -10,7 +10,16 @@ interface EventFormProps {
     onSave: () => void;
 }
 
-const LOCATIONS = ['VL. Dos Graduados', 'VL dos Oficiais', 'Residencia do Morador', 'Clube de Suboficiais', 'Área de Lazer'];
+const LOCATIONS = [
+    'VL. OFICIAIS',
+    'VL. GRADUADOS',
+    'CLUBE OFICIAIS',
+    'CLUBE GRADUADOS',
+    'RESIDÊNCIA DO MORADOR',
+    'QUIOSQUE IV ETA',
+    'QUIOSQUE ILA',
+    'QUIOSQUE SEREP-SP'
+];
 
 export default function EventForm({ user, isDarkMode = false, onSave }: EventFormProps) {
     const dk = isDarkMode;
@@ -64,7 +73,7 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
 
     const handleSave = async () => {
         if (!location) return alert('Selecione um local.');
-        if (location === 'Residencia do Morador' && !address) return alert('O endereço é obrigatório para residências.');
+        if (location === 'RESIDÊNCIA DO MORADOR' && !address) return alert('O endereço é obrigatório para residências.');
         if (!responsibleName) return alert('O nome do responsável é obrigatório.');
         if (!date) return alert('Selecione a data do evento.');
         if (guests.length === 0) return alert('Adicione pelo menos um convidado.');
@@ -76,7 +85,7 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
             await eventService.createEvent({
                 name: eventName ? eventName.toUpperCase() : undefined,
                 location,
-                address: location === 'Residencia do Morador' ? address : undefined,
+                address: location === 'RESIDÊNCIA DO MORADOR' ? address : undefined,
                 responsible_name: responsibleName.toUpperCase(),
                 responsible_saram: responsibleSaram,
                 responsible_contact: responsibleContact,
@@ -218,7 +227,7 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
                                 />
                             </div>
 
-                            {location === 'Residencia do Morador' && (
+                            {location === 'RESIDÊNCIA DO MORADOR' && (
                                 <div className="animate-fade-in">
                                     <label className={labelClass}>Endereço / Quadra / Casa</label>
                                     <input
