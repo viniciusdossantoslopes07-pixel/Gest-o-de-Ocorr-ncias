@@ -52,7 +52,15 @@ const HomeView: React.FC<HomeViewProps> = ({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const defaultHomeOrder = ['DESTINOMETRO', 'MISSION_REQUEST', 'EVENTOS_2', 'Ocorrências de Emergência', 'Controle de Acesso e Credenciamento', 'Segurança Orgânica / Patrimonial', 'Segurança de Sistemas e Tecnologia', 'Veículos e Tráfego Interno', 'Pessoas e Conduta', 'Materiais e Logística'];
-  const [customOrder, setCustomOrder] = useState<string[]>(user.home_order || defaultHomeOrder);
+  
+  const getInitialOrder = () => {
+    if (!user.home_order) return defaultHomeOrder;
+    // Identifica quais itens padrão faltam na ordem salva pelo usuário
+    const missing = defaultHomeOrder.filter(item => !user.home_order!.includes(item));
+    return [...user.home_order, ...missing];
+  };
+  
+  const [customOrder, setCustomOrder] = useState<string[]>(getInitialOrder());
 
   // Lógica para Citação do Dia
   const today = new Date();
