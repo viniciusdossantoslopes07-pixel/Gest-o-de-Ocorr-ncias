@@ -109,8 +109,8 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
                                             <Users className="w-4 h-4" />
                                             {(ev.guests || []).length} convidado{(ev.guests || []).length !== 1 ? 's' : ''} cadastrado{(ev.guests || []).length !== 1 ? 's' : ''}
                                         </div>
-                                        <div className={`text-[9px] font-mono opacity-50 px-2 py-0.5 rounded border border-current`}>
-                                            ID: {ev.id.split('-')[0]}...
+                                        <div className={`text-[10px] font-mono font-black border border-current px-2 py-0.5 rounded shadow-sm opacity-80`}>
+                                            EVENTO #{ev.seq_id || ev.id.split('-')[0]}
                                         </div>
                                     </div>
                                 </div>
@@ -142,7 +142,7 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
                                 onClick={() => manageIdInput ? setView('manage') : alert('Insira um ID')}
                                 className="px-4 py-2 bg-slate-800 text-white dark:bg-slate-700 rounded-xl hover:bg-slate-700 font-bold text-[10px] uppercase transition-colors flex items-center justify-center"
                             >
-                                <Search className="w-4 h-4" />
+                                <Search className="w-4 h-4" /> BÚSCAR
                             </button>
                         </div>
                     </div>

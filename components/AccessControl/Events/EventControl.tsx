@@ -260,7 +260,12 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                                 {selectedEvent.responsible_contact ? `CTT: ${selectedEvent.responsible_contact}` : ''}
                             </p>
                         )}
-                        <p className={`text-[9px] mt-1 font-mono opacity-60 bg-slate-500/10 px-2 py-0.5 rounded w-fit ${dk ? 'text-blue-300' : 'text-blue-700'}`}>ID: {selectedEvent.id}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                            <p className={`text-[9px] font-mono font-black border border-current px-2 py-0.5 rounded shadow-sm opacity-80 ${dk ? 'text-blue-300' : 'text-blue-700'}`}>
+                                EVENTO #{selectedEvent.seq_id || selectedEvent.id.split('-')[0]}
+                            </p>
+                            <p className={`text-[8px] font-mono opacity-30`}>{selectedEvent.id}</p>
+                        </div>
                     </div>
                     <div>
                         <p className={`text-[10px] font-bold uppercase mb-0.5 ${tm}`}>Local</p>
@@ -448,7 +453,12 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                             )}
 
                             <div className="flex items-start justify-between mb-3">
-                                <Badge status={ev.status} />
+                                <div>
+                                    <Badge status={ev.status} />
+                                    <span className={`ml-2 text-[10px] font-mono font-black ${dk ? 'text-blue-400' : 'text-blue-600'}`}>
+                                        #{ev.seq_id || ev.id.split('-')[0]}
+                                    </span>
+                                </div>
                                 <span className={`flex items-center gap-1 text-[11px] font-bold uppercase ${tm}`}>
                                     <Calendar className="w-3.5 h-3.5" />
                                     {new Date(ev.date).toLocaleDateString('pt-BR')}

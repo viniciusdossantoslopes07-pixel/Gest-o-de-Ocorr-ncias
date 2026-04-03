@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../services/supabase';
 import { AccessEvent, EventGuest } from '../../../types';
-import { ArrowLeft, UserPlus, X, Car, Calendar, MapPin, Users, Printer } from 'lucide-react';
+import { ArrowLeft, UserPlus, X, Car, Calendar, MapPin, Users, Printer, Share2, CheckCircle } from 'lucide-react';
+import { eventService } from '../../../services/eventService';
 import EventPrintView from './EventPrintView';
 
 interface PublicEventManageViewProps {
@@ -22,16 +23,13 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
     const [cpf, setCpf] = useState('');
     const [hasVehicle, setHasVehicle] = useState(false);
     const [plate, setPlate] = useState('');
+    const [copied, setCopied] = useState(false);
 
     const fetchEvent = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('events')
-                .select('*, guests:event_guests(*)')
-                .eq('id', eventId)
-                .single();
-            if (error) throw error;
+            const data = await eventService.getEventByIdOrSeqId(eventId);
+            if (!data) throw new Error('Not found');
             setEvent(data);
         } catch (err) {
             console.error(err);
@@ -110,17 +108,30 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
                     <div>
                         <h2 className="font-black uppercase tracking-tight flex items-center gap-2">Gerenciar Evento</h2>
                         <div className="flex items-center gap-2">
-                             <p className={`text-[10px] font-bold uppercase tracking-widest ${textSub}`}>Painel de Controle do Evento</p>
-                             <span className="text-[10px] bg-slate-500/10 px-2 py-0.5 rounded font-mono font-bold text-blue-500">ID: {eventId}</span>
+                             <p className={`text-[10px] font-bold uppercase tracking-widest ${textSub}`}>Painel de Controle</p>
+                             <span className="text-[10px] bg-blue-500/10 px-2 py-0.5 rounded font-mono font-black text-blue-500 border border-blue-500/20">EVENTO #{event.seq_id || event.id.split('-')[0]}</span>
                         </div>
                     </div>
                 </div>
-                <button
-                    onClick={() => setIsPrinting(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-xs uppercase transition-colors"
-                >
-                    <Printer className="w-4 h-4" /> <span className="hidden sm:inline">Imprimir Resumo</span>
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => {
+                            const link = `${window.location.origin}?guestEvent=${event.id}`;
+                            navigator.clipboard.writeText(link);
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000);
+                        }}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all ${copied ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20'}`}
+                    >
+                        {copied ? <><CheckCircle className="w-4 h-4" /> Copiado!</> : <><Share2 className="w-4 h-4" /> Copiar Link</>}
+                    </button>
+                    <button
+                        onClick={() => setIsPrinting(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-xs uppercase transition-colors"
+                    >
+                        <Printer className="w-4 h-4" /> <span className="hidden sm:inline">Imprimir</span>
+                    </button>
+                </div>
             </div>
 
             <div className="overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar">

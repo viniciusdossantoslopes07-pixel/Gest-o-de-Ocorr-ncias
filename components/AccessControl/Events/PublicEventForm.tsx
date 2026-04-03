@@ -147,9 +147,9 @@ export default function PublicEventForm({ isDarkMode = false, onSubmit, onCancel
                     <Send className="w-8 h-8" />
                 </div>
                 <h2 className={`text-2xl font-black uppercase mb-2 ${textTitle}`}>Evento Reservado!</h2>
-                <p className={`text-sm mb-4 ${textSub}`}>Seu código de gerenciamento para consultas futuras é:</p>
-                <div className={`px-6 py-3 rounded-xl border bg-slate-900 border-slate-700 mb-8`}>
-                    <p className="text-blue-400 font-mono font-bold text-lg tracking-widest">{successEvent.id}</p>
+                <p className={`text-sm mb-4 ${textSub}`}>Seu código de gerenciamento (número do evento) é:</p>
+                <div className={`px-8 py-4 rounded-2xl border bg-slate-900 border-slate-700 mb-8 shadow-xl shadow-blue-500/10 transition-all hover:scale-105`}>
+                    <p className="text-blue-400 font-mono font-black text-4xl tracking-widest leading-none">{successEvent.seq_id || successEvent.id.split('-')[0]}</p>
                 </div>
 
                 <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">

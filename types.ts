@@ -298,6 +298,7 @@ export interface EventGuest {
 
 export interface AccessEvent {
   id: string;
+  seq_id?: number;
   name?: string;
   location: string;
   address?: string;

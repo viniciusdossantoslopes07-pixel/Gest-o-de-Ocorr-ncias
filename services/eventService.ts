@@ -140,5 +140,29 @@ export const eventService = {
             console.error('Erro ao adicionar convidado:', error);
             throw error;
         }
+    },
+
+    async getEventByIdOrSeqId(identifier: string): Promise<AccessEvent | null> {
+        const isNum = /^\d+$/.test(identifier);
+        let query = supabase
+            .from('events')
+            .select(`
+                *,
+                guests:event_guests(*)
+            `);
+
+        if (isNum) {
+            query = query.eq('seq_id', parseInt(identifier));
+        } else {
+            query = query.eq('id', identifier);
+        }
+
+        const { data, error } = await query.maybeSingle();
+
+        if (error) {
+            console.error('Erro ao buscar evento por ID/SeqId:', error);
+            throw error;
+        }
+        return data || null;
     }
 };
