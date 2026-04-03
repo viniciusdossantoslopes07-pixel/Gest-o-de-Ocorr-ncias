@@ -156,9 +156,11 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
     const Badge = ({ status }: { status: string }) => (
         <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${status === 'APPROVED'
             ? (dk ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-100 text-emerald-700')
-            : (dk ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-100 text-amber-700')
+            : status === 'FINALIZED'
+                ? (dk ? 'bg-slate-800 text-slate-500 border border-slate-700' : 'bg-slate-100 text-slate-500 border border-slate-200')
+                : (dk ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-100 text-amber-700')
         }`}>
-            {status === 'APPROVED' ? 'Aprovado' : 'Pendente (Cmd)'}
+            {status === 'APPROVED' ? 'Aprovado' : status === 'FINALIZED' ? 'Finalizado' : 'Pendente (Cmd)'}
         </span>
     );
 
@@ -187,21 +189,23 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                             </button>
                         )}
 
-                        {/* Share Link – todos veem */}
-                        <button
-                            onClick={() => copyLink(selectedEvent.id)}
-                            className={`px-4 py-2 rounded-xl text-xs font-black uppercase flex items-center gap-2 transition-all
-                            ${copyFeedback === selectedEvent.id
-                                ? 'bg-emerald-500 text-white'
-                                : (dk ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600/30' : 'bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100')}`}
-                        >
-                            {copyFeedback === selectedEvent.id
-                                ? <><CheckCircle className="w-4 h-4" /> Copiado!</>
-                                : <><Share2 className="w-4 h-4" /> Copiar Link</>}
-                        </button>
+                        {/* Share Link – todos veem, oculto se finalizado */}
+                        {selectedEvent.status !== 'FINALIZED' && (
+                            <button
+                                onClick={() => copyLink(selectedEvent.id)}
+                                className={`px-4 py-2 rounded-xl text-xs font-black uppercase flex items-center gap-2 transition-all
+                                ${copyFeedback === selectedEvent.id
+                                    ? 'bg-emerald-500 text-white'
+                                    : (dk ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600/30' : 'bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100')}`}
+                            >
+                                {copyFeedback === selectedEvent.id
+                                    ? <><CheckCircle className="w-4 h-4" /> Copiado!</>
+                                    : <><Share2 className="w-4 h-4" /> Copiar Link</>}
+                            </button>
+                        )}
 
-                        {/* Add guest – responsável ou admin */}
-                        {owned && (
+                        {/* Add guest – responsável ou admin, oculto se finalizado */}
+                        {owned && selectedEvent.status !== 'FINALIZED' && (
                             <button
                                 onClick={() => setShowAddGuest(v => !v)}
                                 className={`px-4 py-2 rounded-xl text-xs font-black uppercase flex items-center gap-2 transition-all
@@ -213,17 +217,35 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                             </button>
                         )}
 
-                        {/* Status toggle – admin only */}
-                        {admin && (
-                            <button
-                                onClick={() => handleStatusChange(selectedEvent)}
-                                className={`px-4 py-2 rounded-xl text-xs font-black uppercase transition-all border
-                                ${selectedEvent.status === 'APPROVED'
-                                    ? 'bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200'
-                                    : 'bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200'}`}
-                            >
-                                Transformar em {selectedEvent.status === 'APPROVED' ? 'Pendente' : 'Aprovado'}
-                            </button>
+                        {/* Status toggle – admin only, oculto se finalizado */}
+                        {admin && selectedEvent.status !== 'FINALIZED' && (
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => handleStatusChange(selectedEvent)}
+                                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase transition-all border
+                                    ${selectedEvent.status === 'APPROVED'
+                                        ? 'bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200'
+                                        : 'bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200'}`}
+                                >
+                                    Transformar em {selectedEvent.status === 'APPROVED' ? 'Pendente' : 'Aprovado'}
+                                </button>
+                                
+                                {selectedEvent.status === 'APPROVED' && (
+                                    <button
+                                        onClick={async () => {
+                                            if (!window.confirm('Finalizar este evento? Nenhuma alteração poderá ser feita após isso.')) return;
+                                            try {
+                                                await eventService.updateEventStatus(selectedEvent.id, 'FINALIZED');
+                                                setEvents(prev => prev.map(e => e.id === selectedEvent.id ? { ...e, status: 'FINALIZED' } : e));
+                                                setSelectedEvent(prev => prev?.id === selectedEvent.id ? { ...prev, status: 'FINALIZED' } : prev);
+                                            } catch { alert('Erro ao finalizar evento.'); }
+                                        }}
+                                        className="px-4 py-2 rounded-xl text-xs font-black uppercase bg-slate-900 text-white border border-slate-700 hover:bg-black transition-all"
+                                    >
+                                        Finalizar Evento
+                                    </button>
+                                )}
+                            </div>
                         )}
 
                         {/* Delete – admin only */}

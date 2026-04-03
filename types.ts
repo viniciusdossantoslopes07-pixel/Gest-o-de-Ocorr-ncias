@@ -305,7 +305,7 @@ export interface AccessEvent {
   responsible_name: string;
   responsible_saram?: string;
   responsible_contact?: string;
-  status: 'PENDING' | 'APPROVED';
+  status: 'PENDING' | 'APPROVED' | 'FINALIZED';
   date: string;
   created_at?: string;
   registered_by?: string;

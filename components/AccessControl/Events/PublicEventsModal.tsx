@@ -105,9 +105,18 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
                                     </div>
 
                                     <div className={`flex items-center justify-between gap-1.5 text-xs font-bold ${dk ? 'text-blue-400' : 'text-blue-600'}`}>
-                                        <div className="flex items-center gap-1.5">
-                                            <Users className="w-4 h-4" />
-                                            {(ev.guests || []).length} convidado{(ev.guests || []).length !== 1 ? 's' : ''} cadastrado{(ev.guests || []).length !== 1 ? 's' : ''}
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-1.5">
+                                                <Users className="w-4 h-4" />
+                                                {(ev.guests || []).length}
+                                            </div>
+                                            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
+                                                ev.status === 'APPROVED' ? (dk ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-50 text-emerald-600') :
+                                                ev.status === 'FINALIZED' ? (dk ? 'bg-slate-700/60 text-slate-400' : 'bg-slate-100 text-slate-500') :
+                                                (dk ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-50 text-amber-600')
+                                            }`}>
+                                                {ev.status === 'APPROVED' ? 'Aprovado' : ev.status === 'FINALIZED' ? 'Finalizado' : 'Cmd'}
+                                            </span>
                                         </div>
                                         <div className={`text-[10px] font-mono font-black border border-current px-2 py-0.5 rounded shadow-sm opacity-80`}>
                                             EVENTO #{ev.seq_id || ev.id.split('-')[0]}

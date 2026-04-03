@@ -114,17 +114,19 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => {
-                            const link = `${window.location.origin}?guestEvent=${event.id}`;
-                            navigator.clipboard.writeText(link);
-                            setCopied(true);
-                            setTimeout(() => setCopied(false), 2000);
-                        }}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all ${copied ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20'}`}
-                    >
-                        {copied ? <><CheckCircle className="w-4 h-4" /> Copiado!</> : <><Share2 className="w-4 h-4" /> Copiar Link</>}
-                    </button>
+                    {event.status !== 'FINALIZED' && (
+                        <button
+                            onClick={() => {
+                                const link = `${window.location.origin}?guestEvent=${event.id}`;
+                                navigator.clipboard.writeText(link);
+                                setCopied(true);
+                                setTimeout(() => setCopied(false), 2000);
+                            }}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all ${copied ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20'}`}
+                        >
+                            {copied ? <><CheckCircle className="w-4 h-4" /> Copiado!</> : <><Share2 className="w-4 h-4" /> Copiar Link</>}
+                        </button>
+                    )}
                     <button
                         onClick={() => setIsPrinting(true)}
                         className="flex items-center gap-2 px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-xs uppercase transition-colors"
@@ -163,11 +165,12 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
                     </div>
                 </div>
 
-                <div className={`p-4 rounded-2xl border ${dk ? 'border-slate-700' : 'border-slate-200'}`}>
-                    <h4 className="font-bold uppercase tracking-tight mb-4 flex items-center gap-2">
-                        <Users className="w-4 h-4 text-emerald-500" /> Adicionar Coviadado
-                    </h4>
-                    <form onSubmit={handleAddGuest} className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end mb-6">
+                {event.status !== 'FINALIZED' && (
+                    <div className={`p-4 rounded-2xl border mb-6 ${dk ? 'border-slate-700' : 'border-slate-200'}`}>
+                        <h4 className="font-bold uppercase tracking-tight mb-4 flex items-center gap-2">
+                            <Users className="w-4 h-4 text-emerald-500" /> Adicionar Convidado
+                        </h4>
+                        <form onSubmit={handleAddGuest} className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end mb-6">
                         <div className="sm:col-span-4 space-y-1.5">
                             <label className={`text-[10px] font-bold uppercase tracking-widest pl-1 ${textSub}`}>Nome *</label>
                             <input required className={`w-full rounded-xl p-2.5 text-xs font-bold uppercase border focus:ring-2 focus:outline-none transition-all ${inputCls}`} value={name} onChange={e=>setName(e.target.value)} />
@@ -191,9 +194,14 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
                                 <UserPlus className="w-5 h-5" />
                             </button>
                         </div>
-                    </form>
+                        </form>
+                    </div>
+                )}
 
-                    <div className="border rounded-xl overflow-hidden mt-4">
+                <div className={`p-4 rounded-2xl border ${dk ? 'border-slate-700' : 'border-slate-200'}`}>
+                    <h4 className="font-bold uppercase tracking-tight mb-4 flex items-center gap-2">
+                        <Users className="w-4 h-4 text-blue-500" /> Lista de Convidados
+                    </h4>
                         <table className="w-full text-left">
                             <thead>
                                 <tr className={`${sectionBg} border-b text-[10px] uppercase tracking-widest ${textSub} ${dk ? 'border-slate-700' : 'border-slate-200'}`}>
@@ -208,15 +216,16 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
                                         <td className="p-3">{g.name}</td>
                                         <td className="p-3">{g.has_vehicle ? <span className="text-orange-500 font-bold flex items-center gap-1"><Car className="w-3 h-3" /> {g.vehicle_plate || 'SIM'}</span> : '-'}</td>
                                         <td className="p-3 text-center">
-                                            <button onClick={() => handleRemoveGuest(g.id)} className="p-1.5 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors">
-                                                <X className="w-4 h-4" />
-                                            </button>
+                                            {event.status !== 'FINALIZED' && (
+                                                <button onClick={() => handleRemoveGuest(g.id)} className="p-1.5 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors">
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
-                    </div>
                 </div>
             </div>
 
