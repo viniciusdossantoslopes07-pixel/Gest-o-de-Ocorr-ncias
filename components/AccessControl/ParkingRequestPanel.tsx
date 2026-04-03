@@ -9,6 +9,7 @@ import {
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas-pro';
 import { notificationService } from '../../services/notificationService';
+import { hasPermission, PERMISSIONS } from '../../constants/permissions';
 import ParkingStatistics from './ParkingStatistics';
 
 interface ParkingVehicle {
@@ -81,16 +82,17 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
     const printDocRef = useRef<HTMLDivElement>(null);
 
     const isAdmin = user?.role === 'Gestor Master / OSD' || user?.role === 'Comandante OM' || (user?.sector && user.sector.includes('SOP'));
+    const canViewAllParking = isAdmin || hasPermission(user, PERMISSIONS.VIEW_ACCESS_PARKING);
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             await fetchMyRequests();
-            if (isAdmin) await fetchAllRequests();
+            if (canViewAllParking) await fetchAllRequests();
             setLoading(false);
         };
         fetchData();
-    }, []);
+    }, [canViewAllParking]);
 
     // Fechar modais com Escape
     useEffect(() => {
@@ -122,7 +124,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
     const vagasOcupadas = (() => {
         const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
-        return (isAdmin ? allRequests : requests).filter(r =>
+        return (canViewAllParking ? allRequests : requests).filter(r =>
             r.status === 'Aprovado' && r.inicio <= today && r.termino > today
         ).length;
     })();
@@ -339,7 +341,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
     const tabs = [
         { id: 'gerenciar' as const, label: 'Gerenciar Solicitações', icon: List },
-        { id: 'estatisticas' as const, label: 'Estatísticas', icon: BarChart3 },
+        ...(canViewAllParking ? [{ id: 'estatisticas' as const, label: 'Estatísticas', icon: BarChart3 }] : []),
     ];
 
     if (loading) return <div className="text-center py-12 text-slate-400">Carregando solicitações...</div>;
@@ -452,7 +454,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                             <List className={`w-4 h-4 ${dk ? 'text-slate-400' : 'text-slate-500'}`} />
                         </div>
                         <h3 className={`text-base font-black uppercase tracking-[0.15em] ${dk ? 'text-white' : 'text-slate-800'}`}>
-                            {isAdmin ? 'Todas as Solicitações' : 'Minhas Solicitações'}
+                            {canViewAllParking ? 'Todas as Solicitações' : 'Minhas Solicitações'}
                         </h3>
                     </div>
 
@@ -480,17 +482,17 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                     </div>
                     {searchQuery && (
                         <p className={`text-[10px] sm:text-xs font-black uppercase tracking-widest pl-2 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>
-                            {(isAdmin ? filteredAllRequests.filter(r => r.status !== 'Pendente') : filteredRequests).length} resultado(s) encontrado(s)
+                            {(canViewAllParking ? filteredAllRequests.filter(r => r.status !== 'Pendente') : filteredRequests).length} resultado(s) encontrado(s)
                         </p>
                     )}
 
-                    {!isAdmin && (
+                    {!canViewAllParking && (
                         <div className={`mt-2 border rounded-xl p-3 text-xs font-bold text-center flex items-center justify-center gap-2 ${dk ? 'bg-blue-900/20 border-blue-800/30 text-blue-300' : 'bg-blue-50 border-blue-200 text-blue-700'}`}>
                             <Info className="w-4 h-4" /> Para realizar novas solicitações, utilize a tela inicial do sistema.
                         </div>
                     )}
                     
-                    {(isAdmin ? filteredAllRequests.filter(r => r.status !== 'Pendente') : filteredRequests).length === 0 && (
+                    {(canViewAllParking ? filteredAllRequests.filter(r => r.status !== 'Pendente') : filteredRequests).length === 0 && (
                         <div className={`text-center py-10 rounded-[2rem] border border-dashed ${dk ? 'bg-slate-900/30 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                             <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 ${dk ? 'bg-slate-800 text-slate-500' : 'bg-white text-slate-300 shadow-sm'}`}>
                                 <Search className="w-6 h-6" />
@@ -502,7 +504,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                     )}
 
                     <div className="flex flex-col gap-4 mt-6">
-                        {(isAdmin ? filteredAllRequests.filter(r => r.status !== 'Pendente') : filteredRequests).map(req => {
+                        {(canViewAllParking ? filteredAllRequests.filter(r => r.status !== 'Pendente') : filteredRequests).map(req => {
                             const vName = req.vehicle?.marca_modelo || req.ext_marca_modelo || '—';
                             const vPlate = req.vehicle?.placa || req.ext_placa || '';
                             const isSending = sendingEmailId === req.id;

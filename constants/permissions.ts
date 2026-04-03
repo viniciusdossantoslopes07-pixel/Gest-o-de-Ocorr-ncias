@@ -25,6 +25,7 @@ export const PERMISSIONS = {
 
     // Controle de Acesso
     MANAGE_ACCESS_CONTROL: 'manage_access_control',
+    VIEW_ACCESS_PARKING: 'view_access_parking',
 
     // Admin
     MANAGE_USERS: 'manage_users', // Criar usuários, atribuir funções
