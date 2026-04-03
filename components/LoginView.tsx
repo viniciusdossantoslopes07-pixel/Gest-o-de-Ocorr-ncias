@@ -377,7 +377,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                     onClick={onViewEvents}
                     className={`w-full ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'} py-3 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 transition-all`}
                   >
-                    <span>📅</span> Ver Eventos Programados
+                    <span>📅</span> PROGRAMAR EVENTO
                   </button>
                 )}
 

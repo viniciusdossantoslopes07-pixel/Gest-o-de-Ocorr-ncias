@@ -47,6 +47,8 @@ export default function PublicEventForm({ isDarkMode = false, onSubmit, onCancel
     const [guestPlate, setGuestPlate] = useState('');
     
     const [submitting, setSubmitting] = useState(false);
+    const [successEvent, setSuccessEvent] = useState<AccessEvent | null>(null);
+    const [copiedLink, setCopiedLink] = useState('');
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let value = e.target.value.replace(/\D/g, '');
@@ -81,7 +83,7 @@ export default function PublicEventForm({ isDarkMode = false, onSubmit, onCancel
         const calculatedStatus = guests.length < 20 ? 'APPROVED' : 'PENDING';
         setSubmitting(true);
         try {
-            await eventService.createEvent({
+            const created = await eventService.createEvent({
                 name: eventName ? eventName.toUpperCase() : undefined,
                 location,
                 address: location === 'RESIDÊNCIA DO MORADOR' ? address : undefined,
@@ -92,8 +94,7 @@ export default function PublicEventForm({ isDarkMode = false, onSubmit, onCancel
                 status: calculatedStatus,
                 registered_by: null as any // Público
             }, guests);
-            alert(`Evento registrado! Status: ${calculatedStatus === 'APPROVED' ? 'Aprovado' : 'Requer Aprovação do Comando'}`);
-            onSubmit();
+            setSuccessEvent(created);
         } catch (err: any) {
             alert('Erro ao registrar evento. Verifique sua conexão.');
             console.error(err);
@@ -102,9 +103,63 @@ export default function PublicEventForm({ isDarkMode = false, onSubmit, onCancel
         }
     };
 
+    const handleCopy = (text: string, type: string) => {
+        navigator.clipboard.writeText(text);
+        setCopiedLink(type);
+        setTimeout(() => setCopiedLink(''), 2000);
+    };
+
     const today = new Date();
     const offset = today.getTimezoneOffset() * 60000;
     const localDateStr = new Date(today.getTime() - offset).toISOString().split('T')[0];
+
+    if (successEvent) {
+        const guestLink = `${window.location.origin}?guestEvent=${successEvent.id}`;
+        
+        return (
+            <div className={`${cardBg} w-full h-full sm:h-auto sm:rounded-2xl shadow-2xl border overflow-hidden sm:max-h-[90vh] flex flex-col p-6 sm:p-10 items-center justify-center text-center animate-in zoom-in-95`}>
+                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
+                    <Send className="w-8 h-8" />
+                </div>
+                <h2 className={`text-2xl font-black uppercase mb-2 ${textTitle}`}>Evento Registrado!</h2>
+                <p className={`text-sm mb-8 ${textSub}`}>
+                    {successEvent.status === 'APPROVED' ? 
+                        'Seu evento foi pré-aprovado pelo sistema.' : 
+                        'Seu evento requer aprovação do comando e entrará em análise.'}
+                </p>
+
+                <div className="w-full space-y-4 max-w-md">
+                    <div className={`p-4 rounded-xl border text-left ${sectionBg}`}>
+                        <label className={`text-[10px] font-bold ${textSub} uppercase tracking-widest`}>Seu ID de Gerenciamento</label>
+                        <p className={`text-xs mt-1 mb-2 leading-relaxed ${textTitle}`}>Copie e guarde este código. Você precisará dele para acessar, adicionar mais convidados ou imprimir a lista do seu evento.</p>
+                        <div className="flex gap-2">
+                            <input readOnly value={successEvent.id} className={`flex-1 rounded-lg p-2 font-mono text-xs ${inputBg}`} />
+                            <button onClick={() => handleCopy(successEvent.id, 'id')} className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold text-[10px] uppercase">
+                                {copiedLink === 'id' ? 'Copiado!' : 'Copiar'}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className={`p-4 rounded-xl border text-left ${sectionBg}`}>
+                        <label className={`text-[10px] font-bold ${textSub} uppercase tracking-widest`}>Link para Convidados</label>
+                        <p className={`text-xs mt-1 mb-2 leading-relaxed ${textTitle}`}>Compartilhe este link com seus convidados para que eles mesmos preencham seus dados.</p>
+                        <div className="flex gap-2">
+                            <input readOnly value={guestLink} className={`flex-1 rounded-lg p-2 font-mono text-xs ${inputBg}`} />
+                            <button onClick={() => handleCopy(guestLink, 'link')} className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold text-[10px] uppercase">
+                                {copiedLink === 'link' ? 'Copiado!' : 'Copiar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-8 w-full max-w-md">
+                    <button onClick={onSubmit} className="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase text-xs hover:bg-blue-700 transition">
+                        Concluir e Voltar
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <form onSubmit={handleSubmit} className={`${cardBg} w-full h-full sm:h-auto sm:rounded-2xl shadow-2xl border overflow-hidden sm:max-h-[90vh] flex flex-col`}>

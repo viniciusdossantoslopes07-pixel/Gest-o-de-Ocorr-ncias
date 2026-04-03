@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { AccessEvent } from '../../../types';
 import { eventService } from '../../../services/eventService';
-import { Calendar, MapPin, Users, X, RefreshCw, Send, Plus } from 'lucide-react';
+import { Calendar, MapPin, Users, X, RefreshCw, Send, Plus, Search } from 'lucide-react';
 import PublicEventForm from './PublicEventForm';
+import PublicEventManageView from './PublicEventManageView';
 
 interface PublicEventsModalProps {
     onClose: () => void;
@@ -13,8 +14,9 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
     const dk = isDarkMode;
     const [events, setEvents] = useState<AccessEvent[]>([]);
     const [loading, setLoading] = useState(true);
-    const [view, setView] = useState<'list' | 'form'>('list');
+    const [view, setView] = useState<'list' | 'form' | 'manage'>('list');
     const [refreshKey, setRefreshKey] = useState(0);
+    const [manageIdInput, setManageIdInput] = useState('');
 
     useEffect(() => {
         setLoading(true);
@@ -33,7 +35,11 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
             className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
             onClick={e => { if (e.target === e.currentTarget && view === 'list') onClose(); }}
         >
-            {view === 'form' ? (
+            {view === 'manage' ? (
+                <div className="w-full max-w-3xl h-full sm:h-auto animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:fade-in duration-300">
+                    <PublicEventManageView eventId={manageIdInput} isDarkMode={dk} onBack={() => { setView('list'); setRefreshKey(k=>k+1); }} />
+                </div>
+            ) : view === 'form' ? (
                 <div className="w-full max-w-3xl h-full sm:h-auto animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:fade-in duration-300">
                     <PublicEventForm
                         isDarkMode={dk}
@@ -108,8 +114,8 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
                     )}
                 </div>
 
-                {/* Footer with Solicitar Button */}
-                <div className={`px-5 py-5 border-t flex flex-col items-center gap-3 ${dk ? 'bg-slate-900/80 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                {/* Footer with Solicitar Button and Manage Input */}
+                <div className={`px-5 py-5 border-t flex flex-col items-center gap-4 ${dk ? 'bg-slate-900/80 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
                     <button
                         type="button"
                         onClick={() => setView('form')}
@@ -117,8 +123,27 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
                     >
                         <Plus className="w-5 h-5" /> SOLICITAR NOVO EVENTO
                     </button>
-                    <p className={`text-[10px] font-bold uppercase ${tm}`}>
-                        Administrador: acesse o sistema para aprovar/gerenciar eventos.
+                    
+                    <div className={`w-full p-4 rounded-2xl border flex flex-col gap-2 ${dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                        <label className={`text-[10px] font-bold uppercase tracking-widest ${tm}`}>Já tem um código de gerenciamento?</label>
+                        <div className="flex gap-2">
+                            <input 
+                                placeholder="Insira o ID do seu Evento"
+                                className={`flex-1 rounded-xl p-3 text-xs font-mono border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${dk ? 'bg-slate-900 border-slate-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-700'}`}
+                                value={manageIdInput}
+                                onChange={e => setManageIdInput(e.target.value.trim())}
+                            />
+                            <button 
+                                onClick={() => manageIdInput ? setView('manage') : alert('Insira um ID')}
+                                className="px-4 py-2 bg-slate-800 text-white dark:bg-slate-700 rounded-xl hover:bg-slate-700 font-bold text-[10px] uppercase transition-colors flex items-center justify-center"
+                            >
+                                <Search className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+
+                    <p className={`text-[10px] font-bold uppercase mt-2 ${tm}`}>
+                        Administrador logado gerencia eventos pelo painel principal.
                     </p>
                 </div>
             </div>
