@@ -51,6 +51,8 @@ const EventControl = lazy(() => import('./components/AccessControl/Events/EventC
 const Destinometro = lazy(() => import('./components/Destinometro'));
 const FAQModal = lazy(() => import('./components/FAQModal'));
 const SuggestionsModal = lazy(() => import('./components/SuggestionsModal'));
+const GuestRegistrationView = lazy(() => import('./components/AccessControl/Events/GuestRegistrationView'));
+const UserEventControl = lazy(() => import('./components/AccessControl/Events/UserEventControl'));
 
 // Fallback de carregamento para Suspense
 const LazyFallback = () => (
@@ -102,7 +104,7 @@ const App: FC = () => {
   });
   const [users, setUsers] = useState<User[]>([]);
   // Added 'settings' to activeTab type
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'access-control' | 'access-statistics' | 'parking-request' | 'events'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user'>('home');
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [attendanceHistory, setAttendanceHistory] = useState<DailyAttendance[]>([]);
   const [absenceJustifications, setAbsenceJustifications] = useState<AbsenceJustification[]>([]);
@@ -1126,6 +1128,19 @@ const App: FC = () => {
     }
   }
 
+  // Public Guest Registration interception
+  const guestEventId = new URLSearchParams(window.location.search).get('guestEvent');
+  if (guestEventId) {
+    return (
+      <Suspense fallback={<LazyFallback />}>
+          <GuestRegistrationView 
+              eventId={guestEventId} 
+              onComplete={() => window.location.href = window.location.pathname} 
+          />
+      </Suspense>
+    );
+  }
+
   if (!currentUser) {
     return (
       <LoginView
@@ -1585,6 +1600,10 @@ const App: FC = () => {
 
           {activeTab === 'events' && canViewAccessControl && currentUser && (
             <EventControl user={currentUser} isDarkMode={isDarkMode} />
+          )}
+
+          {activeTab === 'events-user' && currentUser && (
+            <UserEventControl user={currentUser} isDarkMode={isDarkMode} />
           )}
 
           {/* Legacy Profile tab mapped to Settings for now, or kept separate if needed. 

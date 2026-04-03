@@ -14,7 +14,7 @@ interface SideMenuProps {
     isOpen: boolean;
     onClose: () => void;
     activeTab: string;
-    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'material-statistics' | 'personnel-center' | 'daily-attendance' | 'personnel-management' | 'force-map' | 'access-control' | 'access-statistics' | 'parking-request' | 'events'>>;
+    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user'>>;
     currentUser: User;
     onLogout: () => void;
     onToggleTheme: () => void;

@@ -91,5 +91,54 @@ export const eventService = {
             console.error('Erro ao deletar o evento:', error);
             throw error;
         }
+    },
+
+    async getUserEvents(userId: string): Promise<AccessEvent[]> {
+        const { data, error } = await supabase
+            .from('events')
+            .select(`
+        *,
+        guests:event_guests(*)
+      `)
+            .eq('registered_by', userId)
+            .order('date', { ascending: false });
+
+        if (error) {
+            console.error('Erro ao buscar eventos do usuário:', error);
+            throw error;
+        }
+        return data || [];
+    },
+
+    async getEventById(eventId: string): Promise<AccessEvent | null> {
+        const { data, error } = await supabase
+            .from('events')
+            .select(`
+                *,
+                guests:event_guests(*)
+            `)
+            .eq('id', eventId)
+            .single();
+
+        if (error) {
+            console.error('Erro ao buscar evento por ID:', error);
+            return null;
+        }
+        return data;
+    },
+
+    async addGuestToEvent(eventId: string, guestData: Partial<EventGuest>): Promise<void> {
+        const guestToInsert = {
+            ...guestData,
+            event_id: eventId
+        };
+        const { error } = await supabase
+            .from('event_guests')
+            .insert([guestToInsert]);
+
+        if (error) {
+            console.error('Erro ao adicionar convidado:', error);
+            throw error;
+        }
     }
 };

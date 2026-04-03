@@ -51,7 +51,7 @@ const HomeView: React.FC<HomeViewProps> = ({
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const defaultHomeOrder = ['DESTINOMETRO', 'MISSION_REQUEST', 'Ocorrências de Emergência', 'Controle de Acesso e Credenciamento', 'Segurança Orgânica / Patrimonial', 'Segurança de Sistemas e Tecnologia', 'Veículos e Tráfego Interno', 'Pessoas e Conduta', 'Materiais e Logística'];
+  const defaultHomeOrder = ['DESTINOMETRO', 'MISSION_REQUEST', 'EVENTOS_2', 'Ocorrências de Emergência', 'Controle de Acesso e Credenciamento', 'Segurança Orgânica / Patrimonial', 'Segurança de Sistemas e Tecnologia', 'Veículos e Tráfego Interno', 'Pessoas e Conduta', 'Materiais e Logística'];
   const [customOrder, setCustomOrder] = useState<string[]>(user.home_order || defaultHomeOrder);
 
   // Lógica para Citação do Dia
@@ -96,6 +96,7 @@ const HomeView: React.FC<HomeViewProps> = ({
     const actions: any[] = [
       { id: 'DESTINOMETRO', title: 'Destinômetro', icon: <MapPin className="w-8 h-8" />, color: isDarkMode ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-emerald-50 border-emerald-100 text-emerald-700', glow: 'bg-emerald-500' },
       { id: 'MISSION_REQUEST', title: 'Missão', icon: <ShieldAlert className="w-8 h-8" />, color: isDarkMode ? 'bg-slate-800/50 border-slate-700 text-blue-400' : 'bg-slate-50 border-slate-200 text-slate-700', glow: 'bg-blue-500' },
+      { id: 'EVENTOS_2', title: 'Solicitar Evento', icon: <Users className="w-8 h-8" />, color: isDarkMode ? 'bg-pink-500/10 border-pink-500/20 text-pink-400' : 'bg-pink-50 border-pink-100 text-pink-600', glow: 'bg-pink-500' },
       { id: 'Ocorrências de Emergência', title: 'Emergências', icon: <Zap className="w-8 h-8" />, color: isDarkMode ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-red-50 border-red-100 text-red-600', glow: 'bg-red-500' },
       { id: 'Controle de Acesso e Credenciamento', title: 'Acesso', icon: <Lock className="w-8 h-8" />, color: isDarkMode ? 'bg-orange-500/10 border-orange-500/20 text-orange-400' : 'bg-orange-50 border-orange-100 text-orange-600', glow: 'bg-orange-500' },
       { id: 'Segurança Orgânica / Patrimonial', title: 'Patrimonial', icon: <Shield className="w-8 h-8" />, color: isDarkMode ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-blue-50 border-blue-100 text-blue-700', glow: 'bg-blue-600' },
@@ -196,6 +197,7 @@ const HomeView: React.FC<HomeViewProps> = ({
                     if (isEditMode) return;
                     if (action.id === 'DESTINOMETRO') return onOpenDestinometro();
                     if (action.id === 'MISSION_REQUEST' && onRequestMission) return onRequestMission();
+                    if (action.id === 'EVENTOS_2') return onNewOccurrence('EVENTOS_2');
                     onNewOccurrence(action.id);
                   }}
                   className={`w-full h-full flex flex-col items-center justify-center p-4 lg:p-7 rounded-[1.5rem] lg:rounded-[2.5rem] shadow-xl border transition-all relative overflow-hidden active:scale-95 ${isEditMode ? 'cursor-default opacity-80' : 'group hover:shadow-2xl hover:-translate-y-1.5'} ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 backdrop-blur-md hover:border-blue-500/50 shadow-black/40' : 'bg-white border-slate-100 hover:shadow-blue-500/10'}`}
