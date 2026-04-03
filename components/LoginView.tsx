@@ -12,12 +12,13 @@ interface LoginViewProps {
   onLogin: (username: string, password: string) => Promise<boolean | string> | boolean | string;
   onRegister: (user: User) => Promise<boolean> | boolean;
   onPublicAccess: () => void;
+  onViewEvents?: () => void;
   onRequestPasswordReset?: (saram: string) => Promise<boolean>;
   onForcePasswordReset?: (username: string, newPassword: string) => Promise<boolean>;
   isDarkMode?: boolean;
 }
 
-const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, onRequestPasswordReset, onForcePasswordReset, isDarkMode }) => {
+const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, onViewEvents, onRequestPasswordReset, onForcePasswordReset, isDarkMode }) => {
   const { sectorNames } = useSectors();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -369,6 +370,16 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                 >
                   <Car className="w-4 h-4" /> Solicitar Estacionamento
                 </button>
+
+                {onViewEvents && (
+                  <button
+                    type="button"
+                    onClick={onViewEvents}
+                    className={`w-full ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'} py-3 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 transition-all`}
+                  >
+                    <span>📅</span> Ver Eventos Programados
+                  </button>
+                )}
 
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center" aria-hidden="true">

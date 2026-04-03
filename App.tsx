@@ -8,6 +8,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { Occurrence, User, UserRole, Status, Urgency, MissionOrder, Mission, DailyAttendance, AbsenceJustification, UserFunction } from './types';
+import PublicEventsModal from './components/AccessControl/Events/PublicEventsModal';
 import { USER_FUNCTIONS, PERMISSIONS, hasPermission } from './constants/permissions';
 import { formatViaturas } from './utils/formatters';
 import {
@@ -53,6 +54,7 @@ const FAQModal = lazy(() => import('./components/FAQModal'));
 const SuggestionsModal = lazy(() => import('./components/SuggestionsModal'));
 const GuestRegistrationView = lazy(() => import('./components/AccessControl/Events/GuestRegistrationView'));
 const UserEventControl = lazy(() => import('./components/AccessControl/Events/UserEventControl'));
+
 
 // Fallback de carregamento para Suspense
 const LazyFallback = () => (
@@ -126,6 +128,7 @@ const App: FC = () => {
   const [showFAQ, setShowFAQ] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showDestinometro, setShowDestinometro] = useState(false);
+  const [showPublicEvents, setShowPublicEvents] = useState(false);
 
   // Theme State
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -1143,14 +1146,18 @@ const App: FC = () => {
 
   if (!currentUser) {
     return (
-      <LoginView
-        onLogin={handleLogin}
-        onRegister={handleRegister}
-        onPublicAccess={handlePublicAccess}
-        onRequestPasswordReset={onRequestPasswordReset}
-        onForcePasswordReset={handleForcePasswordReset}
-        isDarkMode={isDarkMode}
-      />
+      <>
+        <LoginView
+          onLogin={handleLogin}
+          onRegister={handleRegister}
+          onPublicAccess={handlePublicAccess}
+          onViewEvents={() => setShowPublicEvents(true)}
+          onRequestPasswordReset={onRequestPasswordReset}
+          onForcePasswordReset={handleForcePasswordReset}
+          isDarkMode={isDarkMode}
+        />
+        {showPublicEvents && <PublicEventsModal onClose={() => setShowPublicEvents(false)} isDarkMode={isDarkMode} />}
+      </>
     );
   }
 

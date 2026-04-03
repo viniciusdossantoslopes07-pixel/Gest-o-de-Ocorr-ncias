@@ -54,17 +54,20 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
     const [addGuestError, setAddGuestError] = useState('');
     const [guestSearch, setGuestSearch] = useState('');
 
+    /* ─── permission helpers ─── */
+    const isOwner = (ev: AccessEvent) => ev.registered_by === user.id;
+    const canManage = (ev: AccessEvent) => admin || isOwner(ev);
+
     /* ─── fetch ─── */
     useEffect(() => {
         if (activeView === 'list') fetchEvents();
-    }, [activeView, viewMode, user.id]);
+    }, [activeView, viewMode]);
 
     const fetchEvents = async () => {
         setLoading(true);
         try {
-            const data = admin
-                ? await eventService.getEvents(viewMode)
-                : await eventService.getUserEvents(user.id);
+            // Todos os usuários veem TODOS os eventos (upcoming por padrão)
+            const data = await eventService.getEvents(viewMode);
             setEvents(data);
             if (selectedEvent) {
                 const up = data.find(e => e.id === selectedEvent.id);
@@ -161,6 +164,7 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
 
     /* ══════════════════════════ DETAIL VIEW ══════════════════════════ */
     if (selectedEvent) {
+        const owned = canManage(selectedEvent);
         return (
             <div className={`p-4 md:p-5 rounded-2xl border ${card} animate-fade-in`}>
                 {/* Top action bar */}
@@ -173,13 +177,15 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                     </button>
 
                     <div className="flex flex-wrap gap-2">
-                        {/* Print – todos veem */}
-                        <button
-                            onClick={() => setIsPrinting(true)}
-                            className={`px-4 py-2 rounded-xl text-xs font-black uppercase flex items-center gap-2 transition-all ${dk ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}
-                        >
-                            <Printer className="w-4 h-4" /> Imprimir Relação
-                        </button>
+                        {/* Print – responsável e admin */}
+                        {owned && (
+                            <button
+                                onClick={() => setIsPrinting(true)}
+                                className={`px-4 py-2 rounded-xl text-xs font-black uppercase flex items-center gap-2 transition-all ${dk ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}
+                            >
+                                <Printer className="w-4 h-4" /> Imprimir Relação
+                            </button>
+                        )}
 
                         {/* Share Link – todos veem */}
                         <button
@@ -194,16 +200,18 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                                 : <><Share2 className="w-4 h-4" /> Copiar Link</>}
                         </button>
 
-                        {/* Add guest – todos veem */}
-                        <button
-                            onClick={() => setShowAddGuest(v => !v)}
-                            className={`px-4 py-2 rounded-xl text-xs font-black uppercase flex items-center gap-2 transition-all
-                            ${showAddGuest
-                                ? 'bg-indigo-600 text-white'
-                                : (dk ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')}`}
-                        >
-                            <UserPlus className="w-4 h-4" /> Adicionar Convidado
-                        </button>
+                        {/* Add guest – responsável ou admin */}
+                        {owned && (
+                            <button
+                                onClick={() => setShowAddGuest(v => !v)}
+                                className={`px-4 py-2 rounded-xl text-xs font-black uppercase flex items-center gap-2 transition-all
+                                ${showAddGuest
+                                    ? 'bg-indigo-600 text-white'
+                                    : (dk ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')}`}
+                            >
+                                <UserPlus className="w-4 h-4" /> Adicionar Convidado
+                            </button>
+                        )}
 
                         {/* Status toggle – admin only */}
                         {admin && (
@@ -229,6 +237,14 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                         )}
                     </div>
                 </div>
+
+                {/* Ownership notice for non-owner */}
+                {!owned && (
+                    <div className={`flex items-center gap-2 p-3 rounded-xl mb-4 text-xs font-bold ${dk ? 'bg-slate-700/50 text-slate-400' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}>
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        Você está visualizando este evento. Somente o responsável pode adicionar convidados ou imprimir a relação.
+                    </div>
+                )}
 
                 {/* Event info header */}
                 <div className={`p-4 rounded-xl border mb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 ${dk ? 'bg-slate-700/30 border-slate-600/50' : 'bg-slate-50 border-slate-200'}`}>
@@ -265,8 +281,8 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                     </div>
                 </div>
 
-                {/* Add guest form */}
-                {showAddGuest && (
+                {/* Add guest form – visível apenas para responsável/admin */}
+                {showAddGuest && owned && (
                     <div className={`p-4 rounded-xl border mb-5 ${dk ? 'bg-slate-700/30 border-slate-600' : 'bg-indigo-50 border-indigo-100'}`}>
                         <p className={`text-[11px] font-black uppercase tracking-widest mb-3 ${dk ? 'text-indigo-300' : 'text-indigo-700'}`}>
                             Adicionar Convidado Manualmente
@@ -373,7 +389,7 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                         <p className="text-xs font-bold uppercase tracking-widest">
                             {guestSearch ? 'Nenhum resultado' : 'Nenhum convidado registrado'}
                         </p>
-                        {!guestSearch && <p className="text-[11px] mt-1 opacity-60">Compartilhe o link ou adicione manualmente acima</p>}
+                        {!guestSearch && owned && <p className="text-[11px] mt-1 opacity-60">Compartilhe o link ou adicione manualmente acima</p>}
                     </div>
                 )}
 
@@ -403,54 +419,60 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
             <div className="py-16 text-center">
                 <Calendar className={`w-12 h-12 mx-auto mb-4 opacity-20 ${tp}`} />
                 <p className={`text-sm font-bold uppercase ${ts}`}>
-                    {admin
-                        ? (viewMode === 'upcoming' ? 'Nenhum evento próximo' : 'Nenhum evento no histórico')
-                        : 'Você não possui eventos cadastrados'}
+                    {viewMode === 'upcoming' ? 'Nenhum evento próximo' : 'Nenhum evento no histórico'}
                 </p>
                 <p className={`text-xs mt-1 ${tm}`}>
-                    {admin
-                        ? (viewMode === 'upcoming' ? 'Utilize a aba "Novo Evento" para cadastrar' : '')
-                        : 'Clique em "+ Novo Evento" para solicitar'}
+                    Utilize a aba "+ Novo Evento" para solicitar um evento
                 </p>
             </div>
         );
 
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {events.map(ev => (
-                    <div
-                        key={ev.id}
-                        onClick={() => setSelectedEvent(ev)}
-                        className={`p-4 rounded-xl border transition-all cursor-pointer hover:-translate-y-0.5 hover:shadow-lg ${dk
-                            ? 'bg-slate-700/40 border-slate-600 hover:border-blue-500/50'
-                            : 'bg-slate-50 border-slate-200 hover:border-blue-300'}`}
-                    >
-                        <div className="flex items-start justify-between mb-3">
-                            <Badge status={ev.status} />
-                            <span className={`flex items-center gap-1 text-[11px] font-bold uppercase ${tm}`}>
-                                <Calendar className="w-3.5 h-3.5" />
-                                {new Date(ev.date).toLocaleDateString('pt-BR')}
-                            </span>
-                        </div>
+                {events.map(ev => {
+                    const mine = isOwner(ev);
+                    return (
+                        <div
+                            key={ev.id}
+                            onClick={() => setSelectedEvent(ev)}
+                            className={`p-4 rounded-xl border transition-all cursor-pointer hover:-translate-y-0.5 hover:shadow-lg relative ${dk
+                                ? 'bg-slate-700/40 border-slate-600 hover:border-blue-500/50'
+                                : 'bg-slate-50 border-slate-200 hover:border-blue-300'}`}
+                        >
+                            {/* "Meu evento" badge */}
+                            {mine && (
+                                <span className={`absolute top-2 right-10 text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${dk ? 'bg-blue-900/60 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>
+                                    Meu
+                                </span>
+                            )}
 
-                        <h3 className={`font-black text-sm uppercase mb-1 ${tp}`}>
-                            {ev.name ? `${ev.name}` : ''}{ev.name && ev.responsible_name ? ' - ' : ''}{ev.responsible_name}
-                        </h3>
-
-                        <div className="flex items-center gap-1.5 mb-4">
-                            <MapPin className={`w-3.5 h-3.5 shrink-0 ${tm}`} />
-                            <span className={`text-[11px] font-bold uppercase line-clamp-1 ${ts}`}>{ev.location}</span>
-                        </div>
-
-                        <div className={`pt-3 border-t flex items-center justify-between ${dk ? 'border-slate-600' : 'border-slate-200'}`}>
-                            <div className={`flex items-center gap-1.5 text-xs font-bold ${dk ? 'text-blue-400' : 'text-blue-600'}`}>
-                                <Users className="w-4 h-4" />
-                                {(ev.guests || []).length} Convidado{(ev.guests || []).length !== 1 ? 's' : ''}
+                            <div className="flex items-start justify-between mb-3">
+                                <Badge status={ev.status} />
+                                <span className={`flex items-center gap-1 text-[11px] font-bold uppercase ${tm}`}>
+                                    <Calendar className="w-3.5 h-3.5" />
+                                    {new Date(ev.date).toLocaleDateString('pt-BR')}
+                                </span>
                             </div>
-                            <ChevronRight className={`w-4 h-4 ${tm}`} />
+
+                            <h3 className={`font-black text-sm uppercase mb-1 ${tp}`}>
+                                {ev.name ? `${ev.name}` : ''}{ev.name && ev.responsible_name ? ' - ' : ''}{ev.responsible_name}
+                            </h3>
+
+                            <div className="flex items-center gap-1.5 mb-4">
+                                <MapPin className={`w-3.5 h-3.5 shrink-0 ${tm}`} />
+                                <span className={`text-[11px] font-bold uppercase line-clamp-1 ${ts}`}>{ev.location}</span>
+                            </div>
+
+                            <div className={`pt-3 border-t flex items-center justify-between ${dk ? 'border-slate-600' : 'border-slate-200'}`}>
+                                <div className={`flex items-center gap-1.5 text-xs font-bold ${dk ? 'text-blue-400' : 'text-blue-600'}`}>
+                                    <Users className="w-4 h-4" />
+                                    {(ev.guests || []).length} Convidado{(ev.guests || []).length !== 1 ? 's' : ''}
+                                </div>
+                                <ChevronRight className={`w-4 h-4 ${tm}`} />
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         );
     };
@@ -483,29 +505,26 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                         <div>
                             <h2 className={`text-lg font-black uppercase tracking-tight ${tp}`}>
-                                {admin ? 'Eventos Programados' : 'Meus Eventos'}
+                                Eventos Programados
                             </h2>
                             <p className={`text-xs font-bold uppercase ${tm}`}>
-                                {admin ? 'Gerenciamento de acesso coletivo' : 'Gerencie seus convidados e links de convite'}
+                                Gerenciamento de acesso coletivo · Clique no seu evento para gerenciar
                             </p>
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2">
-                            {/* upcoming/history only for admin */}
-                            {admin && (
-                                <div className={`flex p-1 rounded-xl ${dk ? 'bg-slate-900/60' : 'bg-slate-100'}`}>
-                                    {(['upcoming', 'history'] as const).map(mode => (
-                                        <button key={mode} onClick={() => setViewMode(mode)}
-                                            className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wide transition-all whitespace-nowrap
-                                            ${viewMode === mode
-                                                ? (mode === 'upcoming' ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-600 text-white shadow-md')
-                                                : (dk ? 'text-slate-400 hover:text-white hover:bg-slate-700/60' : 'text-slate-500 hover:bg-white/60')}`}
-                                        >
-                                            {mode === 'upcoming' ? 'Próximos' : 'Histórico'}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                            <div className={`flex p-1 rounded-xl ${dk ? 'bg-slate-900/60' : 'bg-slate-100'}`}>
+                                {(['upcoming', 'history'] as const).map(mode => (
+                                    <button key={mode} onClick={() => setViewMode(mode)}
+                                        className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wide transition-all whitespace-nowrap
+                                        ${viewMode === mode
+                                            ? (mode === 'upcoming' ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-600 text-white shadow-md')
+                                            : (dk ? 'text-slate-400 hover:text-white hover:bg-slate-700/60' : 'text-slate-500 hover:bg-white/60')}`}
+                                    >
+                                        {mode === 'upcoming' ? 'Próximos' : 'Histórico'}
+                                    </button>
+                                ))}
+                            </div>
                             <button onClick={fetchEvents} disabled={loading}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase transition-all ${dk ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}>
                                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Atualizar
