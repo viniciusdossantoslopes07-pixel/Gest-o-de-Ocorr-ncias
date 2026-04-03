@@ -29,7 +29,10 @@ const EventPrintView: FC<EventPrintViewProps> = ({ event, onClose }) => {
     const eventNameDisplay = event.name ? `${event.name} - ${event.responsible_name}` : event.responsible_name;
 
     return (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light backdrop-blur-sm">
+        <div
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light backdrop-blur-sm"
+            onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+        >
             <div className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full h-[100vh] sm:h-[90vh] print:h-auto overflow-hidden flex flex-col print:rounded-none print:max-w-none shadow-2xl">
 
                 {/* Control Header - Hidden on print */}

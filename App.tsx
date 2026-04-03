@@ -1216,6 +1216,10 @@ const App: FC = () => {
             <HomeView
               user={currentUser}
               onNewOccurrence={(category) => {
+                if (category === 'EVENTOS_2') {
+                  setActiveTab('events');
+                  return;
+                }
                 setInitialCategory(category);
                 setActiveTab('new');
               }}

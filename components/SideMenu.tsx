@@ -177,8 +177,7 @@ export default function SideMenu({
                                         <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
                                             <MenuItem id="access-control" label="Acesso Visitantes" icon={DoorOpen} />
                                             <MenuItem id="parking-request" label="Estacionamento" icon={Car} />
-                                            <MenuItem id="events" label="Eventos (SOP 3)" icon={CalendarDays} />
-                                            <MenuItem id="events-user" label="Solicitar Evento" icon={CalendarDays} />
+                                            <MenuItem id="events" label="Eventos" icon={CalendarDays} />
                                         </div>
                                     )}
                                 </div>
