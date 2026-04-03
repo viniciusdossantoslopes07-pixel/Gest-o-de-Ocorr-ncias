@@ -226,8 +226,8 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
 
           {/* Header compacto */}
           <div className={`px-6 pt-5 pb-4 border-b ${dk ? 'border-slate-800 bg-gradient-to-b from-blue-950/20 to-transparent' : 'border-slate-100 bg-gradient-to-b from-blue-50/50 to-transparent'} text-center`}>
-            <div className="flex justify-center mb-3">
-              <div className={`w-14 h-14 rounded-2xl overflow-hidden shadow-lg ring-2 ${dk ? 'ring-slate-700' : 'ring-slate-200'} bg-white`}>
+            <div className="flex justify-center mb-4">
+              <div className={`w-24 h-24 rounded-3xl overflow-hidden shadow-xl ring-2 ${dk ? 'ring-slate-700' : 'ring-slate-200'} bg-white transition-transform hover:scale-105 duration-300`}>
                 <img src="/logo_gsd.png" alt="Logo GSD-SP" className="w-full h-full object-cover" />
               </div>
             </div>
@@ -355,12 +355,12 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
             ) : (
               <div className="space-y-3 pt-1">
 
-                {/* Botões de Acesso Público — grid compacto */}
-                <div className="grid grid-cols-2 gap-2">
+                {/* Botões de Acesso Público — layout empilhado otimizado */}
+                <div className="flex flex-col gap-2">
                   <button
                     type="button"
                     onClick={onPublicAccess}
-                    className="col-span-2 bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 transition-all border-b-2 border-amber-700"
+                    className="w-full bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white py-3.5 rounded-2xl font-black uppercase text-[11px] tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 transition-all border-b-2 border-amber-700"
                   >
                     <Megaphone className="w-4 h-4" /> Registrar Ocorrência
                   </button>
@@ -368,26 +368,26 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                   <button
                     type="button"
                     onClick={() => { setShowParkingModal(true); setError(''); }}
-                    className={`py-2.5 rounded-xl font-black uppercase text-[9px] tracking-widest flex items-center justify-center gap-1.5 transition-all active:scale-[0.97] border ${
+                    className={`w-full py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 transition-all active:scale-[0.97] border ${
                       dk
-                        ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 border-slate-700'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border-slate-200'
-                    }`}
+                        ? 'bg-slate-800/80 text-slate-200 hover:bg-slate-700 border-slate-700'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'
+                    } shadow-sm`}
                   >
-                    <Car className="w-3.5 h-3.5" /> Estacionamento
+                    <Car className="w-4 h-4" /> Estacionamento
                   </button>
 
                   {onViewEvents && (
                     <button
                       type="button"
                       onClick={onViewEvents}
-                      className={`py-2.5 rounded-xl font-black uppercase text-[9px] tracking-widest flex items-center justify-center gap-1.5 transition-all active:scale-[0.97] border ${
+                      className={`w-full py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 transition-all active:scale-[0.97] border ${
                         dk
-                          ? 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 border-slate-700'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border-slate-200'
-                      }`}
+                          ? 'bg-slate-800/80 text-slate-200 hover:bg-slate-700 border-slate-700'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'
+                      } shadow-sm`}
                     >
-                      <Calendar className="w-3.5 h-3.5" /> Prog. Evento
+                      <Calendar className="w-4 h-4" /> Programar Evento
                     </button>
                   )}
                 </div>
