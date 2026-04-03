@@ -215,18 +215,7 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                             </button>
                         )}
 
-                        {/* Add guest – responsável ou admin, oculto se finalizado */}
-                        {owned && selectedEvent.status !== 'FINALIZED' && (
-                            <button
-                                onClick={() => setShowAddGuest(v => !v)}
-                                className={`px-4 py-2 rounded-xl text-xs font-black uppercase flex items-center gap-2 transition-all
-                                ${showAddGuest
-                                    ? 'bg-indigo-600 text-white'
-                                    : (dk ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')}`}
-                            >
-                                <UserPlus className="w-4 h-4" /> Adicionar Convidado
-                            </button>
-                        )}
+
 
                         {/* SOP-3 Audit Controls – admin only, oculto se finalizado */}
                         {admin && selectedEvent.status !== 'FINALIZED' && (
@@ -405,10 +394,23 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                     </div>
                 )}
 
-                {/* Guest list */}
-                <h4 className={`font-black text-sm uppercase tracking-wider mb-3 flex items-center gap-2 ${tp}`}>
-                    <Users className="w-4 h-4" /> Lista de Convidados
-                </h4>
+                <div className="flex items-center justify-between mb-4 mt-2">
+                    <h4 className={`font-black text-sm uppercase tracking-wider flex items-center gap-2 ${tp}`}>
+                        <Users className="w-4 h-4" /> Lista de Convidados
+                    </h4>
+                    
+                    {owned && selectedEvent.status !== 'FINALIZED' && (
+                        <button
+                            onClick={() => setShowAddGuest(v => !v)}
+                            className={`px-4 py-2 rounded-xl text-xs font-black uppercase flex items-center gap-2 transition-all
+                            ${showAddGuest
+                                ? 'bg-indigo-600 text-white'
+                                : (dk ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-slate-900 text-white hover:bg-black')}`}
+                        >
+                            <UserPlus className="w-4 h-4" /> Adicionar Convidado
+                        </button>
+                    )}
+                </div>
 
                 {/* Search */}
                 <div className="relative mb-3">
