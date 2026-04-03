@@ -1462,9 +1462,9 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                 ) : (
                     filteredRequests.map(req => (
                         <div key={req.id} className={`rounded-2xl transition-all duration-300 glass-card ${expandedRequestId === req.id ? 'ring-2 ring-blue-500 shadow-blue-500/20 shadow-xl' : 'hover:border-blue-300'}`}>
-                            <div className="p-6 flex flex-col md:flex-row gap-6 items-start md:items-center cursor-pointer" onClick={() => setExpandedRequestId(expandedRequestId === req.id ? null : req.id)}>
+                            <div className="p-4 sm:p-6 flex flex-row gap-3 sm:gap-6 items-start sm:items-center cursor-pointer" onClick={() => setExpandedRequestId(expandedRequestId === req.id ? null : req.id)}>
                                 {(activeTab === 'Em Uso' || (activeTab === 'Solicitações' && (req.status === 'Pendente' || req.status === 'Aprovado'))) && (
-                                    <div className="shrink-0" onClick={e => e.stopPropagation()}>
+                                    <div className="shrink-0 mt-3 sm:mt-0" onClick={e => e.stopPropagation()}>
                                         <input
                                             type="checkbox"
                                             className="w-5 h-5 rounded-lg text-blue-600 focus:ring-blue-500 disabled:opacity-20 disabled:cursor-not-allowed"
@@ -1482,57 +1482,59 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                         />
                                     </div>
                                 )}
-                                <div className={`flex-1 flex flex-col md:flex-row gap-6 items-start md:items-center ${selectedBatchIds.length > 0 && requests.find(r => r.id === selectedBatchIds[0])?.id_usuario !== req.id_usuario ? 'opacity-40 grayscale-[0.5]' : ''}`}>
-                                    <div className={`p-4 rounded-2xl shrink-0 transition-transform ${expandedRequestId === req.id ? 'scale-110' : ''} ${req.status === 'Pendente' ? 'bg-amber-500/10 text-amber-500' : req.status === 'Aprovado' ? 'bg-blue-500/10 text-blue-500' : req.status === 'Pendente Devolução' ? 'bg-purple-500/10 text-purple-500' : req.status === 'Concluído' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-500/10 text-slate-500'}`}>
-                                        <Package className="w-6 h-6" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex flex-wrap items-center gap-3 mb-1">
-                                            <h3 className={`font-black text-base md:text-lg uppercase tracking-tight truncate ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                                                {req.quantidade && req.quantidade > 1 && <span className="text-blue-500 mr-2">{req.quantidade}x</span>}
-                                                {req.material?.material || 'Material'}
-                                            </h3>
-                                            <span className={`text-[9px] px-2.5 py-1 rounded-lg font-black uppercase tracking-widest ${req.status === 'Em Uso' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : (isDarkMode ? 'bg-slate-700 text-slate-400 border border-slate-600' : 'bg-slate-100 text-slate-500 border border-slate-200')}`}>
-                                                {req.status}
-                                            </span>
+                                <div className={`flex-1 flex flex-col md:flex-row gap-4 md:gap-6 items-start md:items-center w-full min-w-0 ${selectedBatchIds.length > 0 && requests.find(r => r.id === selectedBatchIds[0])?.id_usuario !== req.id_usuario ? 'opacity-40 grayscale-[0.5]' : ''}`}>
+                                    <div className="flex flex-row gap-3 sm:gap-4 items-start w-full md:w-auto flex-1 min-w-0">
+                                        <div className={`p-3 sm:p-4 rounded-xl shrink-0 transition-transform ${expandedRequestId === req.id ? 'scale-110' : ''} ${req.status === 'Pendente' ? 'bg-amber-500/10 text-amber-500' : req.status === 'Aprovado' ? 'bg-blue-500/10 text-blue-500' : req.status === 'Pendente Devolução' ? 'bg-purple-500/10 text-purple-500' : req.status === 'Concluído' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-500/10 text-slate-500'}`}>
+                                            <Package className="w-5 h-5 sm:w-6 sm:h-6" />
                                         </div>
-                                        <p className="text-xs text-slate-500 font-medium">
-                                            Solicitante: <span className={`font-black uppercase ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{req.solicitante ? `${req.solicitante.rank} ${req.solicitante.war_name}` : `ID: ${req.id_usuario}`}</span>
-                                            {req.solicitante?.isExternal && (
-                                                <span className="ml-2 text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-500 font-black uppercase tracking-widest border border-emerald-500/20">EXT</span>
-                                            )}
-                                        </p>
-                                        {(req.solicitante?.saram || req.solicitante?.contact) && (
-                                            <div className="flex flex-wrap items-center gap-3 mt-1.5">
-                                                {req.solicitante.saram && (
-                                                    <span className={`text-[10px] font-black flex items-center gap-1 px-2 py-0.5 rounded-lg ${isDarkMode ? 'bg-slate-700 text-emerald-400' : 'bg-emerald-50 text-emerald-700'}`}>
-                                                        🪪 SARAM: {req.solicitante.saram}
-                                                    </span>
-                                                )}
-                                                {req.solicitante.contact && (
-                                                    <span className={`text-[10px] font-black flex items-center gap-1 px-2 py-0.5 rounded-lg ${isDarkMode ? 'bg-slate-700 text-blue-400' : 'bg-blue-50 text-blue-700'}`}>
-                                                        📞 {req.solicitante.contact}
-                                                    </span>
-                                                )}
+                                        <div className="flex-1 min-w-0 pt-0.5">
+                                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                                                <h3 className={`font-black text-sm sm:text-base md:text-lg uppercase tracking-tight truncate ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                                                    {req.quantidade && req.quantidade > 1 && <span className="text-blue-500 mr-1 sm:mr-2">{req.quantidade}x</span>}
+                                                    {req.material?.material || 'Material'}
+                                                </h3>
+                                                <span className={`text-[8px] sm:text-[9px] px-2 py-0.5 rounded-lg font-black uppercase tracking-widest ${req.status === 'Em Uso' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : (isDarkMode ? 'bg-slate-700 text-slate-400 border border-slate-600' : 'bg-slate-100 text-slate-500 border border-slate-200')}`}>
+                                                    {req.status}
+                                                </span>
                                             </div>
-                                        )}
-                                        {req.material?.endereco && (
-                                            <p className="text-[10px] text-amber-500 font-black flex items-center gap-1.5 mt-1.5 uppercase tracking-wide">
-                                                <MapPin className="w-3 h-3" /> {req.material.endereco}
+                                            <p className="text-[10px] sm:text-xs text-slate-500 font-medium">
+                                                Solicitante: <span className={`font-black uppercase ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{req.solicitante ? `${req.solicitante.rank} ${req.solicitante.war_name}` : `ID: ${req.id_usuario}`}</span>
+                                                {req.solicitante?.isExternal && (
+                                                    <span className="ml-2 text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-500 font-black uppercase tracking-widest border border-emerald-500/20">EXT</span>
+                                                )}
                                             </p>
-                                        )}
+                                            {(req.solicitante?.saram || req.solicitante?.contact) && (
+                                                <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                                                    {req.solicitante.saram && (
+                                                        <span className={`text-[9px] sm:text-[10px] font-black flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-lg ${isDarkMode ? 'bg-slate-700 text-emerald-400' : 'bg-emerald-50 text-emerald-700'}`}>
+                                                            🪪 {req.solicitante.saram}
+                                                        </span>
+                                                    )}
+                                                    {req.solicitante.contact && (
+                                                        <span className={`text-[9px] sm:text-[10px] font-black flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-lg ${isDarkMode ? 'bg-slate-700 text-blue-400' : 'bg-blue-50 text-blue-700'}`}>
+                                                            📞 {req.solicitante.contact}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {req.material?.endereco && (
+                                                <p className="text-[9px] sm:text-[10px] text-amber-500 font-black flex items-center gap-1 mt-1.5 uppercase tracking-wide">
+                                                    <MapPin className="w-3 h-3" /> {req.material.endereco}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex flex-row-reverse md:flex-row w-full md:w-auto items-center justify-between md:justify-end gap-3 md:gap-4 shrink-0 pl-11 md:pl-0 mt-1 md:mt-0">
                                         <ChevronDown className={`w-5 h-5 text-slate-300 transition-transform ${expandedRequestId === req.id ? 'rotate-180' : ''}`} />
-                                        <div className="flex flex-col gap-2 min-w-[160px]" onClick={e => e.stopPropagation()}>
+                                        <div className="flex flex-row md:flex-col gap-2 w-full md:min-w-[160px]" onClick={e => e.stopPropagation()}>
                                             {req.status === 'Pendente' && (
-                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_release')} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm">Entregar Material</button>
+                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_release')} className="flex-1 md:flex-none px-3 py-2 sm:px-4 bg-blue-600 text-white rounded-lg font-bold text-[10px] sm:text-sm uppercase md:capitalize">Entregar</button>
                                             )}
                                             {req.status === 'Pendente Devolução' && (
-                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return', req.id_usuario_externo)} className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold text-sm">Receber Material</button>
+                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return', req.id_usuario_externo)} className="flex-1 md:flex-none px-3 py-2 sm:px-4 bg-emerald-600 text-white rounded-lg font-bold text-[10px] sm:text-sm uppercase md:capitalize">Receber</button>
                                             )}
                                             {req.status === 'Em Uso' && (
-                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return', req.id_usuario_externo)} className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold text-sm">Receber Material</button>
+                                                <button onClick={() => startSignatureFlow(req.id, req.id_usuario, 'update_return', req.id_usuario_externo)} className="flex-1 md:flex-none px-3 py-2 sm:px-4 bg-emerald-600 text-white rounded-lg font-bold text-[10px] sm:text-sm uppercase md:capitalize">Receber Material</button>
                                             )}
                                         </div>
                                     </div>
