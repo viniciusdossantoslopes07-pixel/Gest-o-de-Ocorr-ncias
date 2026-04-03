@@ -269,42 +269,35 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                 )}
 
                 {/* Event info header */}
-                <div className={`p-4 rounded-xl border mb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 ${dk ? 'bg-slate-700/30 border-slate-600/50' : 'bg-slate-50 border-slate-200'}`}>
-                    <div>
-                        <p className={`text-[10px] font-bold uppercase mb-0.5 ${tm}`}>Evento / Responsável</p>
-                        <p className={`font-black text-sm uppercase ${tp}`}>
-                            {selectedEvent.name ? `${selectedEvent.name}` : ''}{selectedEvent.name && selectedEvent.responsible_name ? ' - ' : ''}{selectedEvent.responsible_name}
-                        </p>
-                        {(selectedEvent.responsible_saram || selectedEvent.responsible_contact) && (
-                            <p className={`text-[10px] mt-1 font-bold ${ts}`}>
-                                {selectedEvent.responsible_saram ? `SARAM: ${selectedEvent.responsible_saram}` : ''}
-                                {selectedEvent.responsible_saram && selectedEvent.responsible_contact ? ' | ' : ''}
-                                {selectedEvent.responsible_contact ? `CTT: ${selectedEvent.responsible_contact}` : ''}
-                            </p>
-                        )}
-                        <div className="flex items-center gap-2 mt-1">
-                            <p className={`text-[9px] font-mono font-black border border-current px-2 py-0.5 rounded shadow-sm opacity-80 ${dk ? 'text-blue-300' : 'text-blue-700'}`}>
+                <div className={`p-6 rounded-xl border mb-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 ${dk ? 'bg-slate-700/30 border-slate-600/50' : 'bg-slate-50 border-slate-200'}`}>
+                    <div className="flex-1 w-full">
+                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                             <div className={`text-[12px] font-black uppercase px-4 py-1.5 rounded-full border border-blue-500/30 shadow-lg ${dk ? 'bg-blue-500/20 text-blue-300' : 'bg-blue-600 text-white'}`}>
                                 EVENTO #{selectedEvent.seq_id || selectedEvent.id.split('-')[0]}
-                            </p>
-                            <p className={`text-[8px] font-mono opacity-30`}>{selectedEvent.id}</p>
+                             </div>
+                             <Badge status={selectedEvent.status} />
+                             <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${dk ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-white text-slate-600 border-slate-200'}`}>
+                                {(selectedEvent.guests || []).length} Convidados
+                             </div>
+                        </div>
+                        <h2 className={`text-2xl font-black uppercase tracking-tight leading-tight ${tp}`}>
+                            {selectedEvent.name || 'Evento Sem Nome'}
+                        </h2>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3">
+                            <p className={`text-xs font-bold ${ts}`}>Responsável: <span className={tp}>{selectedEvent.responsible_name}</span></p>
+                            {selectedEvent.responsible_saram && <p className={`text-xs font-bold ${ts}`}>SARAM: <span className={tp}>{selectedEvent.responsible_saram}</span></p>}
+                            {selectedEvent.responsible_contact && <p className={`text-xs font-bold ${ts}`}>Contato: <span className={tp}>{selectedEvent.responsible_contact}</span></p>}
                         </div>
                     </div>
-                    <div>
-                        <p className={`text-[10px] font-bold uppercase mb-0.5 ${tm}`}>Local</p>
-                        <p className={`font-black text-sm uppercase ${tp}`}>{selectedEvent.location}</p>
-                        {selectedEvent.address && <p className={`text-xs mt-0.5 ${ts}`}>{selectedEvent.address}</p>}
-                    </div>
-                    <div>
-                        <p className={`text-[10px] font-bold uppercase mb-0.5 ${tm}`}>Data</p>
-                        <p className={`font-black text-sm uppercase ${tp}`}>{new Date(selectedEvent.date).toLocaleDateString('pt-BR')}</p>
-                    </div>
-                    <div>
-                        <p className={`text-[10px] font-bold uppercase mb-0.5 ${tm}`}>Status / Convidados</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                            <Badge status={selectedEvent.status} />
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-black ${dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700'}`}>
-                                {(selectedEvent.guests || []).length}
-                            </span>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-1 gap-4 w-full md:w-auto border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-6 border-slate-300 dark:border-slate-600">
+                        <div>
+                            <p className={`text-[10px] font-bold uppercase mb-0.5 ${tm}`}>Local do Evento</p>
+                            <p className={`font-black text-sm uppercase ${tp}`}>{selectedEvent.location}</p>
+                        </div>
+                        <div>
+                            <p className={`text-[10px] font-bold uppercase mb-0.5 ${tm}`}>Data Prevista</p>
+                            <p className={`font-black text-sm uppercase ${tp}`}>{new Date(selectedEvent.date).toLocaleDateString('pt-BR')}</p>
                         </div>
                     </div>
                 </div>

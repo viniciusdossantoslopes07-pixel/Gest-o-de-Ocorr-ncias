@@ -107,9 +107,11 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
                     </button>
                     <div>
                         <h2 className="font-black uppercase tracking-tight flex items-center gap-2">Gerenciar Evento</h2>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                             <div className={`text-[12px] font-black uppercase px-3 py-1 rounded-full border border-blue-500/30 shadow-lg ${dk ? 'bg-blue-600 text-white' : 'bg-blue-600 text-white'}`}>
+                                EVENTO #{event.seq_id || event.id.split('-')[0]}
+                             </div>
                              <p className={`text-[10px] font-bold uppercase tracking-widest ${textSub}`}>Painel de Controle</p>
-                             <span className="text-[10px] bg-blue-500/10 px-2 py-0.5 rounded font-mono font-black text-blue-500 border border-blue-500/20">EVENTO #{event.seq_id || event.id.split('-')[0]}</span>
                         </div>
                     </div>
                 </div>
