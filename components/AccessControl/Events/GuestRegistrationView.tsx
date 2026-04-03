@@ -54,8 +54,7 @@ export default function GuestRegistrationView({ eventId, onComplete }: GuestRegi
         return val
             .replace(/[^a-zA-Z0-9]/g, '')
             .toUpperCase()
-            .replace(/^([A-Z]{3})(\d[A-Z0-9]\d{2})/, '$1-$2') // Padrão Mercosul ou Antigo
-            .slice(0, 8);
+            .slice(0, 7);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -331,9 +330,9 @@ export default function GuestRegistrationView({ eventId, onComplete }: GuestRegi
                                         required={hasVehicle}
                                         value={vehiclePlate}
                                         onChange={e => setVehiclePlate(formatPlate(e.target.value))}
-                                        maxLength={8}
+                                        maxLength={7}
                                         className="w-full px-4 py-3.5 bg-indigo-50 border border-indigo-200 text-indigo-900 placeholder-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold uppercase transition-all"
-                                        placeholder="ABC-1234"
+                                        placeholder="ABC1234"
                                     />
                                 </div>
                             </div>

@@ -235,7 +235,10 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
                             <>
                                 <div className="sm:col-span-2 space-y-1.5">
                                     <label className={`text-[10px] font-bold uppercase tracking-widest pl-1 ${textSub}`}>Placa *</label>
-                                    <input required className={`w-full rounded-xl p-2.5 text-xs font-bold uppercase border focus:ring-2 focus:outline-none transition-all ${inputCls}`} value={plate} onChange={e=>setPlate(e.target.value)} />
+                                    <input required placeholder="ABC1234" className={`w-full rounded-xl p-2.5 text-xs font-bold uppercase border focus:ring-2 focus:outline-none transition-all ${inputCls}`} value={plate} 
+                                        onChange={e => setPlate(e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 7))} 
+                                        maxLength={7}
+                                    />
                                 </div>
                                 <div className="sm:col-span-3 space-y-1.5">
                                     <label className={`text-[10px] font-bold uppercase tracking-widest pl-1 ${textSub}`}>Modelo *</label>
