@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { AccessEvent } from '../../../types';
 import { eventService } from '../../../services/eventService';
-import { Calendar, MapPin, Users, X, RefreshCw } from 'lucide-react';
+import { Calendar, MapPin, Users, X, RefreshCw, Send, Plus } from 'lucide-react';
+import PublicEventForm from './PublicEventForm';
 
 interface PublicEventsModalProps {
     onClose: () => void;
@@ -12,13 +13,16 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
     const dk = isDarkMode;
     const [events, setEvents] = useState<AccessEvent[]>([]);
     const [loading, setLoading] = useState(true);
+    const [view, setView] = useState<'list' | 'form'>('list');
+    const [refreshKey, setRefreshKey] = useState(0);
 
     useEffect(() => {
+        setLoading(true);
         eventService.getEvents('upcoming')
             .then(setEvents)
             .catch(console.error)
             .finally(() => setLoading(false));
-    }, []);
+    }, [refreshKey]);
 
     const tm = dk ? 'text-slate-400' : 'text-slate-500';
     const tp = dk ? 'text-white' : 'text-slate-900';
@@ -27,10 +31,22 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
     return (
         <div
             className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-            onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+            onClick={e => { if (e.target === e.currentTarget && view === 'list') onClose(); }}
         >
-            <div className={`w-full max-w-2xl max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden ${dk ? 'bg-slate-900 border border-slate-700' : 'bg-white'}`}>
-                {/* Header */}
+            {view === 'form' ? (
+                <div className="w-full max-w-3xl h-full sm:h-auto animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:fade-in duration-300">
+                    <PublicEventForm
+                        isDarkMode={dk}
+                        onSubmit={() => {
+                            setView('list');
+                            setRefreshKey(k => k + 1);
+                        }}
+                        onCancel={() => setView('list')}
+                    />
+                </div>
+            ) : (
+                <div className={`w-full max-w-2xl max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-300 ${dk ? 'bg-slate-900 border border-slate-700' : 'bg-white'}`}>
+                    {/* Header */}
                 <div className={`flex items-center justify-between px-5 py-4 border-b ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
                     <div>
                         <h2 className={`text-base font-black uppercase tracking-tight ${tp}`}>📅 Eventos Programados</h2>
@@ -92,13 +108,21 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
                     )}
                 </div>
 
-                {/* Footer */}
-                <div className={`px-5 py-4 border-t text-center ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
+                {/* Footer with Solicitar Button */}
+                <div className={`px-5 py-5 border-t flex flex-col items-center gap-3 ${dk ? 'bg-slate-900/80 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                    <button
+                        type="button"
+                        onClick={() => setView('form')}
+                        className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98] border-b-4 border-blue-800"
+                    >
+                        <Plus className="w-5 h-5" /> SOLICITAR NOVO EVENTO
+                    </button>
                     <p className={`text-[10px] font-bold uppercase ${tm}`}>
-                        Para gerenciar um evento, acesse com seu login militar
+                        Administrador: acesse o sistema para aprovar/gerenciar eventos.
                     </p>
                 </div>
             </div>
+            )}
         </div>
     );
 }
