@@ -104,9 +104,14 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
                                         <span className={`text-[11px] font-bold uppercase ${ts}`}>{ev.location}</span>
                                     </div>
 
-                                    <div className={`flex items-center gap-1.5 text-xs font-bold ${dk ? 'text-blue-400' : 'text-blue-600'}`}>
-                                        <Users className="w-4 h-4" />
-                                        {(ev.guests || []).length} convidado{(ev.guests || []).length !== 1 ? 's' : ''} cadastrado{(ev.guests || []).length !== 1 ? 's' : ''}
+                                    <div className={`flex items-center justify-between gap-1.5 text-xs font-bold ${dk ? 'text-blue-400' : 'text-blue-600'}`}>
+                                        <div className="flex items-center gap-1.5">
+                                            <Users className="w-4 h-4" />
+                                            {(ev.guests || []).length} convidado{(ev.guests || []).length !== 1 ? 's' : ''} cadastrado{(ev.guests || []).length !== 1 ? 's' : ''}
+                                        </div>
+                                        <div className={`text-[9px] font-mono opacity-50 px-2 py-0.5 rounded border border-current`}>
+                                            ID: {ev.id.split('-')[0]}...
+                                        </div>
                                     </div>
                                 </div>
                             ))}

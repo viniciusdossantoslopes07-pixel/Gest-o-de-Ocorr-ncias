@@ -109,7 +109,10 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
                     </button>
                     <div>
                         <h2 className="font-black uppercase tracking-tight flex items-center gap-2">Gerenciar Evento</h2>
-                        <p className={`text-[10px] font-bold uppercase tracking-widest ${textSub}`}>Adicione convidados ou imprima a lista</p>
+                        <div className="flex items-center gap-2">
+                             <p className={`text-[10px] font-bold uppercase tracking-widest ${textSub}`}>Painel de Controle do Evento</p>
+                             <span className="text-[10px] bg-slate-500/10 px-2 py-0.5 rounded font-mono font-bold text-blue-500">ID: {eventId}</span>
+                        </div>
                     </div>
                 </div>
                 <button

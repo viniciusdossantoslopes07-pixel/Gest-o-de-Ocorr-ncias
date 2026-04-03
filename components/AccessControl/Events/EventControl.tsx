@@ -260,6 +260,7 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                                 {selectedEvent.responsible_contact ? `CTT: ${selectedEvent.responsible_contact}` : ''}
                             </p>
                         )}
+                        <p className={`text-[9px] mt-1 font-mono opacity-60 bg-slate-500/10 px-2 py-0.5 rounded w-fit ${dk ? 'text-blue-300' : 'text-blue-700'}`}>ID: {selectedEvent.id}</p>
                     </div>
                     <div>
                         <p className={`text-[10px] font-bold uppercase mb-0.5 ${tm}`}>Local</p>
