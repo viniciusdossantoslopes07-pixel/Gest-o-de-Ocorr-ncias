@@ -893,7 +893,14 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     </button>
                                 )}
                                 <button
-                                    onClick={() => window.print()}
+                                    onClick={() => {
+                                        document.body.classList.add('print-weekly-mode');
+                                        document.body.classList.remove('print-coupon-mode');
+                                        setTimeout(() => {
+                                            window.print();
+                                            document.body.classList.remove('print-weekly-mode');
+                                        }, 150);
+                                    }}
                                     className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all shadow-lg active:scale-95 ${isDarkMode ? 'bg-slate-800 text-white hover:bg-slate-700 shadow-black/20' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
                                 >
                                     <Plus className="w-4 h-4" /> Gerar PDF
@@ -1437,70 +1444,71 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
                 )}
 
-                {/* Printable Area (Hidden in UI) */}
-                <div className="hidden print:block bg-white text-black font-sans">
-                    {/* Estilos específicos para impressão - Scoped para evitar conflitos */}
+                {/* Áreas de Impressão — ocultas na tela via CSS, visíveis ao imprimir */}
+                <div>
                     <style>{`
+                        /* Oculta na tela sem depender do Tailwind print:block */
+                        @media screen {
+                            .print-weekly { display: none !important; }
+                            .print-coupon-thermal { display: none !important; }
+                        }
+
                         @media print {
-                            /* Reset de visibilidade global */
-                            body { 
+                            @page { margin: 8mm; }
+
+                            /* Esconde toda a UI — só ativo quando modo estiver definido */
+                            body.print-weekly-mode,
+                            body.print-coupon-mode {
                                 visibility: hidden !important;
                                 background: white !important;
                             }
-                            
-                            /* Se estivermos imprimindo a GRADE SEMANAL */
-                            .print-weekly-mode .print-weekly {
+
+                            /* MODO GRADE SEMANAL */
+                            body.print-weekly-mode .print-weekly {
                                 visibility: visible !important;
                                 display: block !important;
-                                position: absolute !important;
+                                position: fixed !important;
                                 top: 0 !important;
                                 left: 0 !important;
                                 right: 0 !important;
-                                width: 210mm !important; /* A4 Portrait */
-                                margin: 0 auto !important;
-                                padding: 10mm !important;
+                                width: 100% !important;
                                 background: white !important;
+                                padding: 10mm !important;
                                 box-sizing: border-box !important;
+                                color: black !important;
+                                font-family: Arial, sans-serif !important;
+                                z-index: 99999 !important;
                             }
-                            
-                            /* Se estivermos imprimindo o CUPOM INDIVIDUAL */
-                            .print-coupon-mode .print-coupon-thermal {
+                            body.print-weekly-mode .print-weekly * {
+                                visibility: visible !important;
+                            }
+
+                            /* MODO CUPOM TÉRMICO */
+                            body.print-coupon-mode .print-coupon-thermal {
                                 visibility: visible !important;
                                 display: block !important;
                                 position: fixed !important;
                                 top: 0 !important;
                                 left: 0 !important;
                                 width: 80mm !important;
-                                height: auto !important;
                                 background: white !important;
-                                margin: 0 !important;
                                 padding: 5mm !important;
+                                box-sizing: border-box !important;
+                                color: black !important;
+                                font-family: monospace !important;
                                 z-index: 99999 !important;
                             }
-
-                            .print-weekly-mode .print-weekly *,
-                            .print-coupon-mode .print-coupon-thermal * { 
-                                visibility: visible !important; 
+                            body.print-coupon-mode .print-coupon-thermal * {
+                                visibility: visible !important;
                             }
 
-                            @page { 
-                                margin: 0; 
-                            }
-                            
-                            .print-weekly-mode @page { size: portrait; }
-                            .print-coupon-mode @page { size: auto; margin: 0; }
-
-                            /* Correções de tabela para impressão */
-                            table { 
-                                width: 100%;
-                                border-collapse: collapse;
-                                table-layout: fixed;
-                            }
-                            tr { page-break-inside: avoid; }
-                            thead { display: table-header-group; }
+                            /* Correções de tabela */
+                            .print-weekly table { border-collapse: collapse !important; width: 100% !important; }
+                            .print-weekly thead { display: table-header-group; }
+                            .print-weekly tr { page-break-inside: avoid; }
                         }
                     `}</style>
-                    <div className={`print-weekly w-full mx-auto ${selectedJustification ? 'hidden' : ''}`}>
+                    <div className="print-weekly w-full mx-auto">
                         {/* Institutional Header */}
                         <div className="text-center mb-10 space-y-0.5 print-header">
                             <div className="flex flex-col items-center">
@@ -1758,9 +1766,9 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
                 )}
 
-                {/* Justification Print View (Thermal Receipt Style) */}
+                {/* Cupom Térmico (oculto na tela, visível ao imprimir via CSS) */}
                 {selectedJustification && (
-                    <div className="hidden print:block fixed inset-0 bg-white z-[500] p-4 text-black font-mono">
+                    <div className="print-coupon-thermal">
                         <div className="w-[80mm] mx-auto border-2 border-dashed border-black p-4 space-y-4">
                             <div className="text-center space-y-1">
                                 <p className="text-sm font-bold">BASP - CENTRAL DE PESSOAL</p>
