@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, AccessEvent, EventGuest } from '../../../types';
 import { eventService } from '../../../services/eventService';
-import { Save, UserPlus, X, Calendar, MapPin, CheckCircle, RefreshCw, AlertCircle, Users, Info, Phone, CreditCard, Hash } from 'lucide-react';
+import { Save, UserPlus, X, Calendar, MapPin, CheckCircle, RefreshCw, AlertCircle, Users, Info, Phone, CreditCard, Hash, Lock, ShieldCheck } from 'lucide-react';
 import { Combobox } from '../../Combobox';
 
 interface EventFormProps {
@@ -41,6 +41,7 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
     const [responsibleSaram, setResponsibleSaram] = useState('');
     const [responsibleContact, setResponsibleContact] = useState('');
     const [date, setDate] = useState('');
+    const [managePassword, setManagePassword] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [guests, setGuests] = useState<Partial<EventGuest>[]>([]);
     const [guestName, setGuestName] = useState('');
@@ -91,7 +92,8 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
                 responsible_contact: responsibleContact,
                 date,
                 status: calculatedStatus,
-                registered_by: user.id
+                registered_by: user.id,
+                manage_password: managePassword || undefined
             }, guests);
             alert(`Evento registrado! Status: ${calculatedStatus === 'APPROVED' ? 'Aprovado' : 'Requer Aprovação do Comando'}`);
             onSave();
@@ -202,6 +204,24 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
                                         className={`${inputClass} pl-9`}
                                     />
                                 </div>
+                            </div>
+
+                            <div className={`p-4 rounded-xl border-2 border-dashed ${dk ? 'border-slate-700 bg-slate-900/30' : 'border-blue-100 bg-blue-50/30'}`}>
+                                <label className={labelClass}>Senha de Gerenciamento <span className={`normal-case font-medium ${textMuted}`}>(opcional)</span></label>
+                                <div className="relative">
+                                    <ShieldCheck className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${dk ? 'text-blue-400' : 'text-blue-600'}`} />
+                                    <input
+                                        type="text"
+                                        value={managePassword}
+                                        onChange={(e) => setManagePassword(e.target.value.toUpperCase())}
+                                        placeholder="EX: BASP2024"
+                                        maxLength={12}
+                                        className={`${inputClass} pl-9 ${dk ? 'bg-slate-800' : 'bg-white'}`}
+                                    />
+                                </div>
+                                <p className={`text-[9px] mt-2 font-bold uppercase ${dk ? 'text-blue-400/70' : 'text-blue-600/70'}`}>
+                                    * Se definida, será exigida para gerenciar este evento pelo link público.
+                                </p>
                             </div>
                         </div>
                     </div>

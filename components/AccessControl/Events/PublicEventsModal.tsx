@@ -143,14 +143,17 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
                             <label className={`text-[10px] font-black uppercase tracking-widest ${dk ? 'text-blue-400' : 'text-blue-600'}`}>Gerenciar meu Evento</label>
                             <p className={`text-[9px] font-bold uppercase opacity-60 ${tm}`}>Digite o ID que aparece no destaque azul do seu card acima:</p>
                         </div>
-                        <div className="flex gap-2">
-                            <input 
-                                placeholder="Digite o ID (Ex: c985035e ou 5)"
-                                className={`flex-1 rounded-xl p-3 text-xs font-mono font-bold border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${dk ? 'bg-slate-900 border-slate-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-700'}`}
-                                value={manageIdInput}
-                                onChange={e => setManageIdInput(e.target.value.trim())}
-                                onKeyDown={e => e.key === 'Enter' && manageIdInput && setView('manage')}
-                            />
+                                <div className="flex gap-2">
+                            <div className="relative flex-1">
+                                <span className={`absolute left-3 top-1/2 -translate-y-1/2 font-mono font-black text-xs ${dk ? 'text-blue-500' : 'text-blue-400'}`}>#</span>
+                                <input 
+                                    placeholder="82159ed0 ou 5"
+                                    className={`w-full rounded-xl p-3 pl-7 text-xs font-mono font-bold border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${dk ? 'bg-slate-900 border-slate-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-700'}`}
+                                    value={manageIdInput.replace('#', '')}
+                                    onChange={e => setManageIdInput(e.target.value.trim())}
+                                    onKeyDown={e => e.key === 'Enter' && manageIdInput && setView('manage')}
+                                />
+                            </div>
                             <button 
                                 onClick={() => manageIdInput ? setView('manage') : alert('Insira o ID')}
                                 className="px-5 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-black text-[10px] uppercase transition-all shadow-md shadow-blue-500/20 active:scale-95 flex items-center justify-center gap-2"

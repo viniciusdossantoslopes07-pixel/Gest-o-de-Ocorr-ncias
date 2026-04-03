@@ -143,7 +143,10 @@ export const eventService = {
     },
 
     async getEventByIdOrSeqId(identifier: string): Promise<AccessEvent | null> {
-        const isNum = /^\d+$/.test(identifier);
+        // Limpar o identificador (remover # e espaços)
+        const cleanId = identifier.replace('#', '').trim();
+        const isNum = /^\d+$/.test(cleanId);
+        
         let query = supabase
             .from('events')
             .select(`
@@ -152,9 +155,14 @@ export const eventService = {
             `);
 
         if (isNum) {
-            query = query.eq('seq_id', parseInt(identifier));
+            query = query.eq('seq_id', parseInt(cleanId));
         } else {
-            query = query.eq('id', identifier);
+            // Busca por ID completo ou prefixo (ID Curto de 8 caracteres)
+            if (cleanId.length >= 8) {
+                query = query.ilike('id', `${cleanId}%`);
+            } else {
+                query = query.eq('id', cleanId);
+            }
         }
 
         const { data, error } = await query.maybeSingle();

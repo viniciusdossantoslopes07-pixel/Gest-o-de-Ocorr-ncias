@@ -4,7 +4,7 @@ import { eventService } from '../../../services/eventService';
 import {
     List, Plus, BarChart3, RefreshCw, Calendar, MapPin, Users,
     ChevronRight, Printer, Share2, Copy, CheckCircle, UserPlus,
-    X, Car, AlertCircle, Search
+    X, Car, AlertCircle, Search, Lock
 } from 'lucide-react';
 import EventForm from './EventForm';
 import EventStatistics from './EventStatistics';
@@ -319,6 +319,11 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                             <p className={`text-xs font-bold ${ts}`}>Responsável: <span className={tp}>{selectedEvent.responsible_name}</span></p>
                             {selectedEvent.responsible_saram && <p className={`text-xs font-bold ${ts}`}>SARAM: <span className={tp}>{selectedEvent.responsible_saram}</span></p>}
                             {selectedEvent.responsible_contact && <p className={`text-xs font-bold ${ts}`}>Contato: <span className={tp}>{selectedEvent.responsible_contact}</span></p>}
+                            {selectedEvent.manage_password && owned && (
+                                <p className={`text-xs font-bold px-2 py-0.5 rounded-lg border flex items-center gap-1.5 ${dk ? 'bg-indigo-900/40 border-indigo-500/30 text-indigo-300' : 'bg-indigo-50 border-indigo-200 text-indigo-700'}`}>
+                                    <Lock className="w-3 h-3" /> Senha: <span className="font-black">{selectedEvent.manage_password}</span>
+                                </p>
+                            )}
                         </div>
                     </div>
                     

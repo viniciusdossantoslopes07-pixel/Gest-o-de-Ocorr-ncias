@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../services/supabase';
 import { AccessEvent, EventGuest } from '../../../types';
-import { ArrowLeft, UserPlus, X, Car, Calendar, MapPin, Users, Printer, Share2, CheckCircle, AlertCircle } from 'lucide-react';
+import { ArrowLeft, UserPlus, X, Car, Calendar, MapPin, Users, Printer, Share2, CheckCircle, AlertCircle, Lock } from 'lucide-react';
 import { eventService } from '../../../services/eventService';
 import EventPrintView from './EventPrintView';
 
@@ -17,6 +17,8 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
     const [loading, setLoading] = useState(true);
     const [addingGuest, setAddingGuest] = useState(false);
     const [isPrinting, setIsPrinting] = useState(false);
+    const [isAuthorized, setIsAuthorized] = useState(false);
+    const [passwordInput, setPasswordInput] = useState('');
 
     // Guest fields
     const [name, setName] = useState('');
@@ -99,6 +101,62 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
             <p className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-xs">Carregando Evento...</p>
         </div>
     );
+
+    // Se o evento tem senha e ainda não foi autorizado
+    if (event?.manage_password && !isAuthorized) {
+        return (
+            <div className="w-full max-w-md animate-fade-in">
+                <div className={`p-8 rounded-3xl border shadow-2xl ${dk ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-100'}`}>
+                    <div className="text-center mb-6">
+                        <div className={`w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center ${dk ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
+                            <Lock className={`w-8 h-8 ${dk ? 'text-blue-400' : 'text-blue-600'}`} />
+                        </div>
+                        <h2 className={`text-xl font-black uppercase tracking-tight ${dk ? 'text-white' : 'text-slate-900'}`}>
+                            Evento Protegido
+                        </h2>
+                        <p className={`text-xs font-bold uppercase mt-1 ${dk ? 'text-slate-400' : 'text-slate-500'}`}>
+                            Digite a senha de gerenciamento
+                        </p>
+                    </div>
+
+                    <form onSubmit={(e) => {
+                        e.preventDefault();
+                        if (passwordInput.toUpperCase() === event.manage_password?.toUpperCase()) {
+                            setIsAuthorized(true);
+                        } else {
+                            alert('Senha incorreta.');
+                            setPasswordInput('');
+                        }
+                    }} className="space-y-4">
+                        <input
+                            type="text"
+                            value={passwordInput}
+                            onChange={(e) => setPasswordInput(e.target.value.toUpperCase())}
+                            placeholder="DIGITE A SENHA"
+                            autoFocus
+                            className={`w-full px-5 py-4 border rounded-2xl text-center font-black tracking-[0.3em] outline-none focus:ring-4 transition-all ${
+                                dk ? 'bg-slate-800 border-slate-700 text-white focus:ring-blue-500/20' 
+                                   : 'bg-slate-50 border-slate-200 text-slate-900 focus:ring-blue-500/10'
+                            }`}
+                        />
+                        <button
+                            type="submit"
+                            className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]"
+                        >
+                            Acessar Gerenciamento
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onBack}
+                            className={`w-full py-3 text-xs font-black uppercase tracking-widest ${dk ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'}`}
+                        >
+                            Voltar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        );
+    }
 
     if (!event) return null;
 

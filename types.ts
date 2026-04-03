@@ -311,4 +311,5 @@ export interface AccessEvent {
   created_at?: string;
   registered_by?: string;
   guests?: EventGuest[];
+  manage_password?: string;
 }
