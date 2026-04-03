@@ -611,7 +611,14 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     const handlePrintJustification = (justification: AbsenceJustification) => {
         setSelectedJustification(justification);
-        setTimeout(() => window.print(), 300);
+        // Adiciona classe para modo de impressão de cupom
+        document.body.classList.add('print-coupon-mode');
+        document.body.classList.remove('print-weekly-mode');
+        setTimeout(() => {
+            window.print();
+            setSelectedJustification(null);
+            document.body.classList.remove('print-coupon-mode');
+        }, 500);
     };
 
     useEffect(() => {
@@ -808,7 +815,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     return (
         <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 pb-20" >
             {/* Sub-Tabs Navigation — FIRST */}
-            < div className={`flex w-full md:w-fit gap-1 p-1 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-900/80 border-slate-800/50 backdrop-blur-xl shadow-xl shadow-black/20' : 'bg-indigo-50/30 border-indigo-100/50'}`} >
+            <div className={`flex w-full md:w-fit gap-1 p-1 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-900/80 border-slate-800/50 backdrop-blur-xl shadow-xl shadow-black/20' : 'bg-indigo-50/30 border-indigo-100/50'}`} >
                 <button
                     onClick={() => setActiveSubTab('chamada')}
                     className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 md:px-6 py-2.5 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-wider md:tracking-[0.15em] transition-all duration-300 ${activeSubTab === 'chamada' ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-white text-slate-900 shadow-md') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
@@ -827,7 +834,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 >
                     <BarChart3 className="w-3.5 h-3.5" /> <span className="truncate">Mapa</span>
                 </button>
-            </div >
+            </div>
 
             {/* Compact Header — only for chamada/cupons */}
             {
@@ -894,24 +901,30 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             </div>
                         </div>
 
-                        {/* Bottom row: Sector + Search inline */}
+                        {/* Search Inline — Mobile Friendly */}
                         <div className="flex flex-col md:flex-row items-stretch gap-3 mt-5">
-                            <select
-                                value={selectedSector}
-                                onChange={(e) => setSelectedSector(e.target.value)}
-                                className={`border-2 rounded-xl px-4 py-2.5 text-xs font-black focus:ring-4 focus:ring-blue-500/10 outline-none transition-all md:w-[220px] cursor-pointer ${isDarkMode ? 'bg-slate-800 border-slate-700/50 text-slate-200' : 'bg-white border-indigo-100/50 text-slate-700'}`}
-                            >
-                                {displaySectors.map(s => <option key={s} value={s}>{s}</option>)}
-                            </select>
-                            <div className="relative flex-1 group">
-                                <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isDarkMode ? 'text-slate-500 group-focus-within:text-blue-400' : 'text-slate-400'}`} />
-                                <input
-                                    type="text"
-                                    placeholder="Buscar militar por nome ou graduação..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className={`w-full border-2 rounded-xl py-2.5 pl-11 pr-4 text-xs font-bold focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:font-medium ${isDarkMode ? 'bg-slate-800 border-slate-700/50 text-white placeholder:text-slate-500' : 'bg-white border-indigo-100/50 text-slate-900'}`}
-                                />
+                            <div className="flex flex-col gap-1 md:w-[220px]">
+                                <label className={`text-[9px] font-black uppercase tracking-widest px-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Setor Selecionado</label>
+                                <select
+                                    value={selectedSector}
+                                    onChange={(e) => setSelectedSector(e.target.value)}
+                                    className={`border-2 rounded-xl px-4 py-2.5 text-xs font-black focus:ring-4 focus:ring-blue-500/10 outline-none transition-all cursor-pointer ${isDarkMode ? 'bg-slate-800 border-slate-700/50 text-slate-200' : 'bg-white border-indigo-100/50 text-slate-700'}`}
+                                >
+                                    {displaySectors.map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                            </div>
+                            <div className="flex flex-col gap-1 flex-1 group">
+                                <label className={`text-[9px] font-black uppercase tracking-widest px-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Buscar Militar</label>
+                                <div className="relative">
+                                    <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isDarkMode ? 'text-slate-500 group-focus-within:text-blue-400' : 'text-slate-400'}`} />
+                                    <input
+                                        type="text"
+                                        placeholder="Nome ou graduação..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className={`w-full border-2 rounded-xl py-2.5 pl-11 pr-4 text-xs font-bold focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:font-medium ${isDarkMode ? 'bg-slate-800 border-slate-700/50 text-white placeholder:text-slate-500' : 'bg-white border-indigo-100/50 text-slate-900'}`}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -921,15 +934,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             {
                 activeSubTab === 'chamada' && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
-                        {/* Weekly Grid Table */}
-                        <div className={`rounded-[2rem] border overflow-hidden shadow-sm relative group ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-100/50'}`}>
-                            {/* Mobile Scroll Hint */}
-                            <div className="lg:hidden absolute right-4 top-4 z-30 animate-pulse pointer-events-none">
-                                <div className="bg-slate-900/80 backdrop-blur-sm text-white text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-xl">
-                                    <Filter className="w-2.5 h-2.5 rotate-90" /> Deslize para ver mais
-                                </div>
-                            </div>
-
+                        {/* Desktop Table View */}
+                        <div className={`hidden lg:block rounded-[2rem] border overflow-hidden shadow-sm relative group ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-100/50'}`}>
                             <div className="overflow-x-auto scrollbar-hide lg:scrollbar-default relative group">
                                 <table className="w-full border-collapse">
                                     <thead className="relative z-40">
@@ -1032,7 +1038,64 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     </tbody>
                                 </table>
                             </div>
+                        </div>
 
+                        {/* Mobile Card View (PREMIUM) */}
+                        <div className="lg:hidden space-y-4">
+                            {filteredUsers.map((user) => (
+                                <div key={user.id} className={`rounded-3xl border shadow-lg overflow-hidden transition-all duration-300 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-50 shadow-indigo-100/20'}`}>
+                                    {/* User Header */}
+                                    <div className={`p-4 border-b flex items-center justify-between ${isDarkMode ? 'bg-slate-800/20 border-slate-800' : 'bg-slate-50 border-indigo-50'}`}>
+                                        <div className="flex items-center gap-3">
+                                            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 w-10 h-10 rounded-2xl flex items-center justify-center text-white font-black text-xs shadow-lg">
+                                                {user.rank.substring(0, 2)}
+                                            </div>
+                                            <div>
+                                                <div className={`font-black text-[11px] uppercase tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{user.warName || user.name}</div>
+                                                <div className="text-[9px] font-black text-blue-500 uppercase tracking-widest">{user.rank}</div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            {canManage && (
+                                                <SectorPicker user={user} currentSector={selectedSector} onMove={onMoveUser} isDarkMode={isDarkMode} displaySectors={displaySectors} />
+                                            )}
+                                        </div>
+                                    </div>
+                                    {/* Scrollable Weekly Status */}
+                                    <div className="p-4 overflow-x-auto scrollbar-hide">
+                                        <div className="flex gap-4 min-w-max pb-2">
+                                            {currentWeek.map(date => (
+                                                <div key={date} className={`flex flex-col gap-2 p-3 rounded-2xl border ${isDarkMode ? 'bg-slate-800/40 border-slate-700' : 'bg-indigo-50/30 border-indigo-100/50'}`}>
+                                                    <div className={`text-[9px] font-black uppercase text-center border-b pb-1.5 ${isDarkMode ? 'text-slate-400 border-slate-700' : 'text-indigo-400 border-indigo-100'}`}>
+                                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}
+                                                        <span className="block opacity-60 text-[7px]">{parseISOToDate(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <span className="text-[7px] font-black text-slate-500">1ª</span>
+                                                            <StatusPicker
+                                                                disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
+                                                                value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P'}
+                                                                onChange={(s) => handleWeeklyChange(user.id, date, 'INICIO', s)}
+                                                                isDarkMode={isDarkMode}
+                                                            />
+                                                        </div>
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <span className="text-[7px] font-black text-slate-500">2ª</span>
+                                                            <StatusPicker
+                                                                disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
+                                                                value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P'}
+                                                                onChange={(s) => handleWeeklyChange(user.id, date, 'TERMINO', s)}
+                                                                isDarkMode={isDarkMode}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
                         <div className={`rounded-[2.5rem] p-7 lg:p-10 border shadow-2xl mt-10 transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-xl' : 'bg-white border-slate-200'}`}>
@@ -1201,9 +1264,17 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 </table>
                             </div>
 
-                            <div className="mt-10 flex justify-end gap-3 no-print">
+                             <div className="mt-10 flex justify-end gap-3 no-print">
                                 <button
-                                    onClick={() => window.print()}
+                                    onClick={() => {
+                                        // Adiciona classe para modo de impressão de grade semanal
+                                        document.body.classList.add('print-weekly-mode');
+                                        document.body.classList.remove('print-coupon-mode');
+                                        setTimeout(() => {
+                                            window.print();
+                                            document.body.classList.remove('print-weekly-mode');
+                                        }, 100);
+                                    }}
                                     className={`flex items-center gap-2 px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-900/40' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
                                 >
                                     <Printer className="w-4 h-4" /> Gerar Impressão
@@ -1368,67 +1439,68 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
                 {/* Printable Area (Hidden in UI) */}
                 <div className="hidden print:block bg-white text-black font-sans">
-                    {activeSubTab !== 'mapa_forca' && (
-                        <style>{`
-                    @media print {
-                        @page { 
-                            size: portrait; 
-                            margin: 0; 
-                        }
-                        
-                        body { 
-                            visibility: hidden !important;
-                            background: white !important;
-                        }
-                        
-                        .print-weekly { 
-                            visibility: visible !important;
-                            position: absolute !important;
-                            top: 10mm !important;
-                            left: 10mm !important;
-                            right: 10mm !important;
-                            width: calc(100% - 20mm) !important;
-                            height: auto; 
-                            margin: 0 !important;
-                            padding: 0 !important;
-                            box-sizing: border-box !important;
-                            background: white !important;
-                            border: 1px solid transparent; /* Borda não visual para correção de renderização */
-                        }
+                    {/* Estilos específicos para impressão - Scoped para evitar conflitos */}
+                    <style>{`
+                        @media print {
+                            /* Reset de visibilidade global */
+                            body { 
+                                visibility: hidden !important;
+                                background: white !important;
+                            }
+                            
+                            /* Se estivermos imprimindo a GRADE SEMANAL */
+                            .print-weekly-mode .print-weekly {
+                                visibility: visible !important;
+                                display: block !important;
+                                position: absolute !important;
+                                top: 0 !important;
+                                left: 0 !important;
+                                right: 0 !important;
+                                width: 210mm !important; /* A4 Portrait */
+                                margin: 0 auto !important;
+                                padding: 10mm !important;
+                                background: white !important;
+                                box-sizing: border-box !important;
+                            }
+                            
+                            /* Se estivermos imprimindo o CUPOM INDIVIDUAL */
+                            .print-coupon-mode .print-coupon-thermal {
+                                visibility: visible !important;
+                                display: block !important;
+                                position: fixed !important;
+                                top: 0 !important;
+                                left: 0 !important;
+                                width: 80mm !important;
+                                height: auto !important;
+                                background: white !important;
+                                margin: 0 !important;
+                                padding: 5mm !important;
+                                z-index: 99999 !important;
+                            }
 
-                        .print-weekly * { 
-                            visibility: visible !important; 
-                        }
+                            .print-weekly-mode .print-weekly *,
+                            .print-coupon-mode .print-coupon-thermal * { 
+                                visibility: visible !important; 
+                            }
 
-                        table { 
-                            width: 100%;
-                            border-collapse: collapse;
-                            table-layout: fixed;
-                            page-break-inside: auto;
-                            margin-bottom: 30px;
-                        }
+                            @page { 
+                                margin: 0; 
+                            }
+                            
+                            .print-weekly-mode @page { size: portrait; }
+                            .print-coupon-mode @page { size: auto; margin: 0; }
 
-                        thead { display: table-header-group; }
-                        tfoot { display: table-footer-group; }
-                        
-                        tr { 
-                            page-break-inside: avoid; 
-                            page-break-after: auto;
+                            /* Correções de tabela para impressão */
+                            table { 
+                                width: 100%;
+                                border-collapse: collapse;
+                                table-layout: fixed;
+                            }
+                            tr { page-break-inside: avoid; }
+                            thead { display: table-header-group; }
                         }
-
-                        .print-header {
-                            page-break-inside: avoid;
-                            margin-bottom: 2rem;
-                        }
-
-                        .print-footer {
-                            page-break-inside: avoid;
-                            margin-top: 2rem;
-                        }
-                    }
-                `}</style>
-                    )}
-                    <div className="print-weekly w-full mx-auto">
+                    `}</style>
+                    <div className={`print-weekly w-full mx-auto ${selectedJustification ? 'hidden' : ''}`}>
                         {/* Institutional Header */}
                         <div className="text-center mb-10 space-y-0.5 print-header">
                             <div className="flex flex-col items-center">
@@ -1746,7 +1818,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
                 )}
             </div>
-        </div >
+        </div>
     );
 };
 
