@@ -21,8 +21,10 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
     // Guest fields
     const [name, setName] = useState('');
     const [cpf, setCpf] = useState('');
+    const [age, setAge] = useState('');
     const [hasVehicle, setHasVehicle] = useState(false);
     const [plate, setPlate] = useState('');
+    const [vehicleModel, setVehicleModel] = useState('');
     const [copied, setCopied] = useState(false);
 
     const fetchEvent = async () => {
@@ -46,8 +48,13 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
 
     const handleAddGuest = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!name) return alert('Nome é obrigatório');
-        if (hasVehicle && !plate) return alert('Placa é obrigatória');
+        if (!name.trim()) return alert('Nome é obrigatório');
+        if (cpf.replace(/\D/g, '').length < 11) return alert('CPF obrigatório');
+        if (!age) return alert('Idade obrigatória');
+        if (hasVehicle) {
+            if (!plate) return alert('Placa é obrigatória');
+            if (!vehicleModel.trim()) return alert('Modelo do veículo é obrigatório');
+        }
 
         setAddingGuest(true);
         try {
@@ -57,12 +64,14 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
                     event_id: eventId,
                     name: name.toUpperCase(),
                     cpf: cpf.replace(/\D/g, ''),
+                    age: parseInt(age),
                     has_vehicle: hasVehicle,
-                    vehicle_plate: hasVehicle ? plate.toUpperCase() : null
+                    vehicle_plate: hasVehicle ? plate.toUpperCase() : null,
+                    vehicle_model: hasVehicle ? vehicleModel.toUpperCase() : null
                 }]);
             
             if (error) throw error;
-            setName(''); setCpf(''); setHasVehicle(false); setPlate('');
+            setName(''); setCpf(''); setAge(''); setHasVehicle(false); setPlate(''); setVehicleModel('');
             fetchEvent();
         } catch (err) {
             console.error(err);
@@ -177,19 +186,29 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
                             <label className={`text-[10px] font-bold uppercase tracking-widest pl-1 ${textSub}`}>Nome *</label>
                             <input required className={`w-full rounded-xl p-2.5 text-xs font-bold uppercase border focus:ring-2 focus:outline-none transition-all ${inputCls}`} value={name} onChange={e=>setName(e.target.value)} />
                         </div>
-                        <div className="sm:col-span-3 space-y-1.5">
-                            <label className={`text-[10px] font-bold uppercase tracking-widest pl-1 ${textSub}`}>CPF</label>
-                            <input className={`w-full rounded-xl p-2.5 text-xs font-bold uppercase border focus:ring-2 focus:outline-none transition-all ${inputCls}`} value={cpf} onChange={e=>setCpf(e.target.value.replace(/\D/g, ''))} maxLength={11} />
+                        <div className="sm:col-span-2 space-y-1.5">
+                            <label className={`text-[10px] font-bold uppercase tracking-widest pl-1 ${textSub}`}>CPF *</label>
+                            <input required placeholder="000.000.000-00" className={`w-full rounded-xl p-2.5 text-xs font-bold uppercase border focus:ring-2 focus:outline-none transition-all ${inputCls}`} value={cpf} onChange={e=>setCpf(e.target.value)} maxLength={14} />
+                        </div>
+                        <div className="sm:col-span-1 space-y-1.5">
+                            <label className={`text-[10px] font-bold uppercase tracking-widest pl-1 ${textSub}`}>Idade *</label>
+                            <input required type="number" className={`w-full rounded-xl p-2.5 text-xs font-bold uppercase border focus:ring-2 focus:outline-none transition-all ${inputCls}`} value={age} onChange={e=>setAge(e.target.value)} />
                         </div>
                         <div className="sm:col-span-2 flex items-center gap-2 pb-2">
                             <input type="checkbox" id="g_vehicle" className="w-4 h-4" checked={hasVehicle} onChange={e=>{setHasVehicle(e.target.checked); if(!e.target.checked) setPlate('')}} />
                             <label htmlFor="g_vehicle" className={`text-[10px] font-bold uppercase tracking-widest cursor-pointer ${textSub}`}>Veículo?</label>
                         </div>
                         {hasVehicle && (
-                            <div className="sm:col-span-2 space-y-1.5">
-                                <label className={`text-[10px] font-bold uppercase tracking-widest pl-1 ${textSub}`}>Placa *</label>
-                                <input required className={`w-full rounded-xl p-2.5 text-xs font-bold uppercase border focus:ring-2 focus:outline-none transition-all ${inputCls}`} value={plate} onChange={e=>setPlate(e.target.value)} />
-                            </div>
+                            <>
+                                <div className="sm:col-span-2 space-y-1.5">
+                                    <label className={`text-[10px] font-bold uppercase tracking-widest pl-1 ${textSub}`}>Placa *</label>
+                                    <input required className={`w-full rounded-xl p-2.5 text-xs font-bold uppercase border focus:ring-2 focus:outline-none transition-all ${inputCls}`} value={plate} onChange={e=>setPlate(e.target.value)} />
+                                </div>
+                                <div className="sm:col-span-3 space-y-1.5">
+                                    <label className={`text-[10px] font-bold uppercase tracking-widest pl-1 ${textSub}`}>Modelo *</label>
+                                    <input required className={`w-full rounded-xl p-2.5 text-xs font-bold uppercase border focus:ring-2 focus:outline-none transition-all ${inputCls}`} value={vehicleModel} onChange={e=>setVehicleModel(e.target.value)} />
+                                </div>
+                            </>
                         )}
                         <div className={hasVehicle ? 'sm:col-span-1' : 'sm:col-span-3'}>
                             <button type="submit" disabled={addingGuest} className="w-full h-10 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 flex items-center justify-center rounded-xl transition-colors">
@@ -216,7 +235,12 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
                                 {(event.guests || []).map(g => (
                                     <tr key={g.id} className={`border-b last:border-0 ${dk ? 'border-slate-700' : 'border-slate-100'} text-xs font-medium uppercase text-slate-600 dark:text-slate-300`}>
                                         <td className="p-3">{g.name}</td>
-                                        <td className="p-3">{g.has_vehicle ? <span className="text-orange-500 font-bold flex items-center gap-1"><Car className="w-3 h-3" /> {g.vehicle_plate || 'SIM'}</span> : '-'}</td>
+                                        <td className="p-3">{g.has_vehicle ? (
+                                            <span className="text-orange-500 font-bold flex flex-col gap-0.5">
+                                                <div className="flex items-center gap-1"><Car className="w-3 h-3" /> {g.vehicle_model || 'VEÍCULO'}</div>
+                                                <div className="text-[10px] opacity-70 ml-4">PLACA: {g.vehicle_plate}</div>
+                                            </span>
+                                        ) : '-'}</td>
                                         <td className="p-3 text-center">
                                             {event.status !== 'FINALIZED' && (
                                                 <button onClick={() => handleRemoveGuest(g.id)} className="p-1.5 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors">

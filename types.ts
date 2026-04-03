@@ -293,6 +293,7 @@ export interface EventGuest {
   age?: number;
   has_vehicle?: boolean;
   vehicle_plate?: string;
+  vehicle_model?: string;
   created_at?: string;
 }
 

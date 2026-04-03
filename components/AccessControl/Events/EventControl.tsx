@@ -51,6 +51,7 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
     const [guestAge, setGuestAge] = useState('');
     const [guestVehicle, setGuestVehicle] = useState(false);
     const [guestPlate, setGuestPlate] = useState('');
+    const [guestModel, setGuestModel] = useState('');
     const [addGuestError, setAddGuestError] = useState('');
     const [guestSearch, setGuestSearch] = useState('');
 
@@ -122,20 +123,28 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
 
     const handleAddGuest = async () => {
         setAddGuestError('');
-        if (!guestName.trim() || guestName.trim().length < 3) { setAddGuestError('Nome deve ter pelo menos 3 caracteres.'); return; }
-        if (guestVehicle && guestPlate.length !== 7) { setAddGuestError('Placa deve ter 7 caracteres.'); return; }
+        if (!guestName.trim() || guestName.trim().length < 3) { setAddGuestError('Nome completo obrigatório.'); return; }
+        if (guestCpf.length < 14) { setAddGuestError('CPF obrigatório.'); return; }
+        if (!guestAge) { setAddGuestError('Idade obrigatória.'); return; }
+        
+        if (guestVehicle) {
+            if (guestPlate.length < 7) { setAddGuestError('Placa inválida.'); return; }
+            if (!guestModel.trim()) { setAddGuestError('Modelo do veículo obrigatório.'); return; }
+        }
+
         if (!selectedEvent) return;
         setAddingGuest(true);
         try {
             await eventService.addGuestToEvent(selectedEvent.id, {
                 name: guestName.trim().toUpperCase(),
-                cpf: guestCpf || undefined,
-                age: guestAge ? parseInt(guestAge) : undefined,
+                cpf: guestCpf,
+                age: parseInt(guestAge),
                 has_vehicle: guestVehicle,
                 vehicle_plate: guestVehicle ? guestPlate : undefined,
+                vehicle_model: guestVehicle ? guestModel.toUpperCase() : undefined,
             });
             setGuestName(''); setGuestCpf(''); setGuestAge('');
-            setGuestVehicle(false); setGuestPlate(''); setShowAddGuest(false);
+            setGuestVehicle(false); setGuestPlate(''); setGuestModel(''); setShowAddGuest(false);
             await fetchEvents();
         } catch (err: any) {
             setAddGuestError(`Erro: ${err.message || 'Desconhecido'}`);
@@ -316,13 +325,13 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                                     className={`w-full px-4 py-2.5 border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 ${inputCls}`}
                                 />
                             </div>
-                            <input type="text" placeholder="CPF (Opcional)" value={guestCpf}
+                            <input type="text" placeholder="CPF *" value={guestCpf}
                                 onChange={e => setGuestCpf(formatCPF(e.target.value))} maxLength={14}
-                                className={`px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${inputCls}`}
+                                className={`px-4 py-2.5 border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 ${inputCls}`}
                             />
-                            <input type="number" placeholder="Idade (Opcional)" value={guestAge}
+                            <input type="number" placeholder="Idade *" value={guestAge}
                                 onChange={e => setGuestAge(e.target.value)} min={0} max={120}
-                                className={`px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${inputCls}`}
+                                className={`px-4 py-2.5 border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 ${inputCls}`}
                             />
                         </div>
                         <div className="flex flex-wrap gap-3 mb-3">
@@ -332,10 +341,16 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                                 <span className={`text-xs font-bold uppercase ${dk ? 'text-slate-200' : 'text-slate-700'}`}>Virá com veículo</span>
                             </label>
                             {guestVehicle && (
-                                <input type="text" placeholder="Placa (ABC1234)" value={guestPlate}
-                                    onChange={e => setGuestPlate(formatPlate(e.target.value))} maxLength={7}
-                                    className={`px-4 py-2.5 border rounded-xl text-sm font-bold uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 ${inputCls}`}
-                                />
+                                <>
+                                    <input type="text" placeholder="Modelo do Veículo *" value={guestModel}
+                                        onChange={e => setGuestModel(e.target.value.toUpperCase())}
+                                        className={`px-4 py-2.5 border rounded-xl text-sm font-bold uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 ${inputCls}`}
+                                    />
+                                    <input type="text" placeholder="Placa (ABC1234) *" value={guestPlate}
+                                        onChange={e => setGuestPlate(formatPlate(e.target.value))} maxLength={7}
+                                        className={`w-32 px-4 py-2.5 border rounded-xl text-sm font-bold uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 ${inputCls}`}
+                                    />
+                                </>
                             )}
                         </div>
                         {addGuestError && (
@@ -393,7 +408,10 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                                             {g.has_vehicle ? (
                                                 <div className="flex flex-col items-end">
                                                     <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">Sim</span>
-                                                    {g.vehicle_plate && <span className="text-xs font-mono mt-0.5 text-slate-400">{g.vehicle_plate}</span>}
+                                                    <div className="flex flex-col items-end mt-1">
+                                                        {g.vehicle_model && <span className="text-[10px] font-black leading-tight text-slate-700 dark:text-slate-200 uppercase">{g.vehicle_model}</span>}
+                                                        {g.vehicle_plate && <span className="text-[10px] font-mono font-bold text-slate-400">{g.vehicle_plate}</span>}
+                                                    </div>
                                                 </div>
                                             ) : (
                                                 <span className={`text-[10px] font-bold uppercase ${tm}`}>Não</span>

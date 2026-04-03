@@ -118,8 +118,8 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
                                                 {ev.status === 'APPROVED' ? 'Aprovado' : ev.status === 'FINALIZED' ? 'Finalizado' : 'Cmd'}
                                             </span>
                                         </div>
-                                        <div className={`text-[10px] font-mono font-black border border-current px-2 py-0.5 rounded shadow-sm opacity-80`}>
-                                            EVENTO #{ev.seq_id || ev.id.split('-')[0]}
+                                        <div className={`text-[11px] font-black uppercase px-2.5 py-1 rounded-lg border shadow-sm transition-all ${dk ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'bg-blue-600 text-white border-blue-700'}`}>
+                                            ID: {ev.seq_id || ev.id.split('-')[0]}
                                         </div>
                                     </div>
                                 </div>
@@ -138,20 +138,24 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
                         <Plus className="w-5 h-5" /> SOLICITAR NOVO EVENTO
                     </button>
                     
-                    <div className={`w-full p-4 rounded-2xl border flex flex-col gap-2 ${dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-                        <label className={`text-[10px] font-bold uppercase tracking-widest ${tm}`}>Já tem um código de gerenciamento?</label>
+                    <div className={`w-full p-4 rounded-2xl border flex flex-col gap-3 ${dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
+                        <div className="flex flex-col gap-1">
+                            <label className={`text-[10px] font-black uppercase tracking-widest ${dk ? 'text-blue-400' : 'text-blue-600'}`}>Gerenciar meu Evento</label>
+                            <p className={`text-[9px] font-bold uppercase opacity-60 ${tm}`}>Digite o ID que aparece no destaque azul do seu card acima:</p>
+                        </div>
                         <div className="flex gap-2">
                             <input 
-                                placeholder="Insira o ID do seu Evento"
-                                className={`flex-1 rounded-xl p-3 text-xs font-mono border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${dk ? 'bg-slate-900 border-slate-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-700'}`}
+                                placeholder="Digite o ID (Ex: c985035e ou 5)"
+                                className={`flex-1 rounded-xl p-3 text-xs font-mono font-bold border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${dk ? 'bg-slate-900 border-slate-600 text-white' : 'bg-slate-50 border-slate-200 text-slate-700'}`}
                                 value={manageIdInput}
                                 onChange={e => setManageIdInput(e.target.value.trim())}
+                                onKeyDown={e => e.key === 'Enter' && manageIdInput && setView('manage')}
                             />
                             <button 
-                                onClick={() => manageIdInput ? setView('manage') : alert('Insira um ID')}
-                                className="px-4 py-2 bg-slate-800 text-white dark:bg-slate-700 rounded-xl hover:bg-slate-700 font-bold text-[10px] uppercase transition-colors flex items-center justify-center"
+                                onClick={() => manageIdInput ? setView('manage') : alert('Insira o ID')}
+                                className="px-5 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-black text-[10px] uppercase transition-all shadow-md shadow-blue-500/20 active:scale-95 flex items-center justify-center gap-2"
                             >
-                                <Search className="w-4 h-4" /> BÚSCAR
+                                <Search className="w-4 h-4" /> ACESSAR
                             </button>
                         </div>
                     </div>

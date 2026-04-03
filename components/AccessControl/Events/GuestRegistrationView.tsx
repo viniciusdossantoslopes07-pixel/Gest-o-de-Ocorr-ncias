@@ -20,6 +20,7 @@ export default function GuestRegistrationView({ eventId, onComplete }: GuestRegi
     const [age, setAge] = useState('');
     const [hasVehicle, setHasVehicle] = useState(false);
     const [vehiclePlate, setVehiclePlate] = useState('');
+    const [vehicleModel, setVehicleModel] = useState('');
     const [error, setError] = useState('');
 
     useEffect(() => {
@@ -66,24 +67,36 @@ export default function GuestRegistrationView({ eventId, onComplete }: GuestRegi
             return;
         }
 
-        if (cpf.length > 0 && cpf.length < 14) {
-            setError('CPF incompleto.');
+        if (cpf.length < 14) {
+            setError('CPF é obrigatório.');
+            return;
+        }
+        
+        if (!age) {
+            setError('Idade é obrigatória.');
             return;
         }
 
-        if (hasVehicle && vehiclePlate.replace(/[^a-zA-Z0-9]/g, '').length !== 7) {
-            setError('A placa deve conter 7 caracteres.');
-            return;
+        if (hasVehicle) {
+            if (vehiclePlate.replace(/[^a-zA-Z0-9]/g, '').length !== 7) {
+                setError('A placa deve conter 7 caracteres.');
+                return;
+            }
+            if (!vehicleModel.trim()) {
+                setError('Modelo do veículo é obrigatório.');
+                return;
+            }
         }
 
         setSubmitting(true);
         try {
             await eventService.addGuestToEvent(eventId, {
                 name: name.trim().toUpperCase(),
-                cpf: cpf || undefined,
-                age: age ? parseInt(age) : undefined,
+                cpf: cpf,
+                age: parseInt(age),
                 has_vehicle: hasVehicle,
-                vehicle_plate: hasVehicle ? vehiclePlate : undefined
+                vehicle_plate: hasVehicle ? vehiclePlate : undefined,
+                vehicle_model: hasVehicle ? vehicleModel.trim().toUpperCase() : undefined
             });
             setSuccess(true);
         } catch (err: any) {
@@ -143,6 +156,7 @@ export default function GuestRegistrationView({ eventId, onComplete }: GuestRegi
                             setAge('');
                             setHasVehicle(false);
                             setVehiclePlate('');
+                            setVehicleModel('');
                         }}
                         className="w-full py-4 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 font-bold uppercase rounded-xl transition-all"
                     >
@@ -234,25 +248,27 @@ export default function GuestRegistrationView({ eventId, onComplete }: GuestRegi
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-[11px] font-black uppercase text-slate-500 mb-1.5 ml-1">CPF (Opcional)</label>
+                                <label className="block text-[11px] font-black uppercase text-slate-500 mb-1.5 ml-1">CPF *</label>
                                 <input
                                     type="text"
+                                    required
                                     value={cpf}
                                     onChange={e => setCpf(formatCPF(e.target.value))}
                                     maxLength={14}
-                                    className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl focus:ring-2 focus:ring-blue-500 font-medium transition-all"
+                                    className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold transition-all"
                                     placeholder="000.000.000-00"
                                 />
                             </div>
                             <div>
-                                <label className="block text-[11px] font-black uppercase text-slate-500 mb-1.5 ml-1">Idade (Opci.)</label>
+                                <label className="block text-[11px] font-black uppercase text-slate-500 mb-1.5 ml-1">Idade *</label>
                                 <input
                                     type="number"
+                                    required
                                     value={age}
                                     onChange={e => setAge(e.target.value)}
                                     min="0"
                                     max="120"
-                                    className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl focus:ring-2 focus:ring-blue-500 font-medium transition-all"
+                                    className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold transition-all"
                                     placeholder="Ex: 30"
                                 />
                             </div>
@@ -274,17 +290,30 @@ export default function GuestRegistrationView({ eventId, onComplete }: GuestRegi
                         </div>
 
                         {hasVehicle && (
-                            <div className="animate-slide-down">
-                                <label className="block text-[11px] font-black uppercase text-slate-500 mb-1.5 ml-1">Placa do Veículo *</label>
-                                <input
-                                    type="text"
-                                    required={hasVehicle}
-                                    value={vehiclePlate}
-                                    onChange={e => setVehiclePlate(formatPlate(e.target.value))}
-                                    maxLength={8}
-                                    className="w-full px-4 py-3.5 bg-indigo-50 border border-indigo-200 text-indigo-900 placeholder-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold uppercase transition-all"
-                                    placeholder="ABC-1234"
-                                />
+                            <div className="space-y-4 animate-slide-down">
+                                <div>
+                                    <label className="block text-[11px] font-black uppercase text-slate-500 mb-1.5 ml-1">Modelo do Veículo *</label>
+                                    <input
+                                        type="text"
+                                        required={hasVehicle}
+                                        value={vehicleModel}
+                                        onChange={e => setVehicleModel(e.target.value.toUpperCase())}
+                                        className="w-full px-4 py-3.5 bg-indigo-50 border border-indigo-200 text-indigo-900 placeholder-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold uppercase transition-all"
+                                        placeholder="EX: TOYOTA COROLLA"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-black uppercase text-slate-500 mb-1.5 ml-1">Placa do Veículo *</label>
+                                    <input
+                                        type="text"
+                                        required={hasVehicle}
+                                        value={vehiclePlate}
+                                        onChange={e => setVehiclePlate(formatPlate(e.target.value))}
+                                        maxLength={8}
+                                        className="w-full px-4 py-3.5 bg-indigo-50 border border-indigo-200 text-indigo-900 placeholder-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500 font-bold uppercase transition-all"
+                                        placeholder="ABC-1234"
+                                    />
+                                </div>
                             </div>
                         )}
 

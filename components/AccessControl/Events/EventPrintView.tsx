@@ -168,9 +168,11 @@ const EventPrintView: FC<EventPrintViewProps> = ({ event, onClose }) => {
                                             <td className="px-3 py-2 text-slate-700">{guest.age ? `${guest.age} anos` : '-'}</td>
                                             <td className="px-3 py-2">
                                                 {guest.has_vehicle ? (
-                                                    <span className="font-bold text-slate-900 uppercase">
-                                                        SIM {guest.vehicle_plate ? `(${guest.vehicle_plate})` : ''}
-                                                    </span>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-black text-slate-900 uppercase leading-tight">SIM</span>
+                                                        <span className="text-[8px] font-bold text-slate-600 uppercase">{guest.vehicle_model || 'VEÍCULO'}</span>
+                                                        <span className="text-[9px] font-mono font-black">{guest.vehicle_plate}</span>
+                                                    </div>
                                                 ) : (
                                                     <span className="text-slate-400 font-bold uppercase">NÃO</span>
                                                 )}
