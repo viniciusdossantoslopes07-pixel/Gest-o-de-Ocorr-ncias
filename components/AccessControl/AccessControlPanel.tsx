@@ -107,12 +107,13 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     const [searchFilterType, setSearchFilterType] = useState<'all' | 'Pedestre' | 'Veículo'>('all');
     const [searchFilterCategory, setSearchFilterCategory] = useState<'all' | 'Entrada' | 'Saída'>('all');
     const [searchFilterCharacteristic, setSearchFilterCharacteristic] = useState<string>('all');
+    const [searchFilterGate, setSearchFilterGate] = useState<string>('all');
     const [searchLimit, setSearchLimit] = useState(100);
 
     // Reseta o limite se os filtros mudarem
     useEffect(() => {
         setSearchLimit(100);
-    }, [searchQuery, searchStartDate, searchEndDate, searchFilterType, searchFilterCategory, searchFilterCharacteristic]);
+    }, [searchQuery, searchStartDate, searchEndDate, searchFilterType, searchFilterCategory, searchFilterCharacteristic, searchFilterGate]);
 
     const handleQuickDate = (days: number | null) => {
         setActiveQuickDate(days);
@@ -278,6 +279,11 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 query = query.eq('characteristic', searchFilterCharacteristic);
             }
 
+            // Apply Gate Filter
+            if (searchFilterGate !== 'all') {
+                query = query.eq('guard_gate', searchFilterGate);
+            }
+
             const { data, error } = await query.limit(Math.min(searchLimit, 20000));
 
             if (error) throw error;
@@ -302,7 +308,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
             }
         }, 800);
         return () => clearTimeout(timer);
-    }, [searchQuery, activeTab, searchStartDate, searchEndDate, searchFilterType, searchFilterCategory, searchFilterCharacteristic, searchLimit]);
+    }, [searchQuery, activeTab, searchStartDate, searchEndDate, searchFilterType, searchFilterCategory, searchFilterCharacteristic, searchFilterGate, searchLimit]);
 
     const handleSubmit = async () => {
         if (!selectedGate) {
@@ -1005,7 +1011,29 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
 
                         {/* Filters Panel */}
                         <div className="flex flex-col gap-3 pt-2">
-                            <div className="flex flex-col md:flex-row gap-3">
+                            <div className="flex flex-col md:flex-row gap-3 flex-wrap">
+                                {/* Gate Filter */}
+                                <div className={`flex gap-2 items-center p-2 rounded-xl border ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
+                                    <span className={`text-[10px] font-black uppercase pl-2 whitespace-nowrap ${textMuted}`}>Portão:</span>
+                                    <div className="flex gap-1">
+                                        {(['all', 'PORTÃO G1', 'PORTÃO G2', 'PORTÃO G3'] as const).map(gate => {
+                                            const label = gate === 'all' ? 'Todos' : gate.replace('PORTÃO ', '');
+                                            return (
+                                                <button
+                                                    key={gate}
+                                                    onClick={() => setSearchFilterGate(gate)}
+                                                    className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${searchFilterGate === gate
+                                                        ? 'bg-violet-600 text-white shadow-sm'
+                                                        : (dk ? 'bg-slate-600 text-slate-300 hover:bg-slate-500 border border-slate-500' : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-200')
+                                                        }`}
+                                                >
+                                                    {label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
                                 {/* Type Filter */}
                                 <div className={`flex gap-2 items-center p-2 rounded-xl border ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
                                     <span className={`text-[10px] font-black uppercase pl-2 whitespace-nowrap ${textMuted}`}>Tipo:</span>
