@@ -150,12 +150,17 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
         const pageSize = 1000;
         let hasMore = true;
 
+        const [sy, sm, sd] = start.split('-').map(Number);
+        const [ey, em, ed] = end.split('-').map(Number);
+        const startIso = new Date(sy, sm - 1, sd, 0, 0, 0, 0).toISOString();
+        const endIso = new Date(ey, em - 1, ed, 23, 59, 59, 999).toISOString();
+
         while (hasMore) {
             const { data, error } = await supabase
                 .from('access_control')
                 .select('id, timestamp, guard_gate, name, characteristic, identification, access_mode, access_category, vehicle_model, vehicle_plate, destination')
-                .gte('timestamp', `${start}T00:00:00`)
-                .lte('timestamp', `${end}T23:59:59`)
+                .gte('timestamp', startIso)
+                .lte('timestamp', endIso)
                 .order('timestamp', { ascending: false })
                 .range(page * pageSize, (page + 1) * pageSize - 1);
 
@@ -197,25 +202,30 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
             const prevStartStr = formatDate(prevStartD);
             const prevEndStr = formatDate(prevEndD);
 
+            const [sy, sm, sd] = prevStartStr.split('-').map(Number);
+            const [ey, em, ed] = prevEndStr.split('-').map(Number);
+            const prevStartIso = new Date(sy, sm - 1, sd, 0, 0, 0, 0).toISOString();
+            const prevEndIso = new Date(ey, em - 1, ed, 23, 59, 59, 999).toISOString();
+
             // Fetch summary stats for prev period to avoid massive download
             const { count: prevTotal } = await supabase
                 .from('access_control')
                 .select('id', { count: 'exact', head: true })
-                .gte('timestamp', `${prevStartStr}T00:00:00`)
-                .lte('timestamp', `${prevEndStr}T23:59:59`);
+                .gte('timestamp', prevStartIso)
+                .lte('timestamp', prevEndIso);
 
             const { count: prevEntries } = await supabase
                 .from('access_control')
                 .select('id', { count: 'exact', head: true })
-                .gte('timestamp', `${prevStartStr}T00:00:00`)
-                .lte('timestamp', `${prevEndStr}T23:59:59`)
+                .gte('timestamp', prevStartIso)
+                .lte('timestamp', prevEndIso)
                 .eq('access_category', 'Entrada');
 
             const { count: prevExits } = await supabase
                 .from('access_control')
                 .select('id', { count: 'exact', head: true })
-                .gte('timestamp', `${prevStartStr}T00:00:00`)
-                .lte('timestamp', `${prevEndStr}T23:59:59`)
+                .gte('timestamp', prevStartIso)
+                .lte('timestamp', prevEndIso)
                 .eq('access_category', 'Saída');
 
             setPrevInfo({

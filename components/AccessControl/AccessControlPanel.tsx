@@ -208,8 +208,9 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 .order('timestamp', { ascending: false });
 
             if (filterDate) {
-                const startOfDay = `${filterDate}T00:00:00`;
-                const endOfDay = `${filterDate}T23:59:59`;
+                const [year, month, day] = filterDate.split('-').map(Number);
+                const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0).toISOString();
+                const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999).toISOString();
                 query = query.gte('timestamp', startOfDay).lte('timestamp', endOfDay);
             }
 
@@ -254,10 +255,12 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
 
             // Apply Date Filters
             if (searchStartDate) {
-                query = query.gte('timestamp', `${searchStartDate}T00:00:00`);
+                const [y, m, d] = searchStartDate.split('-').map(Number);
+                query = query.gte('timestamp', new Date(y, m - 1, d, 0, 0, 0, 0).toISOString());
             }
             if (searchEndDate) {
-                query = query.lte('timestamp', `${searchEndDate}T23:59:59`);
+                const [y, m, d] = searchEndDate.split('-').map(Number);
+                query = query.lte('timestamp', new Date(y, m - 1, d, 23, 59, 59, 999).toISOString());
             }
 
             // Apply Type Filter
