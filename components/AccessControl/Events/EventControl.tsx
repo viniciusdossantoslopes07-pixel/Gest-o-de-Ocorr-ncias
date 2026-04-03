@@ -100,12 +100,12 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
         }).catch(() => prompt('Copie o link:', link));
     };
 
-    const handleStatusChange = async (ev: AccessEvent) => {
+    const handleStatusChange = async (ev: AccessEvent, next: 'PENDING' | 'APPROVED' | 'REJECTED') => {
         if (!admin) return;
-        const next = ev.status === 'APPROVED' ? 'PENDING' : 'APPROVED';
-        if (!window.confirm(`Mudar status para ${next === 'APPROVED' ? 'APROVADO' : 'PENDENTE'}?`)) return;
+        const statusMap = { 'PENDING': 'PENDENTE', 'APPROVED': 'APROVADO', 'REJECTED': 'REJEITADO' };
+        if (!window.confirm(`Mudar status para ${statusMap[next]}?`)) return;
         try {
-            await eventService.updateEventStatus(ev.id, next as 'PENDING' | 'APPROVED');
+            await eventService.updateEventStatus(ev.id, next);
             setEvents(prev => prev.map(e => e.id === ev.id ? { ...e, status: next as any } : e));
             setSelectedEvent(prev => prev?.id === ev.id ? { ...prev, status: next as any } : prev);
         } catch { alert('Erro ao alterar status.'); }
@@ -165,11 +165,13 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
     const Badge = ({ status }: { status: string }) => (
         <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${status === 'APPROVED'
             ? (dk ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-100 text-emerald-700')
-            : status === 'FINALIZED'
-                ? (dk ? 'bg-slate-800 text-slate-500 border border-slate-700' : 'bg-slate-100 text-slate-500 border border-slate-200')
-                : (dk ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-100 text-amber-700')
+            : status === 'REJECTED'
+                ? (dk ? 'bg-red-900/40 text-red-400' : 'bg-red-100 text-red-700')
+                : status === 'FINALIZED'
+                    ? (dk ? 'bg-slate-800 text-slate-500 border border-slate-700' : 'bg-slate-100 text-slate-500 border border-slate-200')
+                    : (dk ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-100 text-amber-700')
         }`}>
-            {status === 'APPROVED' ? 'Aprovado' : status === 'FINALIZED' ? 'Finalizado' : 'Pendente (Cmd)'}
+            {status === 'APPROVED' ? 'Aprovado' : status === 'FINALIZED' ? 'Finalizado' : status === 'REJECTED' ? 'Rejeitado' : 'Pendente (Cmd)'}
         </span>
     );
 
@@ -226,18 +228,35 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                             </button>
                         )}
 
-                        {/* Status toggle – admin only, oculto se finalizado */}
+                        {/* SOP-3 Audit Controls – admin only, oculto se finalizado */}
                         {admin && selectedEvent.status !== 'FINALIZED' && (
                             <div className="flex gap-2">
-                                <button
-                                    onClick={() => handleStatusChange(selectedEvent)}
-                                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase transition-all border
-                                    ${selectedEvent.status === 'APPROVED'
-                                        ? 'bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200'
-                                        : 'bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200'}`}
-                                >
-                                    Transformar em {selectedEvent.status === 'APPROVED' ? 'Pendente' : 'Aprovado'}
-                                </button>
+                                {selectedEvent.status !== 'APPROVED' && (
+                                    <button
+                                        onClick={() => handleStatusChange(selectedEvent, 'APPROVED')}
+                                        className="px-4 py-2 rounded-xl text-xs font-black uppercase bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20"
+                                    >
+                                        Aprovar Evento
+                                    </button>
+                                )}
+                                
+                                {selectedEvent.status !== 'REJECTED' && (
+                                    <button
+                                        onClick={() => handleStatusChange(selectedEvent, 'REJECTED')}
+                                        className="px-4 py-2 rounded-xl text-xs font-black uppercase bg-red-600 text-white hover:bg-red-700 transition-all shadow-lg shadow-red-500/20"
+                                    >
+                                        Rejeitar (Expirar Link)
+                                    </button>
+                                )}
+
+                                {selectedEvent.status !== 'PENDING' && (
+                                    <button
+                                        onClick={() => handleStatusChange(selectedEvent, 'PENDING')}
+                                        className={`px-4 py-2 rounded-xl text-xs font-black uppercase transition-all ${dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-600'}`}
+                                    >
+                                        Voltar p/ Pendente
+                                    </button>
+                                )}
                                 
                                 {selectedEvent.status === 'APPROVED' && (
                                     <button
@@ -274,6 +293,21 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                     <div className={`flex items-center gap-2 p-3 rounded-xl mb-4 text-xs font-bold ${dk ? 'bg-slate-700/50 text-slate-400' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}>
                         <AlertCircle className="w-4 h-4 shrink-0" />
                         Você está visualizando este evento. Somente o responsável pode adicionar convidados ou imprimir a relação.
+                    </div>
+                )}
+
+                {/* Large Event Alert for Admin */}
+                {admin && selectedEvent.guests && selectedEvent.guests.length > 20 && (
+                    <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-5 rounded-r-xl flex items-start gap-4">
+                        <div className="w-10 h-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center shrink-0">
+                            <AlertCircle className="w-6 h-6" />
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="text-amber-900 font-black text-xs uppercase mb-1">Aviso SOP-3: Evento de Grande Porte</h4>
+                            <p className="text-amber-800 text-[11px] font-medium leading-relaxed">
+                                Este evento possui mais de 20 convidados. Segundo o SOP, requer anuência do **CMT da BASP**. O responsável foi instruído a encaminhar a relação para o email gab.cmt.basp@fab.mil.br. **Verifique a autorização antes de aprovar.**
+                            </p>
+                        </div>
                     </div>
                 )}
 

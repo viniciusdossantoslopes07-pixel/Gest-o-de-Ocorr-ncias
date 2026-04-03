@@ -69,7 +69,7 @@ export const eventService = {
         return eventResult;
     },
 
-    async updateEventStatus(eventId: string, newStatus: 'PENDING' | 'APPROVED' | 'FINALIZED'): Promise<void> {
+    async updateEventStatus(eventId: string, newStatus: 'PENDING' | 'APPROVED' | 'REJECTED' | 'FINALIZED'): Promise<void> {
         const { error } = await supabase
             .from('events')
             .update({ status: newStatus })

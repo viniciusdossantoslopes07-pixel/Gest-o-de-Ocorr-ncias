@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../services/supabase';
 import { AccessEvent, EventGuest } from '../../../types';
-import { ArrowLeft, UserPlus, X, Car, Calendar, MapPin, Users, Printer, Share2, CheckCircle } from 'lucide-react';
+import { ArrowLeft, UserPlus, X, Car, Calendar, MapPin, Users, Printer, Share2, CheckCircle, AlertCircle } from 'lucide-react';
 import { eventService } from '../../../services/eventService';
 import EventPrintView from './EventPrintView';
 
@@ -107,6 +107,21 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
     const inputCls = dk ? 'bg-slate-900 border-slate-600 focus:border-blue-500 text-white' : 'bg-white border-slate-200 text-slate-900';
     const textSub = dk ? 'text-slate-400' : 'text-slate-500';
 
+    if (event.status === 'REJECTED') {
+        return (
+            <div className={`w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl p-10 text-center shadow-2xl border ${dk ? 'border-slate-700' : 'border-slate-200'}`}>
+                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <X className="w-8 h-8" />
+                </div>
+                <h2 className="text-2xl font-black uppercase text-slate-900 dark:text-white mb-2">Link Expirado</h2>
+                <p className="text-slate-500 dark:text-slate-400 font-medium mb-8">Este evento foi rejeitado pela auditoria ou o prazo expirou. Por favor, realize uma nova solicitação.</p>
+                <button onClick={onBack} className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold uppercase transition-all hover:bg-slate-800">
+                    Voltar
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className={`w-full max-w-3xl max-h-[90vh] flex flex-col rounded-t-3xl sm:rounded-3xl shadow-2xl border overflow-hidden animate-in zoom-in-95 ${cardBg}`}>
             <div className={`p-4 sm:p-5 border-b flex items-center justify-between ${dk ? 'border-slate-700 bg-slate-800/50' : 'border-slate-100 bg-slate-50'}`}>
@@ -148,6 +163,20 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
             </div>
 
             <div className="overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar">
+                {event.guests && event.guests.length > 20 && (
+                    <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-start gap-4 animate-in slide-in-from-top-4">
+                        <div className="w-10 h-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center shrink-0">
+                            <AlertCircle className="w-6 h-6" />
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="text-amber-900 font-black text-xs uppercase mb-1">Aviso GSD-SP: Evento de Grande Porte</h4>
+                            <p className="text-amber-800 text-[11px] font-medium leading-relaxed">
+                                Este evento possui mais de 20 convidados e requer anuência do **CMT da BASP**. Por favor, imprima a relação e encaminhe-a para o email: <strong className="underline">gab.cmt.basp@fab.mil.br</strong>
+                            </p>
+                        </div>
+                    </div>
+                )}
+
                 <div className={`p-4 rounded-2xl border ${sectionBg} ${dk ? 'border-slate-700' : 'border-slate-200'}`}>
                     <h3 className="text-lg font-bold uppercase mb-3 flex items-center gap-2">
                         <Calendar className="w-5 h-5 text-blue-500" /> {event.name || 'Evento sem nome'}
@@ -165,7 +194,11 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
                         </div>
                         <div>
                             <span className={`block text-[10px] font-bold uppercase tracking-widest ${textSub}`}>Status</span>
-                            <p className="font-medium text-sm">
+                            <p className={`font-black text-xs uppercase px-2 py-0.5 rounded-md inline-block mt-1 ${
+                                event.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' : 
+                                event.status === 'FINALIZED' ? 'bg-slate-200 text-slate-600' :
+                                'bg-amber-100 text-amber-700'
+                            }`}>
                                 {event.status === 'APPROVED' ? 'Aprovado' : event.status === 'PENDING' ? 'Em Análise' : 'Finalizado'}
                             </p>
                         </div>

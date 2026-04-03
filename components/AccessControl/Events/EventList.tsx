@@ -52,11 +52,11 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
         if (!window.confirm(`Tem certeza que deseja mudar para ${newStatus}?`)) return;
 
         try {
-            await eventService.updateEventStatus(eventId, newStatus as 'PENDING' | 'APPROVED');
+            await eventService.updateEventStatus(eventId, newStatus as any);
             // Atualizar local
-            setEvents(prev => prev.map(e => e.id === eventId ? { ...e, status: newStatus as 'PENDING' | 'APPROVED' } : e));
+            setEvents(prev => prev.map(e => e.id === eventId ? { ...e, status: newStatus as any } : e));
             if (selectedEvent && selectedEvent.id === eventId) {
-                setSelectedEvent({ ...selectedEvent, status: newStatus as 'PENDING' | 'APPROVED' });
+                setSelectedEvent({ ...selectedEvent, status: newStatus as any });
             }
         } catch (err) {
             alert('Erro ao alterar o status do evento.');

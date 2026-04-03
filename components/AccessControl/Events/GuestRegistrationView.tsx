@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AccessEvent } from '../../../types';
 import { eventService } from '../../../services/eventService';
-import { CalendarDays, MapPin, User, CheckCircle, CarFront, Loader2 } from 'lucide-react';
+import { CalendarDays, MapPin, User, CheckCircle, CarFront, Loader2, AlertCircle, X } from 'lucide-react';
 
 interface GuestRegistrationViewProps {
     eventId: string;
@@ -117,15 +117,22 @@ export default function GuestRegistrationView({ eventId, onComplete }: GuestRegi
         );
     }
 
-    if (!event) {
+    if (!event || event.status === 'REJECTED') {
+        const isRejected = event?.status === 'REJECTED';
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
                 <div className="bg-white p-8 rounded-3xl shadow-xl max-w-sm w-full text-center border border-slate-100">
-                    <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <CalendarDays className="w-8 h-8" />
+                    <div className={`w-16 h-16 ${isRejected ? 'bg-red-100 text-red-500' : 'bg-blue-100 text-blue-500'} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                        {isRejected ? <X className="w-8 h-8" /> : <CalendarDays className="w-8 h-8" />}
                     </div>
-                    <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-2">Evento Inválido</h2>
-                    <p className="text-sm text-slate-500">O link acessado não pertence a um evento válido ou foi removido.</p>
+                    <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-2">
+                        {isRejected ? 'Link Expirado' : 'Evento Inválido'}
+                    </h2>
+                    <p className="text-sm text-slate-500">
+                        {isRejected 
+                            ? 'Este evento foi rejeitado pela auditoria ou o prazo de preenchimento expirou. Por favor, solicite um novo link ao organizador.' 
+                            : 'O link acessado não pertence a um evento válido ou foi removido.'}
+                    </p>
                 </div>
             </div>
         );
@@ -218,6 +225,21 @@ export default function GuestRegistrationView({ eventId, onComplete }: GuestRegi
 
                 {/* Form */}
                 <div className="p-6 sm:p-8">
+                    {/* Large Event Alert */}
+                    {event.guests && event.guests.length > 20 && (
+                         <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200 mb-6 animate-in slide-in-from-top-2">
+                            <div className="w-8 h-8 rounded-full bg-amber-100 flex flex-shrink-0 items-center justify-center">
+                                <AlertCircle className="w-4 h-4 text-amber-600" />
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-[10px] leading-tight text-amber-900 font-black uppercase mb-1">Evento de Grande Porte</p>
+                                <p className="text-[10px] leading-tight text-amber-800 font-medium">
+                                    Este evento possui mais de 20 convidados e depende de aprovação do comando. Certifique-se com o organizador se sua presença foi autorizada via email oficial.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Security Badge */}
                     <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 border border-blue-100 mb-6">
                         <div className="w-8 h-8 rounded-full bg-blue-200 flex flex-shrink-0 items-center justify-center">
