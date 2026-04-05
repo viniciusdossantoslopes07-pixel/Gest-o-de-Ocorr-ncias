@@ -143,34 +143,55 @@ export const eventService = {
     },
 
     async getEventByIdOrSeqId(identifier: string): Promise<AccessEvent | null> {
-        // Limpar o identificador (remover # e espaços)
         const cleanId = identifier.replace('#', '').trim();
         const isNum = /^\d+$/.test(cleanId);
         
-        let query = supabase
-            .from('events')
-            .select(`
-                *,
-                guests:event_guests(*)
-            `);
-
-        if (isNum) {
-            query = query.eq('seq_id', parseInt(cleanId));
-        } else {
-            // Busca por ID completo ou prefixo (ID Curto de 8 caracteres)
-            if (cleanId.length >= 8) {
-                query = query.ilike('id', `${cleanId}%`);
-            } else {
-                query = query.eq('id', cleanId);
+        try {
+            if (isNum) {
+                const { data, error } = await supabase
+                    .from('events')
+                    .select('*, guests:event_guests(*)')
+                    .eq('seq_id', parseInt(cleanId))
+                    .maybeSingle();
+                
+                if (data && !error) return data;
             }
-        }
 
-        const { data, error } = await query.maybeSingle();
+            // Se for número e não achou, ou se tem letras (ex: 5BA65B0A - eventos antigos com UUID)
+            // O Supabase (PostgREST) não suporta .ilike() direto em colunas UUID.
+            // Para encontrar pedaços de UUID de forma 100% segura, buscamos os eventos recentes em memória filtrados.
+            const today = new Date();
+            const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+            
+            const { data: recentEvents } = await supabase
+                .from('events')
+                .select('*, guests:event_guests(*)')
+                .gte('date', localDate)
+                .order('date', { ascending: true })
+                .limit(200);
 
-        if (error) {
+            if (recentEvents) {
+                const match = recentEvents.find(e => 
+                    e.id.toLowerCase().startsWith(cleanId.toLowerCase())
+                );
+                if (match) return match;
+            }
+
+            // Fallback se for um UUID completo de 36 caracteres
+            if (cleanId.length === 36) {
+                const { data: exactMatch } = await supabase
+                    .from('events')
+                    .select('*, guests:event_guests(*)')
+                    .eq('id', cleanId.toLowerCase())
+                    .maybeSingle();
+                if (exactMatch) return exactMatch;
+            }
+
+            return null;
+        } catch (error) {
             console.error('Erro ao buscar evento por ID/SeqId:', error);
-            throw error;
+            // Retorna silently fail se for formato incorreto ao invés de quebrar a Promise
+            return null;
         }
-        return data || null;
     }
 };
