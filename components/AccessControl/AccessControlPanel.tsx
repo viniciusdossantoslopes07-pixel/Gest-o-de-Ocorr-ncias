@@ -2,13 +2,13 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../../services/supabase';
 import { User } from '../../types';
 import {
-    DoorOpen, Car, Footprints, ArrowDownToLine, ArrowUpFromLine,
-    Shield, UserCheck, Search, Calendar, RefreshCw, Plus, X,
+    DoorOpen, Car, Footprints, ArrowDownToLine, ArrowUpFromLine, Shield, UserCheck, Search, Calendar, RefreshCw, Plus, X,
     ChevronDown, Clock, Filter, Truck, Building2, BadgeCheck, Database, Info, Check,
-    History, Sparkles, ChevronUp, AlertCircle, BarChart3, List
+    History, Sparkles, ChevronUp, AlertCircle, BarChart3, List, Printer
 } from 'lucide-react';
 import AccessStatistics from './AccessStatistics';
 import { Combobox } from '../Combobox';
+import AdvancedSearchPrintView from './AdvancedSearchPrintView';
 
 interface AccessControlPanelProps {
     user: User;
@@ -98,6 +98,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<AccessRecord[]>([]);
     const [loadingSearch, setLoadingSearch] = useState(false);
+    const [showPrintView, setShowPrintView] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
 
     // Search Filters
@@ -1109,13 +1110,21 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                     {
                         hasSearched && (
                             <div className={`rounded-xl shadow-sm border overflow-hidden animate-in fade-in slide-in-from-bottom-4 ${card}`}>
-                                <div className={`p-3 border-b flex items-center justify-between ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
+                                <div className={`p-3 border-b flex flex-col sm:flex-row items-center justify-between gap-3 ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
                                     <span className={`text-xs font-black uppercase flex items-center gap-2 ${textSecondary}`}>
                                         <List className="w-3.5 h-3.5" /> Resultados Encontrados
                                     </span>
-                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${dk ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-700'}`}>
-                                        {searchResults.length} Registros
-                                    </span>
+                                    <div className="flex items-center gap-2 sm:gap-3">
+                                        <button
+                                            onClick={() => setShowPrintView(true)}
+                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all shadow-sm active:scale-95 ${dk ? 'bg-slate-700 text-blue-400 hover:bg-slate-600' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                                        >
+                                            <Printer className="w-3.5 h-3.5" /> EXTRAIR RELATÓRIO
+                                        </button>
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${dk ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-700'}`}>
+                                            {searchResults.length} Registros
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <div className="overflow-x-auto">
@@ -1292,6 +1301,16 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                     </div>
                 )
             }
+
+            {showPrintView && (
+                <AdvancedSearchPrintView
+                    records={searchResults}
+                    searchQuery={searchQuery}
+                    startDate={searchStartDate}
+                    endDate={searchEndDate}
+                    onClose={() => setShowPrintView(false)}
+                />
+            )}
         </div>
     );
 }
