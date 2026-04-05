@@ -285,7 +285,9 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 query = query.eq('guard_gate', searchFilterGate);
             }
 
-            const { data, error } = await query.limit(Math.min(searchLimit, 20000));
+            // Se o filtro rápido for 'HOJE' (0), puxa até 20.000 para não estourar o dia
+            const limit = activeQuickDate === 0 ? 20000 : Math.min(searchLimit, 20000);
+            const { data, error } = await query.limit(limit);
 
             if (error) throw error;
             setSearchResults(data || []);
