@@ -36,11 +36,26 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 z-50 flex print:block items-center justify-center p-4 print:p-0 print:bg-white force-light backdrop-blur-sm">
-            <div className="bg-white rounded-2xl max-w-5xl w-full h-[90vh] print:h-auto overflow-hidden print:overflow-visible flex flex-col print:block print:rounded-none print:max-w-none shadow-2xl">
+        <>
+            <style
+                type="text/css"
+                media="print"
+                dangerouslySetInnerHTML={{
+                    __html: `
+                    @page { size: A4; margin: 10mm; }
+                    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background-color: white !important; }
+                    table { page-break-inside: auto; }
+                    tr { page-break-inside: avoid; page-break-after: auto; }
+                    thead { display: table-header-group; }
+                    tfoot { display: table-footer-group; }
+                    `
+                }}
+            />
+            <div className="fixed print:static print:inset-auto inset-0 bg-black/60 z-[9999] flex print:block items-center justify-center p-4 print:p-0 print:bg-white force-light backdrop-blur-sm">
+                <div className="bg-white rounded-2xl max-w-5xl w-full h-[90vh] print:h-auto overflow-hidden print:overflow-visible flex flex-col print:block print:max-w-none print:rounded-none shadow-2xl print:shadow-none">
 
-                {/* Control Header - Hidden on print */}
-                <div className="bg-white border-b border-slate-200 p-4 flex items-center justify-between print:hidden z-20 shrink-0">
+                    {/* Control Header - Hidden on print */}
+                    <div className="bg-white border-b border-slate-200 p-4 flex items-center justify-between print:hidden z-20 shrink-0">
                     <h2 className="text-lg font-bold text-slate-900 font-mono tracking-tight">Relatório de Controle de Acesso</h2>
                     <div className="flex items-center gap-2">
                         <button
@@ -61,7 +76,7 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
 
                 {/* Content Area - Scrollable in UI, Visible in Print */}
                 <div className="flex-1 overflow-auto print:overflow-visible bg-slate-100 print:bg-white p-4 print:p-0 print:block">
-                    <div className="bg-white shadow-xl print:shadow-none mx-auto p-8 print:p-0 min-h-full max-w-[210mm] print:max-w-none mb-8 print:mb-0">
+                    <div className="bg-white shadow-xl print:shadow-none mx-auto p-8 print:p-8 min-h-full max-w-[210mm] print:max-w-none mb-8 print:mb-0 print:border print:border-slate-300 print:rounded-lg">
 
                         {/* Standard Military Header */}
                         <div className="flex items-start justify-between mb-4 border-b-2 border-slate-900 pb-4">
@@ -190,6 +205,7 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
                 </div>
             </div>
         </div>
+        </>
     );
 };
 
