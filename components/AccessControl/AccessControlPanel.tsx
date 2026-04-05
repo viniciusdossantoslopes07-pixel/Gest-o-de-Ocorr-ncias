@@ -1089,6 +1089,18 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                 ))}
                             </div>
                         </div>
+
+                        <div className="ml-auto flex items-center mt-2 md:mt-0">
+                            <button
+                                onClick={() => setShowPrintView(true)}
+                                disabled={searchResults.length === 0}
+                                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${dk ? 'bg-blue-900/40 border border-blue-800 text-blue-400 hover:bg-blue-800/60' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/20'} ${searchResults.length > 0 && !dk ? 'animate-pulse ring-2 ring-blue-600/30' : ''}`}
+                            >
+                                <Printer className="w-4 h-4" /> 
+                                Extrair Relatório
+                            </button>
+                        </div>
+
                         </div> {/* clse flex-col md:flex-row gap-3 */}
                     </div> {/* close Filters Panel */}
                     </div> {/* close card wrapper */}
@@ -1110,21 +1122,13 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                     {
                         hasSearched && (
                             <div className={`rounded-xl shadow-sm border overflow-hidden animate-in fade-in slide-in-from-bottom-4 ${card}`}>
-                                <div className={`p-3 border-b flex flex-col sm:flex-row items-center justify-between gap-3 ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
+                                <div className={`p-3 border-b flex items-center justify-between ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
                                     <span className={`text-xs font-black uppercase flex items-center gap-2 ${textSecondary}`}>
                                         <List className="w-3.5 h-3.5" /> Resultados Encontrados
                                     </span>
-                                    <div className="flex items-center gap-2 sm:gap-3">
-                                        <button
-                                            onClick={() => setShowPrintView(true)}
-                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all shadow-sm active:scale-95 ${dk ? 'bg-slate-700 text-blue-400 hover:bg-slate-600' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
-                                        >
-                                            <Printer className="w-3.5 h-3.5" /> EXTRAIR RELATÓRIO
-                                        </button>
-                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${dk ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-700'}`}>
-                                            {searchResults.length} Registros
-                                        </span>
-                                    </div>
+                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${dk ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-700'}`}>
+                                        {searchResults.length} Registros
+                                    </span>
                                 </div>
 
                                 <div className="overflow-x-auto">
