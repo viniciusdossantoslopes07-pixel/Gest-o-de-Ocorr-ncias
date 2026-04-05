@@ -43,15 +43,27 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
                 dangerouslySetInnerHTML={{
                     __html: `
                     @page { size: A4; margin: 10mm; }
+                    html, body, #root, #__next { 
+                        height: auto !important; 
+                        min-height: 100% !important;
+                        overflow: visible !important; 
+                        position: static !important;
+                    }
+                    /* Força todos os ancestrais a não cortarem o conteúdo */
+                    * {
+                        overflow: visible !important;
+                    }
                     body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background-color: white !important; }
                     table { page-break-inside: auto; }
                     tr { page-break-inside: avoid; page-break-after: auto; }
                     thead { display: table-header-group; }
                     tfoot { display: table-footer-group; }
+                    
+                    /* Hiding unwanted elements if needed, but the absolute positioning usually covers it */
                     `
                 }}
             />
-            <div className="fixed print:static print:inset-auto inset-0 bg-black/60 z-[9999] flex print:block items-center justify-center p-4 print:p-0 print:bg-white force-light backdrop-blur-sm">
+            <div className="fixed print:absolute print:inset-0 print:left-0 print:top-0 bg-black/60 z-[9999] flex print:block items-center justify-center p-4 print:p-0 print:bg-white force-light backdrop-blur-sm print:min-h-screen">
                 <div className="bg-white rounded-2xl max-w-5xl w-full h-[90vh] print:h-auto overflow-hidden print:overflow-visible flex flex-col print:block print:max-w-none print:rounded-none shadow-2xl print:shadow-none">
 
                     {/* Control Header - Hidden on print */}
@@ -75,8 +87,8 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
                 </div>
 
                 {/* Content Area - Scrollable in UI, Visible in Print */}
-                <div className="flex-1 overflow-auto print:overflow-visible bg-slate-100 print:bg-white p-4 print:p-0 print:block">
-                    <div className="bg-white shadow-xl print:shadow-none mx-auto p-8 print:p-8 min-h-full max-w-[210mm] print:max-w-none mb-8 print:mb-0 print:border print:border-slate-300 print:rounded-lg">
+                <div className="flex-1 overflow-auto print:overflow-visible bg-slate-100 print:bg-white p-4 print:p-8 print:block">
+                    <div className="bg-white shadow-xl print:shadow-none mx-auto p-8 print:p-8 min-h-full max-w-[210mm] print:max-w-none mb-8 print:mb-0 print:border print:border-slate-300 print:rounded-lg box-border">
 
                         {/* Standard Military Header */}
                         <div className="flex items-start justify-between mb-4 border-b-2 border-slate-900 pb-4">
