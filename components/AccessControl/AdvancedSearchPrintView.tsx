@@ -32,42 +32,89 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
     onClose
 }) => {
     const handlePrint = () => {
+        document.body.classList.add('printing-report');
         window.print();
+        document.body.classList.remove('printing-report');
     };
 
     return (
         <>
             <style
                 type="text/css"
-                media="print"
                 dangerouslySetInnerHTML={{
                     __html: `
-                    @page { size: A4; margin: 10mm; }
-                    html, body, #root, #__next { 
-                        height: auto !important; 
-                        min-height: 100% !important;
-                        overflow: visible !important; 
-                        position: static !important;
+                    @media print {
+                        @page { size: A4; margin: 10mm; }
+
+                        /* 1. Esconde TUDO do corpo */
+                        body.printing-report > * {
+                            display: none !important;
+                        }
+
+                        /* 2. Mostra apenas o overlay do relatório */
+                        body.printing-report > #print-report-root {
+                            display: block !important;
+                            position: static !important;
+                            width: 100% !important;
+                            height: auto !important;
+                            background: white !important;
+                            overflow: visible !important;
+                        }
+
+                        /* 3. Dentro do root, zerar estilos de modal */
+                        body.printing-report #print-report-root {
+                            background: white !important;
+                        }
+
+                        /* 4. Ocultar o header de controles da modal */
+                        body.printing-report .print-controls-bar {
+                            display: none !important;
+                        }
+
+                        /* 5. Área de conteúdo: remover scroll, mostrar tudo */
+                        body.printing-report #print-content-area {
+                            overflow: visible !important;
+                            height: auto !important;
+                            max-height: none !important;
+                            padding: 0 !important;
+                            background: white !important;
+                        }
+
+                        body.printing-report #print-content-area * {
+                            overflow: visible !important;
+                        }
+
+                        /* 6. Painel principal semelhante ao papel */
+                        body.printing-report #print-page-panel {
+                            box-shadow: none !important;
+                            border-radius: 0 !important;
+                            max-width: none !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                        }
+
+                        body {
+                            background-color: white !important;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+
+                        table { page-break-inside: auto; }
+                        tr { page-break-inside: avoid; page-break-after: auto; }
+                        thead { display: table-header-group; }
+                        tfoot { display: table-footer-group; }
                     }
-                    /* Força todos os ancestrais a não cortarem o conteúdo */
-                    * {
-                        overflow: visible !important;
-                    }
-                    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background-color: white !important; }
-                    table { page-break-inside: auto; }
-                    tr { page-break-inside: avoid; page-break-after: auto; }
-                    thead { display: table-header-group; }
-                    tfoot { display: table-footer-group; }
-                    
-                    /* Hiding unwanted elements if needed, but the absolute positioning usually covers it */
                     `
                 }}
             />
-            <div className="fixed print:absolute print:inset-0 print:left-0 print:top-0 bg-black/60 z-[9999] flex print:block items-center justify-center p-4 print:p-0 print:bg-white force-light backdrop-blur-sm print:min-h-screen">
-                <div className="bg-white rounded-2xl max-w-5xl w-full h-[90vh] print:h-auto overflow-hidden print:overflow-visible flex flex-col print:block print:max-w-none print:rounded-none shadow-2xl print:shadow-none">
+            <div
+                id="print-report-root"
+                className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 force-light backdrop-blur-sm"
+            >
+                <div className="bg-white rounded-2xl max-w-5xl w-full h-[90vh] overflow-hidden flex flex-col shadow-2xl">
 
-                    {/* Control Header - Hidden on print */}
-                    <div className="bg-white border-b border-slate-200 p-4 flex items-center justify-between print:hidden z-20 shrink-0">
+                    {/* Barra de controles — oculta na impressão */}
+                    <div className="print-controls-bar bg-white border-b border-slate-200 p-4 flex items-center justify-between z-20 shrink-0">
                     <h2 className="text-lg font-bold text-slate-900 font-mono tracking-tight">Relatório de Controle de Acesso</h2>
                     <div className="flex items-center gap-2">
                         <button
@@ -86,9 +133,9 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
                     </div>
                 </div>
 
-                {/* Content Area - Scrollable in UI, Visible in Print */}
-                <div className="flex-1 overflow-auto print:overflow-visible bg-slate-100 print:bg-white p-4 print:p-8 print:block">
-                    <div className="bg-white shadow-xl print:shadow-none mx-auto p-8 print:p-8 min-h-full max-w-[210mm] print:max-w-none mb-8 print:mb-0 print:border print:border-slate-300 print:rounded-lg box-border">
+                {/* Content Area - Scrollable in UI, printed in full in print */}
+                <div id="print-content-area" className="flex-1 overflow-auto bg-slate-100 p-4">
+                    <div id="print-page-panel" className="bg-white shadow-xl mx-auto p-8 min-h-full max-w-[210mm] mb-8 border border-gray-200">
 
                         {/* Standard Military Header */}
                         <div className="flex items-start justify-between mb-4 border-b-2 border-slate-900 pb-4">
