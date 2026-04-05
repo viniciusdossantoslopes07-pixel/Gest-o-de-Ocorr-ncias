@@ -1123,8 +1123,33 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                     {/* Search Results */}
                     {
                         hasSearched && (
-                            <div className={`rounded-xl shadow-sm border overflow-hidden animate-in fade-in slide-in-from-bottom-4 ${card}`}>
-                                <div className={`p-3 border-b flex items-center justify-between ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
+                            <div className="space-y-4">
+                                {/* Search Statistics */}
+                                {searchResults.length > 0 && (
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3 animate-in auto-rows-fr fade-in slide-in-from-top-4">
+                                        <div className={`p-2.5 rounded-xl border flex flex-col justify-center items-center relative overflow-hidden ${dk ? 'bg-emerald-900/20 border-emerald-800/30' : 'bg-emerald-50 border-emerald-100'}`}>
+                                            <p className="text-[9px] sm:text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Entradas</p>
+                                            <p className="text-xl sm:text-2xl font-black text-emerald-700 leading-none mt-1">{searchResults.filter(r => r.access_category === 'Entrada').length}</p>
+                                        </div>
+                                        <div className={`p-2.5 rounded-xl border flex flex-col justify-center items-center relative overflow-hidden ${dk ? 'bg-red-900/20 border-red-800/30' : 'bg-red-50 border-red-100'}`}>
+                                            <p className="text-[9px] sm:text-[10px] font-bold text-red-600 uppercase tracking-widest">Saídas</p>
+                                            <p className="text-xl sm:text-2xl font-black text-red-700 leading-none mt-1">{searchResults.filter(r => r.access_category === 'Saída').length}</p>
+                                        </div>
+                                        <div className={`p-2.5 rounded-xl border flex flex-col justify-center items-center relative overflow-hidden ${dk ? 'bg-blue-900/20 border-blue-800/30' : 'bg-blue-50 border-blue-100'}`}>
+                                            <Footprints className={`absolute -right-1 -bottom-1 w-10 h-10 opacity-10 ${dk ? 'text-blue-400' : 'text-blue-600'}`} />
+                                            <p className="text-[9px] sm:text-[10px] font-bold text-blue-600 uppercase tracking-widest">Pedestres</p>
+                                            <p className="text-xl sm:text-2xl font-black text-blue-700 leading-none mt-1">{searchResults.filter(r => r.access_mode === 'Pedestre').length}</p>
+                                        </div>
+                                        <div className={`p-2.5 rounded-xl border flex flex-col justify-center items-center relative overflow-hidden ${dk ? 'bg-violet-900/20 border-violet-800/30' : 'bg-violet-50 border-violet-100'}`}>
+                                            <Car className={`absolute -right-1 -bottom-1 w-10 h-10 opacity-10 ${dk ? 'text-violet-400' : 'text-violet-600'}`} />
+                                            <p className="text-[9px] sm:text-[10px] font-bold text-violet-600 uppercase tracking-widest">Veículos</p>
+                                            <p className="text-xl sm:text-2xl font-black text-violet-700 leading-none mt-1">{searchResults.filter(r => r.access_mode === 'Veículo').length}</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className={`rounded-xl shadow-sm border overflow-hidden animate-in fade-in slide-in-from-bottom-4 ${card}`}>
+                                    <div className={`p-3 border-b flex items-center justify-between ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
                                     <span className={`text-xs font-black uppercase flex items-center gap-2 ${textSecondary}`}>
                                         <List className="w-3.5 h-3.5" /> Resultados Encontrados
                                     </span>
@@ -1242,6 +1267,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                         </button>
                                     </div>
                                 )}
+                            </div>
                             </div>
                         )
                     }
