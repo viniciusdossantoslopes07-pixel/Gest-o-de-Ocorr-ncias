@@ -156,12 +156,11 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
                             <div className="relative flex-1">
                                 <span className={`absolute left-3 top-1/2 -translate-y-1/2 font-mono font-black text-sm ${dk ? 'text-blue-400' : 'text-blue-500'}`}>Nº</span>
                                 <input 
-                                    placeholder="Digite apenas o número"
-                                    type="number"
-                                    min="1"
+                                    placeholder="Digite o código (ex: 5 ou 5BA65B0A)"
+                                    type="text"
                                     className={`w-full rounded-xl p-3 pl-10 text-sm font-mono font-bold border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${dk ? 'bg-slate-900 border-slate-600 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-700 placeholder:text-slate-400'}`}
                                     value={manageIdInput.replace('#', '')}
-                                    onChange={e => setManageIdInput(e.target.value.trim())}
+                                    onChange={e => setManageIdInput(e.target.value.toUpperCase().trim())}
                                     onKeyDown={e => e.key === 'Enter' && manageIdInput && setView('manage')}
                                 />
                             </div>
