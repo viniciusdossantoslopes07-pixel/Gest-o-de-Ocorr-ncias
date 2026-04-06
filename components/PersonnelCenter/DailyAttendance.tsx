@@ -941,8 +941,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             {
                 activeSubTab === 'chamada' && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
-                        {/* Desktop Table View */}
-                        <div className={`hidden lg:block rounded-[2rem] border overflow-hidden shadow-sm relative group ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-100/50'}`}>
+                        {/* Table View (Responsive) */}
+                        <div className={`rounded-[2rem] border overflow-hidden shadow-sm relative group ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-100/50'}`}>
                             <div className="overflow-x-auto scrollbar-hide lg:scrollbar-default relative group">
                                 <table className="w-full border-collapse">
                                     <thead className="relative z-40">
@@ -1045,64 +1045,6 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
-
-                        {/* Mobile Card View (PREMIUM) */}
-                        <div className="lg:hidden space-y-4">
-                            {filteredUsers.map((user) => (
-                                <div key={user.id} className={`rounded-3xl border shadow-lg overflow-hidden transition-all duration-300 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-50 shadow-indigo-100/20'}`}>
-                                    {/* User Header */}
-                                    <div className={`p-4 border-b flex items-center justify-between ${isDarkMode ? 'bg-slate-800/20 border-slate-800' : 'bg-slate-50 border-indigo-50'}`}>
-                                        <div className="flex items-center gap-3">
-                                            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 w-10 h-10 rounded-2xl flex items-center justify-center text-white font-black text-xs shadow-lg">
-                                                {user.rank.substring(0, 2)}
-                                            </div>
-                                            <div>
-                                                <div className={`font-black text-[11px] uppercase tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{user.warName || user.name}</div>
-                                                <div className="text-[9px] font-black text-blue-500 uppercase tracking-widest">{user.rank}</div>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            {canManage && (
-                                                <SectorPicker user={user} currentSector={selectedSector} onMove={onMoveUser} isDarkMode={isDarkMode} displaySectors={displaySectors} />
-                                            )}
-                                        </div>
-                                    </div>
-                                    {/* Scrollable Weekly Status */}
-                                    <div className="p-4 overflow-x-auto scrollbar-hide">
-                                        <div className="flex gap-4 min-w-max pb-2">
-                                            {currentWeek.map(date => (
-                                                <div key={date} className={`flex flex-col gap-2 p-3 rounded-2xl border ${isDarkMode ? 'bg-slate-800/40 border-slate-700' : 'bg-indigo-50/30 border-indigo-100/50'}`}>
-                                                    <div className={`text-[9px] font-black uppercase text-center border-b pb-1.5 ${isDarkMode ? 'text-slate-400 border-slate-700' : 'text-indigo-400 border-indigo-100'}`}>
-                                                        {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}
-                                                        <span className="block opacity-60 text-[7px]">{parseISOToDate(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
-                                                    </div>
-                                                    <div className="flex gap-2">
-                                                        <div className="flex flex-col items-center gap-1">
-                                                            <span className="text-[7px] font-black text-slate-500">1ª</span>
-                                                            <StatusPicker
-                                                                disabled={!!signedDates[`${date}-INICIO-${selectedSector}`]}
-                                                                value={weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P'}
-                                                                onChange={(s) => handleWeeklyChange(user.id, date, 'INICIO', s)}
-                                                                isDarkMode={isDarkMode}
-                                                            />
-                                                        </div>
-                                                        <div className="flex flex-col items-center gap-1">
-                                                            <span className="text-[7px] font-black text-slate-500">2ª</span>
-                                                            <StatusPicker
-                                                                disabled={!!signedDates[`${date}-TERMINO-${selectedSector}`]}
-                                                                value={weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P'}
-                                                                onChange={(s) => handleWeeklyChange(user.id, date, 'TERMINO', s)}
-                                                                isDarkMode={isDarkMode}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
                         </div>
 
                         <div className={`rounded-[2.5rem] p-7 lg:p-10 border shadow-2xl mt-10 transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-xl' : 'bg-white border-slate-200'}`}>
