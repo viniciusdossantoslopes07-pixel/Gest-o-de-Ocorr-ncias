@@ -14,7 +14,7 @@ interface SideMenuProps {
     isOpen: boolean;
     onClose: () => void;
     activeTab: string;
-    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user'>>;
+    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs'>>;
     currentUser: User;
     onLogout: () => void;
     onToggleTheme: () => void;
@@ -32,6 +32,10 @@ export default function SideMenu({
     const [isOccurrencesOpen, setIsOccurrencesOpen] = useState(false);
     const [isPersonnelOpen, setIsPersonnelOpen] = useState(false);
     const [isAccessControlOpen, setIsAccessControlOpen] = useState(false);
+
+    const [isTestingSound, setIsTestingSound] = useState(false);
+    const audioRef = React.useRef<HTMLAudioElement | null>(null);
+    const sirenRef = React.useRef<{ osc: OscillatorNode, ctx: AudioContext } | null>(null);
 
     // Permission-based Logic
     // Public is handled separately
@@ -79,11 +83,38 @@ export default function SideMenu({
         };
     }, [showEmergencyButton]);
 
+    const stopEmergencySound = () => {
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+            audioRef.current = null;
+        }
+        if (sirenRef.current) {
+            try {
+                sirenRef.current.osc.stop();
+                sirenRef.current.ctx.close();
+            } catch(e) {}
+            sirenRef.current = null;
+        }
+        setIsTestingSound(false);
+    };
+
     const playEmergencySound = () => {
+        stopEmergencySound();
+        setIsTestingSound(true);
+
         try {
             const audio = new Audio('/emergency.mp3');
+            audioRef.current = audio;
+            
+            audio.onended = () => {
+                setIsTestingSound(false);
+                audioRef.current = null;
+            };
+
             audio.play().catch(e => {
                 console.log('mp3 not found, fallback to AudioContext siren');
+                audioRef.current = null;
                 fallbackSiren();
             });
         } catch (err) {
@@ -93,7 +124,10 @@ export default function SideMenu({
 
     const fallbackSiren = () => {
         const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-        if (!AudioContext) return;
+        if (!AudioContext) {
+            setIsTestingSound(false);
+            return;
+        }
         const ctx = new AudioContext();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -115,10 +149,19 @@ export default function SideMenu({
         
         gain.gain.setValueAtTime(0.1, ctx.currentTime);
         osc.start(ctx.currentTime);
+        
+        sirenRef.current = { osc, ctx };
+
+        osc.onended = () => {
+            setIsTestingSound(false);
+            sirenRef.current = null;
+            try { ctx.close(); } catch(e) {}
+        };
+        
         osc.stop(time);
     };
 
-    const handleTriggerEmergency = () => {
+    const handleTriggerEmergency = async () => {
         if (window.confirm("Deseja realmente acionar o ALERTA DE EMERGÊNCIA sonoro para todos os usuários com a função ligada?")) {
             supabase.channel('emergency_channel').send({
                 type: 'broadcast',
@@ -126,11 +169,27 @@ export default function SideMenu({
                 payload: { sender: currentUser.name }
             });
             playEmergencySound();
+            
+            // Gravar log no banco
+            try {
+                await supabase.from('emergency_logs').insert([{
+                    user_id: currentUser.id,
+                    user_name: currentUser.name,
+                    action: 'ALERTA_SONORO',
+                    details: 'Acionamento manual pela barra lateral'
+                }]);
+            } catch(e) {
+                console.error("Failed to log emergency to db:", e);
+            }
         }
     };
 
     const handleTestEmergencySound = () => {
-        playEmergencySound();
+        if (isTestingSound) {
+            stopEmergencySound();
+        } else {
+            playEmergencySound();
+        }
     };
 
     const MenuItem = ({ id, label, icon: Icon, onClick }: any) => (
@@ -182,7 +241,11 @@ export default function SideMenu({
                         <div className={`flex flex-col gap-2 mb-4 border-b border-slate-700/50 pb-4 ${isCollapsed ? 'items-center' : ''}`}>
                              <button
                                 onClick={handleTriggerEmergency}
-                                className={`w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 text-white rounded-lg shadow-[0_0_15px_rgba(220,38,38,0.5)] transition-all animate-pulse hover:animate-none ${isCollapsed ? 'p-3' : 'py-3'}`}
+                                className={`w-full flex items-center justify-center gap-2 text-white rounded-lg transition-all ${
+                                    isTestingSound 
+                                        ? 'bg-red-600 shadow-[0_0_30px_rgba(220,38,38,0.8)] animate-pulse' 
+                                        : 'bg-red-600 hover:bg-red-500 shadow-sm'
+                                } ${isCollapsed ? 'p-3' : 'py-3'}`}
                                 title={isCollapsed ? "Alerta de Emergência" : ""}
                             >
                                 <Siren className="w-5 h-5 shrink-0" />
@@ -191,9 +254,17 @@ export default function SideMenu({
                             {!isCollapsed && (
                                 <button
                                     onClick={handleTestEmergencySound}
-                                    className="w-full text-xs text-slate-400 hover:text-white flex items-center justify-center gap-1 mt-1 transition-colors"
+                                    className={`w-full text-xs flex items-center justify-center gap-1 mt-1 transition-colors ${
+                                        isTestingSound 
+                                            ? 'text-red-400 hover:text-red-300 font-bold' 
+                                            : 'text-slate-400 hover:text-white'
+                                    }`}
                                 >
-                                    <Volume2 className="w-3 h-3" /> Testar Som
+                                    {isTestingSound ? (
+                                        <>Desligar Teste</>
+                                    ) : (
+                                        <><Volume2 className="w-3 h-3" /> Testar Som</>
+                                    )}
                                 </button>
                             )}
                         </div>
@@ -299,6 +370,7 @@ export default function SideMenu({
                                             {hasPermission(currentUser, PERMISSIONS.VIEW_SERVICE_QUEUE) && <MenuItem id="kanban" label="Fila de Serviço" icon={LayoutDashboard} />}
                                             <MenuItem id="dashboard" label="Estatísticas BI" icon={BarChart3} />
                                             <MenuItem id="list" label="Arquivo Geral" icon={FileText} />
+                                            <MenuItem id="emergency-logs" label="Logs de Emergência" icon={Siren} />
                                         </div>
                                     )}
                                 </div>

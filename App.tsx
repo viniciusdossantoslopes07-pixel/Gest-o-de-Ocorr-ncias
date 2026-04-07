@@ -54,7 +54,7 @@ const FAQModal = lazy(() => import('./components/FAQModal'));
 const SuggestionsModal = lazy(() => import('./components/SuggestionsModal'));
 const GuestRegistrationView = lazy(() => import('./components/AccessControl/Events/GuestRegistrationView'));
 const UserEventControl = lazy(() => import('./components/AccessControl/Events/UserEventControl'));
-
+const EmergencyLogs = lazy(() => import('./components/EmergencyLogs'));
 
 // Fallback de carregamento para Suspense
 const LazyFallback = () => (
@@ -106,7 +106,7 @@ const App: FC = () => {
   });
   const [users, setUsers] = useState<User[]>([]);
   // Added 'settings' to activeTab type
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs'>('home');
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [attendanceHistory, setAttendanceHistory] = useState<DailyAttendance[]>([]);
   const [absenceJustifications, setAbsenceJustifications] = useState<AbsenceJustification[]>([]);
@@ -1301,6 +1301,10 @@ const App: FC = () => {
               currentUser={currentUser}
               isDarkMode={isDarkMode}
             />
+          )}
+
+          {activeTab === 'emergency-logs' && (
+            <EmergencyLogs />
           )}
 
           {/* MISSION CENTER (Unified) */}

@@ -313,3 +313,12 @@ export interface AccessEvent {
   guests?: EventGuest[];
   manage_password?: string;
 }
+
+export interface EmergencyLog {
+  id: string;
+  user_id: string;
+  user_name: string;
+  action: string;
+  created_at: string;
+  details?: string;
+}
