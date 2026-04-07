@@ -255,28 +255,37 @@ export default function SideMenu({
         <>
             {/* Overlay Form Modal de Emergência */}
             {emergencyAlertModal && (
-                <div className="fixed inset-0 z-[99999] bg-red-950/95 flex flex-col items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-red-950 border-4 border-red-500 rounded-3xl p-8 md:p-16 max-w-5xl w-full text-center shadow-[0_0_100px_rgba(239,68,68,0.6)] flex flex-col items-center justify-center animate-in zoom-in duration-300">
-                        <Siren className="w-24 h-24 md:w-40 md:h-40 text-red-500 animate-pulse mb-8 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]" />
-                        
-                        <h1 className="text-5xl md:text-8xl font-black text-white uppercase tracking-tighter mb-2 md:mb-6 drop-shadow-[0_0_20px_rgba(255,0,0,0.8)]">
-                            ALERTA
-                        </h1>
-                        
-                        <h2 className="text-4xl md:text-7xl font-black text-red-500 uppercase tracking-widest mt-2 px-8 py-4 bg-red-950/50 rounded-2xl border-2 border-red-900/50 shadow-inner">
-                            {emergencyAlertModal.local}
-                        </h2>
-                        
-                        <div className="mt-12 md:mt-20 bg-black/60 px-6 py-3 md:px-10 md:py-4 rounded-xl text-red-200/80 font-bold tracking-widest text-sm md:text-xl uppercase border border-red-900/30">
-                            Acionado por: {emergencyAlertModal.sender}
+                <div className="fixed inset-0 z-[99999] bg-slate-950/90 flex flex-col items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-[#0B1120] border border-red-500/30 rounded-[2rem] w-full max-w-sm md:max-w-md flex flex-col overflow-hidden shadow-[0_0_50px_rgba(239,68,68,0.3)] animate-in zoom-in duration-300">
+                        {/* Header Pulse */}
+                        <div className="bg-red-600 p-6 flex flex-col items-center justify-center relative overflow-hidden">
+                            <Siren className="w-12 h-12 text-white animate-pulse mb-3 drop-shadow-md" />
+                            <h1 className="text-2xl md:text-3xl font-black text-white uppercase tracking-widest text-center shadow-black/50 drop-shadow-sm">
+                                ALERTA GERAL
+                            </h1>
                         </div>
+                        
+                        {/* Body */}
+                        <div className="p-8 flex flex-col items-center">
+                            <h2 className="text-3xl md:text-4xl font-black text-red-500 uppercase tracking-widest text-center mb-8 drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">
+                                {emergencyAlertModal.local}
+                            </h2>
+                            
+                            <div className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center shadow-inner">
+                                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1">Acionado por</span>
+                                <span className="text-sm md:text-base text-slate-300 font-bold tracking-wider">{emergencyAlertModal.sender}</span>
+                            </div>
 
-                        {/* If they have permission to stop it, show a disclaimer that it must be stopped in the left menu. */}
-                        {showEmergencyButton && (
-                            <p className="mt-8 text-red-500/60 text-[10px] md:text-xs tracking-widest uppercase font-bold animate-pulse">
-                                Acesse o menu lateral para desativar o alarme
-                            </p>
-                        )}
+                            {/* Informative Disclaimer */}
+                            {showEmergencyButton && (
+                                <div className="mt-8 w-full text-center bg-red-950/30 border border-red-900/50 px-4 py-3 rounded-xl relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-red-500/10 animate-pulse"></div>
+                                    <p className="text-red-400 text-[9px] font-bold uppercase tracking-widest relative z-10">
+                                        Use o botão de alarme lateral para desativar
+                                    </p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
