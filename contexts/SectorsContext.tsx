@@ -4,6 +4,7 @@ import { supabase } from '../services/supabase';
 export interface Sector {
     id: string;
     name: string;
+    unit: string;
     display_order: number;
     is_active: boolean;
     hidden_from_attendance: boolean;
@@ -18,8 +19,8 @@ interface SectorsContextValue {
     /** Todos os nomes de setores ativos (equivalente ao antigo SETORES) */
     sectorNames: string[];
     loading: boolean;
-    /** Cria um novo setor com o nome fornecido */
-    addSector: (name: string) => Promise<{ error?: string }>;
+    /** Cria um novo setor com o nome fornecido e a unidade (GSD-SP ou BASP) */
+    addSector: (name: string, unit: string) => Promise<{ error?: string }>;
     /** Desativa um setor. Usuários nele são movidos para sem-setor antes. */
     removeSector: (id: string) => Promise<{ error?: string }>;
     /** Recarrega setores do banco */
@@ -61,7 +62,7 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
         return () => { supabase.removeChannel(channel); };
     }, [fetchSectors]);
 
-    const addSector = useCallback(async (name: string): Promise<{ error?: string }> => {
+    const addSector = useCallback(async (name: string, unit: string): Promise<{ error?: string }> => {
         const trimmed = name.trim().toUpperCase();
         if (!trimmed) return { error: 'Nome inválido.' };
 
@@ -87,7 +88,7 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
         const maxOrder = sectors.length > 0 ? Math.max(...sectors.map(s => s.display_order)) : 0;
         const { error } = await supabase
             .from('sectors')
-            .insert([{ name: trimmed, display_order: maxOrder + 1, is_active: true }]);
+            .insert([{ name: trimmed, unit, display_order: maxOrder + 1, is_active: true }]);
 
         if (error) return { error: error.message };
         await fetchSectors();

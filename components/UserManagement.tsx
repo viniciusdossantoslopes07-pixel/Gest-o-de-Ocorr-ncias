@@ -19,7 +19,7 @@ interface UserManagementProps {
 }
 
 const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdateUser, onDeleteUser, onPermanentDeleteUser, onRefreshUsers, currentUser, isDarkMode }) => {
-  const { sectorNames } = useSectors();
+  const { sectors } = useSectors();
   const [activeTab, setActiveTab] = useState<'users' | 'permissions' | 'sectors'>('users');
   const initialFormState = {
     name: '',
@@ -49,6 +49,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
   const [showFunctional, setShowFunctional] = useState(false);
   const [showNewUserForm, setShowNewUserForm] = useState(false);
   const [showForm, setShowForm] = useState(false); // Estado para o toggle de formulário
+  const [selectedSectorUnit, setSelectedSectorUnit] = useState<'GSD-SP' | 'BASP'>('GSD-SP');
 
   // Rank Categories for Filtering (Consistent with PermissionManagement)
   const RANK_CATEGORIES = {
@@ -136,6 +137,14 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
 
   const handleEditClick = (user: User) => {
     setEditingUserId(user.id);
+    
+    const userSectorObj = sectors.find(s => s.name === user.sector);
+    if (userSectorObj && userSectorObj.unit === 'BASP') {
+      setSelectedSectorUnit('BASP');
+    } else {
+      setSelectedSectorUnit('GSD-SP');
+    }
+
     setFormData({
       name: user.name,
       username: user.username,
@@ -312,9 +321,25 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <Building2 className="w-3 h-3" /> Setor
                   </label>
+                  <div className={`flex rounded-xl p-1 mb-2 border ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedSectorUnit('GSD-SP'); setFormData({ ...formData, sector: '' }); }}
+                      className={`flex-1 px-4 py-2 text-xs font-bold rounded-lg transition-all ${selectedSectorUnit === 'GSD-SP' ? (isDarkMode ? 'bg-blue-600 text-white shadow' : 'bg-white text-slate-900 shadow') : (isDarkMode ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
+                    >
+                      GSD-SP
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedSectorUnit('BASP'); setFormData({ ...formData, sector: '' }); }}
+                      className={`flex-1 px-4 py-2 text-xs font-bold rounded-lg transition-all ${selectedSectorUnit === 'BASP' ? (isDarkMode ? 'bg-emerald-600 text-white shadow' : 'bg-white text-slate-900 shadow') : (isDarkMode ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
+                    >
+                      BASP
+                    </button>
+                  </div>
                   <select required className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.sector} onChange={e => setFormData({ ...formData, sector: e.target.value })}>
-                    <option value="">Selecione...</option>
-                    {sectorNames.map(s => <option key={s} value={s}>{s}</option>)}
+                    <option value="">Selecione um setor da {selectedSectorUnit}...</option>
+                    {sectors.filter(s => s.unit === selectedSectorUnit).map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
                   </select>
                 </div>
 

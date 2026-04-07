@@ -289,16 +289,23 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     absenceJustifications,
     isDarkMode = false
 }) => {
-    const { displaySectors, sectorNames } = useSectors();
+    const { sectors, displaySectors } = useSectors();
+    const [selectedUnit, setSelectedUnit] = useState<'GSD-SP' | 'BASP'>('GSD-SP');
+    
+    // Filtro de setores ativos da unidade selecionada
+    const unitSectors = useMemo(() => 
+        sectors.filter(s => !s.hidden_from_attendance && s.unit === selectedUnit).map(s => s.name),
+    [sectors, selectedUnit]);
+
     const [selectedSector, setSelectedSector] = useState('');
     const [callType, setCallType] = useState<CallTypeCode>('INICIO');
 
     // Inicializa selectedSector assim que os setores carregarem do banco
     useEffect(() => {
-        if (displaySectors.length > 0 && !selectedSector) {
-            setSelectedSector(displaySectors[0]);
+        if (unitSectors.length > 0 && !unitSectors.includes(selectedSector)) {
+            setSelectedSector(unitSectors[0]);
         }
-    }, [displaySectors, selectedSector]);
+    }, [unitSectors, selectedSector]);
     const [searchTerm, setSearchTerm] = useState('');
     const [signedDates, setSignedDates] = useState<Record<string, { signedBy: string, signedAt: string }>>({});
     const [userDestinations, setUserDestinations] = useState<any[]>([]);
@@ -910,14 +917,33 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
                         {/* Search Inline — Mobile Friendly */}
                         <div className="flex flex-col md:flex-row items-stretch gap-3 mt-5">
+                            
+                            <div className="flex flex-col gap-1">
+                                <label className={`text-[9px] font-black uppercase tracking-widest px-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Unidade</label>
+                                <div className={`flex rounded-xl p-1 border ${isDarkMode ? 'bg-slate-900 border-slate-700/50' : 'bg-slate-100 border-indigo-100/50'}`}>
+                                    <button
+                                        onClick={() => setSelectedUnit('GSD-SP')}
+                                        className={`px-4 py-2 text-[10px] font-bold rounded-lg transition-all ${selectedUnit === 'GSD-SP' ? (isDarkMode ? 'bg-blue-600 text-white shadow' : 'bg-white text-slate-900 shadow') : (isDarkMode ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
+                                    >
+                                        GSD-SP
+                                    </button>
+                                    <button
+                                        onClick={() => setSelectedUnit('BASP')}
+                                        className={`px-4 py-2 text-[10px] font-bold rounded-lg transition-all ${selectedUnit === 'BASP' ? (isDarkMode ? 'bg-emerald-600 text-white shadow' : 'bg-white text-slate-900 shadow') : (isDarkMode ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
+                                    >
+                                        BASP
+                                    </button>
+                                </div>
+                            </div>
+
                             <div className="flex flex-col gap-1 md:w-[220px]">
-                                <label className={`text-[9px] font-black uppercase tracking-widest px-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Setor Selecionado</label>
+                                <label className={`text-[9px] font-black uppercase tracking-widest px-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Setor Selecionado ({selectedUnit})</label>
                                 <select
                                     value={selectedSector}
                                     onChange={(e) => setSelectedSector(e.target.value)}
-                                    className={`border-2 rounded-xl px-4 py-2.5 text-xs font-black focus:ring-4 focus:ring-blue-500/10 outline-none transition-all cursor-pointer ${isDarkMode ? 'bg-slate-800 border-slate-700/50 text-slate-200' : 'bg-white border-indigo-100/50 text-slate-700'}`}
+                                    className={`h-[36px] mt-0.5 border-2 rounded-xl px-4 text-[11px] font-black focus:ring-4 focus:ring-blue-500/10 outline-none transition-all cursor-pointer ${isDarkMode ? 'bg-slate-800 border-slate-700/50 text-slate-200' : 'bg-white border-indigo-100/50 text-slate-700'}`}
                                 >
-                                    {displaySectors.map(s => <option key={s} value={s}>{s}</option>)}
+                                    {unitSectors.map(s => <option key={s} value={s}>{s}</option>)}
                                 </select>
                             </div>
                             <div className="flex flex-col gap-1 flex-1 group">
