@@ -246,7 +246,7 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, isDarkMode, acti
                         </div>
                         <div>
                             <h3 className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Distribuição Individual por Posto</h3>
-                            <p className={`text-[9px] font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Cada coluna representa um posto/graduação. Passe o mouse para ver detalhes.</p>
+                            <p className={`text-[9px] font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Quantidade de militares por posto/graduação.</p>
                         </div>
                     </div>
                     {/* Legenda */}
@@ -261,21 +261,20 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, isDarkMode, acti
                 </div>
 
                 {rankStats.length > 0 ? (
-                    <div className="flex items-end gap-2 md:gap-3 overflow-x-auto pb-2" style={{ height: '160px' }}>
+                    <div className="flex items-end gap-2 md:gap-3 overflow-x-auto pb-2" style={{ height: '190px' }}>
                         {rankStats.map((stat) => {
                             const grupo = HIERARQUIA_GRUPOS[stat.group] || HIERARQUIA_GRUPOS[0];
                             const barColor = isDarkMode ? grupo.color.dark : grupo.color.light;
-                            const barBg = isDarkMode ? grupo.bg.dark : grupo.bg.light;
-                            const heightPct = Math.max((stat.count / maxRankCount) * 128, 6);
+                            const heightPct = Math.max((stat.count / maxRankCount) * 120, 6);
                             return (
                                 <div key={stat.rank} className="flex-1 min-w-[36px] max-w-[60px] flex flex-col items-center gap-1.5 group cursor-default">
-                                    {/* Tooltip */}
-                                    <div
-                                        className={`text-[10px] font-black px-2 py-1 rounded-lg mb-1 opacity-0 group-hover:opacity-100 transition-all duration-200 scale-90 group-hover:scale-100 whitespace-nowrap pointer-events-none`}
-                                        style={{ backgroundColor: barBg, color: barColor }}
+                                    {/* Quantidade sempre visível acima da barra */}
+                                    <span
+                                        className="text-[10px] font-black tabular-nums transition-all duration-200"
+                                        style={{ color: barColor }}
                                     >
-                                        {stat.rank}: {stat.count}
-                                    </div>
+                                        {stat.count}
+                                    </span>
                                     {/* Barra */}
                                     <div
                                         className={`w-full rounded-t-lg transition-all duration-700 ease-out group-hover:brightness-125`}
@@ -286,7 +285,7 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, isDarkMode, acti
                                         }}
                                     />
                                     {/* Label Posto */}
-                                    <span className={`text-[9px] font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} group-hover:text-current transition-colors`} style={{ color: undefined }}>
+                                    <span className={`text-[9px] font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                         {stat.rank}
                                     </span>
                                 </div>
