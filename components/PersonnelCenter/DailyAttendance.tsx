@@ -5,7 +5,7 @@ import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '.
 import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, RANKS, getRankPriority } from '../../constants';
 import { useSectors } from '../../contexts/SectorsContext';
 import { hasPermission, PERMISSIONS } from '../../constants/permissions';
-import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint, BarChart3, MoveHorizontal, ShieldCheck } from 'lucide-react';
+import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint, BarChart3, MoveHorizontal, ShieldCheck, ChevronDown } from 'lucide-react';
 import ForceMapDashboard from './ForceMapDashboard';
 import { authenticateBiometrics } from '../../services/webauthn';
 import { supabase } from '../../services/supabase';
@@ -299,6 +299,26 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     const [selectedSector, setSelectedSector] = useState('');
     const [callType, setCallType] = useState<CallTypeCode>('INICIO');
+
+    // States for custom searchable dropdown
+    const [sectorSearchQuery, setSectorSearchQuery] = useState('');
+    const [isSectorDropdownOpen, setIsSectorDropdownOpen] = useState(false);
+    const sectorDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Click outside listener for sector dropdown
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (sectorDropdownRef.current && !sectorDropdownRef.current.contains(event.target as Node)) {
+                setIsSectorDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const filteredUnitSectors = useMemo(() => 
+        unitSectors.filter(s => s.toLowerCase().includes(sectorSearchQuery.toLowerCase())),
+    [unitSectors, sectorSearchQuery]);
 
     // Inicializa selectedSector assim que os setores carregarem do banco
     useEffect(() => {
@@ -936,15 +956,56 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-1 md:w-[220px]">
+                            <div className="flex flex-col gap-1 md:w-[220px]" ref={sectorDropdownRef}>
                                 <label className={`text-[9px] font-black uppercase tracking-widest px-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Setor Selecionado ({selectedUnit})</label>
-                                <select
-                                    value={selectedSector}
-                                    onChange={(e) => setSelectedSector(e.target.value)}
-                                    className={`h-[36px] mt-0.5 border-2 rounded-xl px-4 text-[11px] font-black focus:ring-4 focus:ring-blue-500/10 outline-none transition-all cursor-pointer ${isDarkMode ? 'bg-slate-800 border-slate-700/50 text-slate-200' : 'bg-white border-indigo-100/50 text-slate-700'}`}
-                                >
-                                    {unitSectors.map(s => <option key={s} value={s}>{s}</option>)}
-                                </select>
+                                <div className="relative mt-0.5">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsSectorDropdownOpen(!isSectorDropdownOpen)}
+                                        className={`w-full h-[36px] border-2 rounded-xl px-4 flex items-center justify-between text-[11px] font-black focus:ring-4 focus:ring-blue-500/10 outline-none transition-all cursor-pointer ${isDarkMode ? 'bg-slate-800 border-slate-700/50 text-slate-200' : 'bg-white border-indigo-100/50 text-slate-700'} ${isSectorDropdownOpen ? 'ring-2 ring-blue-500/50' : ''}`}
+                                    >
+                                        <span className="truncate">{selectedSector || 'Selecione...'}</span>
+                                        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isSectorDropdownOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                    
+                                    {isSectorDropdownOpen && (
+                                        <div className={`absolute top-full left-0 right-0 mt-2 p-2 rounded-xl border shadow-xl z-50 animate-in fade-in zoom-in-95 ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black/50' : 'bg-white border-slate-200 shadow-slate-200/50'}`}>
+                                            <div className="relative mb-2">
+                                                <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                                                <input
+                                                    type="text"
+                                                    autoFocus
+                                                    placeholder="Buscar setor..."
+                                                    value={sectorSearchQuery}
+                                                    onChange={e => setSectorSearchQuery(e.target.value)}
+                                                    className={`w-full py-2 pl-9 pr-3 rounded-lg text-[10px] font-bold outline-none transition-all ${isDarkMode ? 'bg-slate-900 border border-slate-700 text-white placeholder-slate-600 focus:ring-2 focus:ring-blue-500' : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500'}`}
+                                                />
+                                            </div>
+                                            <div className="max-h-[220px] overflow-y-auto custom-scrollbar flex flex-col gap-0.5">
+                                                {filteredUnitSectors.length > 0 ? (
+                                                    filteredUnitSectors.map(s => (
+                                                        <button
+                                                            key={s}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setSelectedSector(s);
+                                                                setIsSectorDropdownOpen(false);
+                                                                setSectorSearchQuery('');
+                                                            }}
+                                                            className={`w-full text-left px-3 py-2.5 rounded-lg text-[10px] font-bold transition-all ${selectedSector === s ? (isDarkMode ? 'bg-blue-600/30 text-blue-400' : 'bg-blue-50 text-blue-700') : (isDarkMode ? 'text-slate-300 hover:bg-slate-700/50' : 'text-slate-600 hover:bg-slate-100')}`}
+                                                        >
+                                                            {s}
+                                                        </button>
+                                                    ))
+                                                ) : (
+                                                    <p className={`text-center py-4 text-[10px] font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                                        Nenhum setor encontrado.
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             <div className="flex flex-col gap-1 flex-1 group">
                                 <label className={`text-[9px] font-black uppercase tracking-widest px-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Buscar Militar</label>
