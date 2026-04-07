@@ -37,7 +37,8 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     pending_password_reset: false,
     reset_password_at_login: false,
     password_status: 'ACTIVE' as 'ACTIVE' | 'EXPIRED' | 'PENDING_RESET',
-    is_functional: false
+    is_functional: false,
+    workplace: ''
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -151,7 +152,8 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
       pending_password_reset: user.pending_password_reset || false,
       reset_password_at_login: user.reset_password_at_login || false,
       password_status: user.password_status || 'ACTIVE',
-      is_functional: user.is_functional || false
+      is_functional: user.is_functional || false,
+      workplace: user.workplace || ''
     });
     setShowForm(true); // Abre o formulário ao editar
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -405,6 +407,22 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                     </div>
                   </label>
                 </div>
+
+                {formData.is_functional && (
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <Building2 className="w-3 h-3" /> Local do Alerta (Ex: PORTÃO G1)
+                      </label>
+                      <input 
+                        type="text" 
+                        required
+                        className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} 
+                        value={formData.workplace} 
+                        onChange={e => setFormData({ ...formData, workplace: e.target.value })} 
+                        placeholder="Ex: PORTÃO G1, G2, CENTRAL..." 
+                      />
+                    </div>
+                )}
 
                 <div className={`md:col-span-3 p-4 rounded-xl border transition-all ${isDarkMode ? 'bg-blue-500/10 border-blue-500/30 text-blue-300' : 'bg-blue-50/50 border-blue-100 text-blue-800'}`}>
                   <p className={`text-xs flex items-center gap-2 font-medium ${isDarkMode ? 'text-blue-400' : 'text-blue-800'}`}>

@@ -35,6 +35,7 @@ export default function SideMenu({
 
     const [isTestingSound, setIsTestingSound] = useState(false);
     const [soundCountdown, setSoundCountdown] = useState<number | null>(null);
+    const [emergencyAlertModal, setEmergencyAlertModal] = useState<{ sender: string, local: string } | null>(null);
     const audioRef = React.useRef<HTMLAudioElement | null>(null);
     const sirenRef = React.useRef<{ osc: OscillatorNode, ctx: AudioContext } | null>(null);
     const countdownTimerRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -76,7 +77,12 @@ export default function SideMenu({
 
         const channel = supabase.channel('emergency_channel')
             .on('broadcast', { event: 'emergency_alert' }, (payload) => {
-                playEmergencySound();
+                const data = payload?.payload || {};
+                setEmergencyAlertModal({ 
+                    sender: data.sender || 'Desconhecido', 
+                    local: data.local || 'Desconhecido' 
+                });
+                playEmergencySound(true);
             })
             .subscribe();
 
@@ -90,6 +96,7 @@ export default function SideMenu({
 
         if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
         setSoundCountdown(null);
+        setEmergencyAlertModal(null);
 
         if (audioRef.current) {
             audioRef.current.pause();
@@ -106,25 +113,30 @@ export default function SideMenu({
         setIsTestingSound(false);
     };
 
-    const playEmergencySound = () => {
+    const playEmergencySound = (isRealAlarm = false) => {
         // Only stop if we're not locked in a countdown
         if (soundCountdown !== null && soundCountdown > 0) return;
 
         stopEmergencySound();
         setIsTestingSound(true);
-        setSoundCountdown(5);
+        
+        if (isRealAlarm) {
+            setSoundCountdown(5);
 
-        if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
-        countdownTimerRef.current = setInterval(() => {
-            setSoundCountdown(prev => {
-                if (prev === null) return null;
-                if (prev <= 1) {
-                    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
-                    return null;
-                }
-                return prev - 1;
-            });
-        }, 1000);
+            if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+            countdownTimerRef.current = setInterval(() => {
+                setSoundCountdown(prev => {
+                    if (prev === null) return null;
+                    if (prev <= 1) {
+                        if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+                        return null;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        } else {
+            setSoundCountdown(null);
+        }
 
         try {
             const audio = new Audio('/emergency.mp3');
@@ -186,12 +198,16 @@ export default function SideMenu({
 
     const handleTriggerEmergency = async () => {
         if (window.confirm("Deseja realmente acionar o ALERTA DE EMERGÊNCIA sonoro para todos os usuários com a função ligada?")) {
+            const local = currentUser.workplace || currentUser.sector || 'Desconhecido';
+            
             supabase.channel('emergency_channel').send({
                 type: 'broadcast',
                 event: 'emergency_alert',
-                payload: { sender: currentUser.name }
+                payload: { sender: currentUser.name, local }
             });
-            playEmergencySound();
+            
+            setEmergencyAlertModal({ sender: currentUser.name, local });
+            playEmergencySound(true);
             
             // Gravar log no banco
             try {
@@ -199,7 +215,7 @@ export default function SideMenu({
                     user_id: currentUser.id,
                     user_name: currentUser.name,
                     action: 'ALERTA_SONORO',
-                    details: 'Acionamento manual pela barra lateral'
+                    details: local
                 }]);
             } catch(e) {
                 console.error("Failed to log emergency to db:", e);
@@ -213,7 +229,7 @@ export default function SideMenu({
                 stopEmergencySound();
             }
         } else {
-            playEmergencySound();
+            playEmergencySound(false);
         }
     };
 
@@ -237,6 +253,34 @@ export default function SideMenu({
 
     return (
         <>
+            {/* Overlay Form Modal de Emergência */}
+            {emergencyAlertModal && (
+                <div className="fixed inset-0 z-[99999] bg-red-950/95 flex flex-col items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-red-950 border-4 border-red-500 rounded-3xl p-8 md:p-16 max-w-5xl w-full text-center shadow-[0_0_100px_rgba(239,68,68,0.6)] flex flex-col items-center justify-center animate-in zoom-in duration-300">
+                        <Siren className="w-24 h-24 md:w-40 md:h-40 text-red-500 animate-pulse mb-8 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]" />
+                        
+                        <h1 className="text-5xl md:text-8xl font-black text-white uppercase tracking-tighter mb-2 md:mb-6 drop-shadow-[0_0_20px_rgba(255,0,0,0.8)]">
+                            ALERTA
+                        </h1>
+                        
+                        <h2 className="text-4xl md:text-7xl font-black text-red-500 uppercase tracking-widest mt-2 px-8 py-4 bg-red-950/50 rounded-2xl border-2 border-red-900/50 shadow-inner">
+                            {emergencyAlertModal.local}
+                        </h2>
+                        
+                        <div className="mt-12 md:mt-20 bg-black/60 px-6 py-3 md:px-10 md:py-4 rounded-xl text-red-200/80 font-bold tracking-widest text-sm md:text-xl uppercase border border-red-900/30">
+                            Acionado por: {emergencyAlertModal.sender}
+                        </div>
+
+                        {/* If they have permission to stop it, show a disclaimer that it must be stopped in the left menu. */}
+                        {showEmergencyButton && (
+                            <p className="mt-8 text-red-500/60 text-[10px] md:text-xs tracking-widest uppercase font-bold animate-pulse">
+                                Acesse o menu lateral para desativar o alarme
+                            </p>
+                        )}
+                    </div>
+                </div>
+            )}
+
             {/* Mobile Overlay */}
             {isOpen && <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[998] lg:hidden transition-opacity duration-300" onClick={onClose} />}
 
