@@ -6,6 +6,7 @@ import { useSectors } from '../contexts/SectorsContext';
 import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown, ShieldCheck, Settings, Search, X, Users, Briefcase } from 'lucide-react';
 import PermissionManagement from './PermissionManagement';
 import SectorManagement from './SectorManagement';
+import UserStatistics from './UserStatistics';
 
 interface UserManagementProps {
   users: User[];
@@ -20,7 +21,7 @@ interface UserManagementProps {
 
 const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdateUser, onDeleteUser, onPermanentDeleteUser, onRefreshUsers, currentUser, isDarkMode }) => {
   const { sectors } = useSectors();
-  const [activeTab, setActiveTab] = useState<'users' | 'permissions' | 'sectors'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'permissions' | 'sectors' | 'statistics'>('users');
   const initialFormState = {
     name: '',
     username: '',
@@ -213,6 +214,12 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
             className={`flex-1 md:flex-none px-4 md:px-8 py-2 md:py-3 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'sectors' ? (isDarkMode ? 'bg-slate-700 text-blue-400 shadow-lg' : 'bg-white text-blue-600 shadow-md') : 'text-slate-500 hover:text-slate-800'}`}
           >
             Setores
+          </button>
+          <button
+            onClick={() => setActiveTab('statistics')}
+            className={`flex-1 md:flex-none px-4 md:px-8 py-2 md:py-3 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'statistics' ? (isDarkMode ? 'bg-slate-700 text-blue-400 shadow-lg' : 'bg-white text-blue-600 shadow-md') : 'text-slate-500 hover:text-slate-800'}`}
+          >
+            Estatísticas
           </button>
         </div>
       </div>
@@ -854,6 +861,10 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
             users={users}
           />
         </div>
+      )}
+
+      {activeTab === 'statistics' && (
+        <UserStatistics users={users} isDarkMode={isDarkMode} />
       )}
     </div>
   );
