@@ -294,14 +294,7 @@ export default function SideMenu({
                                 </button>
                             )}
 
-                            {!isCollapsed && (
-                                <button
-                                    onClick={() => { setActiveTab('emergency-logs'); if (window.innerWidth < 1024) onClose(); }}
-                                    className="w-full text-[10px] uppercase font-bold text-slate-500 hover:text-white mt-3 transition-colors tracking-widest text-center border-t border-slate-700/50 pt-2"
-                                >
-                                    Ver Histórico de Disparos
-                                </button>
-                            )}
+
                         </div>
                     )}
                 </div>
