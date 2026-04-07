@@ -5,8 +5,9 @@ import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '.
 import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, RANKS, getRankPriority } from '../../constants';
 import { useSectors } from '../../contexts/SectorsContext';
 import { hasPermission, PERMISSIONS } from '../../constants/permissions';
-import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint, BarChart3, MoveHorizontal, ShieldCheck, ChevronDown } from 'lucide-react';
+import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint, BarChart3, Map as MapIcon, MoveHorizontal, ShieldCheck, ChevronDown } from 'lucide-react';
 import ForceMapDashboard from './ForceMapDashboard';
+import UserStatistics from './UserStatistics';
 import { authenticateBiometrics } from '../../services/webauthn';
 import { supabase } from '../../services/supabase';
 
@@ -304,6 +305,28 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [sectorSearchQuery, setSectorSearchQuery] = useState('');
     const [isSectorDropdownOpen, setIsSectorDropdownOpen] = useState(false);
     const sectorDropdownRef = useRef<HTMLDivElement>(null);
+    const [sectorDropdownPosition, setSectorDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+
+    const toggleSectorDropdown = () => {
+        if (!isSectorDropdownOpen && sectorDropdownRef.current) {
+            const rect = sectorDropdownRef.current.getBoundingClientRect();
+            const screenHeight = window.innerHeight;
+            const dropdownHeight = 310;
+            const spaceBelow = screenHeight - rect.bottom;
+            
+            let top = rect.bottom + 8;
+            if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
+                top = rect.top - dropdownHeight - 8;
+            }
+
+            setSectorDropdownPosition({
+                top: top + window.scrollY,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+        setIsSectorDropdownOpen(!isSectorDropdownOpen);
+    };
 
     // Click outside listener for sector dropdown
     useEffect(() => {
@@ -360,7 +383,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [selectedDaysForNoWork, setSelectedDaysForNoWork] = useState<string[]>([]);
     const [showAdHocModal, setShowAdHocModal] = useState(false);
     const [newAdHoc, setNewAdHoc] = useState({ rank: '', warName: '', saram: '' });
-    const [activeSubTab, setActiveSubTab] = useState<'chamada' | 'cupons' | 'mapa_forca'>('chamada');
+    const [activeSubTab, setActiveSubTab] = useState<'chamada' | 'cupons' | 'mapa_forca' | 'estatisticas'>('chamada');
     const [showJustificationModal, setShowJustificationModal] = useState(false);
     const [justifyingSoldier, setJustifyingSoldier] = useState<{
         userId: string;
@@ -859,7 +882,13 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     onClick={() => setActiveSubTab('mapa_forca')}
                     className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 md:px-6 py-2.5 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-wider md:tracking-[0.15em] transition-all duration-300 ${activeSubTab === 'mapa_forca' ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-white text-slate-900 shadow-md') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
                 >
-                    <BarChart3 className="w-3.5 h-3.5" /> <span className="truncate">Mapa</span>
+                    <MapIcon className="w-3.5 h-3.5" /> <span className="truncate">Mapa</span>
+                </button>
+                <button
+                    onClick={() => setActiveSubTab('estatisticas')}
+                    className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 md:px-6 py-2.5 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-wider md:tracking-[0.15em] transition-all duration-300 ${activeSubTab === 'estatisticas' ? (isDarkMode ? 'bg-amber-600 text-white shadow-lg shadow-amber-900/40' : 'bg-white text-slate-900 shadow-md') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
+                >
+                    <BarChart3 className="w-3.5 h-3.5" /> <span className="truncate">Estatísticas</span>
                 </button>
             </div>
 
@@ -961,52 +990,68 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 <div className="relative mt-0.5">
                                     <button
                                         type="button"
-                                        onClick={() => setIsSectorDropdownOpen(!isSectorDropdownOpen)}
+                                        onClick={toggleSectorDropdown}
                                         className={`w-full h-[36px] border-2 rounded-xl px-4 flex items-center justify-between text-[11px] font-black focus:ring-4 focus:ring-blue-500/10 outline-none transition-all cursor-pointer ${isDarkMode ? 'bg-slate-800 border-slate-700/50 text-slate-200' : 'bg-white border-indigo-100/50 text-slate-700'} ${isSectorDropdownOpen ? 'ring-2 ring-blue-500/50' : ''}`}
                                     >
                                         <span className="truncate">{selectedSector || 'Selecione...'}</span>
                                         <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isSectorDropdownOpen ? 'rotate-180' : ''}`} />
                                     </button>
                                     
-                                    {isSectorDropdownOpen && (
-                                        <div className={`absolute top-full left-0 right-0 mt-2 p-2 rounded-xl border shadow-xl z-50 animate-in fade-in zoom-in-95 ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black/50' : 'bg-white border-slate-200 shadow-slate-200/50'}`}>
-                                            <div className="relative mb-2">
-                                                <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
-                                                <input
-                                                    type="text"
-                                                    autoFocus
-                                                    placeholder="Buscar setor..."
-                                                    value={sectorSearchQuery}
-                                                    onChange={e => setSectorSearchQuery(e.target.value)}
-                                                    className={`w-full py-2 pl-9 pr-3 rounded-lg text-[10px] font-bold outline-none transition-all ${isDarkMode ? 'bg-slate-900 border border-slate-700 text-white placeholder-slate-600 focus:ring-2 focus:ring-blue-500' : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500'}`}
-                                                />
+                                    {isSectorDropdownOpen && createPortal(
+                                        <>
+                                            <div 
+                                                className="fixed inset-0 z-[9998]" 
+                                                onClick={() => setIsSectorDropdownOpen(false)}
+                                            />
+                                            
+                                            <div 
+                                                className={`fixed p-2 rounded-xl border shadow-2xl z-[9999] animate-in fade-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black' : 'bg-white border-slate-200 shadow-slate-200/50'}`}
+                                                style={{
+                                                    top: `${sectorDropdownPosition.top}px`,
+                                                    left: `${sectorDropdownPosition.left}px`,
+                                                    width: `${sectorDropdownPosition.width}px`
+                                                }}
+                                            >
+                                                <div className="relative mb-2">
+                                                    <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                                                    <input
+                                                        type="text"
+                                                        autoFocus
+                                                        placeholder="Buscar setor..."
+                                                        value={sectorSearchQuery}
+                                                        onChange={e => setSectorSearchQuery(e.target.value)}
+                                                        className={`w-full py-2 pl-9 pr-3 rounded-lg text-[10px] font-bold outline-none transition-all ${isDarkMode ? 'bg-slate-900 border border-slate-700 text-white placeholder-slate-600 focus:ring-2 focus:ring-blue-500' : 'bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500'}`}
+                                                    />
+                                                </div>
+                                                <div className="max-h-[220px] overflow-y-auto custom-scrollbar flex flex-col gap-0.5">
+                                                    {filteredUnitSectors.length > 0 ? (
+                                                        filteredUnitSectors.map(s => (
+                                                            <button
+                                                                key={s}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setSelectedSector(s);
+                                                                    setIsSectorDropdownOpen(false);
+                                                                    setSectorSearchQuery('');
+                                                                }}
+                                                                className={`w-full text-left px-3 py-2.5 rounded-lg text-[10px] font-bold transition-all ${selectedSector === s ? (isDarkMode ? 'bg-blue-600/30 text-blue-400' : 'bg-blue-50 text-blue-700') : (isDarkMode ? 'text-slate-300 hover:bg-slate-700/50' : 'text-slate-600 hover:bg-slate-100')}`}
+                                                            >
+                                                                {s}
+                                                            </button>
+                                                        ))
+                                                    ) : (
+                                                        <p className={`text-center py-4 text-[10px] font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                                            Nenhum setor encontrado.
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="max-h-[220px] overflow-y-auto custom-scrollbar flex flex-col gap-0.5">
-                                                {filteredUnitSectors.length > 0 ? (
-                                                    filteredUnitSectors.map(s => (
-                                                        <button
-                                                            key={s}
-                                                            type="button"
-                                                            onClick={() => {
-                                                                setSelectedSector(s);
-                                                                setIsSectorDropdownOpen(false);
-                                                                setSectorSearchQuery('');
-                                                            }}
-                                                            className={`w-full text-left px-3 py-2.5 rounded-lg text-[10px] font-bold transition-all ${selectedSector === s ? (isDarkMode ? 'bg-blue-600/30 text-blue-400' : 'bg-blue-50 text-blue-700') : (isDarkMode ? 'text-slate-300 hover:bg-slate-700/50' : 'text-slate-600 hover:bg-slate-100')}`}
-                                                        >
-                                                            {s}
-                                                        </button>
-                                                    ))
-                                                ) : (
-                                                    <p className={`text-center py-4 text-[10px] font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                                                        Nenhum setor encontrado.
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
+                                        </>,
+                                        document.body
                                     )}
                                 </div>
                             </div>
+
                             <div className="flex flex-col gap-1 flex-1 group">
                                 <label className={`text-[9px] font-black uppercase tracking-widest px-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Buscar Militar</label>
                                 <div className="relative">
@@ -1325,6 +1370,19 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 activeSubTab === 'mapa_forca' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4">
                         <ForceMapDashboard users={users} attendanceHistory={attendanceHistory} isDarkMode={isDarkMode} />
+                    </div>
+                )
+            }
+
+            {
+                activeSubTab === 'estatisticas' && (
+                    <div className="animate-in fade-in slide-in-from-bottom-4">
+                        <UserStatistics 
+                            users={users} 
+                            attendanceHistory={attendanceHistory}
+                            isDarkMode={isDarkMode} 
+                            activeUnitFilter={selectedUnit} 
+                        />
                     </div>
                 )
             }

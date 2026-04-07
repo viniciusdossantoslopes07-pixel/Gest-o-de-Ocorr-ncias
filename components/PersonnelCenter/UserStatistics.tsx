@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react';
-import { User } from '../../types';
+import { User, DailyAttendance } from '../../types';
 import { useSectors } from '../../contexts/SectorsContext';
 import { BarChart3, Users, Shield, Building2, TrendingUp, Award } from 'lucide-react';
 import { RANKS } from '../../constants';
 
 interface UserStatisticsProps {
     users: User[];
+    attendanceHistory: DailyAttendance[];
     isDarkMode: boolean;
     activeUnitFilter: 'TODAS' | 'GSD-SP' | 'BASP';
 }
@@ -38,11 +39,46 @@ const HIERARQUIA_GRUPOS = [
     }
 ];
 
-const UserStatistics: React.FC<UserStatisticsProps> = ({ users, isDarkMode, activeUnitFilter }) => {
+const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistory, isDarkMode, activeUnitFilter }) => {
     const { sectors } = useSectors();
+    const [statsFilter, setStatsFilter] = React.useState<'TOTAL' | 'PRESENTE'>('TOTAL');
 
-    // Apenas pessoal ativo e não funcional
-    const statsUsers = useMemo(() => users.filter(u => u.active !== false && !u.is_functional), [users]);
+    // Mapeamento de quem está presente HOJE (último registro disponível)
+    const presenceMap = useMemo(() => {
+        const today = new Date().toISOString().split('T')[0];
+        const record = attendanceHistory.find(h => h.date === today);
+        if (!record) return new Map<string, string>();
+        
+        const map = new Map<string, string>();
+        record.records?.forEach((r: any) => {
+            map.set(r.userId, r.status);
+        });
+        return map;
+    }, [attendanceHistory]);
+
+    // Filtro inteligente: Efetivo por Unidade + Ativos + Filtro de Status
+    const statsUsers = useMemo(() => {
+        let filtered = users.filter(u => u.active !== false && !u.is_functional);
+        
+        if (activeUnitFilter !== 'TODAS') {
+            filtered = filtered.filter(u => {
+                const sectorObj = sectors.find(s => s.name === u.sector);
+                if (activeUnitFilter === 'BASP') return sectorObj?.unit === 'BASP';
+                return !sectorObj || sectorObj.unit === 'GSD-SP' || !sectorObj.unit;
+            });
+        }
+
+        if (statsFilter === 'PRESENTE') {
+            // Filtra apenas quem está presente ('P', 'FE', 'ESV', etc.)
+            const presenceCodes = ['P', 'FE', 'ESV', 'SSV', 'MIS', 'INST', 'C-E'];
+            filtered = filtered.filter(u => {
+                const status = presenceMap.get(u.id) || 'P'; // Assume P se não houver registro (padrão)
+                return presenceCodes.includes(status);
+            });
+        }
+        
+        return filtered;
+    }, [users, activeUnitFilter, sectors, statsFilter, presenceMap]);
 
     const total = statsUsers.length;
 
@@ -110,6 +146,34 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, isDarkMode, acti
 
     return (
         <div className="space-y-5 mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+            {/* Smart Filters Header */}
+            <div className={`p-4 rounded-2xl border flex flex-col md:flex-row items-center justify-between gap-4 ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-xl ${isDarkMode ? 'bg-blue-600/20 text-blue-400' : 'bg-blue-600 text-white'}`}>
+                        <TrendingUp className="w-4 h-4" />
+                    </div>
+                    <div>
+                        <h2 className={`text-sm font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Painel Analítico Inteligente</h2>
+                        <p className={`text-[10px] font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Dados filtrados para {activeUnitFilter}</p>
+                    </div>
+                </div>
+                
+                <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-800/50 border border-slate-700">
+                    <button
+                        onClick={() => setStatsFilter('TOTAL')}
+                        className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${statsFilter === 'TOTAL' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                        Efetivo Total
+                    </button>
+                    <button
+                        onClick={() => setStatsFilter('PRESENTE')}
+                        className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${statsFilter === 'PRESENTE' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                    >
+                        Efetivo Presente
+                    </button>
+                </div>
+            </div>
 
             {/* KPIs Rápidos */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
