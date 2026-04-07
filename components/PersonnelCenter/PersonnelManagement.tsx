@@ -2,7 +2,8 @@ import React, { useState, FC } from 'react';
 import { User, UserRole } from '../../types';
 import { RANKS, getRankPriority } from '../../constants';
 import { useSectors } from '../../contexts/SectorsContext';
-import { UserPlus, Search, Edit2, Trash2, Shield, User as UserIcon, Hash, Building2, Users, AlertTriangle, XCircle, Briefcase } from 'lucide-react';
+import { UserPlus, Search, Edit2, Trash2, Shield, User as UserIcon, Hash, Building2, Users, AlertTriangle, XCircle, Briefcase, BarChart3, ChevronDown, ChevronUp } from 'lucide-react';
+import UserStatistics from './UserStatistics';
 
 interface PersonnelManagementProps {
     users: User[];
@@ -20,6 +21,10 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     const [editingId, setEditingId] = useState<string | null>(null);
     const [showInactive, setShowInactive] = useState(false);
     const [showFunctional, setShowFunctional] = useState(false);
+    const [showStatistics, setShowStatistics] = useState(false);
+
+    // Filtro Inteligente de Unidade
+    const [activeUnitFilter, setActiveUnitFilter] = useState<'TODAS' | 'GSD-SP' | 'BASP'>('TODAS');
 
     const { sectorNames } = useSectors();
     const [formData, setFormData] = useState({
@@ -74,11 +79,21 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
             sectorMatch = u.sector === filterSector;
         }
 
+        let unitMatch = true;
+        if (activeUnitFilter === 'GSD-SP') {
+            const gsdSectors = ['SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'];
+            unitMatch = gsdSectors.includes(u.sector || '');
+        } else if (activeUnitFilter === 'BASP') {
+            // Se nao esta na lista GSD-SP ou "SEM SETOR", é assumido como BASP (ja que criamos fallback SQL)
+            const gsdSectors = ['SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'];
+            unitMatch = !gsdSectors.includes(u.sector || '') && u.sector !== 'SEM SETOR' && Boolean(u.sector);
+        }
+
         const searchMatch = (u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             u.warName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             u.saram.includes(searchTerm));
 
-        return statusMatch && functionalMatch && sectorMatch && searchMatch;
+        return statusMatch && functionalMatch && sectorMatch && unitMatch && searchMatch;
     });
 
     // Calculate stats based on baseFilteredList
@@ -179,6 +194,46 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                 <p className={`text-2xl lg:text-3xl font-black mt-1 ${isDarkMode ? 'text-emerald-100' : 'text-emerald-900'}`}>{totalPracas}</p>
                             </div>
                         </div>
+
+                        {/* Filtros Inteligentes Globais */}
+                        <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 mb-6">
+                            
+                            <div className={`flex rounded-xl p-1.5 border shadow-inner max-w-full md:max-w-fit overflow-x-auto custom-scrollbar ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200/50'}`}>
+                                <button
+                                    onClick={() => setActiveUnitFilter('TODAS')}
+                                    className={`px-6 py-2.5 min-w-[120px] text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${activeUnitFilter === 'TODAS' ? (isDarkMode ? 'bg-slate-700 text-white shadow-lg' : 'bg-white text-slate-800 shadow-md') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800')}`}
+                                >
+                                    Visão Global
+                                </button>
+                                <button
+                                    onClick={() => setActiveUnitFilter('GSD-SP')}
+                                    className={`px-6 py-2.5 min-w-[120px] text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${activeUnitFilter === 'GSD-SP' ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' : 'bg-blue-600 text-white shadow-md shadow-blue-200') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800')}`}
+                                >
+                                    GSD-SP
+                                </button>
+                                <button
+                                    onClick={() => setActiveUnitFilter('BASP')}
+                                    className={`px-6 py-2.5 min-w-[120px] text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${activeUnitFilter === 'BASP' ? (isDarkMode ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/50' : 'bg-emerald-600 text-white shadow-md shadow-emerald-200') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800')}`}
+                                >
+                                    BASP
+                                </button>
+                            </div>
+
+                            <button
+                                onClick={() => setShowStatistics(!showStatistics)}
+                                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all shadow-sm ${showStatistics ? (isDarkMode ? 'bg-indigo-600 text-white shadow-indigo-900/30' : 'bg-indigo-100 text-indigo-700 border-indigo-200 border') : (isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50')}`}
+                            >
+                                <BarChart3 className="w-4 h-4" />
+                                {showStatistics ? 'Ocultar Estatísticas' : 'Painel Analítico Completo'}
+                                {showStatistics ? <ChevronUp className="w-4 h-4 opacity-50" /> : <ChevronDown className="w-4 h-4 opacity-50" />}
+                            </button>
+                        </div>
+
+                        {showStatistics && (
+                            <div className="mb-10">
+                                <UserStatistics users={baseFilteredList} activeUnitFilter={activeUnitFilter} isDarkMode={isDarkMode} />
+                            </div>
+                        )}
 
                         <div className="flex flex-col md:flex-row gap-4">
                             <div className="relative flex-1">
