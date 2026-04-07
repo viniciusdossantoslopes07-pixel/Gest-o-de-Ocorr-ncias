@@ -263,11 +263,11 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, isDarkMode, acti
                 {rankStats.length > 0 ? (() => {
                     // Escala raiz quadrada para evidenciar melhor as diferenças sem apagar os pequenos
                     const sqrtMax = Math.sqrt(maxRankCount);
-                    const BAR_AREA = 148;
+                    const BAR_AREA = 130; // Reduzido para dar mais espaço no topo
                     return (
                         <div className="relative">
                             {/* Linhas de grade horizontais */}
-                            <div className="absolute pointer-events-none" style={{ bottom: '60px', top: '24px', left: '32px', right: '0' }}>
+                            <div className="absolute pointer-events-none" style={{ bottom: '60px', top: '40px', left: '32px', right: '0' }}>
                                 {[100, 75, 50, 25].map(pct => (
                                     <div
                                         key={pct}
@@ -277,43 +277,40 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, isDarkMode, acti
                                         <span className={`text-[8px] font-bold tabular-nums absolute -left-8 ${isDarkMode ? 'text-slate-700' : 'text-slate-300'}`}>
                                             {Math.round((pct / 100) * maxRankCount)}
                                         </span>
-                                        <div className={`w-full border-t border-dashed ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`} />
+                                        <div className={`w-full border-t ${isDarkMode ? 'border-slate-800/50' : 'border-slate-200/50'}`} />
                                     </div>
                                 ))}
                             </div>
 
                             {/* Barras */}
-                            <div className="flex items-end gap-2 md:gap-3 overflow-x-auto pl-8" style={{ height: '220px', paddingBottom: '32px' }}>
+                            <div className="flex items-end gap-2 md:gap-3 overflow-x-auto pl-8" style={{ height: '240px', paddingBottom: '32px' }}>
                                 {rankStats.map((stat) => {
                                     const grupo = HIERARQUIA_GRUPOS[stat.group] || HIERARQUIA_GRUPOS[0];
                                     const barColor = isDarkMode ? grupo.color.dark : grupo.color.light;
                                     const sqrtVal = Math.sqrt(stat.count);
-                                    const barHeight = Math.max((sqrtVal / sqrtMax) * BAR_AREA, 10);
+                                    const barHeight = Math.max((sqrtVal / sqrtMax) * BAR_AREA, 12);
 
                                     return (
                                         <div key={stat.rank} className="flex-1 min-w-[38px] max-w-[56px] flex flex-col items-center gap-0 group cursor-default">
-                                            {/* Número permanente acima */}
-                                            <span className="text-[11px] font-black tabular-nums mb-1.5 block" style={{ color: barColor }}>
+                                            {/* Número permanente acima - com mais espaço no topo */}
+                                            <span className="text-[11px] font-black tabular-nums mb-2 block" style={{ color: barColor }}>
                                                 {stat.count}
                                             </span>
-                                            {/* Barra premium com gradiente + glow */}
+                                            {/* Barra solida com glow sutil perimetral */}
                                             <div
-                                                className="w-full rounded-t-xl transition-all duration-700 ease-out relative overflow-hidden group-hover:scale-105"
+                                                className="w-full rounded-xl transition-all duration-500 ease-out relative group-hover:scale-[1.03]"
                                                 style={{
                                                     height: `${barHeight}px`,
-                                                    background: isDarkMode
-                                                        ? `linear-gradient(to top, ${barColor}25, ${barColor})`
-                                                        : `linear-gradient(to top, ${barColor}50, ${barColor})`,
-                                                    boxShadow: `0 -6px 20px ${barColor}55, 0 0 0 1px ${barColor}30`,
+                                                    backgroundColor: barColor,
+                                                    boxShadow: isDarkMode 
+                                                        ? `0 4px 20px ${barColor}20, inset 0 0 0 1px rgba(255,255,255,0.1)` 
+                                                        : `0 4px 15px ${barColor}30`,
                                                 }}
-                                            >
-                                                {/* Reflexo de vidro */}
-                                                <div className="absolute inset-0 rounded-t-xl" style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.22) 0%, transparent 55%)' }} />
-                                            </div>
+                                            />
                                             {/* Label posto */}
-                                            <div className="mt-2 flex flex-col items-center gap-0.5">
-                                                <div className="w-4 h-0.5 rounded-full" style={{ backgroundColor: `${barColor}60` }} />
-                                                <span className={`text-[9px] font-black uppercase tracking-tight mt-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                            <div className="mt-3 flex flex-col items-center gap-1">
+                                                <div className="w-4 h-0.5 rounded-full" style={{ backgroundColor: `${barColor}40` }} />
+                                                <span className={`text-[9px] font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                                     {stat.rank}
                                                 </span>
                                             </div>
