@@ -5,7 +5,7 @@ import {
     Home, PlusCircle, ShieldCheck, ShieldAlert, Package,
     LayoutDashboard, FileText, LogOut, ChevronLeft, ChevronRight,
     User as UserIcon, Settings, HelpCircle, Moon, Sun, Lock, Siren, BarChart3,
-    ChevronUp, ChevronDown, Check, Settings2, DoorOpen, Car, MapPin, CalendarDays
+    ChevronUp, ChevronDown, Check, Settings2, DoorOpen, Car, MapPin, CalendarDays, Volume2
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { USER_FUNCTIONS, PERMISSIONS, hasPermission } from '../constants/permissions';
@@ -62,6 +62,77 @@ export default function SideMenu({
     const canManageOccurrences = hasPermission(currentUser, PERMISSIONS.MANAGE_OCCURRENCES);
     const isAdmin = currentUser.role === UserRole.ADMIN;
 
+    const showEmergencyButton = currentUser.is_functional || isAdmin;
+
+    // Supabase realtime channel for emergency
+    React.useEffect(() => {
+        if (!showEmergencyButton) return;
+
+        const channel = supabase.channel('emergency_channel')
+            .on('broadcast', { event: 'emergency_alert' }, (payload) => {
+                playEmergencySound();
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [showEmergencyButton]);
+
+    const playEmergencySound = () => {
+        try {
+            const audio = new Audio('/emergency.mp3');
+            audio.play().catch(e => {
+                console.log('mp3 not found, fallback to AudioContext siren');
+                fallbackSiren();
+            });
+        } catch (err) {
+            fallbackSiren();
+        }
+    };
+
+    const fallbackSiren = () => {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.type = 'square';
+        
+        let time = ctx.currentTime;
+        for (let i = 0; i < 10; i++) {
+            osc.frequency.setValueAtTime(600, time);
+            osc.frequency.linearRampToValueAtTime(1200, time + 0.4);
+            time += 0.4;
+            osc.frequency.setValueAtTime(1200, time);
+            osc.frequency.linearRampToValueAtTime(600, time + 0.4);
+            time += 0.4;
+        }
+        
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        osc.start(ctx.currentTime);
+        osc.stop(time);
+    };
+
+    const handleTriggerEmergency = () => {
+        if (window.confirm("Deseja realmente acionar o ALERTA DE EMERGÊNCIA sonoro para todos os usuários com a função ligada?")) {
+            supabase.channel('emergency_channel').send({
+                type: 'broadcast',
+                event: 'emergency_alert',
+                payload: { sender: currentUser.name }
+            });
+            playEmergencySound();
+        }
+    };
+
+    const handleTestEmergencySound = () => {
+        playEmergencySound();
+    };
+
     const MenuItem = ({ id, label, icon: Icon, onClick }: any) => (
         <button
             onClick={() => {
@@ -105,6 +176,28 @@ export default function SideMenu({
                             </h1>
                         )}
                     </div>
+
+                    {/* Emergency Alerts */}
+                    {!isPublic && showEmergencyButton && (
+                        <div className={`flex flex-col gap-2 mb-4 border-b border-slate-700/50 pb-4 ${isCollapsed ? 'items-center' : ''}`}>
+                             <button
+                                onClick={handleTriggerEmergency}
+                                className={`w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 text-white rounded-lg shadow-[0_0_15px_rgba(220,38,38,0.5)] transition-all animate-pulse hover:animate-none ${isCollapsed ? 'p-3' : 'py-3'}`}
+                                title={isCollapsed ? "Alerta de Emergência" : ""}
+                            >
+                                <Siren className="w-5 h-5 shrink-0" />
+                                {!isCollapsed && <span className="font-bold tracking-wider text-sm uppercase">Alerta Sonoro</span>}
+                            </button>
+                            {!isCollapsed && (
+                                <button
+                                    onClick={handleTestEmergencySound}
+                                    className="w-full text-xs text-slate-400 hover:text-white flex items-center justify-center gap-1 mt-1 transition-colors"
+                                >
+                                    <Volume2 className="w-3 h-3" /> Testar Som
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Menu Items */}
