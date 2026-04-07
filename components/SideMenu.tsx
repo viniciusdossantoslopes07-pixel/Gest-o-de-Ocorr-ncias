@@ -34,6 +34,7 @@ export default function SideMenu({
     const [isAccessControlOpen, setIsAccessControlOpen] = useState(false);
 
     const [isTestingSound, setIsTestingSound] = useState(false);
+    const [isRealAlarm, setIsRealAlarm] = useState(false);
     const [soundCountdown, setSoundCountdown] = useState<number | null>(null);
     const [emergencyAlertModal, setEmergencyAlertModal] = useState<{ sender: string, local: string } | null>(null);
     const audioRef = React.useRef<HTMLAudioElement | null>(null);
@@ -115,16 +116,18 @@ export default function SideMenu({
             sirenRef.current = null;
         }
         setIsTestingSound(false);
+        setIsRealAlarm(false);
     };
 
-    const playEmergencySound = (isRealAlarm = false) => {
+    const playEmergencySound = (isRealAlarmMode = false) => {
         // Only stop if we're not locked in a countdown
         if (soundCountdown !== null && soundCountdown > 0) return;
 
         stopEmergencySound();
-        setIsTestingSound(true);
         
-        if (isRealAlarm) {
+        if (isRealAlarmMode) {
+            setIsRealAlarm(true);
+            setIsTestingSound(false);
             setSoundCountdown(5);
 
             if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
@@ -139,6 +142,8 @@ export default function SideMenu({
                 });
             }, 1000);
         } else {
+            setIsRealAlarm(false);
+            setIsTestingSound(true);
             setSoundCountdown(null);
         }
 
@@ -148,6 +153,7 @@ export default function SideMenu({
             
             audio.onended = () => {
                 setIsTestingSound(false);
+                setIsRealAlarm(false);
                 audioRef.current = null;
             };
 
@@ -193,6 +199,7 @@ export default function SideMenu({
 
         osc.onended = () => {
             setIsTestingSound(false);
+            setIsRealAlarm(false);
             sirenRef.current = null;
             try { ctx.close(); } catch(e) {}
         };
@@ -338,7 +345,7 @@ export default function SideMenu({
                         <div className={`flex flex-col gap-2 mb-4 border-b border-slate-700/50 pb-4 ${isCollapsed ? 'items-center' : ''}`}>
                              <button
                                 onClick={() => {
-                                    if (isTestingSound) {
+                                    if (isRealAlarm) {
                                         if (soundCountdown === null || soundCountdown <= 0) {
                                             stopEmergencySound();
                                         }
@@ -346,31 +353,39 @@ export default function SideMenu({
                                         handleTriggerEmergency();
                                     }
                                 }}
-                                disabled={isTestingSound && soundCountdown !== null && soundCountdown > 0}
+                                disabled={isRealAlarm && soundCountdown !== null && soundCountdown > 0}
                                 className={`w-full flex items-center justify-center gap-2 text-white rounded-lg transition-all ${
-                                    isTestingSound && soundCountdown !== null && soundCountdown > 0
+                                    isRealAlarm && soundCountdown !== null && soundCountdown > 0
                                         ? 'bg-red-800 shadow-none cursor-not-allowed opacity-80'
-                                        : isTestingSound 
+                                        : isRealAlarm 
                                             ? 'bg-red-600 shadow-[0_0_30px_rgba(220,38,38,0.8)] animate-pulse' 
                                             : 'bg-red-600 hover:bg-red-500 shadow-sm'
                                 } ${isCollapsed ? 'p-3' : 'py-3'}`}
-                                title={isCollapsed ? (isTestingSound ? "Desligar Alerta" : "Alerta de Emergência") : ""}
+                                title={isCollapsed ? (isRealAlarm ? "Desligar Alerta" : "Alerta de Emergência") : ""}
                             >
                                 <Siren className="w-5 h-5 shrink-0" />
                                 {!isCollapsed && (
                                     <span className="font-bold tracking-wider text-sm uppercase">
-                                        {isTestingSound 
+                                        {isRealAlarm 
                                             ? (soundCountdown !== null && soundCountdown > 0 ? `Aguarde ${soundCountdown}s...` : 'Desligar Alerta') 
                                             : 'Alerta Sonoro'}
                                     </span>
                                 )}
                             </button>
-                            {!isCollapsed && !isTestingSound && (
+                            {!isCollapsed && !isRealAlarm && (
                                 <button
-                                    onClick={handleTestEmergencySound}
-                                    className="w-full text-xs flex items-center justify-center gap-1 mt-1 transition-colors text-slate-400 hover:text-white"
+                                    onClick={() => {
+                                        if (isTestingSound) {
+                                            stopEmergencySound();
+                                        } else {
+                                            playEmergencySound(false);
+                                        }
+                                    }}
+                                    className={`w-full text-xs flex items-center justify-center gap-1 mt-1 transition-colors ${
+                                        isTestingSound ? 'text-red-400 hover:text-red-300 font-bold' : 'text-slate-400 hover:text-white'
+                                    }`}
                                 >
-                                    <Volume2 className="w-3 h-3" /> Testar Som
+                                    <Volume2 className="w-3 h-3" /> {isTestingSound ? 'Desligar Teste' : 'Testar Som'}
                                 </button>
                             )}
                         </div>
