@@ -34,8 +34,10 @@ export default function SideMenu({
     const [isAccessControlOpen, setIsAccessControlOpen] = useState(false);
 
     const [isTestingSound, setIsTestingSound] = useState(false);
+    const [soundCountdown, setSoundCountdown] = useState<number | null>(null);
     const audioRef = React.useRef<HTMLAudioElement | null>(null);
     const sirenRef = React.useRef<{ osc: OscillatorNode, ctx: AudioContext } | null>(null);
+    const countdownTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
     // Permission-based Logic
     // Public is handled separately
@@ -84,6 +86,11 @@ export default function SideMenu({
     }, [showEmergencyButton]);
 
     const stopEmergencySound = () => {
+        if (soundCountdown !== null && soundCountdown > 0) return; // Block stopping during minimum 5s
+
+        if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+        setSoundCountdown(null);
+
         if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
@@ -100,8 +107,24 @@ export default function SideMenu({
     };
 
     const playEmergencySound = () => {
+        // Only stop if we're not locked in a countdown
+        if (soundCountdown !== null && soundCountdown > 0) return;
+
         stopEmergencySound();
         setIsTestingSound(true);
+        setSoundCountdown(5);
+
+        if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+        countdownTimerRef.current = setInterval(() => {
+            setSoundCountdown(prev => {
+                if (prev === null) return null;
+                if (prev <= 1) {
+                    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+                    return null;
+                }
+                return prev - 1;
+            });
+        }, 1000);
 
         try {
             const audio = new Audio('/emergency.mp3');
@@ -186,7 +209,9 @@ export default function SideMenu({
 
     const handleTestEmergencySound = () => {
         if (isTestingSound) {
-            stopEmergencySound();
+            if (soundCountdown === null || soundCountdown <= 0) {
+                stopEmergencySound();
+            }
         } else {
             playEmergencySound();
         }
@@ -254,17 +279,27 @@ export default function SideMenu({
                             {!isCollapsed && (
                                 <button
                                     onClick={handleTestEmergencySound}
+                                    disabled={isTestingSound && soundCountdown !== null}
                                     className={`w-full text-xs flex items-center justify-center gap-1 mt-1 transition-colors ${
                                         isTestingSound 
-                                            ? 'text-red-400 hover:text-red-300 font-bold' 
+                                            ? (soundCountdown !== null ? 'text-slate-500 cursor-not-allowed' : 'text-red-400 hover:text-red-300 font-bold') 
                                             : 'text-slate-400 hover:text-white'
                                     }`}
                                 >
                                     {isTestingSound ? (
-                                        <>Desligar Teste</>
+                                        <>{soundCountdown !== null ? `Desligar em ${soundCountdown}s...` : 'Desligar Alerta'}</>
                                     ) : (
                                         <><Volume2 className="w-3 h-3" /> Testar Som</>
                                     )}
+                                </button>
+                            )}
+
+                            {!isCollapsed && (
+                                <button
+                                    onClick={() => { setActiveTab('emergency-logs'); if (window.innerWidth < 1024) onClose(); }}
+                                    className="w-full text-[10px] uppercase font-bold text-slate-500 hover:text-white mt-3 transition-colors tracking-widest text-center border-t border-slate-700/50 pt-2"
+                                >
+                                    Ver Histórico de Disparos
                                 </button>
                             )}
                         </div>
