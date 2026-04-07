@@ -39,6 +39,7 @@ export default function SideMenu({
     const audioRef = React.useRef<HTMLAudioElement | null>(null);
     const sirenRef = React.useRef<{ osc: OscillatorNode, ctx: AudioContext } | null>(null);
     const countdownTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+    const channelRef = React.useRef<any>(null);
 
     // Permission-based Logic
     // Public is handled separately
@@ -86,8 +87,11 @@ export default function SideMenu({
             })
             .subscribe();
 
+        channelRef.current = channel;
+
         return () => {
             supabase.removeChannel(channel);
+            channelRef.current = null;
         };
     }, [showEmergencyButton]);
 
@@ -198,15 +202,30 @@ export default function SideMenu({
 
     const handleTriggerEmergency = async () => {
         if (window.confirm("Deseja realmente acionar o ALERTA DE EMERGÊNCIA sonoro para todos os usuários com a função ligada?")) {
-            const local = currentUser.workplace || currentUser.sector || 'Desconhecido';
+            const local = currentUser.workplace || currentUser.sector || (isAdmin ? 'COMANDO GERAL' : 'Desconhecido');
             
-            supabase.channel('emergency_channel').send({
-                type: 'broadcast',
-                event: 'emergency_alert',
-                payload: { sender: currentUser.name, local }
-            });
+            let senderName = currentUser.name;
+            if (currentUser.rank && currentUser.warName) {
+                senderName = `${currentUser.rank} ${currentUser.warName}`;
+            } else if (currentUser.warName) {
+                senderName = currentUser.warName;
+            } else if (currentUser.rank) {
+                senderName = `${currentUser.rank} ${currentUser.name}`;
+            }
+
+            try {
+                if (channelRef.current) {
+                    await channelRef.current.send({
+                        type: 'broadcast',
+                        event: 'emergency_alert',
+                        payload: { sender: senderName, local }
+                    });
+                }
+            } catch (e) {
+                console.error("Error broadcasting alert:", e);
+            }
             
-            setEmergencyAlertModal({ sender: currentUser.name, local });
+            setEmergencyAlertModal({ sender: senderName, local });
             playEmergencySound(true);
             
             // Gravar log no banco
@@ -272,7 +291,7 @@ export default function SideMenu({
                             </h2>
                             
                             <div className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center shadow-inner">
-                                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1">Acionado por</span>
+                                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1">Alerta feito por</span>
                                 <span className="text-sm md:text-base text-slate-300 font-bold tracking-wider">{emergencyAlertModal.sender}</span>
                             </div>
 
