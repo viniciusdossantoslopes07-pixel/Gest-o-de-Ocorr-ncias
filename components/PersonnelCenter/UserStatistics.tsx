@@ -1,52 +1,78 @@
 import React, { useMemo } from 'react';
 import { User } from '../../types';
 import { useSectors } from '../../contexts/SectorsContext';
-import { BarChart3, PieChart as PieChartIcon, TrendingUp } from 'lucide-react';
+import { BarChart3, Users, Shield, Building2, TrendingUp, Award } from 'lucide-react';
 import { RANKS } from '../../constants';
 
 interface UserStatisticsProps {
-    users: User[]; // Já virão filtrados inteligentemente
+    users: User[];
     isDarkMode: boolean;
     activeUnitFilter: 'TODAS' | 'GSD-SP' | 'BASP';
 }
 
+// Mapeamento visual de categorias hierárquicas para a pirâmide
+const HIERARQUIA_GRUPOS = [
+    {
+        label: 'Oficiais Superiores',
+        color: { dark: '#3b82f6', light: '#2563eb' },
+        bg: { dark: 'rgba(59,130,246,0.15)', light: '#eff6ff' },
+        ranks: ['CEL', 'TEN CEL', 'MAJ']
+    },
+    {
+        label: 'Oficiais Intermediários',
+        color: { dark: '#818cf8', light: '#6366f1' },
+        bg: { dark: 'rgba(129,140,248,0.15)', light: '#eef2ff' },
+        ranks: ['CAP', '1T', '2T', 'ASP']
+    },
+    {
+        label: 'Suboficiais e Sargentos',
+        color: { dark: '#34d399', light: '#059669' },
+        bg: { dark: 'rgba(52,211,153,0.15)', light: '#ecfdf5' },
+        ranks: ['SO', '1S', '2S', '3S']
+    },
+    {
+        label: 'Cabos e Soldados',
+        color: { dark: '#fbbf24', light: '#d97706' },
+        bg: { dark: 'rgba(251,191,36,0.15)', light: '#fefce8' },
+        ranks: ['CB', 'S1', 'S2']
+    }
+];
+
 const UserStatistics: React.FC<UserStatisticsProps> = ({ users, isDarkMode, activeUnitFilter }) => {
     const { sectors } = useSectors();
 
-    // Filtra apenas o pessoal ativo e não funcional para as estatísticas
+    // Apenas pessoal ativo e não funcional
     const statsUsers = useMemo(() => users.filter(u => u.active !== false && !u.is_functional), [users]);
 
-    // Estatísticas por Posto/Graduação
+    const total = statsUsers.length;
+
+    // Cálculo de grupos por hierarquia
+    const grupoStats = useMemo(() => {
+        return HIERARQUIA_GRUPOS.map(grupo => {
+            const count = statsUsers.filter(u => u.rank && grupo.ranks.includes(u.rank)).length;
+            const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+            return { ...grupo, count, pct };
+        });
+    }, [statsUsers, total]);
+
+    // Estatísticas individuais por posto (para o gráfico de barras detalhado)
     const rankStats = useMemo(() => {
         const counts: Record<string, number> = {};
-        RANKS.forEach(r => counts[r] = 0);
+        RANKS.forEach(r => { counts[r] = 0; });
         statsUsers.forEach(u => {
-            if (u.rank && counts[u.rank] !== undefined) {
-                counts[u.rank]++;
-            }
+            if (u.rank && counts[u.rank] !== undefined) counts[u.rank]++;
         });
         return RANKS.map(rank => ({
             rank,
-            count: counts[rank]
+            count: counts[rank],
+            group: HIERARQUIA_GRUPOS.findIndex(g => g.ranks.includes(rank))
         })).filter(item => item.count > 0);
     }, [statsUsers]);
 
     const maxRankCount = Math.max(...rankStats.map(s => s.count), 1);
 
-    // Estatísticas por Unidade (só mostra se a visualização for TODAS)
-    const unitStats = useMemo(() => {
-        let gsd = 0;
-        let basp = 0;
-        statsUsers.forEach(u => {
-            const sectorObj = sectors.find(s => s.name === u.sector);
-            if (sectorObj?.unit === 'BASP') basp++;
-            else gsd++; 
-        });
-        return { gsd, basp, total: gsd + basp };
-    }, [statsUsers, sectors]);
-
-    // Setores com maior efetivo (Top 5)
-    const topSectors = useMemo(() => {
+    // Distribuição por SETOR (top 8)
+    const sectorStats = useMemo(() => {
         const counts: Record<string, number> = {};
         statsUsers.forEach(u => {
             if (u.sector && u.sector !== 'SEM SETOR') {
@@ -55,125 +81,272 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, isDarkMode, acti
         });
         return Object.entries(counts)
             .sort((a, b) => b[1] - a[1])
-            .slice(0, 5)
-            .map(([name, count]) => ({ name, count }));
-    }, [statsUsers]);
+            .slice(0, 8)
+            .map(([name, count]) => ({
+                name,
+                count,
+                pct: total > 0 ? Math.round((count / total) * 100) : 0,
+                unit: sectors.find(s => s.name === name)?.unit || 'GSD-SP'
+            }));
+    }, [statsUsers, sectors, total]);
 
-    const maxTopSectorCount = Math.max(...topSectors.map(s => s.count), 1);
+    const maxSectorCount = Math.max(...sectorStats.map(s => s.count), 1);
+
+    // Estatísticas de unidade (só visível em "TODAS")
+    const unitStats = useMemo(() => {
+        let gsd = 0; let basp = 0;
+        statsUsers.forEach(u => {
+            const sectorObj = sectors.find(s => s.name === u.sector);
+            if (sectorObj?.unit === 'BASP') basp++;
+            else gsd++;
+        });
+        return { gsd, basp, total: gsd + basp };
+    }, [statsUsers, sectors]);
+
+    // Sem setor
+    const semSetor = statsUsers.filter(u => !u.sector || u.sector === 'SEM SETOR').length;
+
+    const card = `p-5 rounded-2xl border ${isDarkMode ? 'bg-slate-800/60 border-slate-700/80' : 'bg-white border-slate-100 shadow-sm'}`;
 
     return (
-        <div className="space-y-6 mt-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className={`grid grid-cols-1 ${activeUnitFilter === 'TODAS' ? 'lg:grid-cols-2' : 'lg:grid-cols-1'} gap-6`}>
-                
-                {/* Efetivo por Unidade (Exibido apenas na visão global) */}
-                {activeUnitFilter === 'TODAS' && (
-                    <div className={`p-6 md:p-8 rounded-[2rem] border shadow-sm ${isDarkMode ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-100'}`}>
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className={`p-2.5 rounded-xl ${isDarkMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
-                                <PieChartIcon className="w-5 h-5" />
-                            </div>
-                            <h3 className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Composição por Unidade</h3>
-                        </div>
-                        
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-4">
-                                <div className="w-4 h-4 rounded-full bg-blue-500" />
-                                <div>
-                                    <p className={`text-[10px] font-bold tracking-widest uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>GSD-SP</p>
-                                    <p className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{unitStats.gsd}</p>
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-xl font-bold text-blue-500">{Math.round((unitStats.gsd / Math.max(unitStats.total, 1)) * 100)}%</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="w-4 h-4 rounded-full bg-emerald-500" />
-                                <div>
-                                    <p className={`text-[10px] font-bold tracking-widest uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>BASP</p>
-                                    <p className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{unitStats.basp}</p>
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-xl font-bold text-emerald-500">{Math.round((unitStats.basp / Math.max(unitStats.total, 1)) * 100)}%</p>
-                            </div>
-                        </div>
+        <div className="space-y-5 mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-                        <div className="w-full h-3 mt-6 flex rounded-full overflow-hidden bg-slate-100 dark:bg-slate-900">
-                            <div style={{ width: `${(unitStats.gsd / Math.max(unitStats.total, 1)) * 100}%` }} className="h-full bg-blue-500 transition-all duration-1000" />
-                            <div style={{ width: `${(unitStats.basp / Math.max(unitStats.total, 1)) * 100}%` }} className="h-full bg-emerald-500 transition-all duration-1000" />
+            {/* KPIs Rápidos */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                    { label: 'Efetivo Analisado', value: total, color: 'text-blue-400', icon: Users },
+                    { label: 'Oficiais', value: grupoStats[0].count + grupoStats[1].count, color: 'text-indigo-400', icon: Shield },
+                    { label: 'Subof. / Sargentos', value: grupoStats[2].count, color: 'text-emerald-400', icon: Award },
+                    { label: 'Sem Setor Alocado', value: semSetor, color: semSetor > 0 ? 'text-red-400' : 'text-slate-400', icon: Building2 }
+                ].map(({ label, value, color, icon: Icon }) => (
+                    <div key={label} className={card}>
+                        <div className={`flex items-center gap-2 mb-3`}>
+                            <Icon className={`w-4 h-4 ${color}`} />
+                            <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{label}</p>
                         </div>
+                        <p className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{value}</p>
                     </div>
-                )}
+                ))}
+            </div>
 
-                {/* Top Setores */}
-                <div className={`p-6 md:p-8 rounded-[2rem] border shadow-sm ${isDarkMode ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-100'}`}>
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className={`p-2.5 rounded-xl ${isDarkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
-                            <TrendingUp className="w-5 h-5" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                
+                {/* Pirâmide Hierárquica por Grupos */}
+                <div className={card}>
+                    <div className="flex items-center gap-3 mb-5">
+                        <div className={`p-2 rounded-xl ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
+                            <Shield className="w-4 h-4" />
                         </div>
-                        <h3 className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Maiores Setores ({activeUnitFilter})</h3>
+                        <div>
+                            <h3 className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Composição Hierárquica</h3>
+                            <p className={`text-[9px] font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{activeUnitFilter === 'TODAS' ? 'Visão Geral' : `Unidade ${activeUnitFilter}`}</p>
+                        </div>
                     </div>
 
                     <div className="space-y-4">
-                        {topSectors.map((sector, index) => (
-                            <div key={sector.name} className="relative">
-                                <div className="flex justify-between items-end mb-1 relative z-10 px-1">
-                                    <span className={`text-[11px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                                        {index + 1}. {sector.name}
-                                    </span>
-                                    <span className={`text-xs font-bold ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>
-                                        {sector.count} <span className="text-[9px] text-slate-500">mil</span>
-                                    </span>
+                        {grupoStats.map((grupo) => (
+                            <div key={grupo.label}>
+                                <div className="flex justify-between items-center mb-1.5">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: isDarkMode ? grupo.color.dark : grupo.color.light }} />
+                                        <span className={`text-[10px] font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>{grupo.label}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <span className={`text-[10px] font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{grupo.pct}%</span>
+                                        <span className={`text-sm font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{grupo.count}</span>
+                                    </div>
                                 </div>
-                                <div className={`w-full h-2 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-900' : 'bg-slate-100'}`}>
-                                    <div 
-                                        className={`h-full rounded-full transition-all duration-1000 ${isDarkMode ? 'bg-amber-500/80' : 'bg-amber-500'}`}
-                                        style={{ width: `${(sector.count / maxTopSectorCount) * 100}%` }}
+                                <div className={`w-full h-2.5 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-900/80' : 'bg-slate-100'}`}>
+                                    <div
+                                        className="h-full rounded-full transition-all duration-1000 ease-out"
+                                        style={{
+                                            width: `${total > 0 ? (grupo.count / total) * 100 : 0}%`,
+                                            backgroundColor: isDarkMode ? grupo.color.dark : grupo.color.light,
+                                            minWidth: grupo.count > 0 ? '4px' : '0'
+                                        }}
                                     />
+                                </div>
+                                {/* Detalhe dos postos individuais dentro do grupo */}
+                                <div className="flex flex-wrap gap-1.5 mt-2">
+                                    {rankStats.filter(r => grupo.ranks.includes(r.rank)).map(r => (
+                                        <span
+                                            key={r.rank}
+                                            className={`px-2 py-0.5 rounded-md text-[9px] font-black tracking-wide border`}
+                                            style={{
+                                                backgroundColor: isDarkMode ? grupo.bg.dark : grupo.bg.light,
+                                                borderColor: isDarkMode ? `${grupo.color.dark}40` : `${grupo.color.light}50`,
+                                                color: isDarkMode ? grupo.color.dark : grupo.color.light
+                                            }}
+                                        >
+                                            {r.rank}: {r.count}
+                                        </span>
+                                    ))}
                                 </div>
                             </div>
                         ))}
-                        {topSectors.length === 0 && (
-                            <p className="text-center text-slate-500 text-xs py-4">Nenhum dado cadastrado.</p>
+                    </div>
+                </div>
+
+                {/* Distribuição por Setor */}
+                <div className={card}>
+                    <div className="flex items-center gap-3 mb-5">
+                        <div className={`p-2 rounded-xl ${isDarkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
+                            <Building2 className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <h3 className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Efetivo por Setor</h3>
+                            <p className={`text-[9px] font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Ranking de densidade — Top 8</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        {sectorStats.map((sector, index) => (
+                            <div key={sector.name} className="flex items-center gap-3">
+                                <span className={`text-[9px] font-black w-4 text-right shrink-0 ${isDarkMode ? 'text-slate-600' : 'text-slate-300'}`}>{index + 1}</span>
+                                <div className="flex-1">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className={`text-[10px] font-black uppercase ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>{sector.name}</span>
+                                            <span className={`px-1.5 py-0.5 rounded text-[8px] font-black ${sector.unit === 'BASP' ? (isDarkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-50 text-emerald-700') : (isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-50 text-blue-700')}`}>
+                                                {sector.unit}
+                                            </span>
+                                        </div>
+                                        <span className={`text-[10px] font-black tabular-nums ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                                            {sector.count} <span className={`text-[8px] font-medium ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>({sector.pct}%)</span>
+                                        </span>
+                                    </div>
+                                    <div className={`w-full h-1.5 rounded-full ${isDarkMode ? 'bg-slate-900/80' : 'bg-slate-100'}`}>
+                                        <div
+                                            className={`h-full rounded-full transition-all duration-700`}
+                                            style={{
+                                                width: `${(sector.count / maxSectorCount) * 100}%`,
+                                                background: sector.unit === 'BASP'
+                                                    ? (isDarkMode ? '#34d399' : '#059669')
+                                                    : (isDarkMode ? '#60a5fa' : '#2563eb'),
+                                                minWidth: '3px'
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                        {sectorStats.length === 0 && (
+                            <p className={`text-center py-6 text-xs ${isDarkMode ? 'text-slate-600' : 'text-slate-300'}`}>Nenhum dado de setor disponível.</p>
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* Grafico de Hierarquia (Barras) */}
-            <div className={`p-6 md:p-8 rounded-[2rem] border shadow-sm ${isDarkMode ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-100'}`}>
-                <div className="flex items-center gap-3 mb-10">
-                    <div className={`p-2.5 rounded-xl ${isDarkMode ? 'bg-blue-600/20 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
-                        <BarChart3 className="w-5 h-5" />
+            {/* Gráfico de Barras Detalhado — Postos Individuais */}
+            <div className={card}>
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-xl ${isDarkMode ? 'bg-violet-500/20 text-violet-400' : 'bg-violet-50 text-violet-600'}`}>
+                            <BarChart3 className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <h3 className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Distribuição Individual por Posto</h3>
+                            <p className={`text-[9px] font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Cada coluna representa um posto/graduação. Passe o mouse para ver detalhes.</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 className={`text-sm font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Pirâmide Hierárquica</h3>
-                        <p className={`text-[10px] font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Distribuição completa do efetivo por postos e graduações</p>
+                    {/* Legenda */}
+                    <div className="hidden md:flex items-center gap-4">
+                        {HIERARQUIA_GRUPOS.map(g => (
+                            <div key={g.label} className="flex items-center gap-1.5">
+                                <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: isDarkMode ? g.color.dark : g.color.light }} />
+                                <span className={`text-[8px] font-bold uppercase tracking-wide ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{g.label.split(' ')[0]}</span>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
-                <div className="h-48 md:h-64 flex items-end gap-2 md:gap-4 pb-4 overflow-x-auto custom-scrollbar px-2">
-                    {rankStats.map((stat) => (
-                        <div key={stat.rank} className="flex-1 min-w-[30px] flex flex-col items-center justify-end gap-2 group">
-                            <span className={`text-xs font-bold transition-all ${isDarkMode ? 'text-blue-400 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0' : 'text-blue-600 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0'}`}>
-                                {stat.count}
-                            </span>
-                            <div 
-                                className={`w-full max-w-[40px] rounded-t-xl transition-all duration-1000 ease-out group-hover:brightness-110 ${isDarkMode ? 'bg-gradient-to-t from-blue-900/50 to-blue-500/80 border-t-2 border-blue-400/50' : 'bg-gradient-to-t from-blue-100 to-blue-500 border-t-2 border-blue-600'}`}
-                                style={{ height: `${(stat.count / maxRankCount) * 100}%`, minHeight: '4px' }}
-                            />
-                            <span className={`text-[9px] md:text-[10px] font-black uppercase tracking-tighter ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                                {stat.rank}
-                            </span>
-                        </div>
-                    ))}
-                    {rankStats.length === 0 && (
-                        <p className="w-full text-center text-slate-500 text-xs py-10">Nenhuma hierarquia.</p>
-                    )}
-                </div>
+                {rankStats.length > 0 ? (
+                    <div className="flex items-end gap-2 md:gap-3 overflow-x-auto pb-2" style={{ height: '160px' }}>
+                        {rankStats.map((stat) => {
+                            const grupo = HIERARQUIA_GRUPOS[stat.group] || HIERARQUIA_GRUPOS[0];
+                            const barColor = isDarkMode ? grupo.color.dark : grupo.color.light;
+                            const barBg = isDarkMode ? grupo.bg.dark : grupo.bg.light;
+                            const heightPct = Math.max((stat.count / maxRankCount) * 128, 6);
+                            return (
+                                <div key={stat.rank} className="flex-1 min-w-[36px] max-w-[60px] flex flex-col items-center gap-1.5 group cursor-default">
+                                    {/* Tooltip */}
+                                    <div
+                                        className={`text-[10px] font-black px-2 py-1 rounded-lg mb-1 opacity-0 group-hover:opacity-100 transition-all duration-200 scale-90 group-hover:scale-100 whitespace-nowrap pointer-events-none`}
+                                        style={{ backgroundColor: barBg, color: barColor }}
+                                    >
+                                        {stat.rank}: {stat.count}
+                                    </div>
+                                    {/* Barra */}
+                                    <div
+                                        className={`w-full rounded-t-lg transition-all duration-700 ease-out group-hover:brightness-125`}
+                                        style={{
+                                            height: `${heightPct}px`,
+                                            backgroundColor: barColor,
+                                            opacity: 0.85,
+                                        }}
+                                    />
+                                    {/* Label Posto */}
+                                    <span className={`text-[9px] font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} group-hover:text-current transition-colors`} style={{ color: undefined }}>
+                                        {stat.rank}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className={`flex items-center justify-center h-32 ${isDarkMode ? 'text-slate-600' : 'text-slate-300'}`}>
+                        <p className="text-sm font-bold">Nenhum dado hierárquico disponível.</p>
+                    </div>
+                )}
             </div>
+
+            {/* Composição por Unidade (apenas visão global) */}
+            {activeUnitFilter === 'TODAS' && (
+                <div className={card}>
+                    <div className="flex items-center gap-3 mb-5">
+                        <div className={`p-2 rounded-xl ${isDarkMode ? 'bg-slate-500/20 text-slate-400' : 'bg-slate-50 text-slate-600'}`}>
+                            <TrendingUp className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <h3 className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Composição GSD-SP vs BASP</h3>
+                            <p className={`text-[9px] font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Distribuição proporcional do efetivo total</p>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="w-3 h-3 rounded-full bg-blue-500" />
+                                <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>GSD-SP</p>
+                            </div>
+                            <p className={`text-4xl font-black leading-none ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{unitStats.gsd}</p>
+                            <p className="text-blue-500 font-black text-lg mt-1">{Math.round((unitStats.gsd / Math.max(unitStats.total, 1)) * 100)}%</p>
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                                <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>BASP</p>
+                            </div>
+                            <p className={`text-4xl font-black leading-none ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{unitStats.basp}</p>
+                            <p className="text-emerald-500 font-black text-lg mt-1">{Math.round((unitStats.basp / Math.max(unitStats.total, 1)) * 100)}%</p>
+                        </div>
+                    </div>
+                    {/* Barra proporcional segmentada */}
+                    <div className={`flex h-4 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-900' : 'bg-slate-100'}`}>
+                        <div
+                            className="h-full bg-blue-500 transition-all duration-1000"
+                            style={{ width: `${(unitStats.gsd / Math.max(unitStats.total, 1)) * 100}%` }}
+                        />
+                        <div
+                            className="h-full bg-emerald-500 transition-all duration-1000"
+                            style={{ width: `${(unitStats.basp / Math.max(unitStats.total, 1)) * 100}%` }}
+                        />
+                    </div>
+                    <div className="flex justify-between mt-2">
+                        <span className={`text-[9px] font-bold text-blue-400`}>GSD-SP</span>
+                        <span className={`text-[9px] font-bold text-emerald-400`}>BASP</span>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
