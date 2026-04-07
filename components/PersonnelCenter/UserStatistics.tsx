@@ -13,27 +13,27 @@ interface UserStatisticsProps {
 // Mapeamento visual de categorias hierárquicas para a pirâmide
 const HIERARQUIA_GRUPOS = [
     {
-        label: 'Oficiais Superiores',
-        color: { dark: '#3b82f6', light: '#2563eb' },
-        bg: { dark: 'rgba(59,130,246,0.15)', light: '#eff6ff' },
-        ranks: ['CEL', 'TEN CEL', 'MAJ']
+        label: 'Alto Comando',
+        color: { dark: '#f59e0b', light: '#b45309' },
+        bg: { dark: 'rgba(245,158,11,0.12)', light: '#fffbeb' },
+        ranks: ['CEL', 'TEN CEL', 'MAJ', 'TB', 'MB', 'BR']
     },
     {
-        label: 'Oficiais Intermediários',
-        color: { dark: '#818cf8', light: '#6366f1' },
-        bg: { dark: 'rgba(129,140,248,0.15)', light: '#eef2ff' },
+        label: 'Oficiais',
+        color: { dark: '#60a5fa', light: '#2563eb' },
+        bg: { dark: 'rgba(96,165,250,0.12)', light: '#eff6ff' },
         ranks: ['CAP', '1T', '2T', 'ASP']
     },
     {
-        label: 'Suboficiais e Sargentos',
-        color: { dark: '#34d399', light: '#059669' },
-        bg: { dark: 'rgba(52,211,153,0.15)', light: '#ecfdf5' },
+        label: 'Subof. e Sargentos',
+        color: { dark: '#22d3ee', light: '#0891b2' },
+        bg: { dark: 'rgba(34,211,238,0.12)', light: '#ecfeff' },
         ranks: ['SO', '1S', '2S', '3S']
     },
     {
         label: 'Cabos e Soldados',
-        color: { dark: '#fbbf24', light: '#d97706' },
-        bg: { dark: 'rgba(251,191,36,0.15)', light: '#fefce8' },
+        color: { dark: '#94a3b8', light: '#475569' },
+        bg: { dark: 'rgba(148,163,184,0.12)', light: '#f1f5f9' },
         ranks: ['CB', 'S1', 'S2']
     }
 ];
