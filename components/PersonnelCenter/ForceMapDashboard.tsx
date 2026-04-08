@@ -344,6 +344,53 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         });
     }, [users, currentRecordsMap, previousRecordsMap, selectedSector, rankFilter, viewMode, currentWeekRange, relevantUserIds, displaySectors, GSD_SP_SECTORS, BASP_SECTORS]);
 
+    // Resumo por Posto/Graduação para gráfico de barra
+    const rankBreakdown = useMemo(() => {
+        const stats: Record<string, { present: number, total: number }> = {};
+        RANKS.forEach(r => stats[r] = { present: 0, total: 0 });
+        
+        relevantUsers.forEach(u => {
+            if (!u.rank || !stats[u.rank]) return;
+            stats[u.rank].total++;
+        });
+
+        if (viewMode === 'WEEKLY') {
+            const daysCount = currentWeekRange.length;
+            const daySums: Record<string, number> = {};
+            RANKS.forEach(r => daySums[r] = 0);
+            
+            currentWeekRange.forEach(date => {
+                const dayMap = getRecordsForDate(date);
+                relevantUsers.forEach(u => {
+                    if (!u.rank || daySums[u.rank] === undefined) return;
+                    const r = dayMap.get(u.id);
+                    // Use mesma lógica de status de "prontos"
+                    if (r && ['P', 'INST'].includes(r.status)) daySums[u.rank]++;
+                });
+            });
+
+            return RANKS.map(rank => {
+                const total = stats[rank].total;
+                const dailyAvgPresent = daysCount > 0 ? Math.round(daySums[rank] / daysCount) : 0;
+                return { rank, total, present: dailyAvgPresent, absent: total - dailyAvgPresent };
+            }).filter(r => r.total > 0);
+        } else {
+            relevantUsers.forEach(u => {
+                if (!u.rank || stats[u.rank] === undefined) return;
+                const record = currentRecordsMap.get(u.id);
+                if (record && ['P', 'INST'].includes(record.status)) {
+                    stats[u.rank].present++;
+                }
+            });
+            return RANKS.map(rank => ({
+                rank,
+                total: stats[rank].total,
+                present: stats[rank].present,
+                absent: stats[rank].total - stats[rank].present
+            })).filter(r => r.total > 0);
+        }
+    }, [relevantUsers, viewMode, currentWeekRange, currentRecordsMap]);
+
     // Delta indicator
     const DeltaIndicator = ({ value, suffix = '' }: { value: number; suffix?: string }) => {
         if (value === 0) return <span className="text-[10px] font-bold text-slate-400 flex items-center gap-0.5"><Minus className="w-3 h-3" /> 0{suffix}</span>;
@@ -750,6 +797,65 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                             <AlertTriangle className={`w-8 h-8 mb-3 ${dk ? 'text-slate-600' : 'text-slate-200'}`} />
                             <p className={`text-xs font-black uppercase tracking-widest ${dk ? 'text-slate-500' : 'text-slate-300'}`}>Nenhuma chamada assinada encontrada</p>
                             <p className={`text-[10px] mt-1 ${textMuted}`}>Selecione outra data ou aguarde a assinatura</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Grafico por Posto e Graduação (Abaixo do Setor, mas dentro da mesma coluna central se quisermos, ou full-width) */}
+                <div className={`col-span-1 lg:col-span-3 rounded-[2rem] border overflow-hidden shadow-sm ${card}`}>
+                    <div className={`p-5 border-b flex justify-between items-center ${dk ? 'border-slate-700 bg-slate-800/50' : 'border-slate-100 bg-slate-50/50'}`}>
+                        <div className="flex items-center gap-3">
+                            <div className={`p-1.5 rounded-lg ${dk ? 'bg-violet-900/30 text-violet-400' : 'bg-violet-50 text-violet-600'}`}>
+                                <BarChart3 className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Presença por Posto e Graduação</h3>
+                                <p className={`text-[10px] font-medium ${textMuted}`}>Efetivo presente vs ausente por patente</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-4">
+                            <span className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider ${textMuted}`}><div className="w-2.5 h-2.5 rounded shadow-sm bg-emerald-500" /> Presentes</span>
+                            <span className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider ${textMuted}`}><div className={`w-2.5 h-2.5 rounded shadow-sm ${dk ? 'bg-slate-700' : 'bg-slate-200'}`} /> Ausentes</span>
+                        </div>
+                    </div>
+                    {rankBreakdown.length > 0 ? (
+                        <div className="p-6 md:p-8 overflow-x-auto custom-scrollbar">
+                            <div className="flex items-end gap-3 min-w-[600px] h-60 pt-6 border-b border-dashed border-slate-500/20">
+                                {rankBreakdown.map((r, i) => {
+                                    const maxCount = Math.max(...rankBreakdown.map(x => x.total));
+                                    const hTotal = Math.max((r.total / maxCount) * 100, 5); // min 5% 
+                                    const pctOk = r.total > 0 ? (r.present / r.total) * 100 : 0;
+                                    const pctNo = r.total > 0 ? (r.absent / r.total) * 100 : 0;
+                                    
+                                    return (
+                                        <div key={r.rank} className="flex-1 flex flex-col items-center justify-end relative h-full group">
+                                            {/* Hover info */}
+                                            <div className={`absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-[10px] px-3 py-2 rounded-lg font-bold pointer-events-none whitespace-nowrap z-10 shadow-xl`}>
+                                                {r.present} Presentes / {r.absent} Ausentes
+                                                <div className="w-2 h-2 bg-slate-900 rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2" />
+                                            </div>
+
+                                            <span className={`text-[10px] font-black mb-2 ${textMuted}`}>{r.total}</span>
+                                            
+                                            <div className="w-full max-w-[40px] rounded-t-lg overflow-hidden flex flex-col justify-end shadow-sm border border-slate-500/10 transition-transform group-hover:scale-105" style={{ height: `${hTotal}%` }}>
+                                                {/* Present Bar */}
+                                                <div className={`w-full bg-emerald-500 flex items-center justify-center text-[10px] font-black text-white hover:brightness-110 transition-all cursor-crosshair`} style={{ height: `${pctOk}%` }}>
+                                                    {r.present > 0 && r.present}
+                                                </div>
+                                                {/* Absent Bar */}
+                                                <div className={`w-full flex items-center justify-center text-[10px] font-black cursor-crosshair ${dk ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-slate-200 text-slate-500 hover:bg-slate-300'} transition-all`} style={{ height: `${pctNo}%` }}>
+                                                    {r.absent > 0 && r.absent}
+                                                </div>
+                                            </div>
+                                            <span className={`mt-3 text-[9px] font-black uppercase tracking-tight text-center whitespace-nowrap ${textPrimary}`}>{r.rank}</span>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className={`p-16 flex justify-center text-sm font-black uppercase tracking-widest ${textMuted}`}>
+                            Sem dados para exibir
                         </div>
                     )}
                 </div>
