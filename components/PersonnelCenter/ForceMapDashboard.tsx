@@ -196,6 +196,28 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         }).filter(s => s.count > 0 || ['PRESENTES', 'FALTAS', 'MISSAO', 'SERVICO'].includes(s.key));
     }, [allRecords, prevRecords, totalEfetivo]);
 
+    // Global absent list for the modal
+    const globalAbsentList = useMemo(() => {
+        return relevantUsers
+            .filter(u => {
+                const record = currentRecordsMap.get(u.id);
+                return !record || !['P', 'INST'].includes(record.status);
+            })
+            .map(u => {
+                const record = currentRecordsMap.get(u.id);
+                return {
+                    user: u,
+                    status: record?.status || 'A',
+                    label: record?.status ? (PRESENCE_STATUS as any)[record.status] || record.status : 'FALTA/AUSENTE'
+                };
+            })
+            .sort((a, b) => {
+                const rankOrder = [...OFICIAIS, ...GRADUADOS, ...PRACAS].indexOf(a.user.rank) - [...OFICIAIS, ...GRADUADOS, ...PRACAS].indexOf(b.user.rank);
+                if (rankOrder !== 0) return rankOrder;
+                return (a.user.warName || a.user.name).localeCompare(b.user.warName || b.user.name);
+            });
+    }, [relevantUsers, currentRecordsMap]);
+
     // Sector breakdown
     const sectorBreakdown = useMemo(() => {
         return activeSectorsToShow.map(sector => {
@@ -275,8 +297,11 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         </div>
     );
 
-    const StatCard = ({ label, value, icon: Icon, color, delta }: any) => (
-        <div className={`${gls} ${shadowGlow} p-4 rounded-3xl border flex flex-col justify-between transition-all hover:scale-[1.02] hover:border-blue-500/30 group`}>
+    const StatCard = ({ label, value, icon: Icon, color, delta, onClick }: any) => (
+        <div 
+            onClick={onClick}
+            className={`${gls} ${shadowGlow} p-4 rounded-3xl border flex flex-col justify-between transition-all hover:scale-[1.02] hover:border-blue-500/30 group ${onClick ? 'cursor-pointer active:scale-95' : ''}`}
+        >
             <div className="flex items-center justify-between">
                 <div className={`p-2 rounded-2xl bg-${color}-500/10 text-${color}-500 group-hover:scale-110 transition-transform`}>
                     <Icon className="w-5 h-5" />
@@ -417,7 +442,14 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 <div className="lg:col-span-3 grid grid-cols-2 gap-4">
                     <StatCard label="Efetivo Total" value={totalEfetivo} icon={Users} color="slate" />
                     <StatCard label="Em Serviço (Presentes)" value={presentCount} icon={CheckCircle} color="emerald" delta={presentCount - prevPresentCount} />
-                    <StatCard label="Registros de Ausência" value={absenceCount} icon={UserX} color="red" delta={-(absenceCount - (totalEfetivo - prevPresentCount))} />
+                    <StatCard 
+                        label="Registros de Ausência" 
+                        value={absenceCount} 
+                        icon={UserX} 
+                        color="red" 
+                        delta={-(absenceCount - (totalEfetivo - prevPresentCount))} 
+                        onClick={() => setShowAbsentList(true)}
+                    />
                     <StatCard label="Em Missão" value={getCount(allRecords, ['MIS'])} icon={ExternalLink} color="indigo" />
                 </div>
             </div>
@@ -627,6 +659,67 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     sectorBreakdown={sectorBreakdown}
                     onClose={() => setIsPrinting(false)}
                 />
+            )}
+
+            {/* Global Absent Modal */}
+            {showAbsentList && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setShowAbsentList(false)} />
+                    <div className={`${gls} w-full max-w-4xl max-h-[90vh] rounded-[3rem] border shadow-2xl overflow-hidden flex flex-col relative animate-in zoom-in-95 duration-300`}>
+                        <div className="p-8 border-b border-slate-500/10 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 rounded-2xl bg-red-500/10 text-red-500">
+                                    <UserX className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className={`text-xl font-black uppercase tracking-tight ${textPrimary}`}>REGISTRO GERAL DE AUSÊNCIAS</h3>
+                                    <p className={`text-xs font-bold ${textSecondary}`}>{globalAbsentList.length} Militares indisponíveis no momento</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setShowAbsentList(false)}
+                                className={`p-3 rounded-2xl transition-all ${dk ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        
+                        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {globalAbsentList.map(a => {
+                                    const group = Object.values(STATUS_GROUPS).find(g => (g.codes as readonly string[]).includes(a.status as string));
+                                    const colorMap: Record<string, string> = {
+                                        emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+                                        red: 'bg-red-500/10 text-red-500 border-red-500/20',
+                                        indigo: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+                                        blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+                                        amber: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+                                        cyan: 'bg-cyan-500/10 text-cyan-400 border-cyan-400/20',
+                                        violet: 'bg-violet-500/10 text-violet-400 border-violet-400/20',
+                                        pink: 'bg-pink-500/10 text-pink-500 border-pink-500/20',
+                                        slate: 'bg-slate-500/10 text-slate-400 border-slate-400/20',
+                                        gray: 'bg-gray-500/10 text-gray-400 border-gray-400/20'
+                                    };
+                                    const clr = group?.color || 'slate';
+
+                                    return (
+                                        <div key={a.user.id} className={`p-4 rounded-3xl border flex flex-col gap-3 transition-all ${dk ? 'bg-slate-800/20 border-slate-700/30' : 'bg-slate-50 border-slate-100'}`}>
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <p className={`text-xs font-black uppercase ${textPrimary}`}>{a.user.rank} {a.user.warName || a.user.name}</p>
+                                                    <p className={`text-[9px] font-bold uppercase tracking-widest ${textMuted} mt-0.5`}>{a.user.sector}</p>
+                                                </div>
+                                                <span className={`text-[8px] font-black uppercase px-2 py-1 rounded-lg border ${colorMap[clr] || colorMap.slate}`}>
+                                                    {a.label}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
