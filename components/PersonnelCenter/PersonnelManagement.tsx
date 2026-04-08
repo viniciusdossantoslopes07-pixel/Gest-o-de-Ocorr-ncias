@@ -26,7 +26,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     // Filtro Inteligente de Unidade
     const [activeUnitFilter, setActiveUnitFilter] = useState<'TODAS' | 'GSD-SP' | 'BASP'>('TODAS');
 
-    const { sectorNames } = useSectors();
+    const { sectors, sectorNames } = useSectors();
     const [formData, setFormData] = useState({
         name: '',
         warName: '',
@@ -70,10 +70,10 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
         } else if (filterSector === 'SEM SETOR') {
             sectorMatch = !u.sector || u.sector === 'SEM SETOR';
         } else if (filterSector === 'TODOS GSD-SP') {
-            const gsdSectors = ['SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'];
+            const gsdSectors = sectors.filter(s => s.unit === 'GSD-SP').map(s => s.name);
             sectorMatch = gsdSectors.includes(u.sector || '');
         } else if (filterSector === 'TODOS BASP') {
-            const baspSectors = ['EP', 'EIE', 'EI', 'BASP'];
+            const baspSectors = sectors.filter(s => s.unit === 'BASP').map(s => s.name);
             sectorMatch = baspSectors.includes(u.sector || '');
         } else {
             sectorMatch = u.sector === filterSector;
@@ -81,11 +81,11 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
 
         let unitMatch = true;
         if (activeUnitFilter === 'GSD-SP') {
-            const gsdSectors = ['SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'];
+            const gsdSectors = sectors.filter(s => s.unit === 'GSD-SP').map(s => s.name);
             unitMatch = gsdSectors.includes(u.sector || '');
         } else if (activeUnitFilter === 'BASP') {
             // Se nao esta na lista GSD-SP ou "SEM SETOR", é assumido como BASP (ja que criamos fallback SQL)
-            const gsdSectors = ['SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'];
+            const gsdSectors = sectors.filter(s => s.unit === 'GSD-SP').map(s => s.name);
             unitMatch = !gsdSectors.includes(u.sector || '') && u.sector !== 'SEM SETOR' && Boolean(u.sector);
         }
 

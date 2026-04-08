@@ -6,7 +6,7 @@ import { RANKS } from '../../constants';
 
 interface UserStatisticsProps {
     users: User[];
-    attendanceHistory: DailyAttendance[];
+    attendanceHistory?: DailyAttendance[];
     isDarkMode: boolean;
     activeUnitFilter: 'TODAS' | 'GSD-SP' | 'BASP';
 }
@@ -39,7 +39,7 @@ const HIERARQUIA_GRUPOS = [
     }
 ];
 
-const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistory, isDarkMode, activeUnitFilter }) => {
+const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistory = [], isDarkMode, activeUnitFilter }) => {
     const { sectors } = useSectors();
     const [statsFilter, setStatsFilter] = React.useState<'TOTAL' | 'PRESENTE'>('TOTAL');
 
@@ -166,12 +166,14 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
                     >
                         Efetivo Total
                     </button>
-                    <button
-                        onClick={() => setStatsFilter('PRESENTE')}
-                        className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${statsFilter === 'PRESENTE' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-                    >
-                        Efetivo Presente
-                    </button>
+                    {attendanceHistory.length > 0 && (
+                        <button
+                            onClick={() => setStatsFilter('PRESENTE')}
+                            className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${statsFilter === 'PRESENTE' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                        >
+                            Efetivo Presente
+                        </button>
+                    )}
                 </div>
             </div>
 
