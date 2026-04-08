@@ -47,6 +47,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const [rankFilter, setRankFilter] = useState<'TODOS' | 'OFICIAIS' | 'GRADUADOS' | 'PRACAS'>('TODOS');
     const [showAbsentList, setShowAbsentList] = useState(false);
     const [expandedSector, setExpandedSector] = useState<string | null>(null);
+    const [isAbsencesExpanded, setIsAbsencesExpanded] = useState(false);
     const [isPrinting, setIsPrinting] = useState(false);
     const { sectors, displaySectors } = useSectors();
 
@@ -448,7 +449,6 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                         icon={UserX} 
                         color="red" 
                         delta={-(absenceCount - (totalEfetivo - prevPresentCount))} 
-                        onClick={() => setShowAbsentList(true)}
                     />
                     <StatCard label="Em Missão" value={getCount(allRecords, ['MIS'])} icon={ExternalLink} color="indigo" />
                 </div>
@@ -595,6 +595,65 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                 );
                             })}
                         </div>
+                    </div>
+
+                    <div className={`rounded-[2.5rem] border ${gls} ${shadowGlow} p-6 overflow-hidden relative transition-all duration-500`}>
+                        <button 
+                            onClick={() => setIsAbsencesExpanded(!isAbsencesExpanded)}
+                            className="w-full flex items-center justify-between group text-left"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-xl transition-all ${dk ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-500'}`}>
+                                    <UserX className={`w-5 h-5 group-hover:scale-110 transition-transform`} />
+                                </div>
+                                <div>
+                                    <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Registro de Ausências</h3>
+                                    <p className={`text-[10px] font-bold ${textSecondary}`}>{globalAbsentList.length} Militares indisponíveis</p>
+                                </div>
+                            </div>
+                            <div className={`p-2 rounded-xl transition-all ${isAbsencesExpanded ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : dk ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400'}`}>
+                                {isAbsencesExpanded ? <X className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                            </div>
+                        </button>
+                        
+                        {isAbsencesExpanded && (
+                            <div className="mt-6 space-y-2 relative z-10 overflow-y-auto max-h-[500px] custom-scrollbar pr-2 animate-in slide-in-from-top-2 duration-300">
+                                {globalAbsentList.length === 0 ? (
+                                    <div className={`p-4 rounded-2xl border border-dashed ${dk ? 'border-slate-700 bg-slate-800/10' : 'border-slate-200 bg-slate-50'} text-center`}>
+                                        <p className={`text-[10px] font-bold ${textMuted} uppercase`}>Nenhuma ausência registrada</p>
+                                    </div>
+                                ) : (
+                                    globalAbsentList.map(a => {
+                                        const group = Object.values(STATUS_GROUPS).find(g => (g.codes as readonly string[]).includes(a.status as string));
+                                        const clrClass = group?.color || 'slate';
+                                        const colors: Record<string, string> = {
+                                            emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+                                            red: 'bg-red-500/10 text-red-500 border-red-500/20',
+                                            indigo: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+                                            blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+                                            amber: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+                                            cyan: 'bg-cyan-500/10 text-cyan-400 border-cyan-400/20',
+                                            violet: 'bg-violet-500/10 text-violet-400 border-violet-400/20',
+                                            pink: 'bg-pink-500/10 text-pink-500 border-pink-500/20',
+                                            slate: 'bg-slate-500/10 text-slate-400 border-slate-400/20',
+                                            gray: 'bg-gray-500/10 text-gray-400 border-gray-400/20'
+                                        };
+
+                                        return (
+                                            <div key={a.user.id} className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${dk ? 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50' : 'bg-slate-50 border-slate-100 hover:bg-white hover:shadow-sm'}`}>
+                                                <div className="flex flex-col">
+                                                    <span className={`text-[10px] font-black uppercase ${textPrimary}`}>{a.user.rank} {a.user.warName || a.user.name}</span>
+                                                    <span className={`text-[8px] font-bold uppercase tracking-widest ${textMuted}`}>{a.user.sector}</span>
+                                                </div>
+                                                <span className={`text-[8px] font-black uppercase px-2 py-1 rounded-lg border ${colors[clrClass] || colors.slate}`}>
+                                                    {a.label}
+                                                </span>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
