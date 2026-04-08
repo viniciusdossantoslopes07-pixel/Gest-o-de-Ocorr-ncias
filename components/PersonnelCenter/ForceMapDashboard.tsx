@@ -589,11 +589,15 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                             const pctOk = r.total > 0 ? (r.present / r.total) * 100 : 0;
                             
                             return (
-                                <div key={r.rank} className="flex-1 flex flex-col items-center justify-end h-full group relative">
-                                    <div className="absolute -top-16 opacity-0 group-hover:opacity-100 transition-all z-20">
-                                        <div className="bg-slate-900 text-white p-3 rounded-2xl shadow-2xl flex flex-col items-center">
-                                            <span className="text-[10px] font-black uppercase text-blue-400">{r.rank}</span>
-                                            <span className="text-xl font-black">{r.present}/{r.total}</span>
+                                <div key={r.rank} className="flex-1 flex flex-col items-center justify-end h-full group relative pt-12">
+                                    <div className="absolute top-0 z-20 flex flex-col items-center">
+                                        <div className={`px-2 py-1.5 rounded-xl border flex flex-col items-center transition-all ${dk ? 'bg-slate-900/50 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                            <span className={`text-[8px] font-black uppercase ${dk ? 'text-blue-400' : 'text-blue-600'}`}>{r.rank}</span>
+                                            <div className="flex items-baseline gap-0.5">
+                                                <span className={`text-sm font-black ${textPrimary}`}>{r.present}</span>
+                                                <span className={`text-[9px] font-bold ${textMuted}`}>/</span>
+                                                <span className={`text-[9px] font-bold ${textMuted}`}>{r.total}</span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div 
