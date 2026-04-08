@@ -21,11 +21,7 @@ const OFICIAIS = ['ASP', '2T', '1T', 'CAP', 'MAJ', 'TEN CEL', 'CEL', 'BR', 'MB',
 const GRADUADOS = ['3S', '2S', '1S', 'SO'];
 const PRACAS = ['S2', 'S1', 'CB'];
 
-// Setores fixos que pertencem ao GSD-SP
-const GSD_SP_SECTORS = ['SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'];
-
-// Setores fixos que pertencem ao BASP
-const BASP_SECTORS = ['EP', 'EIE', 'EI', 'BASP'];
+// Setores dinâmicos agora são obtidos via useSectors()
 
 // Status grouping for manager view
 const STATUS_GROUPS = {
@@ -56,7 +52,10 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const [isPrinting, setIsPrinting] = useState(false);
     const [showBaspGroup, setShowBaspGroup] = useState(true);
     const [showGsdGroup, setShowGsdGroup] = useState(true);
-    const { displaySectors } = useSectors();
+    const { sectors, displaySectors } = useSectors();
+
+    const GSD_SP_SECTORS = useMemo(() => sectors.filter(s => s.unit === 'GSD-SP').map(s => s.name), [sectors]);
+    const BASP_SECTORS = useMemo(() => sectors.filter(s => s.unit === 'BASP').map(s => s.name), [sectors]);
 
     // Previous day for delta comparison
     const previousDate = useMemo(() => {
@@ -208,7 +207,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     : activeAndInRoster.filter(u => u.sector === selectedSector);
 
         return filterUsersByRank(sectorFiltered);
-    }, [users, selectedSector, rankFilter, displaySectors]);
+    }, [users, selectedSector, rankFilter, displaySectors, GSD_SP_SECTORS, BASP_SECTORS]);
 
     const relevantUserIds = new Set(relevantUsers.map(u => u.id));
     const allRecords = Array.from(currentRecordsMap.values()).filter(r => relevantUserIds.has(r.militarId));
@@ -343,7 +342,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 
             return { sector, total, ready, absent, pct, prevPct, delta: Math.round(pct - prevPct), absentDetails };
         });
-    }, [users, currentRecordsMap, previousRecordsMap, selectedSector, rankFilter, viewMode, currentWeekRange, relevantUserIds]);
+    }, [users, currentRecordsMap, previousRecordsMap, selectedSector, rankFilter, viewMode, currentWeekRange, relevantUserIds, displaySectors, GSD_SP_SECTORS, BASP_SECTORS]);
 
     // Delta indicator
     const DeltaIndicator = ({ value, suffix = '' }: { value: number; suffix?: string }) => {
