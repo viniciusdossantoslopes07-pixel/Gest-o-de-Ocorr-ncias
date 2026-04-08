@@ -14,7 +14,7 @@ interface UserStatisticsProps {
 // Mapeamento visual de categorias hierárquicas para a pirâmide
 const HIERARQUIA_GRUPOS = [
     {
-        label: 'Alto Comando',
+        label: 'OF. Superiores',
         color: { dark: '#f59e0b', light: '#b45309' },
         bg: { dark: 'rgba(245,158,11,0.12)', light: '#fffbeb' },
         ranks: ['CEL', 'TEN CEL', 'MAJ', 'TB', 'MB', 'BR']
