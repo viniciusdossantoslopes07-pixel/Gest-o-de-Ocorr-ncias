@@ -305,6 +305,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [sectorSearchQuery, setSectorSearchQuery] = useState('');
     const [isSectorDropdownOpen, setIsSectorDropdownOpen] = useState(false);
     const sectorDropdownRef = useRef<HTMLDivElement>(null);
+    const sectorDropdownMenuRef = useRef<HTMLDivElement>(null);
     const [sectorDropdownPosition, setSectorDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
 
     const toggleSectorDropdown = () => {
@@ -320,8 +321,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             }
 
             setSectorDropdownPosition({
-                top: top + window.scrollY,
-                left: rect.left + window.scrollX,
+                top: top,
+                left: rect.left,
                 width: rect.width
             });
         }
@@ -331,7 +332,10 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     // Click outside listener for sector dropdown
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (sectorDropdownRef.current && !sectorDropdownRef.current.contains(event.target as Node)) {
+            const isClickInsideTrigger = sectorDropdownRef.current?.contains(event.target as Node);
+            const isClickInsideMenu = sectorDropdownMenuRef.current?.contains(event.target as Node);
+            
+            if (!isClickInsideTrigger && !isClickInsideMenu) {
                 setIsSectorDropdownOpen(false);
             }
         };
@@ -1005,6 +1009,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                             />
                                             
                                             <div 
+                                                ref={sectorDropdownMenuRef}
                                                 className={`fixed p-2 rounded-xl border shadow-2xl z-[9999] animate-in fade-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black' : 'bg-white border-slate-200 shadow-slate-200/50'}`}
                                                 style={{
                                                     top: `${sectorDropdownPosition.top}px`,
