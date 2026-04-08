@@ -1,4 +1,4 @@
-
+﻿
 import { useState, useMemo, FC } from 'react';
 import { DailyAttendance, User } from '../../types';
 import { PRESENCE_STATUS, RANKS } from '../../constants';
@@ -410,18 +410,18 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const inputBg = dk ? 'text-slate-200' : 'text-slate-700';
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 pb-20">
+        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 pb-20">
             {/* Header + Filters */}
-            <div className={`p-6 lg:p-8 rounded-[2rem] border shadow-sm ${card}`}>
-                <div className="flex flex-col gap-6">
+            <div className={`px-4 py-2.5 rounded-2xl border ${card}`}>
+                <div className="flex flex-wrap lg:flex-nowrap items-center gap-2">
                     {/* Title Row */}
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 shrink-0">
                         <div className="flex items-center gap-4">
-                            <div className={`p-3 rounded-2xl shadow-xl ${dk ? 'bg-blue-600' : 'bg-slate-900'}`}>
-                                <BarChart3 className="w-6 h-6 text-white" />
+                            <div className={`p-2 rounded-xl ${dk ? 'bg-blue-600' : 'bg-slate-900'}`}>
+                                <BarChart3 className="w-4 h-4 text-white" />
                             </div>
                             <div>
-                                <h2 className={`text-xl lg:text-2xl font-black tracking-tight ${textPrimary}`}>Mapa de Força</h2>
+                                <h2 className={`text-sm font-black ${textPrimary}`}>Mapa de Força</h2>
                                 <p className={`text-sm font-medium ${textSecondary}`}>Análise em tempo real do efetivo GSD-SP</p>
                             </div>
                         </div>
@@ -565,14 +565,14 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
             </div>
 
             {/* Hero KPI: Prontidão Operacional */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
                 {/* Main Readiness Card */}
-                <div className="lg:col-span-1 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 lg:p-8 rounded-[2rem] shadow-2xl text-white">
+                <div className="lg:col-span-1 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-5 rounded-2xl shadow-xl text-white">
                     <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-white/5 to-transparent rounded-full -translate-y-10 translate-x-10" />
                     <div className="relative z-10">
-                        <p className="text-[9px] font-black text-white/50 uppercase tracking-[0.25em] mb-4">Prontidão Operacional</p>
+                        <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] mb-1">Prontidão Operacional</p>
                         <div className="flex items-end gap-3 mb-2">
-                            <span className={`text-5xl lg:text-6xl font-black tabular-nums ${prontidao > 85 ? 'text-emerald-400' : prontidao > 60 ? 'text-amber-400' : 'text-red-400'}`}>
+                            <span className={`text-4xl font-black tabular-nums leading-none ${prontidao > 85 ? 'text-emerald-400' : prontidao > 60 ? 'text-amber-400' : 'text-red-400'}`}>
                                 {prontidao}%
                             </span>
                         </div>
@@ -594,9 +594,9 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 </div>
 
                 {/* Summary Cards */}
-                <div className="lg:col-span-3 grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="contents">
                     {/* Total Efetivo */}
-                    <div className={`p-5 rounded-[1.5rem] border shadow-sm flex flex-col justify-between ${card}`}>
+                    <div className={`p-4 rounded-2xl border flex flex-col justify-between ${card}`}>
                         <div className="flex items-center justify-between">
                             <div className={`p-2.5 rounded-xl ${dk ? 'bg-slate-700' : 'bg-slate-100'}`}><Users className={`w-5 h-5 ${dk ? 'text-slate-300' : 'text-slate-600'}`} /></div>
                             <Activity className={`w-4 h-4 ${dk ? 'text-slate-600' : 'text-slate-300'}`} />
@@ -608,7 +608,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     </div>
 
                     {/* Presentes */}
-                    <div className={`p-5 rounded-[1.5rem] border shadow-sm flex flex-col justify-between ${dk ? 'bg-emerald-900/20 border-emerald-800/40' : 'bg-white border-emerald-100'}`}>
+                    <div className={`p-4 rounded-2xl border flex flex-col justify-between ${dk ? 'bg-emerald-900/20 border-emerald-800/40' : 'bg-white border-emerald-100'}`}>
                         <div className="flex items-center justify-between">
                             <div className={`p-2.5 rounded-xl ${dk ? 'bg-emerald-900/40' : 'bg-emerald-50'}`}><CheckCircle className="w-5 h-5 text-emerald-600" /></div>
                             <DeltaIndicator value={presentCount - prevPresentCount} />
@@ -620,7 +620,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     </div>
 
                     {/* Ausentes */}
-                    <div className={`p-5 rounded-[1.5rem] border shadow-sm flex flex-col justify-between ${dk ? 'bg-red-900/20 border-red-800/40' : 'bg-white border-red-100'}`}>
+                    <div className={`p-4 rounded-2xl border flex flex-col justify-between ${dk ? 'bg-red-900/20 border-red-800/40' : 'bg-white border-red-100'}`}>
                         <div className="flex items-center justify-between">
                             <div className={`p-2.5 rounded-xl ${dk ? 'bg-red-900/40' : 'bg-red-50'}`}><UserX className="w-5 h-5 text-red-600" /></div>
                             <DeltaIndicator value={-(absenceCount - (totalEfetivo - prevPresentCount))} />
@@ -632,7 +632,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     </div>
 
                     {/* Em Missão */}
-                    <div className={`p-5 rounded-[1.5rem] border shadow-sm flex flex-col justify-between ${dk ? 'bg-indigo-900/20 border-indigo-800/40' : 'bg-white border-indigo-100'}`}>
+                    <div className={`p-4 rounded-2xl border flex flex-col justify-between ${dk ? 'bg-indigo-900/20 border-indigo-800/40' : 'bg-white border-indigo-100'}`}>
                         <div className="flex items-center justify-between">
                             <div className={`p-2.5 rounded-xl ${dk ? 'bg-indigo-900/40' : 'bg-indigo-50'}`}><ExternalLink className="w-5 h-5 text-indigo-600" /></div>
                             <DeltaIndicator value={getCount(allRecords, ['MIS']) - getCount(prevRecords, ['MIS'])} />
@@ -646,7 +646,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
             </div>
 
             {/* Status Breakdown */}
-            <div className={`rounded-[2rem] border shadow-sm p-6 ${card}`}>
+            <div className={`rounded-2xl border shadow-sm p-4 ${card}`}>
                 <div className="flex items-center gap-3 mb-5">
                     <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
                     <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Distribuição por Situação</h3>
@@ -713,9 +713,9 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
             </div>
 
             {/* Sector Table + Signature Control */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Sector Table */}
-                <div className={`lg:col-span-2 rounded-[2rem] border overflow-hidden shadow-sm ${card}`}>
+                <div className={`lg:col-span-2 rounded-2xl border overflow-hidden shadow-sm ${card}`}>
                     <div className={`p-5 border-b flex justify-between items-center ${dk ? 'border-slate-700 bg-slate-800/50' : 'border-slate-100 bg-slate-50/50'}`}>
                         <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Resumo por Setor</h3>
                         <div className="flex gap-3">
@@ -802,7 +802,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 </div>
 
                 {/* Grafico por Posto e Graduação (Abaixo do Setor, mas dentro da mesma coluna central se quisermos, ou full-width) */}
-                <div className={`col-span-1 lg:col-span-3 rounded-[2rem] border overflow-hidden shadow-sm ${card}`}>
+                <div className={`col-span-1 lg:col-span-3 rounded-2xl border overflow-hidden shadow-sm ${card}`}>
                     <div className={`p-5 border-b flex justify-between items-center ${dk ? 'border-slate-700 bg-slate-800/50' : 'border-slate-100 bg-slate-50/50'}`}>
                         <div className="flex items-center gap-3">
                             <div className={`p-1.5 rounded-lg ${dk ? 'bg-violet-900/30 text-violet-400' : 'bg-violet-50 text-violet-600'}`}>
@@ -863,7 +863,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 {/* Signature Control + Absent Summary */}
                 <div className="space-y-4">
                     {/* Absent Toggle */}
-                    <div className={`rounded-[2rem] border shadow-sm overflow-hidden ${card}`}>
+                    <div className={`rounded-2xl border shadow-sm overflow-hidden ${card}`}>
                         <button
                             onClick={() => setShowAbsentList(!showAbsentList)}
                             className={`w-full flex items-center justify-between p-5 transition-all ${dk ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'}`}
@@ -903,7 +903,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     </div>
 
                     {/* Signature Status */}
-                    <div className="bg-slate-900 rounded-[2rem] p-6 text-white shadow-2xl relative overflow-hidden">
+                    <div className="bg-slate-900 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-6 opacity-5">
                             <ShieldAlert className="w-28 h-28" />
                         </div>
@@ -1034,3 +1034,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 };
 
 export default ForceMapDashboard;
+
+
+
+
