@@ -139,6 +139,14 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     }, [selectedDate, selectedSector, callTypeFilter, attendanceHistory, viewMode, currentWeekRange]);
 
     const previousRecordsMap = useMemo(() => getRecordsForDate(previousDate), [previousDate, selectedSector, callTypeFilter, attendanceHistory]);
+    
+    // Sectors to show based on filter
+    const activeSectorsToShow = useMemo(() => {
+        if (selectedSector === 'TODOS') return displaySectors;
+        if (selectedSector === 'GSD-SP') return GSD_SP_SECTORS.filter(s => displaySectors.includes(s));
+        if (selectedSector === 'BASP') return BASP_SECTORS.filter(s => displaySectors.includes(s));
+        return [selectedSector];
+    }, [selectedSector, displaySectors, GSD_SP_SECTORS, BASP_SECTORS]);
 
     // Relevant users
     const relevantUsers = useMemo(() => {
@@ -190,15 +198,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 
     // Sector breakdown
     const sectorBreakdown = useMemo(() => {
-        const sectors = selectedSector === 'TODOS'
-            ? displaySectors
-            : selectedSector === 'GSD-SP'
-                ? GSD_SP_SECTORS.filter(s => displaySectors.includes(s))
-                : selectedSector === 'BASP'
-                    ? BASP_SECTORS.filter(s => displaySectors.includes(s))
-                    : [selectedSector];
-
-        return sectors.map(sector => {
+        return activeSectorsToShow.map(sector => {
             const sectorUsers = users.filter(u => u.sector === sector && u.active !== false && u.is_functional !== true);
             const total = sectorUsers.length;
             const sectorRecords = Array.from(currentRecordsMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
@@ -542,10 +542,10 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                         </div>
                         <div className="flex items-center gap-3 mb-6">
                             <ShieldAlert className="w-5 h-5 text-amber-500" />
-                            <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Status das Missões</h3>
+                            <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Status de Chamada</h3>
                         </div>
                         <div className="space-y-3 relative z-10 overflow-y-auto max-h-[500px] custom-scrollbar pr-2">
-                             {displaySectors.map(sector => {
+                             {activeSectorsToShow.map(sector => {
                                 const sectorCalls = attendanceHistory?.filter(a => a.date === selectedDate && a.sector === sector && !!a.signedBy) || [];
                                 const hasInicio = sectorCalls.some(c => c.callType === 'INICIO');
                                 const hasTermino = sectorCalls.some(c => c.callType === 'TERMINO');
