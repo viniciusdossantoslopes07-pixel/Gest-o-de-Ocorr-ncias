@@ -386,21 +386,9 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                             </div>
 
                             <div className="space-y-4 flex-1 pl-10 text-right">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p className={`text-[10px] font-bold ${textSecondary} mb-1 uppercase`}>Tendência</p>
-                                        <div className={`text-xl font-black ${prontidaoDelta >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                                            {prontidaoDelta >= 0 ? 'NOMINAL' : 'DEGRADADO'}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p className={`text-[10px] font-bold ${textSecondary} mb-1 uppercase`}>Nível</p>
-                                        <div className={`text-xl font-black ${dk ? 'text-slate-300' : 'text-slate-700'}`}>DEFCON 4</div>
-                                    </div>
-                                </div>
-                                <div className={`p-3 rounded-2xl ${dk ? 'bg-slate-800/50' : 'bg-slate-50'} border border-slate-500/10 text-left`}>
-                                    <p className={`text-[9px] font-bold ${textMuted} mb-2 leading-tight uppercase`}>Observação Operacional</p>
-                                    <p className={`text-[10px] font-black ${textPrimary} leading-tight`}>
+                                <div className={`p-4 rounded-3xl ${dk ? 'bg-slate-800/50' : 'bg-slate-50'} border border-slate-500/10 text-left w-full h-full flex flex-col justify-center`}>
+                                    <p className={`text-[10px] font-black ${textMuted} mb-2 leading-tight uppercase tracking-widest`}>Observação Operacional</p>
+                                    <p className={`text-sm font-black ${textPrimary} leading-snug italic`}>
                                         {prontidao > 85 ? 'Força total disponível para resposta imediata.' : prontidao > 60 ? 'Efetivo reduzido por dispensas/missões.' : 'Alerta: Efetivo abaixo do nível de prontidão crítica.'}
                                     </p>
                                 </div>
@@ -513,11 +501,29 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                         <div className={`rounded-3xl border ${dk ? 'bg-slate-900/50 border-red-500/20' : 'bg-red-50/30 border-red-100'} p-4`}>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                                                 {s.absentDetails.map(a => (
-                                                    <div key={a.user.id} className={`flex items-center justify-between p-3 rounded-2xl ${dk ? 'bg-slate-800/50 shadow-inner' : 'bg-white shadow-sm border border-slate-100'}`}>
+                                                    <div key={a.user.id} className={`flex items-center justify-between p-3 rounded-2xl ${dk ? 'bg-slate-800/50 hover:bg-slate-800/80' : 'bg-white border border-slate-100 hover:shadow-md'} transition-all group`}>
                                                         <p className={`text-[10px] font-black uppercase ${textPrimary}`}>{a.user.rank} {a.user.warName || a.user.name}</p>
-                                                        <span className={`text-[8px] font-black uppercase px-2 py-1 rounded-lg ${a.status === 'F' || a.status === 'A' ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'}`}>
-                                                            {a.label}
-                                                        </span>
+                                                        {(() => {
+                                                            const group = Object.values(STATUS_GROUPS).find(g => (g.codes as readonly string[]).includes(a.status as string));
+                                                            const colorClass = group?.color || 'slate';
+                                                            const colorMap: Record<string, string> = {
+                                                                emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+                                                                red: 'bg-red-500/10 text-red-500 border-red-500/20',
+                                                                indigo: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+                                                                blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+                                                                amber: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+                                                                cyan: 'bg-cyan-500/10 text-cyan-400 border-cyan-400/20',
+                                                                violet: 'bg-violet-500/10 text-violet-400 border-violet-400/20',
+                                                                pink: 'bg-pink-500/10 text-pink-500 border-pink-500/20',
+                                                                slate: 'bg-slate-500/10 text-slate-400 border-slate-400/20',
+                                                                gray: 'bg-gray-500/10 text-gray-400 border-gray-400/20'
+                                                            };
+                                                            return (
+                                                                <span className={`text-[8px] font-black uppercase px-2 py-1 rounded-lg border ${colorMap[colorClass] || colorMap.slate}`}>
+                                                                    {a.label}
+                                                                </span>
+                                                            );
+                                                        })()}
                                                     </div>
                                                 ))}
                                             </div>
