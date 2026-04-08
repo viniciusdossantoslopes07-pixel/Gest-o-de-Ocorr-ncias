@@ -305,7 +305,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                         <div className="flex items-center gap-2">
                             <h2 className={`text-lg font-black tracking-tight ${textPrimary}`}>MAPA DE FORÇA</h2>
                             <div className={`px-2 py-0.5 rounded-full text-[8px] font-black border ${dk ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' : 'bg-slate-100 border-slate-200 text-slate-600'}`}>
-                                V2.0 LIVE
+                                V2.0 AO VIVO
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -366,7 +366,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     <div className="flex flex-col h-full justify-between relative z-10">
                         <div>
                             <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-1">Status de Prontidão</p>
-                            <h3 className={`text-2xl font-black italic tracking-tighter ${textPrimary}`}>OPERATIONAL READINESS</h3>
+                            <h3 className={`text-2xl font-black italic tracking-tighter ${textPrimary}`}>PRONTIDÃO OPERACIONAL</h3>
                         </div>
 
                         <div className="flex items-center justify-between my-8">
@@ -388,13 +388,13 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                             <div className="space-y-4 flex-1 pl-10 text-right">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <p className={`text-[10px] font-bold ${textSecondary} mb-1 uppercase`}>Trend</p>
+                                        <p className={`text-[10px] font-bold ${textSecondary} mb-1 uppercase`}>Tendência</p>
                                         <div className={`text-xl font-black ${prontidaoDelta >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                                             {prontidaoDelta >= 0 ? 'NOMINAL' : 'DEGRADADO'}
                                         </div>
                                     </div>
                                     <div>
-                                        <p className={`text-[10px] font-bold ${textSecondary} mb-1 uppercase`}>Level</p>
+                                        <p className={`text-[10px] font-bold ${textSecondary} mb-1 uppercase`}>Nível</p>
                                         <div className={`text-xl font-black ${dk ? 'text-slate-300' : 'text-slate-700'}`}>DEFCON 4</div>
                                     </div>
                                 </div>
@@ -427,10 +427,10 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 </div>
 
                 <div className="lg:col-span-3 grid grid-cols-2 gap-4">
-                    <StatCard label="Total Personnel" value={totalEfetivo} icon={Users} color="slate" />
-                    <StatCard label="Deployed (Present)" value={presentCount} icon={CheckCircle} color="emerald" delta={presentCount - prevPresentCount} />
-                    <StatCard label="Absent Records" value={absenceCount} icon={UserX} color="red" delta={-(absenceCount - (totalEfetivo - prevPresentCount))} />
-                    <StatCard label="In Mission" value={getCount(allRecords, ['MIS'])} icon={ExternalLink} color="indigo" />
+                    <StatCard label="Efetivo Total" value={totalEfetivo} icon={Users} color="slate" />
+                    <StatCard label="Em Serviço (Presentes)" value={presentCount} icon={CheckCircle} color="emerald" delta={presentCount - prevPresentCount} />
+                    <StatCard label="Registros de Ausência" value={absenceCount} icon={UserX} color="red" delta={-(absenceCount - (totalEfetivo - prevPresentCount))} />
+                    <StatCard label="Em Missão" value={getCount(allRecords, ['MIS'])} icon={ExternalLink} color="indigo" />
                 </div>
             </div>
 
@@ -440,7 +440,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     <div className="flex items-center gap-3">
                         <div className="w-1.5 h-8 bg-blue-600 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.5)]" />
                         <div>
-                            <h3 className={`text-md font-black uppercase tracking-[0.2em] ${textPrimary}`}>Tactical Situation Monitor</h3>
+                            <h3 className={`text-md font-black uppercase tracking-[0.2em] ${textPrimary}`}>Monitor de Situação Tática</h3>
                             <p className={`text-[10px] font-bold ${textSecondary}`}>Monitoramento granular de situações individuais</p>
                         </div>
                     </div>
@@ -478,7 +478,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     <div className={`p-6 border-b flex justify-between items-center ${dk ? 'border-slate-700/50 bg-slate-800/30' : 'border-slate-100 bg-slate-50/50'}`}>
                         <div className="flex items-center gap-3">
                             <Activity className="text-blue-500" />
-                            <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Sector Readiness Pulse</h3>
+                            <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Pulso de Prontidão por Setor</h3>
                         </div>
                     </div>
 
@@ -536,7 +536,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                         </div>
                         <div className="flex items-center gap-3 mb-6">
                             <ShieldAlert className="w-5 h-5 text-amber-500" />
-                            <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Mission Status</h3>
+                            <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Status das Missões</h3>
                         </div>
                         <div className="space-y-3 relative z-10 overflow-y-auto max-h-[500px] custom-scrollbar pr-2">
                              {displaySectors.map(sector => {
@@ -569,7 +569,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                             <Award className="w-8 h-8" />
                         </div>
                         <div>
-                            <h3 className={`text-2xl font-black uppercase tracking-widest ${textPrimary}`}>Hierarchy Analytics</h3>
+                            <h3 className={`text-2xl font-black uppercase tracking-widest ${textPrimary}`}>Análise Hierárquica</h3>
                             <p className={`text-[10px] font-bold ${textSecondary}`}>PRONTIDÃO POR POSTO E GRADUAÇÃO</p>
                         </div>
                     </div>
