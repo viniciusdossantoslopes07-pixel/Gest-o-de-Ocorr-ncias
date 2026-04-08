@@ -1,4 +1,4 @@
-﻿
+
 import { useState, useMemo, FC } from 'react';
 import { DailyAttendance, User } from '../../types';
 import { PRESENCE_STATUS, RANKS } from '../../constants';
@@ -20,8 +20,6 @@ interface ForceMapProps {
 const OFICIAIS = ['ASP', '2T', '1T', 'CAP', 'MAJ', 'TEN CEL', 'CEL', 'BR', 'MB', 'TB'];
 const GRADUADOS = ['3S', '2S', '1S', 'SO'];
 const PRACAS = ['S2', 'S1', 'CB'];
-
-// Setores dinâmicos agora são obtidos via useSectors()
 
 // Status grouping for manager view
 const STATUS_GROUPS = {
@@ -50,8 +48,6 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const [showAbsentList, setShowAbsentList] = useState(false);
     const [expandedSector, setExpandedSector] = useState<string | null>(null);
     const [isPrinting, setIsPrinting] = useState(false);
-    const [showBaspGroup, setShowBaspGroup] = useState(true);
-    const [showGsdGroup, setShowGsdGroup] = useState(true);
     const { sectors, displaySectors } = useSectors();
 
     const GSD_SP_SECTORS = useMemo(() => sectors.filter(s => s.unit === 'GSD-SP').map(s => s.name), [sectors]);
@@ -61,22 +57,10 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const previousDate = useMemo(() => {
         const d = new Date(selectedDate + 'T12:00:00');
         d.setDate(d.getDate() - 1);
-        // Skip weekends
         if (d.getDay() === 0) d.setDate(d.getDate() - 2);
         if (d.getDay() === 6) d.setDate(d.getDate() - 1);
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }, [selectedDate]);
-
-    // Quick date helpers
-    const getToday = () => {
-        const d = new Date();
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    };
-    const getYesterday = () => {
-        const d = new Date();
-        d.setDate(d.getDate() - 1);
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    };
 
     // Week helpers
     const currentWeekRange = useMemo(() => {
@@ -93,12 +77,6 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         }
         return days;
     }, [selectedDate]);
-
-    const navigateWeek = (direction: 'next' | 'prev') => {
-        const d = new Date(selectedDate + 'T12:00:00');
-        d.setDate(d.getDate() + (direction === 'next' ? 7 : -7));
-        setSelectedDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
-    };
 
     // Filter users by rank
     const filterUsersByRank = (userList: User[]) => {
@@ -127,7 +105,6 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         const latestMap = new Map<string, any>();
 
         if (callTypeFilter === 'LATEST') {
-            // For LATEST, sort by time and take the most recent for each user
             filtered
                 .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
                 .forEach(a => {
@@ -146,40 +123,14 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return latestMap;
     };
 
-    // Get weekly records (aggregate most recent status for each user in the week)
-    const getRecordsForWeek = (weekDays: string[]) => {
-        const latestMap = new Map<string, any>();
-
-        // Process each day of the week
-        weekDays.forEach(date => {
-            const dailyMap = getRecordsForDate(date);
-            dailyMap.forEach((record, militarId) => {
-                // Keep the record for calculation (we might take average or latest)
-                // For a "Weekly Map", we could show the most recent across the week,
-                // or just collect all to average them later.
-                // Let's collect all for averaging KPIs.
-                if (!latestMap.has(militarId)) {
-                    latestMap.set(militarId, []);
-                }
-                latestMap.get(militarId).push(record);
-            });
-        });
-
-        return latestMap;
-    };
-
     // Current and previous records
     const currentRecordsMap = useMemo(() => {
         if (viewMode === 'WEEKLY') {
-            const weekMap = getRecordsForWeek(currentWeekRange);
             const flattenedMap = new Map<string, any>();
-
-            // For weekly aggregation, we'll store the list of records to calculate averages later
-            // but for simple lookups we'll use the most recent
-            weekMap.forEach((records: any[], id) => {
-                flattenedMap.set(id, {
-                    ...records[records.length - 1],
-                    weeklyRecords: records // Store all for averaging
+            currentWeekRange.forEach(date => {
+                const dailyMap = getRecordsForDate(date);
+                dailyMap.forEach((record, id) => {
+                    flattenedMap.set(id, record); // Simplified for weekly: take last record of week
                 });
             });
             return flattenedMap;
@@ -189,9 +140,8 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 
     const previousRecordsMap = useMemo(() => getRecordsForDate(previousDate), [previousDate, selectedSector, callTypeFilter, attendanceHistory]);
 
-    // Relevant users after rank filter
+    // Relevant users
     const relevantUsers = useMemo(() => {
-        // [MODIFICAÇÃO]: Filtrar apenas militares habilitados E que estejam na relação de chamada (setores válidos)
         const activeAndInRoster = users.filter(u =>
             u.active !== false &&
             !u.is_functional &&
@@ -216,19 +166,6 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 
     // Count helpers
     const getCount = (records: any[], codes: string[]) => {
-        if (viewMode === 'WEEKLY') {
-            // Average count across the week
-            let totalMatchCount = 0;
-            const daysCount = currentWeekRange.length;
-
-            currentWeekRange.forEach(date => {
-                const dayRecords = Array.from(getRecordsForDate(date).values())
-                    .filter(r => relevantUserIds.has(r.militarId));
-                totalMatchCount += dayRecords.filter(r => codes.includes(r.status)).length;
-            });
-
-            return Math.round(totalMatchCount / daysCount);
-        }
         return records.filter(r => codes.includes(r.status)).length;
     };
 
@@ -236,53 +173,19 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const prevPresentCount = getCount(prevRecords, ['P', 'INST']);
     const absenceCount = totalEfetivo - presentCount;
 
-    // Weekly average readiness
-    const prontidao = useMemo(() => {
-        if (viewMode === 'WEEKLY') {
-            let totalProntidao = 0;
-            let validDays = 0;
-            currentWeekRange.forEach(date => {
-                const dayRecords = Array.from(getRecordsForDate(date).values())
-                    .filter(r => relevantUserIds.has(r.militarId));
-                if (dayRecords.length > 0) {
-                    const dailyPresent = dayRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
-                    totalProntidao += (dailyPresent / totalEfetivo) * 100;
-                    validDays++;
-                }
-            });
-            return validDays > 0 ? Math.round(totalProntidao / validDays) : 0;
-        }
-        return totalEfetivo > 0 ? Math.round((presentCount / totalEfetivo) * 100) : 0;
-    }, [viewMode, currentWeekRange, totalEfetivo, presentCount, relevantUserIds, attendanceHistory]);
-
+    // Readiness
+    const prontidao = totalEfetivo > 0 ? Math.round((presentCount / totalEfetivo) * 100) : 0;
     const prevProntidao = totalEfetivo > 0 ? Math.round((prevPresentCount / totalEfetivo) * 100) : 0;
     const prontidaoDelta = prontidao - prevProntidao;
-
-    // Absent personnel details
-    const absentPersonnel = useMemo(() => {
-        const absent: { user: User; status: string; statusLabel: string; sector: string }[] = [];
-        relevantUsers.forEach(u => {
-            const record = currentRecordsMap.get(u.id);
-            if (record && !['P', 'INST'].includes(record.status)) {
-                absent.push({
-                    user: u,
-                    status: record.status,
-                    statusLabel: (PRESENCE_STATUS as any)[record.status] || record.status,
-                    sector: record.sector || u.sector
-                });
-            }
-        });
-        return absent;
-    }, [relevantUsers, currentRecordsMap]);
 
     // Status breakdown
     const statusBreakdown = useMemo(() => {
         return Object.entries(STATUS_GROUPS).map(([key, group]) => {
             const count = getCount(allRecords, [...group.codes]);
             const prevCount = getCount(prevRecords, [...group.codes]);
-            const pct = allRecords.length > 0 ? Math.round((count / totalEfetivo) * 100) : 0;
+            const pct = totalEfetivo > 0 ? Math.round((count / totalEfetivo) * 100) : 0;
             return { key, ...group, count, prevCount, delta: count - prevCount, pct };
-        }).filter(s => s.count > 0 || ['PRESENTES', 'FALTAS', 'MISSAO', 'SERVICO', 'DISPENSA'].includes(s.key));
+        }).filter(s => s.count > 0 || ['PRESENTES', 'FALTAS', 'MISSAO', 'SERVICO'].includes(s.key));
     }, [allRecords, prevRecords, totalEfetivo]);
 
     // Sector breakdown
@@ -296,38 +199,15 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     : [selectedSector];
 
         return sectors.map(sector => {
-            const sectorUsers = filterUsersByRank(users.filter(u => u.sector === sector && u.active !== false && u.is_functional !== true));
+            const sectorUsers = users.filter(u => u.sector === sector && u.active !== false && u.is_functional !== true);
             const total = sectorUsers.length;
-
-            let ready = 0;
-            let pct = 0;
-            let prevPct = 0;
-
-            if (viewMode === 'WEEKLY') {
-                let totalReady = 0;
-                let validDays = 0;
-                currentWeekRange.forEach(date => {
-                    const dayMap = getRecordsForDate(date);
-                    const daySectorRecords = Array.from(dayMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
-                    if (daySectorRecords.length > 0 || total > 0) {
-                        totalReady += daySectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
-                        validDays++;
-                    }
-                });
-                ready = validDays > 0 ? Math.round(totalReady / validDays) : 0;
-                pct = total > 0 ? (ready / total) * 100 : 0;
-                prevPct = pct;
-            } else {
-                const sectorRecords = Array.from(currentRecordsMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
-                ready = sectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
-                pct = total > 0 ? (ready / total) * 100 : 0;
-
-                const prevSectorRecords = Array.from(previousRecordsMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
-                const prevReadyCount = prevSectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
-                prevPct = total > 0 ? (prevReadyCount / total) * 100 : 0;
-            }
-
-            const absent = total - ready;
+            const sectorRecords = Array.from(currentRecordsMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
+            const ready = sectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
+            const pct = total > 0 ? (ready / total) * 100 : 0;
+            
+            const prevSectorRecords = Array.from(previousRecordsMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
+            const prevReadyCount = prevSectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
+            const prevPct = total > 0 ? (prevReadyCount / total) * 100 : 0;
 
             const absentDetails = sectorUsers
                 .filter(u => {
@@ -340,56 +220,31 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     label: (PRESENCE_STATUS as any)[currentRecordsMap.get(u.id)?.status] || 'N/A'
                 }));
 
-            return { sector, total, ready, absent, pct, prevPct, delta: Math.round(pct - prevPct), absentDetails };
+            return { sector, total, ready, absent: total - ready, pct, prevPct, delta: Math.round(pct - prevPct), absentDetails };
         });
-    }, [users, currentRecordsMap, previousRecordsMap, selectedSector, rankFilter, viewMode, currentWeekRange, relevantUserIds, displaySectors, GSD_SP_SECTORS, BASP_SECTORS]);
+    }, [users, currentRecordsMap, previousRecordsMap, selectedSector, rankFilter, displaySectors, GSD_SP_SECTORS, BASP_SECTORS, relevantUserIds]);
 
-    // Resumo por Posto/Graduação para gráfico de barra
+    // Rank breakdown
     const rankBreakdown = useMemo(() => {
         const stats: Record<string, { present: number, total: number }> = {};
         RANKS.forEach(r => stats[r] = { present: 0, total: 0 });
         
         relevantUsers.forEach(u => {
-            if (!u.rank || !stats[u.rank]) return;
+            if (!u.rank || stats[u.rank] === undefined) return;
             stats[u.rank].total++;
+            const record = currentRecordsMap.get(u.id);
+            if (record && ['P', 'INST'].includes(record.status)) {
+                stats[u.rank].present++;
+            }
         });
 
-        if (viewMode === 'WEEKLY') {
-            const daysCount = currentWeekRange.length;
-            const daySums: Record<string, number> = {};
-            RANKS.forEach(r => daySums[r] = 0);
-            
-            currentWeekRange.forEach(date => {
-                const dayMap = getRecordsForDate(date);
-                relevantUsers.forEach(u => {
-                    if (!u.rank || daySums[u.rank] === undefined) return;
-                    const r = dayMap.get(u.id);
-                    // Use mesma lógica de status de "prontos"
-                    if (r && ['P', 'INST'].includes(r.status)) daySums[u.rank]++;
-                });
-            });
-
-            return RANKS.map(rank => {
-                const total = stats[rank].total;
-                const dailyAvgPresent = daysCount > 0 ? Math.round(daySums[rank] / daysCount) : 0;
-                return { rank, total, present: dailyAvgPresent, absent: total - dailyAvgPresent };
-            }).filter(r => r.total > 0);
-        } else {
-            relevantUsers.forEach(u => {
-                if (!u.rank || stats[u.rank] === undefined) return;
-                const record = currentRecordsMap.get(u.id);
-                if (record && ['P', 'INST'].includes(record.status)) {
-                    stats[u.rank].present++;
-                }
-            });
-            return RANKS.map(rank => ({
-                rank,
-                total: stats[rank].total,
-                present: stats[rank].present,
-                absent: stats[rank].total - stats[rank].present
-            })).filter(r => r.total > 0);
-        }
-    }, [relevantUsers, viewMode, currentWeekRange, currentRecordsMap]);
+        return RANKS.map(rank => ({
+            rank,
+            total: stats[rank].total,
+            present: stats[rank].present,
+            absent: stats[rank].total - stats[rank].present
+        })).filter(r => r.total > 0);
+    }, [relevantUsers, currentRecordsMap]);
 
     // Delta indicator
     const DeltaIndicator = ({ value, suffix = '' }: { value: number; suffix?: string }) => {
@@ -401,7 +256,6 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     // Dark mode helper aliases
     const dk = isDarkMode;
     const card = dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-200';
-    const filterPill = dk ? 'bg-slate-700/60 border-slate-600' : 'bg-slate-50 border-slate-100';
     const filterBtnActive = dk ? 'bg-slate-600 text-white shadow-sm' : 'bg-white text-slate-900 shadow-sm';
     const filterBtnInactive = dk ? 'text-slate-400 hover:text-slate-200' : 'text-slate-400 hover:text-slate-700';
     const textPrimary = dk ? 'text-white' : 'text-slate-900';
@@ -409,301 +263,207 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const textMuted = dk ? 'text-slate-500' : 'text-slate-400';
     const inputBg = dk ? 'text-slate-200' : 'text-slate-700';
 
+    // [DESIGN TOKENS V2.0]
+    const gls = dk ? 'backdrop-blur-xl bg-slate-900/40 border-slate-700/50' : 'backdrop-blur-xl bg-white/60 border-slate-200/60';
+    const shadowGlow = dk ? 'shadow-[0_0_20px_rgba(30,58,138,0.3)]' : 'shadow-xl shadow-slate-200/50';
+
+    // Sub-components
+    const MiniPulse = ({ color = 'blue' }: { color?: string }) => (
+        <div className="relative flex h-2 w-2">
+            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full bg-${color}-400 opacity-75`}></span>
+            <span className={`relative inline-flex rounded-full h-2 w-2 bg-${color}-500`}></span>
+        </div>
+    );
+
+    const StatCard = ({ label, value, icon: Icon, color, delta }: any) => (
+        <div className={`${gls} ${shadowGlow} p-4 rounded-3xl border flex flex-col justify-between transition-all hover:scale-[1.02] hover:border-blue-500/30 group`}>
+            <div className="flex items-center justify-between">
+                <div className={`p-2 rounded-2xl bg-${color}-500/10 text-${color}-500 group-hover:scale-110 transition-transform`}>
+                    <Icon className="w-5 h-5" />
+                </div>
+                {delta !== undefined && <DeltaIndicator value={delta} />}
+            </div>
+            <div className="mt-4">
+                <p className={`text-[10px] font-black uppercase tracking-[0.15em] ${textMuted}`}>{label}</p>
+                <p className={`text-3xl font-black tabular-nums tracking-tight ${textPrimary}`}>{value}</p>
+            </div>
+        </div>
+    );
+
     return (
-        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 pb-20">
-            {/* Header + Filters */}
-            <div className={`px-4 py-2.5 rounded-2xl border ${card}`}>
-                <div className="flex flex-wrap lg:flex-nowrap items-center gap-2">
-                    {/* Title Row */}
-                    <div className="flex items-center gap-3 shrink-0">
-                        <div className="flex items-center gap-4">
-                            <div className={`p-2 rounded-xl ${dk ? 'bg-blue-600' : 'bg-slate-900'}`}>
-                                <BarChart3 className="w-4 h-4 text-white" />
-                            </div>
-                            <div>
-                                <h2 className={`text-sm font-black ${textPrimary}`}>Mapa de Força</h2>
-                                <p className={`text-sm font-medium ${textSecondary}`}>Análise em tempo real do efetivo GSD-SP</p>
-                            </div>
+        <div className="space-y-6 animate-in fade-in duration-700 pb-20">
+            {/* Command Bar (Modern Floating Header) */}
+            <div className={`sticky top-0 z-40 ${gls} border shadow-2xl rounded-[2.5rem] px-6 py-3 mt-2 flex flex-wrap lg:flex-nowrap items-center justify-between gap-4 transition-all hover:shadow-blue-500/10`}>
+                <div className="flex items-center gap-4">
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-blue-500 blur-lg opacity-20 animate-pulse"></div>
+                        <div className={`relative p-3 rounded-2xl shadow-2xl ${dk ? 'bg-gradient-to-br from-blue-600 to-indigo-700' : 'bg-slate-900'} text-white`}>
+                            <Shield className="w-5 h-5" />
                         </div>
-
+                    </div>
+                    <div>
                         <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => setIsPrinting(true)}
-                                className={`p-2.5 rounded-xl transition-all border flex items-center gap-2 font-bold text-xs ${dk ? 'bg-slate-700 hover:bg-slate-600 text-white border-slate-600' : 'bg-slate-100 hover:bg-slate-200 text-slate-900 border-slate-200'}`}
-                                title="Gerar Mapa Oficial (BASP/GSD-SP)"
-                            >
-                                <Printer className="w-4 h-4" />
-                                <span className="hidden sm:inline">Gerar Mapa</span>
-                            </button>
-                            {allRecords.length > 0 && (
-                                <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-4 py-2.5 rounded-xl border ${dk ? 'text-emerald-400 bg-emerald-900/30 border-emerald-800/50' : 'text-emerald-600 bg-emerald-50 border-emerald-100'}`}>
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                    {allRecords.length} Registros
+                            <h2 className={`text-lg font-black tracking-tight ${textPrimary}`}>MAPA DE FORÇA</h2>
+                            <div className={`px-2 py-0.5 rounded-full text-[8px] font-black border ${dk ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' : 'bg-slate-100 border-slate-200 text-slate-600'}`}>
+                                V2.0 LIVE
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <MiniPulse color={allRecords.length > 0 ? 'emerald' : 'red'} />
+                            <p className={`text-[10px] font-bold uppercase tracking-widest ${textSecondary}`}>
+                                {allRecords.length > 0 ? `Monitorando ${allRecords.length} Operacionais` : 'Aguardando Sincronização'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1 p-1 rounded-2xl bg-slate-500/5 border border-slate-500/10">
+                        <button onClick={() => setViewMode('DAILY')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'DAILY' ? filterBtnActive : filterBtnInactive}`}>Diário</button>
+                        <button onClick={() => setViewMode('WEEKLY')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'WEEKLY' ? filterBtnActive : filterBtnInactive}`}>Semanal</button>
+                    </div>
+
+                    <div className={`flex items-center gap-2 p-1.5 rounded-2xl bg-slate-500/5 border border-slate-500/10`}>
+                        <Clock className={`w-3.5 h-3.5 ml-2 ${textMuted}`} />
+                        <input
+                            type="date"
+                            value={selectedDate}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                            className={`bg-transparent border-none text-[10px] font-black uppercase focus:ring-0 cursor-pointer ${inputBg}`}
+                            style={{ colorScheme: dk ? 'dark' : 'light' }}
+                        />
+                    </div>
+
+                    <div className="min-w-[160px]">
+                        <FilterSelect
+                            icon={Filter}
+                            placeholder="Setor"
+                            value={selectedSector}
+                            onChange={setSelectedSector}
+                            isDarkMode={dk}
+                            options={[
+                                { label: 'TODO EFETIVO', value: 'TODOS' },
+                                { label: 'UNIDADE GSD-SP', value: 'GSD-SP' },
+                                { label: 'UNIDADE BASP', value: 'BASP' },
+                                ...displaySectors.map(s => ({ label: s, value: s }))
+                            ]}
+                        />
+                    </div>
+
+                    <button
+                        onClick={() => setIsPrinting(true)}
+                        className={`p-3 rounded-2xl transition-all shadow-lg active:scale-95 ${dk ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}
+                    >
+                        <Printer className="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+
+            {/* Tactical Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+                <div className={`lg:col-span-2 relative overflow-hidden ${gls} p-6 lg:p-8 rounded-[2.5rem] shadow-2xl border transition-all hover:border-blue-500/20`}>
+                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-500/5 blur-[100px] rounded-full"></div>
+                    <div className="flex flex-col h-full justify-between relative z-10">
+                        <div>
+                            <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-1">Status de Prontidão</p>
+                            <h3 className={`text-2xl font-black italic tracking-tighter ${textPrimary}`}>OPERATIONAL READINESS</h3>
+                        </div>
+
+                        <div className="flex items-center justify-between my-8">
+                            <div className="relative flex items-center justify-center">
+                                <svg className="w-32 h-32 transform -rotate-90">
+                                    <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" className={`${dk ? 'text-slate-800' : 'text-slate-100'}`} />
+                                    <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray="364.4" 
+                                        strokeDashoffset={364.4 - (364.4 * prontidao) / 100}
+                                        className={`transition-all duration-1000 ease-out ${prontidao > 85 ? 'text-emerald-500' : prontidao > 60 ? 'text-amber-500' : 'text-red-500'}`} 
+                                        strokeLinecap="round"
+                                    />
+                                </svg>
+                                <div className="absolute flex flex-col items-center">
+                                    <span className={`text-4xl font-black tabular-nums ${textPrimary}`}>{prontidao}%</span>
+                                    <DeltaIndicator value={prontidaoDelta} suffix="%" />
                                 </div>
-                            )}
+                            </div>
+
+                            <div className="space-y-4 flex-1 pl-10 text-right">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className={`text-[10px] font-bold ${textSecondary} mb-1 uppercase`}>Trend</p>
+                                        <div className={`text-xl font-black ${prontidaoDelta >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                            {prontidaoDelta >= 0 ? 'NOMINAL' : 'DEGRADADO'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className={`text-[10px] font-bold ${textSecondary} mb-1 uppercase`}>Level</p>
+                                        <div className={`text-xl font-black ${dk ? 'text-slate-300' : 'text-slate-700'}`}>DEFCON 4</div>
+                                    </div>
+                                </div>
+                                <div className={`p-3 rounded-2xl ${dk ? 'bg-slate-800/50' : 'bg-slate-50'} border border-slate-500/10 text-left`}>
+                                    <p className={`text-[9px] font-bold ${textMuted} mb-2 leading-tight uppercase`}>Observação Operacional</p>
+                                    <p className={`text-[10px] font-black ${textPrimary} leading-tight`}>
+                                        {prontidao > 85 ? 'Força total disponível para resposta imediata.' : prontidao > 60 ? 'Efetivo reduzido por dispensas/missões.' : 'Alerta: Efetivo abaixo do nível de prontidão crítica.'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-2">
+                            {['OFICIAIS', 'GRADUADOS', 'PRACAS'].map(cat => (
+                                <div key={cat} className="flex flex-col">
+                                    <div className={`h-1.5 rounded-full ${dk ? 'bg-slate-800' : 'bg-slate-100'} overflow-hidden`}>
+                                        <div className="h-full bg-blue-500" style={{ width: '70%' }}></div>
+                                    </div>
+                                    <span className={`text-[8px] font-black mt-1 ${textMuted} uppercase`}>{cat}</span>
+                                </div>
+                            ))}
+                            <div className="flex flex-col">
+                                <div className={`h-1.5 rounded-full ${dk ? 'bg-slate-800' : 'bg-slate-100'} overflow-hidden`}>
+                                    <div className="h-full bg-emerald-500" style={{ width: '90%' }}></div>
+                                </div>
+                                <span className={`text-[8px] font-black mt-1 ${textMuted} uppercase`}>ESTABILIDADE</span>
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    {/* Filter Bar */}
-                    <div className="flex flex-wrap items-center gap-3">
-                        {/* View Mode Toggle */}
-                        <div className={`flex items-center gap-1 p-1 rounded-xl border ${filterPill}`}>
-                            <button
-                                onClick={() => setViewMode('DAILY')}
-                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${viewMode === 'DAILY' ? filterBtnActive : filterBtnInactive}`}
-                            >
-                                Diário
-                            </button>
-                            <button
-                                onClick={() => setViewMode('WEEKLY')}
-                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${viewMode === 'WEEKLY' ? filterBtnActive : filterBtnInactive}`}
-                            >
-                                Semanal
-                            </button>
-                        </div>
-
-                        {/* Quick Date Buttons (Daily Only) */}
-                        {viewMode === 'DAILY' && (
-                            <div className={`flex items-center gap-1 p-1 rounded-xl border ${filterPill}`}>
-                                <button
-                                    onClick={() => setSelectedDate(getToday())}
-                                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${selectedDate === getToday() ? filterBtnActive : filterBtnInactive}`}
-                                >
-                                    Hoje
-                                </button>
-                                <button
-                                    onClick={() => setSelectedDate(getYesterday())}
-                                    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${selectedDate === getYesterday() ? filterBtnActive : filterBtnInactive}`}
-                                >
-                                    Ontem
-                                </button>
-                            </div>
-                        )}
-
-                        {/* Date Picker (Daily Only) */}
-                        {viewMode === 'DAILY' && (
-                            <div className={`flex items-center gap-2 p-2 rounded-xl border ${filterPill}`}>
-                                <Clock className={`w-4 h-4 ml-1 ${textMuted}`} />
-                                <input
-                                    type="date"
-                                    value={selectedDate}
-                                    onChange={(e) => setSelectedDate(e.target.value)}
-                                    className={`bg-transparent border-none text-xs font-black uppercase focus:ring-0 cursor-pointer ${dk ? 'color-scheme-dark' : ''} ${inputBg}`}
-                                    style={{ colorScheme: dk ? 'dark' : 'light' }}
-                                />
-                            </div>
-                        )}
-
-                        {/* Sector */}
-                        <div className="min-w-[140px]">
-                            <FilterSelect
-                                icon={Filter}
-                                placeholder="Todos Setores"
-                                value={selectedSector}
-                                onChange={setSelectedSector}
-                                isDarkMode={dk}
-                                options={[
-                                    { label: 'Todos Setores', value: 'TODOS' },
-                                    { label: 'TODOS GSD-SP', value: 'GSD-SP' },
-                                    { label: 'TODOS BASP', value: 'BASP' },
-                                    ...displaySectors.map(s => ({ label: s, value: s }))
-                                ]}
-                            />
-                        </div>
-
-                        {/* Weekly Navigator (like image) */}
-                        <div className={`flex items-center gap-0.5 px-1 py-1 rounded-[2rem] border transition-all ${filterPill}`}>
-                            <button
-                                onClick={() => navigateWeek('prev')}
-                                className={`p-2 rounded-full transition-colors ${dk ? 'hover:bg-slate-700 text-slate-400 hover:text-white' : 'hover:bg-slate-200 text-slate-500 hover:text-slate-900'}`}
-                                title="Semana Anterior"
-                            >
-                                <ChevronDown className="w-3.5 h-3.5 rotate-90" />
-                            </button>
-
-                            <div className="px-4 py-1 flex items-center justify-center min-w-[130px]">
-                                <span className={`text-[11px] font-black tabular-nums tracking-tight ${textPrimary}`}>
-                                    {(() => {
-                                        const start = new Date(currentWeekRange[0] + 'T12:00:00');
-                                        const end = new Date(currentWeekRange[4] + 'T12:00:00');
-                                        return `${start.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} — ${end.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`;
-                                    })()}
-                                </span>
-                            </div>
-
-                            <button
-                                onClick={() => navigateWeek('next')}
-                                className={`p-2 rounded-full transition-colors ${dk ? 'hover:bg-slate-700 text-slate-400 hover:text-white' : 'hover:bg-slate-200 text-slate-500 hover:text-slate-900'}`}
-                                title="Próxima Semana"
-                            >
-                                <ChevronDown className="w-3.5 h-3.5 -rotate-90" />
-                            </button>
-                        </div>
-
-                        {/* Funnel Icon (Extra) */}
-                        <div className={`p-2.5 rounded-full border ${filterPill} text-slate-400`}>
-                            <Filter className="w-3.5 h-3.5" />
-                        </div>
-
-                        {/* Rank Filter */}
-                        <div className={`flex items-center gap-1 p-1 rounded-xl border ${filterPill}`}>
-                            <button onClick={() => setRankFilter('TODOS')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${rankFilter === 'TODOS' ? filterBtnActive : filterBtnInactive}`}>
-                                Todos
-                            </button>
-                            <button onClick={() => setRankFilter('OFICIAIS')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${rankFilter === 'OFICIAIS' ? filterBtnActive : filterBtnInactive}`}>
-                                Oficiais
-                            </button>
-                            <button onClick={() => setRankFilter('GRADUADOS')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${rankFilter === 'GRADUADOS' ? filterBtnActive : filterBtnInactive}`}>
-                                Graduados
-                            </button>
-                            <button onClick={() => setRankFilter('PRACAS')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${rankFilter === 'PRACAS' ? filterBtnActive : filterBtnInactive}`}>
-                                Praças
-                            </button>
-                        </div>
-                    </div>
+                <div className="lg:col-span-3 grid grid-cols-2 gap-4">
+                    <StatCard label="Total Personnel" value={totalEfetivo} icon={Users} color="slate" />
+                    <StatCard label="Deployed (Present)" value={presentCount} icon={CheckCircle} color="emerald" delta={presentCount - prevPresentCount} />
+                    <StatCard label="Absent Records" value={absenceCount} icon={UserX} color="red" delta={-(absenceCount - (totalEfetivo - prevPresentCount))} />
+                    <StatCard label="In Mission" value={getCount(allRecords, ['MIS'])} icon={ExternalLink} color="indigo" />
                 </div>
             </div>
 
-            {/* Hero KPI: Prontidão Operacional */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-                {/* Main Readiness Card */}
-                <div className="lg:col-span-1 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-5 rounded-2xl shadow-xl text-white">
-                    <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-white/5 to-transparent rounded-full -translate-y-10 translate-x-10" />
-                    <div className="relative z-10">
-                        <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] mb-1">Prontidão Operacional</p>
-                        <div className="flex items-end gap-3 mb-2">
-                            <span className={`text-4xl font-black tabular-nums leading-none ${prontidao > 85 ? 'text-emerald-400' : prontidao > 60 ? 'text-amber-400' : 'text-red-400'}`}>
-                                {prontidao}%
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-2 mt-2">
-                            <DeltaIndicator value={prontidaoDelta} suffix="% vs ontem" />
-                        </div>
-                        <div className="w-full h-2 bg-white/10 rounded-full mt-4 overflow-hidden">
-                            <div
-                                className={`h-full rounded-full transition-all duration-1000 ${prontidao > 85 ? 'bg-emerald-400' : prontidao > 60 ? 'bg-amber-400' : 'bg-red-400'}`}
-                                style={{ width: `${prontidao}%` }}
-                            />
-                        </div>
-                        <div className="flex justify-between text-[9px] font-bold text-white/30 mt-1">
-                            <span>0%</span>
-                            <span>50%</span>
-                            <span>100%</span>
+            {/* Tactical Monitor */}
+            <div className={`${gls} ${shadowGlow} rounded-[2.5rem] p-6 border`}>
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                        <div className="w-1.5 h-8 bg-blue-600 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.5)]" />
+                        <div>
+                            <h3 className={`text-md font-black uppercase tracking-[0.2em] ${textPrimary}`}>Tactical Situation Monitor</h3>
+                            <p className={`text-[10px] font-bold ${textSecondary}`}>Monitoramento granular de situações individuais</p>
                         </div>
                     </div>
                 </div>
-
-                {/* Summary Cards */}
-                <div className="contents">
-                    {/* Total Efetivo */}
-                    <div className={`p-4 rounded-2xl border flex flex-col justify-between ${card}`}>
-                        <div className="flex items-center justify-between">
-                            <div className={`p-2.5 rounded-xl ${dk ? 'bg-slate-700' : 'bg-slate-100'}`}><Users className={`w-5 h-5 ${dk ? 'text-slate-300' : 'text-slate-600'}`} /></div>
-                            <Activity className={`w-4 h-4 ${dk ? 'text-slate-600' : 'text-slate-300'}`} />
-                        </div>
-                        <div className="mt-4">
-                            <p className={`text-[9px] font-black uppercase tracking-widest ${textMuted}`}>Efetivo Total</p>
-                            <p className={`text-3xl font-black tabular-nums ${textPrimary}`}>{totalEfetivo}</p>
-                        </div>
-                    </div>
-
-                    {/* Presentes */}
-                    <div className={`p-4 rounded-2xl border flex flex-col justify-between ${dk ? 'bg-emerald-900/20 border-emerald-800/40' : 'bg-white border-emerald-100'}`}>
-                        <div className="flex items-center justify-between">
-                            <div className={`p-2.5 rounded-xl ${dk ? 'bg-emerald-900/40' : 'bg-emerald-50'}`}><CheckCircle className="w-5 h-5 text-emerald-600" /></div>
-                            <DeltaIndicator value={presentCount - prevPresentCount} />
-                        </div>
-                        <div className="mt-4">
-                            <p className={`text-[9px] font-black uppercase tracking-widest ${dk ? 'text-emerald-400' : 'text-emerald-500'}`}>Presentes</p>
-                            <p className={`text-3xl font-black tabular-nums ${dk ? 'text-emerald-400' : 'text-emerald-700'}`}>{presentCount}</p>
-                        </div>
-                    </div>
-
-                    {/* Ausentes */}
-                    <div className={`p-4 rounded-2xl border flex flex-col justify-between ${dk ? 'bg-red-900/20 border-red-800/40' : 'bg-white border-red-100'}`}>
-                        <div className="flex items-center justify-between">
-                            <div className={`p-2.5 rounded-xl ${dk ? 'bg-red-900/40' : 'bg-red-50'}`}><UserX className="w-5 h-5 text-red-600" /></div>
-                            <DeltaIndicator value={-(absenceCount - (totalEfetivo - prevPresentCount))} />
-                        </div>
-                        <div className="mt-4">
-                            <p className={`text-[9px] font-black uppercase tracking-widest ${dk ? 'text-red-400' : 'text-red-500'}`}>Ausentes</p>
-                            <p className={`text-3xl font-black tabular-nums ${dk ? 'text-red-400' : 'text-red-700'}`}>{absenceCount}</p>
-                        </div>
-                    </div>
-
-                    {/* Em Missão */}
-                    <div className={`p-4 rounded-2xl border flex flex-col justify-between ${dk ? 'bg-indigo-900/20 border-indigo-800/40' : 'bg-white border-indigo-100'}`}>
-                        <div className="flex items-center justify-between">
-                            <div className={`p-2.5 rounded-xl ${dk ? 'bg-indigo-900/40' : 'bg-indigo-50'}`}><ExternalLink className="w-5 h-5 text-indigo-600" /></div>
-                            <DeltaIndicator value={getCount(allRecords, ['MIS']) - getCount(prevRecords, ['MIS'])} />
-                        </div>
-                        <div className="mt-4">
-                            <p className={`text-[9px] font-black uppercase tracking-widest ${dk ? 'text-indigo-400' : 'text-indigo-500'}`}>Em Missão</p>
-                            <p className={`text-3xl font-black tabular-nums ${dk ? 'text-indigo-400' : 'text-indigo-700'}`}>{getCount(allRecords, ['MIS'])}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Status Breakdown */}
-            <div className={`rounded-2xl border shadow-sm p-4 ${card}`}>
-                <div className="flex items-center gap-3 mb-5">
-                    <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
-                    <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Distribuição por Situação</h3>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10 gap-3">
                     {statusBreakdown.map(s => {
                         const Icon = s.icon;
-                        const bgMap: Record<string, string> = dk ? {
-                            emerald: 'bg-emerald-900/30 border-emerald-800/40', red: 'bg-red-900/30 border-red-800/40',
-                            indigo: 'bg-indigo-900/30 border-indigo-800/40', blue: 'bg-blue-900/30 border-blue-800/40',
-                            amber: 'bg-amber-900/30 border-amber-800/40', cyan: 'bg-cyan-900/30 border-cyan-800/40',
-                            violet: 'bg-violet-900/30 border-violet-800/40', pink: 'bg-pink-900/30 border-pink-800/40',
-                            slate: 'bg-slate-700/50 border-slate-600', gray: 'bg-gray-700/50 border-gray-600'
-                        } : {
-                            emerald: 'bg-emerald-50 border-emerald-100', red: 'bg-red-50 border-red-100',
-                            indigo: 'bg-indigo-50 border-indigo-100', blue: 'bg-blue-50 border-blue-100',
-                            amber: 'bg-amber-50 border-amber-100', cyan: 'bg-cyan-50 border-cyan-100',
-                            violet: 'bg-violet-50 border-violet-100', pink: 'bg-pink-50 border-pink-100',
-                            slate: 'bg-slate-50 border-slate-100', gray: 'bg-gray-50 border-gray-100'
-                        };
-                        const iconMap: Record<string, string> = dk ? {
-                            emerald: 'bg-emerald-800/50 text-emerald-400', red: 'bg-red-800/50 text-red-400',
-                            indigo: 'bg-indigo-800/50 text-indigo-400', blue: 'bg-blue-800/50 text-blue-400',
-                            amber: 'bg-amber-800/50 text-amber-400', cyan: 'bg-cyan-800/50 text-cyan-400',
-                            violet: 'bg-violet-800/50 text-violet-400', pink: 'bg-pink-800/50 text-pink-400',
-                            slate: 'bg-slate-600 text-slate-300', gray: 'bg-gray-600 text-gray-300'
-                        } : {
-                            emerald: 'bg-emerald-100 text-emerald-600', red: 'bg-red-100 text-red-600',
-                            indigo: 'bg-indigo-100 text-indigo-600', blue: 'bg-blue-100 text-blue-600',
-                            amber: 'bg-amber-100 text-amber-600', cyan: 'bg-cyan-100 text-cyan-600',
-                            violet: 'bg-violet-100 text-violet-600', pink: 'bg-pink-100 text-pink-600',
-                            slate: 'bg-slate-200 text-slate-600', gray: 'bg-gray-100 text-gray-500'
-                        };
-                        const textMap: Record<string, string> = dk ? {
-                            emerald: 'text-emerald-400', red: 'text-red-400', indigo: 'text-indigo-400',
-                            blue: 'text-blue-400', amber: 'text-amber-400', cyan: 'text-cyan-400',
-                            violet: 'text-violet-400', pink: 'text-pink-400', slate: 'text-slate-300',
-                            gray: 'text-gray-400'
-                        } : {
-                            emerald: 'text-emerald-800', red: 'text-red-800', indigo: 'text-indigo-800',
-                            blue: 'text-blue-800', amber: 'text-amber-800', cyan: 'text-cyan-800',
-                            violet: 'text-violet-800', pink: 'text-pink-800', slate: 'text-slate-800',
-                            gray: 'text-gray-600'
+                        const colorMap: Record<string, string> = {
+                            emerald: 'emerald', red: 'red', indigo: 'indigo', blue: 'blue',
+                            amber: 'amber', cyan: 'cyan', violet: 'violet', pink: 'pink',
+                            slate: 'slate', gray: 'gray'
                         };
                         return (
-                            <div key={s.key} className={`p-4 rounded-2xl border ${bgMap[s.color]} flex flex-col gap-2`}>
-                                <div className="flex items-center justify-between">
-                                    <div className={`p-1.5 rounded-lg ${iconMap[s.color]}`}>
-                                        <Icon className="w-4 h-4" />
-                                    </div>
-                                    <DeltaIndicator value={s.delta} />
+                            <div key={s.key} className={`group relative p-4 rounded-3xl border transition-all duration-300 hover:-translate-y-1 ${dk ? 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/60' : 'bg-slate-50/50 border-slate-100 hover:bg-white'}`}>
+                                <div className={`inline-flex p-2.5 rounded-2xl bg-${colorMap[s.color]}-500/10 text-${colorMap[s.color]}-500 mb-4 group-hover:scale-110 transition-transform`}>
+                                    <Icon className="w-4 h-4" />
                                 </div>
                                 <div>
-                                    <p className={`text-[9px] font-black uppercase tracking-widest ${textMuted}`}>{s.label}</p>
-                                    <div className="flex items-baseline gap-2">
-                                        <span className={`text-2xl font-black tabular-nums ${textMap[s.color]}`}>{s.count}</span>
-                                        {s.pct > 0 && <span className={`text-[10px] font-bold ${textMuted}`}>{s.pct}%</span>}
+                                    <p className={`text-[9px] font-black uppercase tracking-widest ${textMuted} truncate`}>{s.label}</p>
+                                    <div className="flex items-baseline gap-1.5 mt-1">
+                                        <span className={`text-xl font-black tabular-nums ${textPrimary}`}>{s.count}</span>
+                                        <span className={`text-[9px] font-bold ${textMuted}`}>{s.pct}%</span>
                                     </div>
                                 </div>
                             </div>
@@ -712,74 +472,50 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 </div>
             </div>
 
-            {/* Sector Table + Signature Control */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                {/* Sector Table */}
-                <div className={`lg:col-span-2 rounded-2xl border overflow-hidden shadow-sm ${card}`}>
-                    <div className={`p-5 border-b flex justify-between items-center ${dk ? 'border-slate-700 bg-slate-800/50' : 'border-slate-100 bg-slate-50/50'}`}>
-                        <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Resumo por Setor</h3>
-                        <div className="flex gap-3">
-                            <span className={`flex items-center gap-1.5 text-[10px] font-black uppercase ${textMuted}`}><div className="w-2 h-2 rounded-full bg-emerald-500" /> Prontos</span>
-                            <span className={`flex items-center gap-1.5 text-[10px] font-black uppercase ${textMuted}`}><div className="w-2 h-2 rounded-full bg-red-500" /> Ausentes</span>
+            {/* Strategic Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                <div className={`lg:col-span-8 rounded-[2.5rem] border overflow-hidden ${gls} ${shadowGlow}`}>
+                    <div className={`p-6 border-b flex justify-between items-center ${dk ? 'border-slate-700/50 bg-slate-800/30' : 'border-slate-100 bg-slate-50/50'}`}>
+                        <div className="flex items-center gap-3">
+                            <Activity className="text-blue-500" />
+                            <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Sector Readiness Pulse</h3>
                         </div>
                     </div>
 
-                    <div className={`divide-y ${dk ? 'divide-slate-700/50' : 'divide-slate-100'}`}>
+                    <div className="divide-y divide-slate-500/10 max-h-[600px] overflow-y-auto custom-scrollbar">
                         {sectorBreakdown.map(s => (
-                            <div key={s.sector}>
-                                {/* Main Row */}
+                            <div key={s.sector} className="group">
                                 <button
                                     onClick={() => setExpandedSector(expandedSector === s.sector ? null : s.sector)}
-                                    className={`w-full flex items-center justify-between p-4 lg:px-6 transition-colors ${dk ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50/50'}`}
+                                    className={`w-full flex items-center justify-between p-5 transition-all ${dk ? 'hover:bg-blue-500/5' : 'hover:bg-blue-50/30'}`}
                                 >
-                                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                                        <span className={`text-xs font-black uppercase tracking-tight min-w-[80px] ${textPrimary}`}>{s.sector}</span>
-                                        <div className={`hidden md:flex items-center gap-6 text-xs`}>
-                                            <span className={`font-bold w-12 text-center ${textMuted}`}>{s.total}</span>
-                                            <span className="text-emerald-600 font-black w-8 text-center">{s.ready}</span>
-                                            <span className={`font-black w-8 text-center ${s.absent > 0 ? 'text-red-500' : dk ? 'text-slate-600' : 'text-slate-300'}`}>{s.absent}</span>
+                                    <div className="flex items-center gap-6 flex-1">
+                                        <div className="min-w-[100px] text-left">
+                                            <span className={`text-xs font-black uppercase tracking-tighter ${textPrimary}`}>{s.sector}</span>
+                                            <p className={`text-[9px] font-bold ${textMuted}`}>Total: {s.total} PAX</p>
                                         </div>
-                                        <div className="flex-1 flex items-center gap-3 max-w-[200px]">
-                                            <div className={`flex-1 h-2 rounded-full overflow-hidden ${dk ? 'bg-slate-700' : 'bg-slate-100'}`}>
+                                        <div className="flex-1 flex flex-col gap-1 max-w-[200px]">
+                                            <div className={`h-2 rounded-full overflow-hidden ${dk ? 'bg-slate-800' : 'bg-slate-100'} p-0.5`}>
                                                 <div
-                                                    className={`h-full rounded-full transition-all duration-700 ${s.pct > 85 ? 'bg-emerald-500' : s.pct > 60 ? 'bg-amber-400' : 'bg-red-500'}`}
+                                                    className={`h-full rounded-full transition-all duration-1000 ${s.pct > 85 ? 'bg-emerald-500' : s.pct > 60 ? 'bg-amber-400' : 'bg-red-500'}`}
                                                     style={{ width: `${s.pct}%` }}
                                                 />
                                             </div>
-                                            <span className={`text-[10px] font-black w-10 text-right ${s.pct > 85 ? 'text-emerald-600' : s.pct > 60 ? 'text-amber-600' : 'text-red-600'}`}>
-                                                {Math.round(s.pct)}%
-                                            </span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3">
-                                        <DeltaIndicator value={s.delta} suffix="%" />
-                                        {s.absent > 0 && (
-                                            expandedSector === s.sector
-                                                ? <ChevronUp className={`w-4 h-4 ${textMuted}`} />
-                                                : <ChevronDown className={`w-4 h-4 ${textMuted}`} />
-                                        )}
+                                    <div className={`p-2 rounded-xl transition-all ${expandedSector === s.sector ? 'bg-blue-500 text-white shadow-lg' : dk ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400'}`}>
+                                        {expandedSector === s.sector ? <X className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                     </div>
                                 </button>
-
-                                {/* Expanded Absent Detail */}
+                                
                                 {expandedSector === s.sector && s.absentDetails.length > 0 && (
-                                    <div className="px-6 pb-4 animate-in fade-in slide-in-from-top-2">
-                                        <div className={`rounded-xl border overflow-hidden ${dk ? 'bg-red-900/15 border-red-800/30' : 'bg-red-50/50 border-red-100'}`}>
-                                            <div className={`px-4 py-2 border-b ${dk ? 'bg-red-900/20 border-red-800/30' : 'bg-red-50 border-red-100'}`}>
-                                                <p className={`text-[9px] font-black uppercase tracking-widest ${dk ? 'text-red-400' : 'text-red-400'}`}>Militares Ausentes — {s.sector}</p>
-                                            </div>
-                                            <div className={`divide-y ${dk ? 'divide-red-900/20' : 'divide-red-50'}`}>
+                                    <div className="px-6 pb-6 animate-in zoom-in-95 duration-300">
+                                        <div className={`rounded-3xl border ${dk ? 'bg-slate-900/50 border-red-500/20' : 'bg-red-50/30 border-red-100'} p-4`}>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                                                 {s.absentDetails.map(a => (
-                                                    <div key={a.user.id} className="flex items-center justify-between px-4 py-2">
-                                                        <div>
-                                                            <p className={`text-xs font-black uppercase ${dk ? 'text-slate-200' : 'text-slate-800'}`}>{a.user.rank} {a.user.warName || a.user.name}</p>
-                                                        </div>
-                                                        <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-lg ${a.status === 'F' || a.status === 'A' ? (dk ? 'bg-red-900/40 text-red-400' : 'bg-red-100 text-red-700') :
-                                                            a.status === 'MIS' ? (dk ? 'bg-indigo-900/40 text-indigo-400' : 'bg-indigo-100 text-indigo-700') :
-                                                                a.status === 'ESV' || a.status === 'DSV' || a.status === 'SSV' ? (dk ? 'bg-blue-900/40 text-blue-400' : 'bg-blue-100 text-blue-700') :
-                                                                    a.status === 'FE' ? (dk ? 'bg-cyan-900/40 text-cyan-400' : 'bg-cyan-100 text-cyan-700') :
-                                                                        (dk ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-100 text-amber-700')
-                                                            }`}>
+                                                    <div key={a.user.id} className={`flex items-center justify-between p-3 rounded-2xl ${dk ? 'bg-slate-800/50 shadow-inner' : 'bg-white shadow-sm border border-slate-100'}`}>
+                                                        <p className={`text-[10px] font-black uppercase ${textPrimary}`}>{a.user.rank} {a.user.warName || a.user.name}</p>
+                                                        <span className={`text-[8px] font-black uppercase px-2 py-1 rounded-lg ${a.status === 'F' || a.status === 'A' ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'}`}>
                                                             {a.label}
                                                         </span>
                                                     </div>
@@ -791,224 +527,83 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                             </div>
                         ))}
                     </div>
-
-                    {allRecords.length === 0 && (
-                        <div className={`flex flex-col items-center justify-center py-16 ${dk ? 'bg-slate-800/30' : 'bg-slate-50/30'}`}>
-                            <AlertTriangle className={`w-8 h-8 mb-3 ${dk ? 'text-slate-600' : 'text-slate-200'}`} />
-                            <p className={`text-xs font-black uppercase tracking-widest ${dk ? 'text-slate-500' : 'text-slate-300'}`}>Nenhuma chamada assinada encontrada</p>
-                            <p className={`text-[10px] mt-1 ${textMuted}`}>Selecione outra data ou aguarde a assinatura</p>
-                        </div>
-                    )}
                 </div>
 
-                {/* Grafico por Posto e Graduação (Abaixo do Setor, mas dentro da mesma coluna central se quisermos, ou full-width) */}
-                <div className={`col-span-1 lg:col-span-3 rounded-2xl border overflow-hidden shadow-sm ${card}`}>
-                    <div className={`p-5 border-b flex justify-between items-center ${dk ? 'border-slate-700 bg-slate-800/50' : 'border-slate-100 bg-slate-50/50'}`}>
-                        <div className="flex items-center gap-3">
-                            <div className={`p-1.5 rounded-lg ${dk ? 'bg-violet-900/30 text-violet-400' : 'bg-violet-50 text-violet-600'}`}>
-                                <BarChart3 className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Presença por Posto e Graduação</h3>
-                                <p className={`text-[10px] font-medium ${textMuted}`}>Efetivo presente vs ausente por patente</p>
-                            </div>
+                <div className="lg:col-span-4 flex flex-col gap-4">
+                    <div className={`flex-1 rounded-[2.5rem] border ${gls} ${shadowGlow} p-6 overflow-hidden relative`}>
+                        <div className="absolute -bottom-10 -right-10 opacity-[0.03] rotate-12">
+                            <ShieldAlert className="w-48 h-48" />
                         </div>
-                        <div className="flex gap-4">
-                            <span className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider ${textMuted}`}><div className="w-2.5 h-2.5 rounded shadow-sm bg-emerald-500" /> Presentes</span>
-                            <span className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider ${textMuted}`}><div className={`w-2.5 h-2.5 rounded shadow-sm ${dk ? 'bg-slate-700' : 'bg-slate-200'}`} /> Ausentes</span>
+                        <div className="flex items-center gap-3 mb-6">
+                            <ShieldAlert className="w-5 h-5 text-amber-500" />
+                            <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Mission Status</h3>
                         </div>
-                    </div>
-                    {rankBreakdown.length > 0 ? (
-                        <div className="p-6 md:p-8 overflow-x-auto custom-scrollbar">
-                            <div className="flex items-end gap-3 min-w-[600px] h-60 pt-6 border-b border-dashed border-slate-500/20">
-                                {rankBreakdown.map((r, i) => {
-                                    const maxCount = Math.max(...rankBreakdown.map(x => x.total));
-                                    const hTotal = Math.max((r.total / maxCount) * 100, 5); // min 5% 
-                                    const pctOk = r.total > 0 ? (r.present / r.total) * 100 : 0;
-                                    const pctNo = r.total > 0 ? (r.absent / r.total) * 100 : 0;
-                                    
-                                    return (
-                                        <div key={r.rank} className="flex-1 flex flex-col items-center justify-end relative h-full group">
-                                            {/* Hover info */}
-                                            <div className={`absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-[10px] px-3 py-2 rounded-lg font-bold pointer-events-none whitespace-nowrap z-10 shadow-xl`}>
-                                                {r.present} Presentes / {r.absent} Ausentes
-                                                <div className="w-2 h-2 bg-slate-900 rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2" />
-                                            </div>
-
-                                            <span className={`text-[10px] font-black mb-2 ${textMuted}`}>{r.total}</span>
-                                            
-                                            <div className="w-full max-w-[40px] rounded-t-lg overflow-hidden flex flex-col justify-end shadow-sm border border-slate-500/10 transition-transform group-hover:scale-105" style={{ height: `${hTotal}%` }}>
-                                                {/* Present Bar */}
-                                                <div className={`w-full bg-emerald-500 flex items-center justify-center text-[10px] font-black text-white hover:brightness-110 transition-all cursor-crosshair`} style={{ height: `${pctOk}%` }}>
-                                                    {r.present > 0 && r.present}
-                                                </div>
-                                                {/* Absent Bar */}
-                                                <div className={`w-full flex items-center justify-center text-[10px] font-black cursor-crosshair ${dk ? 'bg-slate-700 text-slate-400 hover:bg-slate-600' : 'bg-slate-200 text-slate-500 hover:bg-slate-300'} transition-all`} style={{ height: `${pctNo}%` }}>
-                                                    {r.absent > 0 && r.absent}
-                                                </div>
-                                            </div>
-                                            <span className={`mt-3 text-[9px] font-black uppercase tracking-tight text-center whitespace-nowrap ${textPrimary}`}>{r.rank}</span>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className={`p-16 flex justify-center text-sm font-black uppercase tracking-widest ${textMuted}`}>
-                            Sem dados para exibir
-                        </div>
-                    )}
-                </div>
-
-                {/* Signature Control + Absent Summary */}
-                <div className="space-y-4">
-                    {/* Absent Toggle */}
-                    <div className={`rounded-2xl border shadow-sm overflow-hidden ${card}`}>
-                        <button
-                            onClick={() => setShowAbsentList(!showAbsentList)}
-                            className={`w-full flex items-center justify-between p-5 transition-all ${dk ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'}`}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2.5 rounded-xl ${dk ? 'bg-red-900/30' : 'bg-red-50'}`}>
-                                    <UserX className="w-5 h-5 text-red-600" />
-                                </div>
-                                <div className="text-left">
-                                    <p className={`text-[9px] font-black uppercase tracking-widest ${textMuted}`}>Todos os Ausentes</p>
-                                    <p className="text-lg font-black text-red-600">{absentPersonnel.length} militares</p>
-                                </div>
-                            </div>
-                            {showAbsentList ? <ChevronUp className={`w-5 h-5 ${textMuted}`} /> : <ChevronDown className={`w-5 h-5 ${textMuted}`} />}
-                        </button>
-
-                        {showAbsentList && absentPersonnel.length > 0 && (
-                            <div className={`border-t max-h-[400px] overflow-y-auto ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
-                                {absentPersonnel.map(a => (
-                                    <div key={a.user.id} className={`flex items-center justify-between px-5 py-2.5 border-b last:border-b-0 ${dk ? 'border-slate-700/50 hover:bg-slate-700/20' : 'border-slate-50 hover:bg-slate-50/50'}`}>
-                                        <div>
-                                            <p className={`text-[11px] font-black uppercase ${dk ? 'text-slate-200' : 'text-slate-800'}`}>{a.user.rank} {a.user.warName || a.user.name}</p>
-                                            <p className={`text-[9px] font-bold ${textMuted}`}>{a.sector}</p>
-                                        </div>
-                                        <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg ${a.status === 'F' || a.status === 'A' ? (dk ? 'bg-red-900/40 text-red-400' : 'bg-red-100 text-red-700') :
-                                            a.status === 'MIS' ? (dk ? 'bg-indigo-900/40 text-indigo-400' : 'bg-indigo-100 text-indigo-700') :
-                                                ['ESV', 'DSV', 'SSV'].includes(a.status) ? (dk ? 'bg-blue-900/40 text-blue-400' : 'bg-blue-100 text-blue-700') :
-                                                    a.status === 'FE' ? (dk ? 'bg-cyan-900/40 text-cyan-400' : 'bg-cyan-100 text-cyan-700') :
-                                                        (dk ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-100 text-amber-700')
-                                            }`}>
-                                            {a.statusLabel}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Signature Status */}
-                    <div className="bg-slate-900 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-6 opacity-5">
-                            <ShieldAlert className="w-28 h-28" />
-                        </div>
-                        <h3 className="text-sm font-black tracking-tight mb-4 uppercase">Controle de Assinaturas</h3>
-                        <div className="space-y-2 relative z-10">
-                            {(() => {
-                                // Determinar quais setores mostrar com base no filtro
-                                const isFiltered = selectedSector === 'GSD-SP' || selectedSector === 'BASP';
-
-                                // Grupos de setores
-                                const baspList = BASP_SECTORS.filter(s => displaySectors.includes(s));
-                                const gsdList = GSD_SP_SECTORS.filter(s => displaySectors.includes(s));
-
-                                const renderSectorRow = (sector: string) => {
-                                    const sectorCalls = attendanceHistory?.filter(a =>
-                                        a.date === selectedDate && a.sector === sector && !!a.signedBy
-                                    ) || [];
-                                    const hasInicio = sectorCalls.some(c => c.callType === 'INICIO');
-                                    const hasTermino = sectorCalls.some(c => c.callType === 'TERMINO');
-                                    return (
-                                        <div key={sector} className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl p-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-2 h-2 rounded-full ${hasTermino ? 'bg-emerald-400' : hasInicio ? 'bg-amber-400' : 'bg-red-400'} shadow-[0_0_8px_rgba(52,211,153,0.5)]`} />
-                                                <div>
-                                                    <p className="text-[10px] font-black text-white uppercase tracking-widest">{sector}</p>
-                                                    <p className="text-[9px] text-slate-400 font-bold uppercase">
-                                                        {hasTermino ? 'Expediente Encerrado' : hasInicio ? '1ª Chamada Assinada' : 'Nenhuma Chamada'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-1">
-                                                <div className={`w-4 h-4 rounded-md flex items-center justify-center text-[8px] font-black ${hasInicio ? 'bg-emerald-500/30 text-emerald-300' : 'bg-white/5 text-white/20'}`}>1ª</div>
-                                                <div className={`w-4 h-4 rounded-md flex items-center justify-center text-[8px] font-black ${hasTermino ? 'bg-emerald-500/30 text-emerald-300' : 'bg-white/5 text-white/20'}`}>2ª</div>
-                                            </div>
-                                        </div>
-                                    );
-                                };
-
-                                // Se filtro é específico (GSD-SP ou BASP), mostra lista simples
-                                if (isFiltered) {
-                                    const list = selectedSector === 'GSD-SP' ? gsdList : baspList;
-                                    return list.map(renderSectorRow);
-                                }
-
-                                // Filtro TODOS: mostrar grupos colapsáveis
+                        <div className="space-y-3 relative z-10 overflow-y-auto max-h-[500px] custom-scrollbar pr-2">
+                             {displaySectors.map(sector => {
+                                const sectorCalls = attendanceHistory?.filter(a => a.date === selectedDate && a.sector === sector && !!a.signedBy) || [];
+                                const hasInicio = sectorCalls.some(c => c.callType === 'INICIO');
+                                const hasTermino = sectorCalls.some(c => c.callType === 'TERMINO');
                                 return (
-                                    <>
-                                        {/* Grupo BASP */}
-                                        {baspList.length > 0 && (
-                                            <div>
-                                                <button
-                                                    onClick={() => setShowBaspGroup(v => !v)}
-                                                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition-all mb-1"
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">BASP</span>
-                                                        <span className="text-[9px] font-bold text-amber-400/60">{baspList.length} setores</span>
-                                                    </div>
-                                                    <ChevronDown className={`w-3.5 h-3.5 text-amber-400 transition-transform duration-200 ${showBaspGroup ? '' : '-rotate-90'}`} />
-                                                </button>
-                                                {showBaspGroup && (
-                                                    <div className="space-y-1.5 pl-1">
-                                                        {baspList.map(renderSectorRow)}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {/* Grupo GSD-SP */}
-                                        {gsdList.length > 0 && (
-                                            <div>
-                                                <button
-                                                    onClick={() => setShowGsdGroup(v => !v)}
-                                                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all mb-1"
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-300">GSD-SP</span>
-                                                        <span className="text-[9px] font-bold text-blue-400/60">{gsdList.length} setores</span>
-                                                    </div>
-                                                    <ChevronDown className={`w-3.5 h-3.5 text-blue-400 transition-transform duration-200 ${showGsdGroup ? '' : '-rotate-90'}`} />
-                                                </button>
-                                                {showGsdGroup && (
-                                                    <div className="space-y-1.5 pl-1">
-                                                        {gsdList.map(renderSectorRow)}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {/* Setores fora dos dois grupos */}
-                                        {displaySectors
-                                            .filter(s => !BASP_SECTORS.includes(s) && !GSD_SP_SECTORS.includes(s))
-                                            .map(renderSectorRow)
-                                        }
-                                    </>
+                                    <div key={sector} className={`flex items-center justify-between p-3 rounded-2xl border ${dk ? 'bg-slate-800/30 border-slate-700/50' : 'bg-slate-50 border-slate-100'}`}>
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-1.5 h-1.5 rounded-full ${hasTermino ? 'bg-emerald-500' : hasInicio ? 'bg-amber-500' : 'bg-red-500'} animate-pulse`} />
+                                            <span className={`text-[10px] font-black uppercase ${textPrimary}`}>{sector}</span>
+                                        </div>
+                                        <div className="flex gap-1">
+                                            <div className={`w-5 h-5 rounded-lg flex items-center justify-center text-[8px] font-black ${hasInicio ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-500/10 text-slate-500'}`}>1</div>
+                                            <div className={`w-5 h-5 rounded-lg flex items-center justify-center text-[8px] font-black ${hasTermino ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-500/10 text-slate-500'}`}>2</div>
+                                        </div>
+                                    </div>
                                 );
-                            })()}
+                            })}
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Print View Modal */}
+            {/* Rank Breakdown Chart */}
+            <div className={`rounded-[2.5rem] border ${gls} ${shadowGlow} p-6 lg:p-10 overflow-hidden`}>
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+                    <div className="flex items-center gap-4">
+                        <div className={`p-4 rounded-3xl ${dk ? 'bg-indigo-900/40 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                            <Award className="w-8 h-8" />
+                        </div>
+                        <div>
+                            <h3 className={`text-2xl font-black uppercase tracking-widest ${textPrimary}`}>Hierarchy Analytics</h3>
+                            <p className={`text-[10px] font-bold ${textSecondary}`}>PRONTIDÃO POR POSTO E GRADUAÇÃO</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="overflow-x-auto custom-scrollbar pb-10">
+                    <div className="flex items-end gap-6 min-w-[800px] h-80 pt-10 border-b border-dashed border-slate-500/20 relative">
+                        {rankBreakdown.map((r) => {
+                            const maxCount = Math.max(...rankBreakdown.map(x => x.total));
+                            const hTotal = Math.max((r.total / maxCount) * 100, 10);
+                            const pctOk = r.total > 0 ? (r.present / r.total) * 100 : 0;
+                            
+                            return (
+                                <div key={r.rank} className="flex-1 flex flex-col items-center justify-end h-full group relative">
+                                    <div className="absolute -top-16 opacity-0 group-hover:opacity-100 transition-all z-20">
+                                        <div className="bg-slate-900 text-white p-3 rounded-2xl shadow-2xl flex flex-col items-center">
+                                            <span className="text-[10px] font-black uppercase text-blue-400">{r.rank}</span>
+                                            <span className="text-xl font-black">{r.present}/{r.total}</span>
+                                        </div>
+                                    </div>
+                                    <div 
+                                        className={`w-full max-w-[40px] rounded-full border border-white/10 overflow-hidden flex flex-col justify-end shadow-2xl ${dk ? 'bg-slate-900/50' : 'bg-slate-100'}`} 
+                                        style={{ height: `${hTotal}%` }}
+                                    >
+                                        <div className="w-full bg-emerald-500 transition-all duration-1000" style={{ height: `${pctOk}%` }} />
+                                    </div>
+                                    <span className={`mt-4 text-[10px] font-black uppercase ${textMuted}`}>{r.rank.substring(0, 3)}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+
             {isPrinting && (
                 <ForceMapPrintView
                     date={selectedDate}
@@ -1019,13 +614,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     emMissao={getCount(allRecords, ['MIS'])}
                     prontidao={prontidao}
                     statusBreakdown={statusBreakdown}
-                    sectorBreakdown={
-                        selectedSector === 'GSD-SP'
-                            ? sectorBreakdown.filter(s => GSD_SP_SECTORS.includes(s.sector))
-                            : selectedSector === 'BASP'
-                                ? sectorBreakdown.filter(s => BASP_SECTORS.includes(s.sector))
-                                : sectorBreakdown
-                    }
+                    sectorBreakdown={sectorBreakdown}
                     onClose={() => setIsPrinting(false)}
                 />
             )}
@@ -1034,7 +623,3 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 };
 
 export default ForceMapDashboard;
-
-
-
-
