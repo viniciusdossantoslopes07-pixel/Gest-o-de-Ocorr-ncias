@@ -180,7 +180,24 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 
     const presentCount = getCount(allRecords, ['P', 'INST']);
     const prevPresentCount = getCount(prevRecords, ['P', 'INST']);
-    const absenceCount = totalEfetivo - presentCount;
+
+    // Signed sectors for current date
+    const signedSectors = useMemo(() => {
+        return new Set(
+            attendanceHistory
+                .filter(a => a.date === selectedDate && !!a.signedBy)
+                .map(a => a.sector)
+        );
+    }, [attendanceHistory, selectedDate]);
+
+    // Accounted absences (only from signed sectors)
+    const absenceCount = useMemo(() => {
+        return relevantUsers.filter(u => {
+            if (!signedSectors.has(u.sector)) return false;
+            const record = currentRecordsMap.get(u.id);
+            return !record || !['P', 'INST'].includes(record.status);
+        }).length;
+    }, [relevantUsers, signedSectors, currentRecordsMap]);
 
     // Readiness
     const prontidao = totalEfetivo > 0 ? Math.round((presentCount / totalEfetivo) * 100) : 0;
@@ -197,10 +214,13 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         }).filter(s => s.count > 0 || ['PRESENTES', 'FALTAS', 'MISSAO', 'SERVICO'].includes(s.key));
     }, [allRecords, prevRecords, totalEfetivo]);
 
-    // Global absent list for the modal
+    // Global absent list for the retractable section (only from signed sectors)
     const globalAbsentList = useMemo(() => {
         return relevantUsers
             .filter(u => {
+                // Only include if sector has signed the call
+                if (!signedSectors.has(u.sector)) return false;
+
                 const record = currentRecordsMap.get(u.id);
                 return !record || !['P', 'INST'].includes(record.status);
             })
