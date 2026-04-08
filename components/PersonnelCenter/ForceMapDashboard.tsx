@@ -79,6 +79,21 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return days;
     }, [selectedDate]);
 
+    const previousWeekRange = useMemo(() => {
+        const d = new Date(selectedDate + 'T12:00:00');
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1) - 7;
+        const monday = new Date(d.setDate(diff));
+
+        const days = [];
+        for (let i = 0; i < 5; i++) {
+            const temp = new Date(monday);
+            temp.setDate(monday.getDate() + i);
+            days.push(`${temp.getFullYear()}-${String(temp.getMonth() + 1).padStart(2, '0')}-${String(temp.getDate()).padStart(2, '0')}`);
+        }
+        return days;
+    }, [selectedDate]);
+
     // Filter users by rank
     const filterUsersByRank = (userList: User[]) => {
         if (rankFilter === 'TODOS') return userList;
@@ -124,23 +139,6 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return latestMap;
     };
 
-    // Current and previous records
-    const currentRecordsMap = useMemo(() => {
-        if (viewMode === 'WEEKLY') {
-            const flattenedMap = new Map<string, any>();
-            currentWeekRange.forEach(date => {
-                const dailyMap = getRecordsForDate(date);
-                dailyMap.forEach((record, id) => {
-                    flattenedMap.set(id, record); // Simplified for weekly: take last record of week
-                });
-            });
-            return flattenedMap;
-        }
-        return getRecordsForDate(selectedDate);
-    }, [selectedDate, selectedSector, callTypeFilter, attendanceHistory, viewMode, currentWeekRange]);
-
-    const previousRecordsMap = useMemo(() => getRecordsForDate(previousDate), [previousDate, selectedSector, callTypeFilter, attendanceHistory]);
-    
     // Sectors to show based on filter
     const activeSectorsToShow = useMemo(() => {
         if (selectedSector === 'TODOS') return displaySectors;
@@ -169,6 +167,60 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     }, [users, selectedSector, rankFilter, displaySectors, GSD_SP_SECTORS, BASP_SECTORS]);
 
     const relevantUserIds = new Set(relevantUsers.map(u => u.id));
+
+    // Current and previous records
+    const currentRecordsMap = useMemo(() => {
+        if (viewMode === 'WEEKLY') {
+            const flattenedMap = new Map<string, any>();
+            const sortedDates = [...currentWeekRange].sort();
+            sortedDates.forEach(date => {
+                const dailyMap = getRecordsForDate(date);
+                dailyMap.forEach((record, id) => {
+                    flattenedMap.set(id, record);
+                });
+            });
+            return flattenedMap;
+        }
+        return getRecordsForDate(selectedDate);
+    }, [selectedDate, selectedSector, callTypeFilter, attendanceHistory, viewMode, currentWeekRange]);
+
+    // Weekly average readiness logic
+    const weeklyProntidaoData = useMemo(() => {
+        if (viewMode !== 'WEEKLY') return null;
+        
+        const dailyPercentages: number[] = [];
+        currentWeekRange.forEach(date => {
+            const dailyMap = getRecordsForDate(date);
+            if (dailyMap.size > 0) {
+                const presentInDay = Array.from(dailyMap.values()).filter(r => ['P', 'INST'].includes(r.status)).length;
+                const pct = relevantUsers.length > 0 ? (presentInDay / relevantUsers.length) * 100 : 0;
+                dailyPercentages.push(pct);
+            }
+        });
+
+        if (dailyPercentages.length === 0) return 0;
+        return Math.round(dailyPercentages.reduce((a, b) => a + b, 0) / dailyPercentages.length);
+    }, [currentWeekRange, relevantUsers, attendanceHistory, selectedSector, callTypeFilter]);
+
+    const weeklyPrevProntidaoData = useMemo(() => {
+        if (viewMode !== 'WEEKLY') return null;
+        
+        const dailyPercentages: number[] = [];
+        previousWeekRange.forEach(date => {
+            const dailyMap = getRecordsForDate(date);
+            if (dailyMap.size > 0) {
+                const presentInDay = Array.from(dailyMap.values()).filter(r => ['P', 'INST'].includes(r.status)).length;
+                const pct = relevantUsers.length > 0 ? (presentInDay / relevantUsers.length) * 100 : 0;
+                dailyPercentages.push(pct);
+            }
+        });
+
+        if (dailyPercentages.length === 0) return 0;
+        return Math.round(dailyPercentages.reduce((a, b) => a + b, 0) / dailyPercentages.length);
+    }, [previousWeekRange, relevantUsers, attendanceHistory, selectedSector, callTypeFilter]);
+
+    const previousRecordsMap = useMemo(() => getRecordsForDate(previousDate), [previousDate, selectedSector, callTypeFilter, attendanceHistory]);
+    
     const allRecords = Array.from(currentRecordsMap.values()).filter(r => relevantUserIds.has(r.militarId));
     const prevRecords = Array.from(previousRecordsMap.values()).filter(r => relevantUserIds.has(r.militarId));
     const totalEfetivo = relevantUsers.length;
@@ -181,14 +233,18 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const presentCount = getCount(allRecords, ['P', 'INST']);
     const prevPresentCount = getCount(prevRecords, ['P', 'INST']);
 
-    // Signed sectors for current date
+    // Signed sectors
     const signedSectors = useMemo(() => {
-        return new Set(
-            attendanceHistory
-                .filter(a => a.date === selectedDate && !!a.signedBy)
-                .map(a => a.sector)
-        );
-    }, [attendanceHistory, selectedDate]);
+        const set = new Set<string>();
+        const datesToCheck = viewMode === 'WEEKLY' ? currentWeekRange : [selectedDate];
+        
+        attendanceHistory.forEach(a => {
+            if (datesToCheck.includes(a.date) && !!a.signedBy) {
+                set.add(a.sector);
+            }
+        });
+        return set;
+    }, [attendanceHistory, selectedDate, viewMode, currentWeekRange]);
 
     // Accounted absences (only from signed sectors)
     const absenceCount = useMemo(() => {
@@ -200,8 +256,14 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     }, [relevantUsers, signedSectors, currentRecordsMap]);
 
     // Readiness
-    const prontidao = totalEfetivo > 0 ? Math.round((presentCount / totalEfetivo) * 100) : 0;
-    const prevProntidao = totalEfetivo > 0 ? Math.round((prevPresentCount / totalEfetivo) * 100) : 0;
+    const prontidao = viewMode === 'WEEKLY' 
+        ? (weeklyProntidaoData ?? 0)
+        : (totalEfetivo > 0 ? Math.round((presentCount / totalEfetivo) * 100) : 0);
+        
+    const prevProntidao = viewMode === 'WEEKLY'
+        ? (weeklyPrevProntidaoData ?? 0)
+        : (totalEfetivo > 0 ? Math.round((prevPresentCount / totalEfetivo) * 100) : 0);
+        
     const prontidaoDelta = prontidao - prevProntidao;
 
     // Status breakdown
