@@ -320,8 +320,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             }
 
             setSectorDropdownPosition({
-                top: top,
-                left: rect.left,
+                top: top + window.scrollY,
+                left: rect.left + window.scrollX,
                 width: rect.width
             });
         }
@@ -339,44 +339,16 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const realPersonnel = useMemo(() =>
-        users.filter(u => u.active !== false && !u.is_functional),
-        [users]
-    );
-
-    // Identificar setores que possuem militares mas não estão na lista oficial da unidade no banco
-    const extraSectors = useMemo(() => {
-        const OfficialSet = new Set(unitSectors);
-        const set = new Set<string>();
-        realPersonnel.forEach(u => {
-            if (u.sector && !OfficialSet.has(u.sector)) {
-                // Se o militar está em um setor não oficial, mas estamos na unidade GSD-SP 
-                // e o setor é tipicamente do GSD, vamos incluí-lo na lista de filtros
-                const knownGSDSectors = ['SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'];
-                if (selectedUnit === 'GSD-SP' && knownGSDSectors.includes(u.sector)) {
-                    set.add(u.sector);
-                }
-            }
-        });
-        return Array.from(set);
-    }, [realPersonnel, unitSectors, selectedUnit]);
-
-    const allAvailableSectors = useMemo(() => {
-        return Array.from(new Set([...unitSectors, ...extraSectors])).sort();
-    }, [unitSectors, extraSectors]);
-
-
-
     const filteredUnitSectors = useMemo(() => 
-        allAvailableSectors.filter(s => s.toLowerCase().includes(sectorSearchQuery.toLowerCase())),
-    [allAvailableSectors, sectorSearchQuery]);
+        unitSectors.filter(s => s.toLowerCase().includes(sectorSearchQuery.toLowerCase())),
+    [unitSectors, sectorSearchQuery]);
 
     // Inicializa selectedSector assim que os setores carregarem do banco
     useEffect(() => {
-        if (allAvailableSectors.length > 0 && !allAvailableSectors.includes(selectedSector)) {
-            setSelectedSector(allAvailableSectors[0]);
+        if (unitSectors.length > 0 && !unitSectors.includes(selectedSector)) {
+            setSelectedSector(unitSectors[0]);
         }
-    }, [allAvailableSectors, selectedSector]);
+    }, [unitSectors, selectedSector]);
     const [searchTerm, setSearchTerm] = useState('');
     const [signedDates, setSignedDates] = useState<Record<string, { signedBy: string, signedAt: string }>>({});
     const [userDestinations, setUserDestinations] = useState<any[]>([]);
@@ -439,7 +411,11 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [soldierToMove, setSoldierToMove] = useState<User | null>(null);
     const [targetSector, setTargetSector] = useState('');
 
-
+    // Filtragem de contas funcionais
+    const realPersonnel = useMemo(() =>
+        users.filter(u => u.active !== false && !u.is_functional),
+        [users]
+    );
 
     const filteredUsers = useMemo(() => {
         return realPersonnel.filter(user => {
