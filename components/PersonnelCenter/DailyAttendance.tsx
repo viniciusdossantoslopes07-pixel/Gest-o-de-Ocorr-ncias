@@ -5,9 +5,7 @@ import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '.
 import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, RANKS, getRankPriority } from '../../constants';
 import { useSectors } from '../../contexts/SectorsContext';
 import { hasPermission, PERMISSIONS } from '../../constants/permissions';
-import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint, BarChart3, Map as MapIcon, MoveHorizontal, ShieldCheck, ChevronDown } from 'lucide-react';
-import ForceMapDashboard from './ForceMapDashboard';
-import UserStatistics from './UserStatistics';
+import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint, MoveHorizontal, ShieldCheck, ChevronDown } from 'lucide-react';
 import { authenticateBiometrics } from '../../services/webauthn';
 import { supabase } from '../../services/supabase';
 
@@ -387,7 +385,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [selectedDaysForNoWork, setSelectedDaysForNoWork] = useState<string[]>([]);
     const [showAdHocModal, setShowAdHocModal] = useState(false);
     const [newAdHoc, setNewAdHoc] = useState({ rank: '', warName: '', saram: '' });
-    const [activeSubTab, setActiveSubTab] = useState<'chamada' | 'cupons' | 'mapa_forca' | 'estatisticas'>('chamada');
+    const [activeSubTab, setActiveSubTab] = useState<'chamada' | 'cupons'>('chamada');
     const [showJustificationModal, setShowJustificationModal] = useState(false);
     const [justifyingSoldier, setJustifyingSoldier] = useState<{
         userId: string;
@@ -882,18 +880,6 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 >
                     <FileText className="w-3.5 h-3.5" /> <span className="truncate">Cupons</span>
                 </button>
-                <button
-                    onClick={() => setActiveSubTab('mapa_forca')}
-                    className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 md:px-6 py-2.5 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-wider md:tracking-[0.15em] transition-all duration-300 ${activeSubTab === 'mapa_forca' ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'bg-white text-slate-900 shadow-md') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
-                >
-                    <MapIcon className="w-3.5 h-3.5" /> <span className="truncate">Mapa</span>
-                </button>
-                <button
-                    onClick={() => setActiveSubTab('estatisticas')}
-                    className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 md:px-6 py-2.5 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-wider md:tracking-[0.15em] transition-all duration-300 ${activeSubTab === 'estatisticas' ? (isDarkMode ? 'bg-amber-600 text-white shadow-lg shadow-amber-900/40' : 'bg-white text-slate-900 shadow-md') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
-                >
-                    <BarChart3 className="w-3.5 h-3.5" /> <span className="truncate">Estatísticas</span>
-                </button>
             </div>
 
             {/* Compact Header — only for chamada/cupons */}
@@ -1367,27 +1353,6 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 </button>
                             </div>
                         </div>
-                    </div>
-                )
-            }
-
-            {
-                activeSubTab === 'mapa_forca' && (
-                    <div className="animate-in fade-in slide-in-from-bottom-4">
-                        <ForceMapDashboard users={users} attendanceHistory={attendanceHistory} isDarkMode={isDarkMode} />
-                    </div>
-                )
-            }
-
-            {
-                activeSubTab === 'estatisticas' && (
-                    <div className="animate-in fade-in slide-in-from-bottom-4">
-                        <UserStatistics 
-                            users={users} 
-                            attendanceHistory={attendanceHistory}
-                            isDarkMode={isDarkMode} 
-                            activeUnitFilter={selectedUnit} 
-                        />
                     </div>
                 )
             }
