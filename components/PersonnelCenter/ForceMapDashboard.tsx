@@ -370,7 +370,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
             const absentDetails = sectorUsers
                 .filter(u => {
                     const r = currentRecordsMap.get(u.id);
-                    return r && !r.status === 'P';
+                    return r && r.status !== 'P';
                 })
                 .map(u => ({
                     user: u,
