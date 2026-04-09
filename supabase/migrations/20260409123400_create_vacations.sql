@@ -28,9 +28,11 @@ CREATE INDEX IF NOT EXISTS idx_vacation_periods_vacation_id ON public.vacation_p
 ALTER TABLE public.vacations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.vacation_periods ENABLE ROW LEVEL SECURITY;
 
--- Simple Policies (Admin can do everything, users can view theirs)
-CREATE POLICY "Admins can manage all vacations" ON public.vacations
-  FOR ALL TO authenticated USING (true);
+-- Policies (Explicit permissions for INSERT, SELECT, UPDATE, DELETE)
+DROP POLICY IF EXISTS "Admins can manage all vacations" ON public.vacations;
+CREATE POLICY "Enable all for authenticated on vacations" ON public.vacations
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
-CREATE POLICY "Admins can manage all vacation periods" ON public.vacation_periods
-  FOR ALL TO authenticated USING (true);
+DROP POLICY IF EXISTS "Admins can manage all vacation periods" ON public.vacation_periods;
+CREATE POLICY "Enable all for authenticated on vacation_periods" ON public.vacation_periods
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);

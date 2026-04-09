@@ -15,7 +15,7 @@ interface VacationModalProps {
 }
 
 const MODELS: { id: InstallmentModel; label: string; description: string }[] = [
-    { id: '30', label: '30 Dias Corrutos', description: 'Uma única parcela de 30 dias.' },
+    { id: '30', label: '30 Dias Corridos', description: 'Uma única parcela de 30 dias.' },
     { id: '15+15', label: '15 + 15 Dias', description: 'Duas parcelas de 15 dias cada.' },
     { id: '20+10', label: '20 + 10 Dias', description: 'Duas parcelas, sendo a primeira de 20 e a segunda de 10.' },
     { id: '10+20', label: '10 + 20 Dias', description: 'Duas parcelas, sendo a primeira de 10 e a segunda de 20.' },
@@ -68,7 +68,12 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
         newPeriods[index] = { ...newPeriods[index], [field]: value };
         
         if (newPeriods[index].start_date && newPeriods[index].end_date) {
-            newPeriods[index].days = calculateDays(newPeriods[index].start_date!, newPeriods[index].end_date!);
+            // Só calcula se for uma data válida ISO (YYYY-MM-DD), ignorando máscaras temporárias (DD/MM/AAAA)
+            if (!newPeriods[index].start_date?.includes('/') && !newPeriods[index].end_date?.includes('/')) {
+                newPeriods[index].days = calculateDays(newPeriods[index].start_date!, newPeriods[index].end_date!);
+            } else {
+                newPeriods[index].days = 0;
+            }
         }
         
         setPeriods(newPeriods);
