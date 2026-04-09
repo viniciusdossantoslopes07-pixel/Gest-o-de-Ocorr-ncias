@@ -169,7 +169,7 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
                         </div>
                         <div className="min-w-0">
                             <h2 className="text-lg lg:text-xl font-black text-white uppercase tracking-tight truncate">Lançar Período de Férias</h2>
-                            <p className="text-[9px] lg:text-[10px] font-black text-blue-400 uppercase tracking-widest truncate">Cadastro Administrativo {selectedYear}</p>
+                            <p className="text-[9px] lg:text-[10px] font-black text-blue-400 uppercase tracking-widest truncate">Cadastro Administrativo {year}</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-xl transition-all text-slate-500 hover:text-white shrink-0">
