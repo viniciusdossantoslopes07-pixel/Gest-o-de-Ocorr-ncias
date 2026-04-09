@@ -43,18 +43,20 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
     }, [selectedYear]);
 
     const fetchVacations = async () => {
-        setLoading(true);
-        const { data, error } = await supabase
-            .from('vacations')
-            .select('*, periods:vacation_periods(*)')
-            .eq('year', selectedYear);
+        try {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from('vacations')
+                .select('*, periods:vacation_periods(*)')
+                .eq('year', selectedYear);
 
-        if (error) {
-            console.error('Error fetching vacations:', error);
-        } else {
+            if (error) throw error;
             setVacations(data || []);
+        } catch (error) {
+            console.error('Erro ao buscar fésias:', error);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const sortedUsers = useMemo(() => {
@@ -247,15 +249,15 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
             <div className="flex items-center gap-2 p-1.5 rounded-[2.5rem] bg-slate-900/5 dark:bg-slate-800/40 w-fit border border-slate-200 dark:border-slate-800">
                 <button
                     onClick={() => setActiveTab('timeline')}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-[2rem] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'timeline' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white'}`}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-[2rem] text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'timeline' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20 scale-105' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-900/5'}`}
                 >
-                    <CalendarDays className="w-4 h-4" /> Cronograma Anual
+                    <CalendarDays className={`w-4 h-4 ${activeTab === 'timeline' ? 'animate-pulse' : ''}`} /> Cronograma Anual
                 </button>
                 <button
                     onClick={() => setActiveTab('stats')}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-[2rem] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'stats' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white'}`}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-[2rem] text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'stats' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20 scale-105' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-900/5'}`}
                 >
-                    <TrendingUp className="w-4 h-4" /> BI & Estatísticas
+                    <TrendingUp className={`w-4 h-4 ${activeTab === 'stats' ? 'animate-bounce' : ''}`} /> BI & Estatísticas
                 </button>
             </div>
 

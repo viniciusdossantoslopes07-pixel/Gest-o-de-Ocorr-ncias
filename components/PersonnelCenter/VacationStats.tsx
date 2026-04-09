@@ -1,7 +1,7 @@
 import React, { FC, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { User, Vacation, VacationStatus } from '../../types';
-import { Users, Calendar, TrendingDown, Target, Info } from 'lucide-react';
+import { Users, Calendar, TrendingDown, Target, Info, Clock, AlertCircle } from 'lucide-react';
 
 interface VacationStatsProps {
     isDarkMode?: boolean;
@@ -92,16 +92,18 @@ const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vaca
     }, [vacations, users, selectedYear]);
 
     // KPIs
-    const presentToday = users.length - (vacations.filter(v => v.status === 'EM_FRUIÇÃO').length);
-    const readinessPercent = Math.round((presentToday / users.length) * 100) || 0;
+    const presentToday = users?.length ? users.length - (vacations.filter(v => v.status === 'EM_FRUIÇÃO').length) : 0;
+    const readinessPercent = users?.length ? Math.round((presentToday / users.length) * 100) : 0;
 
     const next3MonthsStats = useMemo(() => {
+        if (!vacations || !Array.isArray(vacations)) return [];
+        
         const today = new Date();
         const results = [];
         for (let i = 0; i < 3; i++) {
-            const monthIndex = (today.getMonth() + i) % 12;
-            const yearOffset = Math.floor((today.getMonth() + i) / 12);
-            const yearToUse = today.getFullYear() + yearOffset;
+            const nextMonth = new Date(today.getFullYear(), today.getMonth() + i, 1);
+            const monthIndex = nextMonth.getMonth();
+            const yearToUse = nextMonth.getFullYear();
             
             const monthStart = new Date(yearToUse, monthIndex, 1);
             const monthEnd = new Date(yearToUse, monthIndex + 1, 0);
@@ -109,7 +111,9 @@ const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vaca
             const absentCount = new Set();
             vacations.forEach(v => {
                 v.periods?.forEach(p => {
-                    if (new Date(p.start_date) <= monthEnd && new Date(p.end_date) >= monthStart) {
+                    const pStart = new Date(p.start_date);
+                    const pEnd = new Date(p.end_date);
+                    if (pStart <= monthEnd && pEnd >= monthStart) {
                         absentCount.add(v.militar_id);
                     }
                 });
@@ -118,6 +122,16 @@ const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vaca
         }
         return results;
     }, [vacations]);
+
+    if (!users || users.length === 0) {
+        return (
+            <div className={`flex flex-col items-center justify-center p-20 rounded-[2rem] border-2 border-dashed ${dk ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                <AlertCircle className="w-12 h-12 text-slate-400 mb-4" />
+                <h3 className={`text-lg font-black uppercase tracking-widest ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Nenhum militar encontrado</h3>
+                <p className="text-xs font-bold text-slate-500 mt-2">Ajuste os filtros de busca ou unidade para visualizar as estatísticas.</p>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
