@@ -377,6 +377,8 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
                     </div>
                 </div>
 
+                </div>
+
                 {/* Footer Buttons & Error Message */}
                 <div className="p-6 lg:p-8 border-t border-slate-800 bg-slate-900 space-y-4">
                     {/* Summary Info (Always visible in footer) */}
