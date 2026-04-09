@@ -577,28 +577,19 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                             <h3 className={`text-2xl font-black italic tracking-tighter ${textPrimary}`}>PRONTIDÃO OPERACIONAL</h3>
                         </div>
 
-                        <div className="flex items-center justify-between my-8">
+                        <div className="flex items-center justify-center my-8">
                             <div className="relative flex items-center justify-center">
-                                <svg className="w-32 h-32 transform -rotate-90">
-                                    <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" className={`${dk ? 'text-slate-800' : 'text-slate-100'}`} />
-                                    <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray="364.4" 
-                                        strokeDashoffset={364.4 - (364.4 * prontidao) / 100}
+                                <svg className="w-40 h-40 transform -rotate-90">
+                                    <circle cx="80" cy="80" r="72" stroke="currentColor" strokeWidth="10" fill="transparent" className={`${dk ? 'text-slate-800' : 'text-slate-100'}`} />
+                                    <circle cx="80" cy="80" r="72" stroke="currentColor" strokeWidth="10" fill="transparent" strokeDasharray="452.4" 
+                                        strokeDashoffset={452.4 - (452.4 * prontidao) / 100}
                                         className={`transition-all duration-1000 ease-out ${prontidao > 85 ? 'text-emerald-500' : prontidao > 60 ? 'text-amber-500' : 'text-red-500'}`} 
                                         strokeLinecap="round"
                                     />
                                 </svg>
                                 <div className="absolute flex flex-col items-center">
-                                    <span className={`text-4xl font-black tabular-nums ${textPrimary}`}>{prontidao}%</span>
+                                    <span className={`text-5xl font-black tabular-nums ${textPrimary}`}>{prontidao}%</span>
                                     <DeltaIndicator value={prontidaoDelta} suffix="%" />
-                                </div>
-                            </div>
-
-                            <div className="space-y-4 flex-1 pl-10 text-right">
-                                <div className={`p-4 rounded-3xl ${dk ? 'bg-slate-800/50' : 'bg-slate-50'} border border-slate-500/10 text-left w-full h-full flex flex-col justify-center`}>
-                                    <p className={`text-[10px] font-black ${textMuted} mb-2 leading-tight uppercase tracking-widest`}>Observação Operacional</p>
-                                    <p className={`text-sm font-black ${textPrimary} leading-snug italic`}>
-                                        {prontidao > 85 ? 'Força total disponível para resposta imediata.' : prontidao > 60 ? 'Efetivo reduzido por dispensas/missões.' : 'Alerta: Efetivo abaixo do nível de prontidão crítica.'}
-                                    </p>
                                 </div>
                             </div>
                         </div>
