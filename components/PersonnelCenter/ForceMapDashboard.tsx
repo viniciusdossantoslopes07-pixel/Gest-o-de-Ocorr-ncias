@@ -594,7 +594,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                     <div className="flex items-center gap-6 flex-1">
                                         <div className="min-w-[100px] text-left">
                                             <span className={`text-xs font-black uppercase tracking-tighter ${textPrimary}`}>{s.sector}</span>
-                                            <p className={`text-[9px] font-bold ${textMuted}`}>Total: {s.total} PAX</p>
+                                            <p className={`text-[9px] font-bold ${textMuted}`}>Total: {s.total}</p>
                                         </div>
                                         <div className="flex-1 flex flex-col gap-1 max-w-[200px]">
                                             <div className={`h-2 rounded-full overflow-hidden ${dk ? 'bg-slate-800' : 'bg-slate-100'} p-0.5`}>
