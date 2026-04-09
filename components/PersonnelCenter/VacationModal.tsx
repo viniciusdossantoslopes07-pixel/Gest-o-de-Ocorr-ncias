@@ -134,14 +134,32 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
                 if (dError) throw dError;
             }
 
-            // 3. Insert Periods
-            const periodsToInsert = periods.map(p => ({
-                vacation_id: vacationId,
-                start_date: p.start_date,
-                end_date: p.end_date,
-                days: p.days,
-                parcel_number: p.parcel_number
-            }));
+            // 3. Insert Periods with sanitized data
+            const periodsToInsert = periods.map(p => {
+                // Ensure dates are ISO YYYY-MM-DD
+                let start = p.start_date || '';
+                let end = p.end_date || '';
+                
+                if (start.includes('/')) {
+                    const parts = start.split('/');
+                    if (parts.length === 3) start = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                }
+                if (end.includes('/')) {
+                    const parts = end.split('/');
+                    if (parts.length === 3) end = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                }
+
+                // Recalculate days just in case
+                const days = calculateDays(start, end);
+
+                return {
+                    vacation_id: vacationId!,
+                    start_date: start,
+                    end_date: end,
+                    days: days,
+                    parcel_number: p.parcel_number
+                };
+            });
 
             const { error: pError } = await supabase.from('vacation_periods').insert(periodsToInsert);
             if (pError) throw pError;

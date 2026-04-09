@@ -119,8 +119,11 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
     };
 
     const getDayOfYear = (dateStr: string) => {
-        const date = new Date(dateStr);
-        const start = new Date(date.getFullYear(), 0, 0);
+        if (!dateStr) return 0;
+        // Parse manual (YYYY-MM-DD) para evitar problemas de timezone de Date(string)
+        const [year, month, day] = dateStr.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
+        const start = new Date(year, 0, 0);
         const diff = date.getTime() - start.getTime();
         const oneDay = 1000 * 60 * 60 * 24;
         return Math.floor(diff / oneDay);
