@@ -348,6 +348,12 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 alert('Por favor, selecione um destino válido da lista.');
                 return;
             }
+
+            // Validação de Autorizador para Prestador/Entregador
+            if ((characteristic === 'PRESTADOR' || characteristic === 'ENTREGADOR') && !authorizer.trim()) {
+                alert(`Para ${characteristic}, o campo AUTORIZADOR é obrigatório.`);
+                return;
+            }
         }
 
         setSubmitting(true);
@@ -763,9 +769,9 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                     type="text"
                                     value={authorizer}
                                     onChange={(e) => setAuthorizer(e.target.value)}
-                                    placeholder="AUTORIZADOR"
+                                    placeholder={(accessCategory === 'Entrada' && (characteristic === 'PRESTADOR' || characteristic === 'ENTREGADOR')) ? "AUTORIZADOR (OBRIGATÓRIO)" : "AUTORIZADOR"}
                                     disabled={accessCategory === 'Saída'}
-                                    className={`w-full border rounded-xl p-2.5 sm:p-3 font-bold text-sm outline-none uppercase focus:ring-2 ${inputCls} ${accessCategory === 'Saída' ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                    className={`w-full border rounded-xl p-2.5 sm:p-3 font-bold text-sm outline-none uppercase focus:ring-2 ${inputCls} ${accessCategory === 'Saída' ? 'opacity-40 cursor-not-allowed' : ''} ${(accessCategory === 'Entrada' && (characteristic === 'PRESTADOR' || characteristic === 'ENTREGADOR') && !authorizer.trim()) ? 'border-amber-500/50 bg-amber-500/5' : ''}`}
                                 />
                             </div>
 
