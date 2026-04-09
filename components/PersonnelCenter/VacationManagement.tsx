@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FC, useMemo } from 'react';
-import { Calendar, ChevronLeft, ChevronRight, Filter, Search, User as UserIcon, Clock, CircleCheck, CircleAlert, Plus, CalendarDays, MoreHorizontal, Pencil, Trash2, Download } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, Filter, Search, User as UserIcon, Clock, CircleCheck, CircleAlert, Plus, CalendarDays, MoreHorizontal, Pencil, Trash2, Download, X } from 'lucide-react';
 import { supabase } from '../../services/supabase';
 import { User, Vacation, VacationStatus, VacationPeriod, InstallmentModel } from '../../types';
 import { hasPermission, PERMISSIONS } from '../../constants/permissions';
@@ -109,6 +109,23 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
         return vacations.filter(v => v.status === selectedStatus);
     }, [vacations, selectedStatus]);
 
+    const resetFilters = () => {
+        setSearchTerm('');
+        setSelectedStatus('ALL');
+        setActiveUnit('TODAS');
+        setActiveCategory('TODOS');
+    };
+
+    const todayPos = useMemo(() => {
+        const today = new Date();
+        if (today.getFullYear() !== selectedYear) return -1;
+        const start = new Date(selectedYear, 0, 0);
+        const diff = today.getTime() - start.getTime();
+        const oneDay = 1000 * 60 * 60 * 24;
+        const day = Math.floor(diff / oneDay);
+        return (day / getDaysInYear(selectedYear)) * 100;
+    }, [selectedYear]);
+
     const getVacationForUser = (userId: string) => {
         return filteredVacations.find(v => v.militar_id === userId);
     };
@@ -171,6 +188,16 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                                                 <div key={i} className={`flex-1 border-l h-full ${dk ? 'border-slate-800/30' : 'border-slate-100/50'}`} />
                                             ))}
                                         </div>
+
+                                        {/* Today Line Indicator (v1.5.0) */}
+                                        {todayPos !== -1 && (
+                                            <div 
+                                                className="absolute top-0 bottom-0 w-px bg-blue-500/50 z-20 pointer-events-none"
+                                                style={{ left: `${todayPos}%` }}
+                                            >
+                                                <div className="absolute -top-1 -left-1 w-2 h-2 bg-blue-500 rounded-full shadow-lg shadow-blue-500/50" />
+                                            </div>
+                                        )}
                                         
                                         {/* Vacation Bar */}
                                         {vacation?.periods?.map((period, idx) => {
@@ -190,10 +217,13 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                                             return (
                                                 <div 
                                                     key={idx}
-                                                    className={`absolute top-1/2 -translate-y-1/2 h-7 rounded-lg border flex items-center justify-center text-[9px] font-black pointer-events-auto cursor-pointer transition-transform hover:scale-[1.02] shadow-sm z-10 ${statusColors[vacation.status]}`}
+                                                    className={`absolute top-1/2 -translate-y-1/2 h-7 rounded-lg border flex items-center justify-center gap-1.5 px-2 text-[9px] font-black pointer-events-auto cursor-pointer transition-transform hover:scale-[1.02] shadow-sm z-10 ${statusColors[vacation.status]}`}
                                                     style={{ left: `${left}%`, width: `${width}%` }}
                                                     onClick={() => handleEditVacation(vacation)}
+                                                    title={`${vacation.status}: ${period.days} dias`}
                                                 >
+                                                    {vacation.status === 'HOMOLOGADO' && <CircleCheck className="w-2.5 h-2.5" />}
+                                                    {vacation.status === 'EM_FRUIÇÃO' && <Clock className="w-2.5 h-2.5 animate-pulse" />}
                                                     {period.days}D
                                                 </div>
                                             );
@@ -291,8 +321,17 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                                 placeholder="Buscar militar pelo nome ou SARAM..."
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
-                                className={`w-full pl-10 pr-4 py-3.5 rounded-2xl border text-sm outline-none transition-all ${dk ? 'bg-slate-910 border-slate-700 text-white focus:border-blue-500' : 'bg-slate-50 border-slate-100 text-slate-900 focus:border-blue-600'}`}
+                                className={`w-full pl-10 pr-12 py-3.5 rounded-2xl border text-sm outline-none transition-all ${dk ? 'bg-slate-910 border-slate-700 text-white focus:border-blue-500' : 'bg-slate-50 border-slate-100 text-slate-900 focus:border-blue-600'}`}
                             />
+                            { (searchTerm || selectedStatus !== 'ALL' || activeUnit !== 'TODAS' || activeCategory !== 'TODOS') && (
+                                <button 
+                                    onClick={resetFilters}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white transition-all group"
+                                    title="Limpar Filtros"
+                                >
+                                    <X className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-300" />
+                                </button>
+                            )}
                         </div>
                         
                         <div className="flex items-center gap-3">

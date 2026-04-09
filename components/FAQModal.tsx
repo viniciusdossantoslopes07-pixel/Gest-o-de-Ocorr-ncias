@@ -151,7 +151,7 @@ export default function FAQModal({ onClose }: FAQModalProps) {
                 {/* Footer: Glassmorphism */}
                 <div className="p-5 border-t border-slate-100 bg-slate-50/80 backdrop-blur-xl flex justify-between items-center">
                     <div className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">
-                        Versão 1.4.0 — Guardião GSD-SP
+                        Versão 1.5.0 — Guardião GSD-SP
                     </div>
                     <button onClick={onClose} className="px-8 py-3 bg-slate-900 text-white font-black text-[11px] uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all shadow-lg active:scale-95">
                         Fechar Guia

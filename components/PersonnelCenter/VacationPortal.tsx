@@ -10,7 +10,7 @@ interface VacationPortalProps {
 }
 
 const MODELS: { id: InstallmentModel; label: string; description: string }[] = [
-    { id: '30', label: '30 Dias Corrutos', description: 'Uma única parcela de 30 dias.' },
+    { id: '30', label: '30 Dias Corridos', description: 'Uma única parcela de 30 dias.' },
     { id: '15+15', label: '15 + 15 Dias', description: 'Duas parcelas de 15 dias cada.' },
     { id: '20+10', label: '20 + 10 Dias', description: 'Duas parcelas, sendo a primeira de 20 e a segunda de 10.' },
     { id: '10+20', label: '10 + 20 Dias', description: 'Duas parcelas, sendo a primeira de 10 e a segunda de 20.' },
@@ -69,14 +69,17 @@ const VacationPortal: FC<VacationPortalProps> = ({ isDarkMode = false, onBack })
     };
 
     const handleDateChange = (index: number, field: 'start_date' | 'end_date', value: string) => {
-        const newPeriods = [...periods];
-        newPeriods[index] = { ...newPeriods[index], [field]: value };
-        
-        if (newPeriods[index].start_date && newPeriods[index].end_date) {
-            newPeriods[index].days = calculateDays(newPeriods[index].start_date!, newPeriods[index].end_date!);
-        }
-        
-        setPeriods(newPeriods);
+        setPeriods(prev => {
+            const newPeriods = [...prev];
+            newPeriods[index] = { ...newPeriods[index], [field]: value };
+            if (newPeriods[index].start_date && newPeriods[index].end_date) {
+                // Só calcula dias se as datas não estiverem mascaradas no estado (YYYY-MM-DD vs DD/MM/AAAA)
+                if (!newPeriods[index].start_date?.includes('/') && !newPeriods[index].end_date?.includes('/')) {
+                    newPeriods[index].days = calculateDays(newPeriods[index].start_date!, newPeriods[index].end_date!);
+                }
+            }
+            return newPeriods;
+        });
         setError('');
     };
 
@@ -106,18 +109,36 @@ const VacationPortal: FC<VacationPortalProps> = ({ isDarkMode = false, onBack })
                     status: 'PLANEJADO',
                     installment_model: selectedModel
                 })
-                .select()
+                .select('id')
                 .single();
 
             if (vError) throw vError;
+            if (!vacation) throw new Error('Não foi possível gerar o ID do planejamento.');
 
-            // 2. Insert Periods
-            const periodsToInsert = periods.map(p => ({
-                ...p,
-                vacation_id: vacation.id
-            }));
+            // 2. Insert Periods with sanitized data
+            const sanitizedPeriods = periods.map(p => {
+                let start = p.start_date || '';
+                let end = p.end_date || '';
+                
+                if (start.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+                    const [d, m, y] = start.split('/');
+                    start = `${y}-${m}-${d}`;
+                }
+                if (end.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+                    const [d, m, y] = end.split('/');
+                    end = `${y}-${m}-${d}`;
+                }
 
-            const { error: pError } = await supabase.from('vacation_periods').insert(periodsToInsert);
+                return {
+                    vacation_id: vacation.id,
+                    start_date: start,
+                    end_date: end,
+                    days: calculateDays(start, end),
+                    parcel_number: p.parcel_number
+                };
+            });
+
+            const { error: pError } = await supabase.from('vacation_periods').insert(sanitizedPeriods);
             if (pError) throw pError;
 
             setStep('success');
@@ -238,24 +259,70 @@ const VacationPortal: FC<VacationPortalProps> = ({ isDarkMode = false, onBack })
                                         <span className={`text-[10px] font-black uppercase tracking-widest ${dk ? 'text-blue-400' : 'text-blue-600'}`}>Parcela {idx + 1}</span>
                                         <span className="text-[10px] font-black text-slate-400 uppercase">{p.days || 0} Dias</span>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1">
-                                            <p className="text-[9px] font-black text-slate-500 uppercase ml-1">Início</p>
-                                            <input 
-                                                type="date" 
-                                                value={p.start_date}
-                                                onChange={e => handleDateChange(idx, 'start_date', e.target.value)}
-                                                className={`w-full px-3 py-2.5 rounded-xl border text-xs font-bold outline-none ${dk ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-100'}`}
-                                            />
+                                            <p className="text-[9px] font-black text-slate-500 uppercase ml-1">Início (DD/MM/AAAA)</p>
+                                            <div className="relative group/date">
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="DD/MM/AAAA"
+                                                    value={p.start_date ? p.start_date.split('-').reverse().join('/') : ''}
+                                                    onChange={e => {
+                                                        let val = e.target.value.replace(/\D/g, '');
+                                                        if (val.length > 8) val = val.slice(0, 8);
+                                                        let masked = val;
+                                                        if (val.length > 2) masked = val.slice(0, 2) + '/' + val.slice(2);
+                                                        if (val.length > 4) masked = masked.slice(0, 5) + '/' + masked.slice(5);
+                                                        
+                                                        if (val.length === 8) {
+                                                            const iso = `${val.slice(4, 8)}-${val.slice(2, 4)}-${val.slice(0, 2)}`;
+                                                            handleDateChange(idx, 'start_date', iso);
+                                                        } else {
+                                                            setPeriods(prev => {
+                                                                const newPeriods = [...prev];
+                                                                newPeriods[idx] = { ...newPeriods[idx], start_date: masked };
+                                                                return newPeriods;
+                                                            });
+                                                        }
+                                                    }}
+                                                    className={`w-full px-4 py-3 rounded-xl border text-xs font-black outline-none transition-all ${dk ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                                                />
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                    <Calendar className="w-4 h-4 text-blue-500" />
+                                                </div>
+                                            </div>
                                         </div>
                                         <div className="space-y-1">
-                                            <p className="text-[9px] font-black text-slate-500 uppercase ml-1">Término</p>
-                                            <input 
-                                                type="date" 
-                                                value={p.end_date}
-                                                onChange={e => handleDateChange(idx, 'end_date', e.target.value)}
-                                                className={`w-full px-3 py-2.5 rounded-xl border text-xs font-bold outline-none ${dk ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-100'}`}
-                                            />
+                                            <p className="text-[9px] font-black text-slate-500 uppercase ml-1">Término (DD/MM/AAAA)</p>
+                                            <div className="relative group/date">
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="DD/MM/AAAA"
+                                                    value={p.end_date ? p.end_date.split('-').reverse().join('/') : ''}
+                                                    onChange={e => {
+                                                        let val = e.target.value.replace(/\D/g, '');
+                                                        if (val.length > 8) val = val.slice(0, 8);
+                                                        let masked = val;
+                                                        if (val.length > 2) masked = val.slice(0, 2) + '/' + val.slice(2);
+                                                        if (val.length > 4) masked = masked.slice(0, 5) + '/' + masked.slice(5);
+                                                        
+                                                        if (val.length === 8) {
+                                                            const iso = `${val.slice(4, 8)}-${val.slice(2, 4)}-${val.slice(0, 2)}`;
+                                                            handleDateChange(idx, 'end_date', iso);
+                                                        } else {
+                                                            setPeriods(prev => {
+                                                                const newPeriods = [...prev];
+                                                                newPeriods[idx] = { ...newPeriods[idx], end_date: masked };
+                                                                return newPeriods;
+                                                            });
+                                                        }
+                                                    }}
+                                                    className={`w-full px-4 py-3 rounded-xl border text-xs font-black outline-none transition-all ${dk ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+                                                />
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                    <Calendar className="w-4 h-4 text-blue-500" />
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
