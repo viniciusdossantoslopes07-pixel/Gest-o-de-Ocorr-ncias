@@ -637,7 +637,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     <div className="flex items-center gap-3">
                         <div className="w-1.5 h-8 bg-blue-600 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.5)]" />
                         <div>
-                            <h3 className={`text-md font-black uppercase tracking-[0.2em] ${textPrimary}`}>Monitor de Situação Tática</h3>
+                            <h3 className={`text-md font-black uppercase tracking-[0.2em] ${textPrimary}`}>Monitor de Situação</h3>
                             <p className={`text-[10px] font-bold ${textSecondary}`}>Monitoramento granular de situações individuais</p>
                         </div>
                     </div>
