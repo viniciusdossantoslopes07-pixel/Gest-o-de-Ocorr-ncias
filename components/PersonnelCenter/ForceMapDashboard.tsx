@@ -23,7 +23,7 @@ const PRACAS = ['S2', 'S1', 'CB'];
 
 // Status grouping for manager view
 const STATUS_GROUPS = {
-    PRESENTES: { codes: ['P', 'INST'], label: 'Presentes', color: 'emerald', icon: CheckCircle },
+    PRESENTES: { codes: ['P'], label: 'Presentes', color: 'emerald', icon: CheckCircle },
     FALTAS: { codes: ['F', 'A'], label: 'Faltas', color: 'red', icon: ShieldAlert },
     MISSAO: { codes: ['MIS'], label: 'Em Missão', color: 'indigo', icon: ExternalLink },
     SERVICO: { codes: ['ESV', 'DSV', 'SSV'], label: 'Serviço', color: 'blue', icon: Shield },
@@ -245,7 +245,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         currentWeekRange.forEach(date => {
             const dailyMap = getRecordsForDate(date);
             if (dailyMap.size > 0) {
-                const presentInDay = Array.from(dailyMap.values()).filter(r => ['P', 'INST'].includes(r.status)).length;
+                const presentInDay = Array.from(dailyMap.values()).filter(r => r.status === 'P').length;
                 const pct = relevantUsers.length > 0 ? (presentInDay / relevantUsers.length) * 100 : 0;
                 dailyPercentages.push(pct);
             }
@@ -262,7 +262,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         previousWeekRange.forEach(date => {
             const dailyMap = getRecordsForDate(date);
             if (dailyMap.size > 0) {
-                const presentInDay = Array.from(dailyMap.values()).filter(r => ['P', 'INST'].includes(r.status)).length;
+                const presentInDay = Array.from(dailyMap.values()).filter(r => r.status === 'P').length;
                 const pct = relevantUsers.length > 0 ? (presentInDay / relevantUsers.length) * 100 : 0;
                 dailyPercentages.push(pct);
             }
@@ -283,8 +283,8 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return records.filter(r => codes.includes(r.status)).length;
     };
 
-    const presentCount = getCount(allRecords, ['P', 'INST']);
-    const prevPresentCount = getCount(prevRecords, ['P', 'INST']);
+    const presentCount = getCount(allRecords, ['P']);
+    const prevPresentCount = getCount(prevRecords, ['P']);
 
     // Signed sectors
     const signedSectors = useMemo(() => {
@@ -304,7 +304,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return relevantUsers.filter(u => {
             if (!signedSectors.has(u.sector)) return false;
             const record = currentRecordsMap.get(u.id);
-            return !record || !['P', 'INST'].includes(record.status);
+            return !record || record.status !== 'P';
         }).length;
     }, [relevantUsers, signedSectors, currentRecordsMap]);
 
@@ -337,7 +337,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 if (!signedSectors.has(u.sector)) return false;
 
                 const record = currentRecordsMap.get(u.id);
-                return !record || !['P', 'INST'].includes(record.status);
+                return !record || record.status !== 'P';
             })
             .map(u => {
                 const record = currentRecordsMap.get(u.id);
@@ -360,17 +360,17 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
             const sectorUsers = users.filter(u => u.sector === sector && u.active !== false && u.is_functional !== true);
             const total = sectorUsers.length;
             const sectorRecords = Array.from(currentRecordsMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
-            const ready = sectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
+            const ready = sectorRecords.filter(r => r.status === 'P').length;
             const pct = total > 0 ? (ready / total) * 100 : 0;
             
             const prevSectorRecords = Array.from(previousRecordsMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
-            const prevReadyCount = prevSectorRecords.filter(r => ['P', 'INST'].includes(r.status)).length;
+            const prevReadyCount = prevSectorRecords.filter(r => r.status === 'P').length;
             const prevPct = total > 0 ? (prevReadyCount / total) * 100 : 0;
 
             const absentDetails = sectorUsers
                 .filter(u => {
                     const r = currentRecordsMap.get(u.id);
-                    return r && !['P', 'INST'].includes(r.status);
+                    return r && !r.status === 'P';
                 })
                 .map(u => ({
                     user: u,
