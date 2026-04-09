@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FC, useMemo } from 'react';
-import { Calendar, ChevronLeft, ChevronRight, Filter, Search, User as UserIcon, Clock, CheckCircle2, AlertCircle, Plus, CalendarDays, MoreHorizontal, Edit3, Trash2, Download } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, Filter, Search, User as UserIcon, Clock, CircleCheck, CircleAlert, Plus, CalendarDays, MoreHorizontal, Pencil, Trash2, Download } from 'lucide-react';
 import { supabase } from '../../services/supabase';
 import { User, Vacation, VacationStatus, VacationPeriod, InstallmentModel } from '../../types';
 import { hasPermission, PERMISSIONS } from '../../constants/permissions';
@@ -198,7 +198,7 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                 <div className={`p-6 rounded-[2rem] border shadow-sm ${dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-200'}`}>
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-emerald-500 rounded-2xl text-white">
-                            <CheckCircle2 className="w-5 h-5" />
+                            <CircleCheck className="w-5 h-5" />
                         </div>
                         <div>
                             <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Férias Homologadas</p>

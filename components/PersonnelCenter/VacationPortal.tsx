@@ -1,7 +1,7 @@
 import React, { useState, FC } from 'react';
 import { supabase } from '../../services/supabase';
 import { User, Vacation, VacationStatus, VacationPeriod, InstallmentModel } from '../../types';
-import { ShieldCheck, Calendar, Lock, ArrowRight, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { ShieldCheck, Calendar, Lock, ArrowRight, CircleCheck, CircleAlert, Loader2 } from 'lucide-react';
 import { calculateDays, validateVacationParcels, hasOverlap } from '../../utils/vacationValidation';
 
 interface VacationPortalProps {
@@ -180,7 +180,7 @@ const VacationPortal: FC<VacationPortalProps> = ({ isDarkMode = false, onBack })
 
                             {error && (
                                 <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-red-500 text-xs font-bold">
-                                    <AlertCircle className="w-4 h-4 shrink-0" /> {error}
+                                    <CircleAlert className="w-4 h-4 shrink-0" /> {error}
                                 </div>
                             )}
 
@@ -264,7 +264,7 @@ const VacationPortal: FC<VacationPortalProps> = ({ isDarkMode = false, onBack })
 
                         {error && (
                             <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-red-500 text-xs font-bold">
-                                <AlertCircle className="w-4 h-4 shrink-0" /> {error}
+                                <CircleAlert className="w-4 h-4 shrink-0" /> {error}
                             </div>
                         )}
 
@@ -273,7 +273,7 @@ const VacationPortal: FC<VacationPortalProps> = ({ isDarkMode = false, onBack })
                             disabled={loading || periods.some(p => !p.start_date || !p.end_date)}
                             className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
                         >
-                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Finalizar Planejamento <CheckCircle2 className="w-4 h-4" /></>}
+                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Finalizar Planejamento <CircleCheck className="w-4 h-4" /></>}
                         </button>
                     </div>
                 )}
@@ -281,7 +281,7 @@ const VacationPortal: FC<VacationPortalProps> = ({ isDarkMode = false, onBack })
                 {step === 'success' && (
                     <div className="text-center space-y-8 animate-in zoom-in duration-500">
                         <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/40">
-                            <CheckCircle2 className="w-10 h-10 text-white" />
+                            <CircleCheck className="w-10 h-10 text-white" />
                         </div>
                         <div>
                             <h2 className={`text-2xl font-black tracking-tight ${dk ? 'text-white' : 'text-slate-900'}`}>Sucesso!</h2>

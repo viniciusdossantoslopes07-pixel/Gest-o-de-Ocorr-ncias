@@ -2,7 +2,7 @@ import React, { useState, FC } from 'react';
 import { User, UserRole } from '../../types';
 import { RANKS, getRankPriority } from '../../constants';
 import { useSectors } from '../../contexts/SectorsContext';
-import { UserPlus, Search, Edit2, Trash2, Shield, User as UserIcon, Hash, Building2, Users, AlertTriangle, XCircle, Briefcase, BarChart3, ChevronDown, ChevronUp } from 'lucide-react';
+import { UserPlus, Search, Pencil, Trash2, Shield, User as UserIcon, Hash, Building2, Users, TriangleAlert, CircleX, Briefcase, ChartNoAxesColumn, ChevronDown, ChevronUp } from 'lucide-react';
 import UserStatistics from './UserStatistics';
 
 interface PersonnelManagementProps {
@@ -223,7 +223,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                 onClick={() => setShowStatistics(!showStatistics)}
                                 className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all shadow-sm ${showStatistics ? (isDarkMode ? 'bg-indigo-600 text-white shadow-indigo-900/30' : 'bg-indigo-100 text-indigo-700 border-indigo-200 border') : (isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50')}`}
                             >
-                                <BarChart3 className="w-4 h-4" />
+                                <ChartNoAxesColumn className="w-4 h-4" />
                                 {showStatistics ? 'Ocultar Estatísticas' : 'Painel Analítico Completo'}
                                 {showStatistics ? <ChevronUp className="w-4 h-4 opacity-50" /> : <ChevronDown className="w-4 h-4 opacity-50" />}
                             </button>
@@ -284,7 +284,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                         : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700 shadow-sm')
                         }`}
                 >
-                    <XCircle className="w-4 h-4" />
+                    <CircleX className="w-4 h-4" />
                     {showInactive ? 'Visualizando Desativados' : 'Ver Militares Desativados'}
                 </button>
             </div>
@@ -293,7 +293,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                 /* Registration Form */
                 <div className={`rounded-[2rem] p-8 border shadow-sm animate-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                     <h3 className={`text-lg font-bold mb-6 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                        {editingId ? <Edit2 className="w-5 h-5 text-indigo-400" /> : <UserPlus className="w-5 h-5 text-indigo-400" />}
+                        {editingId ? <Pencil className="w-5 h-5 text-indigo-400" /> : <UserPlus className="w-5 h-5 text-indigo-400" />}
                         {editingId ? 'Editar Dados do Militar' : 'Novo Cadastro Militar'}
                     </h3>
 
@@ -607,7 +607,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                                     </button>
                                                 ) : (
                                                     <button onClick={() => handleEdit(user)} className={`p-2 transition-colors ${isDarkMode ? 'text-slate-500 hover:text-indigo-400' : 'text-slate-400 hover:text-blue-600'}`}>
-                                                        <Edit2 className="w-4 h-4" />
+                                                        <Pencil className="w-4 h-4" />
                                                     </button>
                                                 )}
 
@@ -623,7 +623,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
 
                                                 {user.active !== false ? (
                                                     <button onClick={() => { if (confirm('Desativar militar do sistema?')) onDeletePersonnel(user.id); }} className={`p-2 transition-colors ${isDarkMode ? 'text-slate-500 hover:text-amber-400' : 'text-slate-400 hover:text-amber-500'}`} title="Desativar (Soft Delete)">
-                                                        <XCircle className="w-4 h-4" />
+                                                        <CircleX className="w-4 h-4" />
                                                     </button>
                                                 ) : null}
                                                 {currentUserRole === UserRole.ADMIN && onPermanentDeletePersonnel && (
@@ -692,7 +692,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                                 className={`flex-1 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm animate-pulse border ${isDarkMode ? 'bg-red-400/10 border-red-400/20 text-red-400 active:bg-red-400/20' : 'bg-red-50 border-red-100 text-red-600 active:bg-red-100'
                                                     }`}
                                             >
-                                                <AlertTriangle className="w-4 h-4" /> Atribuir Setor
+                                                <TriangleAlert className="w-4 h-4" /> Atribuir Setor
                                             </button>
                                         ) : (
                                             <button
@@ -700,7 +700,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                                 className={`flex-1 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 active:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 active:bg-slate-50'
                                                     }`}
                                             >
-                                                <Edit2 className="w-4 h-4 text-blue-500" /> Editar Dados
+                                                <Pencil className="w-4 h-4 text-blue-500" /> Editar Dados
                                             </button>
                                         )
                                     )}
@@ -718,7 +718,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                                 className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-amber-400/5 border-amber-400/10 text-amber-400 active:bg-amber-400/10' : 'bg-amber-50/30 border-amber-100 text-amber-500 active:bg-amber-50'
                                                     }`}
                                             >
-                                                <XCircle className="w-4 h-4" />
+                                                <CircleX className="w-4 h-4" />
                                             </button>
                                         </>
                                     ) : null}

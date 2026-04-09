@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { User, DailyAttendance } from '../../types';
 import { useSectors } from '../../contexts/SectorsContext';
-import { BarChart3, Users, Shield, Building2, TrendingUp, Award } from 'lucide-react';
+import { ChartNoAxesColumn, Users, Shield, Building2, TrendingUp, Award } from 'lucide-react';
 import { RANKS } from '../../constants';
 
 interface UserStatisticsProps {
@@ -308,7 +308,7 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-xl ${isDarkMode ? 'bg-violet-500/20 text-violet-400' : 'bg-violet-50 text-violet-600'}`}>
-                            <BarChart3 className="w-4 h-4" />
+                            <ChartNoAxesColumn className="w-4 h-4" />
                         </div>
                         <div>
                             <h3 className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Distribuição Individual por Posto</h3>

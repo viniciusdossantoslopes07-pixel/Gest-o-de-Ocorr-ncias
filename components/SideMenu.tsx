@@ -5,7 +5,8 @@ import {
     Home, PlusCircle, ShieldCheck, ShieldAlert, Package,
     LayoutDashboard, FileText, LogOut, ChevronLeft, ChevronRight,
     User as UserIcon, Settings, HelpCircle, Moon, Sun, Lock, Siren, BarChart3,
-    ChevronUp, ChevronDown, Check, Settings2, DoorOpen, Car, MapPin, CalendarDays, Volume2
+    ChevronUp, ChevronDown, Check, Settings2, DoorOpen, Car, MapPin, CalendarDays, Volume2,
+    Calendar, TrendingUp, Shield
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { USER_FUNCTIONS, PERMISSIONS, hasPermission } from '../constants/permissions';
