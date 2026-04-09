@@ -26,6 +26,8 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [activeTab, setActiveTab] = useState<'timeline' | 'stats'>('timeline');
     const [activeUnit, setActiveUnit] = useState<'TODAS' | 'GSD-SP' | 'BASP'>('TODAS');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
     const { sectors } = useSectors();
     
     // Edit/Add Modal State

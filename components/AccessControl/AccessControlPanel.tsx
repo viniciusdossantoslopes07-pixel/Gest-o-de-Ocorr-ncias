@@ -575,7 +575,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
             {activeTab === 'registrar' && (
                 <div className="space-y-4 animate-fade-in">
                     {/* 1. Registration Card */}
-                    <div className={`glass-panel border-t-4 ${selectedGate === 'PORTÃO G1' ? 'border-t-blue-500' :
+                    <div className={`glass-panel border-t-4 relative z-20 ${selectedGate === 'PORTÃO G1' ? 'border-t-blue-500' :
                         selectedGate === 'PORTÃO G2' ? 'border-t-emerald-500' :
                         selectedGate === 'PORTÃO G3' ? 'border-t-amber-500' : 'border-t-slate-300'
                         }`}>
@@ -778,7 +778,14 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                             {/* Submit Button */}
                             <button
                                 onClick={handleSubmit}
-                                disabled={submitting || !name.trim() || !selectedGate || !accessCategory || !accessMode}
+                                disabled={
+                                    submitting || 
+                                    !name.trim() || 
+                                    !selectedGate || 
+                                    !accessCategory || 
+                                    !accessMode ||
+                                    (accessCategory === 'Entrada' && (characteristic === 'PRESTADOR' || characteristic === 'ENTREGADOR') && !authorizer.trim())
+                                }
                                 className={`w-full py-3.5 rounded-xl font-black uppercase text-sm tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg border-b-4 active:border-b-0 active:translate-y-1 ${accessCategory === 'Entrada'
                                     ? 'bg-emerald-500 text-white border-emerald-700 hover:bg-emerald-600'
                                     : accessCategory === 'Saída' ? 'bg-red-500 text-white border-red-700 hover:bg-red-600'
