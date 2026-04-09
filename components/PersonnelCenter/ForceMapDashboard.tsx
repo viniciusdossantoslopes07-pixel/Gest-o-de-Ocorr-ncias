@@ -94,6 +94,59 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return days;
     }, [selectedDate]);
 
+    // Get unique weeks from history
+    const availableWeeks = useMemo(() => {
+        const weeksMap = new Map<string, string>();
+
+        // Helper to get Monday of a date string
+        const getMonday = (dateStr: string) => {
+            const d = new Date(dateStr + 'T12:00:00');
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(d.setDate(diff));
+            return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+        };
+
+        // Current week Monday
+        const today = new Date();
+        const thisMonday = getMonday(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
+
+        // Extract weeks from attendance records
+        attendanceHistory.forEach(att => {
+            const monday = getMonday(att.date);
+            if (!weeksMap.has(monday)) {
+                const mon = new Date(monday + 'T12:00:00');
+                const fri = new Date(mon);
+                fri.setDate(mon.getDate() + 4);
+
+                const label = `${mon.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} — ${fri.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`;
+                weeksMap.set(monday, label);
+            }
+        });
+
+        // Ensure this week is in the list
+        if (!weeksMap.has(thisMonday)) {
+            const mon = new Date(thisMonday + 'T12:00:00');
+            const fri = new Date(mon);
+            fri.setDate(mon.getDate() + 4);
+            const label = `${mon.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} — ${fri.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`;
+            weeksMap.set(thisMonday, label);
+        }
+
+        return Array.from(weeksMap.entries())
+            .map(([value, label]) => ({ label: `Semana ${label}`, value }))
+            .sort((a, b) => b.value.localeCompare(a.value));
+    }, [attendanceHistory]);
+
+    // Monday of the week for the selected date
+    const selectedWeekMonday = useMemo(() => {
+        const d = new Date(selectedDate + 'T12:00:00');
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(d.setDate(diff));
+        return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+    }, [selectedDate]);
+
     // Filter users by rank
     const filterUsersByRank = (userList: User[]) => {
         if (rankFilter === 'TODOS') return userList;
@@ -431,16 +484,29 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                         <button onClick={() => setViewMode('WEEKLY')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${viewMode === 'WEEKLY' ? filterBtnActive : filterBtnInactive}`}>Semanal</button>
                     </div>
 
-                    <div className={`flex items-center gap-2 p-1.5 rounded-2xl bg-slate-500/5 border border-slate-500/10`}>
-                        <Clock className={`w-3.5 h-3.5 ml-2 ${textMuted}`} />
-                        <input
-                            type="date"
-                            value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                            className={`bg-transparent border-none text-[10px] font-black uppercase focus:ring-0 cursor-pointer ${inputBg}`}
-                            style={{ colorScheme: dk ? 'dark' : 'light' }}
-                        />
-                    </div>
+                    {viewMode === 'DAILY' ? (
+                        <div className={`flex items-center gap-2 p-1.5 rounded-2xl bg-slate-500/5 border border-slate-500/10`}>
+                            <Clock className={`w-3.5 h-3.5 ml-2 ${textMuted}`} />
+                            <input
+                                type="date"
+                                value={selectedDate}
+                                onChange={(e) => setSelectedDate(e.target.value)}
+                                className={`bg-transparent border-none text-[10px] font-black uppercase focus:ring-0 cursor-pointer ${inputBg}`}
+                                style={{ colorScheme: dk ? 'dark' : 'light' }}
+                            />
+                        </div>
+                    ) : (
+                        <div className="min-w-[180px]">
+                            <FilterSelect
+                                icon={Filter}
+                                placeholder="Selecionar Semana"
+                                value={selectedWeekMonday}
+                                onChange={setSelectedDate}
+                                isDarkMode={dk}
+                                options={availableWeeks}
+                            />
+                        </div>
+                    )}
 
                     <div className="min-w-[160px]">
                         <FilterSelect
