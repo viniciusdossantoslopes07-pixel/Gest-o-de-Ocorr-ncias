@@ -136,27 +136,24 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
 
             // 3. Insert Periods with sanitized data
             const periodsToInsert = periods.map(p => {
-                // Ensure dates are ISO YYYY-MM-DD
                 let start = p.start_date || '';
                 let end = p.end_date || '';
                 
-                if (start.includes('/')) {
-                    const parts = start.split('/');
-                    if (parts.length === 3) start = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                // Converter DD/MM/AAAA -> YYYY-MM-DD se necessário
+                if (start.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+                    const [d, m, y] = start.split('/');
+                    start = `${y}-${m}-${d}`;
                 }
-                if (end.includes('/')) {
-                    const parts = end.split('/');
-                    if (parts.length === 3) end = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                if (end.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+                    const [d, m, y] = end.split('/');
+                    end = `${y}-${m}-${d}`;
                 }
-
-                // Recalculate days just in case
-                const days = calculateDays(start, end);
 
                 return {
-                    vacation_id: vacationId!,
+                    vacation_id: vacationId as string,
                     start_date: start,
                     end_date: end,
-                    days: days,
+                    days: calculateDays(start, end),
                     parcel_number: p.parcel_number
                 };
             });
@@ -164,11 +161,14 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
             const { error: pError } = await supabase.from('vacation_periods').insert(periodsToInsert);
             if (pError) throw pError;
 
+            // Fechamento imediato com sucesso
             onSuccess();
             onClose();
+            
+            // Feedback visual opcional (pode ser emitido pelo parent)
         } catch (err: any) {
-            console.error(err);
-            setError(`Erro ao salvar: ${err.message || 'Erro interno'}`);
+            console.error('Erro detalhado no salvamento:', err);
+            setError(`Falha ao salvar: ${err.message || 'Verifique sua conexão ou permissões.'}`);
         } finally {
             setIsSaving(false);
         }
