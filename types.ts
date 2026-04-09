@@ -282,7 +282,7 @@ export interface AbsenceJustification {
   timestamp: string;
   sector: string;
   callType: string;
-  date?: string;
+  date: string;
 }
 
 export interface EventGuest {

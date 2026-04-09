@@ -24,7 +24,9 @@ const MONTHS = [
 const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMode = false, users }) => {
     const [vacations, setVacations] = useState<Vacation[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const currentYear = new Date().getFullYear();
+    const [selectedYear, setSelectedYear] = useState(currentYear);
+    const years = [currentYear - 1, currentYear, currentYear + 1, currentYear + 2];
     const [activeTab, setActiveTab] = useState<'timeline' | 'stats'>('timeline');
     const [activeUnit, setActiveUnit] = useState<'TODAS' | 'GSD-SP' | 'BASP'>('TODAS');
     const [activeCategory, setActiveCategory] = useState<'TODOS' | 'OFICIAIS' | 'GRADUADOS' | 'PRAÇAS'>('TODOS');
