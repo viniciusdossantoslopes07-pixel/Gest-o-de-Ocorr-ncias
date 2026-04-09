@@ -26,6 +26,7 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [activeTab, setActiveTab] = useState<'timeline' | 'stats'>('timeline');
     const [activeUnit, setActiveUnit] = useState<'TODAS' | 'GSD-SP' | 'BASP'>('TODAS');
+    const [activeCategory, setActiveCategory] = useState<'TODOS' | 'OFICIAIS' | 'GRADUADOS' | 'PRAÇAS'>('TODOS');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
     const { sectors } = useSectors();
@@ -76,6 +77,18 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                 return true;
             })
             .filter(u => {
+                // Category Filter
+                if (activeCategory === 'TODOS') return true;
+                
+                const ranks = {
+                    OFICIAIS: ['TB', 'MB', 'BR', 'CEL', 'TEN CEL', 'MAJ', 'CAP', '1T', '2T', 'ASP'],
+                    GRADUADOS: ['SO', '1S', '2S', '3S'],
+                    PRAÇAS: ['CB', 'S1', 'S2']
+                };
+
+                return ranks[activeCategory as keyof typeof ranks].includes(u.rank);
+            })
+            .filter(u => {
                 const searchLower = searchTerm.toLowerCase();
                 return u.name.toLowerCase().includes(searchLower) || 
                        u.warName?.toLowerCase().includes(searchLower) ||
@@ -88,7 +101,7 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                 if (a.warName && b.warName) return a.warName.localeCompare(b.warName);
                 return a.name.localeCompare(b.name);
             });
-    }, [users, searchTerm, activeUnit, sectors]);
+    }, [users, searchTerm, activeUnit, activeCategory, sectors]);
 
     const filteredVacations = useMemo(() => {
         if (selectedStatus === 'ALL') return vacations;
@@ -288,6 +301,19 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                                 </button>
                             ))}
                         </div>
+
+                        <div className="flex items-center gap-2 ml-2 border-l border-slate-200 dark:border-slate-700 pl-4">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Círculo:</span>
+                            {(['TODOS', 'OFICIAIS', 'GRADUADOS', 'PRAÇAS'] as const).map(c => (
+                                <button
+                                    key={c}
+                                    onClick={() => setActiveCategory(c)}
+                                    className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${activeCategory === c ? 'bg-blue-600 text-white border-blue-600' : 'bg-transparent border-slate-200 dark:border-slate-700 text-slate-500 dark:hover:border-slate-600'}`}
+                                >
+                                    {c}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                     
                     <div className="flex items-center gap-3">
@@ -301,7 +327,13 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                             <option value="HOMOLOGADO">HOMOLOGADO</option>
                             <option value="EM_FRUIÇÃO">EM FRUIÇÃO</option>
                         </select>
-                        <button className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95">
+                        <button 
+                            onClick={() => {
+                                setEditingVacation(null);
+                                setIsModalOpen(true);
+                            }}
+                            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+                        >
                             <Plus className="w-4 h-4" /> Novo Lançamento
                         </button>
                     </div>
