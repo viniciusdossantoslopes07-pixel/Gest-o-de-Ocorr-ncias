@@ -5,9 +5,10 @@ import {
   Menu,
   ShieldAlert,
   Search,
-  Loader2
+  Loader2,
+  Calendar
 } from 'lucide-react';
-import { Occurrence, User, UserRole, Status, Urgency, MissionOrder, Mission, DailyAttendance, AbsenceJustification, UserFunction } from './types';
+import { Occurrence, User, UserRole, Status, Urgency, MissionOrder, Mission, DailyAttendance, AbsenceJustification, UserFunction, Vacation } from './types';
 import PublicEventsModal from './components/AccessControl/Events/PublicEventsModal';
 import { USER_FUNCTIONS, PERMISSIONS, hasPermission } from './constants/permissions';
 import { formatViaturas } from './utils/formatters';
@@ -55,6 +56,9 @@ const SuggestionsModal = lazy(() => import('./components/SuggestionsModal'));
 const GuestRegistrationView = lazy(() => import('./components/AccessControl/Events/GuestRegistrationView'));
 const UserEventControl = lazy(() => import('./components/AccessControl/Events/UserEventControl'));
 const EmergencyLogs = lazy(() => import('./components/EmergencyLogs'));
+const VacationManagement = lazy(() => import('./components/PersonnelCenter/VacationManagement'));
+const VacationStats = lazy(() => import('./components/PersonnelCenter/VacationStats'));
+const VacationPortal = lazy(() => import('./components/PersonnelCenter/VacationPortal'));
 
 // Fallback de carregamento para Suspense
 const LazyFallback = () => (
@@ -105,8 +109,10 @@ const App: FC = () => {
     return null;
   });
   const [users, setUsers] = useState<User[]>([]);
+  const [vacations, setVacations] = useState<Vacation[]>([]);
   // Added 'settings' to activeTab type
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'vacation-management' | 'vacation-stats' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs'>('home');
+  const [showVacationPortal, setShowVacationPortal] = useState(false);
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [attendanceHistory, setAttendanceHistory] = useState<DailyAttendance[]>([]);
   const [absenceJustifications, setAbsenceJustifications] = useState<AbsenceJustification[]>([]);
@@ -183,9 +189,18 @@ const App: FC = () => {
         hasPermission(currentUser, PERMISSIONS.VIEW_PERSONNEL) ||
         hasPermission(currentUser, PERMISSIONS.VIEW_DAILY_ATTENDANCE)) {
         fetchUsers();
+        fetchVacations();
       }
     }
   }, [currentUser]);
+
+  const fetchVacations = async () => {
+    const { data, error } = await supabase
+      .from('vacations')
+      .select('*, periods:vacation_periods(*)');
+    if (data) setVacations(data as Vacation[]);
+    if (error) console.error('Error fetching vacations:', error);
+  };
 
   // Theme Persistence & Class Toggling
   useEffect(() => {
@@ -1145,8 +1160,16 @@ const App: FC = () => {
   }
 
   if (!currentUser) {
+    if (showVacationPortal) {
+      return (
+        <Suspense fallback={<LazyFallback />}>
+          <VacationPortal isDarkMode={isDarkMode} onBack={() => setShowVacationPortal(false)} />
+        </Suspense>
+      );
+    }
+
     return (
-      <>
+      <div className={isDarkMode ? 'dark' : ''}>
         <LoginView
           onLogin={handleLogin}
           onRegister={handleRegister}
@@ -1156,8 +1179,16 @@ const App: FC = () => {
           onForcePasswordReset={handleForcePasswordReset}
           isDarkMode={isDarkMode}
         />
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
+          <button 
+            onClick={() => setShowVacationPortal(true)}
+            className={`px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-2xl border-2 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 ${isDarkMode ? 'bg-slate-900 border-slate-800 text-blue-400 hover:bg-slate-800' : 'bg-white border-blue-100 text-blue-600 hover:bg-slate-50'}`}
+          >
+            <Calendar className="w-4 h-4" /> Planejamento de Férias {new Date().getFullYear() + 1}
+          </button>
+        </div>
         {showPublicEvents && <PublicEventsModal onClose={() => setShowPublicEvents(false)} isDarkMode={isDarkMode} />}
-      </>
+      </div>
     );
   }
 
@@ -1198,7 +1229,9 @@ const App: FC = () => {
                                       activeTab === 'access-statistics' ? 'Estatísticas de Acesso' :
                                         activeTab === 'parking-request' ? 'Solicitação Estacionamento' :
                                           activeTab === 'events' ? 'Eventos Programados' :
-                                            activeTab === 'settings' ? 'Minhas Configurações' : 'Arquivo Digital'}
+                                            activeTab === 'vacation-management' ? 'Gestão de Férias' :
+                                              activeTab === 'vacation-stats' ? 'Estatísticas de Férias' :
+                                                activeTab === 'settings' ? 'Minhas Configurações' : 'Arquivo Digital'}
               </h2>
             </div>
 
@@ -1301,6 +1334,26 @@ const App: FC = () => {
               currentUser={currentUser}
               isDarkMode={isDarkMode}
             />
+          )}
+
+          {activeTab === 'personnel-management' && canManagePersonnel && (
+            <PersonnelManagementView 
+              users={users} 
+              isDarkMode={isDarkMode} 
+              onAddPersonnel={handleCreateUser}
+              onUpdatePersonnel={handleUpdateUser}
+              onDeletePersonnel={handleDeleteUser}
+              onPermanentDeletePersonnel={handlePermanentDeleteUser}
+              currentUserRole={currentUser?.role}
+            />
+          )}
+
+          {activeTab === 'vacation-management' && canManagePersonnel && (
+            <VacationManagement currentUser={currentUser} isDarkMode={isDarkMode} users={users} />
+          )}
+
+          {activeTab === 'vacation-stats' && canManagePersonnel && (
+            <VacationStats isDarkMode={isDarkMode} users={users} vacations={vacations} />
           )}
 
           {activeTab === 'emergency-logs' && (

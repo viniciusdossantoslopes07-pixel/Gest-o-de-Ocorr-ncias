@@ -322,3 +322,32 @@ export interface EmergencyLog {
   created_at: string;
   details?: string;
 }
+
+export enum VacationStatus {
+  PLANEJADO = 'PLANEJADO',
+  HOMOLOGADO = 'HOMOLOGADO',
+  EM_FRUICAO = 'EM_FRUIÇÃO'
+}
+
+export type InstallmentModel = '30' | '15+15' | '20+10' | '10+20' | '10+10+10';
+
+export interface VacationPeriod {
+  id?: string;
+  vacation_id?: string;
+  start_date: string;
+  end_date: string;
+  days: number;
+  parcel_number: number;
+}
+
+export interface Vacation {
+  id: string;
+  militar_id: string;
+  year: number;
+  status: VacationStatus;
+  installment_model: InstallmentModel;
+  created_at?: string;
+  updated_at?: string;
+  periods?: VacationPeriod[];
+  user?: User; // Joined user data
+}
