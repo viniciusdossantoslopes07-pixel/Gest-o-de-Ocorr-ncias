@@ -398,10 +398,44 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 
         return RANKS.map(rank => ({
             rank,
-            total: stats[rank].total,
             present: stats[rank].present,
-            absent: stats[rank].total - stats[rank].present
+            total: stats[rank].total,
+            pct: stats[rank].total > 0 ? Math.round((stats[rank].present / stats[rank].total) * 100) : 0
         })).filter(r => r.total > 0);
+    }, [relevantUsers, currentRecordsMap]);
+
+    // Summary of readiness by category
+    const categoryReadiness = useMemo(() => {
+        const stats = {
+            OFICIAIS: { present: 0, total: 0 },
+            GRADUADOS: { present: 0, total: 0 },
+            PRACAS: { present: 0, total: 0 }
+        };
+
+        relevantUsers.forEach(u => {
+            const record = currentRecordsMap.get(u.id);
+            const isPresent = record && ['P', 'INST'].includes(record.status);
+
+            if (OFICIAIS.includes(u.rank)) {
+                stats.OFICIAIS.total++;
+                if (isPresent) stats.OFICIAIS.present++;
+            } else if (GRADUADOS.includes(u.rank)) {
+                stats.GRADUADOS.total++;
+                if (isPresent) stats.GRADUADOS.present++;
+            } else if (PRACAS.includes(u.rank)) {
+                stats.PRACAS.total++;
+                if (isPresent) stats.PRACAS.present++;
+            }
+        });
+
+        const getPct = (cat: keyof typeof stats) => 
+            stats[cat].total > 0 ? Math.round((stats[cat].present / stats[cat].total) * 100) : 0;
+
+        return {
+            OFICIAIS: getPct('OFICIAIS'),
+            GRADUADOS: getPct('GRADUADOS'),
+            PRACAS: getPct('PRACAS')
+        };
     }, [relevantUsers, currentRecordsMap]);
 
     // Delta indicator
@@ -569,21 +603,25 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-4 gap-2">
-                            {['OFICIAIS', 'GRADUADOS', 'PRACAS'].map(cat => (
-                                <div key={cat} className="flex flex-col">
+                        <div className="grid grid-cols-3 gap-2">
+                            {[
+                                { label: 'OFICIAIS', pct: categoryReadiness.OFICIAIS, color: 'bg-blue-500' },
+                                { label: 'GRADUADOS', pct: categoryReadiness.GRADUADOS, color: 'bg-blue-500' },
+                                { label: 'PRACAS', pct: categoryReadiness.PRACAS, color: 'bg-blue-500' }
+                            ].map(cat => (
+                                <div key={cat.label} className="flex flex-col">
                                     <div className={`h-1.5 rounded-full ${dk ? 'bg-slate-800' : 'bg-slate-100'} overflow-hidden`}>
-                                        <div className="h-full bg-blue-500" style={{ width: '70%' }}></div>
+                                        <div 
+                                            className={`h-full transition-all duration-1000 ease-out ${cat.color}`} 
+                                            style={{ width: `${cat.pct}%` }}
+                                        ></div>
                                     </div>
-                                    <span className={`text-[8px] font-black mt-1 ${textMuted} uppercase`}>{cat}</span>
+                                    <div className="flex justify-between items-center mt-1">
+                                        <span className={`text-[8px] font-black ${textMuted} uppercase`}>{cat.label}</span>
+                                        <span className={`text-[8px] font-black ${textMuted}`}>{cat.pct}%</span>
+                                    </div>
                                 </div>
                             ))}
-                            <div className="flex flex-col">
-                                <div className={`h-1.5 rounded-full ${dk ? 'bg-slate-800' : 'bg-slate-100'} overflow-hidden`}>
-                                    <div className="h-full bg-emerald-500" style={{ width: '90%' }}></div>
-                                </div>
-                                <span className={`text-[8px] font-black mt-1 ${textMuted} uppercase`}>ESTABILIDADE</span>
-                            </div>
                         </div>
                     </div>
                 </div>
