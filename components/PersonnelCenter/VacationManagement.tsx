@@ -7,6 +7,7 @@ import { RANKS } from '../../constants';
 import { calculateDays, validateVacationParcels } from '../../utils/vacationValidation';
 import { useSectors } from '../../contexts/SectorsContext';
 import VacationStats from './VacationStats';
+import VacationModal from './VacationModal';
 import { LayoutDashboard, TrendingUp } from 'lucide-react';
 
 interface VacationManagementProps {
@@ -356,6 +357,15 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                     />
                 )
             )}
+
+            <VacationModal 
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSuccess={fetchVacations}
+                users={users}
+                isDarkMode={dk}
+                initialData={editingVacation}
+            />
         </div>
     );
 };
