@@ -7,6 +7,7 @@ interface VacationStatsProps {
     isDarkMode?: boolean;
     users: User[];
     vacations: Vacation[];
+    selectedYear: number;
 }
 
 const CATEGORIES = {
@@ -18,7 +19,7 @@ const CATEGORIES = {
 
 const MONTHS_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
-const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vacations }) => {
+const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vacations, selectedYear }) => {
     const dk = isDarkMode;
 
     // Helper to categorize users
@@ -33,8 +34,8 @@ const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vaca
     // Calculate monthly absenteeism (Military in vacation periods)
     const absenteeismData = useMemo(() => {
         return MONTHS_LABELS.map((month, index) => {
-            const monthStart = new Date(new Date().getFullYear(), index, 1);
-            const monthEnd = new Date(new Date().getFullYear(), index + 1, 0);
+            const monthStart = new Date(selectedYear, index, 1);
+            const monthEnd = new Date(selectedYear, index + 1, 0);
             
             // Count unique users with periods overlapping this month
             const absentUsers = new Set();
@@ -53,13 +54,13 @@ const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vaca
                 ausentes: absentUsers.size
             };
         });
-    }, [vacations]);
+    }, [vacations, selectedYear]);
 
     // Calculate stacked bar data (Category x Month)
     const stackedBarData = useMemo(() => {
         return MONTHS_LABELS.map((month, index) => {
-            const monthStart = new Date(new Date().getFullYear(), index, 1);
-            const monthEnd = new Date(new Date().getFullYear(), index + 1, 0);
+            const monthStart = new Date(selectedYear, index, 1);
+            const monthEnd = new Date(selectedYear, index + 1, 0);
             
             const counts: any = {
                 name: month,
@@ -88,7 +89,7 @@ const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vaca
 
             return counts;
         });
-    }, [vacations, users]);
+    }, [vacations, users, selectedYear]);
 
     // KPIs
     const presentToday = users.length - (vacations.filter(v => v.status === 'EM_FRUIÇÃO').length);
@@ -99,8 +100,11 @@ const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vaca
         const results = [];
         for (let i = 0; i < 3; i++) {
             const monthIndex = (today.getMonth() + i) % 12;
-            const monthStart = new Date(today.getFullYear(), monthIndex, 1);
-            const monthEnd = new Date(today.getFullYear(), monthIndex + 1, 0);
+            const yearOffset = Math.floor((today.getMonth() + i) / 12);
+            const yearToUse = today.getFullYear() + yearOffset;
+            
+            const monthStart = new Date(yearToUse, monthIndex, 1);
+            const monthEnd = new Date(yearToUse, monthIndex + 1, 0);
             
             const absentCount = new Set();
             vacations.forEach(v => {

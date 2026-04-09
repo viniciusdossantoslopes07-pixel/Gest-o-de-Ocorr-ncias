@@ -5,6 +5,9 @@ import { User, Vacation, VacationStatus, VacationPeriod, InstallmentModel } from
 import { hasPermission, PERMISSIONS } from '../../constants/permissions';
 import { RANKS } from '../../constants';
 import { calculateDays, validateVacationParcels } from '../../utils/vacationValidation';
+import { useSectors } from '../../contexts/SectorsContext';
+import VacationStats from './VacationStats';
+import { LayoutDashboard, TrendingUp } from 'lucide-react';
 
 interface VacationManagementProps {
     currentUser: User | null;
@@ -21,9 +24,9 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
     const [vacations, setVacations] = useState<Vacation[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
-    const [viewMode, setViewMode] = useState<'timeline' | 'list'>('timeline');
+    const [activeTab, setActiveTab] = useState<'timeline' | 'stats'>('timeline');
+    const [activeUnit, setActiveUnit] = useState<'TODAS' | 'GSD-SP' | 'BASP'>('TODAS');
+    const { sectors } = useSectors();
     
     // Edit/Add Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,6 +59,19 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
         return users
             .filter(u => u.active !== false && !u.is_functional)
             .filter(u => {
+                // Unit Filter
+                if (activeUnit === 'TODAS') return true;
+                
+                const gsdSectors = sectors.filter(s => s.unit === 'GSD-SP').map(s => s.name);
+                if (activeUnit === 'GSD-SP') {
+                    return gsdSectors.includes(u.sector || '');
+                } else if (activeUnit === 'BASP') {
+                    // Se nao esta na lista GSD-SP ou "SEM SETOR", é assumido como BASP (ja que criamos fallback SQL)
+                    return !gsdSectors.includes(u.sector || '') && u.sector !== 'SEM SETOR' && Boolean(u.sector);
+                }
+                return true;
+            })
+            .filter(u => {
                 const searchLower = searchTerm.toLowerCase();
                 return u.name.toLowerCase().includes(searchLower) || 
                        u.warName?.toLowerCase().includes(searchLower) ||
@@ -65,9 +81,10 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                 const pA = RANKS.indexOf(a.rank);
                 const pB = RANKS.indexOf(b.rank);
                 if (pA !== pB) return pA - pB;
+                if (a.warName && b.warName) return a.warName.localeCompare(b.warName);
                 return a.name.localeCompare(b.name);
             });
-    }, [users, searchTerm]);
+    }, [users, searchTerm, activeUnit, sectors]);
 
     const filteredVacations = useMemo(() => {
         if (selectedStatus === 'ALL') return vacations;
@@ -224,18 +241,49 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                 </div>
             </div>
 
+            {/* Tab Selector */}
+            <div className="flex items-center gap-2 p-1.5 rounded-[2.5rem] bg-slate-900/5 dark:bg-slate-800/40 w-fit border border-slate-200 dark:border-slate-800">
+                <button
+                    onClick={() => setActiveTab('timeline')}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-[2rem] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'timeline' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white'}`}
+                >
+                    <CalendarDays className="w-4 h-4" /> Cronograma Anual
+                </button>
+                <button
+                    onClick={() => setActiveTab('stats')}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-[2rem] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'stats' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white'}`}
+                >
+                    <TrendingUp className="w-4 h-4" /> BI & Estatísticas
+                </button>
+            </div>
+
             {/* Controls */}
             <div className={`p-6 rounded-[2rem] border shadow-sm ${dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-200'}`}>
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="relative flex-1 max-w-md">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input 
-                            type="text"
-                            placeholder="Buscar militar pelo nome ou SARAM..."
-                            value={searchTerm}
-                            onChange={e => setSearchTerm(e.target.value)}
-                            className={`w-full pl-10 pr-4 py-3 rounded-2xl border text-sm outline-none transition-all ${dk ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`}
-                        />
+                    <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 flex-1">
+                        <div className="relative flex-1 max-w-md">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input 
+                                type="text"
+                                placeholder="Buscar militar pelo nome ou SARAM..."
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                                className={`w-full pl-10 pr-4 py-3 rounded-2xl border text-sm outline-none transition-all ${dk ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`}
+                            />
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Unidade:</span>
+                            {(['TODAS', 'GSD-SP', 'BASP'] as const).map(u => (
+                                <button
+                                    key={u}
+                                    onClick={() => setActiveUnit(u)}
+                                    className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${activeUnit === u ? 'bg-slate-900 text-white border-slate-900' : 'bg-transparent border-slate-200 dark:border-slate-700 text-slate-500 dark:hover:border-slate-600'}`}
+                                >
+                                    {u}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                     
                     <div className="flex items-center gap-3">
@@ -256,14 +304,21 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                 </div>
             </div>
 
-            {/* Timeline View */}
+            {/* Content View */}
             {loading ? (
                 <div className="flex flex-col items-center justify-center py-20">
                     <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
-                    <p className="text-xs font-black uppercase text-slate-400 tracking-widest">Carregando fésias...</p>
+                    <p className="text-xs font-black uppercase text-slate-400 tracking-widest">Carregando dados...</p>
                 </div>
             ) : (
-                renderTimeline()
+                activeTab === 'timeline' ? renderTimeline() : (
+                    <VacationStats 
+                        isDarkMode={dk} 
+                        users={sortedUsers} 
+                        vacations={filteredVacations.filter(v => sortedUsers.some(u => u.id === v.militar_id))}
+                        selectedYear={selectedYear}
+                    />
+                )
             )}
         </div>
     );

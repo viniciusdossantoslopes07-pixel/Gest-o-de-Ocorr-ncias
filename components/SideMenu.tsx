@@ -439,7 +439,6 @@ export default function SideMenu({
                                             {canViewAttendance && <MenuItem id="daily-attendance" label="Chamada Diária" icon={ShieldCheck} />}
                                             {canManagePersonnel && <MenuItem id="personnel-management" label="Gestão de Efetivo" icon={UserIcon} />}
                                             {canManagePersonnel && <MenuItem id="vacation-management" label="Gestão de Férias" icon={Calendar} />}
-                                            {canManagePersonnel && <MenuItem id="vacation-stats" label="Estatísticas (BI)" icon={TrendingUp} />}
                                         </div>
                                     )}
                                 </div>

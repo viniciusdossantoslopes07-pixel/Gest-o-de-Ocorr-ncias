@@ -1352,10 +1352,6 @@ const App: FC = () => {
             <VacationManagement currentUser={currentUser} isDarkMode={isDarkMode} users={users} />
           )}
 
-          {activeTab === 'vacation-stats' && canManagePersonnel && (
-            <VacationStats isDarkMode={isDarkMode} users={users} vacations={vacations} />
-          )}
-
           {activeTab === 'emergency-logs' && (
             <EmergencyLogs />
           )}
