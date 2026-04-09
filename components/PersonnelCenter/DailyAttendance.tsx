@@ -1838,6 +1838,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
                 )}
 
+                {selectedJustification && (
                     <div className="print-coupon-thermal">
                         <div className="w-full mx-auto border-b border-dashed border-black pb-4 space-y-3">
                             <div className="text-center space-y-0.5">
