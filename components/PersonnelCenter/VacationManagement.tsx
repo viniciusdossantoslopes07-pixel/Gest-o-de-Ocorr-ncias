@@ -53,7 +53,7 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
             if (error) throw error;
             setVacations(data || []);
         } catch (error) {
-            console.error('Erro ao buscar fésias:', error);
+            console.error('Erro ao buscar férias:', error);
         } finally {
             setLoading(false);
         }

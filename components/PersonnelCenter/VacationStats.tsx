@@ -279,7 +279,7 @@ const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vaca
             <div className={`p-4 rounded-2xl flex items-center gap-4 border ${dk ? 'bg-amber-900/10 border-amber-900/40 text-amber-500' : 'bg-amber-50 border-amber-100 text-amber-700'}`}>
                 <Info className="w-5 h-5 shrink-0" />
                 <p className="text-xs font-medium">
-                    Os dados estatísticos são baseados em fésias com status <strong>Homologado</strong> e <strong>Em Fruição</strong>. Planejamentos não são contabilizados na previsão de "Claro".
+                    Os dados estatísticos são baseados em férias com status <strong>Homologado</strong> e <strong>Em Fruição</strong>. Planejamentos não são contabilizados na previsão de "Claro".
                 </p>
             </div>
         </div>

@@ -285,7 +285,7 @@ const VacationPortal: FC<VacationPortalProps> = ({ isDarkMode = false, onBack })
                         </div>
                         <div>
                             <h2 className={`text-2xl font-black tracking-tight ${dk ? 'text-white' : 'text-slate-900'}`}>Sucesso!</h2>
-                            <p className="text-sm font-medium text-slate-400 mt-2">Seu planejamento de fésias foi enviado para homologação do comando.</p>
+                            <p className="text-sm font-medium text-slate-400 mt-2">Seu planejamento de férias foi enviado para homologação do comando.</p>
                         </div>
                         <div className={`p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest ${dk ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
                             ID do Registro: {Math.random().toString(36).substr(2, 9).toUpperCase()}
