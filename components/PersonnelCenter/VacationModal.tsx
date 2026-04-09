@@ -64,19 +64,20 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
     };
 
     const handleDateChange = (index: number, field: 'start_date' | 'end_date', value: string) => {
-        const newPeriods = [...periods];
-        newPeriods[index] = { ...newPeriods[index], [field]: value };
-        
-        if (newPeriods[index].start_date && newPeriods[index].end_date) {
-            // Só calcula se for uma data válida ISO (YYYY-MM-DD), ignorando máscaras temporárias (DD/MM/AAAA)
-            if (!newPeriods[index].start_date?.includes('/') && !newPeriods[index].end_date?.includes('/')) {
-                newPeriods[index].days = calculateDays(newPeriods[index].start_date!, newPeriods[index].end_date!);
-            } else {
-                newPeriods[index].days = 0;
+        setPeriods(prev => {
+            const newPeriods = [...prev];
+            newPeriods[index] = { ...newPeriods[index], [field]: value };
+            
+            if (newPeriods[index].start_date && newPeriods[index].end_date) {
+                // Só calcula se for uma data válida ISO (YYYY-MM-DD)
+                if (!newPeriods[index].start_date?.includes('/') && !newPeriods[index].end_date?.includes('/')) {
+                    newPeriods[index].days = calculateDays(newPeriods[index].start_date!, newPeriods[index].end_date!);
+                } else {
+                    newPeriods[index].days = 0;
+                }
             }
-        }
-        
-        setPeriods(newPeriods);
+            return newPeriods;
+        });
         setError('');
     };
 
@@ -107,22 +108,25 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
                 installment_model: selectedModel
             };
 
-            let vacationId = initialData?.id;
+            let vId = initialData?.id;
 
-            if (vacationId) {
+            if (vId) {
                 const { error: vError } = await supabase
                     .from('vacations')
                     .update(vacationData)
-                    .eq('id', vacationId);
+                    .eq('id', vId);
                 if (vError) throw vError;
             } else {
-                const { data, error: vError } = await supabase
+                // Inserir novo registro de férias
+                const { data: insertedData, error: vError } = await supabase
                     .from('vacations')
                     .insert(vacationData)
-                    .select()
+                    .select('id')
                     .single();
+                
                 if (vError) throw vError;
-                vacationId = data.id;
+                if (!insertedData) throw new Error('Não foi possível recuperar o ID das férias inseridas.');
+                vId = insertedData.id;
             }
 
             // 2. Clear old periods if editing
@@ -130,16 +134,16 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
                 const { error: dError } = await supabase
                     .from('vacation_periods')
                     .delete()
-                    .eq('vacation_id', vacationId);
+                    .eq('vacation_id', vId);
                 if (dError) throw dError;
             }
 
             // 3. Insert Periods with sanitized data
-            const periodsToInsert = periods.map(p => {
+            const sanitizedPeriods = periods.map(p => {
                 let start = p.start_date || '';
                 let end = p.end_date || '';
                 
-                // Converter DD/MM/AAAA -> YYYY-MM-DD se necessário
+                // Converter DD/MM/AAAA -> YYYY-MM-DD
                 if (start.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
                     const [d, m, y] = start.split('/');
                     start = `${y}-${m}-${d}`;
@@ -150,7 +154,7 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
                 }
 
                 return {
-                    vacation_id: vacationId as string,
+                    vacation_id: vId as string,
                     start_date: start,
                     end_date: end,
                     days: calculateDays(start, end),
@@ -158,7 +162,7 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
                 };
             });
 
-            const { error: pError } = await supabase.from('vacation_periods').insert(periodsToInsert);
+            const { error: pError } = await supabase.from('vacation_periods').insert(sanitizedPeriods);
             if (pError) throw pError;
 
             // Fechamento imediato com sucesso
@@ -304,10 +308,11 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
                                                             const iso = `${val.slice(4, 8)}-${val.slice(2, 4)}-${val.slice(0, 2)}`;
                                                             handleDateChange(idx, 'start_date', iso);
                                                         } else {
-                                                            // Keep local state for typing
-                                                            const newPeriods = [...periods];
-                                                            newPeriods[idx] = { ...newPeriods[idx], start_date: masked }; // Temporario
-                                                            setPeriods(newPeriods);
+                                                            setPeriods(prev => {
+                                                                const newPeriods = [...prev];
+                                                                newPeriods[idx] = { ...newPeriods[idx], start_date: masked };
+                                                                return newPeriods;
+                                                            });
                                                         }
                                                     }}
                                                     className={`w-full px-3 py-2.5 pr-10 rounded-xl border text-xs font-black outline-none transition-all ${inputClass}`}
@@ -343,9 +348,11 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
                                                             const iso = `${val.slice(4, 8)}-${val.slice(2, 4)}-${val.slice(0, 2)}`;
                                                             handleDateChange(idx, 'end_date', iso);
                                                         } else {
-                                                            const newPeriods = [...periods];
-                                                            newPeriods[idx] = { ...newPeriods[idx], end_date: masked };
-                                                            setPeriods(newPeriods);
+                                                            setPeriods(prev => {
+                                                                const newPeriods = [...prev];
+                                                                newPeriods[idx] = { ...newPeriods[idx], end_date: masked };
+                                                                return newPeriods;
+                                                            });
                                                         }
                                                     }}
                                                     className={`w-full px-3 py-2.5 pr-10 rounded-xl border text-xs font-black outline-none transition-all ${inputClass}`}
@@ -367,7 +374,12 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
                         </div>
                     </div>
 
-                    {/* Summary Info */}
+                    </div>
+                </div>
+
+                {/* Footer Buttons & Error Message */}
+                <div className="p-6 lg:p-8 border-t border-slate-800 bg-slate-900 space-y-4">
+                    {/* Summary Info (Always visible in footer) */}
                     <div className={`p-4 rounded-2xl flex items-center justify-between border ${dk ? 'bg-blue-900/10 border-blue-900/40' : 'bg-blue-50 border-blue-100'}`}>
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-blue-500 rounded-lg text-white">
@@ -381,27 +393,25 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
                     </div>
 
                     {error && (
-                        <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-red-500 text-xs font-bold animate-shake">
+                        <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 text-red-500 text-[11px] font-black uppercase tracking-widest animate-shake">
                             <AlertCircle className="w-4 h-4 shrink-0" /> {error}
                         </div>
                     )}
-                </div>
-
-                {/* Footer Buttons */}
-                <div className="p-6 lg:p-8 border-t border-slate-800 bg-slate-900 flex flex-col sm:flex-row items-center justify-end gap-3 sm:gap-4">
-                    <button 
-                        onClick={onClose}
-                        className="w-full sm:w-auto px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-all order-2 sm:order-1"
-                    >
-                        Cancelar
-                    </button>
-                    <button 
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="w-full sm:w-auto px-10 py-3.5 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 disabled:opacity-50 flex items-center justify-center gap-2 order-1 sm:order-2"
-                    >
-                        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /> Finalizar Lançamento</>}
-                    </button>
+                    <div className="flex flex-col sm:flex-row items-center justify-end gap-3 sm:gap-4">
+                        <button 
+                            onClick={onClose}
+                            className="w-full sm:w-auto px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-all order-2 sm:order-1"
+                        >
+                            Cancelar
+                        </button>
+                        <button 
+                            onClick={handleSave}
+                            disabled={isSaving}
+                            className="w-full sm:w-auto px-10 py-3.5 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 disabled:opacity-50 flex items-center justify-center gap-2 order-1 sm:order-2"
+                        >
+                            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /> Finalizar Lançamento</>}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
