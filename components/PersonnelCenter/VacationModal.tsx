@@ -373,10 +373,6 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
                             ))}
                         </div>
                     </div>
-
-                    </div>
-                </div>
-
                 </div>
 
                 {/* Footer Buttons & Error Message */}
