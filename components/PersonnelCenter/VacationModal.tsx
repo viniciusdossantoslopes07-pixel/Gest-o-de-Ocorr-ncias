@@ -3,7 +3,7 @@ import { X, Calendar, User as UserIcon, Save, Info, Plus, ChevronRight, AlertCir
 import { supabase } from '../../services/supabase';
 import { User, Vacation, VacationStatus, VacationPeriod, InstallmentModel } from '../../types';
 import { calculateDays, validateVacationParcels, hasOverlap } from '../../utils/vacationValidation';
-import Combobox from '../Combobox';
+import { Combobox } from '../Combobox';
 
 interface VacationModalProps {
     isOpen: boolean;
@@ -184,9 +184,16 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2 italic">Militar</label>
                             <Combobox 
-                                options={users.map(u => ({ id: u.id, label: `${u.rank} ${u.warName || u.name} (${u.saram})` }))}
-                                value={militarId}
-                                onChange={setMilitarId}
+                                options={users.map(u => `${u.saram} | ${u.rank} ${u.warName || u.name}`)}
+                                value={users.find(u => u.id === militarId) ? (() => {
+                                    const u = users.find(u => u.id === militarId)!;
+                                    return `${u.saram} | ${u.rank} ${u.warName || u.name}`;
+                                })() : ''}
+                                onChange={(val) => {
+                                    const saram = val.split(' | ')[0];
+                                    const user = users.find(u => u.saram === saram);
+                                    if (user) setMilitarId(user.id);
+                                }}
                                 placeholder="Selecione o militar..."
                                 isDarkMode={dk}
                             />
