@@ -619,7 +619,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 
                 <div className="lg:col-span-3 grid grid-cols-2 gap-4">
                     <StatCard label="Efetivo Total" value={totalEfetivo} icon={Users} color="slate" />
-                    <StatCard label="Em Serviço (Presentes)" value={presentCount} icon={CheckCircle} color="emerald" delta={presentCount - prevPresentCount} />
+                    <StatCard label="Presentes" value={presentCount} icon={CheckCircle} color="emerald" delta={presentCount - prevPresentCount} />
                     <StatCard 
                         label="Registros de Ausência" 
                         value={absenceCount} 
