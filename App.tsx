@@ -1160,14 +1160,6 @@ const App: FC = () => {
   }
 
   if (!currentUser) {
-    if (showVacationPortal) {
-      return (
-        <Suspense fallback={<LazyFallback />}>
-          <VacationPortal isDarkMode={isDarkMode} onBack={() => setShowVacationPortal(false)} />
-        </Suspense>
-      );
-    }
-
     return (
       <div className={isDarkMode ? 'dark' : ''}>
         <LoginView
@@ -1179,14 +1171,6 @@ const App: FC = () => {
           onForcePasswordReset={handleForcePasswordReset}
           isDarkMode={isDarkMode}
         />
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
-          <button 
-            onClick={() => setShowVacationPortal(true)}
-            className={`px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-2xl border-2 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 ${isDarkMode ? 'bg-slate-900 border-slate-800 text-blue-400 hover:bg-slate-800' : 'bg-white border-blue-100 text-blue-600 hover:bg-slate-50'}`}
-          >
-            <Calendar className="w-4 h-4" /> Planejamento de Férias {new Date().getFullYear() + 1}
-          </button>
-        </div>
         {showPublicEvents && <PublicEventsModal onClose={() => setShowPublicEvents(false)} isDarkMode={isDarkMode} />}
       </div>
     );
