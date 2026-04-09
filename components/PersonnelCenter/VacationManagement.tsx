@@ -131,13 +131,13 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
             <div className={`overflow-x-auto rounded-[2rem] border ${dk ? 'border-slate-800 bg-slate-900/50' : 'border-slate-100 bg-white'}`}>
                 <div className="min-w-[1200px]">
                     {/* Timeline Header - Months */}
-                    <div className={`flex border-b ${dk ? 'border-slate-800' : 'border-slate-100'}`}>
-                        <div className={`w-64 shrink-0 px-6 py-4 font-black uppercase tracking-widest text-[10px] ${dk ? 'text-slate-500' : 'text-slate-400'} border-r ${dk ? 'border-slate-800' : 'border-slate-100'}`}>
+                    <div className={`flex border-b sticky top-0 z-30 ${dk ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-100'}`}>
+                        <div className={`w-56 lg:w-64 shrink-0 px-6 py-4 font-black uppercase tracking-widest text-[10px] ${dk ? 'text-slate-500 bg-slate-950' : 'text-slate-400 bg-slate-50'} border-r sticky left-0 z-40 ${dk ? 'border-slate-800' : 'border-slate-100'} shadow-[4px_0_10px_rgba(0,0,0,0.05)]`}>
                             Militar
                         </div>
                         <div className="flex-1 flex">
                             {MONTHS.map((month, i) => (
-                                <div key={month} className={`flex-1 text-center py-4 text-[10px] font-black uppercase tracking-tighter ${dk ? 'text-slate-500 border-l border-slate-800' : 'text-slate-400 border-l border-slate-100'}`}>
+                                <div key={month} className={`flex-1 text-center py-4 text-[10px] font-black uppercase tracking-tighter ${dk ? 'text-slate-400 border-l border-slate-800' : 'text-slate-500 border-l border-slate-100'}`}>
                                     {month}
                                 </div>
                             ))}
@@ -150,14 +150,14 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                             const vacation = getVacationForUser(user.id);
                             return (
                                 <div key={user.id} className="flex group hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
-                                    <div className={`w-64 shrink-0 px-6 py-3 border-r ${dk ? 'border-slate-800' : 'border-slate-100'}`}>
+                                    <div className={`w-56 lg:w-64 shrink-0 px-6 py-3 border-r sticky left-0 z-20 ${dk ? 'border-slate-800 bg-slate-900' : 'border-slate-100 bg-white'} shadow-[2px_0_5px_rgba(0,0,0,0.02)]`}>
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[10px] ${dk ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[10px] ${dk ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400'}`}>
                                                 {user.rank}
                                             </div>
                                             <div className="min-w-0">
                                                 <p className={`text-xs font-black uppercase truncate ${dk ? 'text-white' : 'text-slate-900'}`}>{user.warName || user.name}</p>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">SARAM: {user.saram}</p>
+                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">SARAM: {user.saram}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -213,13 +213,13 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
             {/* Header Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className={`p-6 rounded-[2rem] border shadow-sm ${dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-200'}`}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={`p-4 lg:p-6 rounded-[2rem] border shadow-sm ${dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-200'}`}>
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-500 rounded-2xl text-white">
+                        <div className="p-3 bg-blue-500 rounded-2xl text-white shrink-0">
                             <CalendarDays className="w-5 h-5" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                             <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Ano de Referência</p>
                             <div className="flex items-center gap-4 mt-1">
                                 <button onClick={() => setSelectedYear(y => y - 1)} className={`p-1 rounded-lg ${dk ? 'hover:bg-slate-700' : 'hover:bg-slate-100'}`}><ChevronLeft className="w-4 h-4" /></button>
@@ -230,28 +230,28 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                     </div>
                 </div>
 
-                <div className={`p-6 rounded-[2rem] border shadow-sm ${dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-200'}`}>
+                <div className={`p-4 lg:p-6 rounded-[2rem] border shadow-sm ${dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-200'}`}>
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-emerald-500 rounded-2xl text-white">
+                        <div className="p-3 bg-emerald-500 rounded-2xl text-white shrink-0">
                             <CircleCheck className="w-5 h-5" />
                         </div>
-                        <div>
-                            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Férias Homologadas</p>
-                            <p className={`text-2xl font-black ${dk ? 'text-white' : 'text-slate-900'}`}>
+                        <div className="min-w-0">
+                            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest truncate">Férias Homologadas</p>
+                            <p className={`text-xl lg:text-2xl font-black ${dk ? 'text-white' : 'text-slate-900'}`}>
                                 {vacations.filter(v => v.status === 'HOMOLOGADO').length} / {users.length}
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <div className={`p-6 rounded-[2rem] border shadow-sm ${dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-200'}`}>
+                <div className={`p-4 lg:p-6 rounded-[2rem] border shadow-sm ${dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-200'} sm:col-span-2 lg:col-span-1`}>
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-amber-500 rounded-2xl text-white">
+                        <div className="p-3 bg-amber-500 rounded-2xl text-white shrink-0">
                             <Clock className="w-5 h-5" />
                         </div>
-                        <div>
-                            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Em Fruição Hoje</p>
-                            <p className={`text-2xl font-black ${dk ? 'text-white' : 'text-slate-900'}`}>
+                        <div className="min-w-0">
+                            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest truncate">Em Fruição Hoje</p>
+                            <p className={`text-xl lg:text-2xl font-black ${dk ? 'text-white' : 'text-slate-900'}`}>
                                 {vacations.filter(v => v.status === 'EM_FRUIÇÃO').length}
                             </p>
                         </div>
@@ -259,84 +259,92 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                 </div>
             </div>
 
-            {/* Tab Selector */}
-            <div className="flex items-center gap-2 p-1.5 rounded-[2.5rem] bg-slate-900/5 dark:bg-slate-800/40 w-fit border border-slate-200 dark:border-slate-800">
-                <button
-                    onClick={() => setActiveTab('timeline')}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-[2rem] text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'timeline' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20 scale-105' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-900/5'}`}
-                >
-                    <CalendarDays className={`w-4 h-4 ${activeTab === 'timeline' ? 'animate-pulse' : ''}`} /> Cronograma Anual
-                </button>
-                <button
-                    onClick={() => setActiveTab('stats')}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-[2rem] text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'stats' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20 scale-105' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-900/5'}`}
-                >
-                    <TrendingUp className={`w-4 h-4 ${activeTab === 'stats' ? 'animate-bounce' : ''}`} /> BI & Estatísticas
-                </button>
+            {/* Tab Selector - Mobile Scrollable */}
+            <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+                <div className="flex items-center gap-2 p-1.5 rounded-[2.5rem] bg-slate-900/5 dark:bg-slate-800/40 w-fit border border-slate-200 dark:border-slate-800">
+                    <button
+                        onClick={() => setActiveTab('timeline')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-[2rem] text-xs font-black uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${activeTab === 'timeline' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20 scale-105' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-900/5'}`}
+                    >
+                        <CalendarDays className={`w-4 h-4 ${activeTab === 'timeline' ? 'animate-pulse' : ''}`} /> Cronograma
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('stats')}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-[2rem] text-xs font-black uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${activeTab === 'stats' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20 scale-105' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-slate-900/5'}`}
+                    >
+                        <TrendingUp className={`w-4 h-4 ${activeTab === 'stats' ? 'animate-bounce' : ''}`} /> BI & Estatísticas
+                    </button>
+                </div>
             </div>
 
-            {/* Controls */}
+            {/* Controls - Premium Mobile Flow */}
             <div className={`p-6 rounded-[2rem] border shadow-sm ${dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-200'}`}>
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 flex-1">
-                        <div className="relative flex-1 max-w-md">
+                <div className="flex flex-col gap-6">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div className="relative flex-1 max-w-2xl">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <input 
                                 type="text"
                                 placeholder="Buscar militar pelo nome ou SARAM..."
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
-                                className={`w-full pl-10 pr-4 py-3 rounded-2xl border text-sm outline-none transition-all ${dk ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-100 text-slate-900'}`}
+                                className={`w-full pl-10 pr-4 py-3.5 rounded-2xl border text-sm outline-none transition-all ${dk ? 'bg-slate-910 border-slate-700 text-white focus:border-blue-500' : 'bg-slate-50 border-slate-100 text-slate-900 focus:border-blue-600'}`}
                             />
                         </div>
                         
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Unidade:</span>
-                            {(['TODAS', 'GSD-SP', 'BASP'] as const).map(u => (
-                                <button
-                                    key={u}
-                                    onClick={() => setActiveUnit(u)}
-                                    className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${activeUnit === u ? 'bg-slate-900 text-white border-slate-900' : 'bg-transparent border-slate-200 dark:border-slate-700 text-slate-500 dark:hover:border-slate-600'}`}
-                                >
-                                    {u}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="flex items-center gap-2 ml-2 border-l border-slate-200 dark:border-slate-700 pl-4">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Círculo:</span>
-                            {(['TODOS', 'OFICIAIS', 'GRADUADOS', 'PRAÇAS'] as const).map(c => (
-                                <button
-                                    key={c}
-                                    onClick={() => setActiveCategory(c)}
-                                    className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${activeCategory === c ? 'bg-blue-600 text-white border-blue-600' : 'bg-transparent border-slate-200 dark:border-slate-700 text-slate-500 dark:hover:border-slate-600'}`}
-                                >
-                                    {c}
-                                </button>
-                            ))}
+                        <div className="flex items-center gap-3">
+                            <select 
+                                value={selectedStatus}
+                                onChange={e => setSelectedStatus(e.target.value)}
+                                className={`flex-1 lg:flex-none px-4 py-3.5 rounded-2xl border text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer transition-all ${dk ? 'bg-slate-900 border-slate-700 text-slate-300 focus:border-blue-500' : 'bg-slate-50 border-slate-100 text-slate-600'}`}
+                            >
+                                <option value="ALL">TODOS STATUS</option>
+                                <option value="PLANEJADO">PLANEJADO</option>
+                                <option value="HOMOLOGADO">HOMOLOGADO</option>
+                                <option value="EM_FRUIÇÃO">EM FRUIÇÃO</option>
+                            </select>
+                            <button 
+                                onClick={() => {
+                                    setEditingVacation(null);
+                                    setIsModalOpen(true);
+                                }}
+                                className="flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+                            >
+                                <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Lançar Férias</span><span className="sm:hidden">Novo</span>
+                            </button>
                         </div>
                     </div>
-                    
-                    <div className="flex items-center gap-3">
-                        <select 
-                            value={selectedStatus}
-                            onChange={e => setSelectedStatus(e.target.value)}
-                            className={`px-4 py-3 rounded-2xl border text-xs font-bold outline-none cursor-pointer ${dk ? 'bg-slate-900 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-600'}`}
-                        >
-                            <option value="ALL">TODOS STATUS</option>
-                            <option value="PLANEJADO">PLANEJADO</option>
-                            <option value="HOMOLOGADO">HOMOLOGADO</option>
-                            <option value="EM_FRUIÇÃO">EM FRUIÇÃO</option>
-                        </select>
-                        <button 
-                            onClick={() => {
-                                setEditingVacation(null);
-                                setIsModalOpen(true);
-                            }}
-                            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
-                        >
-                            <Plus className="w-4 h-4" /> Novo Lançamento
-                        </button>
+
+                    <div className="flex flex-col md:flex-row md:items-center gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                        <div className="flex flex-col gap-2">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Unidade</span>
+                            <div className="flex flex-wrap items-center gap-2">
+                                {(['TODAS', 'GSD-SP', 'BASP'] as const).map(u => (
+                                    <button
+                                        key={u}
+                                        onClick={() => setActiveUnit(u)}
+                                        className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${activeUnit === u ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-transparent border-slate-200 dark:border-slate-700 text-slate-500 dark:hover:border-slate-600'}`}
+                                    >
+                                        {u}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-2 flex-1">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Círculo Hierárquico</span>
+                            <div className="flex flex-wrap items-center gap-2">
+                                {(['TODOS', 'OFICIAIS', 'GRADUADOS', 'PRAÇAS'] as const).map(c => (
+                                    <button
+                                        key={c}
+                                        onClick={() => setActiveCategory(c)}
+                                        className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${activeCategory === c ? 'bg-blue-600 text-white border-blue-600 shadow-md scale-105' : 'bg-transparent border-slate-200 dark:border-slate-700 text-slate-500 dark:hover:border-slate-600'}`}
+                                    >
+                                        {c}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

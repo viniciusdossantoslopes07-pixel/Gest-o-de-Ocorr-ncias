@@ -1562,12 +1562,12 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 position: fixed !important;
                                 top: 0 !important;
                                 left: 0 !important;
-                                width: 80mm !important;
+                                width: 72mm !important;
                                 background: white !important;
-                                padding: 5mm !important;
+                                padding: 2mm !important;
                                 box-sizing: border-box !important;
                                 color: black !important;
-                                font-family: monospace !important;
+                                font-family: 'Courier New', Courier, monospace !important;
                                 z-index: 99999 !important;
                             }
                             body.print-coupon-mode .print-coupon-thermal * {
@@ -1838,61 +1838,58 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
                 )}
 
-                {/* Cupom Térmico (oculto na tela, visível ao imprimir via CSS) */}
-                {selectedJustification && (
                     <div className="print-coupon-thermal">
-                        <div className="w-[80mm] mx-auto border-2 border-dashed border-black p-4 space-y-4">
-                            <div className="text-center space-y-1">
-                                <p className="text-sm font-bold">BASP - CENTRAL DE PESSOAL</p>
-                                <p className="text-xs">COMPROVANTE DE RETIRADA DE FALTA</p>
+                        <div className="w-full mx-auto border-b border-dashed border-black pb-4 space-y-3">
+                            <div className="text-center space-y-0.5">
+                                <p className="text-[11px] font-black uppercase tracking-tight">BASP - CENTRAL DE PESSOAL</p>
+                                <p className="text-[9px] font-bold uppercase tracking-tighter">COMPROVANTE DE RETIRADA DE FALTA</p>
                                 <div className="border-b border-black w-full my-2" />
                             </div>
 
-                            <div className="space-y-2 text-[10px]">
-                                <div className="flex justify-between">
+                            <div className="space-y-1.5 text-[9px] leading-tight">
+                                <div className="flex justify-between font-mono">
                                     <span>ID:</span>
-                                    <span>#{selectedJustification.id.toUpperCase()}</span>
+                                    <span className="font-black">#{selectedJustification.id.split('-')[0].toUpperCase()}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span>DATA:</span>
-                                    <span>{new Date(selectedJustification.timestamp).toLocaleString('pt-BR')}</span>
+                                <div className="flex justify-between font-mono">
+                                    <span>DATA EMISSAO:</span>
+                                    <span>{new Date(selectedJustification.timestamp).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
                                 </div>
-                                <div className="border-b border-black w-full" />
+                                <div className="border-b border-black/20 w-full" />
 
-                                <p className="font-bold">MILITAR:</p>
-                                <p className="text-xs">{selectedJustification.militarRank} {selectedJustification.militarName}</p>
-                                <p>SARAM: {selectedJustification.saram || 'N/I'}</p>
+                                <p className="font-black uppercase text-[10px] mt-2">MILITAR:</p>
+                                <p className="text-[11px] font-black">{selectedJustification.militarRank} {selectedJustification.militarName}</p>
+                                <p className="font-bold opacity-70">SARAM: {selectedJustification.saram || 'N/I'}</p>
 
-                                <div className="border-b border-black w-full" />
+                                <div className="border-b border-black/20 w-full my-1" />
 
-                                <div className="flex justify-between">
-                                    <span>REF. DATA:</span>
-                                    <span>{new Date(selectedJustification.date).toLocaleDateString('pt-BR')}</span>
+                                <div className="flex justify-between items-baseline">
+                                    <span className="font-bold">REF. DATA:</span>
+                                    <span className="font-black">{new Date(selectedJustification.date).toLocaleDateString('pt-BR')}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span>CHAMADA:</span>
-                                    <span>{selectedJustification.callType === 'INICIO' ? '1ª CHAMADA' : '2ª CHAMADA'}</span>
+                                <div className="flex justify-between items-baseline">
+                                    <span className="font-bold">CONV. CHAMADA:</span>
+                                    <span className="font-black">{selectedJustification.callType === 'INICIO' ? '1ª CHAMADA' : '2ª CHAMADA'}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span>ALTERACAO:</span>
-                                    <span>{selectedJustification.originalStatus} {"->"} {selectedJustification.newStatus}</span>
+                                <div className="flex justify-between items-baseline py-1 bg-black/5 px-1 rounded">
+                                    <span className="font-bold">ALTERACAO:</span>
+                                    <span className="font-black">{selectedJustification.originalStatus} {"->"} {selectedJustification.newStatus}</span>
                                 </div>
 
-                                <div className="border-b border-black w-full" />
+                                <div className="border-b border-black/20 w-full my-1" />
 
-                                <p className="font-bold">JUSTIFICATIVA:</p>
-                                <p className="italic uppercase">{selectedJustification.justification}</p>
+                                <p className="font-black uppercase text-[10px]">JUSTIFICATIVA:</p>
+                                <p className="italic uppercase text-[10px] font-bold leading-relaxed">{selectedJustification.justification}</p>
 
-                                <div className="border-b border-black w-full" />
+                                <div className="border-b border-black/20 w-full my-1" />
 
-                                <p className="font-bold">RESPONSAVEL:</p>
-                                <p>{selectedJustification.performedBy}</p>
+                                <p className="font-black uppercase text-[10px]">RESPONSAVEL:</p>
+                                <p className="font-bold">{selectedJustification.performedBy}</p>
                             </div>
 
-                            <div className="text-center pt-8 space-y-1">
-                                <div className="border-t border-black w-48 mx-auto" />
-                                <p className="text-[8px] uppercase font-bold">Autenticado Digitalmente</p>
-                                <p className="text-[6px] text-gray-500 uppercase mt-2">Documento para fins de controle interno da BASP</p>
+                            <div className="text-center pt-6 space-y-1 border-t border-black mt-4">
+                                <p className="text-[9px] uppercase font-black tracking-widest">Autenticado Digitalmente</p>
+                                <p className="text-[7px] text-gray-600 uppercase mt-1 leading-tight font-medium">Documento de controle interno BASP<br/>Protocolo Eletrônico GSD-SP</p>
                             </div>
                         </div>
                     </div>

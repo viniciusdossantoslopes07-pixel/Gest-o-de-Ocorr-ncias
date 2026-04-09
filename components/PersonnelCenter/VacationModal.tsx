@@ -160,19 +160,19 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
             
-            <div className={`relative w-full max-w-2xl rounded-[2.5rem] border shadow-2xl overflow-hidden flex flex-col max-h-[90vh] ${modalClass} animate-in zoom-in duration-300`}>
+            <div className={`relative w-full max-w-2xl rounded-[2.5rem] border shadow-2xl overflow-hidden flex flex-col max-h-[92vh] ${modalClass} animate-in zoom-in duration-300`}>
                 {/* Header */}
-                <div className="p-8 border-b border-slate-800 flex items-center justify-between bg-slate-900">
+                <div className="p-6 lg:p-8 border-b border-slate-800 flex items-center justify-between bg-slate-900">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-600 rounded-2xl text-white shadow-lg shadow-blue-500/20">
+                        <div className="p-3 bg-blue-600 rounded-2xl text-white shadow-lg shadow-blue-500/20 shrink-0">
                             <Plus className="w-6 h-6" />
                         </div>
-                        <div>
-                            <h2 className="text-xl font-black text-white uppercase tracking-tight">Lançar Período de Férias</h2>
-                            <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Cadastro Administrativo</p>
+                        <div className="min-w-0">
+                            <h2 className="text-lg lg:text-xl font-black text-white uppercase tracking-tight truncate">Lançar Período de Férias</h2>
+                            <p className="text-[9px] lg:text-[10px] font-black text-blue-400 uppercase tracking-widest truncate">Cadastro Administrativo {selectedYear}</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-xl transition-all text-slate-500 hover:text-white">
+                    <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-xl transition-all text-slate-500 hover:text-white shrink-0">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -248,9 +248,9 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
                             <Calendar className="w-4 h-4 text-blue-500" />
                             <h3 className="text-sm font-black uppercase tracking-widest text-slate-500">Cronograma de Parcelas</h3>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             {periods.map((p, idx) => (
-                                <div key={idx} className={`p-5 rounded-[2rem] border relative overflow-hidden group ${dk ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                                <div key={idx} className={`p-5 rounded-[2.2rem] border relative overflow-hidden group ${dk ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                                     <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:scale-110 transition-transform duration-500">
                                         <Calendar className="w-12 h-12" />
                                     </div>
@@ -259,23 +259,84 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
                                         <span className="px-2 py-0.5 bg-blue-500/10 text-blue-500 rounded-full text-[9px] font-black">{p.days || 0} DIAS</span>
                                     </div>
                                     <div className="space-y-4 relative z-10">
+                                        {/* Início */}
                                         <div className="space-y-1">
-                                            <p className="text-[9px] font-black text-slate-500 uppercase ml-1">Início</p>
-                                            <input 
-                                                type="date" 
-                                                value={p.start_date}
-                                                onChange={e => handleDateChange(idx, 'start_date', e.target.value)}
-                                                className={`w-full px-3 py-2.5 rounded-xl border text-xs font-black outline-none ${inputClass}`}
-                                            />
+                                            <p className="text-[9px] font-black text-slate-500 uppercase ml-1">Início (DD/MM/AAAA)</p>
+                                            <div className="relative group/date">
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="DD/MM/AAAA"
+                                                    value={p.start_date ? p.start_date.split('-').reverse().join('/') : ''}
+                                                    onChange={e => {
+                                                        let val = e.target.value.replace(/\D/g, '');
+                                                        if (val.length > 8) val = val.slice(0, 8);
+                                                        
+                                                        // Apply mask
+                                                        let masked = val;
+                                                        if (val.length > 2) masked = val.slice(0, 2) + '/' + val.slice(2);
+                                                        if (val.length > 4) masked = masked.slice(0, 5) + '/' + masked.slice(5);
+                                                        
+                                                        // If complete, update state
+                                                        if (val.length === 8) {
+                                                            const iso = `${val.slice(4, 8)}-${val.slice(2, 4)}-${val.slice(0, 2)}`;
+                                                            handleDateChange(idx, 'start_date', iso);
+                                                        } else {
+                                                            // Keep local state for typing
+                                                            const newPeriods = [...periods];
+                                                            newPeriods[idx] = { ...newPeriods[idx], start_date: masked }; // Temporario
+                                                            setPeriods(newPeriods);
+                                                        }
+                                                    }}
+                                                    className={`w-full px-3 py-2.5 pr-10 rounded-xl border text-xs font-black outline-none transition-all ${inputClass}`}
+                                                />
+                                                <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                                    <input 
+                                                        type="date"
+                                                        value={p.start_date?.includes('/') ? '' : p.start_date}
+                                                        onChange={e => handleDateChange(idx, 'start_date', e.target.value)}
+                                                        className="absolute inset-0 opacity-0 cursor-pointer w-8 h-8 z-10"
+                                                    />
+                                                    <Calendar className="w-4 h-4 text-blue-500 group-hover/date:scale-110 transition-transform" />
+                                                </div>
+                                            </div>
                                         </div>
+
+                                        {/* Término */}
                                         <div className="space-y-1">
-                                            <p className="text-[9px] font-black text-slate-500 uppercase ml-1">Término</p>
-                                            <input 
-                                                type="date" 
-                                                value={p.end_date}
-                                                onChange={e => handleDateChange(idx, 'end_date', e.target.value)}
-                                                className={`w-full px-3 py-2.5 rounded-xl border text-xs font-black outline-none ${inputClass}`}
-                                            />
+                                            <p className="text-[9px] font-black text-slate-500 uppercase ml-1">Término (DD/MM/AAAA)</p>
+                                            <div className="relative group/date">
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="DD/MM/AAAA"
+                                                    value={p.end_date ? p.end_date.split('-').reverse().join('/') : ''}
+                                                    onChange={e => {
+                                                        let val = e.target.value.replace(/\D/g, '');
+                                                        if (val.length > 8) val = val.slice(0, 8);
+                                                        let masked = val;
+                                                        if (val.length > 2) masked = val.slice(0, 2) + '/' + val.slice(2);
+                                                        if (val.length > 4) masked = masked.slice(0, 5) + '/' + masked.slice(5);
+                                                        
+                                                        if (val.length === 8) {
+                                                            const iso = `${val.slice(4, 8)}-${val.slice(2, 4)}-${val.slice(0, 2)}`;
+                                                            handleDateChange(idx, 'end_date', iso);
+                                                        } else {
+                                                            const newPeriods = [...periods];
+                                                            newPeriods[idx] = { ...newPeriods[idx], end_date: masked };
+                                                            setPeriods(newPeriods);
+                                                        }
+                                                    }}
+                                                    className={`w-full px-3 py-2.5 pr-10 rounded-xl border text-xs font-black outline-none transition-all ${inputClass}`}
+                                                />
+                                                <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                                    <input 
+                                                        type="date"
+                                                        value={p.end_date?.includes('/') ? '' : p.end_date}
+                                                        onChange={e => handleDateChange(idx, 'end_date', e.target.value)}
+                                                        className="absolute inset-0 opacity-0 cursor-pointer w-8 h-8 z-10"
+                                                    />
+                                                    <Calendar className="w-4 h-4 text-blue-500 group-hover/date:scale-110 transition-transform" />
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -304,17 +365,17 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
                 </div>
 
                 {/* Footer Buttons */}
-                <div className="p-8 border-t border-slate-800 bg-slate-900 flex items-center justify-end gap-4">
+                <div className="p-6 lg:p-8 border-t border-slate-800 bg-slate-900 flex flex-col sm:flex-row items-center justify-end gap-3 sm:gap-4">
                     <button 
                         onClick={onClose}
-                        className="px-6 py-3 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-white transition-all"
+                        className="w-full sm:w-auto px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-all order-2 sm:order-1"
                     >
                         Cancelar
                     </button>
                     <button 
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="px-10 py-3.5 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2"
+                        className="w-full sm:w-auto px-10 py-3.5 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 disabled:opacity-50 flex items-center justify-center gap-2 order-1 sm:order-2"
                     >
                         {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /> Finalizar Lançamento</>}
                     </button>

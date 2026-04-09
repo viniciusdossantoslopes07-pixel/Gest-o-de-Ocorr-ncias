@@ -136,8 +136,8 @@ const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vaca
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className={`p-6 rounded-[2rem] border shadow-sm ${dk ? 'bg-slate-800/80 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className={`p-5 lg:p-6 rounded-[2rem] border shadow-sm ${dk ? 'bg-slate-800/80 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
                     <div className="flex justify-between items-start mb-4">
                         <div className="p-3 bg-blue-500 rounded-2xl text-white shadow-lg shadow-blue-500/20">
                             <Users className="w-5 h-5" />
@@ -151,7 +151,7 @@ const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vaca
                     </div>
                 </div>
 
-                <div className={`p-6 rounded-[2rem] border shadow-sm ${dk ? 'bg-slate-800/80 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
+                <div className={`p-5 lg:p-6 rounded-[2rem] border shadow-sm ${dk ? 'bg-slate-800/80 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
                     <div className="flex justify-between items-start mb-4">
                         <div className="p-3 bg-emerald-500 rounded-2xl text-white shadow-lg shadow-emerald-500/20">
                             <Target className="w-5 h-5" />
@@ -167,19 +167,19 @@ const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vaca
                     </div>
                 </div>
 
-                <div className="col-span-1 md:col-span-2 p-6 rounded-[2rem] border shadow-sm bg-slate-900 border-slate-800 text-white relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                <div className="col-span-1 sm:col-span-2 p-5 lg:p-6 rounded-[2rem] border shadow-sm bg-slate-900 border-slate-800 text-white relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700 hidden sm:block">
                         <Calendar className="w-32 h-32" />
                     </div>
-                    <h4 className="text-sm font-black uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <h4 className="text-[10px] lg:text-sm font-black uppercase tracking-widest mb-4 flex items-center gap-2">
                         <Clock className="w-4 h-4 text-blue-400" /> Previsão de "Claro" (Próximos 3 Meses)
                     </h4>
-                    <div className="grid grid-cols-3 gap-6 relative z-10">
+                    <div className="grid grid-cols-3 gap-2 lg:gap-6 relative z-10">
                         {next3MonthsStats.map((stat, i) => (
-                            <div key={i} className="flex flex-col border-l border-slate-700 pl-4">
-                                <span className="text-[10px] font-black text-slate-500 uppercase">{stat.month}</span>
-                                <span className="text-2xl font-black text-blue-400">{stat.count}</span>
-                                <span className="text-[9px] font-bold text-slate-500">Ausências Previstas</span>
+                            <div key={i} className="flex flex-col border-l border-slate-700 pl-3 lg:pl-4">
+                                <span className="text-[9px] lg:text-[10px] font-black text-slate-500 uppercase truncate">{stat.month}</span>
+                                <span className="text-xl lg:text-2xl font-black text-blue-400">{stat.count}</span>
+                                <span className="text-[8px] lg:text-[9px] font-bold text-slate-500 leading-tight">Ausências</span>
                             </div>
                         ))}
                     </div>
@@ -194,7 +194,7 @@ const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vaca
                         <h3 className={`text-lg font-black tracking-tight ${dk ? 'text-white' : 'text-slate-900'}`}>Tendência de Efetivo Ausente</h3>
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Flutuação mensal de militares em férias</p>
                     </div>
-                    <div className="h-[300px]">
+                    <div className="h-[220px] lg:h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={absenteeismData}>
                                 <defs>
@@ -236,7 +236,7 @@ const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vaca
                         <h3 className={`text-lg font-black tracking-tight ${dk ? 'text-white' : 'text-slate-900'}`}>Distribuição por Categoria</h3>
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Ausências por Posto e Graduação</p>
                     </div>
-                    <div className="h-[300px]">
+                    <div className="h-[220px] lg:h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={stackedBarData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={dk ? '#334155' : '#e2e8f0'} />
