@@ -83,13 +83,14 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                 // Category Filter
                 if (activeCategory === 'TODOS') return true;
                 
-                const ranks = {
+                const ranks: Record<string, string[]> = {
                     OFICIAIS: ['TB', 'MB', 'BR', 'CEL', 'TEN CEL', 'MAJ', 'CAP', '1T', '2T', 'ASP'],
                     GRADUADOS: ['SO', '1S', '2S', '3S'],
                     PRAÇAS: ['CB', 'S1', 'S2']
                 };
 
-                return ranks[activeCategory as keyof typeof ranks].includes(u.rank);
+                const categoryRanks = ranks[activeCategory as keyof typeof ranks];
+                return categoryRanks ? categoryRanks.includes(u.rank) : false;
             })
             .filter(u => {
                 const searchLower = searchTerm.toLowerCase();
@@ -140,7 +141,7 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
     const getDayOfYear = (dateStr: string) => {
         if (!dateStr) return 0;
         // Parse manual (YYYY-MM-DD) para evitar problemas de timezone de Date(string)
-        const [year, month, day] = dateStr.split('-').map(Number);
+        const [year, month, day] = dateStr.split(/[-/]/).map(Number);
         const date = new Date(year, month - 1, day);
         const start = new Date(year, 0, 0);
         const diff = date.getTime() - start.getTime();
@@ -323,7 +324,7 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                                 placeholder="Buscar militar pelo nome ou SARAM..."
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
-                                className={`w-full pl-10 pr-12 py-3.5 rounded-2xl border text-sm outline-none transition-all ${dk ? 'bg-slate-910 border-slate-700 text-white focus:border-blue-500' : 'bg-slate-50 border-slate-100 text-slate-900 focus:border-blue-600'}`}
+                                className={`w-full pl-10 pr-12 py-3.5 rounded-2xl border text-sm outline-none transition-all ${dk ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500' : 'bg-slate-50 border-slate-100 text-slate-900 focus:border-blue-600'}`}
                             />
                             { (searchTerm || selectedStatus !== 'ALL' || activeUnit !== 'TODAS' || activeCategory !== 'TODOS') && (
                                 <button 
