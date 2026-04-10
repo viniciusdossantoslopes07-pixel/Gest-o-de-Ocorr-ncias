@@ -246,7 +246,7 @@ const App: FC = () => {
           signedAt: a.signed_at,
           signedBy: a.signed_by,
           createdAt: a.created_at,
-          records: a.attendance_records.map((r: any) => ({
+          records: (a.attendance_records || []).map((r: any) => ({
             militarId: r.militar_id,
             militarName: r.militar_name,
             militarRank: r.militar_rank,
@@ -272,7 +272,7 @@ const App: FC = () => {
           performedBy: j.performed_by,
           timestamp: j.timestamp,
           sector: j.sector,
-          date: j.date,
+          date: j.date || j.initial_date || '', // Fallback para compatibilidade
           callType: j.call_type
         })));
       }
