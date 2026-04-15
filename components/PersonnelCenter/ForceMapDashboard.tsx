@@ -45,7 +45,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const [selectedSector, setSelectedSector] = useState<string>('TODOS');
     const [callTypeFilter, setCallTypeFilter] = useState<'INICIO' | 'TERMINO' | 'LATEST'>('LATEST');
     const [rankFilter, setRankFilter] = useState<'TODOS' | 'OFICIAIS' | 'GRADUADOS' | 'PRACAS'>('TODOS');
-    const [showAbsentList, setShowAbsentList] = useState(false);
+    const [selectedStatusModal, setSelectedStatusModal] = useState<keyof typeof STATUS_GROUPS | null>(null);
     const [expandedSector, setExpandedSector] = useState<string | null>(null);
     const [isAbsencesExpanded, setIsAbsencesExpanded] = useState(false);
     const [isPrinting, setIsPrinting] = useState(false);
@@ -352,7 +352,35 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 if (rankOrder !== 0) return rankOrder;
                 return (a.user.warName || a.user.name).localeCompare(b.user.warName || b.user.name);
             });
-    }, [relevantUsers, currentRecordsMap]);
+    }, [relevantUsers, currentRecordsMap, signedSectors]);
+
+    // List for detailed status modal
+    const activeStatusList = useMemo(() => {
+        if (!selectedStatusModal) return [];
+        const group = STATUS_GROUPS[selectedStatusModal];
+        
+        return relevantUsers
+            .filter(u => {
+                if (!signedSectors.has(u.sector)) return false;
+                const record = currentRecordsMap.get(u.id);
+                const status = record?.status || 'A';
+                return (group.codes as readonly string[]).includes(status);
+            })
+            .map(u => {
+                const record = currentRecordsMap.get(u.id);
+                const status = record?.status || 'A';
+                return {
+                    user: u,
+                    status,
+                    label: (PRESENCE_STATUS as any)[status] || status
+                };
+            })
+            .sort((a, b) => {
+                const rankOrder = [...OFICIAIS, ...GRADUADOS, ...PRACAS].indexOf(a.user.rank) - [...OFICIAIS, ...GRADUADOS, ...PRACAS].indexOf(b.user.rank);
+                if (rankOrder !== 0) return rankOrder;
+                return (a.user.warName || a.user.name).localeCompare(b.user.warName || b.user.name);
+            });
+    }, [selectedStatusModal, relevantUsers, currentRecordsMap, signedSectors]);
 
     // Sector breakdown
     const sectorBreakdown = useMemo(() => {
@@ -652,7 +680,11 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                             slate: 'slate', gray: 'gray'
                         };
                         return (
-                            <div key={s.key} className={`group relative p-4 rounded-3xl border transition-all duration-300 hover:-translate-y-1 ${dk ? 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/60' : 'bg-slate-50/50 border-slate-100 hover:bg-white'}`}>
+                            <button 
+                                key={s.key} 
+                                onClick={() => setSelectedStatusModal(s.key as keyof typeof STATUS_GROUPS)}
+                                className={`group relative w-full text-left p-4 rounded-3xl border transition-all duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${dk ? 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/60' : 'bg-slate-50/50 border-slate-100 hover:bg-white'}`}
+                            >
                                 <div className={`inline-flex p-2.5 rounded-2xl bg-${colorMap[s.color]}-500/10 text-${colorMap[s.color]}-500 mb-4 group-hover:scale-110 transition-transform`}>
                                     <Icon className="w-4 h-4" />
                                 </div>
@@ -663,7 +695,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                         <span className={`text-[9px] font-bold ${textMuted}`}>{s.pct}%</span>
                                     </div>
                                 </div>
-                            </div>
+                            </button>
                         );
                     })}
                 </div>
@@ -897,23 +929,46 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 />
             )}
 
-            {/* Global Absent Modal */}
-            {showAbsentList && (
+            {/* Detailed Status Modal */}
+            {selectedStatusModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setShowAbsentList(false)} />
+                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setSelectedStatusModal(null)} />
                     <div className={`${gls} w-full max-w-4xl max-h-[90vh] rounded-[3rem] border shadow-2xl overflow-hidden flex flex-col relative animate-in zoom-in-95 duration-300`}>
                         <div className="p-8 border-b border-slate-500/10 flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <div className="p-3 rounded-2xl bg-red-500/10 text-red-500">
-                                    <UserX className="w-6 h-6" />
-                                </div>
+                                {(() => {
+                                    const group = STATUS_GROUPS[selectedStatusModal];
+                                    const Icon = group.icon;
+                                    const clr = group.color;
+                                    const colorsMap: Record<string, string> = {
+                                        emerald: 'bg-emerald-500/10 text-emerald-500',
+                                        red: 'bg-red-500/10 text-red-500',
+                                        indigo: 'bg-indigo-500/10 text-indigo-500',
+                                        blue: 'bg-blue-500/10 text-blue-500',
+                                        amber: 'bg-amber-500/10 text-amber-500',
+                                        cyan: 'bg-cyan-500/10 text-cyan-400',
+                                        violet: 'bg-violet-500/10 text-violet-400',
+                                        pink: 'bg-pink-500/10 text-pink-500',
+                                        slate: 'bg-slate-500/10 text-slate-400',
+                                        gray: 'bg-gray-500/10 text-gray-400'
+                                    };
+                                    return (
+                                        <div className={`p-3 rounded-2xl ${colorsMap[clr] || colorsMap.slate}`}>
+                                            <Icon className="w-6 h-6" />
+                                        </div>
+                                    );
+                                })()}
                                 <div>
-                                    <h3 className={`text-xl font-black uppercase tracking-tight ${textPrimary}`}>REGISTRO GERAL DE AUSÊNCIAS</h3>
-                                    <p className={`text-xs font-bold ${textSecondary}`}>{globalAbsentList.length} Militares indisponíveis no momento</p>
+                                    <h3 className={`text-xl font-black uppercase tracking-tight ${textPrimary}`}>
+                                        DETALHES: {STATUS_GROUPS[selectedStatusModal].label}
+                                    </h3>
+                                    <p className={`text-xs font-bold ${textSecondary}`}>
+                                        {activeStatusList.length} Militares com este status
+                                    </p>
                                 </div>
                             </div>
                             <button 
-                                onClick={() => setShowAbsentList(false)}
+                                onClick={() => setSelectedStatusModal(null)}
                                 className={`p-3 rounded-2xl transition-all ${dk ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                             >
                                 <X className="w-5 h-5" />
@@ -922,36 +977,42 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                         
                         <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                {globalAbsentList.map(a => {
-                                    const group = Object.values(STATUS_GROUPS).find(g => (g.codes as readonly string[]).includes(a.status as string));
-                                    const colorMap: Record<string, string> = {
-                                        emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-                                        red: 'bg-red-500/10 text-red-500 border-red-500/20',
-                                        indigo: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
-                                        blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-                                        amber: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-                                        cyan: 'bg-cyan-500/10 text-cyan-400 border-cyan-400/20',
-                                        violet: 'bg-violet-500/10 text-violet-400 border-violet-400/20',
-                                        pink: 'bg-pink-500/10 text-pink-500 border-pink-500/20',
-                                        slate: 'bg-slate-500/10 text-slate-400 border-slate-400/20',
-                                        gray: 'bg-gray-500/10 text-gray-400 border-gray-400/20'
-                                    };
-                                    const clr = group?.color || 'slate';
+                                {activeStatusList.length === 0 ? (
+                                    <div className={`col-span-full p-8 rounded-3xl border border-dashed ${dk ? 'border-slate-700 bg-slate-800/10' : 'border-slate-200 bg-slate-50'} text-center`}>
+                                        <p className={`text-sm font-bold ${textMuted} uppercase`}>Nenhum registro encontrado para este status</p>
+                                    </div>
+                                ) : (
+                                    activeStatusList.map(a => {
+                                        const group = Object.values(STATUS_GROUPS).find(g => (g.codes as readonly string[]).includes(a.status as string));
+                                        const colorMap: Record<string, string> = {
+                                            emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+                                            red: 'bg-red-500/10 text-red-500 border-red-500/20',
+                                            indigo: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+                                            blue: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+                                            amber: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+                                            cyan: 'bg-cyan-500/10 text-cyan-400 border-cyan-400/20',
+                                            violet: 'bg-violet-500/10 text-violet-400 border-violet-400/20',
+                                            pink: 'bg-pink-500/10 text-pink-500 border-pink-500/20',
+                                            slate: 'bg-slate-500/10 text-slate-400 border-slate-400/20',
+                                            gray: 'bg-gray-500/10 text-gray-400 border-gray-400/20'
+                                        };
+                                        const clr = group?.color || 'slate';
 
-                                    return (
-                                        <div key={a.user.id} className={`p-4 rounded-3xl border flex flex-col gap-3 transition-all ${dk ? 'bg-slate-800/20 border-slate-700/30' : 'bg-slate-50 border-slate-100'}`}>
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <p className={`text-xs font-black uppercase ${textPrimary}`}>{a.user.rank} {a.user.warName || a.user.name}</p>
-                                                    <p className={`text-[9px] font-bold uppercase tracking-widest ${textMuted} mt-0.5`}>{a.user.sector}</p>
+                                        return (
+                                            <div key={a.user.id} className={`p-4 rounded-3xl border flex flex-col gap-3 transition-all ${dk ? 'bg-slate-800/20 border-slate-700/30' : 'bg-slate-50 border-slate-100'}`}>
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <p className={`text-xs font-black uppercase ${textPrimary}`}>{a.user.rank} {a.user.warName || a.user.name}</p>
+                                                        <p className={`text-[9px] font-bold uppercase tracking-widest ${textMuted} mt-0.5`}>{a.user.sector}</p>
+                                                    </div>
+                                                    <span className={`text-[8px] font-black uppercase px-2 py-1 rounded-lg border ${colorMap[clr] || colorMap.slate}`}>
+                                                        {a.label}
+                                                    </span>
                                                 </div>
-                                                <span className={`text-[8px] font-black uppercase px-2 py-1 rounded-lg border ${colorMap[clr] || colorMap.slate}`}>
-                                                    {a.label}
-                                                </span>
                                             </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })
+                                )}
                             </div>
                         </div>
                     </div>
