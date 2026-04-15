@@ -723,8 +723,9 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                             <span className={`text-xs font-black uppercase tracking-tighter ${textPrimary}`}>{s.sector}</span>
                                             <p className={`text-[9px] font-bold ${textMuted}`}>Total: {s.total}</p>
                                         </div>
-                                        <div className="flex-1 flex flex-col gap-1 max-w-[200px]">
-                                            <div className={`h-2 rounded-full overflow-hidden ${dk ? 'bg-slate-800' : 'bg-slate-100'} p-0.5`}>
+                                        <div className="flex-1 flex items-center justify-end gap-3 max-w-[200px]">
+                                            <span className={`text-[10px] font-black ${textPrimary} w-8 text-right`}>{Math.round(s.pct)}%</span>
+                                            <div className={`flex-1 h-2 rounded-full overflow-hidden ${dk ? 'bg-slate-800' : 'bg-slate-100'} p-0.5`}>
                                                 <div
                                                     className={`h-full rounded-full transition-all duration-1000 ${s.pct > 85 ? 'bg-emerald-500' : s.pct > 60 ? 'bg-amber-400' : 'bg-red-500'}`}
                                                     style={{ width: `${s.pct}%` }}
@@ -786,23 +787,43 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                             <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Status de Chamada</h3>
                         </div>
                         <div className="space-y-3 relative z-10 overflow-y-auto max-h-[500px] custom-scrollbar pr-2">
-                             {activeSectorsToShow.map(sector => {
-                                const sectorCalls = attendanceHistory?.filter(a => a.date === selectedDate && a.sector === sector && !!a.signedBy) || [];
-                                const hasInicio = sectorCalls.some(c => c.callType === 'INICIO');
-                                const hasTermino = sectorCalls.some(c => c.callType === 'TERMINO');
-                                return (
-                                    <div key={sector} className={`flex items-center justify-between p-3 rounded-2xl border ${dk ? 'bg-slate-800/30 border-slate-700/50' : 'bg-slate-50 border-slate-100'}`}>
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-1.5 h-1.5 rounded-full ${hasTermino ? 'bg-emerald-500' : hasInicio ? 'bg-amber-500' : 'bg-red-500'} animate-pulse`} />
-                                            <span className={`text-[10px] font-black uppercase ${textPrimary}`}>{sector}</span>
+                            {(() => {
+                                const renderSectors = (sectorsToRender: string[]) => {
+                                    return sectorsToRender.map(sector => {
+                                        const sectorCalls = attendanceHistory?.filter(a => a.date === selectedDate && a.sector === sector && !!a.signedBy) || [];
+                                        const hasInicio = sectorCalls.some(c => c.callType === 'INICIO');
+                                        const hasTermino = sectorCalls.some(c => c.callType === 'TERMINO');
+                                        return (
+                                            <div key={sector} className={`flex items-center justify-between p-3 rounded-2xl border ${dk ? 'bg-slate-800/30 border-slate-700/50' : 'bg-slate-50 border-slate-100'}`}>
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${hasTermino ? 'bg-emerald-500' : hasInicio ? 'bg-amber-500' : 'bg-red-500'} animate-pulse`} />
+                                                    <span className={`text-[10px] font-black uppercase ${textPrimary}`}>{sector}</span>
+                                                </div>
+                                                <div className="flex gap-1">
+                                                    <div className={`w-5 h-5 rounded-lg flex items-center justify-center text-[8px] font-black ${hasInicio ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-500/10 text-slate-500'}`}>1</div>
+                                                    <div className={`w-5 h-5 rounded-lg flex items-center justify-center text-[8px] font-black ${hasTermino ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-500/10 text-slate-500'}`}>2</div>
+                                                </div>
+                                            </div>
+                                        );
+                                    });
+                                };
+
+                                if (selectedSector === 'TODOS') {
+                                    return (
+                                        <div className="space-y-4">
+                                            <div>
+                                                <h4 className={`text-[10px] font-black uppercase tracking-widest text-blue-500 mb-2 pl-2`}>UNIDADE GSD-SP</h4>
+                                                <div className="space-y-2">{renderSectors(GSD_SP_SECTORS.filter(s => displaySectors.includes(s)))}</div>
+                                            </div>
+                                            <div>
+                                                <h4 className={`text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-2 pl-2`}>UNIDADE BASP</h4>
+                                                <div className="space-y-2">{renderSectors(BASP_SECTORS.filter(s => displaySectors.includes(s)))}</div>
+                                            </div>
                                         </div>
-                                        <div className="flex gap-1">
-                                            <div className={`w-5 h-5 rounded-lg flex items-center justify-center text-[8px] font-black ${hasInicio ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-500/10 text-slate-500'}`}>1</div>
-                                            <div className={`w-5 h-5 rounded-lg flex items-center justify-center text-[8px] font-black ${hasTermino ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-500/10 text-slate-500'}`}>2</div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                }
+                                return <div className="space-y-3">{renderSectors(activeSectorsToShow)}</div>;
+                            })()}
                         </div>
                     </div>
 
