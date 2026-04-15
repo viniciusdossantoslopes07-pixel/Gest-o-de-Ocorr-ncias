@@ -94,9 +94,9 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
             })
             .filter(u => {
                 const searchLower = searchTerm.toLowerCase();
-                return u.name.toLowerCase().includes(searchLower) || 
+                return u.name?.toLowerCase().includes(searchLower) || 
                        u.warName?.toLowerCase().includes(searchLower) ||
-                       u.saram.includes(searchTerm);
+                       (u.saram || '').includes(searchTerm);
             })
             .sort((a, b) => {
                 const pA = RANKS.indexOf(a.rank);
