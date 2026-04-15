@@ -969,26 +969,28 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                             <p className={`text-sm ${textMuted}`}>Histórico de acesso e rastreamento de dados.</p>
                         </div>
                         
-                        <div className={`flex flex-col sm:flex-row gap-2 p-1 rounded-xl border shadow-sm ${dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-                            {([
-                                { label: 'Hoje', value: 0 },
-                                { label: '7 Dias', value: 7 },
-                                { label: '30 Dias', value: 30 },
-                                { label: 'Tudo', value: null }
-                            ] as const).map(preset => (
-                                <button
-                                    key={String(preset.value)}
-                                    onClick={() => handleQuickDate(preset.value)}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeQuickDate === preset.value
-                                        ? (dk ? 'bg-blue-900/40 text-blue-400 shadow-sm' : 'bg-blue-100 text-blue-700 shadow-sm')
-                                        : (dk ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-500 hover:bg-slate-50')
-                                        }`}
-                                >
-                                    {preset.label}
-                                </button>
-                            ))}
+                        <div className={`flex flex-col sm:flex-row gap-2 p-1.5 rounded-xl border shadow-sm ${dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                            <div className="flex flex-wrap justify-center sm:justify-start gap-1 w-full sm:w-auto">
+                                {([
+                                    { label: 'Hoje', value: 0 },
+                                    { label: '7 Dias', value: 7 },
+                                    { label: '30 Dias', value: 30 },
+                                    { label: 'Tudo', value: null }
+                                ] as const).map(preset => (
+                                    <button
+                                        key={String(preset.value)}
+                                        onClick={() => handleQuickDate(preset.value)}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex-1 sm:flex-none text-center ${activeQuickDate === preset.value
+                                            ? (dk ? 'bg-blue-900/40 text-blue-400 shadow-sm' : 'bg-blue-100 text-blue-700 shadow-sm')
+                                            : (dk ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-500 hover:bg-slate-50')
+                                            }`}
+                                    >
+                                        {preset.label}
+                                    </button>
+                                ))}
+                            </div>
                             <div className={`w-px mx-1 hidden sm:block ${dk ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                            <div className="flex items-center gap-2 px-2">
+                            <div className="flex items-center justify-center sm:justify-start gap-2 px-2 pb-1 sm:pb-0">
                                 <input
                                     type="date"
                                     value={searchStartDate}
@@ -1015,8 +1017,8 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Pesquisar por NOME, PLACA, MODELO, IDENTIFICAÇÃO ou DESTINO..."
-                                className={`w-full pl-12 pr-4 py-4 border rounded-xl font-bold text-lg outline-none transition-all uppercase focus:ring-4 ${inputCls}`}
+                                placeholder="NOME, PLACA, MODELO, DOC OU DESTINO..."
+                                className={`w-full pl-10 md:pl-12 pr-4 py-3 md:py-4 border rounded-xl font-bold text-sm md:text-lg outline-none transition-all uppercase focus:ring-4 ${inputCls}`}
                                 autoFocus
                             />
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400" />
@@ -1029,9 +1031,9 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                         <div className="flex flex-col gap-3 pt-2">
                             <div className="flex flex-col md:flex-row gap-3 flex-wrap">
                                 {/* Gate Filter */}
-                                <div className={`flex gap-2 items-center p-2 rounded-xl border ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-                                    <span className={`text-[10px] font-black uppercase pl-2 whitespace-nowrap ${textMuted}`}>Portão:</span>
-                                    <div className="flex gap-1">
+                                <div className={`flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 p-2 rounded-xl border ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
+                                    <span className={`text-[10px] font-black uppercase pl-1 sm:pl-2 whitespace-nowrap ${textMuted}`}>Portão:</span>
+                                    <div className="flex flex-wrap gap-1">
                                         {(['all', 'PORTÃO G1', 'PORTÃO G2', 'PORTÃO G3'] as const).map(gate => {
                                             const label = gate === 'all' ? 'Todos' : gate.replace('PORTÃO ', '');
                                             return (
@@ -1051,8 +1053,9 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                 </div>
 
                                 {/* Type Filter */}
-                                <div className={`flex gap-2 items-center p-2 rounded-xl border ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-                                    <span className={`text-[10px] font-black uppercase pl-2 whitespace-nowrap ${textMuted}`}>Tipo:</span>
+                                <div className={`flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 p-2 rounded-xl border ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
+                                    <span className={`text-[10px] font-black uppercase pl-1 sm:pl-2 whitespace-nowrap ${textMuted}`}>Tipo:</span>
+                                <div className="flex flex-wrap gap-1">
                                 {(['all', 'Pedestre', 'Veículo'] as const).map(type => (
                                     <button
                                         key={type}
@@ -1065,12 +1068,13 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                         {type === 'all' ? 'Todos' : type}
                                     </button>
                                 ))}
+                                </div>
                             </div>
 
                         {/* Category Filters */}
-                        <div className={`flex gap-2 items-center p-2 rounded-xl border overflow-x-auto ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-                            <span className={`text-[10px] font-black uppercase pl-2 whitespace-nowrap ${textMuted}`}>Sentido:</span>
-                            <div className="flex gap-1">
+                        <div className={`flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 p-2 rounded-xl border ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
+                            <span className={`text-[10px] font-black uppercase pl-1 sm:pl-2 whitespace-nowrap ${textMuted}`}>Sentido:</span>
+                            <div className="flex flex-wrap gap-1">
                                 {(['all', 'Entrada', 'Saída'] as const).map(cat => (
                                     <button
                                         key={cat}
@@ -1087,9 +1091,9 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                         </div>
 
                         {/* Characteristic Filter */}
-                        <div className={`flex gap-2 items-center p-2 rounded-xl border overflow-x-auto ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-                            <span className={`text-[10px] font-black uppercase pl-2 whitespace-nowrap ${textMuted}`}>Característica:</span>
-                            <div className="flex gap-1">
+                        <div className={`flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 p-2 rounded-xl border ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
+                            <span className={`text-[10px] font-black uppercase pl-1 sm:pl-2 whitespace-nowrap ${textMuted}`}>Característica:</span>
+                            <div className="flex flex-wrap gap-1">
                                 {(['all', 'CIVIL', 'MILITAR', 'PRESTADOR', 'ENTREGADOR'] as const).map(char => (
                                     <button
                                         key={char}
