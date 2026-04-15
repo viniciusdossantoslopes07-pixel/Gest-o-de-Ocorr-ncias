@@ -483,7 +483,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 const isNoWorkDay = a.observacao === 'Feriado' || a.observacao === 'Expediente Cancelado' || a.records.every(r => r.status === 'NIL');
 
                 if (isNoWorkDay) {
-                    filteredUsers.forEach(u => {
+                    realPersonnel.forEach(u => {
                         if (!grid[u.id]) grid[u.id] = {};
                         if (!grid[u.id][a.date]) grid[u.id][a.date] = {};
                         grid[u.id][a.date][a.callType] = 'NIL';
@@ -540,7 +540,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         });
 
         setWeeklyGrid(grid);
-    }, [currentWeek, attendanceHistory, selectedSector, userDestinations, signedDates, filteredUsers]);
+    }, [currentWeek, attendanceHistory, selectedSector, userDestinations, signedDates, realPersonnel]);
 
     const handleWeeklyChange = (userId: string, date: string, callType: string, status: string) => {
         // Registrar override local ANTES de qualquer outro update para evitar race condition
