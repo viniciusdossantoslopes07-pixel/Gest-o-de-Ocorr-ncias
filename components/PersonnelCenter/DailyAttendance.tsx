@@ -1539,7 +1539,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             body.print-weekly-mode .print-weekly {
                                 visibility: visible !important;
                                 display: block !important;
-                                position: fixed !important;
+                                position: absolute !important;
                                 top: 0 !important;
                                 left: 0 !important;
                                 right: 0 !important;
@@ -1559,7 +1559,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             body.print-coupon-mode .print-coupon-thermal {
                                 visibility: visible !important;
                                 display: block !important;
-                                position: fixed !important;
+                                position: absolute !important;
                                 top: 0 !important;
                                 left: 0 !important;
                                 width: 72mm !important;
