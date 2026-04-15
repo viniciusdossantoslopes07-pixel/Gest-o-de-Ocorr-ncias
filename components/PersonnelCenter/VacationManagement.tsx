@@ -21,6 +21,10 @@ const MONTHS = [
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
 ];
 
+const getDaysInYear = (year: number) => {
+    return ((year % 4 === 0 && year % 100 > 0) || year % 400 === 0) ? 366 : 365;
+};
+
 const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMode = false, users }) => {
     const [vacations, setVacations] = useState<Vacation[]>([]);
     const [loading, setLoading] = useState(true);
@@ -90,7 +94,7 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                 };
 
                 const categoryRanks = ranks[activeCategory as keyof typeof ranks];
-                return categoryRanks ? categoryRanks.includes(u.rank) : false;
+                return categoryRanks ? categoryRanks.includes(u.rank || '') : false;
             })
             .filter(u => {
                 const searchLower = searchTerm.toLowerCase();
@@ -99,11 +103,11 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                        (u.saram || '').includes(searchTerm);
             })
             .sort((a, b) => {
-                const pA = RANKS.indexOf(a.rank);
-                const pB = RANKS.indexOf(b.rank);
+                const pA = RANKS.indexOf(a.rank || '');
+                const pB = RANKS.indexOf(b.rank || '');
                 if (pA !== pB) return pA - pB;
                 if (a.warName && b.warName) return a.warName.localeCompare(b.warName);
-                return a.name.localeCompare(b.name);
+                return (a.name || '').localeCompare(b.name || '');
             });
     }, [users, searchTerm, activeUnit, activeCategory, sectors]);
 
