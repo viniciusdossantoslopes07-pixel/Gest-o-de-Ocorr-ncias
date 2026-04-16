@@ -16,14 +16,17 @@ interface VacationManagementProps {
     users: User[];
 }
 
+
 const MONTHS = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
 ];
 
-const getDaysInYear = (year: number) => {
+const getDaysInYear = (year: number): number => {
     return ((year % 4 === 0 && year % 100 > 0) || year % 400 === 0) ? 366 : 365;
 };
+
+
 
 const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMode = false, users }) => {
     const [vacations, setVacations] = useState<Vacation[]>([]);
@@ -137,10 +140,7 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
         return filteredVacations.find(v => v.militar_id === userId);
     };
 
-    // Timeline Rendering Helpers
-    const getDaysInYear = (year: number) => {
-        return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 366 : 365;
-    };
+    // Timeline Rendering Helpers — getDaysInYear is defined at module level
 
     const getDayOfYear = (dateStr: string) => {
         if (!dateStr) return 0;
