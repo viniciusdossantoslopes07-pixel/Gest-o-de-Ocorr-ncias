@@ -154,43 +154,15 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return userList.filter(u => rankSet.includes(u.rank));
     };
 
-    // Get records for a specific date
-    const getRecordsForDate = (date: string) => {
-        const filtered = attendanceHistory?.filter(a => {
-            const matchesDate = a.date === date;
-            let matchesSector = true;
-            if (selectedSector === 'GSD-SP') matchesSector = GSD_SP_SECTORS.includes(a.sector);
-            else if (selectedSector === 'BASP') matchesSector = BASP_SECTORS.includes(a.sector);
-            else if (selectedSector !== 'TODOS') matchesSector = a.sector === selectedSector;
-            const isSigned = !!a.signedBy;
-
-            let matchesCall = true;
-            if (callTypeFilter === 'INICIO') matchesCall = a.callType === 'INICIO';
-            else if (callTypeFilter === 'TERMINO') matchesCall = a.callType === 'TERMINO';
-
-            return matchesDate && matchesSector && isSigned && matchesCall;
-        }) || [];
-
-        const latestMap = new Map<string, any>();
-
-        if (callTypeFilter === 'LATEST') {
-            filtered
-                .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-                .forEach(a => {
-                    a.records.forEach(r => {
-                        latestMap.set(r.militarId, { ...r, sector: a.sector, callType: a.callType });
-                    });
-                });
-        } else {
-            filtered.forEach(a => {
-                a.records.forEach(r => {
-                    latestMap.set(r.militarId, { ...r, sector: a.sector, callType: a.callType });
-                });
-            });
-        }
-
-        return latestMap;
-    };
+    // Pre-index attendanceHistory by date to dramatically speed up lookups (O(1) vs O(N) over hundreds of records)
+    const historyByDate = useMemo(() => {
+        const map = new Map<string, DailyAttendance[]>();
+        attendanceHistory?.forEach(a => {
+            if (!map.has(a.date)) map.set(a.date, []);
+            map.get(a.date)!.push(a);
+        });
+        return map;
+    }, [attendanceHistory]);
 
     // Sectors to show based on filter
     const activeSectorsToShow = useMemo(() => {
@@ -219,7 +191,51 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return filterUsersByRank(sectorFiltered);
     }, [users, selectedSector, rankFilter, displaySectors, GSD_SP_SECTORS, BASP_SECTORS]);
 
-    const relevantUserIds = new Set(relevantUsers.map(u => u.id));
+    // Pre-index by user ID for O(1) matching later
+    const relevantUserIds = useMemo(() => new Set(relevantUsers.map(u => u.id)), [relevantUsers]);
+
+    // Get records for a specific date
+    const getRecordsForDate = (date: string) => {
+        const dayHistory = historyByDate.get(date) || [];
+        const filtered = dayHistory.filter(a => {
+            let matchesSector = true;
+            if (selectedSector === 'GSD-SP') matchesSector = GSD_SP_SECTORS.includes(a.sector);
+            else if (selectedSector === 'BASP') matchesSector = BASP_SECTORS.includes(a.sector);
+            else if (selectedSector !== 'TODOS') matchesSector = a.sector === selectedSector;
+            
+            const isSigned = !!a.signedBy;
+
+            let matchesCall = true;
+            if (callTypeFilter === 'INICIO') matchesCall = a.callType === 'INICIO';
+            else if (callTypeFilter === 'TERMINO') matchesCall = a.callType === 'TERMINO';
+
+            return matchesSector && isSigned && matchesCall;
+        });
+
+        const latestMap = new Map<string, any>();
+
+        if (callTypeFilter === 'LATEST') {
+            filtered
+                .sort((a, b) => {
+                    const timeA = new Date(a.createdAt || a.signedAt || a.date).getTime();
+                    const timeB = new Date(b.createdAt || b.signedAt || b.date).getTime();
+                    return timeA - timeB;
+                })
+                .forEach(a => {
+                    a.records.forEach(r => {
+                        latestMap.set(r.militarId, { ...r, sector: a.sector, callType: a.callType });
+                    });
+                });
+        } else {
+            filtered.forEach(a => {
+                a.records.forEach(r => {
+                    latestMap.set(r.militarId, { ...r, sector: a.sector, callType: a.callType });
+                });
+            });
+        }
+
+        return latestMap;
+    };
 
     // Current and previous records
     const currentRecordsMap = useMemo(() => {
@@ -235,7 +251,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
             return flattenedMap;
         }
         return getRecordsForDate(selectedDate);
-    }, [selectedDate, selectedSector, callTypeFilter, attendanceHistory, viewMode, currentWeekRange]);
+    }, [selectedDate, selectedSector, callTypeFilter, historyByDate, viewMode, currentWeekRange, GSD_SP_SECTORS, BASP_SECTORS]);
 
     // Weekly average readiness logic
     const weeklyProntidaoData = useMemo(() => {
