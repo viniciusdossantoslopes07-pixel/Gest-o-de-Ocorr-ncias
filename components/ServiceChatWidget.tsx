@@ -41,7 +41,11 @@ const ServiceChatWidget: React.FC<ServiceChatWidgetProps> = ({ currentUser, isDa
         table: 'service_chat_messages' 
       }, (payload) => {
         const newMessage = payload.new as ChatMessage;
-        setMessages(prev => [...prev, newMessage]);
+        
+        setMessages(prev => {
+          if (prev.find(m => m.id === newMessage.id)) return prev;
+          return [...prev, newMessage];
+        });
         
         // Se estiver fechado ou usuário não for o próprio, aumentar contador e tocar som
         if (!isOpen && newMessage.user_id !== currentUser.id) {
@@ -89,8 +93,8 @@ const ServiceChatWidget: React.FC<ServiceChatWidgetProps> = ({ currentUser, isDa
     const messageContent = inputValue.trim();
     setInputValue(''); // Limpa otimista
 
-    // Enviar pro Supabase
-    const { error } = await supabase
+    // Enviar pro Supabase e já retornar os dados salvos para exibir instantaneamente
+    const { data, error } = await supabase
       .from('service_chat_messages')
       .insert([{
         user_id: currentUser.id,
@@ -98,11 +102,19 @@ const ServiceChatWidget: React.FC<ServiceChatWidgetProps> = ({ currentUser, isDa
         rank: currentUser.rank,
         war_name: currentUser.warName || currentUser.name,
         content: messageContent
-      }]);
+      }])
+      .select()
+      .single();
 
     if (error) {
       console.error('Erro ao enviar mensagem:', error);
-      // Fallback
+      // alert('Erro de conexão ao enviar');
+    } else if (data) {
+      // Atualização otimista: insere a msg na própria tela instantaneamente
+      setMessages(prev => {
+        if (prev.find(m => m.id === data.id)) return prev;
+        return [...prev, data as ChatMessage];
+      });
     }
   };
 
@@ -196,7 +208,7 @@ const ServiceChatWidget: React.FC<ServiceChatWidgetProps> = ({ currentUser, isDa
                             {msg.rank} {msg.war_name}
                           </span>
                         )}
-                        <div className={`relative max-w-[85%] px-4 py-2.5 rounded-2xl text-sm whitespace-pre-wrap word-break flex flex-col gap-1 shadow-sm
+                        <div className={`relative max-w-[85%] px-4 py-2.5 rounded-2xl text-sm whitespace-pre-wrap break-words flex flex-col gap-1 shadow-sm
                           ${isMine 
                             ? isDarkMode ? 'bg-blue-600 text-white rounded-br-none' : 'bg-blue-600 text-white rounded-br-none' 
                             : isDarkMode ? 'bg-slate-800 text-slate-200 rounded-bl-none border border-slate-700/50' : 'bg-white text-slate-800 rounded-bl-none border border-slate-200'
