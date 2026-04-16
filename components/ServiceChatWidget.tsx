@@ -16,6 +16,7 @@ const ServiceChatWidget: React.FC<ServiceChatWidgetProps> = ({ currentUser, isDa
   const [isMinimized, setIsMinimized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
 
   // Inicializa o chat e busca histórico
   useEffect(() => {
@@ -33,8 +34,20 @@ const ServiceChatWidget: React.FC<ServiceChatWidgetProps> = ({ currentUser, isDa
 
     fetchHistory();
 
-    // Inscreve no canal de mensagens
-    const chatChannel = supabase.channel('service_chat_channel')
+    // Inscreve no canal de mensagens e presença
+    const chatChannel = supabase.channel('service_chat_channel', {
+      config: {
+        presence: { key: currentUser.id }
+      }
+    })
+      .on('presence', { event: 'sync' }, () => {
+        const newState = chatChannel.presenceState();
+        const currentUsers: any[] = [];
+        for (const id in newState) {
+          currentUsers.push(newState[id][0]); // Pega a primeira instância de cada usuário
+        }
+        setOnlineUsers(currentUsers);
+      })
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
@@ -53,12 +66,21 @@ const ServiceChatWidget: React.FC<ServiceChatWidgetProps> = ({ currentUser, isDa
           playNotificationSound();
         }
       })
-      .subscribe();
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          // Quando conecta, anuncia sua presença pro grupo
+          await chatChannel.track({
+            id: currentUser.id,
+            rank: currentUser.rank,
+            war_name: currentUser.warName || currentUser.username
+          });
+        }
+      });
 
     return () => {
       supabase.removeChannel(chatChannel);
     };
-  }, [isOpen, currentUser.id]);
+  }, [isOpen, currentUser.id, currentUser.rank, currentUser.warName, currentUser.username]);
 
   // Rolar para baixo ao receber mensagem
   useEffect(() => {
@@ -160,12 +182,40 @@ const ServiceChatWidget: React.FC<ServiceChatWidgetProps> = ({ currentUser, isDa
             `}
             onClick={() => setIsMinimized(!isMinimized)}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 relative group/header">
               <div className="relative">
                 <MessageCircle className={`w-5 h-5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                <div className="absolute bottom-0 -right-1 w-2 h-2 rounded-full bg-emerald-500 border border-current"></div>
+                <div className="absolute bottom-0 -right-1 w-2 h-2 rounded-full bg-emerald-500 border border-current shadow-[0_0_5px_rgba(16,185,129,0.8)]"></div>
               </div>
-              <h3 className={`font-black text-sm uppercase tracking-wider ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>Canal Operacional</h3>
+              <div className="flex flex-col">
+                <h3 className={`font-black text-[13px] uppercase tracking-wider leading-none ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
+                  Canal Operacional
+                </h3>
+                {onlineUsers.length > 0 && !isMinimized && (
+                  <span className={`text-[10px] font-bold mt-0.5 flex items-center gap-1 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    {onlineUsers.length} Online
+                  </span>
+                )}
+              </div>
+
+              {/* Lista Suspenso de Presença */}
+              {!isMinimized && onlineUsers.length > 0 && (
+                <div className={`absolute top-full left-0 mt-3 w-48 rounded-xl shadow-xl border opacity-0 invisible group-hover/header:opacity-100 group-hover/header:visible transition-all z-[110]
+                  ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                  <div className="p-2">
+                    <h4 className={`text-[9px] font-black uppercase tracking-widest mb-1.5 px-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Na Escuta</h4>
+                    <ul className="space-y-0.5 max-h-40 overflow-y-auto no-scrollbar">
+                      {onlineUsers.map((u, i) => (
+                        <li key={i} className={`text-[11px] font-medium px-2 py-1.5 rounded flex items-center gap-2 ${isDarkMode ? 'hover:bg-slate-700/50 text-slate-300' : 'hover:bg-slate-50 text-slate-700'}`}>
+                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0 shadow-[0_0_4px_rgba(16,185,129,0.5)]"></span>
+                           <span className="truncate">{u.rank} {u.war_name}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-1">
               <button 

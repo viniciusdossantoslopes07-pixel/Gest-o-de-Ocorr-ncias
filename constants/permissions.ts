@@ -44,6 +44,9 @@ export const PERMISSIONS = {
     SIGN_MISSION: 'sign_mission', // Assinar Digitalmente (Chefe SOP/Cmt)
     START_MISSION: 'start_mission', // Iniciar execução
     END_MISSION: 'end_mission', // Finalizar execução
+
+    // Comunicação / Relacionais
+    USE_SERVICE_CHAT: 'use_service_chat', // Acesso ao Canal Operacional (Chat de Serviço)
 };
 
 export const USER_FUNCTIONS = {
