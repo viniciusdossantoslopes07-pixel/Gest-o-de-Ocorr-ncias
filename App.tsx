@@ -219,11 +219,11 @@ const App: FC = () => {
   useEffect(() => {
     if (!currentUser || currentUser.role === UserRole.PUBLIC) return;
 
-    // Fetch inicial de presenças (últimos 60 dias)
+    // Fetch inicial de presenças (últimos 15 dias) para não onerar bateria/RAM e limites da Cloud Database
     const fetchAttendanceData = async () => {
-      const sixtyDaysAgo = new Date();
-      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
-      const dateFilter = sixtyDaysAgo.toISOString().split('T')[0];
+      const pastDaysForCache = new Date();
+      pastDaysForCache.setDate(pastDaysForCache.getDate() - 15);
+      const dateFilter = pastDaysForCache.toISOString().split('T')[0];
 
       const [attendanceRes, justificationsRes] = await Promise.all([
         supabase
@@ -281,12 +281,12 @@ const App: FC = () => {
     fetchAttendanceData();
 
     // === OTIMIZAÇÃO CRÍTICA ===
-    // Debounce de 3s (era 500ms) para agrupar eventos em massa de uma vez só
-    // (ex: salvar 30 presenças de uma vez disparava 30 fetchs antes)
+    // Debounce alargado para 10s para aliviar o servidor em horários de pico
+    // As assinaturas e os apontamentos salvos refletem imediatamente na tela local.
     let fetchTimeout: ReturnType<typeof setTimeout>;
     const debouncedFetchAttendance = () => {
       clearTimeout(fetchTimeout);
-      fetchTimeout = setTimeout(fetchAttendanceData, 3000);
+      fetchTimeout = setTimeout(fetchAttendanceData, 10000);
     };
 
     // Apenas escutar daily_attendance (não attendance_records) para evitar
