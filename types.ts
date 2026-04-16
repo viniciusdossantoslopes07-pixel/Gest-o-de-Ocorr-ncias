@@ -351,3 +351,14 @@ export interface Vacation {
   periods?: VacationPeriod[];
   user?: User; // Joined user data
 }
+
+export interface ChatMessage {
+  id: string;
+  user_id: string;
+  username: string;
+  rank: string;
+  war_name: string;
+  content: string;
+  created_at: string;
+}
+

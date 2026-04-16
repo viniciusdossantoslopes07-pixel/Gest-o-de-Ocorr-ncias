@@ -59,6 +59,7 @@ const EmergencyLogs = lazy(() => import('./components/EmergencyLogs'));
 const VacationManagement = lazy(() => import('./components/PersonnelCenter/VacationManagement'));
 const VacationStats = lazy(() => import('./components/PersonnelCenter/VacationStats'));
 const VacationPortal = lazy(() => import('./components/PersonnelCenter/VacationPortal'));
+const ServiceChatWidget = lazy(() => import('./components/ServiceChatWidget'));
 
 // Fallback de carregamento para Suspense
 const LazyFallback = () => (
@@ -1896,6 +1897,12 @@ const App: FC = () => {
         )}
       </Suspense>
 
+      {/* Service Chat Widget - Global Floating Box */}
+      {currentUser && (currentUser.is_functional || currentUser.role === UserRole.ADMIN) && (
+        <Suspense fallback={null}>
+          <ServiceChatWidget currentUser={currentUser} isDarkMode={isDarkMode} />
+        </Suspense>
+      )}
     </div>
   );
 };
