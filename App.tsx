@@ -1898,7 +1898,7 @@ const App: FC = () => {
       </Suspense>
 
       {/* Service Chat Widget - Global Floating Box */}
-      {currentUser && hasPermission(currentUser, PERMISSIONS.USE_SERVICE_CHAT) && (
+      {currentUser && (currentUser.is_functional || currentUser.role === UserRole.ADMIN || hasPermission(currentUser, PERMISSIONS.USE_SERVICE_CHAT)) && (
         <Suspense fallback={null}>
           <ServiceChatWidget currentUser={currentUser} isDarkMode={isDarkMode} />
         </Suspense>
