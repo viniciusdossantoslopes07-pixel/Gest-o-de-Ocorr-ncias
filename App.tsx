@@ -680,7 +680,10 @@ const App: FC = () => {
       rc: newUser.rc,
       workplace: newUser.workplace,
       emergency_contact: newUser.emergency_contact || (newUser as any).emergencyContact,
-      is_functional: newUser.is_functional || false
+      is_functional: newUser.is_functional || false,
+      pending_password_reset: newUser.pending_password_reset || false,
+      reset_password_at_login: newUser.reset_password_at_login || false,
+      password_status: newUser.password_status || 'ACTIVE'
     };
 
     const { data, error } = await supabase
@@ -722,7 +725,10 @@ const App: FC = () => {
         rc: data.rc,
         workplace: data.workplace,
         emergency_contact: data.emergency_contact,
-        is_functional: !!data.is_functional
+        is_functional: !!data.is_functional,
+        pending_password_reset: data.pending_password_reset,
+        reset_password_at_login: data.reset_password_at_login,
+        password_status: data.password_status
       };
       setUsers([...users, createdUser]);
       return true;
