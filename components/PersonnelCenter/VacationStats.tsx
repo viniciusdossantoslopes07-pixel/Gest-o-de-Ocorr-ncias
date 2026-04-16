@@ -1,7 +1,7 @@
-import React, { FC, useMemo } from 'react';
+import React, { FC, useMemo, useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { User, Vacation, VacationStatus } from '../../types';
-import { Users, Calendar, TrendingDown, Target, Info, Clock, AlertCircle } from 'lucide-react';
+import { Users, Calendar, TrendingDown, Target, Info, Clock, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface VacationStatsProps {
     isDarkMode?: boolean;
@@ -21,6 +21,8 @@ const MONTHS_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', '
 
 const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vacations, selectedYear }) => {
     const dk = isDarkMode;
+    // Offset em meses para a previsão (0 = mês atual em diante)
+    const [forecastOffset, setForecastOffset] = useState(0);
 
     // Helper to categorize users
     const getUserCategory = (rank: string) => {
@@ -95,33 +97,32 @@ const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vaca
     const presentToday = users?.length ? users.length - (vacations.filter(v => v.status === 'EM_FRUIÇÃO').length) : 0;
     const readinessPercent = users?.length ? Math.round((presentToday / users.length) * 100) : 0;
 
-    const next3MonthsStats = useMemo(() => {
+    const forecastStats = useMemo(() => {
         if (!vacations || !Array.isArray(vacations)) return [];
-        
         const today = new Date();
         const results = [];
         for (let i = 0; i < 3; i++) {
-            const nextMonth = new Date(today.getFullYear(), today.getMonth() + i, 1);
-            const monthIndex = nextMonth.getMonth();
-            const yearToUse = nextMonth.getFullYear();
-            
+            const target = new Date(today.getFullYear(), today.getMonth() + forecastOffset + i, 1);
+            const monthIndex = target.getMonth();
+            const yearToUse = target.getFullYear();
             const monthStart = new Date(yearToUse, monthIndex, 1);
-            const monthEnd = new Date(yearToUse, monthIndex + 1, 0);
-            
-            const absentCount = new Set();
+            const monthEnd  = new Date(yearToUse, monthIndex + 1, 0);
+            const absentCount = new Set<string>();
             vacations.forEach(v => {
                 v.periods?.forEach(p => {
                     const pStart = new Date(p.start_date);
-                    const pEnd = new Date(p.end_date);
+                    const pEnd   = new Date(p.end_date);
                     if (pStart <= monthEnd && pEnd >= monthStart) {
                         absentCount.add(v.militar_id);
                     }
                 });
             });
-            results.push({ month: MONTHS_LABELS[monthIndex], count: absentCount.size });
+            // label: ABR/2027 se ano diferente do atual
+            const yearLabel = yearToUse !== today.getFullYear() ? `/${String(yearToUse).slice(2)}` : '';
+            results.push({ month: MONTHS_LABELS[monthIndex] + yearLabel, count: absentCount.size, year: yearToUse });
         }
         return results;
-    }, [vacations]);
+    }, [vacations, forecastOffset]);
 
     if (!users || users.length === 0) {
         return (
@@ -171,14 +172,46 @@ const VacationStats: FC<VacationStatsProps> = ({ isDarkMode = false, users, vaca
                     <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700 hidden sm:block">
                         <Calendar className="w-32 h-32" />
                     </div>
-                    <h4 className="text-[10px] lg:text-sm font-black uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-blue-400" /> Previsão de "Claro" (Próximos 3 Meses)
-                    </h4>
+                    {/* Header com navegação */}
+                    <div className="flex items-center justify-between mb-4 relative z-10">
+                        <h4 className="text-[10px] lg:text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-blue-400" /> Previsão de "Claro"
+                        </h4>
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={() => setForecastOffset(o => Math.max(0, o - 3))}
+                                disabled={forecastOffset === 0}
+                                className="p-1.5 rounded-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed hover:bg-slate-700 active:scale-95"
+                                title="Meses anteriores"
+                            >
+                                <ChevronLeft className="w-4 h-4 text-slate-400" />
+                            </button>
+                            {forecastOffset !== 0 && (
+                                <button
+                                    onClick={() => setForecastOffset(0)}
+                                    className="px-2 py-1 rounded-lg text-[9px] font-black text-blue-400 hover:bg-slate-700 transition-all uppercase tracking-wider"
+                                    title="Voltar ao mês atual"
+                                >
+                                    Hoje
+                                </button>
+                            )}
+                            <button
+                                onClick={() => setForecastOffset(o => o + 3)}
+                                className="p-1.5 rounded-lg transition-all hover:bg-slate-700 active:scale-95"
+                                title="Próximos meses"
+                            >
+                                <ChevronRight className="w-4 h-4 text-slate-400" />
+                            </button>
+                        </div>
+                    </div>
+                    {/* Meses */}
                     <div className="grid grid-cols-3 gap-2 lg:gap-6 relative z-10">
-                        {next3MonthsStats.map((stat, i) => (
-                            <div key={i} className="flex flex-col border-l border-slate-700 pl-3 lg:pl-4">
-                                <span className="text-[9px] lg:text-[10px] font-black text-slate-500 uppercase truncate">{stat.month}</span>
-                                <span className="text-xl lg:text-2xl font-black text-blue-400">{stat.count}</span>
+                        {forecastStats.map((stat, i) => (
+                            <div key={i} className="flex flex-col border-l border-slate-700 pl-3 lg:pl-4 transition-all">
+                                <span className="text-[9px] lg:text-[10px] font-black text-slate-500 uppercase tracking-widest truncate">{stat.month}</span>
+                                <span className={`text-xl lg:text-2xl font-black transition-colors ${stat.count > 0 ? 'text-amber-400' : 'text-blue-400'}`}>
+                                    {stat.count}
+                                </span>
                                 <span className="text-[8px] lg:text-[9px] font-bold text-slate-500 leading-tight">Ausências</span>
                             </div>
                         ))}
