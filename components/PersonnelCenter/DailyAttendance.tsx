@@ -1070,14 +1070,14 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
             {
                 activeSubTab === 'chamada' && (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
+                    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 w-full min-w-0 max-w-[100vw]">
                         {/* Table View (Responsive) */}
-                        <div className={`rounded-[2rem] border overflow-hidden shadow-sm relative group ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-100/50'}`}>
-                            <div className="overflow-x-auto scrollbar-hide lg:scrollbar-default relative group">
+                        <div className={`rounded-[2rem] border shadow-sm relative group w-full min-w-0 max-w-full overflow-hidden ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-indigo-100/50'}`}>
+                            <div className="overflow-x-auto overflow-y-hidden scrollbar-hide md:scrollbar-default relative group w-full" style={{ WebkitOverflowScrolling: 'touch' }}>
                                 <table className="w-full border-collapse">
                                     <thead className="relative z-40">
                                         <tr className={`${isDarkMode ? 'bg-slate-900/80' : 'bg-indigo-50/50'} premium-table-header`}>
-                                            <th rowSpan={2} className={`px-4 lg:px-7 py-5 border-b text-[10px] font-black uppercase tracking-[0.2em] text-left min-w-[150px] lg:min-w-[220px] sticky left-0 z-30 shadow-[4px_0_10px_rgba(0,0,0,0.05)] ${isDarkMode ? 'bg-slate-900 border-slate-800 text-blue-400' : 'bg-white border-indigo-100/50 text-indigo-600'}`}>
+                                            <th rowSpan={2} className={`px-4 lg:px-7 py-5 border-b text-[10px] font-black uppercase tracking-[0.2em] text-left min-w-[200px] lg:min-w-[220px] sticky left-0 z-30 shadow-[4px_0_10px_rgba(0,0,0,0.05)] ${isDarkMode ? 'bg-slate-900 border-slate-800 text-blue-400' : 'bg-white border-indigo-100/50 text-indigo-600'}`}>
                                                 <div className="flex items-center gap-3">
                                                     <Users className="w-4 h-4 opacity-50" />
                                                     <span>Efetivo Militar</span>

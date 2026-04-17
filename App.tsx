@@ -1239,7 +1239,7 @@ const App: FC = () => {
           </header>
         )}
 
-        <div className="p-3 lg:p-6 flex-1 overflow-y-auto custom-scrollbar relative z-0">
+        <div className="p-3 lg:p-6 flex-1 w-full min-w-0 overflow-y-auto overflow-x-hidden custom-scrollbar relative z-0">
           {/* --- CONTENT AREA START --- */}
           <Suspense fallback={<LazyFallback />}>
 
