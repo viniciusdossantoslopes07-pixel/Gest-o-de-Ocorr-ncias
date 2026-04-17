@@ -117,15 +117,20 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     const isStandardReset = formData.password === '123456';
+    const cleanSaram = formData.saram.replace(/\D/g, '');
+
+    // Garantia: ao criar/editar, o username SEMPRE é o SARAM (exceto contas especiais)
+    const resolvedUsername = (formData.username === 'admin' || formData.username.startsWith('sop.'))
+      ? formData.username
+      : cleanSaram || formData.username.replace(/\D/g, '');
+
     const userData: User = {
       ...formData,
       id: editingUserId || Math.random().toString(36).substr(2, 9),
-      username: (formData.username === 'admin' || formData.username.startsWith('sop.'))
-        ? formData.username
-        : formData.username.replace(/\D/g, ''),
-      saram: formData.saram.replace(/\D/g, ''),
-      email: formData.email || `${formData.username.replace(/\D/g, '')}@secureguard.mil.br`,
-      accessLevel: formData.accessLevel, // Always save accessLevel (N0 default)
+      username: resolvedUsername,
+      saram: cleanSaram,
+      email: formData.email || `${cleanSaram}@secureguard.mil.br`,
+      accessLevel: formData.accessLevel,
       pending_password_reset: isStandardReset ? false : formData.pending_password_reset,
       reset_password_at_login: isStandardReset ? true : formData.reset_password_at_login,
       password_status: isStandardReset ? 'EXPIRED' : formData.password_status
