@@ -14,11 +14,12 @@ interface UserManagementProps {
   onDeleteUser: (id: string) => void;
   onPermanentDeleteUser?: (id: string) => void;
   onRefreshUsers?: () => void;
+  onResetPassword?: (userId: string) => Promise<boolean>;
   currentUser: User | null;
   isDarkMode: boolean;
 }
 
-const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdateUser, onDeleteUser, onPermanentDeleteUser, onRefreshUsers, currentUser, isDarkMode }) => {
+const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdateUser, onDeleteUser, onPermanentDeleteUser, onRefreshUsers, onResetPassword, currentUser, isDarkMode }) => {
   const { sectors } = useSectors();
   const [activeTab, setActiveTab] = useState<'users' | 'permissions' | 'sectors'>('users');
   const initialFormState = {
@@ -48,8 +49,14 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
   const [showInactive, setShowInactive] = useState(false);
   const [showFunctional, setShowFunctional] = useState(false);
   const [showNewUserForm, setShowNewUserForm] = useState(false);
-  const [showForm, setShowForm] = useState(false); // Estado para o toggle de formulário
+  const [showForm, setShowForm] = useState(false);
   const [selectedSectorUnit, setSelectedSectorUnit] = useState<'GSD-SP' | 'BASP'>('GSD-SP');
+  const [resetToast, setResetToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
+
+  const showResetFeedback = (type: 'success' | 'error', msg: string) => {
+    setResetToast({ type, msg });
+    setTimeout(() => setResetToast(null), 4000);
+  };
 
   // Rank Categories for Filtering (Consistent with PermissionManagement)
   const RANK_CATEGORIES = {
@@ -180,6 +187,19 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
 
   return (
     <div className="space-y-4 md:space-y-8 animate-fade-in max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-4 md:py-8">
+
+      {/* Toast de Feedback */}
+      {resetToast && (
+        <div className={`fixed top-4 right-4 z-[9999] px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-black uppercase tracking-widest animate-in slide-in-from-top-2 duration-300 ${
+          resetToast.type === 'success'
+            ? 'bg-emerald-600 text-white'
+            : 'bg-red-600 text-white'
+        }`}>
+          {resetToast.type === 'success' ? <ShieldCheck className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+          {resetToast.msg}
+        </div>
+      )}
+
       {/* Header Premium */}
       <div className={`p-4 md:p-8 rounded-3xl md:rounded-[2.5rem] border shadow-sm flex flex-col md:flex-row justify-between items-center gap-6 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black/20' : 'bg-white border-slate-100 shadow-slate-200/50'}`}>
         <div className="flex items-center gap-4 md:gap-6">
@@ -382,21 +402,26 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                     <div className="flex flex-col gap-2">
                       <button
                         type="button"
-                        onClick={() => {
+                        onClick={async () => {
                           if (confirm(`Deseja resetar a senha do usuário ${formData.username} para o padrão '123456'? O usuário será obrigado a trocar a senha no próximo login.`)) {
-                            setFormData({
-                              ...formData,
-                              password: '123456',
-                              password_status: 'EXPIRED',
-                              reset_password_at_login: true
-                            });
-                            alert('Senha resetada para 123456. Clique em "Salvar Alterações" para confirmar.');
+                            if (onResetPassword && editingUserId) {
+                              const ok = await onResetPassword(editingUserId);
+                              if (ok) {
+                                showResetFeedback('success', `Senha de ${formData.username} redefinida para 123456 com sucesso!`);
+                                handleCancelEdit();
+                              } else {
+                                showResetFeedback('error', 'Falha ao redefinir senha. Verifique as permissões do banco de dados.');
+                              }
+                            } else {
+                              // Fallback se prop não disponível
+                              setFormData({ ...formData, password: '123456', password_status: 'EXPIRED', reset_password_at_login: true });
+                              alert('Senha resetada para 123456. Clique em "Salvar Alterações" para confirmar.');
+                            }
                           }
                         }}
-                        className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.password === '123456'
-                          ? 'bg-amber-100 text-amber-700 border-2 border-amber-200'
-                          : isDarkMode ? 'bg-slate-900 border border-slate-700 text-blue-400 hover:bg-slate-800' : 'bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100'
-                          }`}
+                        className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                          isDarkMode ? 'bg-slate-900 border border-slate-700 text-blue-400 hover:bg-slate-800' : 'bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100'
+                        }`}
                       >
                         <Key className="w-4 h-4" />
                         {formData.password === '123456' ? 'Senha Resetada (Clique em Salvar)' : 'Resetar Senha para 123456'}
@@ -621,15 +646,18 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                               <td className="px-6 py-4 text-right">
                                 <div className="flex justify-end gap-2">
                                   <button
-                                    onClick={() => {
+                                    onClick={async () => {
                                       if (confirm(`Deseja resetar a senha do militar ${u.name} para o padrão '123456'?`)) {
-                                        onUpdateUser({
-                                          ...u,
-                                          password: '123456',
-                                          pending_password_reset: false,
-                                          reset_password_at_login: true,
-                                          password_status: 'EXPIRED'
-                                        });
+                                        if (onResetPassword) {
+                                          const ok = await onResetPassword(u.id);
+                                          if (ok) {
+                                            showResetFeedback('success', `Senha de ${u.warName || u.name} redefinida. Login: 123456.`);
+                                          } else {
+                                            showResetFeedback('error', 'Falha ao redefinir senha. Tente novamente.');
+                                          }
+                                        } else {
+                                          onUpdateUser({ ...u, password: '123456', pending_password_reset: false, reset_password_at_login: true, password_status: 'EXPIRED' as any });
+                                        }
                                       }
                                     }}
                                     className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-xs font-bold transition-all flex items-center gap-2"

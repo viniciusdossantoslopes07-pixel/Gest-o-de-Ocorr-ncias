@@ -515,13 +515,14 @@ const App: FC = () => {
         ? username
         : username.replace(/\D/g, '');
 
-      const { data: user, error } = await supabase
+      const { data: rawUsers, error } = await supabase
         .from('users')
         .select('*')
         .eq('username', cleanUsername)
-        .single();
+        .limit(1);
 
-      if (error || !user) return false;
+      if (error || !rawUsers || rawUsers.length === 0) return false;
+      const user = rawUsers[0];
 
       const { error: resetError } = await supabase
         .from('users')
@@ -592,6 +593,42 @@ const App: FC = () => {
 
     } catch (err) {
       console.error('Reset error:', err);
+      return false;
+    }
+  };
+
+  /**
+   * Redefine APENAS senha + flags de reset para um usuário pelo ID.
+   * Usado pelo admin em "Gerir Permissões > Usuários".
+   * Opera diretamente no banco sem propagar outros campos (evita sobrescrever com undefined).
+   */
+  const handleAdminResetPassword = async (userId: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          password: '123456',
+          reset_password_at_login: true,
+          pending_password_reset: false,
+          password_status: 'EXPIRED'
+        })
+        .eq('id', userId);
+
+      if (error) {
+        console.error('Admin reset password error:', error);
+        return false;
+      }
+
+      // Atualiza estado local imediatamente
+      setUsers(prev => prev.map(u =>
+        u.id === userId
+          ? { ...u, password: '123456', reset_password_at_login: true, pending_password_reset: false, password_status: 'EXPIRED' as any }
+          : u
+      ));
+
+      return true;
+    } catch (err) {
+      console.error('Admin reset password exception:', err);
       return false;
     }
   };
@@ -1340,6 +1377,7 @@ const App: FC = () => {
               onDeleteUser={handleDeleteUser}
               onPermanentDeleteUser={handlePermanentDeleteUser}
               onRefreshUsers={fetchUsers}
+              onResetPassword={handleAdminResetPassword}
               currentUser={currentUser}
               isDarkMode={isDarkMode}
             />
