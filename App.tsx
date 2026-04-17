@@ -419,22 +419,29 @@ const App: FC = () => {
         ? username
         : username.replace(/\D/g, '');
 
-      const { data, error } = await withTimeout<any>(
+      const { data: rawData, error } = await withTimeout<any>(
         Promise.resolve(
           supabase
             .from('users')
             .select('*')
             .eq('username', cleanUsername)
             .eq('password', password)
-            .single()
+            .limit(1)
         ),
         8000,
         'O servidor não respondeu a tempo. Tente novamente.'
       );
 
-      if (error || !data) {
+      if (error) {
+        console.error('Database login error:', error);
         return false;
       }
+
+      if (!rawData || rawData.length === 0) {
+        return false;
+      }
+
+      const data = rawData[0];
 
       const user: User = {
         id: data.id,
