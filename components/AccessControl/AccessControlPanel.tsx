@@ -688,18 +688,26 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                             {/* Row 2: Characteristic - Horizontal Scroll */}
                             <div className="overflow-x-auto pb-1 -mx-1 px-1">
                                 <div className="flex gap-2">
-                                    {CHARACTERISTICS.map(c => (
-                                        <button
-                                            key={c}
-                                            onClick={() => setCharacteristic(c)}
-                                            className={`whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all border ${characteristic === c
-                                                ? 'bg-slate-800 text-white border-slate-800 shadow'
-                                                : (dk ? 'bg-slate-700/60 text-slate-300 border-slate-600 hover:bg-slate-600' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50')
-                                                }`}
-                                        >
-                                            {c}
-                                        </button>
-                                    ))}
+                                    {CHARACTERISTICS.map(c => {
+                                        let activeColor = 'bg-slate-800 text-white border-slate-800 shadow scale-[1.02]';
+                                        if (c === 'MILITAR') activeColor = 'bg-blue-600 text-white border-blue-700 shadow-lg ring-2 ring-blue-500/30 scale-[1.02]';
+                                        if (c === 'CIVIL') activeColor = 'bg-emerald-600 text-white border-emerald-700 shadow-lg ring-2 ring-emerald-500/30 scale-[1.02]';
+                                        if (c === 'PRESTADOR') activeColor = 'bg-amber-600 text-white border-amber-700 shadow-lg ring-2 ring-amber-500/30 scale-[1.02]';
+                                        if (c === 'ENTREGADOR') activeColor = 'bg-violet-600 text-white border-violet-700 shadow-lg ring-2 ring-violet-500/30 scale-[1.02]';
+
+                                        return (
+                                            <button
+                                                key={c}
+                                                onClick={() => setCharacteristic(c)}
+                                                className={`whitespace-nowrap px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all border ${characteristic === c
+                                                    ? activeColor
+                                                    : (dk ? 'bg-slate-700/60 text-slate-300 border-slate-600 hover:bg-slate-600' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50')
+                                                    }`}
+                                            >
+                                                {c}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
 
