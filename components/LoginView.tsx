@@ -10,7 +10,7 @@ import { ParkingRequestModal } from './ParkingRequestModal';
 
 interface LoginViewProps {
   onLogin: (username: string, password: string) => Promise<boolean | string> | boolean | string;
-  onRegister: (user: User) => Promise<boolean> | boolean;
+  onRegister: (user: User) => Promise<{ success: boolean; error?: string }> | { success: boolean; error?: string };
   onPublicAccess: () => void;
   onViewEvents?: () => void;
   onRequestPasswordReset?: (saram: string) => Promise<boolean>;
@@ -85,13 +85,13 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
           ...regData,
           saram: regData.saram.replace(/\D/g, '')
         };
-        const successRes = await onRegister(newUser as any);
-        if (successRes) {
+        const res = await onRegister(newUser as any);
+        if (res.success) {
           alert('Cadastro realizado com sucesso! Aguarde aprovação do Comandante.');
           setView('login');
           setUsername(regData.saram.replace(/\D/g, ''));
         } else {
-          setError('Erro ao realizar cadastro.');
+          setError(res.error || 'Erro ao realizar cadastro.');
         }
       } else if (view === 'forgot-password') {
         if (onRequestPasswordReset) {

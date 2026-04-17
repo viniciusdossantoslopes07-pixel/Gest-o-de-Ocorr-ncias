@@ -738,7 +738,18 @@ const App: FC = () => {
     }
   };
 
-  const handleRegister = async (newUser: User): Promise<boolean> => {
+  const handleRegister = async (newUser: User): Promise<{ success: boolean; error?: string }> => {
+    // 1. Verificar Cadastro Existente
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id')
+      .eq('saram', newUser.saram)
+      .maybeSingle();
+
+    if (existingUser) {
+      return { success: false, error: 'SARAM já cadastrado no sistema. Por favor, redefina sua senha na área "Esqueci a Senha" do Login.' };
+    }
+
     const dbUser = {
       username: newUser.username,
       password: newUser.password,
@@ -762,9 +773,9 @@ const App: FC = () => {
 
     if (error) {
       console.error('Registration error:', error);
-      return false;
+      return { success: false, error: 'Houve uma falha ao tentar realizar o cadastro.' };
     }
-    return true;
+    return { success: true };
   };
 
   const handleUpdateUser = async (updatedUser: User) => {
