@@ -626,7 +626,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
         const initialOrderData: Partial<MissionOrder> = {
             mission: selectedMission.dados_missao.tipo_missao,
             location: selectedMission.dados_missao.local,
-            description: `Solicitado por: ${selectedMission.dados_missao.posto} ${selectedMission.dados_missao.nome_guerra} - Setor ${selectedMission.dados_missao.setor}.\nEfetivo: ${selectedMission.dados_missao.efetivo}`,
+            description: '',
             requester: `${selectedMission.dados_missao.posto} ${selectedMission.dados_missao.nome_guerra}`,
             date: selectedMission.dados_missao.data,
             food: Object.values(selectedMission.dados_missao.alimentacao).some(v => v === true),

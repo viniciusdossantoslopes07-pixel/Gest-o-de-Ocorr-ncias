@@ -77,7 +77,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
 
-        if (!formData.mission || !formData.location || !formData.requester) {
+        if (!formData.mission || !formData.location || !formData.requester || !formData.description) {
             alert('Preencha todos os campos obrigatórios.');
             return;
         }
@@ -165,16 +165,26 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                     <div className="flex gap-2 relative">
                         <input
                             type="text"
-                            placeholder="Digite o SARAM"
+                            placeholder="Nome, Guerra ou SARAM"
                             className={`flex-1 px-4 py-2.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all pr-10`}
                             onBlur={(e) => {
-                                const saram = e.target.value;
-                                const foundUser = users.find(u => u.saram === saram);
+                                const term = e.target.value.toUpperCase();
+                                if (!term) {
+                                    setFormData({ ...formData, missionCommanderId: '' });
+                                    return;
+                                }
+                                const foundUser = users.find(u => 
+                                    u.saram === term || 
+                                    (u.warName || '').toUpperCase() === term ||
+                                    (u.name || '').toUpperCase().includes(term) ||
+                                    (u.warName || '').toUpperCase().includes(term)
+                                );
                                 if (foundUser) {
                                     setFormData({ ...formData, missionCommanderId: foundUser.id });
+                                    e.target.value = foundUser.warName || foundUser.name;
                                 } else {
-                                    setFormData({ ...formData, missionCommanderId: undefined });
-                                    if (saram) alert('Militar não encontrado com este SARAM.');
+                                    setFormData({ ...formData, missionCommanderId: '' });
+                                    alert('Militar não encontrado com este Nome, Guerra ou SARAM.');
                                 }
                             }}
                         />
@@ -187,7 +197,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                         </div>
                     )}
                     <p className={`text-[10px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} mt-2 leading-relaxed`}>
-                        Digite o SARAM para selecionar o Comandante que gerenciará a missão.
+                        Digite o Nome, Guerra ou SARAM para selecionar o Comandante.
                     </p>
                 </div>
 
@@ -222,13 +232,14 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                     </div>
 
                     <div>
-                        <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase tracking-wider mb-2`}>Descrição da Missão</label>
+                        <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase tracking-wider mb-2`}>Descrição da Missão *</label>
                         <textarea
                             value={formData.description}
                             onChange={e => setFormData({ ...formData, description: e.target.value })}
                             rows={2}
                             placeholder="Detalhes adicionais sobre a missão..."
                             className={`w-full px-4 py-2.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all resize-none`}
+                            required
                         />
                     </div>
                 </div>
