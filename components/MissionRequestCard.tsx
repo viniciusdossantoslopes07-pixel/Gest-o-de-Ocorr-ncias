@@ -31,24 +31,34 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
     const [newComment, setNewComment] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
+    const generateId = () => {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            return crypto.randomUUID();
+        }
+        return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+    };
+
     const handleSave = async () => {
         setIsSaving(true);
         try {
             // Compare old vs new data and generate history entries
             const changes: HistoricoItem[] = [];
-            const oldData = mission.dados_missao;
+            const oldData = mission.dados_missao || {};
 
             Object.keys(formData).forEach(key => {
-                if (JSON.stringify(oldData[key]) !== JSON.stringify(formData[key])) {
+                const oldVal = (oldData as any)[key];
+                const newVal = (formData as any)[key];
+                
+                if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
                     changes.push({
-                        id: crypto.randomUUID(),
+                        id: generateId(),
                         tipo: 'edicao',
                         usuario: currentUser.name,
                         usuario_id: currentUser.id,
                         data: new Date().toISOString(),
                         campo: key,
-                        valor_anterior: oldData[key],
-                        valor_novo: formData[key]
+                        valor_anterior: oldVal === undefined ? null : oldVal,
+                        valor_novo: newVal === undefined ? null : newVal
                     });
                 }
             });
@@ -82,9 +92,9 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
             onUpdate(updatedMission);
             setIsEditing(false);
             alert('Alterações salvas com sucesso!');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Erro ao salvar:', error);
-            alert('Erro ao salvar alterações.');
+            alert(`Erro ao salvar alterações: ${error.message || 'Erro desconhecido'}`);
         } finally {
             setIsSaving(false);
         }
@@ -96,7 +106,7 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
         setIsSaving(true);
         try {
             const commentItem: HistoricoItem = {
-                id: crypto.randomUUID(),
+                id: generateId(),
                 tipo: 'comentario',
                 usuario: currentUser.name,
                 usuario_id: currentUser.id,

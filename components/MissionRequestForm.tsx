@@ -17,6 +17,13 @@ interface MissionRequestFormProps {
 const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCancel, initialData, isDarkMode }) => {
     const [requesterId, setRequesterId] = useState(initialData?.solicitante_id || user.id);
 
+    const generateId = () => {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            return crypto.randomUUID();
+        }
+        return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+    };
+
     const [formData, setFormData] = useState({
         saram: initialData ? '' : (user.saram || ''), // Don't overwrite if editing, but we might need to lookup user again if not provided
         posto: initialData?.dados_missao.posto || user.rank || '',
@@ -120,7 +127,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
             },
             status: isDraft ? 'RASCUNHO' : 'PENDENTE',
             data_criacao: initialData?.data_criacao || new Date().toISOString(),
-            id: initialData?.id || crypto.randomUUID() // Ensure unique ID
+            id: initialData?.id || generateId() // Ensure unique ID
         };
 
         onSubmit(submissionData, isDraft);
