@@ -1383,9 +1383,27 @@ const App: FC = () => {
             <PersonnelManagementView 
               users={users} 
               isDarkMode={isDarkMode} 
-              onAddPersonnel={handleCreateUser}
-              onUpdatePersonnel={handleUpdateUser}
-              onDeletePersonnel={handleDeleteUser}
+              onAddPersonnel={(u) => {
+                handleCreateUser({
+                  ...u,
+                  role: 'USER' as UserRole,
+                  password: 'password123',
+                  username: `user_${Date.now()}`,
+                  email: `user_${Date.now()}@system.local`,
+                  approved: true
+                } as any);
+              }}
+              onUpdatePersonnel={(u) => {
+                handleUpdateUser(u).then(() => {
+                  alert('Militar atualizado com sucesso!');
+                  fetchUsers();
+                }).catch(err => {
+                  console.error(err);
+                });
+              }}
+              onDeletePersonnel={(id) => {
+                handleDeleteUser(id);
+              }}
               onPermanentDeletePersonnel={handlePermanentDeleteUser}
               currentUserRole={currentUser?.role}
             />
@@ -1660,36 +1678,6 @@ const App: FC = () => {
           )}
 
 
-          {activeTab === 'personnel-management' && canManagePersonnel && (
-            <PersonnelManagementView
-              users={users}
-              isDarkMode={isDarkMode}
-              onAddPersonnel={(u) => {
-                handleCreateUser({
-                  ...u,
-                  role: 'USER' as UserRole,
-                  password: 'password123',
-                  username: `user_${Date.now()}`,
-                  email: `user_${Date.now()}@system.local`,
-                  approved: true
-                } as any);
-              }}
-              onUpdatePersonnel={(u) => {
-                handleUpdateUser(u).then(() => {
-                  alert('Militar atualizado com sucesso!');
-                  fetchUsers();
-                }).catch(err => {
-                  console.error(err);
-                });
-              }}
-              onDeletePersonnel={(id) => {
-                // Por padrão usa o soft delete
-                handleDeleteUser(id);
-              }}
-              onPermanentDeletePersonnel={handlePermanentDeleteUser}
-              currentUserRole={currentUser?.role}
-            />
-          )}
 
 
           {/* Access Control Module */}
