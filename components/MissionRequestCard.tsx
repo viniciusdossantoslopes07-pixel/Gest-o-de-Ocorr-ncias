@@ -1,7 +1,7 @@
 import { useState, type FC } from 'react';
 import { Mission, User, HistoricoItem } from '../types';
 import { RANKS, SETORES, TIPOS_MISSAO } from '../constants';
-import { X, Save, Calendar, Clock, MapPin, Users as UsersIcon, Truck, Coffee, MessageSquare, Edit2, History, Trash2, Ban } from 'lucide-react';
+import { X, Save, Calendar, Clock, MapPin, Users as UsersIcon, Truck, Coffee, MessageSquare, Edit2, History, Trash2, Ban, CheckCircle } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { formatViaturas, formatEfetivo } from '../utils/formatters';
 
@@ -11,12 +11,13 @@ interface MissionRequestCardProps {
     onUpdate: (updatedMission: Mission) => void;
     onReject?: (mission: Mission) => void;
     onDelete?: (mission: Mission) => void;
+    onApprove?: (mission: Mission) => void;
     currentUser: User;
     canEdit: boolean;
     isDarkMode?: boolean;
 }
 
-const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onUpdate, onReject, onDelete, currentUser, canEdit, isDarkMode }) => {
+const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onUpdate, onReject, onDelete, onApprove, currentUser, canEdit, isDarkMode }) => {
     const [activeTab, setActiveTab] = useState<'dados' | 'historico'>('dados');
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
@@ -601,6 +602,15 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                             >
                                 <Save className="w-5 h-5" />
                                 {isSaving ? 'Salvando...' : 'Salvar Alterações'}
+                            </button>
+                        )}
+                        {onApprove && (mission.status === 'PENDENTE' || mission.status === 'ESCALONADA') && (
+                            <button
+                                onClick={() => onApprove(mission)}
+                                className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 px-8 py-3 rounded-xl font-black text-white shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all active:scale-95 text-sm uppercase tracking-widest"
+                            >
+                                <CheckCircle className="w-5 h-5" />
+                                Aprovar e Gerar OMIS
                             </button>
                         )}
                     </div>

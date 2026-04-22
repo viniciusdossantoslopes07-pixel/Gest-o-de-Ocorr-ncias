@@ -140,12 +140,17 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
 
     // --- Actions ---
 
-    // 1. Analyze Request (SOP) -> Moves to EM_ELABORACAO
+    // 1. Analyze Request (SOP) -> Opens Detail Card
     const handleAnalyzeRequest = async (mission: Mission) => {
-        // Technically status updates to indicate analysis started, but for now we just open the form
-        // We could verify if an order already exists in draft.
+        setSelectedMission(mission);
+        setShowMissionCard(true);
+    };
+
+    // Starts generating the OMIS from a mission request
+    const handleStartOrder = (mission: Mission) => {
         setSelectedMission(mission);
         setShowOrderForm(true);
+        setShowMissionCard(false); // Close card if open
     };
 
     const handleRejectRequest = async (mission: Mission) => {
@@ -1017,6 +1022,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                         }}
                         onReject={handleRejectRequest}
                         onDelete={handleDeleteRequest}
+                        onApprove={handleStartOrder}
                         currentUser={user}
                         canEdit={isSop || selectedMission.solicitante_id === user.id}
                         isDarkMode={isDarkMode}
