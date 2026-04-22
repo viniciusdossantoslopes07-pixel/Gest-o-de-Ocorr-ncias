@@ -33,7 +33,7 @@ interface AccessRecord {
 }
 
 const GATES = ['PORTÃO G1', 'PORTÃO G2', 'PORTÃO G3'];
-const CHARACTERISTICS = ['MILITAR', 'CIVIL', 'PRESTADOR', 'ENTREGADOR'];
+const CHARACTERISTICS = ['MILITAR', 'CIVIL', 'DEPENDENTE', 'PRESTADOR', 'ENTREGADOR'];
 const DESTINATIONS = [
     'BASP (Comando)', 'PCAN', 'PASP', 'ILA', 'SEREP-SP', 'GSD-SP', 'GECAMP',
     'BOMBEIRO', 'VILA OF.', 'VILA GRAD.', 'CAPELA', 'GSAU', 'RANCHO',
@@ -349,8 +349,8 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 return;
             }
 
-            // Validação de Autorizador para Prestador/Entregador
-            if ((characteristic === 'PRESTADOR' || characteristic === 'ENTREGADOR') && !authorizer.trim()) {
+            // Validação de Autorizador para Civil/Prestador/Entregador
+            if ((characteristic === 'CIVIL' || characteristic === 'PRESTADOR' || characteristic === 'ENTREGADOR') && !authorizer.trim()) {
                 alert(`Para ${characteristic}, o campo AUTORIZADOR é obrigatório.`);
                 return;
             }
@@ -692,6 +692,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                         let activeColor = 'bg-slate-800 text-white border-slate-800 shadow scale-[1.02]';
                                         if (c === 'MILITAR') activeColor = 'bg-blue-600 text-white border-blue-700 shadow-lg ring-2 ring-blue-500/30 scale-[1.02]';
                                         if (c === 'CIVIL') activeColor = 'bg-emerald-600 text-white border-emerald-700 shadow-lg ring-2 ring-emerald-500/30 scale-[1.02]';
+                                        if (c === 'DEPENDENTE') activeColor = 'bg-pink-600 text-white border-pink-700 shadow-lg ring-2 ring-pink-500/30 scale-[1.02]';
                                         if (c === 'PRESTADOR') activeColor = 'bg-amber-600 text-white border-amber-700 shadow-lg ring-2 ring-amber-500/30 scale-[1.02]';
                                         if (c === 'ENTREGADOR') activeColor = 'bg-violet-600 text-white border-violet-700 shadow-lg ring-2 ring-violet-500/30 scale-[1.02]';
 
@@ -777,9 +778,9 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                     type="text"
                                     value={authorizer}
                                     onChange={(e) => setAuthorizer(e.target.value)}
-                                    placeholder={(accessCategory === 'Entrada' && (characteristic === 'PRESTADOR' || characteristic === 'ENTREGADOR')) ? "AUTORIZADOR (OBRIGATÓRIO)" : "AUTORIZADOR"}
+                                    placeholder={(accessCategory === 'Entrada' && (characteristic === 'CIVIL' || characteristic === 'PRESTADOR' || characteristic === 'ENTREGADOR')) ? "AUTORIZADOR (OBRIGATÓRIO)" : "AUTORIZADOR"}
                                     disabled={accessCategory === 'Saída'}
-                                    className={`w-full border rounded-xl p-2.5 sm:p-3 font-bold text-sm outline-none uppercase focus:ring-2 ${inputCls} ${accessCategory === 'Saída' ? 'opacity-40 cursor-not-allowed' : ''} ${(accessCategory === 'Entrada' && (characteristic === 'PRESTADOR' || characteristic === 'ENTREGADOR') && !authorizer.trim()) ? 'border-amber-500/50 bg-amber-500/5' : ''}`}
+                                    className={`w-full border rounded-xl p-2.5 sm:p-3 font-bold text-sm outline-none uppercase focus:ring-2 ${inputCls} ${accessCategory === 'Saída' ? 'opacity-40 cursor-not-allowed' : ''} ${(accessCategory === 'Entrada' && (characteristic === 'CIVIL' || characteristic === 'PRESTADOR' || characteristic === 'ENTREGADOR') && !authorizer.trim()) ? 'border-amber-500/50 bg-amber-500/5' : ''}`}
                                 />
                             </div>
 
@@ -792,7 +793,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                     !selectedGate || 
                                     !accessCategory || 
                                     !accessMode ||
-                                    (accessCategory === 'Entrada' && (characteristic === 'PRESTADOR' || characteristic === 'ENTREGADOR') && !authorizer.trim())
+                                    (accessCategory === 'Entrada' && (characteristic === 'CIVIL' || characteristic === 'PRESTADOR' || characteristic === 'ENTREGADOR') && !authorizer.trim())
                                 }
                                 className={`w-full py-3.5 rounded-xl font-black uppercase text-sm tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg border-b-4 active:border-b-0 active:translate-y-1 ${accessCategory === 'Entrada'
                                     ? 'bg-emerald-500 text-white border-emerald-700 hover:bg-emerald-600'
