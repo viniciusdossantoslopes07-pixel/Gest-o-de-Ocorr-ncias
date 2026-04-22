@@ -15,7 +15,7 @@ interface SideMenuProps {
     isOpen: boolean;
     onClose: () => void;
     activeTab: string;
-    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'vacation-management' | 'vacation-stats' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs'>>;
+    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'vacation-management' | 'vacation-stats' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs'>>;
     currentUser: User;
     onLogout: () => void;
     onToggleTheme: () => void;
@@ -55,8 +55,7 @@ export default function SideMenu({
     const canManageMissions = hasPermission(currentUser, PERMISSIONS.MANAGE_MISSIONS) || hasPermission(currentUser, PERMISSIONS.APPROVE_MISSION);
 
     // Material
-    const canViewMaterialPanel = hasPermission(currentUser, PERMISSIONS.VIEW_MATERIAL_PANEL) || hasPermission(currentUser, PERMISSIONS.REQUEST_MATERIAL) || hasPermission(currentUser, PERMISSIONS.MANAGE_MATERIAL);
-    const canRequestMaterial = hasPermission(currentUser, PERMISSIONS.REQUEST_MATERIAL);
+    const canViewMaterialPanel = hasPermission(currentUser, PERMISSIONS.VIEW_MATERIAL_PANEL) || hasPermission(currentUser, PERMISSIONS.MANAGE_MATERIAL) || hasPermission(currentUser, PERMISSIONS.REQUEST_MATERIAL);
     const canManageMaterial = hasPermission(currentUser, PERMISSIONS.MANAGE_MATERIAL);
 
     // Personnel
@@ -517,7 +516,6 @@ export default function SideMenu({
                                     {(!isCollapsed && isMaterialMenuOpen) && (
                                         <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
                                             <MenuItem id="my-material-loans" label="Minhas Cautelas" icon={Package} />
-                                            {canRequestMaterial && <MenuItem id="request-material" label="Solicitar Material" icon={PlusCircle} />}
                                             {canManageMaterial && (
                                                 <>
                                                     <div className="my-2 border-t border-slate-800" />

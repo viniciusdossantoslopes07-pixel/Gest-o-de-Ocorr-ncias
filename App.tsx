@@ -41,8 +41,6 @@ const MissionOrderList = lazy(() => import('./components/MissionOrderList'));
 const MissionOrderForm = lazy(() => import('./components/MissionOrderForm'));
 const InventoryManager = lazy(() => import('./components/InventoryManager').then(m => ({ default: m.InventoryManager })));
 const SAP03Panel = lazy(() => import('./components/SAP03Panel').then(m => ({ default: m.SAP03Panel })));
-const LoanRequestForm = lazy(() => import('./components/LoanRequestForm'));
-const MaterialDashboard = lazy(() => import('./components/MaterialDashboard'));
 const MyMaterialLoans = lazy(() => import('./components/MyMaterialLoans').then(m => ({ default: m.MyMaterialLoans })));
 const DailyAttendanceView = lazy(() => import('./components/PersonnelCenter/DailyAttendance'));
 const PersonnelManagementView = lazy(() => import('./components/PersonnelCenter/PersonnelManagement'));
@@ -112,7 +110,7 @@ const App: FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [vacations, setVacations] = useState<Vacation[]>([]);
   // Added 'settings' to activeTab type
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'request-material' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'vacation-management' | 'vacation-stats' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'vacation-management' | 'vacation-stats' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs'>('home');
   const [showVacationPortal, setShowVacationPortal] = useState(false);
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [attendanceHistory, setAttendanceHistory] = useState<DailyAttendance[]>([]);
@@ -157,7 +155,6 @@ const App: FC = () => {
       canManageMissions: hasPermission(currentUser, PERMISSIONS.MANAGE_MISSIONS) || hasPermission(currentUser, PERMISSIONS.APPROVE_MISSION),
       canManageUsers: hasPermission(currentUser, PERMISSIONS.MANAGE_USERS),
       canManageMaterial: hasPermission(currentUser, PERMISSIONS.MANAGE_MATERIAL),
-      canRequestMaterial: hasPermission(currentUser, PERMISSIONS.REQUEST_MATERIAL),
       canViewMaterialPanel: hasPermission(currentUser, PERMISSIONS.VIEW_MATERIAL_PANEL),
       canManagePersonnel: hasPermission(currentUser, PERMISSIONS.MANAGE_PERSONNEL),
       canViewAttendance: hasPermission(currentUser, PERMISSIONS.VIEW_DAILY_ATTENDANCE),
@@ -169,7 +166,7 @@ const App: FC = () => {
     };
   }, [currentUser]);
 
-  const { canRequestMission, canManageMissions, canManageUsers, canManageMaterial, canRequestMaterial, canViewMaterialPanel, canManagePersonnel, canViewAttendance, canViewPersonnel, canViewAccessControl, canManageOccurrences, canViewServiceQueue, canViewDashboard } = permissions;
+  const { canRequestMission, canManageMissions, canManageUsers, canManageMaterial, canViewMaterialPanel, canManagePersonnel, canViewAttendance, canViewPersonnel, canViewAccessControl, canManageOccurrences, canViewServiceQueue, canViewDashboard } = permissions;
 
 
   useEffect(() => {
@@ -1807,16 +1804,6 @@ const App: FC = () => {
             <SAP03Panel user={currentUser} isDarkMode={isDarkMode} />
           )}
 
-          {activeTab === 'request-material' && canRequestMaterial && (
-            <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 md:space-y-8">
-              <LoanRequestForm
-                user={currentUser}
-                isDarkMode={isDarkMode}
-                onSuccess={() => setActiveTab('my-material-loans')}
-                onCancel={() => setActiveTab('home')}
-              />
-            </div>
-          )}
 
 
           {activeTab === 'list' && !isPublic && (
