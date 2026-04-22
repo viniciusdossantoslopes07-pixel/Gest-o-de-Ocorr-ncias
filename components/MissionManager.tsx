@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { Mission, User, MissionOrder, UserRole } from '../types';
-import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint, Filter, MapPin, User as UserIcon } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint, Filter, MapPin, User as UserIcon, PlayCircle, History } from 'lucide-react';
 import { authenticateBiometrics } from '../services/webauthn';
 import MissionStatistics from './MissionStatistics';
 import MissionOrderForm from './MissionOrderForm';
@@ -688,6 +688,18 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                         className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'minhas_solicitacoes' ? (isDarkMode ? 'bg-blue-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white text-blue-700 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
                     >
                         <List className={`w-4 h-4 ${activeTab === 'minhas_solicitacoes' ? '' : 'opacity-70'}`} /> Minhas
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('missoes_ativas')}
+                        className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'missoes_ativas' ? (isDarkMode ? 'bg-blue-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white text-blue-700 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
+                    >
+                        <PlayCircle className={`w-4 h-4 ${activeTab === 'missoes_ativas' ? '' : 'opacity-70'}`} /> Ativas
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('missoes_finalizadas')}
+                        className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'missoes_finalizadas' ? (isDarkMode ? 'bg-blue-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white text-blue-700 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
+                    >
+                        <History className={`w-4 h-4 ${activeTab === 'missoes_finalizadas' ? '' : 'opacity-70'}`} /> Histórico
                     </button>
                     {(isSop || isChSop) && (
                         <button
