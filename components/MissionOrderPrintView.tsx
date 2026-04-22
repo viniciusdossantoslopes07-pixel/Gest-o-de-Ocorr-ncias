@@ -1,14 +1,16 @@
 
 import { type FC, useEffect } from 'react';
 import { MissionOrder } from '../types';
-import { X, Printer, FileDown } from 'lucide-react';
+import { X, Printer, FileDown, FileSignature } from 'lucide-react';
 
 interface MissionOrderPrintViewProps {
     order: MissionOrder;
     onClose: () => void;
+    onSign?: () => void;
+    canSign?: boolean;
 }
 
-const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose }) => {
+const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose, onSign, canSign }) => {
     const handlePrint = () => {
         const content = document.getElementById('omis-print-content');
         if (!content) return;
@@ -286,29 +288,42 @@ ${content.outerHTML}
                     </div>
                 </div>
 
-                {/* Rodapé fixo com botão de impressão */}
-                <div className="bg-white border-t border-slate-200 p-4 sm:p-5 flex items-center justify-between gap-4 print:hidden flex-shrink-0">
-                    <div className="flex items-center gap-3">
+                {/* Rodapé fixo com botão de impressão e assinatura */}
+                <div className="bg-white border-t border-slate-200 p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 print:hidden flex-shrink-0 relative overflow-hidden">
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
                         <button
                             onClick={onClose}
-                            className="flex items-center gap-2 px-4 py-3 border border-slate-200 text-slate-600 rounded-xl font-black text-sm hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all active:scale-95"
+                            className="flex items-center gap-2 px-4 py-3 border border-slate-200 text-slate-600 rounded-xl font-black text-sm hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all active:scale-95 flex-1 sm:flex-none justify-center"
                             title="Fechar (Esc)"
                         >
                             <X className="w-4 h-4" />
                             <span className="hidden sm:inline">Fechar</span>
                         </button>
-                        <p className="text-xs text-slate-400 font-medium hidden sm:block leading-tight">
+                        <p className="text-xs text-slate-400 font-medium hidden md:block leading-tight">
                             Pressione <kbd className="px-1 py-0.5 bg-slate-100 rounded text-[10px] font-mono">Esc</kbd> para fechar
                         </p>
                     </div>
-                    <button
-                        onClick={handlePrint}
-                        className="w-auto flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-black text-sm hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition-all active:scale-95"
-                    >
-                        <Printer className="w-4 h-4" />
-                        <span className="hidden sm:inline">Imprimir Documento Oficial</span>
-                        <span className="inline sm:hidden">Imprimir</span>
-                    </button>
+                    
+                    <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                        {order.status === 'AGUARDANDO_ASSINATURA' && canSign && onSign && (
+                            <button
+                                onClick={onSign}
+                                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-black text-sm hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30 transition-all active:scale-95 ring-2 ring-transparent hover:ring-orange-200 relative group overflow-hidden"
+                            >
+                                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-out"></div>
+                                <FileSignature className="w-4 h-4 sm:w-5 sm:h-5 relative z-10" />
+                                <span className="relative z-10">Assinar Ordem de Serviço</span>
+                            </button>
+                        )}
+                        <button
+                            onClick={handlePrint}
+                            className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 ${order.status === 'AGUARDANDO_ASSINATURA' && canSign ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/30'} rounded-xl font-black text-sm transition-all active:scale-95`}
+                        >
+                            <Printer className="w-4 h-4" />
+                            <span className="hidden sm:inline">{order.status === 'AGUARDANDO_ASSINATURA' && canSign ? 'Apenas Imprimir' : 'Imprimir Oficial'}</span>
+                            <span className="inline sm:hidden">Imprimir</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
