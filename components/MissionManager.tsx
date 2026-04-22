@@ -671,40 +671,28 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                         onClick={() => setActiveTab('solicitar_missao')}
                         className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'solicitar_missao' ? (isDarkMode ? 'bg-blue-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white text-blue-700 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
                     >
-                        <PlusCircle className={`w-4 h-4 ${activeTab === 'solicitar_missao' ? '' : 'opacity-70'}`} /> <span className="hidden sm:inline">Solicitar Missão</span><span className="sm:hidden">Solicitar</span>
+                        <PlusCircle className={`w-4 h-4 ${activeTab === 'solicitar_missao' ? '' : 'opacity-70'}`} /> Solicitar
                     </button>
                     <button
                         onClick={() => setActiveTab('minhas_solicitacoes')}
                         className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'minhas_solicitacoes' ? (isDarkMode ? 'bg-blue-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white text-blue-700 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
                     >
-                        <List className={`w-4 h-4 ${activeTab === 'minhas_solicitacoes' ? '' : 'opacity-70'}`} /> <span className="hidden sm:inline">Minhas Solicitações</span><span className="sm:hidden">Minhas</span>
+                        <List className={`w-4 h-4 ${activeTab === 'minhas_solicitacoes' ? '' : 'opacity-70'}`} /> Minhas
                     </button>
                     {(isSop || isChSop) && (
                         <button
                             onClick={() => setActiveTab('painel_gestao')}
                             className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 whitespace-nowrap ${activeTab === 'painel_gestao' ? (isDarkMode ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-[0_0_25px_rgba(249,115,22,0.3)]' : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
                         >
-                            <Shield className={`w-4 h-4 ${activeTab === 'painel_gestao' ? '' : 'opacity-70'}`} /> Gestão Avançada
+                            <Shield className={`w-4 h-4 ${activeTab === 'painel_gestao' ? '' : 'opacity-70'}`} /> Gerenciar
                         </button>
                     )}
-                    <button
-                        onClick={() => setActiveTab('missoes_ativas')}
-                        className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 whitespace-nowrap ${activeTab === 'missoes_ativas' ? (isDarkMode ? 'bg-emerald-600 text-white shadow-[0_0_20px_rgba(5,150,105,0.3)]' : 'bg-emerald-500 text-white shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
-                    >
-                        <Play className={`w-4 h-4 ${activeTab === 'missoes_ativas' ? 'fill-current' : 'opacity-70'}`} /> Ativas
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('missoes_finalizadas')}
-                        className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 whitespace-nowrap ${activeTab === 'missoes_finalizadas' ? (isDarkMode ? 'bg-slate-700 text-white shadow-[0_0_20px_rgba(51,65,85,0.3)]' : 'bg-slate-800 text-white shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
-                    >
-                        <CheckCircle className={`w-4 h-4 ${activeTab === 'missoes_finalizadas' ? '' : 'opacity-70'}`} /> Finalizadas
-                    </button>
                     {(isSop || isChSop) && (
                         <button
                             onClick={() => setActiveTab('estatisticas')}
                             className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 whitespace-nowrap ${activeTab === 'estatisticas' ? (isDarkMode ? 'bg-purple-600 text-white shadow-[0_0_20px_rgba(147,51,234,0.3)]' : 'bg-purple-600 text-white shadow-md') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
                         >
-                            <LayoutDashboard className={`w-4 h-4 ${activeTab === 'estatisticas' ? '' : 'opacity-70'}`} /> Estatísticas
+                            <LayoutDashboard className={`w-4 h-4 ${activeTab === 'estatisticas' ? '' : 'opacity-70'}`} /> BI
                         </button>
                     )}
                 </div>
