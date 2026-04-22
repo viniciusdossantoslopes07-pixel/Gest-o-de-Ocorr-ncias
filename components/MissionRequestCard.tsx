@@ -1,7 +1,7 @@
 import { useState, type FC } from 'react';
 import { Mission, User, HistoricoItem } from '../types';
 import { RANKS, SETORES, TIPOS_MISSAO } from '../constants';
-import { X, Save, Calendar, Clock, MapPin, Users as UsersIcon, Truck, Coffee, MessageSquare, Edit2, History } from 'lucide-react';
+import { X, Save, Calendar, Clock, MapPin, Users as UsersIcon, Truck, Coffee, MessageSquare, Edit2, History, Trash2, Ban } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { formatViaturas, formatEfetivo } from '../utils/formatters';
 
@@ -9,12 +9,14 @@ interface MissionRequestCardProps {
     mission: Mission;
     onClose: () => void;
     onUpdate: (updatedMission: Mission) => void;
+    onReject?: (mission: Mission) => void;
+    onDelete?: (mission: Mission) => void;
     currentUser: User;
     canEdit: boolean;
     isDarkMode?: boolean;
 }
 
-const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onUpdate, currentUser, canEdit, isDarkMode }) => {
+const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onUpdate, onReject, onDelete, currentUser, canEdit, isDarkMode }) => {
     const [activeTab, setActiveTab] = useState<'dados' | 'historico'>('dados');
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
@@ -550,23 +552,48 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                 </div>
 
                 {/* Footer */}
-                <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800/80' : 'bg-slate-50 border-slate-200'} p-4 sm:p-6 border-t flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 shrink-0 rounded-b-2xl`}>
-                    <button
-                        onClick={onClose}
-                        className={`w-full sm:w-auto px-6 py-3 rounded-xl font-bold ${isDarkMode ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-200'} transition-colors text-sm uppercase tracking-widest order-2 sm:order-1`}
-                    >
-                        Fechar
-                    </button>
-                    {isEditing && (
+                <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800/80' : 'bg-slate-50 border-slate-200'} p-4 sm:p-6 border-t flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 rounded-b-2xl`}>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        {onDelete && canEdit && (
+                            <button
+                                onClick={() => onDelete(mission)}
+                                className={`flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-red-500 hover:bg-red-500/10 transition-colors text-xs uppercase tracking-widest flex items-center justify-center gap-2`}
+                                title="Excluir Solicitação"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                                <span className="sm:inline">Excluir</span>
+                            </button>
+                        )}
+                        {onReject && (mission.status === 'PENDENTE' || mission.status === 'RASCUNHO') && (
+                            <button
+                                onClick={() => onReject(mission)}
+                                className={`flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-orange-500 hover:bg-orange-500/10 transition-colors text-xs uppercase tracking-widest flex items-center justify-center gap-2`}
+                                title="Recusar Solicitação"
+                            >
+                                <Ban className="w-4 h-4" />
+                                <span className="sm:inline">Recusar</span>
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 w-full sm:w-auto">
                         <button
-                            onClick={handleSave}
-                            disabled={isSaving}
-                            className={`w-full sm:w-auto ${isDarkMode ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/20' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20'} px-8 py-3 rounded-xl font-black text-white shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-sm uppercase tracking-widest order-1 sm:order-2`}
+                            onClick={onClose}
+                            className={`px-6 py-3 rounded-xl font-bold ${isDarkMode ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-200'} transition-colors text-sm uppercase tracking-widest`}
                         >
-                            <Save className="w-5 h-5" />
-                            {isSaving ? 'Salvando...' : 'Salvar Alterações'}
+                            Fechar
                         </button>
-                    )}
+                        {isEditing && (
+                            <button
+                                onClick={handleSave}
+                                disabled={isSaving}
+                                className={`w-full sm:w-auto ${isDarkMode ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/20' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20'} px-8 py-3 rounded-xl font-black text-white shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-sm uppercase tracking-widest`}
+                            >
+                                <Save className="w-5 h-5" />
+                                {isSaving ? 'Salvando...' : 'Salvar Alterações'}
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

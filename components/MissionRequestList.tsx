@@ -283,6 +283,14 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
                         onMissionUpdated(updated);
                         setSelectedMission(updated);
                     }}
+                    onDelete={onMissionDeleted ? () => {
+                        const confirmDelete = confirm('Tem certeza que deseja excluir esta solicitação?');
+                        if (confirmDelete) {
+                            onMissionDeleted();
+                            setSelectedMission(null);
+                        }
+                    } : undefined}
+                    onReject={onProcess ? (m) => onProcess(m.id, 'REJEITADA') : undefined}
                     currentUser={currentUser}
                     canEdit={selectedMission.status === 'PENDENTE' || selectedMission.status === 'RASCUNHO'}
                     isDarkMode={isDarkMode}

@@ -160,6 +160,8 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
         if (!error) {
             await fetchMissions();
             alert('Solicitação rejeitada.');
+            setShowMissionCard(false);
+            setSelectedMission(null);
         } else {
             console.error('Erro ao rejeitar:', error);
             alert('Erro ao rejeitar solicitação.');
@@ -185,10 +187,18 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
         if (!error) {
             await fetchMissions();
             alert('Solicitação excluída com sucesso.');
+            setShowMissionCard(false);
+            setSelectedMission(null);
         } else {
             console.error('Erro ao excluir:', error);
             alert('Erro ao excluir solicitação.');
         }
+    };
+
+    const handleMissionDeleteRequest = async (mission: Mission) => {
+        // Simplified version for the list callback if needed, 
+        // but we can just use handleDeleteRequest
+        return handleDeleteRequest(mission);
     };
 
     const handleSendDraft = async (mission: Mission) => {
@@ -708,7 +718,11 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                             missions={myMissions}
                             currentUser={user}
                             onMissionUpdated={fetchMissions}
-                            onMissionDeleted={fetchMissions}
+                            onMissionDeleted={fetchMissions} // Keep this for list refresh
+                            onProcess={(id, decision) => {
+                                const m = missions.find(mission => mission.id === id);
+                                if (m && decision === 'REJEITADA') handleRejectRequest(m);
+                            }}
                             isDarkMode={isDarkMode}
                         />
 
@@ -989,6 +1003,8 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                             setMissions(missions.map(m => m.id === updatedMission.id ? updatedMission : m));
                             setSelectedMission(updatedMission);
                         }}
+                        onReject={handleRejectRequest}
+                        onDelete={handleDeleteRequest}
                         currentUser={user}
                         canEdit={isSop || selectedMission.solicitante_id === user.id}
                         isDarkMode={isDarkMode}
