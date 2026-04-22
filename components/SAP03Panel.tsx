@@ -44,7 +44,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [selectedRequest, setSelectedRequest] = useState<LoanRequest | null>(null);
     const [requestToReject, setRequestToReject] = useState<LoanRequest | null>(null);
-    const [activeTab, setActiveTab] = useState<'Em Uso' | 'Histórico' | 'Estoque'>('Em Uso');
+    const [activeTab, setActiveTab] = useState<'Em Uso' | 'Histórico'>('Em Uso');
 
     const [historyFilterDay, setHistoryFilterDay] = useState('');
     const [historyFilterMonth, setHistoryFilterMonth] = useState('');
@@ -734,7 +734,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             let matchesTab = false;
             if (activeTab === 'Em Uso') matchesTab = req.status === 'Em Uso';
             else if (activeTab === 'Histórico') matchesTab = ['Concluído', 'Rejeitado'].includes(req.status);
-            else if (activeTab === 'Estoque') matchesTab = false;
+            else if (activeTab === ('Estoque' as any)) matchesTab = false;
 
             if (!matchesTab) return false;
 
@@ -837,7 +837,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                 <div className="flex flex-wrap gap-3 w-full md:w-auto">
                     <button
                         onClick={() => { setShowDirectRelease(!showDirectRelease); }}
-                        className={`flex-1 md:flex-none px-8 py-4 rounded-2xl font-black uppercase tracking-widest transition-all shadow-2xl flex items-center justify-center gap-3 text-[12px] active:scale-95 group ${showDirectRelease ? 'bg-red-500 text-white shadow-red-500/30' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/30'}`}
+                        className={`flex-1 md:flex-none px-6 py-3.5 rounded-2xl font-black uppercase tracking-widest transition-all shadow-2xl flex items-center justify-center gap-3 text-[11px] active:scale-95 group ${showDirectRelease ? 'bg-red-500 text-white shadow-red-500/30' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/30'}`}
                     >
                         <Package className={`w-5 h-5 transition-transform group-hover:scale-110 ${showDirectRelease ? 'rotate-12' : ''}`} />
                         <span>{showDirectRelease ? 'Cancelar Operação' : 'Nova Cautela Direta'}</span>
@@ -850,7 +850,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                 setShowDirectRelease(false);
                             }
                         }}
-                        className={`flex-1 md:flex-none px-8 py-4 rounded-2xl font-black uppercase tracking-widest transition-all shadow-2xl flex items-center justify-center gap-3 text-[12px] active:scale-95 group ${activeTab === 'Em Uso' ? 'bg-amber-500 text-white shadow-amber-500/30 hover:bg-amber-600' : 'bg-slate-800 text-white hover:bg-slate-900 shadow-slate-800/40 border border-slate-700'}`}
+                        className={`flex-1 md:flex-none px-6 py-3.5 rounded-2xl font-black uppercase tracking-widest transition-all shadow-2xl flex items-center justify-center gap-3 text-[11px] active:scale-95 group ${activeTab === 'Em Uso' ? 'bg-amber-500 text-white shadow-amber-500/30 hover:bg-amber-600' : 'bg-slate-800 text-white hover:bg-slate-900 shadow-slate-800/40 border border-slate-700'}`}
                     >
                         <ShieldCheck className="w-5 h-5 transition-transform group-hover:scale-110" />
                         <span>Receber Material</span>
@@ -1136,12 +1136,10 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             )}
 
             {/* Tabs Premium — Cards com métricas */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {(['Estoque', 'Em Uso', 'Histórico'] as const).map(tab => {
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-3 sm:gap-4">
+                {(['Em Uso', 'Histórico'] as const).map(tab => {
                     let count = 0;
-                    if (tab === 'Estoque') {
-                        count = inventory.reduce((acc, curr) => acc + (curr.qtdisponivel || 0), 0);
-                    } else if (tab === 'Em Uso') {
+                    if (tab === 'Em Uso') {
                         count = requests.filter(req => req.status === 'Em Uso').length;
                     } else if (tab === 'Histórico') {
                         count = requests.filter(req => ['Concluído', 'Rejeitado'].includes(req.status)).length;
@@ -1149,7 +1147,6 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
 
                     const isActive = activeTab === tab;
                     const colors = {
-                        'Estoque': { active: 'from-blue-600 to-indigo-600', icon: '🏢', dot: 'bg-blue-400' },
                         'Em Uso': { active: 'from-amber-500 to-orange-500', icon: '📦', dot: 'bg-amber-400' },
                         'Histórico': { active: 'from-slate-700 to-slate-900', icon: '🗂️', dot: 'bg-slate-400' },
                     }[tab];
@@ -1166,7 +1163,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                     setHistoryFilterYear('');
                                 }
                             }}
-                            className={`relative flex flex-col items-start p-6 rounded-[2rem] border transition-all duration-300 overflow-hidden text-left ${isActive
+                            className={`relative flex flex-col items-start p-4 sm:p-5 rounded-[1.2rem] sm:rounded-[1.5rem] border transition-all duration-300 overflow-hidden text-left ${isActive
                                 ? `bg-gradient-to-br ${colors.active} text-white border-transparent shadow-2xl scale-[1.02] z-10`
                                 : isDarkMode
                                     ? 'bg-slate-800/40 border-slate-700 text-slate-400 hover:border-slate-500 hover:bg-slate-800'
@@ -1174,16 +1171,16 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                 }`}
                         >
                             {isActive && <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top_right,_white,_transparent)]" />}
-                            <div className="flex items-center justify-between w-full mb-4">
-                                <div className={`p-2 rounded-xl ${isActive ? 'bg-white/20' : (isDarkMode ? 'bg-slate-700' : 'bg-slate-50')}`}>
-                                    <span className="text-xl">{colors.icon}</span>
+                            <div className="flex items-center justify-between w-full mb-2 sm:mb-3">
+                                <div className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl ${isActive ? 'bg-white/20' : (isDarkMode ? 'bg-slate-700' : 'bg-slate-50')}`}>
+                                    <span className="text-base sm:text-lg">{colors.icon}</span>
                                 </div>
-                                {count > 0 && !isActive && <span className={`w-2.5 h-2.5 rounded-full ${colors.dot} animate-pulse shadow-lg`} />}
+                                {count > 0 && !isActive && <span className={`w-2 h-2 rounded-full ${colors.dot} animate-pulse shadow-lg`} />}
                             </div>
-                            <p className={`text-3xl font-black tracking-tighter leading-none mb-2 ${isActive ? 'text-white' : (isDarkMode ? 'text-white' : 'text-slate-800')}`}>
+                            <p className={`text-xl sm:text-2xl font-black tracking-tighter leading-none mb-1 ${isActive ? 'text-white' : (isDarkMode ? 'text-white' : 'text-slate-800')}`}>
                                 {count}
                             </p>
-                            <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isActive ? 'text-white/90' : 'text-slate-500'}`}>{tab === 'Estoque' ? 'Itens em Estoque' : tab}</p>
+                            <p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-[0.15em] ${isActive ? 'text-white/90' : 'text-slate-500'}`}>{tab}</p>
                         </button>
                     );
                 })}
@@ -1490,60 +1487,25 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                         className="px-4 py-2 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20"
                                     >
                                         <CheckCircle className="w-4 h-4" />
-                                        Receber ({selectedBatchIds.length})
+                                                        Receber ({selectedBatchIds.length})
                                     </button>
                                 )}
                             </div>
                         )}
                     </div>
-                )
-            }
+                )}
 
             <div className="space-y-4">
-                {activeTab === 'Estoque' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-scale-in">
-                        {filteredInventory.length === 0 ? (
-                            <div className={`md:col-span-3 text-center p-16 rounded-[2rem] border-dashed border-2 flex flex-col items-center justify-center gap-4 ${isDarkMode ? 'bg-slate-800/40 border-slate-700 text-slate-500' : 'bg-white border-slate-200 text-slate-400'}`}>
-                                <AlertCircle className="w-12 h-12 opacity-20" />
-                                <p className="font-black uppercase tracking-widest text-[10px]">Nenhum item em estoque corresponde à busca</p>
-                            </div>
-                        ) : (
-                            filteredInventory.map(item => (
-                                <div key={item.id} className={`p-6 rounded-[2rem] border-2 transition-all duration-300 group hover:scale-[1.02] ${isDarkMode ? 'bg-slate-800/40 border-slate-700 hover:border-blue-500/50 hover:bg-slate-800' : 'bg-white border-slate-100 hover:border-blue-200 shadow-sm hover:shadow-xl'}`}>
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className={`p-3 rounded-2xl transition-colors ${isDarkMode ? 'bg-slate-700 group-hover:bg-blue-600/20 text-slate-400 group-hover:text-blue-400' : 'bg-slate-50 group-hover:bg-blue-50 text-slate-500 group-hover:text-blue-600'}`}>
-                                            <Package className="w-6 h-6" />
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Disponível</p>
-                                            <h4 className={`text-2xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{item.qtdisponivel}</h4>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <h3 className={`font-black text-lg uppercase tracking-tight mb-2 truncate ${isDarkMode ? 'text-white' : 'text-slate-800'}`} title={item.material}>
-                                            {item.material}
-                                        </h3>
-                                        {item.endereco && (
-                                            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'bg-amber-500/10 text-amber-500' : 'bg-amber-50 text-amber-600'}`}>
-                                                <MapPin className="w-3 h-3" /> {item.endereco}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                ) : filteredRequests.length === 0 ? (
+                {filteredRequests.length === 0 ? (
                     <div className={`text-center p-16 rounded-[2rem] border-dashed border-2 flex flex-col items-center justify-center gap-4 ${isDarkMode ? 'bg-slate-800/40 border-slate-700 text-slate-500' : 'bg-white border-slate-200 text-slate-400'}`}>
                         <div className={`p-6 rounded-full ${isDarkMode ? 'bg-slate-800 shadow-inner' : 'bg-slate-50'}`}>
                             <AlertCircle className={`w-12 h-12 ${isDarkMode ? 'text-slate-600' : 'text-slate-200'}`} />
                         </div>
                         <p className="font-black uppercase tracking-widest text-[10px]">Nenhum registro encontrado em "{activeTab}"</p>
                     </div>
-                ) : (
-                    filteredRequests.map(req => (
-                        <div key={req.id} className={`rounded-2xl transition-all duration-300 glass-card ${expandedRequestId === req.id ? 'ring-2 ring-blue-500 shadow-blue-500/20 shadow-xl' : 'hover:border-blue-300'}`}>
-                            <div className="p-4 sm:p-6 flex flex-row gap-3 sm:gap-6 items-start sm:items-center cursor-pointer" onClick={() => setExpandedRequestId(expandedRequestId === req.id ? null : req.id)}>
+                ) : filteredRequests.map(req => (
+                    <div key={req.id} className={`rounded-xl transition-all duration-300 glass-card ${expandedRequestId === req.id ? 'ring-2 ring-blue-500 shadow-blue-500/10 shadow-lg' : 'hover:border-blue-300/50'}`}>
+                        <div className="p-3 sm:p-4 flex flex-row gap-3 sm:gap-4 items-start sm:items-center cursor-pointer" onClick={() => setExpandedRequestId(expandedRequestId === req.id ? null : req.id)}>
                                 {activeTab === 'Em Uso' && (
                                     <div className="shrink-0 mt-3 sm:mt-0" onClick={e => e.stopPropagation()}>
                                         <input
@@ -1564,24 +1526,24 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                     </div>
                                 )}
                                 <div className={`flex-1 flex flex-col md:flex-row gap-4 md:gap-6 items-start md:items-center w-full min-w-0 ${selectedBatchIds.length > 0 && requests.find(r => r.id === selectedBatchIds[0])?.id_usuario !== req.id_usuario ? 'opacity-40 grayscale-[0.5]' : ''}`}>
-                                    <div className="flex flex-row gap-3 sm:gap-4 items-start w-full md:w-auto flex-1 min-w-0">
-                                        <div className={`p-3 sm:p-4 rounded-xl shrink-0 transition-transform ${expandedRequestId === req.id ? 'scale-110' : ''} ${req.status === 'Pendente' ? 'bg-amber-500/10 text-amber-500' : req.status === 'Aprovado' ? 'bg-blue-500/10 text-blue-500' : req.status === 'Pendente Devolução' ? 'bg-purple-500/10 text-purple-500' : req.status === 'Concluído' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-500/10 text-slate-500'}`}>
-                                            <Package className="w-5 h-5 sm:w-6 sm:h-6" />
+                                    <div className="flex flex-row gap-3 items-start w-full md:w-auto flex-1 min-w-0">
+                                        <div className={`p-2.5 rounded-lg shrink-0 transition-transform ${expandedRequestId === req.id ? 'scale-110' : ''} ${req.status === 'Pendente' ? 'bg-amber-500/10 text-amber-500' : req.status === 'Aprovado' ? 'bg-blue-500/10 text-blue-500' : req.status === 'Pendente Devolução' ? 'bg-purple-500/10 text-purple-500' : req.status === 'Concluído' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-500/10 text-slate-500'}`}>
+                                            <Package className="w-4 h-4 sm:w-5 sm:h-5" />
                                         </div>
                                         <div className="flex-1 min-w-0 pt-0.5">
                                             <div className="flex flex-wrap items-center gap-2 mb-1">
-                                                <h3 className={`font-black text-sm sm:text-base md:text-lg uppercase tracking-tight truncate ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                                                    {req.quantidade && req.quantidade > 1 && <span className="text-blue-500 mr-1 sm:mr-2">{req.quantidade}x</span>}
+                                                <h3 className={`font-black text-xs sm:text-sm md:text-base uppercase tracking-tight truncate ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                                                    {req.quantidade && req.quantidade > 1 && <span className="text-blue-500 mr-1">{req.quantidade}x</span>}
                                                     {req.material?.material || 'Material'}
                                                 </h3>
-                                                <span className={`text-[8px] sm:text-[9px] px-2 py-0.5 rounded-lg font-black uppercase tracking-widest ${req.status === 'Em Uso' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : (isDarkMode ? 'bg-slate-700 text-slate-400 border border-slate-600' : 'bg-slate-100 text-slate-500 border border-slate-200')}`}>
+                                                <span className={`text-[7px] sm:text-[8px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-widest ${req.status === 'Em Uso' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : (isDarkMode ? 'bg-slate-700 text-slate-400 border border-slate-600' : 'bg-slate-100 text-slate-500 border border-slate-200')}`}>
                                                     {req.status}
                                                 </span>
                                             </div>
-                                            <p className="text-[10px] sm:text-xs text-slate-500 font-medium">
+                                            <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium">
                                                 Solicitante: <span className={`font-black uppercase ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{req.solicitante ? `${req.solicitante.rank} ${req.solicitante.war_name}` : `ID: ${req.id_usuario}`}</span>
                                                 {req.solicitante?.isExternal && (
-                                                    <span className="ml-2 text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-500 font-black uppercase tracking-widest border border-emerald-500/20">EXT</span>
+                                                    <span className="ml-1.5 text-[7px] sm:text-[8px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-500 font-black uppercase tracking-widest border border-emerald-500/20">EXT</span>
                                                 )}
                                             </p>
                                             {(req.solicitante?.saram || req.solicitante?.contact) && (
@@ -1685,7 +1647,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                             )}
                         </div>
                     ))
-                )}
+                }
             </div>
 
             {/* Modal Cupom Compacto */}
