@@ -26,6 +26,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'minhas_solicitacoes' | 'painel_gestao' | 'missoes_ativas' | 'estatisticas' | 'solicitar_missao' | 'missoes_finalizadas'>('minhas_solicitacoes');
     const [showOrderForm, setShowOrderForm] = useState(false);
+    const [draftOmisNumber, setDraftOmisNumber] = useState('');
     const [showPrintView, setShowPrintView] = useState(false);
     const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
     const [editingDraft, setEditingDraft] = useState<Mission | null>(null); // State for editing draft
@@ -147,8 +148,10 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
     };
 
     // Starts generating the OMIS from a mission request
-    const handleStartOrder = (mission: Mission) => {
+    const handleStartOrder = async (mission: Mission) => {
         setSelectedMission(mission);
+        const omisNumber = await generateOMISNumber();
+        setDraftOmisNumber(omisNumber);
         setShowOrderForm(true);
         setShowMissionCard(false); // Close card if open
     };
@@ -249,7 +252,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
     // 2. Submit Order (SOP) -> Moves to AGUARDANDO_ASSINATURA
     const handleOrderSubmit = async (orderData: Partial<MissionOrder>) => {
         try {
-            const omisNumber = await generateOMISNumber();
+            const omisNumber = orderData.omisNumber || await generateOMISNumber();
 
             // Map to snake_case for DB
             // Ensure mission_commander_id is a valid UUID or null. 
@@ -688,7 +691,8 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
             requester: `${selectedMission.dados_missao.posto} ${selectedMission.dados_missao.nome_guerra}`,
             date: selectedMission.dados_missao.data,
             food: Object.values(selectedMission.dados_missao.alimentacao).some(v => v === true),
-            transport: false
+            transport: false,
+            omisNumber: draftOmisNumber
         };
 
         return (

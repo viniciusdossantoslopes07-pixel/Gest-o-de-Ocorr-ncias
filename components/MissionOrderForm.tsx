@@ -1,7 +1,7 @@
 
 import { useState, type FC, type FormEvent } from 'react';
 import { MissionOrder, MissionOrderPersonnel, MissionOrderSchedule } from '../types';
-import { Save, X, Plus, Trash2, Search } from 'lucide-react';
+import { Save, X, Plus, Trash2, Search, Shield } from 'lucide-react';
 import { RANKS, ARMAMENT_OPTIONS, MISSION_FUNCTIONS, TIPOS_MISSAO } from '../constants';
 
 interface MissionOrderFormProps {
@@ -25,6 +25,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
         food: order?.food || false,
         permanentOrders: order?.permanentOrders || '',
         specialOrders: order?.specialOrders || '',
+        omisNumber: order?.omisNumber || '',
 
         missionCommanderId: order?.missionCommanderId || ''
     });
@@ -153,6 +154,21 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                             >
                                 Externa
                             </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase tracking-wider mb-2`}>Nº da OMIS *</label>
+                        <div className="relative">
+                            <Shield className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} pointer-events-none`} />
+                            <input
+                                type="text"
+                                value={formData.omisNumber}
+                                onChange={e => setFormData({ ...formData, omisNumber: e.target.value })}
+                                placeholder="Ex: 10/GSD-SP"
+                                className={`w-full pl-10 pr-4 py-2.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-blue-400 font-mono' : 'border-slate-200 bg-white text-blue-600 font-mono'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all uppercase`}
+                                required
+                            />
                         </div>
                     </div>
 
