@@ -1,16 +1,17 @@
 
 import { type FC, useEffect } from 'react';
 import { MissionOrder } from '../types';
-import { X, Printer, FileDown, FileSignature } from 'lucide-react';
+import { X, Printer, FileDown, FileSignature, Zap } from 'lucide-react';
 
 interface MissionOrderPrintViewProps {
     order: MissionOrder;
     onClose: () => void;
     onSign?: () => void;
+    onForceActivate?: () => void;
     canSign?: boolean;
 }
 
-const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose, onSign, canSign }) => {
+const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose, onSign, onForceActivate, canSign }) => {
     const handlePrint = () => {
         const content = document.getElementById('omis-print-content');
         if (!content) return;
@@ -319,6 +320,15 @@ ${content.outerHTML}
                     </div>
                     
                     <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                        {order.status === 'AGUARDANDO_ASSINATURA' && canSign && onForceActivate && (
+                            <button
+                                onClick={onForceActivate}
+                                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl font-black text-sm hover:bg-emerald-700 shadow-lg shadow-emerald-500/30 transition-all active:scale-95"
+                            >
+                                <Zap className="w-4 h-4" />
+                                <span>Iniciar</span>
+                            </button>
+                        )}
                         {order.status === 'AGUARDANDO_ASSINATURA' && canSign && onSign && (
                             <button
                                 onClick={onSign}
@@ -326,7 +336,7 @@ ${content.outerHTML}
                             >
                                 <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-out"></div>
                                 <FileSignature className="w-4 h-4 sm:w-5 sm:h-5 relative z-10" />
-                                <span className="relative z-10">Assinar Ordem de Serviço</span>
+                                <span className="relative z-10">Assinar Digitalmente</span>
                             </button>
                         )}
                         <button

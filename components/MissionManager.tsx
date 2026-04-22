@@ -646,30 +646,30 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 </div>
                             </div>
                             
-                            <div className={`mt-6 pt-5 border-t ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'} flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 relative z-10`}>
+                            <div className={`mt-6 pt-5 border-t ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'} flex items-center justify-between gap-2 relative z-10`}>
                                 <button 
                                     onClick={() => handlePrintOrder(o)}
-                                    className={`flex-1 px-4 py-3 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2 ${isDarkMode ? 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/80 border border-slate-700/50' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'}`}
+                                    className={`flex-1 px-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-1.5 ${isDarkMode ? 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/80 border border-slate-700/50' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'}`}
                                 >
                                     <Eye className="w-4 h-4" /> Visualizar
                                 </button>
                                 {canSign && (
-                                    <div className="flex flex-col sm:flex-row gap-2 flex-1">
+                                    <>
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); handleForceActivateOrder(o); }} 
-                                            className={`flex-1 px-4 py-3 ${isDarkMode ? 'bg-emerald-900/30 text-emerald-400 border-emerald-800/50 hover:bg-emerald-800/40' : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'} rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all border shadow-lg shadow-emerald-500/10 active:scale-95 flex items-center justify-center gap-2`}
+                                            className={`flex-1 px-2 py-3 ${isDarkMode ? 'bg-emerald-900/30 text-emerald-400 border-emerald-800/50 hover:bg-emerald-800/40' : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'} rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border shadow-lg shadow-emerald-500/10 active:scale-95 flex items-center justify-center gap-1.5`}
                                             title="Liberar sem assinatura digital (Física)"
                                         >
                                             <Zap className="w-4 h-4" /> Iniciar
                                         </button>
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); handleChSopSign(o); }} 
-                                            className="flex-1 px-4 py-3 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/25 active:scale-95 flex items-center justify-center gap-2" 
+                                            className="flex-1 px-2 py-3 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/25 active:scale-95 flex items-center justify-center gap-1.5" 
                                             title="Assinar Digitalmente"
                                         >
                                             <FileSignature className="w-4 h-4" /> Assinar
                                         </button>
-                                    </div>
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -963,6 +963,10 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                     onSign={() => {
                         setShowPrintView(false);
                         handleChSopSign(selectedOrder);
+                    }}
+                    onForceActivate={() => {
+                        setShowPrintView(false);
+                        handleForceActivateOrder(selectedOrder);
                     }}
                 />
             )}
