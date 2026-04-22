@@ -191,7 +191,9 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                 const matches = users.filter(u => 
                                     u.saram.includes(term) || 
                                     (u.warName || '').toUpperCase().includes(upperTerm) ||
-                                    (u.name || '').toUpperCase().includes(upperTerm)
+                                    (u.name || '').toUpperCase().includes(upperTerm) ||
+                                    (`${u.rank || ''} ${u.warName || ''}`).toUpperCase().includes(upperTerm) ||
+                                    (`${u.rank || ''} ${u.name || ''}`).toUpperCase().includes(upperTerm)
                                 );
                                 setCommanderSuggestions(matches);
                                 setShowCommanderSuggestions(true);
