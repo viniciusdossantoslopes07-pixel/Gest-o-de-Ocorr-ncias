@@ -46,7 +46,7 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose,
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    padding: 2.0cm 1.5cm;
+    padding: 1.5cm 1.5cm;
     background: #fff;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -117,52 +117,52 @@ ${content.outerHTML}
                 <div className="flex-1 overflow-auto p-4 sm:p-12 bg-slate-50/30 print:p-0 print:bg-white print:overflow-visible">
                     <div id="omis-print-content" className="bg-white shadow-sm print:shadow-none mx-auto max-w-[21cm] p-6 sm:p-12 border border-slate-100 print:border-none print:p-0 min-h-full">
                         {/* Header with Logos */}
-                        <div className="flex items-start justify-between mb-6 border-b-2 border-slate-900 pb-4">
-                            <img src="/logo_basp_optimized.png" alt="Logo BASP" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
+                        <div className="flex items-start justify-between mb-4 border-b-2 border-slate-900 pb-3">
+                            <img src="/logo_basp_optimized.png" alt="Logo BASP" className="w-14 h-14 sm:w-16 sm:h-16 object-contain" />
                             <div className="flex-1 text-center px-2">
-                                <h1 className="text-[9px] sm:text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">Ministério da Defesa</h1>
-                                <h1 className="text-base sm:text-xl font-black uppercase text-slate-900 leading-tight">Comando da Aeronáutica</h1>
-                                <h2 className="text-xs sm:text-base font-black uppercase text-slate-800 tracking-wide mt-1">BASE AÉREA DE SÃO PAULO</h2>
-                                <h3 className="text-[10px] sm:text-sm font-bold uppercase text-slate-700 leading-tight">Grupo de Segurança e Defesa de São Paulo</h3>
+                                <h1 className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">Ministério da Defesa</h1>
+                                <h1 className="text-sm sm:text-lg font-black uppercase text-slate-900 leading-tight">Comando da Aeronáutica</h1>
+                                <h2 className="text-[11px] sm:text-sm font-black uppercase text-slate-800 tracking-wide mt-1">BASE AÉREA DE SÃO PAULO</h2>
+                                <h3 className="text-[9px] sm:text-xs font-bold uppercase text-slate-700 leading-tight">Grupo de Segurança e Defesa de São Paulo</h3>
                             </div>
-                            <img src="/logo_gsd.png" alt="Logo GSD-SP" className="w-16 h-16 sm:w-20 sm:h-20 object-contain" />
+                            <img src="/logo_gsd.png" alt="Logo GSD-SP" className="w-14 h-14 sm:w-16 sm:h-16 object-contain" />
                         </div>
 
                         {/* Basic Info Table */}
-                        <table className="w-full border-[1.5px] border-slate-950 mb-8 text-[11px] sm:text-sm">
+                        <table className="w-full border-[1.5px] border-slate-950 mb-6 text-[10px] sm:text-xs leading-tight">
                             <tbody>
                                 <tr>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 font-black bg-slate-50 w-32 uppercase text-[10px]">Nº da OMIS:</td>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 font-bold">{order.omisNumber}</td>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 font-black bg-slate-50 w-24 uppercase text-[10px]">Data:</td>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 font-bold">{new Date(order.date).toLocaleDateString('pt-BR')}</td>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 font-black bg-slate-50 w-24 uppercase text-[10px]">Interna:</td>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 w-12 text-center font-bold">
+                                    <td className="border border-slate-950 px-2 py-1 font-black bg-slate-50 w-32 uppercase text-[9px]">Nº da OMIS:</td>
+                                    <td className="border border-slate-950 px-2 py-1 font-bold">{order.omisNumber}</td>
+                                    <td className="border border-slate-950 px-2 py-1 font-black bg-slate-50 w-24 uppercase text-[9px]">Data:</td>
+                                    <td className="border border-slate-950 px-2 py-1 font-bold">{new Date(order.date).toLocaleDateString('pt-BR')}</td>
+                                    <td className="border border-slate-950 px-2 py-1 font-black bg-slate-50 w-24 uppercase text-[9px]">Interna:</td>
+                                    <td className="border border-slate-950 px-2 py-1 w-12 text-center font-bold">
                                         {order.isInternal ? '☑' : '☐'}
                                     </td>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 font-black bg-slate-50 w-24 uppercase text-[10px]">Externa:</td>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 w-12 text-center font-bold">
+                                    <td className="border border-slate-950 px-2 py-1 font-black bg-slate-50 w-24 uppercase text-[9px]">Externa:</td>
+                                    <td className="border border-slate-950 px-2 py-1 w-12 text-center font-bold">
                                         {!order.isInternal ? '☑' : '☐'}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 font-black bg-slate-50 uppercase text-[10px]">Missão:</td>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 font-bold" colSpan={3}>{formatValue(order.mission)}</td>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 font-black bg-slate-50 uppercase text-[10px]">Local:</td>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 font-bold" colSpan={3}>{formatValue(order.location)}</td>
+                                    <td className="border border-slate-950 px-2 py-1 font-black bg-slate-50 uppercase text-[9px]">Missão:</td>
+                                    <td className="border border-slate-950 px-2 py-1 font-bold" colSpan={3}>{formatValue(order.mission)}</td>
+                                    <td className="border border-slate-950 px-2 py-1 font-black bg-slate-50 uppercase text-[9px]">Local:</td>
+                                    <td className="border border-slate-950 px-2 py-1 font-bold" colSpan={3}>{formatValue(order.location)}</td>
                                 </tr>
                                 <tr>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 font-black bg-slate-50 uppercase text-[10px]">Descrição:</td>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 font-medium leading-relaxed" colSpan={7}>{formatValue(order.description)}</td>
+                                    <td className="border border-slate-950 px-2 py-1 font-black bg-slate-50 uppercase text-[9px]">Descrição:</td>
+                                    <td className="border border-slate-950 px-2 py-1 font-medium leading-snug" colSpan={7}>{formatValue(order.description)}</td>
                                 </tr>
                                 <tr>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 font-black bg-slate-50 uppercase text-[10px]">Solicitante:</td>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 font-bold uppercase" colSpan={3}>{formatValue(order.requester)}</td>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 font-black bg-slate-50 uppercase text-[10px]">Transp./Alim.:</td>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 font-bold text-center" colSpan={2}>
+                                    <td className="border border-slate-950 px-2 py-1 font-black bg-slate-50 uppercase text-[9px]">Solicitante:</td>
+                                    <td className="border border-slate-950 px-2 py-1 font-bold uppercase" colSpan={3}>{formatValue(order.requester)}</td>
+                                    <td className="border border-slate-950 px-2 py-1 font-black bg-slate-50 uppercase text-[9px]">Transp./Alim.:</td>
+                                    <td className="border border-slate-950 px-2 py-1 font-bold text-center" colSpan={2}>
                                         T: {order.transport ? 'SIM' : 'NÃO'}
                                     </td>
-                                    <td className="border border-slate-950 px-2.5 py-1.5 font-bold text-center">
+                                    <td className="border border-slate-950 px-2 py-1 font-bold text-center">
                                         A: {order.food ? 'SIM' : 'NÃO'}
                                     </td>
                                 </tr>
@@ -170,18 +170,18 @@ ${content.outerHTML}
                         </table>
 
                         {/* Personnel Table */}
-                        <div className="mb-8">
-                            <h3 className="text-center font-black text-xs sm:text-sm mb-3 uppercase tracking-wider">Pessoal e Material</h3>
-                            <table className="w-full border-[1.5px] border-slate-950 text-[10px] sm:text-[11px]">
+                        <div className="mb-6">
+                            <h3 className="text-center font-black text-[11px] sm:text-xs mb-2 uppercase tracking-wider">Pessoal e Material</h3>
+                            <table className="w-full border-[1.5px] border-slate-950 text-[9px] sm:text-[10px]">
                                 <thead>
                                     <tr className="bg-slate-50">
-                                        <th className="border border-slate-950 px-2 py-1.5 font-black uppercase tracking-tighter">Função</th>
-                                        <th className="border border-slate-950 px-2 py-1.5 font-black uppercase tracking-tighter">P/G</th>
-                                        <th className="border border-slate-950 px-2 py-1.5 font-black uppercase tracking-tighter">Nome de Guerra</th>
-                                        <th className="border border-slate-950 px-2 py-1.5 font-black uppercase tracking-tighter">SARAM</th>
-                                        <th className="border border-slate-950 px-2 py-1.5 font-black uppercase tracking-tighter">Unif.</th>
-                                        <th className="border border-slate-950 px-2 py-1.5 font-black uppercase tracking-tighter">Armt</th>
-                                        <th className="border border-slate-950 px-2 py-1.5 font-black uppercase tracking-tighter">Mun.</th>
+                                        <th className="border border-slate-950 px-1 py-1 font-black uppercase tracking-tighter">Função</th>
+                                        <th className="border border-slate-950 px-1 py-1 font-black uppercase tracking-tighter">P/G</th>
+                                        <th className="border border-slate-950 px-1 py-1 font-black uppercase tracking-tighter">Nome de Guerra</th>
+                                        <th className="border border-slate-950 px-1 py-1 font-black uppercase tracking-tighter">SARAM</th>
+                                        <th className="border border-slate-950 px-1 py-1 font-black uppercase tracking-tighter">Unif.</th>
+                                        <th className="border border-slate-950 px-1 py-1 font-black uppercase tracking-tighter">Armt</th>
+                                        <th className="border border-slate-950 px-1 py-1 font-black uppercase tracking-tighter">Mun.</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -190,13 +190,13 @@ ${content.outerHTML}
 
                                         return (
                                             <tr key={person.id || idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
-                                                <td className="border border-slate-950 px-2 py-1 font-bold uppercase">{person.function}</td>
-                                                <td className="border border-slate-950 px-2 py-1 text-center font-bold">{formatValue(person.rank)}</td>
-                                                <td className="border border-slate-950 px-2 py-1 font-bold uppercase">{formatValue(warName)}</td>
-                                                <td className="border border-slate-950 px-2 py-1 text-center">{formatValue(person.saram)}</td>
-                                                <td className="border border-slate-950 px-2 py-1 text-center uppercase">{formatValue(person.uniform)}</td>
-                                                <td className="border border-slate-950 px-2 py-1 text-center uppercase">{formatValue(person.armament)}</td>
-                                                <td className="border border-slate-950 px-2 py-1 text-center uppercase">{formatValue(person.ammunition)}</td>
+                                                <td className="border border-slate-950 px-1 py-0.5 font-bold uppercase">{person.function}</td>
+                                                <td className="border border-slate-950 px-1 py-0.5 text-center font-bold">{formatValue(person.rank)}</td>
+                                                <td className="border border-slate-950 px-1 py-0.5 font-bold uppercase">{formatValue(warName)}</td>
+                                                <td className="border border-slate-950 px-1 py-0.5 text-center">{formatValue(person.saram)}</td>
+                                                <td className="border border-slate-950 px-1 py-0.5 text-center uppercase">{formatValue(person.uniform)}</td>
+                                                <td className="border border-slate-950 px-1 py-0.5 text-center uppercase">{formatValue(person.armament)}</td>
+                                                <td className="border border-slate-950 px-1 py-0.5 text-center uppercase">{formatValue(person.ammunition)}</td>
                                             </tr>
                                         );
                                     })}
@@ -205,30 +205,30 @@ ${content.outerHTML}
                         </div>
 
                         {/* Schedule Table */}
-                        <div className="mb-8">
-                            <h3 className="text-center font-black text-xs sm:text-sm mb-3 uppercase tracking-wider">Quadro Horário</h3>
-                            <table className="w-full border-[1.5px] border-slate-950 text-[10px] sm:text-[11px]">
+                        <div className="mb-6">
+                            <h3 className="text-center font-black text-[11px] sm:text-xs mb-2 uppercase tracking-wider">Quadro Horário</h3>
+                            <table className="w-full border-[1.5px] border-slate-950 text-[9px] sm:text-[10px]">
                                 <thead>
                                     <tr className="bg-slate-50">
-                                        <th className="border border-slate-950 px-2 py-1.5 font-black uppercase tracking-tighter w-1/2">Atividade</th>
-                                        <th className="border border-slate-950 px-2 py-1.5 font-black uppercase tracking-tighter">Local</th>
-                                        <th className="border border-slate-950 px-2 py-1.5 font-black uppercase tracking-tighter">Data</th>
-                                        <th className="border border-slate-950 px-2 py-1.5 font-black uppercase tracking-tighter">Hora</th>
+                                        <th className="border border-slate-950 px-2 py-1 font-black uppercase tracking-tighter w-1/2">Atividade</th>
+                                        <th className="border border-slate-950 px-2 py-1 font-black uppercase tracking-tighter">Local</th>
+                                        <th className="border border-slate-950 px-2 py-1 font-black uppercase tracking-tighter">Data</th>
+                                        <th className="border border-slate-950 px-2 py-1 font-black uppercase tracking-tighter">Hora</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {order.schedule.length > 0 ? (
                                         order.schedule.map((s, idx) => (
                                             <tr key={s.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
-                                                <td className="border border-slate-950 px-2 py-1 font-bold uppercase">{formatValue(s.event)}</td>
-                                                <td className="border border-slate-950 px-2 py-1 text-center">-</td>
-                                                <td className="border border-slate-950 px-2 py-1 text-center font-medium">{new Date(order.date).toLocaleDateString('pt-BR')}</td>
-                                                <td className="border border-slate-950 px-2 py-1 text-center font-black">{formatValue(s.startTime)}</td>
+                                                <td className="border border-slate-950 px-2 py-0.5 font-bold uppercase">{formatValue(s.event)}</td>
+                                                <td className="border border-slate-950 px-2 py-0.5 text-center">-</td>
+                                                <td className="border border-slate-950 px-2 py-0.5 text-center font-medium">{new Date(order.date).toLocaleDateString('pt-BR')}</td>
+                                                <td className="border border-slate-950 px-2 py-0.5 text-center font-black">{formatValue(s.startTime)}</td>
                                             </tr>
                                         ))
                                     ) : (
                                         <tr>
-                                            <td className="border border-slate-900 px-2 py-1 text-center text-slate-400" colSpan={4}>
+                                            <td className="border border-slate-900 px-2 py-0.5 text-center text-slate-400" colSpan={4}>
                                                 Nenhuma atividade programada
                                             </td>
                                         </tr>
@@ -238,23 +238,23 @@ ${content.outerHTML}
                         </div>
 
                         {/* Orders */}
-                        <div className="mb-8">
-                            <h3 className="text-center font-black text-xs sm:text-sm mb-3 uppercase tracking-wider">Ordens Permanentes</h3>
-                            <div className="border-[1.5px] border-slate-950 px-4 py-3 min-h-[60px] text-[11px] sm:text-xs leading-relaxed whitespace-pre-wrap font-medium">
+                        <div className="mb-6">
+                            <h3 className="text-center font-black text-[11px] sm:text-xs mb-2 uppercase tracking-wider">Ordens Permanentes</h3>
+                            <div className="border-[1.5px] border-slate-950 px-3 py-2 min-h-[40px] text-[10px] sm:text-[11px] leading-snug whitespace-pre-wrap font-medium">
                                 {formatValue(order.permanentOrders)}
                             </div>
                         </div>
 
-                        <div className="mb-8">
-                            <h3 className="text-center font-black text-xs sm:text-sm mb-3 uppercase tracking-wider">Ordens Especiais</h3>
-                            <div className="border-[1.5px] border-slate-950 px-4 py-3 min-h-[60px] text-[11px] sm:text-xs leading-relaxed whitespace-pre-wrap font-medium">
+                        <div className="mb-6">
+                            <h3 className="text-center font-black text-[11px] sm:text-xs mb-2 uppercase tracking-wider">Ordens Especiais</h3>
+                            <div className="border-[1.5px] border-slate-950 px-3 py-2 min-h-[40px] text-[10px] sm:text-[11px] leading-snug whitespace-pre-wrap font-medium">
                                 {formatValue(order.specialOrders)}
                             </div>
                         </div>
 
                         {/* Signature Block - Only if signed */}
                         {order.chSopSignature && (
-                            <div className="mb-6 border border-blue-100 bg-blue-50/30 rounded-xl p-6 mt-8 flex flex-col items-center">
+                            <div className="mb-6 border border-blue-100 bg-blue-50/30 rounded-xl p-6 mt-8 flex flex-col items-center print:hidden">
                                 <div className="flex items-center gap-2 mb-2">
                                     <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
                                     <p className="text-[10px] font-black uppercase text-blue-900 tracking-widest">Documento Autenticado Digitalmente</p>
@@ -272,8 +272,20 @@ ${content.outerHTML}
                             </div>
                         )}
 
+                        {/* Static Signatures */}
+                        <div className="mt-20 sm:mt-28 mb-4 flex justify-between px-2 sm:px-8 text-center print:mt-24">
+                            <div className="flex flex-col items-center w-1/2 px-2">
+                                <p className="text-[10px] sm:text-[11px] font-bold text-slate-800 uppercase">JOÃO GABRIEL PICCOLI E SOUZA Maj Inf</p>
+                                <p className="text-[10px] sm:text-[11px] font-bold text-slate-800">Chefe da Seção de Operações</p>
+                            </div>
+                            <div className="flex flex-col items-center w-1/2 px-2">
+                                <p className="text-[10px] sm:text-[11px] font-bold text-slate-800 uppercase">FELIPE BARBOSA ALVARENGA Ten Cel Inf</p>
+                                <p className="text-[10px] sm:text-[11px] font-bold text-slate-800">Cmt do GSD-SP</p>
+                            </div>
+                        </div>
+
                         {/* Footer */}
-                        <div className="text-xs text-slate-500 mt-4 pt-4 border-t border-slate-300">
+                        <div className="text-[10px] sm:text-xs text-slate-500 mt-4 pt-4 border-t border-slate-300">
                             <p>Criado por: {order.createdBy}</p>
                             <p>Data de criação: {new Date(order.createdAt).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</p>
                             {order.updatedAt !== order.createdAt && (
