@@ -44,7 +44,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [selectedRequest, setSelectedRequest] = useState<LoanRequest | null>(null);
     const [requestToReject, setRequestToReject] = useState<LoanRequest | null>(null);
-    const [activeTab, setActiveTab] = useState<'Solicitações' | 'Em Uso' | 'Histórico'>('Solicitações');
+    const [activeTab, setActiveTab] = useState<'Em Uso' | 'Histórico' | 'Estoque'>('Em Uso');
 
     const [historyFilterDay, setHistoryFilterDay] = useState('');
     const [historyFilterMonth, setHistoryFilterMonth] = useState('');
@@ -718,14 +718,23 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
         }
     };
 
+    const filteredInventory = React.useMemo(() => {
+        const search = inUseSearch.toLowerCase().trim();
+        if (!search) return inventory;
+        return inventory.filter(item => 
+            item.material.toLowerCase().includes(search) || 
+            (item.endereco && item.endereco.toLowerCase().includes(search))
+        );
+    }, [inventory, inUseSearch]);
+
     const filteredRequests = React.useMemo(() => {
         const searchObj = inUseSearch ? inUseSearch.toLowerCase().trim() : '';
         
         return requests.filter(req => {
             let matchesTab = false;
-            if (activeTab === 'Solicitações') matchesTab = ['Pendente', 'Aprovado'].includes(req.status);
-            else if (activeTab === 'Em Uso') matchesTab = req.status === 'Em Uso';
+            if (activeTab === 'Em Uso') matchesTab = req.status === 'Em Uso';
             else if (activeTab === 'Histórico') matchesTab = ['Concluído', 'Rejeitado'].includes(req.status);
+            else if (activeTab === 'Estoque') matchesTab = false;
 
             if (!matchesTab) return false;
 
@@ -828,24 +837,22 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                 <div className="flex flex-wrap gap-3 w-full md:w-auto">
                     <button
                         onClick={() => { setShowDirectRelease(!showDirectRelease); }}
-                        className={`flex-1 md:flex-none px-6 py-3 rounded-xl font-black uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-3 text-[11px] active:scale-95 ${showDirectRelease ? 'bg-red-500 text-white shadow-red-500/20' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20'}`}
+                        className={`flex-1 md:flex-none px-8 py-4 rounded-2xl font-black uppercase tracking-widest transition-all shadow-2xl flex items-center justify-center gap-3 text-[12px] active:scale-95 group ${showDirectRelease ? 'bg-red-500 text-white shadow-red-500/30' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/30'}`}
                     >
-                        <Package className="w-4.5 h-4.5" />
+                        <Package className={`w-5 h-5 transition-transform group-hover:scale-110 ${showDirectRelease ? 'rotate-12' : ''}`} />
                         <span>{showDirectRelease ? 'Cancelar Operação' : 'Nova Cautela Direta'}</span>
                     </button>
                     <button
                         onClick={() => {
-                            if (activeTab === 'Em Uso') {
-                                setActiveTab('Solicitações');
-                            } else {
+                            if (activeTab !== 'Em Uso') {
                                 setActiveTab('Em Uso');
                                 setInUseSearch('');
                                 setShowDirectRelease(false);
                             }
                         }}
-                        className={`flex-1 md:flex-none px-6 py-3 rounded-xl font-black uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-3 text-[11px] active:scale-95 ${activeTab === 'Em Uso' ? 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-600' : 'bg-slate-800 text-white hover:bg-slate-900 shadow-slate-800/20 border border-slate-700'}`}
+                        className={`flex-1 md:flex-none px-8 py-4 rounded-2xl font-black uppercase tracking-widest transition-all shadow-2xl flex items-center justify-center gap-3 text-[12px] active:scale-95 group ${activeTab === 'Em Uso' ? 'bg-amber-500 text-white shadow-amber-500/30 hover:bg-amber-600' : 'bg-slate-800 text-white hover:bg-slate-900 shadow-slate-800/40 border border-slate-700'}`}
                     >
-                        <ShieldCheck className="w-4.5 h-4.5" />
+                        <ShieldCheck className="w-5 h-5 transition-transform group-hover:scale-110" />
                         <span>Receber Material</span>
                     </button>
                     <button onClick={fetchRequests} className={`p-3 rounded-xl transition-all shadow-md shrink-0 border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
@@ -857,10 +864,20 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             {/* Direct forms */}
             {showDirectRelease && (
                 <div className={`p-8 rounded-[2rem] border-2 shadow-2xl space-y-6 animate-scale-in ${isDarkMode ? 'bg-slate-800 border-blue-500/30' : 'bg-white border-blue-100 shadow-blue-100/50'}`}>
-                    <h2 className={`font-black flex items-center gap-3 uppercase text-[10px] tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                        <div className={`w-2.5 h-2.5 rounded-full shadow-lg bg-blue-500`}></div>
-                        Nova Movimentação de Cautela (Saída Rápida)
-                    </h2>
+                    <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-6 mb-2">
+                        <div className="flex items-center gap-4">
+                            <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-blue-600/20 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
+                                <Plus className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h2 className={`text-xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Nova Movimentação</h2>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mt-1">Registro de saída imediata</p>
+                            </div>
+                        </div>
+                        <button onClick={() => setShowDirectRelease(false)} className={`p-2 rounded-xl transition-colors ${isDarkMode ? 'hover:bg-slate-700 text-slate-500' : 'hover:bg-slate-100 text-slate-400'}`}>
+                            <X className="w-6 h-6" />
+                        </button>
+                    </div>
                     <div className="flex gap-4 mb-4 border-b border-slate-200 dark:border-slate-700 pb-4">
                         <button
                             onClick={() => { setIsExternalMilitar(false); setFoundUser(null); setDirectSaram(''); }}
@@ -876,21 +893,47 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                         </button>
                     </div>
 
-                    {/* Bloco do Militar OM (SARAM isolado) */}
                     {!isExternalMilitar && (
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase">SARAM do Militar</label>
-                                <input
-                                    type="text"
-                                    value={directSaram}
-                                    onChange={(e) => setDirectSaram(e.target.value)}
-                                    placeholder="Digite o SARAM..."
-                                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 font-bold outline-none transition-colors ${isDarkMode ? 'bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500 focus:bg-slate-900 focus:border-blue-500' : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white'}`}
-                                />
-                                {isSearchingSaram && <p className="text-[10px] font-bold text-blue-500 mt-1 animate-pulse">Buscando militar...</p>}
-                                {foundUser && <p className="text-[10px] font-bold text-green-600 mt-1">✓ {foundUser.rank} {foundUser.war_name || foundUser.name}</p>}
-                                {!isSearchingSaram && directSaram.length >= 4 && !foundUser && <p className="text-[10px] font-bold text-red-500 mt-1">✗ Militar não encontrado</p>}
+                        <div className={`p-6 rounded-3xl border-2 border-dashed transition-all ${foundUser ? 'border-blue-500/50 bg-blue-500/5' : 'border-slate-200 dark:border-slate-700'}`}>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+                                <div className="md:col-span-1 space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">SARAM do Militar</label>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            value={directSaram}
+                                            onChange={(e) => setDirectSaram(e.target.value)}
+                                            placeholder="Ex: 1234567"
+                                            className={`w-full px-5 py-4 border-2 rounded-[1.2rem] focus:ring-4 focus:ring-blue-500/10 font-black outline-none transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600 focus:border-blue-500' : 'bg-slate-50 border-slate-100 text-slate-800 focus:bg-white focus:border-blue-500 shadow-inner'}`}
+                                        />
+                                        <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 opacity-50" />
+                                    </div>
+                                </div>
+                                <div className="md:col-span-3">
+                                    {isSearchingSaram && (
+                                        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 animate-pulse">
+                                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                            <p className="text-xs font-black text-blue-500 uppercase tracking-widest">Buscando militar na base de dados...</p>
+                                        </div>
+                                    )}
+                                    {foundUser && !isSearchingSaram && (
+                                        <div className="flex items-center gap-4 px-5 py-3 rounded-[1.2rem] bg-emerald-500/10 border border-emerald-500/20 animate-scale-in">
+                                            <div className="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center font-black text-sm shadow-lg shadow-emerald-500/20">
+                                                {foundUser.rank}
+                                            </div>
+                                            <div>
+                                                <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none mb-1">Militar Identificado</p>
+                                                <h3 className={`text-lg font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{foundUser.war_name || foundUser.name}</h3>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {!foundUser && !isSearchingSaram && directSaram.length >= 4 && (
+                                        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-red-500/10 border border-red-500/20 animate-shake">
+                                            <AlertCircle className="w-5 h-5 text-red-500" />
+                                            <p className="text-xs font-black text-red-500 uppercase tracking-widest">Nenhum militar encontrado com este SARAM</p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}
@@ -1093,20 +1136,24 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             )}
 
             {/* Tabs Premium — Cards com métricas */}
-            <div className="grid grid-cols-3 gap-3">
-                {(['Solicitações', 'Em Uso', 'Histórico'] as const).map(tab => {
-                    const count = requests.filter(req => {
-                        if (tab === 'Solicitações') return ['Pendente', 'Aprovado'].includes(req.status);
-                        if (tab === 'Em Uso') return req.status === 'Em Uso';
-                        if (tab === 'Histórico') return ['Concluído', 'Rejeitado'].includes(req.status);
-                        return false;
-                    }).length;
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {(['Estoque', 'Em Uso', 'Histórico'] as const).map(tab => {
+                    let count = 0;
+                    if (tab === 'Estoque') {
+                        count = inventory.reduce((acc, curr) => acc + (curr.qtdisponivel || 0), 0);
+                    } else if (tab === 'Em Uso') {
+                        count = requests.filter(req => req.status === 'Em Uso').length;
+                    } else if (tab === 'Histórico') {
+                        count = requests.filter(req => ['Concluído', 'Rejeitado'].includes(req.status)).length;
+                    }
+
                     const isActive = activeTab === tab;
                     const colors = {
-                        'Solicitações': { active: 'from-amber-500 to-orange-500', icon: '📋', dot: 'bg-amber-400' },
-                        'Em Uso': { active: 'from-blue-600 to-blue-500', icon: '📦', dot: 'bg-blue-400' },
-                        'Histórico': { active: 'from-slate-600 to-slate-500', icon: '🗂️', dot: 'bg-slate-400' },
+                        'Estoque': { active: 'from-blue-600 to-indigo-600', icon: '🏢', dot: 'bg-blue-400' },
+                        'Em Uso': { active: 'from-amber-500 to-orange-500', icon: '📦', dot: 'bg-amber-400' },
+                        'Histórico': { active: 'from-slate-700 to-slate-900', icon: '🗂️', dot: 'bg-slate-400' },
                     }[tab];
+
                     return (
                         <button
                             key={tab}
@@ -1119,22 +1166,24 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                     setHistoryFilterYear('');
                                 }
                             }}
-                            className={`relative flex flex-col items-start p-4 rounded-2xl border transition-all duration-200 overflow-hidden text-left ${isActive
-                                ? `bg-gradient-to-br ${colors.active} text-white border-transparent shadow-lg`
+                            className={`relative flex flex-col items-start p-6 rounded-[2rem] border transition-all duration-300 overflow-hidden text-left ${isActive
+                                ? `bg-gradient-to-br ${colors.active} text-white border-transparent shadow-2xl scale-[1.02] z-10`
                                 : isDarkMode
-                                    ? 'bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-600 hover:bg-slate-800'
-                                    : 'bg-white border-slate-100 text-slate-500 hover:border-slate-200 shadow-sm hover:shadow-md'
+                                    ? 'bg-slate-800/40 border-slate-700 text-slate-400 hover:border-slate-500 hover:bg-slate-800'
+                                    : 'bg-white border-slate-100 text-slate-500 hover:border-blue-200 shadow-sm hover:shadow-xl'
                                 }`}
                         >
-                            {isActive && <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_white,_transparent)]" />}
-                            <div className="flex items-center justify-between w-full mb-2">
-                                <span className="text-lg">{colors.icon}</span>
-                                {count > 0 && !isActive && <span className={`w-2 h-2 rounded-full ${colors.dot} animate-pulse`} />}
+                            {isActive && <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top_right,_white,_transparent)]" />}
+                            <div className="flex items-center justify-between w-full mb-4">
+                                <div className={`p-2 rounded-xl ${isActive ? 'bg-white/20' : (isDarkMode ? 'bg-slate-700' : 'bg-slate-50')}`}>
+                                    <span className="text-xl">{colors.icon}</span>
+                                </div>
+                                {count > 0 && !isActive && <span className={`w-2.5 h-2.5 rounded-full ${colors.dot} animate-pulse shadow-lg`} />}
                             </div>
-                            <p className={`text-2xl font-black tracking-tight leading-none mb-1 ${isActive ? 'text-white' : (isDarkMode ? 'text-white' : 'text-slate-800')}`}>
+                            <p className={`text-3xl font-black tracking-tighter leading-none mb-2 ${isActive ? 'text-white' : (isDarkMode ? 'text-white' : 'text-slate-800')}`}>
                                 {count}
                             </p>
-                            <p className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-white/80' : ''}`}>{tab}</p>
+                            <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isActive ? 'text-white/90' : 'text-slate-500'}`}>{tab === 'Estoque' ? 'Itens em Estoque' : tab}</p>
                         </button>
                     );
                 })}
@@ -1381,7 +1430,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
 
             {/* Search and Batch Actions — abaixo dos gráficos */}
             {
-                (activeTab === 'Em Uso' || activeTab === 'Histórico' || activeTab === 'Solicitações') && (
+                (activeTab === 'Em Uso' || activeTab === 'Histórico') && (
                     <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 rounded-2xl animate-scale-in glass-panel">
                         <div className="relative flex-1 w-full">
                             <input
@@ -1394,14 +1443,14 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         </div>
 
-                        {(activeTab === 'Em Uso' || activeTab === 'Solicitações') && (
+                        {activeTab === 'Em Uso' && (
                             <div className="flex items-center gap-3 shrink-0">
                                 <label className={`flex items-center gap-2 cursor-pointer group px-3 py-2 rounded-xl border transition-all text-sm ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-white border-slate-200'}`}>
                                     <input
                                         type="checkbox"
                                         className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-30"
                                         checked={(() => {
-                                            const selectableRequests = filteredRequests.filter(r => (activeTab === 'Em Uso' || activeTab === 'Solicitações'));
+                                            const selectableRequests = filteredRequests.filter(r => activeTab === 'Em Uso');
                                             if (selectableRequests.length === 0) return false;
                                             if (selectedBatchIds.length > 0) {
                                                 const firstId = selectedBatchIds[0];
@@ -1413,7 +1462,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                         })()}
                                         onChange={(e) => {
                                             if (e.target.checked) {
-                                                const selectable = filteredRequests.filter(r => (activeTab === 'Em Uso' || activeTab === 'Solicitações'));
+                                                const selectable = filteredRequests.filter(r => activeTab === 'Em Uso');
                                                 if (selectable.length > 0) {
                                                     const targetUserId = selectedBatchIds.length > 0
                                                         ? requests.find(r => r.id === selectedBatchIds[0])?.id_usuario
@@ -1435,14 +1484,13 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                         onClick={() => {
                                             const firstReq = requests.find(r => r.id === selectedBatchIds[0]);
                                             if (firstReq) {
-                                                const action = activeTab === 'Solicitações' ? 'update_release' : 'update_return';
-                                                startSignatureFlow(selectedBatchIds, firstReq.id_usuario, action, firstReq.id_usuario_externo);
+                                                startSignatureFlow(selectedBatchIds, firstReq.id_usuario, 'update_return', firstReq.id_usuario_externo);
                                             }
                                         }}
-                                        className={`px-4 py-2 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${activeTab === 'Solicitações' ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/20' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                                        className="px-4 py-2 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20"
                                     >
-                                        {activeTab === 'Solicitações' ? <Package className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
-                                        {activeTab === 'Solicitações' ? 'Entregar' : 'Receber'} ({selectedBatchIds.length})
+                                        <CheckCircle className="w-4 h-4" />
+                                        Receber ({selectedBatchIds.length})
                                     </button>
                                 )}
                             </div>
@@ -1452,7 +1500,40 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             }
 
             <div className="space-y-4">
-                {filteredRequests.length === 0 ? (
+                {activeTab === 'Estoque' ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-scale-in">
+                        {filteredInventory.length === 0 ? (
+                            <div className={`md:col-span-3 text-center p-16 rounded-[2rem] border-dashed border-2 flex flex-col items-center justify-center gap-4 ${isDarkMode ? 'bg-slate-800/40 border-slate-700 text-slate-500' : 'bg-white border-slate-200 text-slate-400'}`}>
+                                <AlertCircle className="w-12 h-12 opacity-20" />
+                                <p className="font-black uppercase tracking-widest text-[10px]">Nenhum item em estoque corresponde à busca</p>
+                            </div>
+                        ) : (
+                            filteredInventory.map(item => (
+                                <div key={item.id} className={`p-6 rounded-[2rem] border-2 transition-all duration-300 group hover:scale-[1.02] ${isDarkMode ? 'bg-slate-800/40 border-slate-700 hover:border-blue-500/50 hover:bg-slate-800' : 'bg-white border-slate-100 hover:border-blue-200 shadow-sm hover:shadow-xl'}`}>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className={`p-3 rounded-2xl transition-colors ${isDarkMode ? 'bg-slate-700 group-hover:bg-blue-600/20 text-slate-400 group-hover:text-blue-400' : 'bg-slate-50 group-hover:bg-blue-50 text-slate-500 group-hover:text-blue-600'}`}>
+                                            <Package className="w-6 h-6" />
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Disponível</p>
+                                            <h4 className={`text-2xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{item.qtdisponivel}</h4>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 className={`font-black text-lg uppercase tracking-tight mb-2 truncate ${isDarkMode ? 'text-white' : 'text-slate-800'}`} title={item.material}>
+                                            {item.material}
+                                        </h3>
+                                        {item.endereco && (
+                                            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'bg-amber-500/10 text-amber-500' : 'bg-amber-50 text-amber-600'}`}>
+                                                <MapPin className="w-3 h-3" /> {item.endereco}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                ) : filteredRequests.length === 0 ? (
                     <div className={`text-center p-16 rounded-[2rem] border-dashed border-2 flex flex-col items-center justify-center gap-4 ${isDarkMode ? 'bg-slate-800/40 border-slate-700 text-slate-500' : 'bg-white border-slate-200 text-slate-400'}`}>
                         <div className={`p-6 rounded-full ${isDarkMode ? 'bg-slate-800 shadow-inner' : 'bg-slate-50'}`}>
                             <AlertCircle className={`w-12 h-12 ${isDarkMode ? 'text-slate-600' : 'text-slate-200'}`} />
@@ -1463,7 +1544,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                     filteredRequests.map(req => (
                         <div key={req.id} className={`rounded-2xl transition-all duration-300 glass-card ${expandedRequestId === req.id ? 'ring-2 ring-blue-500 shadow-blue-500/20 shadow-xl' : 'hover:border-blue-300'}`}>
                             <div className="p-4 sm:p-6 flex flex-row gap-3 sm:gap-6 items-start sm:items-center cursor-pointer" onClick={() => setExpandedRequestId(expandedRequestId === req.id ? null : req.id)}>
-                                {(activeTab === 'Em Uso' || (activeTab === 'Solicitações' && (req.status === 'Pendente' || req.status === 'Aprovado'))) && (
+                                {activeTab === 'Em Uso' && (
                                     <div className="shrink-0 mt-3 sm:mt-0" onClick={e => e.stopPropagation()}>
                                         <input
                                             type="checkbox"
