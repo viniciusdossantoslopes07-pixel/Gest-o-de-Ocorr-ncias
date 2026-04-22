@@ -452,7 +452,11 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
             <div className="space-y-4 mt-8">
                 <h3 className={`text-sm font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-500'} uppercase tracking-wider mb-2`}>Ordens de Missão (Envolvendo Você)</h3>
                 {myOrders.map(order => (
-                    <div key={order.id} className={`p-4 sm:p-6 rounded-[1.5rem] border border-l-4 border-l-emerald-500 transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-md hover:bg-slate-900/60 shadow-lg shadow-black/20' : 'bg-white border-slate-200 hover:shadow-xl hover:shadow-slate-200/50'}`}>
+                    <div 
+                        key={order.id} 
+                        onClick={() => handlePrintOrder(order)}
+                        className={`p-4 sm:p-6 rounded-[1.5rem] border border-l-4 border-l-emerald-500 transition-all cursor-pointer ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-md hover:bg-slate-900/60 shadow-lg shadow-black/20' : 'bg-white border-slate-200 hover:shadow-xl hover:shadow-slate-200/50'}`}
+                    >
                         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                             <div className="flex-1 min-w-0">
                                 <div className="flex flex-wrap items-center gap-2 mb-2.5">
@@ -470,7 +474,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                             <div className="flex flex-col sm:flex-col gap-2.5 w-full sm:w-auto mt-4 sm:mt-0">
                                 {order.status === 'PRONTA_PARA_EXECUCAO' && canManageMission(order) && (
                                     <button
-                                        onClick={() => handleMissionStart(order)}
+                                        onClick={(e) => { e.stopPropagation(); handleMissionStart(order); }}
                                         className="flex-1 sm:flex-none px-5 py-3 bg-emerald-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-emerald-500 transition-all flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-600/20 active:scale-95"
                                     >
                                         <Play className="w-4 h-4 fill-current" /> Iniciar
@@ -478,7 +482,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 )}
                                 {order.status === 'EM_MISSAO' && canManageMission(order) && (
                                     <button
-                                        onClick={() => handleMissionEnd(order)}
+                                        onClick={(e) => { e.stopPropagation(); handleMissionEnd(order); }}
                                         className="flex-1 sm:flex-none px-5 py-3 bg-red-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-red-500 transition-all flex items-center justify-center gap-2.5 shadow-lg shadow-red-600/20 active:scale-95"
                                     >
                                         <Square className="w-4 h-4 fill-current" /> Finalizar
@@ -600,7 +604,11 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {waiting.map(o => (
-                        <div key={o.id} className={`p-6 rounded-[2rem] border transition-all duration-300 ${isDarkMode ? 'bg-slate-900/40 border-slate-800/80 hover:border-orange-500/50 hover:bg-slate-900/60 shadow-[0_8px_30px_rgb(0,0,0,0.12)]' : 'bg-white border-slate-100 hover:border-orange-200 hover:shadow-xl'} flex flex-col justify-between group relative overflow-hidden`}>
+                        <div 
+                            key={o.id} 
+                            onClick={() => handlePrintOrder(o)}
+                            className={`p-6 rounded-[2rem] border transition-all duration-300 cursor-pointer ${isDarkMode ? 'bg-slate-900/40 border-slate-800/80 hover:border-orange-500/50 hover:bg-slate-900/60 shadow-[0_8px_30px_rgb(0,0,0,0.12)]' : 'bg-white border-slate-100 hover:border-orange-200 hover:shadow-xl'} flex flex-col justify-between group relative overflow-hidden`}
+                        >
                             {/* Decorative background glow */}
                             <div className={`absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 pointer-events-none transition-all duration-500 ${isDarkMode ? 'bg-orange-500 group-hover:opacity-40' : 'bg-orange-400 group-hover:opacity-30'}`}></div>
                             
@@ -624,7 +632,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                     <Eye className="w-4 h-4" /> Visualizar
                                 </button>
                                 {canSign && (
-                                    <button onClick={() => handleChSopSign(o)} className="flex-1 px-4 py-3 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/25 active:scale-95 flex items-center justify-center gap-2" title="Assinar rapidamente">
+                                    <button onClick={(e) => { e.stopPropagation(); handleChSopSign(o); }} className="flex-1 px-4 py-3 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/25 active:scale-95 flex items-center justify-center gap-2" title="Assinar rapidamente">
                                         <FileSignature className="w-4 h-4" /> Assinar
                                     </button>
                                 )}
@@ -694,6 +702,14 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                     >
                         <List className={`w-4 h-4 ${activeTab === 'minhas_solicitacoes' ? '' : 'opacity-70'}`} /> Minhas
                     </button>
+                    {(isSop || isChSop) && (
+                        <button
+                            onClick={() => setActiveTab('painel_gestao')}
+                            className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 whitespace-nowrap ${activeTab === 'painel_gestao' ? (isDarkMode ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-[0_0_25px_rgba(249,115,22,0.3)]' : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
+                        >
+                            <Shield className={`w-4 h-4 ${activeTab === 'painel_gestao' ? '' : 'opacity-70'}`} /> Gerenciar
+                        </button>
+                    )}
                     <button
                         onClick={() => setActiveTab('missoes_ativas')}
                         className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'missoes_ativas' ? (isDarkMode ? 'bg-blue-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white text-blue-700 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
@@ -706,14 +722,6 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                     >
                         <History className={`w-4 h-4 ${activeTab === 'missoes_finalizadas' ? '' : 'opacity-70'}`} /> Histórico
                     </button>
-                    {(isSop || isChSop) && (
-                        <button
-                            onClick={() => setActiveTab('painel_gestao')}
-                            className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 whitespace-nowrap ${activeTab === 'painel_gestao' ? (isDarkMode ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-[0_0_25px_rgba(249,115,22,0.3)]' : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
-                        >
-                            <Shield className={`w-4 h-4 ${activeTab === 'painel_gestao' ? '' : 'opacity-70'}`} /> Gerenciar
-                        </button>
-                    )}
                     {(isSop || isChSop) && (
                         <button
                             onClick={() => setActiveTab('estatisticas')}
@@ -765,7 +773,11 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                             <div className={`text-center py-12 rounded-2xl border ${isDarkMode ? 'text-slate-500 bg-slate-900/40 border-slate-800/50 backdrop-blur-md' : 'text-slate-400 bg-slate-50 border-slate-200'} text-xs font-bold uppercase tracking-widest`}>Nenhuma missão ativa ou pronta para execução no momento.</div>
                         ) : (
                             getFilteredItems().map(order => (
-                                <div key={order.id} className={`p-4 sm:p-7 rounded-[1.5rem] border border-l-4 border-l-emerald-500 transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-md hover:bg-slate-900/60 shadow-lg shadow-black/20' : 'bg-white border-slate-200 hover:shadow-xl hover:shadow-slate-200/50'}`}>
+                                <div 
+                                    key={order.id} 
+                                    onClick={() => handlePrintOrder(order)}
+                                    className={`p-4 sm:p-7 rounded-[1.5rem] border border-l-4 border-l-emerald-500 transition-all cursor-pointer ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-md hover:bg-slate-900/60 shadow-lg shadow-black/20' : 'bg-white border-slate-200 hover:shadow-xl hover:shadow-slate-200/50'}`}
+                                >
                                     <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex flex-wrap items-center gap-3 mb-4">
@@ -783,7 +795,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                         <div className="flex flex-col sm:flex-col gap-2.5 w-full sm:w-auto mt-6 sm:mt-0">
                                             {order.status === 'PRONTA_PARA_EXECUCAO' && canManageMission(order) && (
                                                 <button
-                                                    onClick={() => handleMissionStart(order)}
+                                                    onClick={(e) => { e.stopPropagation(); handleMissionStart(order); }}
                                                     className="flex-1 sm:flex-none px-5 py-3.5 bg-emerald-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-600/20 active:scale-95 flex items-center justify-center gap-2.5"
                                                 >
                                                     <Play className="w-4.5 h-4.5 fill-current" /> Iniciar
@@ -791,7 +803,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                             )}
                                             {order.status === 'EM_MISSAO' && canManageMission(order) && (
                                                 <button
-                                                    onClick={() => handleMissionEnd(order)}
+                                                    onClick={(e) => { e.stopPropagation(); handleMissionEnd(order); }}
                                                     className="flex-1 sm:flex-none px-5 py-3.5 bg-red-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-red-500 transition-all shadow-lg shadow-red-600/20 active:scale-95 flex items-center justify-center gap-2.5"
                                                 >
                                                     <Square className="w-4.5 h-4.5 fill-current" /> Finalizar
@@ -871,7 +883,10 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                             <div className={`text-center py-12 rounded-2xl border ${isDarkMode ? 'text-slate-500 bg-slate-900/40 border-slate-800/50 backdrop-blur-md' : 'text-slate-400 bg-slate-50 border-slate-200'} text-xs font-bold uppercase tracking-widest`}>Nenhuma missão finalizada encontrada.</div>
                         ) : (
                             orders.filter(o => o.status === 'CONCLUIDA' || o.status === 'CANCELADA').map(order => (
-                                <div key={order.id} className={`p-4 sm:p-5 rounded-2xl border border-l-4 transition-all ${order.status === 'CONCLUIDA' ? 'border-l-emerald-500 shadow-emerald-500/5' : 'border-l-red-500 shadow-red-500/5'} ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-md hover:bg-slate-900/60 shadow-lg' : 'bg-slate-50 border-slate-200 hover:bg-white hover:shadow-md'}`}>
+                                <div 
+                                    key={order.id} 
+                                    onClick={() => handlePrintOrder(order)}
+                                    className={`p-4 sm:p-5 rounded-2xl border border-l-4 transition-all cursor-pointer ${order.status === 'CONCLUIDA' ? 'border-l-emerald-500 shadow-emerald-500/5' : 'border-l-red-500 shadow-red-500/5'} ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-md hover:bg-slate-900/60 shadow-lg' : 'bg-slate-50 border-slate-200 hover:bg-white hover:shadow-md'}`}>
                                     <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex flex-wrap items-center gap-3 mb-3">
