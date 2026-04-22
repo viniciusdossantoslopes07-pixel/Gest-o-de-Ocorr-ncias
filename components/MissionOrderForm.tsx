@@ -32,6 +32,16 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
     const [personnel, setPersonnel] = useState<MissionOrderPersonnel[]>(order?.personnel || []);
     const [schedule, setSchedule] = useState<MissionOrderSchedule[]>(order?.schedule || []);
 
+    const [commanderSearchQuery, setCommanderSearchQuery] = useState(() => {
+        if (order?.missionCommanderId) {
+            const u = users.find(u => u.id === order.missionCommanderId);
+            return u ? (u.warName || u.name) : '';
+        }
+        return '';
+    });
+    const [commanderSuggestions, setCommanderSuggestions] = useState<typeof users>([]);
+    const [showCommanderSuggestions, setShowCommanderSuggestions] = useState(false);
+
     const addPersonnel = () => {
         setPersonnel([...personnel, {
             id: Math.random().toString(),
@@ -165,30 +175,58 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                     <div className="flex gap-2 relative">
                         <input
                             type="text"
+                            value={commanderSearchQuery}
                             placeholder="Nome, Guerra ou SARAM"
-                            className={`flex-1 px-4 py-2.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all pr-10`}
-                            onBlur={(e) => {
-                                const term = e.target.value.toUpperCase();
+                            className={`w-full px-4 py-2.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all pr-10`}
+                            onChange={(e) => {
+                                const term = e.target.value;
+                                setCommanderSearchQuery(term);
                                 if (!term) {
+                                    setCommanderSuggestions([]);
+                                    setShowCommanderSuggestions(false);
                                     setFormData({ ...formData, missionCommanderId: '' });
                                     return;
                                 }
-                                const foundUser = users.find(u => 
-                                    u.saram === term || 
-                                    (u.warName || '').toUpperCase() === term ||
-                                    (u.name || '').toUpperCase().includes(term) ||
-                                    (u.warName || '').toUpperCase().includes(term)
+                                const upperTerm = term.toUpperCase();
+                                const matches = users.filter(u => 
+                                    u.saram.includes(term) || 
+                                    (u.warName || '').toUpperCase().includes(upperTerm) ||
+                                    (u.name || '').toUpperCase().includes(upperTerm)
                                 );
-                                if (foundUser) {
-                                    setFormData({ ...formData, missionCommanderId: foundUser.id });
-                                    e.target.value = foundUser.warName || foundUser.name;
-                                } else {
-                                    setFormData({ ...formData, missionCommanderId: '' });
-                                    alert('Militar não encontrado com este Nome, Guerra ou SARAM.');
-                                }
+                                setCommanderSuggestions(matches);
+                                setShowCommanderSuggestions(true);
+                                setFormData({ ...formData, missionCommanderId: '' });
+                            }}
+                            onFocus={() => {
+                                if (commanderSuggestions.length > 0) setShowCommanderSuggestions(true);
+                            }}
+                            onBlur={() => {
+                                setTimeout(() => setShowCommanderSuggestions(false), 200);
                             }}
                         />
-                        <Search className={`w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                        <Search className={`w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} pointer-events-none`} />
+                        
+                        {showCommanderSuggestions && commanderSuggestions.length > 0 && (
+                            <ul className={`absolute z-10 w-full top-full mt-1 max-h-48 overflow-y-auto rounded-xl shadow-lg border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} custom-scrollbar`}>
+                                {commanderSuggestions.map(u => (
+                                    <li 
+                                        key={u.id}
+                                        onClick={() => {
+                                            setFormData({ ...formData, missionCommanderId: u.id });
+                                            setCommanderSearchQuery(u.warName || u.name);
+                                            setShowCommanderSuggestions(false);
+                                        }}
+                                        className={`px-4 py-3 cursor-pointer flex items-center justify-between transition-colors border-b last:border-b-0 ${isDarkMode ? 'hover:bg-slate-700/50 text-slate-300 border-slate-700' : 'hover:bg-slate-50 text-slate-700 border-slate-100'}`}
+                                    >
+                                        <div className="flex flex-col">
+                                            <span className={`text-xs font-black uppercase ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{u.rank} {u.warName || u.name}</span>
+                                            {u.name !== u.warName && <span className={`text-[10px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{u.name}</span>}
+                                        </div>
+                                        <span className={`text-[10px] font-mono px-2 py-1 rounded-lg ${isDarkMode ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{u.saram}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
                     {formData.missionCommanderId && (
                         <div className={`mt-3 p-3 ${isDarkMode ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-blue-50 border-blue-100 text-blue-700'} border rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 animate-in zoom-in-95 duration-200`}>
