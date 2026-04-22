@@ -357,7 +357,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [userDestinations, setUserDestinations] = useState<any[]>([]);
 
     // Permission Flags
-    const canSign = hasPermission(currentUser, PERMISSIONS.SIGN_DAILY_ATTENDANCE);
+    const canSign = (getRankPriority(currentUser.rank || '') <= 14) || hasPermission(currentUser, PERMISSIONS.SIGN_DAILY_ATTENDANCE);
     const canManage = hasPermission(currentUser, PERMISSIONS.MANAGE_PERSONNEL);
     const [callToSign, setCallToSign] = useState<CallTypeCode | null>(null);
     const [currentWeek, setCurrentWeek] = useState(() => {
