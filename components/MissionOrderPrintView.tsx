@@ -129,7 +129,7 @@ ${content.outerHTML}
                         </div>
 
                         {/* Basic Info Table */}
-                        <table className="w-full border-[1.5px] border-slate-950 mb-4 text-[11px] sm:text-sm">
+                        <table className="w-full border-[1.5px] border-slate-950 mb-8 text-[11px] sm:text-sm">
                             <tbody>
                                 <tr>
                                     <td className="border border-slate-950 px-2.5 py-1.5 font-black bg-slate-50 w-32 uppercase text-[10px]">Nº da OMIS:</td>
@@ -170,8 +170,8 @@ ${content.outerHTML}
                         </table>
 
                         {/* Personnel Table */}
-                        <div className="mb-4">
-                            <h3 className="text-center font-black text-xs mb-1.5 uppercase tracking-wider">Pessoal e Material</h3>
+                        <div className="mb-8">
+                            <h3 className="text-center font-black text-xs sm:text-sm mb-3 uppercase tracking-wider">Pessoal e Material</h3>
                             <table className="w-full border-[1.5px] border-slate-950 text-[10px] sm:text-[11px]">
                                 <thead>
                                     <tr className="bg-slate-50">
@@ -205,8 +205,8 @@ ${content.outerHTML}
                         </div>
 
                         {/* Schedule Table */}
-                        <div className="mb-4">
-                            <h3 className="text-center font-black text-xs mb-1.5 uppercase tracking-wider">Quadro Horário</h3>
+                        <div className="mb-8">
+                            <h3 className="text-center font-black text-xs sm:text-sm mb-3 uppercase tracking-wider">Quadro Horário</h3>
                             <table className="w-full border-[1.5px] border-slate-950 text-[10px] sm:text-[11px]">
                                 <thead>
                                     <tr className="bg-slate-50">
@@ -238,16 +238,16 @@ ${content.outerHTML}
                         </div>
 
                         {/* Orders */}
-                        <div className="mb-4">
-                            <h3 className="text-center font-black text-xs mb-1.5 uppercase tracking-wider">Ordens Permanentes</h3>
-                            <div className="border-[1.5px] border-slate-950 px-4 py-3 min-h-[60px] text-[11px] leading-relaxed whitespace-pre-wrap font-medium">
+                        <div className="mb-8">
+                            <h3 className="text-center font-black text-xs sm:text-sm mb-3 uppercase tracking-wider">Ordens Permanentes</h3>
+                            <div className="border-[1.5px] border-slate-950 px-4 py-3 min-h-[60px] text-[11px] sm:text-xs leading-relaxed whitespace-pre-wrap font-medium">
                                 {formatValue(order.permanentOrders)}
                             </div>
                         </div>
 
-                        <div className="mb-6">
-                            <h3 className="text-center font-black text-xs mb-1.5 uppercase tracking-wider">Ordens Especiais</h3>
-                            <div className="border-[1.5px] border-slate-950 px-4 py-3 min-h-[60px] text-[11px] leading-relaxed whitespace-pre-wrap font-medium">
+                        <div className="mb-8">
+                            <h3 className="text-center font-black text-xs sm:text-sm mb-3 uppercase tracking-wider">Ordens Especiais</h3>
+                            <div className="border-[1.5px] border-slate-950 px-4 py-3 min-h-[60px] text-[11px] sm:text-xs leading-relaxed whitespace-pre-wrap font-medium">
                                 {formatValue(order.specialOrders)}
                             </div>
                         </div>
