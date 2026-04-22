@@ -32,7 +32,9 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
             om: '',
             telefone: ''
         },
-        efetivo: initialData?.dados_missao.efetivo || '',
+        efetivo: typeof initialData?.dados_missao.efetivo === 'object'
+            ? initialData.dados_missao.efetivo
+            : (initialData?.dados_missao.efetivo ? { oficial: 0, graduado: 0, praca: 0, _legacy: initialData.dados_missao.efetivo } : { oficial: 0, graduado: 0, praca: 0 }),
         viaturas: typeof initialData?.dados_missao.viaturas === 'object'
             ? initialData.dados_missao.viaturas
             : { operacional: 0, descaracterizada: 0, caminhao_tropa: 0 },
@@ -88,9 +90,15 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
         // or maybe relax it for drafts if requested. User said "Salvar Solicitação", implies saving state.
 
         if (!isDraft) {
-            if (!formData.nome_guerra || !formData.local || !formData.efetivo) {
-                alert('Preencha os campos obrigatórios.');
+            if (!formData.nome_guerra || !formData.local) {
+                alert('Preencha os campos obrigatórios (Nome de Guerra, Local, Efetivo).');
                 return;
+            }
+            if (typeof formData.efetivo === 'object' && !('_legacy' in formData.efetivo)) {
+                if (formData.efetivo.oficial === 0 && formData.efetivo.graduado === 0 && formData.efetivo.praca === 0) {
+                    alert('Selecione a quantidade de efetivo desejado (Oficial, Graduado ou Praça).');
+                    return;
+                }
             }
 
             if (!formData.data) {
@@ -333,15 +341,57 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                             <Truck className="w-4 h-4 text-blue-600" /> Recursos Necessários
                         </h3>
                         <div>
-                            <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Efetivo</label>
-                            <textarea
-                                value={formData.efetivo}
-                                onChange={e => setFormData({ ...formData, efetivo: e.target.value })}
-                                placeholder="Ex: 1 Sgt, 2 Cabos e 4 Soldados para isolamento..."
-                                rows={3}
-                                className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none`}
-                                required
-                            />
+                            <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Efetivo Solicitado</label>
+                            <div className="space-y-2">
+                                {[
+                                    { id: 'oficial', label: 'OFICIAL' },
+                                    { id: 'graduado', label: 'GRADUADO' },
+                                    { id: 'praca', label: 'PRAÇA' }
+                                ].map(cat => (
+                                    <div key={cat.id} className={`flex items-center gap-2 p-3 border ${isDarkMode ? 'border-slate-800 bg-slate-800/40' : 'border-slate-100 bg-slate-100/50'} rounded-xl transition-colors hover:border-blue-500/20`}>
+                                        <label className="flex flex-1 items-center gap-3 cursor-pointer group">
+                                            <div className="relative flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={typeof formData.efetivo === 'object' && (formData.efetivo as any)[cat.id] > 0}
+                                                    onChange={e => {
+                                                        const newVal = e.target.checked ? 1 : 0;
+                                                        let newEfetivo: any = typeof formData.efetivo === 'object' ? { ...formData.efetivo } : { oficial: 0, graduado: 0, praca: 0 };
+                                                        newEfetivo[cat.id] = newVal;
+                                                        if ('_legacy' in newEfetivo) delete newEfetivo._legacy;
+                                                        setFormData({ ...formData, efetivo: newEfetivo });
+                                                    }}
+                                                    className="w-5 h-5 rounded-lg border-2 border-slate-700 text-blue-600 focus:ring-offset-0 focus:ring-blue-500/50"
+                                                />
+                                            </div>
+                                            <span className={`text-xs font-black uppercase tracking-wider ${isDarkMode ? 'text-slate-400 group-hover:text-slate-200' : 'text-slate-600 group-hover:text-slate-900'}`}>{cat.label}</span>
+                                        </label>
+                                        {(typeof formData.efetivo === 'object' && (formData.efetivo as any)[cat.id] > 0) && (
+                                            <div className="flex items-center gap-2 animate-fade-in">
+                                                <span className="text-[10px] font-bold text-slate-500">QTD:</span>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    value={(formData.efetivo as any)[cat.id]}
+                                                    onChange={e => {
+                                                        const val = Math.max(1, parseInt(e.target.value) || 1);
+                                                        setFormData({
+                                                            ...formData,
+                                                            efetivo: { ...(formData.efetivo as any), [cat.id]: val }
+                                                        });
+                                                    }}
+                                                    className={`w-14 px-2 py-1.5 border ${isDarkMode ? 'border-slate-600 bg-slate-700 text-white' : 'border-slate-300 bg-white text-slate-700'} rounded-lg text-center text-xs font-black focus:ring-2 focus:ring-blue-500 outline-none`}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                                {(typeof formData.efetivo === 'string' || (typeof formData.efetivo === 'object' && '_legacy' in formData.efetivo)) && (
+                                    <div className={`p-3 text-xs italic rounded-lg ${isDarkMode ? 'bg-amber-900/20 text-amber-500' : 'bg-amber-50 text-amber-700'}`}>
+                                        Aviso: Efetivo legado detectado ("{typeof formData.efetivo === 'string' ? formData.efetivo : (formData.efetivo as any)._legacy}"). Por favor, atualize as categorias numéricas acima.
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <div className="space-y-3">
                             {[

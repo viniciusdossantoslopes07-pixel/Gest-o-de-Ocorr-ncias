@@ -107,8 +107,17 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     const completedMissions = filteredOrders.filter(o => o.status === 'CONCLUIDA').length;
     const pendingMissions = filteredOrders.filter(o => o.status === 'AGUARDANDO_ASSINATURA').length;
 
-    // New Metric: Total Personnel Employed in filtered missions
+    // Metric: Total Personnel Employed in filtered missions (Atribuídos na Ordem)
     const personnelCount = filteredOrders.reduce((total, order) => total + (order.personnel?.length || 0), 0);
+
+    // New Metric: Total Personnel Requested (Solicitados)
+    const requestedPersonnelCount = filteredMissions.reduce((total, mission) => {
+        if (typeof mission.dados_missao?.efetivo === 'object') {
+            const ef = mission.dados_missao.efetivo;
+            return total + (ef.oficial || 0) + (ef.graduado || 0) + (ef.praca || 0);
+        }
+        return total;
+    }, 0);
 
     // 2. Prepare Data for Charts
 
@@ -214,7 +223,17 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
+                <div className={`col-span-2 lg:col-span-1 p-5 sm:p-6 rounded-3xl shadow-xl flex flex-col items-center justify-center text-center gap-2 transition-all border ${isDarkMode ? 'bg-gradient-to-br from-indigo-900 to-indigo-800 border-indigo-700/50 shadow-black/40' : 'bg-gradient-to-br from-indigo-600 to-indigo-800 border-indigo-700 shadow-indigo-200'}`}>
+                    <div className="p-3 sm:p-4 bg-white/10 text-white rounded-2xl mb-1 backdrop-blur-md">
+                        <Users className="w-8 h-8 sm:w-10 sm:h-10" />
+                    </div>
+                    <div>
+                        <p className={`text-[10px] sm:text-xs text-indigo-100 font-black uppercase tracking-widest`}>Solicitado</p>
+                        <h3 className="text-3xl sm:text-5xl font-black text-white mt-1">{requestedPersonnelCount}</h3>
+                    </div>
+                </div>
+
                 <div className={`col-span-2 lg:col-span-1 p-5 sm:p-6 rounded-3xl shadow-xl flex flex-col items-center justify-center text-center gap-2 transition-all border ${isDarkMode ? 'bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50 shadow-black/40' : 'bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 shadow-slate-200'}`}>
                     <div className="p-3 sm:p-4 bg-white/10 text-white rounded-2xl mb-1 backdrop-blur-md">
                         <Users className="w-8 h-8 sm:w-10 sm:h-10" />

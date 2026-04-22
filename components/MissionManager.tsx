@@ -452,7 +452,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                     <span className={`flex items-center gap-1.5 rounded px-2.5 py-1 whitespace-nowrap font-black uppercase tracking-tighter ${isDarkMode ? 'bg-slate-950 text-blue-400 border border-slate-800' : 'bg-slate-100 text-slate-500'}`}><Shield className="w-3.5 h-3.5" /> OM #{order.omisNumber}</span>
                                 </div>
                             </div>
-                            <div className="flex sm:flex-col gap-2.5 w-full sm:w-auto mt-2 sm:mt-0">
+                            <div className="flex flex-col sm:flex-col gap-2.5 w-full sm:w-auto mt-4 sm:mt-0">
                                 {order.status === 'PRONTA_PARA_EXECUCAO' && canManageMission(order) && (
                                     <button
                                         onClick={() => handleMissionStart(order)}
@@ -549,8 +549,8 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 </div>
                             </div>
 
-                            <div className={`mt-6 pt-5 border-t ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'} flex items-center justify-between gap-3 relative z-10`}>
-                                <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} flex-1 min-w-0 pr-2`}>
+                            <div className={`mt-6 pt-5 border-t ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'} flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10`}>
+                                <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} w-full sm:w-auto sm:flex-1 min-w-0 pr-2`}>
                                     <UserIcon className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
                                     <span className="truncate">{m.dados_missao.nome_guerra}</span>
                                 </div>
@@ -601,7 +601,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 </div>
                             </div>
                             
-                            <div className={`mt-6 pt-5 border-t ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'} flex items-center justify-between gap-3 relative z-10`}>
+                            <div className={`mt-6 pt-5 border-t ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'} flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 relative z-10`}>
                                 <button 
                                     onClick={() => handlePrintOrder(o)}
                                     className={`flex-1 px-4 py-3 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2 ${isDarkMode ? 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/80 border border-slate-700/50' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'}`}
@@ -669,15 +669,15 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 <div className={`flex p-1.5 ${isDarkMode ? 'bg-slate-900/60 border border-slate-700/50 backdrop-blur-xl shadow-inner' : 'bg-slate-200/50 border border-slate-200'} rounded-2xl w-max sm:w-fit min-w-full sm:min-w-0 gap-1`}>
                     <button
                         onClick={() => setActiveTab('solicitar_missao')}
-                        className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 whitespace-nowrap ${activeTab === 'solicitar_missao' ? (isDarkMode ? 'bg-blue-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white text-blue-700 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
+                        className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'solicitar_missao' ? (isDarkMode ? 'bg-blue-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white text-blue-700 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
                     >
-                        <PlusCircle className={`w-4 h-4 ${activeTab === 'solicitar_missao' ? '' : 'opacity-70'}`} /> <span className="hidden xs:inline">Solicitar Missão</span><span className="xs:hidden">Solicitar</span>
+                        <PlusCircle className={`w-4 h-4 ${activeTab === 'solicitar_missao' ? '' : 'opacity-70'}`} /> <span className="hidden sm:inline">Solicitar Missão</span><span className="sm:hidden">Solicitar</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('minhas_solicitacoes')}
-                        className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 whitespace-nowrap ${activeTab === 'minhas_solicitacoes' ? (isDarkMode ? 'bg-blue-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white text-blue-700 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
+                        className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'minhas_solicitacoes' ? (isDarkMode ? 'bg-blue-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white text-blue-700 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
                     >
-                        <List className={`w-4 h-4 ${activeTab === 'minhas_solicitacoes' ? '' : 'opacity-70'}`} /> <span className="hidden xs:inline">Minhas Solicitações</span><span className="xs:hidden">Minhas</span>
+                        <List className={`w-4 h-4 ${activeTab === 'minhas_solicitacoes' ? '' : 'opacity-70'}`} /> <span className="hidden sm:inline">Minhas Solicitações</span><span className="sm:hidden">Minhas</span>
                     </button>
                     {(isSop || isChSop) && (
                         <button
@@ -761,7 +761,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                                 <span className={`flex items-center gap-1.5 rounded px-2.5 py-1 whitespace-nowrap font-black uppercase tracking-tighter ${isDarkMode ? 'bg-slate-950 text-blue-400 border border-slate-800' : 'bg-slate-100 text-slate-600'}`}><Shield className="w-3.5 h-3.5" /> OM #{order.omisNumber}</span>
                                             </div>
                                         </div>
-                                        <div className="flex sm:flex-col gap-2.5 w-full sm:w-auto mt-4 sm:mt-0">
+                                        <div className="flex flex-col sm:flex-col gap-2.5 w-full sm:w-auto mt-6 sm:mt-0">
                                             {order.status === 'PRONTA_PARA_EXECUCAO' && canManageMission(order) && (
                                                 <button
                                                     onClick={() => handleMissionStart(order)}

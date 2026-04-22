@@ -189,7 +189,7 @@ export interface Mission {
       om: string;
       telefone: string;
     };
-    efetivo: string;
+    efetivo: string | { oficial: number; graduado: number; praca: number };
     viaturas: string | { operacional: number; descaracterizada: number; caminhao_tropa: number };
     alimentacao: {
       cafe: boolean;

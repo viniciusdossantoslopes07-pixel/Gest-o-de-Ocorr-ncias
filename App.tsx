@@ -11,7 +11,7 @@ import {
 import { Occurrence, User, UserRole, Status, Urgency, MissionOrder, Mission, DailyAttendance, AbsenceJustification, UserFunction, Vacation } from './types';
 import PublicEventsModal from './components/AccessControl/Events/PublicEventsModal';
 import { USER_FUNCTIONS, PERMISSIONS, hasPermission } from './constants/permissions';
-import { formatViaturas } from './utils/formatters';
+import { formatViaturas, formatEfetivo } from './utils/formatters';
 import {
   STATUS_COLORS,
   URGENCY_COLORS,
@@ -985,8 +985,7 @@ const App: FC = () => {
       isInternal: true,
       mission: mission.dados_missao.tipo_missao,
       location: mission.dados_missao.local,
-      requester: `${mission.dados_missao.posto} ${mission.dados_missao.nome_guerra}`,
-      description: `SOLICITAÇÃO DE MISSÃO ID: ${mission.id}\nResponsável: ${mission.dados_missao.responsavel?.nome || 'O próprio'}\nEfetivo Solicitado: ${mission.dados_missao.efetivo}\nViaturas: ${formatViaturas(mission.dados_missao.viaturas)}`,
+      description: `SOLICITAÇÃO DE MISSÃO ID: ${mission.id}\nResponsável: ${mission.dados_missao.responsavel?.nome || 'O próprio'}\nEfetivo Solicitado: ${formatEfetivo(mission.dados_missao.efetivo)}\nViaturas: ${formatViaturas(mission.dados_missao.viaturas)}`,
       food: Object.values(mission.dados_missao.alimentacao).some(Boolean),
       transport: typeof mission.dados_missao.viaturas === 'object'
         ? Object.values(mission.dados_missao.viaturas).some(v => v > 0)

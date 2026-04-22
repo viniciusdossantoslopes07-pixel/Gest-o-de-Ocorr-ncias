@@ -1,7 +1,7 @@
 import { useState, FC } from 'react';
 import { Mission, User } from '../types';
 import { CheckCircle, XCircle, ArrowUpCircle, Clock, Calendar, MapPin, User as UserIcon, FileText, X, Eye, ChevronRight, Package, Filter, Users as UsersIcon } from 'lucide-react';
-import { formatViaturas } from '../utils/formatters';
+import { formatViaturas, formatEfetivo } from '../utils/formatters';
 import MissionRequestCard from './MissionRequestCard';
 import RejectionModal from './RejectionModal';
 
@@ -183,7 +183,7 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
                                         </div>
                                         <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-blue-600/5 border-blue-500/20' : 'bg-blue-50/50 border-blue-100'}`}>
                                             <label className="block text-[10px] font-black text-blue-500 uppercase mb-2">Efetivo Solicitado</label>
-                                            <p className={`text-sm leading-relaxed font-bold whitespace-pre-wrap ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{selectedMission.dados_missao.efetivo || 'Não detalhado'}</p>
+                                            <p className={`text-sm leading-relaxed font-bold whitespace-pre-wrap ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{formatEfetivo(selectedMission.dados_missao.efetivo)}</p>
                                         </div>
                                     </div>
 
