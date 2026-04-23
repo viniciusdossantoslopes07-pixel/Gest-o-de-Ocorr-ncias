@@ -122,6 +122,13 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
                                 display: block !important;
                                 margin: 0 !important;
                             }
+                            /* Forçar texto preto no cabeçalho militar */
+                            .personnel-printable h1,
+                            .personnel-printable h2,
+                            .personnel-printable h3,
+                            .personnel-printable p {
+                                color: #000000 !important;
+                            }
                             .personnel-printable table {
                                 width: 100% !important;
                                 border-collapse: collapse !important;
