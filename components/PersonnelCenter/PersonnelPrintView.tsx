@@ -156,21 +156,21 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
                         <table className="w-full text-left">
                             <thead>
                                 <tr>
-                                    <th className="text-[8px] font-black uppercase tracking-widest text-slate-600">Posto/Grad</th>
-                                    <th className="text-[8px] font-black uppercase tracking-widest text-slate-600">Nome de Guerra</th>
-                                    <th className="text-[8px] font-black uppercase tracking-widest text-slate-600">Nome Completo</th>
-                                    <th className="text-[8px] font-black uppercase tracking-widest text-slate-600">SARAM</th>
-                                    <th className="text-[8px] font-black uppercase tracking-widest text-slate-600 text-right">Setor</th>
+                                    <th className="py-2 px-1 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-500 whitespace-nowrap w-20">Posto/Grad</th>
+                                    <th className="py-2 px-1 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-500 whitespace-nowrap w-32">Nome de Guerra</th>
+                                    <th className="py-2 px-1 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-500">Nome Completo</th>
+                                    <th className="py-2 px-1 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-500 whitespace-nowrap w-24">SARAM</th>
+                                    <th className="py-2 px-1 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-500 text-right whitespace-nowrap w-20">Setor</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="divide-y divide-slate-100">
                                 {users.map((user, idx) => (
-                                    <tr key={user.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                                        <td className="font-bold text-slate-900">{user.rank}</td>
-                                        <td className="font-black text-slate-700">{user.warName}</td>
-                                        <td className="font-medium text-slate-800">{user.name}</td>
-                                        <td className="font-mono text-slate-600">{user.saram}</td>
-                                        <td className="text-right font-bold text-slate-600 text-[8px]">{user.sector}</td>
+                                    <tr key={user.id} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'} hover:bg-slate-50 transition-colors`}>
+                                        <td className="py-2 px-1 text-xs sm:text-[13px] font-bold text-slate-900 whitespace-nowrap">{user.rank}</td>
+                                        <td className="py-2 px-1 text-xs sm:text-[13px] font-black text-slate-800 whitespace-nowrap">{user.warName}</td>
+                                        <td className="py-2 px-1 text-xs sm:text-[13px] font-semibold text-slate-700 uppercase tracking-tight">{user.name}</td>
+                                        <td className="py-2 px-1 text-xs sm:text-[13px] font-mono font-medium text-slate-600 whitespace-nowrap">{user.saram}</td>
+                                        <td className="py-2 px-1 text-[10px] sm:text-xs text-right font-black uppercase tracking-wider text-slate-500 whitespace-nowrap">{user.sector}</td>
                                     </tr>
                                 ))}
                             </tbody>
