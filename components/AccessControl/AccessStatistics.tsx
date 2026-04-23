@@ -633,8 +633,20 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
                                             contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', backgroundColor: dk ? '#1e293b' : '#fff', color: dk ? '#e2e8f0' : '#1e293b' }}
                                             itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
                                         />
-                                        <Area type="monotone" dataKey="entries" name="Entradas" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorEntries)" />
-                                        <Area type="monotone" dataKey="exits" name="Saídas" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExits)" />
+                                        <Area type="monotone" dataKey="entries" name="Entradas" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorEntries)">
+                                            <LabelList dataKey="entries" position="top" content={(props: any) => {
+                                                const { x, y, value } = props;
+                                                if (!value || value === 0) return null;
+                                                return <text x={x} y={y - 10} fill="#10b981" fontSize={10} fontWeight="bold" textAnchor="middle">{value}</text>;
+                                            }} />
+                                        </Area>
+                                        <Area type="monotone" dataKey="exits" name="Saídas" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExits)">
+                                            <LabelList dataKey="exits" position="top" content={(props: any) => {
+                                                const { x, y, value } = props;
+                                                if (!value || value === 0) return null;
+                                                return <text x={x} y={y - 10} fill="#ef4444" fontSize={10} fontWeight="bold" textAnchor="middle">{value}</text>;
+                                            }} />
+                                        </Area>
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </div>
@@ -652,7 +664,9 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
                                         <XAxis type="number" hide />
                                         <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fontWeight: 'bold', fill: axisFill }} width={80} axisLine={false} tickLine={false} />
                                         <Tooltip cursor={{ fill: dk ? '#1e293b' : '#f8fafc' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: dk ? '#1e293b' : '#fff', color: dk ? '#e2e8f0' : '#1e293b' }} />
-                                        <Bar dataKey="total" name="Total" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />
+                                        <Bar dataKey="total" name="Total" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20}>
+                                            <LabelList dataKey="total" position="right" style={{ fill: axisFill, fontSize: 10, fontWeight: 'bold' }} offset={8} />
+                                        </Bar>
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>
@@ -673,8 +687,20 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
                                         <XAxis dataKey="hour" tick={{ fontSize: 9, fontWeight: 'bold', fill: axisFill }} interval={3} axisLine={false} tickLine={false} />
                                         <YAxis tick={{ fontSize: 10, fill: axisFill }} axisLine={false} tickLine={false} />
                                         <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px', backgroundColor: dk ? '#1e293b' : '#fff', color: dk ? '#e2e8f0' : '#1e293b' }} />
-                                        <Bar dataKey="entries" stackId="a" name="Entradas" fill="#10b981" radius={[0, 0, 0, 0]} />
-                                        <Bar dataKey="exits" stackId="a" name="Saídas" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                                        <Bar dataKey="entries" stackId="a" name="Entradas" fill="#10b981" radius={[0, 0, 0, 0]}>
+                                            <LabelList dataKey="entries" position="center" content={(props: any) => {
+                                                const { x, y, width, height, value } = props;
+                                                if (!value || value < 3 || height < 15) return null;
+                                                return <text x={x + width / 2} y={y + height / 2} fill="#fff" fontSize={9} fontWeight="bold" textAnchor="middle" dominantBaseline="middle">{value}</text>;
+                                            }} />
+                                        </Bar>
+                                        <Bar dataKey="exits" stackId="a" name="Saídas" fill="#ef4444" radius={[4, 4, 0, 0]}>
+                                            <LabelList dataKey="exits" position="center" content={(props: any) => {
+                                                const { x, y, width, height, value } = props;
+                                                if (!value || value < 3 || height < 15) return null;
+                                                return <text x={x + width / 2} y={y + height / 2} fill="#fff" fontSize={9} fontWeight="bold" textAnchor="middle" dominantBaseline="middle">{value}</text>;
+                                            }} />
+                                        </Bar>
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>
@@ -697,6 +723,8 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
                                             paddingAngle={5}
                                             dataKey="value"
                                             stroke="none"
+                                            label={({ percent, name, value }) => percent > 0.05 ? `${name}: ${value}` : ''}
+                                            labelLine={false}
                                         >
                                             {byCharacteristic.map((_, index) => (
                                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
