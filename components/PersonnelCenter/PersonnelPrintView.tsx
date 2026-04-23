@@ -209,8 +209,9 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
                     </div>
                 </div>
             </div>
-    );
+            </div>
 
+    );
     return createPortal(content, document.body);
 };
 
