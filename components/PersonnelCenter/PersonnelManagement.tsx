@@ -697,83 +697,107 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                         </table>
                     </div>
 
-                    {/* Mobile View (Cards) */}
-                    {/* Mobile View (Cards) */}
-                    <div className={`lg:hidden divide-y ${isDarkMode ? 'divide-slate-800' : 'divide-slate-100'}`}>
+                    {/* Mobile View (Cards) - Layout Premium */}
+                    <div className={`lg:hidden ${isDarkMode ? 'divide-y divide-slate-800/60' : 'divide-y divide-slate-100'}`}>
                         {filteredUsers.map(user => (
-                            <div key={user.id} className={`p-4 sm:p-6 flex flex-col gap-4 transition-all duration-300 ${user.external_service ? (isDarkMode ? 'bg-emerald-500/10 hover:bg-emerald-500/20' : 'bg-emerald-50 hover:bg-emerald-100') : (isDarkMode ? 'hover:bg-slate-800/30' : 'hover:bg-slate-50')}`}>
-                                <div className="flex justify-between items-start gap-3">
-                                    <div className="flex gap-3">
-                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${user.external_service ? (isDarkMode ? 'bg-emerald-900/30 border-emerald-800 text-emerald-500' : 'bg-emerald-100 border-emerald-200 text-emerald-600') : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-500' : 'bg-slate-100 border-slate-200/50 text-slate-400')}`}>
-                                            {user.external_service ? <PlaneTakeoff className="w-5 h-5" /> : <UserIcon className="w-5 h-5" />}
+                            <div key={user.id} className={`flex flex-col transition-all duration-300 ${user.external_service ? (isDarkMode ? 'bg-emerald-500/5' : 'bg-emerald-50/70') : ''}`}>
+                                
+                                {/* Card Header */}
+                                <div className={`px-4 pt-4 pb-3 flex items-start gap-3`}>
+                                    {/* Avatar Icon */}
+                                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 mt-0.5 ${user.external_service
+                                        ? (isDarkMode ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-100 text-emerald-600')
+                                        : (isDarkMode ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-500')
+                                    }`}>
+                                        {user.external_service ? <PlaneTakeoff className="w-5 h-5" /> : <UserIcon className="w-5 h-5" />}
+                                    </div>
+
+                                    {/* Name + Rank Block */}
+                                    <div className="flex-1 min-w-0">
+                                        <div className={`font-black text-base leading-tight mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                            {user.name}
+                                            {user.is_functional && (
+                                                <span className={`ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${isDarkMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-100 text-indigo-600'}`}>
+                                                    <Briefcase className="w-2.5 h-2.5" /> Funcional
+                                                </span>
+                                            )}
                                         </div>
-                                        <div className="min-w-0 flex flex-col justify-center">
-                                            <div className={`font-black text-sm leading-tight truncate flex items-center gap-1.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                                                {user.name}
-                                                {user.is_functional && <Briefcase className="w-3 h-3 text-indigo-500" />}
-                                            </div>
-                                            <div className="flex items-center gap-1.5 mt-0.5">
-                                                <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-tight ${isDarkMode ? 'bg-blue-400/10 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
-                                                    {user.rank}
-                                                </span>
-                                                <span className={`text-[10px] font-bold uppercase truncate ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                                                    {user.warName}
-                                                </span>
-                                            </div>
+                                        <div className="flex flex-wrap items-center gap-1.5">
+                                            <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wide ${isDarkMode ? 'bg-blue-500/20 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>
+                                                {user.rank}
+                                            </span>
+                                            <span className={`text-xs font-bold uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                                                {user.warName}
+                                            </span>
                                         </div>
                                     </div>
-                                    <span className={`px-2 py-1 rounded-lg text-[8px] font-black tracking-widest uppercase shrink-0 transition-all ${user.external_service ? (isDarkMode ? 'bg-emerald-600 text-white' : 'bg-emerald-600 text-white shadow-md') : (isDarkMode ? 'bg-white text-slate-900 border border-slate-200' : 'bg-slate-900 text-white')}`}>
-                                        {user.external_service ? `EXT: ${user.external_om}` : user.sector}
+                                </div>
+
+                                {/* Sector / External Badge */}
+                                <div className="px-4 pb-3">
+                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wide ${user.external_service
+                                        ? (isDarkMode ? 'bg-emerald-600 text-white' : 'bg-emerald-600 text-white')
+                                        : (user.sector === 'SEM SETOR'
+                                            ? (isDarkMode ? 'bg-red-900/40 text-red-400 border border-red-800' : 'bg-red-100 text-red-600 border border-red-200')
+                                            : (isDarkMode ? 'bg-slate-700 text-slate-200' : 'bg-slate-900 text-white'))
+                                    }`}>
+                                        {user.external_service
+                                            ? <><PlaneTakeoff className="w-3 h-3" /> EXT: {user.external_om}</>
+                                            : user.sector
+                                        }
                                     </span>
                                 </div>
 
-                                <div className={`rounded-xl p-3 grid grid-cols-2 gap-3 border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
-                                    <div className="space-y-0.5">
-                                        <p className={`text-[8px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>SARAM</p>
-                                        <p className={`text-xs font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{user.saram}</p>
+                                {/* Data Row */}
+                                <div className={`mx-4 mb-3 rounded-2xl border grid grid-cols-2 divide-x ${isDarkMode ? 'bg-slate-800/50 border-slate-700/60 divide-slate-700/60' : 'bg-slate-50 border-slate-200/80 divide-slate-200/80'}`}>
+                                    <div className="px-4 py-3">
+                                        <p className={`text-[9px] font-black uppercase tracking-widest mb-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>SARAM</p>
+                                        <p className={`text-sm font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{user.saram}</p>
                                     </div>
-                                    <div className="space-y-0.5">
-                                        <p className={`text-[8px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>CPF</p>
-                                        <p className={`text-xs font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{user.cpf || '---'}</p>
+                                    <div className="px-4 py-3">
+                                        <p className={`text-[9px] font-black uppercase tracking-widest mb-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>CPF</p>
+                                        <p className={`text-sm font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{user.cpf || '---'}</p>
                                     </div>
                                 </div>
 
-                                <div className="flex flex-wrap gap-2 pt-1">
+                                {/* Action Buttons */}
+                                <div className="px-4 pb-4 flex flex-col gap-2">
+                                    {/* Primary action */}
                                     {user.active === false ? (
                                         <button
                                             onClick={() => { if (confirm('Deseja reativar este militar?')) onUpdatePersonnel({ ...user, active: true }); }}
-                                            className={`flex-1 py-2.5 rounded-xl font-bold text-[10px] flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-green-400/10 border-green-400/20 text-green-400 active:bg-green-400/20' : 'bg-green-50 border-green-100 text-green-600 active:bg-green-100'}`}
+                                            className={`w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 ${isDarkMode ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-green-100 text-green-700 border border-green-200'}`}
                                         >
-                                            <Shield className="w-3.5 h-3.5" /> Reativar Militar
+                                            <Shield className="w-4 h-4" /> Reativar Militar
+                                        </button>
+                                    ) : user.sector === 'SEM SETOR' ? (
+                                        <button
+                                            onClick={() => handleEdit(user)}
+                                            className={`w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all animate-pulse active:scale-95 ${isDarkMode ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-red-100 text-red-700 border border-red-200'}`}
+                                        >
+                                            <TriangleAlert className="w-4 h-4" /> ⚠ Atribuir Setor
                                         </button>
                                     ) : (
-                                        user.sector === 'SEM SETOR' ? (
-                                            <button
-                                                onClick={() => handleEdit(user)}
-                                                className={`flex-1 py-2.5 rounded-xl font-bold text-[10px] flex items-center justify-center gap-2 transition-all shadow-sm animate-pulse border ${isDarkMode ? 'bg-red-400/10 border-red-400/20 text-red-400 active:bg-red-400/20' : 'bg-red-50 border-red-100 text-red-600 active:bg-red-100'
-                                                    }`}
-                                            >
-                                                <TriangleAlert className="w-3.5 h-3.5" /> Atribuir Setor
-                                            </button>
-                                        ) : (
-                                            <button
-                                                onClick={() => handleEdit(user)}
-                                                className={`flex-1 py-2.5 rounded-xl font-bold text-[10px] flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 active:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 active:bg-slate-50'
-                                                    }`}
-                                            >
-                                                <Pencil className="w-3.5 h-3.5 text-blue-500" /> Editar Dados
-                                            </button>
-                                        )
+                                        <button
+                                            onClick={() => handleEdit(user)}
+                                            className={`w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 ${isDarkMode ? 'bg-slate-700 text-white border border-slate-600' : 'bg-slate-900 text-white border border-slate-800'}`}
+                                        >
+                                            <Pencil className="w-4 h-4" /> Editar Dados
+                                        </button>
                                     )}
 
+                                    {/* Secondary actions row */}
                                     {user.active !== false && (
-                                        <div className="flex gap-2">
+                                        <div className="grid grid-cols-3 gap-2">
                                             <button
                                                 onClick={() => { if (confirm(user.is_functional ? 'Remover status funcional?' : 'Marcar como conta funcional?')) onUpdatePersonnel({ ...user, is_functional: !user.is_functional }); }}
-                                                className={`py-2.5 px-3.5 rounded-xl font-bold text-xs transition-all shadow-sm border ${user.is_functional ? (isDarkMode ? 'bg-indigo-400/10 border-indigo-400 text-indigo-400' : 'bg-indigo-50 border-indigo-100 text-indigo-600') : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-600')}`}
-                                                title="Contas Funcionais"
+                                                className={`py-3 rounded-2xl font-bold text-[10px] flex flex-col items-center justify-center gap-1 transition-all active:scale-95 border ${user.is_functional
+                                                    ? (isDarkMode ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-400' : 'bg-indigo-100 border-indigo-200 text-indigo-700')
+                                                    : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-600')}`}
+                                                title="Conta Funcional"
                                             >
-                                                <Briefcase className="w-3.5 h-3.5" />
+                                                <Briefcase className="w-4 h-4" />
+                                                <span>Funcional</span>
                                             </button>
                                             <button
                                                 onClick={() => {
@@ -783,30 +807,37 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                                     setExternalSector(user.external_sector || '');
                                                     setShowExternalServiceModal(true);
                                                 }}
-                                                className={`py-2.5 px-3.5 rounded-xl font-bold text-xs transition-all shadow-sm border ${user.external_service ? (isDarkMode ? 'bg-emerald-400/10 border-emerald-400 text-emerald-400' : 'bg-emerald-50 border-emerald-100 text-emerald-600') : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-600')}`}
+                                                className={`py-3 rounded-2xl font-bold text-[10px] flex flex-col items-center justify-center gap-1 transition-all active:scale-95 border ${user.external_service
+                                                    ? (isDarkMode ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-emerald-100 border-emerald-200 text-emerald-700')
+                                                    : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-600')}`}
                                                 title="Serviço Externo"
                                             >
-                                                <PlaneTakeoff className="w-3.5 h-3.5" />
+                                                <PlaneTakeoff className="w-4 h-4" />
+                                                <span>Ext.</span>
                                             </button>
                                             <button
                                                 onClick={() => { if (confirm('Desativar militar?')) onDeletePersonnel(user.id); }}
-                                                className={`py-2.5 px-3.5 rounded-xl font-bold text-xs transition-all shadow-sm border ${isDarkMode ? 'bg-amber-400/5 border-amber-400/10 text-amber-400 active:bg-amber-400/10' : 'bg-amber-50/30 border-amber-100 text-amber-500 active:bg-amber-50'
-                                                    }`}
+                                                className={`py-3 rounded-2xl font-bold text-[10px] flex flex-col items-center justify-center gap-1 transition-all active:scale-95 border ${isDarkMode ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-amber-50 border-amber-200 text-amber-600'}`}
                                             >
-                                                <CircleX className="w-3.5 h-3.5" />
+                                                <CircleX className="w-4 h-4" />
+                                                <span>Desativar</span>
                                             </button>
                                         </div>
                                     )}
+
+                                    {/* Admin delete */}
                                     {user.active !== false && currentUserRole === UserRole.ADMIN && onPermanentDeletePersonnel && (
                                         <button
                                             onClick={() => onPermanentDeletePersonnel(user.id)}
-                                            className={`py-2.5 px-3.5 rounded-xl font-bold text-xs transition-all shadow-sm border ${isDarkMode ? 'bg-red-400/5 border-red-400/10 text-red-400 active:bg-red-400/10' : 'bg-red-50/30 border-red-100 text-red-500 active:bg-red-50'
-                                                }`}
+                                            className={`w-full py-2.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 border ${isDarkMode ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-red-50 border-red-200 text-red-600'}`}
                                         >
-                                            <Trash2 className="w-3.5 h-3.5" />
+                                            <Trash2 className="w-3.5 h-3.5" /> Excluir Permanentemente
                                         </button>
                                     )}
                                 </div>
+
+                                {/* Divider */}
+                                <div className={`h-2 ${isDarkMode ? 'bg-slate-900/50' : 'bg-slate-50'}`} />
                             </div>
                         ))}
                     </div>
