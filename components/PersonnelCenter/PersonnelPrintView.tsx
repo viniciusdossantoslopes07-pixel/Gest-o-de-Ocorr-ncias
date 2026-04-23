@@ -1,0 +1,179 @@
+import React, { type FC } from 'react';
+import { Printer, X } from 'lucide-react';
+import { User } from '../../types';
+
+interface PersonnelPrintViewProps {
+    users: User[];
+    filterCategory: string;
+    filterSector: string;
+    activeUnitFilter: string;
+    onClose: () => void;
+}
+
+const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
+    users,
+    filterCategory,
+    filterSector,
+    activeUnitFilter,
+    onClose
+}) => {
+    const handlePrint = () => {
+        const originalTitle = document.title;
+        document.title = `Relação de Efetivo - ${filterCategory !== 'TODOS' ? filterCategory : 'Geral'} - ${new Date().toLocaleDateString('pt-BR')}`;
+
+        window.print();
+
+        setTimeout(() => {
+            document.title = originalTitle;
+        }, 1000);
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light backdrop-blur-sm">
+            <div className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full h-[100vh] sm:h-[90vh] print:h-auto overflow-hidden flex flex-col print:rounded-none print:max-w-none shadow-2xl">
+
+                {/* Control Header - Hidden on print */}
+                <div className="bg-white border-b border-slate-200 p-4 flex items-center justify-between print:hidden z-20 shrink-0">
+                    <h2 className="text-lg font-bold text-slate-900 font-mono tracking-tight">Relação de Efetivo</h2>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handlePrint}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-all shadow-lg active:scale-95"
+                        >
+                            <Printer className="w-4 h-4" />
+                            Imprimir Relação
+                        </button>
+                        <button
+                            onClick={onClose}
+                            className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-all"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Content Area */}
+                <div className="flex-1 overflow-auto print:overflow-visible bg-slate-100 print:bg-white p-4 print:p-0">
+                    <style>{`
+                        @media print {
+                            * {
+                                -webkit-print-color-adjust: exact !important;
+                                print-color-adjust: exact !important;
+                                color-adjust: exact !important;
+                            }
+                            body {
+                                visibility: hidden !important;
+                                background: white !important;
+                                margin: 0 !important;
+                                padding: 0 !important;
+                            }
+                            .personnel-printable {
+                                visibility: visible !important;
+                                position: absolute !important;
+                                left: 10mm !important;
+                                top: 8mm !important;
+                                width: calc(100% - 20mm) !important;
+                                margin: 0 !important;
+                                padding: 0 !important;
+                                height: auto !important;
+                                font-size: 9pt !important;
+                            }
+                            .personnel-printable table {
+                                font-size: 8pt !important;
+                                border-collapse: collapse !important;
+                                width: 100% !important;
+                            }
+                            .personnel-printable th {
+                                padding: 4px 8px !important;
+                                background-color: #f8fafc !important;
+                                border-bottom: 2px solid #cbd5e1 !important;
+                            }
+                            .personnel-printable td {
+                                padding: 4px 8px !important;
+                                border-bottom: 1px solid #e2e8f0 !important;
+                            }
+                            .personnel-printable tr {
+                                page-break-inside: avoid !important;
+                                break-inside: avoid !important;
+                            }
+                            .print-section {
+                                page-break-inside: avoid !important;
+                                break-inside: avoid !important;
+                            }
+                            @page {
+                                size: A4 portrait;
+                                margin: 8mm 10mm;
+                            }
+                        }
+                    `}</style>
+                    <div className="bg-white shadow-xl print:shadow-none mx-auto p-8 sm:p-12 print:p-0 min-h-full max-w-[210mm] print:max-w-none mb-8 print:mb-0 personnel-printable">
+
+                        {/* Standard Military Header */}
+                        <div className="flex items-start justify-between mb-5 border-b-2 border-slate-900 pb-3 print-section">
+                            <img src="/logo_basp_optimized.png" alt="Logo BASP" className="w-14 h-14 object-contain" />
+                            <div className="flex-1 text-center">
+                                <h1 className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">Ministério da Defesa</h1>
+                                <h1 className="text-sm font-black uppercase tracking-tight">Comando da Aeronáutica</h1>
+                                <h2 className="text-xs font-bold uppercase tracking-wide">Base Aérea de São Paulo</h2>
+                                <h3 className="text-[10px] font-bold uppercase text-slate-700">Grupo de Segurança e Defesa de São Paulo</h3>
+                                <div className="mt-1.5 inline-block px-3 py-0.5 bg-slate-900 text-white text-[8px] font-black uppercase tracking-[0.2em] rounded">
+                                    Relação Nominal de Efetivo
+                                </div>
+                            </div>
+                            <img src="/logo_gsd.png" alt="Logo GSD-SP" className="w-14 h-14 object-contain" />
+                        </div>
+
+                        {/* Document Info */}
+                        <div className="flex justify-between items-end mb-6 text-[9px] font-bold uppercase tracking-wider text-slate-600 border-l-4 border-slate-900 pl-3 print-section">
+                            <div>
+                                <p>Filtro de Categoria: <span className="text-slate-900">{filterCategory}</span></p>
+                                <p>Unidade: <span className="text-slate-900">{activeUnitFilter}</span></p>
+                                <p>Setor: <span className="text-slate-900">{filterSector}</span></p>
+                                <p className="mt-1">Total Listado: <span className="text-slate-900 font-black text-xs">{users.length} militares</span></p>
+                            </div>
+                            <div className="text-right">
+                                <p>Emissão: {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}h</p>
+                            </div>
+                        </div>
+
+                        {/* Personnel Table */}
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr>
+                                    <th className="text-[8px] font-black uppercase tracking-widest text-slate-600">Posto/Grad</th>
+                                    <th className="text-[8px] font-black uppercase tracking-widest text-slate-600">Nome de Guerra</th>
+                                    <th className="text-[8px] font-black uppercase tracking-widest text-slate-600">Nome Completo</th>
+                                    <th className="text-[8px] font-black uppercase tracking-widest text-slate-600">SARAM</th>
+                                    <th className="text-[8px] font-black uppercase tracking-widest text-slate-600 text-right">Setor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {users.map((user, idx) => (
+                                    <tr key={user.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                                        <td className="font-bold text-slate-900">{user.rank}</td>
+                                        <td className="font-black text-slate-700">{user.warName}</td>
+                                        <td className="font-medium text-slate-800">{user.name}</td>
+                                        <td className="font-mono text-slate-600">{user.saram}</td>
+                                        <td className="text-right font-bold text-slate-600 text-[8px]">{user.sector}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+
+                        {users.length === 0 && (
+                            <div className="text-center py-8 text-slate-500 font-bold text-sm">
+                                Nenhum militar corresponde aos filtros atuais.
+                            </div>
+                        )}
+
+                        <div className="mt-12 text-center text-[6px] text-slate-400 uppercase tracking-widest font-bold print-section">
+                            Documento gerado eletronicamente pelo Sistema Guardião GSD-SP em {new Date().toLocaleString('pt-BR')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default PersonnelPrintView;

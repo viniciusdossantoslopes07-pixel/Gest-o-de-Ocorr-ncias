@@ -2,8 +2,9 @@ import React, { useState, FC } from 'react';
 import { User, UserRole } from '../../types';
 import { RANKS, getRankPriority } from '../../constants';
 import { useSectors } from '../../contexts/SectorsContext';
-import { UserPlus, Search, Pencil, Trash2, Shield, User as UserIcon, Hash, Building2, Users, TriangleAlert, CircleX, Briefcase, ChartNoAxesColumn, ChevronDown, ChevronUp } from 'lucide-react';
+import { UserPlus, Search, Pencil, Trash2, Shield, User as UserIcon, Hash, Building2, Users, TriangleAlert, CircleX, Briefcase, ChartNoAxesColumn, ChevronDown, ChevronUp, Printer } from 'lucide-react';
 import UserStatistics from './UserStatistics';
+import PersonnelPrintView from './PersonnelPrintView';
 
 interface PersonnelManagementProps {
     users: User[];
@@ -22,6 +23,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     const [showInactive, setShowInactive] = useState(false);
     const [showFunctional, setShowFunctional] = useState(false);
     const [showStatistics, setShowStatistics] = useState(false);
+    const [showPrintView, setShowPrintView] = useState(false);
 
     // Filtro Inteligente de Unidade
     const [activeUnitFilter, setActiveUnitFilter] = useState<'TODAS' | 'GSD-SP' | 'BASP'>('TODAS');
@@ -246,11 +248,11 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                     className={`w-full border rounded-2xl py-4 pl-12 pr-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
                                 />
                             </div>
-                            <div className="md:w-64">
+                            <div className="md:w-auto flex gap-2">
                                 <select
                                     value={filterSector}
                                     onChange={(e) => setFilterSector(e.target.value)}
-                                    className={`w-full h-full border rounded-2xl px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'} ${filterSector === 'SEM SETOR' ? (isDarkMode ? 'text-red-400 border-red-900/50 bg-red-400/10' : 'text-red-500 border-red-200 bg-red-50') : ''}`}
+                                    className={`w-full md:w-64 h-full border rounded-2xl px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'} ${filterSector === 'SEM SETOR' ? (isDarkMode ? 'text-red-400 border-red-900/50 bg-red-400/10' : 'text-red-500 border-red-200 bg-red-50') : ''}`}
                                 >
                                     <option value="TODOS">Todos os Setores</option>
                                     <option value="TODOS GSD-SP">🔵 TODOS GSD-SP</option>
@@ -258,11 +260,29 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                     {sectorNames.map(s => <option key={s} value={s}>{s}</option>)}
                                     <option value="SEM SETOR">⚠ SEM SETOR (Não Alocados)</option>
                                 </select>
+                                
+                                <button
+                                    onClick={() => setShowPrintView(true)}
+                                    className={`flex items-center justify-center w-[58px] shrink-0 rounded-2xl transition-all shadow-lg ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/20' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200'}`}
+                                    title="Imprimir Relação do Efetivo"
+                                >
+                                    <Printer className="w-5 h-5" />
+                                </button>
                             </div>
                         </div>
                     </>
                 )}
             </div>
+
+            {showPrintView && (
+                <PersonnelPrintView
+                    users={filteredUsers}
+                    filterCategory={filterCategory}
+                    filterSector={filterSector}
+                    activeUnitFilter={activeUnitFilter}
+                    onClose={() => setShowPrintView(false)}
+                />
+            )}
 
             {/* Inactive & Functional Toggle Filters */}
             <div className="flex flex-wrap justify-end gap-3 px-4">
