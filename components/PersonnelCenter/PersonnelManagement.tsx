@@ -71,7 +71,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     const baseFilteredList = users.filter(u => {
         const statusMatch = showInactive ? (u.active === false) : (u.active !== false);
         const functionalMatch = showFunctional ? (!!u.is_functional === true) : (!!u.is_functional !== true);
-        const externalMatch = showExternal ? (!!u.external_service === true) : true;
+        const externalMatch = showExternal ? (!!u.external_service === true) : (!!u.external_service === false);
 
         let sectorMatch = true;
         if (filterSector === 'TODOS') {
@@ -102,7 +102,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
             u.warName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             u.saram.includes(searchTerm));
 
-        return statusMatch && functionalMatch && sectorMatch && unitMatch && searchMatch;
+        return statusMatch && functionalMatch && externalMatch && sectorMatch && unitMatch && searchMatch;
     });
 
     // Calculate stats based on baseFilteredList
