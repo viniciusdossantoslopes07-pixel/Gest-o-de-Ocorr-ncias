@@ -32,68 +32,29 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
     }, [onClose]);
 
     const handlePrint = () => {
-        const printContent = document.getElementById('personnel-print-content');
-        if (!printContent) return;
-
-        const printWindow = window.open('', '_blank', 'width=900,height=700');
-        if (!printWindow) return;
-
-        const docTitle = `Relação de Efetivo - ${filterCategory !== 'TODOS' ? filterCategory : 'Geral'} - ${new Date().toLocaleDateString('pt-BR')}`;
-
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html lang="pt-BR">
-            <head>
-                <meta charset="UTF-8" />
-                <title>${docTitle}</title>
-                <style>
-                    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-                    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: white; color: #0f172a; }
-                    @page { size: A4 portrait; margin: 8mm 10mm; }
-                    table { width: 100%; border-collapse: collapse; }
-                    th { padding: 6px 4px; border-bottom: 2px solid #cbd5e1; text-align: left; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; }
-                    td { padding: 6px 4px; border-bottom: 1px solid #e2e8f0; font-size: 12px; }
-                    tr { page-break-inside: avoid; }
-                    tr:nth-child(even) td { background-color: #f8fafc; }
-                    .header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #0f172a; }
-                    .header img { width: 56px; height: 56px; object-fit: contain; }
-                    .header-center { flex: 1; text-align: center; }
-                    .header-center h1 { margin: 0; }
-                    .meta { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; font-size: 9px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; border-left: 4px solid #0f172a; padding-left: 12px; }
-                    .badge { display: inline-block; padding: 2px 10px; background: #0f172a; color: white; font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em; border-radius: 4px; margin-top: 6px; }
-                    .footer { margin-top: 40px; text-align: center; font-size: 6px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold; }
-                </style>
-            </head>
-            <body>
-                ${printContent.innerHTML}
-            </body>
-            </html>
-        `);
-
-        printWindow.document.close();
-        printWindow.focus();
-
+        const originalTitle = document.title;
+        document.title = `Relação de Efetivo - ${filterCategory !== 'TODOS' ? filterCategory : 'Geral'} - ${new Date().toLocaleDateString('pt-BR')}`;
+        window.print();
         setTimeout(() => {
-            printWindow.print();
-            printWindow.close();
-        }, 500);
+            document.title = originalTitle;
+        }, 1000);
     };
 
     if (!mounted) return null;
 
     const content = (
-        <div 
+        <div
             id="personnel-modal"
-            className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-0 sm:p-4 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-0 sm:p-4 print:relative print:inset-auto print:block print:h-auto print:w-full print:bg-white backdrop-blur-sm print:overflow-visible"
             onClick={onClose}
         >
-            <div 
-                className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full h-[100vh] sm:h-[90vh] overflow-hidden flex flex-col shadow-2xl"
+            <div
+                className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full h-[100vh] sm:h-[90vh] print:h-auto overflow-hidden print:overflow-visible flex flex-col print:block print:rounded-none print:max-w-none shadow-2xl print:shadow-none"
                 onClick={(e) => e.stopPropagation()}
             >
 
-                {/* Control Header */}
-                <div className="bg-white border-b border-slate-200 p-4 flex items-center justify-between z-20 shrink-0">
+                {/* Control Header - Hidden on print */}
+                <div id="print-controls-header" className="bg-white border-b border-slate-200 p-4 flex items-center justify-between z-20 shrink-0">
                     <h2 className="text-lg font-bold text-slate-900 font-mono tracking-tight">Relação de Efetivo</h2>
                     <div className="flex items-center gap-2">
                         <button
@@ -113,17 +74,90 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-1 overflow-auto bg-slate-100 p-4">
-                    <div id="personnel-print-content" className="bg-white shadow-xl mx-auto p-8 sm:p-12 min-h-full max-w-[210mm] mb-8 personnel-printable">
+                <div className="flex-1 overflow-auto print:overflow-visible bg-slate-100 print:bg-white p-4 print:p-0 print:block">
+                    <style>{`
+                        @media print {
+                            * {
+                                -webkit-print-color-adjust: exact !important;
+                                print-color-adjust: exact !important;
+                                color-adjust: exact !important;
+                            }
+                            body > *:not(#personnel-modal) {
+                                display: none !important;
+                            }
+                            html, body {
+                                height: auto !important;
+                                overflow: visible !important;
+                                background: white !important;
+                                margin: 0 !important;
+                                padding: 0 !important;
+                            }
+                            #personnel-modal {
+                                position: static !important;
+                                display: block !important;
+                                height: auto !important;
+                                overflow: visible !important;
+                            }
+                            #personnel-modal > div,
+                            #personnel-modal > div > div {
+                                position: static !important;
+                                height: auto !important;
+                                display: block !important;
+                                overflow: visible !important;
+                                max-height: none !important;
+                            }
+                            /* Especificidade (2,0,0) — supera #personnel-modal > div > div (1,0,2) */
+                            #personnel-modal #print-controls-header {
+                                display: none !important;
+                                visibility: hidden !important;
+                                height: 0 !important;
+                                overflow: hidden !important;
+                                padding: 0 !important;
+                                margin: 0 !important;
+                                border: none !important;
+                            }
+                            .personnel-printable {
+                                width: 100% !important;
+                                height: auto !important;
+                                display: block !important;
+                                margin: 0 !important;
+                            }
+                            .personnel-printable table {
+                                width: 100% !important;
+                                border-collapse: collapse !important;
+                            }
+                            .personnel-printable th {
+                                padding: 6px 4px !important;
+                                border-bottom: 2px solid #cbd5e1 !important;
+                            }
+                            .personnel-printable td {
+                                padding: 6px 4px !important;
+                                border-bottom: 1px solid #e2e8f0 !important;
+                            }
+                            .personnel-printable tr {
+                                page-break-inside: avoid !important;
+                                break-inside: avoid !important;
+                            }
+                            .print-section {
+                                page-break-inside: avoid !important;
+                                break-inside: avoid !important;
+                            }
+                            @page {
+                                size: A4 portrait;
+                                margin: 8mm 10mm;
+                            }
+                        }
+                    `}</style>
+                    <div className="bg-white shadow-xl print:shadow-none mx-auto p-8 sm:p-12 print:p-0 min-h-full max-w-[210mm] print:max-w-none mb-8 print:mb-0 personnel-printable">
 
                         {/* Standard Military Header */}
-                        <div className="header flex items-start justify-between mb-5 border-b-2 border-slate-900 pb-3">
+                        <div className="flex items-start justify-between mb-5 border-b-2 border-slate-900 pb-3 print-section">
                             <img src="/logo_basp_optimized.png" alt="Logo BASP" className="w-14 h-14 object-contain" />
                             <div className="flex-1 text-center">
-                                <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">Ministério da Defesa</p>
-                                <p className="text-sm font-black uppercase tracking-tight">Comando da Aeronáutica</p>
-                                <p className="text-xs font-bold uppercase tracking-wide">Base Aérea de São Paulo</p>
-                                <p className="text-[10px] font-bold uppercase text-slate-700">Grupo de Segurança e Defesa de São Paulo</p>
+                                <h1 className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">Ministério da Defesa</h1>
+                                <h1 className="text-sm font-black uppercase tracking-tight">Comando da Aeronáutica</h1>
+                                <h2 className="text-xs font-bold uppercase tracking-wide">Base Aérea de São Paulo</h2>
+                                <h3 className="text-[10px] font-bold uppercase text-slate-700">Grupo de Segurança e Defesa de São Paulo</h3>
                                 <div className="mt-1.5 inline-block px-3 py-0.5 bg-slate-900 text-white text-[8px] font-black uppercase tracking-[0.2em] rounded">
                                     Relação Nominal de Efetivo
                                 </div>
@@ -132,7 +166,7 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
                         </div>
 
                         {/* Document Info */}
-                        <div className="flex justify-between items-end mb-6 text-[9px] font-bold uppercase tracking-wider text-slate-600 border-l-4 border-slate-900 pl-3">
+                        <div className="flex justify-between items-end mb-6 text-[9px] font-bold uppercase tracking-wider text-slate-600 border-l-4 border-slate-900 pl-3 print-section">
                             <div>
                                 <p>Filtro de Categoria: <span className="text-slate-900">{filterCategory}</span></p>
                                 <p>Unidade: <span className="text-slate-900">{activeUnitFilter}</span></p>
@@ -180,9 +214,9 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
                     </div>
                 </div>
             </div>
-            </div>
-
+        </div>
     );
+
     return createPortal(content, document.body);
 };
 
