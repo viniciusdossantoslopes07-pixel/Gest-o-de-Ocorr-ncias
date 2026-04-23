@@ -71,7 +71,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     const baseFilteredList = users.filter(u => {
         const statusMatch = showInactive ? (u.active === false) : (u.active !== false);
         const functionalMatch = showFunctional ? (!!u.is_functional === true) : (!!u.is_functional !== true);
-        const externalMatch = showExternal ? (!!u.external_service === true) : (!!u.external_service === false);
+        const externalMatch = showExternal ? (!!u.external_service === true) : true;
 
         let sectorMatch = true;
         if (filterSector === 'TODOS') {
@@ -162,21 +162,21 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 pb-20">
             {/* Header & Search */}
-            <div className={`rounded-[2rem] p-8 border shadow-sm ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
-                    <div className="flex items-center gap-4">
-                        <div className={`p-2.5 lg:p-3 rounded-2xl shadow-lg ${isDarkMode ? 'bg-blue-500/20 shadow-blue-900/20' : 'bg-blue-600 shadow-blue-200'}`}>
-                            <Users className={`w-5 h-5 lg:w-6 h-6 ${isDarkMode ? 'text-blue-400' : 'text-white'}`} />
+            <div className={`rounded-[1.5rem] lg:rounded-[2rem] p-5 lg:p-8 border shadow-sm ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 lg:gap-6 mb-6 lg:mb-8">
+                    <div className="flex items-center gap-3 lg:gap-4">
+                        <div className={`p-2 rounded-xl lg:p-3 lg:rounded-2xl shadow-lg ${isDarkMode ? 'bg-blue-500/20 shadow-blue-900/20' : 'bg-blue-600 shadow-blue-200'}`}>
+                            <Users className={`w-5 h-5 lg:w-6 lg:h-6 ${isDarkMode ? 'text-blue-400' : 'text-white'}`} />
                         </div>
                         <div>
-                            <h2 className={`text-xl lg:text-2xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Gestão de Efetivo</h2>
-                            <p className={`${isDarkMode ? 'text-slate-500' : 'text-slate-500'} text-xs lg:sm font-medium`}>Cadastro e vinculação de militares</p>
+                            <h2 className={`text-lg lg:text-2xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Gestão de Efetivo</h2>
+                            <p className={`${isDarkMode ? 'text-slate-500' : 'text-slate-500'} text-[10px] lg:text-sm font-medium`}>Cadastro e vinculação de militares</p>
                         </div>
                     </div>
 
                     <button
                         onClick={() => { setIsAdding(!isAdding); setEditingId(null); }}
-                        className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-xl text-sm lg:text-base w-full lg:w-auto ${isDarkMode ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
+                        className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl lg:rounded-2xl font-bold transition-all shadow-xl text-xs lg:text-base w-full lg:w-auto ${isDarkMode ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
                     >
                         {isAdding ? <Users className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
                         {isAdding ? 'Ver Lista' : 'Cadastrar Militar'}
@@ -185,22 +185,22 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
 
                 {!isAdding && (
                     <>
-                        <div className={`grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8`}>
-                            <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'} cursor-pointer transition-all hover:ring-2 ring-blue-500 ${filterCategory === 'TODOS' ? 'ring-2' : ''}`} onClick={() => setFilterCategory('TODOS')}>
-                                <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Total do Efetivo</p>
-                                <p className={`text-2xl lg:text-3xl font-black mt-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{totalMilitaries}</p>
+                        <div className={`grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8`}>
+                            <div className={`p-3 lg:p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'} cursor-pointer transition-all hover:ring-2 ring-blue-500 ${filterCategory === 'TODOS' ? 'ring-2' : ''}`} onClick={() => setFilterCategory('TODOS')}>
+                                <p className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Total do Efetivo</p>
+                                <p className={`text-xl lg:text-3xl font-black mt-0.5 lg:mt-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{totalMilitaries}</p>
                             </div>
-                            <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-indigo-900/20 border-indigo-800' : 'bg-indigo-50 border-indigo-100'} cursor-pointer transition-all hover:ring-2 ring-indigo-500 ${filterCategory === 'OFICIAIS' ? 'ring-2' : ''}`} onClick={() => setFilterCategory('OFICIAIS')}>
-                                <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>Oficiais</p>
-                                <p className={`text-2xl lg:text-3xl font-black mt-1 ${isDarkMode ? 'text-indigo-100' : 'text-indigo-900'}`}>{totalOficiais}</p>
+                            <div className={`p-3 lg:p-4 rounded-2xl border ${isDarkMode ? 'bg-indigo-900/20 border-indigo-800' : 'bg-indigo-50 border-indigo-100'} cursor-pointer transition-all hover:ring-2 ring-indigo-500 ${filterCategory === 'OFICIAIS' ? 'ring-2' : ''}`} onClick={() => setFilterCategory('OFICIAIS')}>
+                                <p className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>Oficiais</p>
+                                <p className={`text-xl lg:text-3xl font-black mt-0.5 lg:mt-1 ${isDarkMode ? 'text-indigo-100' : 'text-indigo-900'}`}>{totalOficiais}</p>
                             </div>
-                            <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-blue-900/20 border-blue-800' : 'bg-blue-50 border-blue-100'} cursor-pointer transition-all hover:ring-2 ring-blue-500 ${filterCategory === 'GRADUADOS' ? 'ring-2' : ''}`} onClick={() => setFilterCategory('GRADUADOS')}>
-                                <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>Graduados</p>
-                                <p className={`text-2xl lg:text-3xl font-black mt-1 ${isDarkMode ? 'text-blue-100' : 'text-blue-900'}`}>{totalGraduados}</p>
+                            <div className={`p-3 lg:p-4 rounded-2xl border ${isDarkMode ? 'bg-blue-900/20 border-blue-800' : 'bg-blue-50 border-blue-100'} cursor-pointer transition-all hover:ring-2 ring-blue-500 ${filterCategory === 'GRADUADOS' ? 'ring-2' : ''}`} onClick={() => setFilterCategory('GRADUADOS')}>
+                                <p className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>Graduados</p>
+                                <p className={`text-xl lg:text-3xl font-black mt-0.5 lg:mt-1 ${isDarkMode ? 'text-blue-100' : 'text-blue-900'}`}>{totalGraduados}</p>
                             </div>
-                            <div className={`p-4 rounded-2xl border ${isDarkMode ? 'bg-emerald-900/20 border-emerald-800' : 'bg-emerald-50 border-emerald-100'} cursor-pointer transition-all hover:ring-2 ring-emerald-500 ${filterCategory === 'PRAÇAS' ? 'ring-2' : ''}`} onClick={() => setFilterCategory('PRAÇAS')}>
-                                <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>Praças</p>
-                                <p className={`text-2xl lg:text-3xl font-black mt-1 ${isDarkMode ? 'text-emerald-100' : 'text-emerald-900'}`}>{totalPracas}</p>
+                            <div className={`p-3 lg:p-4 rounded-2xl border ${isDarkMode ? 'bg-emerald-900/20 border-emerald-800' : 'bg-emerald-50 border-emerald-100'} cursor-pointer transition-all hover:ring-2 ring-emerald-500 ${filterCategory === 'PRAÇAS' ? 'ring-2' : ''}`} onClick={() => setFilterCategory('PRAÇAS')}>
+                                <p className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>Praças</p>
+                                <p className={`text-xl lg:text-3xl font-black mt-0.5 lg:mt-1 ${isDarkMode ? 'text-emerald-100' : 'text-emerald-900'}`}>{totalPracas}</p>
                             </div>
                         </div>
 
@@ -292,10 +292,10 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
             )}
 
             {/* Inactive, Functional & External Toggle Filters */}
-            <div className="flex flex-wrap justify-end gap-3 px-4">
+            <div className="grid grid-cols-1 sm:flex sm:flex-wrap justify-end gap-3 px-4">
                 <button
                     onClick={() => { setShowExternal(!showExternal); if (!showExternal) { setShowInactive(false); setShowFunctional(false); } }}
-                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 border-2 ${showExternal
+                    className={`flex items-center justify-center sm:justify-start gap-2 px-6 py-3 lg:py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 border-2 ${showExternal
                         ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-900/40'
                         : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700 shadow-sm')
                         }`}
@@ -306,7 +306,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
 
                 <button
                     onClick={() => { setShowFunctional(!showFunctional); if (!showFunctional) setShowInactive(false); }}
-                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 border-2 ${showFunctional
+                    className={`flex items-center justify-center sm:justify-start gap-2 px-6 py-3 lg:py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 border-2 ${showFunctional
                         ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-900/40'
                         : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700 shadow-sm')
                         }`}
@@ -317,7 +317,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
 
                 <button
                     onClick={() => { setShowInactive(!showInactive); if (!showInactive) setShowFunctional(false); }}
-                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 border-2 ${showInactive
+                    className={`flex items-center justify-center sm:justify-start gap-2 px-6 py-3 lg:py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 border-2 ${showInactive
                         ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-900/40'
                         : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700 shadow-sm')
                         }`}
@@ -329,15 +329,15 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
 
             {isAdding ? (
                 /* Registration Form */
-                <div className={`rounded-[2rem] p-8 border shadow-sm animate-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
-                    <h3 className={`text-lg font-bold mb-6 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                <div className={`rounded-[1.5rem] lg:rounded-[2rem] p-5 lg:p-8 border shadow-sm animate-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+                    <h3 className={`text-base lg:text-lg font-black mb-6 flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                         {editingId ? <Pencil className="w-5 h-5 text-indigo-400" /> : <UserPlus className="w-5 h-5 text-indigo-400" />}
                         {editingId ? 'Editar Dados do Militar' : 'Novo Cadastro Militar'}
                     </h3>
 
                     <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-                        <div className="space-y-1.5 lg:space-y-2">
-                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 <UserIcon className="w-3 h-3" /> Nome Completo
                             </label>
                             <input
@@ -349,8 +349,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             />
                         </div>
 
-                        <div className="space-y-1.5 lg:space-y-2">
-                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 <UserIcon className="w-3 h-3" /> Nome de Guerra
                             </label>
                             <input
@@ -362,8 +362,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             />
                         </div>
 
-                        <div className="space-y-1.5 lg:space-y-2">
-                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 <Shield className="w-3 h-3" /> Posto / Graduação
                             </label>
                             <select
@@ -377,8 +377,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             </select>
                         </div>
 
-                        <div className="space-y-1.5 lg:space-y-2">
-                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 <Hash className="w-3 h-3" /> SARAM
                             </label>
                             <input
@@ -390,8 +390,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             />
                         </div>
 
-                        <div className="space-y-1.5 lg:space-y-2">
-                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 <Hash className="w-3 h-3" /> CPF
                             </label>
                             <input
@@ -404,8 +404,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             />
                         </div>
 
-                        <div className="space-y-1.5 lg:space-y-2">
-                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 <Building2 className="w-3 h-3" /> Setor de Lotação
                             </label>
                             <select
@@ -418,8 +418,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             </select>
                         </div>
 
-                        <div className="space-y-1.5 lg:space-y-2">
-                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 Especialidade
                             </label>
                             <input
@@ -430,8 +430,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             />
                         </div>
 
-                        <div className="space-y-1.5 lg:space-y-2">
-                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 Turma
                             </label>
                             <input
@@ -442,8 +442,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             />
                         </div>
 
-                        <div className="space-y-1.5 lg:space-y-2">
-                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 Serviço
                             </label>
                             <input
@@ -454,8 +454,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             />
                         </div>
 
-                        <div className="space-y-1.5 lg:space-y-2">
-                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 Endereço
                             </label>
                             <input
@@ -466,8 +466,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             />
                         </div>
 
-                        <div className="space-y-1.5 lg:space-y-2">
-                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 Data de Praça
                             </label>
                             <input
@@ -478,8 +478,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             />
                         </div>
 
-                        <div className="space-y-1.5 lg:space-y-2">
-                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 Apresentação
                             </label>
                             <input
@@ -490,8 +490,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             />
                         </div>
 
-                        <div className="space-y-1.5 lg:space-y-2">
-                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 Última Promoção
                             </label>
                             <input
@@ -502,8 +502,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             />
                         </div>
 
-                        <div className="space-y-1.5 lg:space-y-2">
-                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 Identidade Militar
                             </label>
                             <input
@@ -514,8 +514,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             />
                         </div>
 
-                        <div className="space-y-1.5 lg:space-y-2">
-                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 RC
                             </label>
                             <input
@@ -526,8 +526,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             />
                         </div>
 
-                        <div className="space-y-1.5 lg:space-y-2">
-                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 Local de Trabalho
                             </label>
                             <input
@@ -538,8 +538,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             />
                         </div>
 
-                        <div className="space-y-1.5 lg:space-y-2">
-                            <label className={`text-[9px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 Telefone de Emergência
                             </label>
                             <input
@@ -550,7 +550,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             />
                         </div>
 
-                        <div className="space-y-1.5 lg:space-y-2 flex items-end pb-3">
+                        <div className="space-y-1 lg:space-y-2 flex items-end pb-3">
                             <label className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer ${formData.is_functional ? (isDarkMode ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400' : 'bg-indigo-50 border-indigo-200 text-indigo-700') : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-500')}`}>
                                 <input
                                     type="checkbox"
@@ -559,7 +559,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                     className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                                 />
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Conta Funcional</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">Conta Funcional</span>
                                     <span className="text-[8px] font-medium opacity-70 leading-none">Excluir do efetivo real/chamada</span>
                                 </div>
                                 <Briefcase className={`w-4 h-4 ml-auto ${formData.is_functional ? 'opacity-100' : 'opacity-30'}`} />
@@ -570,13 +570,13 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             <button
                                 type="button"
                                 onClick={() => { setIsAdding(false); setEditingId(null); }}
-                                className={`w-full sm:w-auto px-6 py-3 rounded-xl font-bold transition-all ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                                className={`w-full sm:w-auto px-6 py-3 rounded-xl font-bold transition-all text-xs lg:text-sm ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                             >
                                 Cancelar
                             </button>
                             <button
                                 type="submit"
-                                className={`w-full sm:w-auto px-10 py-3 rounded-xl font-bold transition-all shadow-xl ${isDarkMode ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-900/20' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200'}`}
+                                className={`w-full sm:w-auto px-10 py-3 rounded-xl font-bold transition-all shadow-xl text-xs lg:text-sm ${isDarkMode ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-900/20' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200'}`}
                             >
                                 {editingId ? 'Salvar Alterações' : 'Confirmar Cadastro'}
                             </button>
@@ -701,79 +701,79 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                     {/* Mobile View (Cards) */}
                     <div className={`lg:hidden divide-y ${isDarkMode ? 'divide-slate-800' : 'divide-slate-100'}`}>
                         {filteredUsers.map(user => (
-                            <div key={user.id} className={`p-6 flex flex-col gap-5 transition-all duration-300 ${user.external_service ? (isDarkMode ? 'bg-emerald-500/10 hover:bg-emerald-500/20' : 'bg-emerald-50 hover:bg-emerald-100') : (isDarkMode ? 'hover:bg-slate-800/30' : 'hover:bg-slate-50')}`}>
-                                <div className="flex justify-between items-start gap-4">
-                                    <div className="flex gap-4">
-                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${user.external_service ? (isDarkMode ? 'bg-emerald-900/30 border-emerald-800 text-emerald-500' : 'bg-emerald-100 border-emerald-200 text-emerald-600') : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-500' : 'bg-slate-100 border-slate-200/50 text-slate-400')}`}>
-                                            {user.external_service ? <PlaneTakeoff className="w-6 h-6" /> : <UserIcon className="w-6 h-6" />}
+                            <div key={user.id} className={`p-4 sm:p-6 flex flex-col gap-4 transition-all duration-300 ${user.external_service ? (isDarkMode ? 'bg-emerald-500/10 hover:bg-emerald-500/20' : 'bg-emerald-50 hover:bg-emerald-100') : (isDarkMode ? 'hover:bg-slate-800/30' : 'hover:bg-slate-50')}`}>
+                                <div className="flex justify-between items-start gap-3">
+                                    <div className="flex gap-3">
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${user.external_service ? (isDarkMode ? 'bg-emerald-900/30 border-emerald-800 text-emerald-500' : 'bg-emerald-100 border-emerald-200 text-emerald-600') : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-500' : 'bg-slate-100 border-slate-200/50 text-slate-400')}`}>
+                                            {user.external_service ? <PlaneTakeoff className="w-5 h-5" /> : <UserIcon className="w-5 h-5" />}
                                         </div>
                                         <div className="min-w-0 flex flex-col justify-center">
-                                            <div className={`font-bold text-sm leading-tight mb-1 truncate flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                            <div className={`font-black text-sm leading-tight truncate flex items-center gap-1.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                                                 {user.name}
                                                 {user.is_functional && <Briefcase className="w-3 h-3 text-indigo-500" />}
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tight ${isDarkMode ? 'bg-blue-400/10 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
+                                            <div className="flex items-center gap-1.5 mt-0.5">
+                                                <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-tight ${isDarkMode ? 'bg-blue-400/10 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
                                                     {user.rank}
                                                 </span>
-                                                <span className={`text-[10px] font-bold uppercase truncate ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                                                <span className={`text-[10px] font-bold uppercase truncate ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                                     {user.warName}
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
-                                    <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black tracking-widest uppercase shrink-0 transition-all ${user.external_service ? (isDarkMode ? 'bg-emerald-600 text-white' : 'bg-emerald-600 text-white shadow-md') : (isDarkMode ? 'bg-white text-slate-900' : 'bg-slate-900 text-white')}`}>
+                                    <span className={`px-2 py-1 rounded-lg text-[8px] font-black tracking-widest uppercase shrink-0 transition-all ${user.external_service ? (isDarkMode ? 'bg-emerald-600 text-white' : 'bg-emerald-600 text-white shadow-md') : (isDarkMode ? 'bg-white text-slate-900 border border-slate-200' : 'bg-slate-900 text-white')}`}>
                                         {user.external_service ? `EXT: ${user.external_om}` : user.sector}
                                     </span>
                                 </div>
 
-                                <div className={`rounded-2xl p-4 grid grid-cols-2 gap-4 border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
-                                    <div className="space-y-1">
-                                        <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>SARAM</p>
+                                <div className={`rounded-xl p-3 grid grid-cols-2 gap-3 border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                                    <div className="space-y-0.5">
+                                        <p className={`text-[8px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>SARAM</p>
                                         <p className={`text-xs font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{user.saram}</p>
                                     </div>
-                                    <div className="space-y-1">
-                                        <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>CPF</p>
+                                    <div className="space-y-0.5">
+                                        <p className={`text-[8px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>CPF</p>
                                         <p className={`text-xs font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{user.cpf || '---'}</p>
                                     </div>
                                 </div>
 
-                                <div className="flex gap-3 mt-1">
+                                <div className="flex flex-wrap gap-2 pt-1">
                                     {user.active === false ? (
                                         <button
                                             onClick={() => { if (confirm('Deseja reativar este militar?')) onUpdatePersonnel({ ...user, active: true }); }}
-                                            className={`flex-1 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-green-400/10 border-green-400/20 text-green-400 active:bg-green-400/20' : 'bg-green-50 border-green-100 text-green-600 active:bg-green-100'}`}
+                                            className={`flex-1 py-2.5 rounded-xl font-bold text-[10px] flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-green-400/10 border-green-400/20 text-green-400 active:bg-green-400/20' : 'bg-green-50 border-green-100 text-green-600 active:bg-green-100'}`}
                                         >
-                                            <Shield className="w-4 h-4" /> Reativar Militar
+                                            <Shield className="w-3.5 h-3.5" /> Reativar Militar
                                         </button>
                                     ) : (
                                         user.sector === 'SEM SETOR' ? (
                                             <button
                                                 onClick={() => handleEdit(user)}
-                                                className={`flex-1 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm animate-pulse border ${isDarkMode ? 'bg-red-400/10 border-red-400/20 text-red-400 active:bg-red-400/20' : 'bg-red-50 border-red-100 text-red-600 active:bg-red-100'
+                                                className={`flex-1 py-2.5 rounded-xl font-bold text-[10px] flex items-center justify-center gap-2 transition-all shadow-sm animate-pulse border ${isDarkMode ? 'bg-red-400/10 border-red-400/20 text-red-400 active:bg-red-400/20' : 'bg-red-50 border-red-100 text-red-600 active:bg-red-100'
                                                     }`}
                                             >
-                                                <TriangleAlert className="w-4 h-4" /> Atribuir Setor
+                                                <TriangleAlert className="w-3.5 h-3.5" /> Atribuir Setor
                                             </button>
                                         ) : (
                                             <button
                                                 onClick={() => handleEdit(user)}
-                                                className={`flex-1 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 active:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 active:bg-slate-50'
+                                                className={`flex-1 py-2.5 rounded-xl font-bold text-[10px] flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 active:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 active:bg-slate-50'
                                                     }`}
                                             >
-                                                <Pencil className="w-4 h-4 text-blue-500" /> Editar Dados
+                                                <Pencil className="w-3.5 h-3.5 text-blue-500" /> Editar Dados
                                             </button>
                                         )
                                     )}
 
-                                    {user.active !== false ? (
-                                        <>
+                                    {user.active !== false && (
+                                        <div className="flex gap-2">
                                             <button
                                                 onClick={() => { if (confirm(user.is_functional ? 'Remover status funcional?' : 'Marcar como conta funcional?')) onUpdatePersonnel({ ...user, is_functional: !user.is_functional }); }}
-                                                className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${user.is_functional ? (isDarkMode ? 'bg-indigo-400/10 border-indigo-400 text-indigo-400' : 'bg-indigo-50 border-indigo-100 text-indigo-600') : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-600')}`}
+                                                className={`py-2.5 px-3.5 rounded-xl font-bold text-xs transition-all shadow-sm border ${user.is_functional ? (isDarkMode ? 'bg-indigo-400/10 border-indigo-400 text-indigo-400' : 'bg-indigo-50 border-indigo-100 text-indigo-600') : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-600')}`}
                                                 title="Contas Funcionais"
                                             >
-                                                <Briefcase className="w-4 h-4" />
+                                                <Briefcase className="w-3.5 h-3.5" />
                                             </button>
                                             <button
                                                 onClick={() => {
@@ -783,27 +783,27 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                                     setExternalSector(user.external_sector || '');
                                                     setShowExternalServiceModal(true);
                                                 }}
-                                                className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${user.external_service ? (isDarkMode ? 'bg-emerald-400/10 border-emerald-400 text-emerald-400' : 'bg-emerald-50 border-emerald-100 text-emerald-600') : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-600')}`}
+                                                className={`py-2.5 px-3.5 rounded-xl font-bold text-xs transition-all shadow-sm border ${user.external_service ? (isDarkMode ? 'bg-emerald-400/10 border-emerald-400 text-emerald-400' : 'bg-emerald-50 border-emerald-100 text-emerald-600') : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-600')}`}
                                                 title="Serviço Externo"
                                             >
-                                                <PlaneTakeoff className="w-4 h-4" />
+                                                <PlaneTakeoff className="w-3.5 h-3.5" />
                                             </button>
                                             <button
                                                 onClick={() => { if (confirm('Desativar militar?')) onDeletePersonnel(user.id); }}
-                                                className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-amber-400/5 border-amber-400/10 text-amber-400 active:bg-amber-400/10' : 'bg-amber-50/30 border-amber-100 text-amber-500 active:bg-amber-50'
+                                                className={`py-2.5 px-3.5 rounded-xl font-bold text-xs transition-all shadow-sm border ${isDarkMode ? 'bg-amber-400/5 border-amber-400/10 text-amber-400 active:bg-amber-400/10' : 'bg-amber-50/30 border-amber-100 text-amber-500 active:bg-amber-50'
                                                     }`}
                                             >
-                                                <CircleX className="w-4 h-4" />
+                                                <CircleX className="w-3.5 h-3.5" />
                                             </button>
-                                        </>
-                                    ) : null}
-                                    {currentUserRole === UserRole.ADMIN && onPermanentDeletePersonnel && (
+                                        </div>
+                                    )}
+                                    {user.active !== false && currentUserRole === UserRole.ADMIN && onPermanentDeletePersonnel && (
                                         <button
                                             onClick={() => onPermanentDeletePersonnel(user.id)}
-                                            className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${isDarkMode ? 'bg-red-400/5 border-red-400/10 text-red-400 active:bg-red-400/10' : 'bg-red-50/30 border-red-100 text-red-500 active:bg-red-50'
+                                            className={`py-2.5 px-3.5 rounded-xl font-bold text-xs transition-all shadow-sm border ${isDarkMode ? 'bg-red-400/5 border-red-400/10 text-red-400 active:bg-red-400/10' : 'bg-red-50/30 border-red-100 text-red-500 active:bg-red-50'
                                                 }`}
                                         >
-                                            <Trash2 className="w-4 h-4" />
+                                            <Trash2 className="w-3.5 h-3.5" />
                                         </button>
                                     )}
                                 </div>
