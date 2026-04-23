@@ -478,7 +478,10 @@ const App: FC = () => {
         rc: data.rc,
         workplace: data.workplace,
         emergency_contact: data.emergency_contact,
-        is_functional: !!data.is_functional
+        is_functional: !!data.is_functional,
+        external_service: !!data.external_service,
+        external_om: data.external_om,
+        external_sector: data.external_sector
       };
 
       if (user.approved === false) {
@@ -671,7 +674,10 @@ const App: FC = () => {
         rc: u.rc,
         workplace: u.workplace,
         emergency_contact: u.emergency_contact,
-        is_functional: !!u.is_functional
+        is_functional: !!u.is_functional,
+        external_service: !!u.external_service,
+        external_om: u.external_om,
+        external_sector: u.external_sector
       }));
       setUsers(mappedUsers);
     }
@@ -722,6 +728,9 @@ const App: FC = () => {
       workplace: newUser.workplace,
       emergency_contact: newUser.emergency_contact || (newUser as any).emergencyContact,
       is_functional: newUser.is_functional || false,
+      external_service: newUser.external_service || false,
+      external_om: newUser.external_om || '',
+      external_sector: newUser.external_sector || '',
       pending_password_reset: newUser.pending_password_reset || false,
       reset_password_at_login: newUser.reset_password_at_login || false,
       password_status: newUser.password_status || 'ACTIVE'
@@ -767,6 +776,9 @@ const App: FC = () => {
         workplace: data.workplace,
         emergency_contact: data.emergency_contact,
         is_functional: !!data.is_functional,
+        external_service: !!data.external_service,
+        external_om: data.external_om,
+        external_sector: data.external_sector,
         pending_password_reset: data.pending_password_reset,
         reset_password_at_login: data.reset_password_at_login,
         password_status: data.password_status
@@ -864,7 +876,10 @@ const App: FC = () => {
             ? { reset_password_at_login: updatedUser.reset_password_at_login } : {}),
         ...(updatedUser.password_status !== undefined
             ? { password_status: updatedUser.password_status } : {}),
-        is_functional: updatedUser.is_functional
+        is_functional: updatedUser.is_functional,
+        external_service: updatedUser.external_service,
+        external_om: updatedUser.external_om,
+        external_sector: updatedUser.external_sector
       })
       .eq('id', updatedUser.id);
 

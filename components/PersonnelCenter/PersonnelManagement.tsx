@@ -854,34 +854,55 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
 
                             {isExternalService && (
                                 <>
-                                    <div className="space-y-2">
-                                        <label className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                                            OM de Destino
+                                    <div className="space-y-4">
+                                        <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${externalOm === 'BASP' ? (isDarkMode ? 'bg-blue-900/20 border-blue-500/30' : 'bg-blue-50 border-blue-200') : (isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200')}`}>
+                                            <div className="flex flex-col">
+                                                <span className={`text-sm font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Destino é a BASP?</span>
+                                                <span className={`text-xs mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Habilite para alocar no efetivo da Base Aérea</span>
+                                            </div>
+                                            <input
+                                                type="checkbox"
+                                                checked={externalOm === 'BASP'}
+                                                onChange={e => {
+                                                    const isBasp = e.target.checked;
+                                                    setExternalOm(isBasp ? 'BASP' : '');
+                                                    if (!isBasp) setExternalSector('');
+                                                }}
+                                                className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500"
+                                            />
                                         </label>
-                                        <input
-                                            type="text"
-                                            value={externalOm}
-                                            onChange={e => setExternalOm(e.target.value.toUpperCase())}
-                                            placeholder="Ex: BASP, PAMASP, CELOG"
-                                            className={`w-full rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all uppercase ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
-                                        />
-                                    </div>
 
-                                    {externalOm === 'BASP' && (
-                                        <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                                            <label className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                                                Setor na BASP
-                                            </label>
-                                            <select
-                                                value={externalSector}
-                                                onChange={e => setExternalSector(e.target.value)}
-                                                className={`w-full rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
-                                            >
-                                                <option value="">Selecione o setor...</option>
-                                                {sectorNames.map(s => <option key={s} value={s}>{s}</option>)}
-                                            </select>
-                                        </div>
-                                    )}
+                                        {externalOm === 'BASP' ? (
+                                            <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                                                <label className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                                    Setor na BASP
+                                                </label>
+                                                <select
+                                                    value={externalSector}
+                                                    onChange={e => setExternalSector(e.target.value)}
+                                                    className={`w-full rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                                >
+                                                    <option value="">Selecione o setor...</option>
+                                                    {sectors.filter(s => s.unit === 'BASP').map(s => (
+                                                        <option key={s.name} value={s.name}>{s.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                                                <label className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                                    Outra OM de Destino
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={externalOm}
+                                                    onChange={e => setExternalOm(e.target.value.toUpperCase())}
+                                                    placeholder="Ex: PAMASP, CELOG, SEREP-SP"
+                                                    className={`w-full rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all uppercase ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
 
                                     <button
                                         onClick={() => {
