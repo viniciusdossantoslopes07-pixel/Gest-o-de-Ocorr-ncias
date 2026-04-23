@@ -1,4 +1,4 @@
-import React, { type FC } from 'react';
+import React, { type FC, useEffect } from 'react';
 import { Printer, X } from 'lucide-react';
 import { User } from '../../types';
 
@@ -17,6 +17,16 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
     activeUnitFilter,
     onClose
 }) => {
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [onClose]);
+
     const handlePrint = () => {
         const originalTitle = document.title;
         document.title = `Relação de Efetivo - ${filterCategory !== 'TODOS' ? filterCategory : 'Geral'} - ${new Date().toLocaleDateString('pt-BR')}`;
@@ -29,8 +39,14 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light backdrop-blur-sm">
-            <div className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full h-[100vh] sm:h-[90vh] print:h-auto overflow-hidden flex flex-col print:rounded-none print:max-w-none shadow-2xl">
+        <div 
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light backdrop-blur-sm"
+            onClick={onClose}
+        >
+            <div 
+                className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full h-[100vh] sm:h-[90vh] print:h-auto overflow-hidden flex flex-col print:rounded-none print:max-w-none shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+            >
 
                 {/* Control Header - Hidden on print */}
                 <div className="bg-white border-b border-slate-200 p-4 flex items-center justify-between print:hidden z-20 shrink-0">
