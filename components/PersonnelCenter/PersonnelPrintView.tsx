@@ -56,7 +56,7 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
             >
 
                 {/* Control Header - Hidden on print */}
-                <div className="bg-white border-b border-slate-200 p-4 flex items-center justify-between print:hidden z-20 shrink-0">
+                <div id="print-controls-header" className="bg-white border-b border-slate-200 p-4 flex items-center justify-between print:hidden z-20 shrink-0">
                     <h2 className="text-lg font-bold text-slate-900 font-mono tracking-tight">Relação de Efetivo</h2>
                     <div className="flex items-center gap-2">
                         <button
@@ -110,6 +110,10 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
                                 display: block !important;
                                 overflow: visible !important;
                                 max-height: none !important;
+                            }
+                            /* Ocultar explicitamente o cabeçalho de controle (botões de ação) na impressão */
+                            #print-controls-header {
+                                display: none !important;
                             }
                             .personnel-printable {
                                 width: 100% !important;
