@@ -22,10 +22,12 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     const [editingId, setEditingId] = useState<string | null>(null);
     const [showInactive, setShowInactive] = useState(false);
     const [showFunctional, setShowFunctional] = useState(false);
+    const [showExternal, setShowExternal] = useState(false);
     const [showStatistics, setShowStatistics] = useState(false);
     const [showPrintView, setShowPrintView] = useState(false);
     const [showExternalServiceModal, setShowExternalServiceModal] = useState(false);
     const [externalServiceUser, setExternalServiceUser] = useState<User | null>(null);
+    const [isExternalService, setIsExternalService] = useState(false);
     const [externalOm, setExternalOm] = useState('');
     const [externalSector, setExternalSector] = useState('');
 
@@ -69,6 +71,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     const baseFilteredList = users.filter(u => {
         const statusMatch = showInactive ? (u.active === false) : (u.active !== false);
         const functionalMatch = showFunctional ? (!!u.is_functional === true) : (!!u.is_functional !== true);
+        const externalMatch = showExternal ? (!!u.external_service === true) : true;
 
         let sectorMatch = true;
         if (filterSector === 'TODOS') {
@@ -288,8 +291,19 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                 />
             )}
 
-            {/* Inactive & Functional Toggle Filters */}
+            {/* Inactive, Functional & External Toggle Filters */}
             <div className="flex flex-wrap justify-end gap-3 px-4">
+                <button
+                    onClick={() => { setShowExternal(!showExternal); if (!showExternal) { setShowInactive(false); setShowFunctional(false); } }}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 border-2 ${showExternal
+                        ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-900/40'
+                        : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700 shadow-sm')
+                        }`}
+                >
+                    <PlaneTakeoff className="w-3.5 h-3.5" />
+                    {showExternal ? 'Ocultar Serviço Externo' : 'Apenas Serviço Externo'}
+                </button>
+
                 <button
                     onClick={() => { setShowFunctional(!showFunctional); if (!showFunctional) setShowInactive(false); }}
                     className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 border-2 ${showFunctional
@@ -586,13 +600,18 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             </thead>
                             <tbody className={`divide-y ${isDarkMode ? 'divide-slate-800' : 'divide-slate-100'}`}>
                                 {filteredUsers.map(user => (
-                                    <tr key={user.id} className={`transition-colors ${isDarkMode ? 'hover:bg-slate-800/30' : 'hover:bg-slate-50/30'}`}>
+                                    <tr key={user.id} className={`transition-colors ${user.external_service ? (isDarkMode ? 'bg-emerald-900/10 hover:bg-emerald-900/20' : 'bg-emerald-50/50 hover:bg-emerald-100/50') : (isDarkMode ? 'hover:bg-slate-800/30' : 'hover:bg-slate-50/30')}`}>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
                                                 <div className={`font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{user.name}</div>
                                                 {user.is_functional && (
                                                     <span className={`px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-widest bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400 flex items-center gap-1 border border-indigo-200 dark:border-indigo-800`}>
                                                         <Briefcase className="w-2 h-2" />
+                                                    </span>
+                                                )}
+                                                {user.external_service && (
+                                                    <span className={`px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 flex items-center gap-1 border border-emerald-200 dark:border-emerald-800`}>
+                                                        <PlaneTakeoff className="w-2 h-2" /> Em Serviço Externo ({user.external_om})
                                                     </span>
                                                 )}
                                             </div>
@@ -605,9 +624,9 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                             <div className={`text-[10px] font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>CPF: {user.cpf || '---'}</div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-md text-[10px] font-black border ${isDarkMode ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-600 border-slate-200'
+                                            <span className={`px-2 py-1 rounded-md text-[10px] font-black border ${user.external_service ? (isDarkMode ? 'bg-emerald-900/40 text-emerald-400 border-emerald-800' : 'bg-emerald-100 text-emerald-700 border-emerald-200') : (isDarkMode ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-600 border-slate-200')
                                                 }`}>
-                                                {user.sector}
+                                                {user.external_service ? `${user.external_om}${user.external_sector ? ' - ' + user.external_sector : ''}` : user.sector}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
@@ -647,6 +666,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                                         <button
                                                             onClick={() => {
                                                                 setExternalServiceUser(user);
+                                                                setIsExternalService(!!user.external_service);
                                                                 setExternalOm(user.external_om || '');
                                                                 setExternalSector(user.external_sector || '');
                                                                 setShowExternalServiceModal(true);
@@ -681,14 +701,17 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                     {/* Mobile View (Cards) */}
                     <div className={`lg:hidden divide-y ${isDarkMode ? 'divide-slate-800' : 'divide-slate-100'}`}>
                         {filteredUsers.map(user => (
-                            <div key={user.id} className={`p-6 flex flex-col gap-5 transition-colors ${isDarkMode ? 'hover:bg-slate-800/30' : 'hover:bg-slate-50'}`}>
+                            <div key={user.id} className={`p-6 flex flex-col gap-5 transition-colors ${user.external_service ? (isDarkMode ? 'bg-emerald-900/10 hover:bg-emerald-900/20' : 'bg-emerald-50/50 hover:bg-emerald-100/50') : (isDarkMode ? 'hover:bg-slate-800/30' : 'hover:bg-slate-50')}`}>
                                 <div className="flex justify-between items-start gap-4">
                                     <div className="flex gap-4">
-                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-200/50'}`}>
-                                            <UserIcon className={`w-6 h-6 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${user.external_service ? (isDarkMode ? 'bg-emerald-900/30 border-emerald-800 text-emerald-500' : 'bg-emerald-100 border-emerald-200 text-emerald-600') : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-500' : 'bg-slate-100 border-slate-200/50 text-slate-400')}`}>
+                                            {user.external_service ? <PlaneTakeoff className="w-6 h-6" /> : <UserIcon className="w-6 h-6" />}
                                         </div>
-                                        <div className="min-w-0">
-                                            <div className={`font-bold text-sm leading-tight mb-1 truncate ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{user.name}</div>
+                                        <div className="min-w-0 flex flex-col justify-center">
+                                            <div className={`font-bold text-sm leading-tight mb-1 truncate flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                                {user.name}
+                                                {user.is_functional && <Briefcase className="w-3 h-3 text-indigo-500" title="Conta Funcional" />}
+                                            </div>
                                             <div className="flex items-center gap-2">
                                                 <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tight ${isDarkMode ? 'bg-blue-400/10 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
                                                     {user.rank}
@@ -699,8 +722,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                             </div>
                                         </div>
                                     </div>
-                                    <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black tracking-widest uppercase shrink-0 ${isDarkMode ? 'bg-white text-slate-900' : 'bg-slate-900 text-white'}`}>
-                                        {user.sector}
+                                    <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black tracking-widest uppercase shrink-0 ${user.external_service ? (isDarkMode ? 'bg-emerald-900 text-emerald-400' : 'bg-emerald-100 text-emerald-700') : (isDarkMode ? 'bg-white text-slate-900' : 'bg-slate-900 text-white')}`}>
+                                        {user.external_service ? `${user.external_om}` : user.sector}
                                     </span>
                                 </div>
 
@@ -755,6 +778,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                             <button
                                                 onClick={() => {
                                                     setExternalServiceUser(user);
+                                                    setIsExternalService(!!user.external_service);
                                                     setExternalOm(user.external_om || '');
                                                     setExternalSector(user.external_sector || '');
                                                     setShowExternalServiceModal(true);
@@ -815,20 +839,20 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                         </div>
 
                         <div className="space-y-4">
-                            <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${externalServiceUser.external_service ? (isDarkMode ? 'bg-emerald-900/20 border-emerald-500/30' : 'bg-emerald-50 border-emerald-200') : (isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200')}`}>
+                            <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${isExternalService ? (isDarkMode ? 'bg-emerald-900/20 border-emerald-500/30' : 'bg-emerald-50 border-emerald-200') : (isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200')}`}>
                                 <div className="flex flex-col">
                                     <span className={`text-sm font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Prestando Serviço em Outra OM</span>
                                     <span className={`text-xs mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Ativar para informar alocação</span>
                                 </div>
                                 <input
                                     type="checkbox"
-                                    checked={!!externalServiceUser.external_service}
-                                    onChange={e => onUpdatePersonnel({ ...externalServiceUser, external_service: e.target.checked })}
+                                    checked={isExternalService}
+                                    onChange={e => setIsExternalService(e.target.checked)}
                                     className="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500"
                                 />
                             </label>
 
-                            {externalServiceUser.external_service && (
+                            {isExternalService && (
                                 <>
                                     <div className="space-y-2">
                                         <label className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
@@ -863,8 +887,9 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                         onClick={() => {
                                             onUpdatePersonnel({ 
                                                 ...externalServiceUser, 
-                                                external_om: externalOm, 
-                                                external_sector: externalOm === 'BASP' ? externalSector : ''
+                                                external_service: isExternalService,
+                                                external_om: isExternalService ? externalOm : '', 
+                                                external_sector: (isExternalService && externalOm === 'BASP') ? externalSector : ''
                                             });
                                             setShowExternalServiceModal(false);
                                         }}
@@ -873,6 +898,23 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                         Salvar Dados Externos
                                     </button>
                                 </>
+                            )}
+                            
+                            {!isExternalService && (
+                                <button
+                                    onClick={() => {
+                                        onUpdatePersonnel({ 
+                                            ...externalServiceUser, 
+                                            external_service: false,
+                                            external_om: '', 
+                                            external_sector: ''
+                                        });
+                                        setShowExternalServiceModal(false);
+                                    }}
+                                    className={`w-full py-3 mt-2 rounded-xl font-bold transition-all shadow-lg active:scale-95 ${isDarkMode ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'}`}
+                                >
+                                    Confirmar Desativação
+                                </button>
                             )}
                         </div>
                     </div>
