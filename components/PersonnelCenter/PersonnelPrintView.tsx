@@ -1,4 +1,5 @@
-import React, { type FC, useEffect } from 'react';
+import React, { type FC, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Printer, X } from 'lucide-react';
 import { User } from '../../types';
 
@@ -17,7 +18,10 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
     activeUnitFilter,
     onClose
 }) => {
+    const [mounted, setMounted] = useState(false);
+
     useEffect(() => {
+        setMounted(true);
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
                 onClose();
@@ -38,10 +42,12 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
         }, 1000);
     };
 
-    return (
+    if (!mounted) return null;
+
+    const content = (
         <div 
             id="personnel-modal"
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-0 sm:p-4 print:absolute print:inset-0 print:block print:h-auto print:w-full print:bg-white force-light backdrop-blur-sm print:overflow-visible"
+            className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-0 sm:p-4 print:relative print:inset-auto print:block print:h-auto print:w-full print:bg-white force-light backdrop-blur-sm print:overflow-visible"
             onClick={onClose}
         >
             <div 
@@ -78,29 +84,38 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
                                 print-color-adjust: exact !important;
                                 color-adjust: exact !important;
                             }
+                            /* Esconder todo o app principal (normalmente #root no Vite/CRA) */
+                            body > *:not(#personnel-modal) {
+                                display: none !important;
+                            }
                             html, body {
                                 height: auto !important;
                                 overflow: visible !important;
                                 background: white !important;
+                                margin: 0 !important;
+                                padding: 0 !important;
                             }
-                            body * {
-                                visibility: hidden;
-                            }
-                            #personnel-modal, #personnel-modal * {
-                                visibility: visible;
-                            }
+                            /* O modal, agora sendo portal no body, pode seguir o fluxo normal (static) */
                             #personnel-modal {
-                                position: absolute !important;
-                                left: 0 !important;
-                                top: 0 !important;
-                                width: 100% !important;
+                                position: static !important;
+                                display: block !important;
+                                height: auto !important;
+                                overflow: visible !important;
+                            }
+                            /* Garantir que todos os containers intermediários não limitem a altura */
+                            #personnel-modal > div,
+                            #personnel-modal > div > div {
+                                position: static !important;
                                 height: auto !important;
                                 display: block !important;
+                                overflow: visible !important;
+                                max-height: none !important;
                             }
                             .personnel-printable {
                                 width: 100% !important;
                                 height: auto !important;
                                 display: block !important;
+                                margin: 0 !important;
                             }
                             .personnel-printable table {
                                 width: 100% !important;
@@ -194,8 +209,9 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
                     </div>
                 </div>
             </div>
-        </div>
     );
+
+    return createPortal(content, document.body);
 };
 
 export default PersonnelPrintView;
