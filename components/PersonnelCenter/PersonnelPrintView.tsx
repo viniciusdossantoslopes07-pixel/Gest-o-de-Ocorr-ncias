@@ -40,11 +40,12 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
 
     return (
         <div 
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light backdrop-blur-sm"
+            id="personnel-modal"
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-0 sm:p-4 print:absolute print:inset-0 print:block print:h-auto print:w-full print:bg-white force-light backdrop-blur-sm print:overflow-visible"
             onClick={onClose}
         >
             <div 
-                className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full h-[100vh] sm:h-[90vh] print:h-auto overflow-hidden flex flex-col print:rounded-none print:max-w-none shadow-2xl"
+                className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full h-[100vh] sm:h-[90vh] print:h-auto overflow-hidden print:overflow-visible flex flex-col print:block print:rounded-none print:max-w-none shadow-2xl print:shadow-none"
                 onClick={(e) => e.stopPropagation()}
             >
 
@@ -69,7 +70,7 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-1 overflow-auto print:overflow-visible bg-slate-100 print:bg-white p-4 print:p-0">
+                <div className="flex-1 overflow-auto print:overflow-visible bg-slate-100 print:bg-white p-4 print:p-0 print:block">
                     <style>{`
                         @media print {
                             * {
@@ -77,35 +78,40 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
                                 print-color-adjust: exact !important;
                                 color-adjust: exact !important;
                             }
-                            body {
-                                visibility: hidden !important;
+                            html, body {
+                                height: auto !important;
+                                overflow: visible !important;
                                 background: white !important;
-                                margin: 0 !important;
-                                padding: 0 !important;
+                            }
+                            body * {
+                                visibility: hidden;
+                            }
+                            #personnel-modal, #personnel-modal * {
+                                visibility: visible;
+                            }
+                            #personnel-modal {
+                                position: absolute !important;
+                                left: 0 !important;
+                                top: 0 !important;
+                                width: 100% !important;
+                                height: auto !important;
+                                display: block !important;
                             }
                             .personnel-printable {
-                                visibility: visible !important;
-                                position: absolute !important;
-                                left: 10mm !important;
-                                top: 8mm !important;
-                                width: calc(100% - 20mm) !important;
-                                margin: 0 !important;
-                                padding: 0 !important;
+                                width: 100% !important;
                                 height: auto !important;
-                                font-size: 9pt !important;
+                                display: block !important;
                             }
                             .personnel-printable table {
-                                font-size: 8pt !important;
-                                border-collapse: collapse !important;
                                 width: 100% !important;
+                                border-collapse: collapse !important;
                             }
                             .personnel-printable th {
-                                padding: 4px 8px !important;
-                                background-color: #f8fafc !important;
+                                padding: 6px 4px !important;
                                 border-bottom: 2px solid #cbd5e1 !important;
                             }
                             .personnel-printable td {
-                                padding: 4px 8px !important;
+                                padding: 6px 4px !important;
                                 border-bottom: 1px solid #e2e8f0 !important;
                             }
                             .personnel-printable tr {
