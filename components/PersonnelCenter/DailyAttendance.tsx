@@ -420,11 +420,34 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         [users]
     );
 
+    const getSectorUsers = (sector: string) => {
+        return realPersonnel.filter(user => {
+            if (user.external_service) {
+                if (user.external_om === 'BASP') {
+                    return user.external_sector === sector;
+                }
+                return false;
+            }
+            return user.sector === sector;
+        });
+    };
+
     const filteredUsers = useMemo(() => {
         return realPersonnel.filter(user => {
             const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 (user.warName || '').toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesSector = !selectedSector || user.sector === selectedSector;
+            
+            let matchesSector = false;
+            if (user.external_service) {
+                if (user.external_om === 'BASP') {
+                    matchesSector = (selectedSector === user.external_sector);
+                } else {
+                    matchesSector = false;
+                }
+            } else {
+                matchesSector = !selectedSector || user.sector === selectedSector;
+            }
+
             return matchesSearch && matchesSector;
         });
     }, [realPersonnel, searchTerm, selectedSector]);
@@ -584,7 +607,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         const calls: CallTypeCode[] = ['INICIO', 'TERMINO'];
         for (const date of dates) {
             for (const sector of displaySectors) {
-                const sectorUsers = users.filter(u => u.sector === sector && u.active !== false);
+                const sectorUsers = getSectorUsers(sector);
                 for (const type of calls) {
                     const existing = attendanceHistory.find(a => a.date === date && a.callType === type && a.sector === sector);
                     let attendanceToSave: DailyAttendance;
@@ -607,7 +630,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         const calls: CallTypeCode[] = ['INICIO', 'TERMINO'];
         for (const date of dates) {
             for (const sector of displaySectors) {
-                const sectorUsers = users.filter(u => u.sector === sector && u.active !== false);
+                const sectorUsers = getSectorUsers(sector);
                 for (const type of calls) {
                     const existing = attendanceHistory.find(a => a.date === date && a.callType === type && a.sector === sector);
                     if (existing) {
@@ -746,7 +769,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             const key = `${dateToSign}-${callToSign}-${selectedSector}`;
             const signatureInfo = { signedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`, signedAt: new Date().toISOString() };
             setSignedDates(prev => ({ ...prev, [key]: signatureInfo }));
-            const sectorUsers = users.filter(u => u.sector === selectedSector && u.active !== false);
+            const sectorUsers = getSectorUsers(selectedSector);
             const existing = attendanceHistory.find(a => a.date === dateToSign && a.callType === callToSign && a.sector === selectedSector);
             let attendanceToSave: DailyAttendance;
             if (existing) {

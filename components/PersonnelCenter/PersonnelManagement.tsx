@@ -2,7 +2,7 @@ import React, { useState, FC } from 'react';
 import { User, UserRole } from '../../types';
 import { RANKS, getRankPriority } from '../../constants';
 import { useSectors } from '../../contexts/SectorsContext';
-import { UserPlus, Search, Pencil, Trash2, Shield, User as UserIcon, Hash, Building2, Users, TriangleAlert, CircleX, Briefcase, ChartNoAxesColumn, ChevronDown, ChevronUp, Printer } from 'lucide-react';
+import { UserPlus, Search, Pencil, Trash2, Shield, User as UserIcon, Hash, Building2, Users, TriangleAlert, CircleX, Briefcase, ChartNoAxesColumn, ChevronDown, ChevronUp, Printer, PlaneTakeoff } from 'lucide-react';
 import UserStatistics from './UserStatistics';
 import PersonnelPrintView from './PersonnelPrintView';
 
@@ -24,6 +24,10 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     const [showFunctional, setShowFunctional] = useState(false);
     const [showStatistics, setShowStatistics] = useState(false);
     const [showPrintView, setShowPrintView] = useState(false);
+    const [showExternalServiceModal, setShowExternalServiceModal] = useState(false);
+    const [externalServiceUser, setExternalServiceUser] = useState<User | null>(null);
+    const [externalOm, setExternalOm] = useState('');
+    const [externalSector, setExternalSector] = useState('');
 
     // Filtro Inteligente de Unidade
     const [activeUnitFilter, setActiveUnitFilter] = useState<'TODAS' | 'GSD-SP' | 'BASP'>('TODAS');
@@ -632,13 +636,27 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                                 )}
 
                                                 {user.active !== false && (
-                                                    <button
-                                                        onClick={() => { if (confirm(user.is_functional ? 'Remover status funcional?' : 'Marcar como conta funcional? (Não contará no efetivo)')) onUpdatePersonnel({ ...user, is_functional: !user.is_functional }); }}
-                                                        className={`p-2 transition-colors ${user.is_functional ? (isDarkMode ? 'text-indigo-400' : 'text-indigo-600') : (isDarkMode ? 'text-slate-500 hover:text-indigo-400' : 'text-slate-400 hover:text-indigo-600')}`}
-                                                        title={user.is_functional ? "Remover de Funcionais" : "Mover para Funcionais"}
-                                                    >
-                                                        <Briefcase className="w-4 h-4" />
-                                                    </button>
+                                                    <>
+                                                        <button
+                                                            onClick={() => { if (confirm(user.is_functional ? 'Remover status funcional?' : 'Marcar como conta funcional? (Não contará no efetivo)')) onUpdatePersonnel({ ...user, is_functional: !user.is_functional }); }}
+                                                            className={`p-2 transition-colors ${user.is_functional ? (isDarkMode ? 'text-indigo-400' : 'text-indigo-600') : (isDarkMode ? 'text-slate-500 hover:text-indigo-400' : 'text-slate-400 hover:text-indigo-600')}`}
+                                                            title={user.is_functional ? "Remover de Funcionais" : "Mover para Funcionais"}
+                                                        >
+                                                            <Briefcase className="w-4 h-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                setExternalServiceUser(user);
+                                                                setExternalOm(user.external_om || '');
+                                                                setExternalSector(user.external_sector || '');
+                                                                setShowExternalServiceModal(true);
+                                                            }}
+                                                            className={`p-2 transition-colors ${user.external_service ? (isDarkMode ? 'text-emerald-400' : 'text-emerald-600') : (isDarkMode ? 'text-slate-500 hover:text-emerald-400' : 'text-slate-400 hover:text-emerald-600')}`}
+                                                            title={user.external_service ? "Em Serviço Externo" : "Informar Serviço Externo"}
+                                                        >
+                                                            <PlaneTakeoff className="w-4 h-4" />
+                                                        </button>
+                                                    </>
                                                 )}
 
                                                 {user.active !== false ? (
@@ -730,8 +748,21 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                             <button
                                                 onClick={() => { if (confirm(user.is_functional ? 'Remover status funcional?' : 'Marcar como conta funcional?')) onUpdatePersonnel({ ...user, is_functional: !user.is_functional }); }}
                                                 className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${user.is_functional ? (isDarkMode ? 'bg-indigo-400/10 border-indigo-400 text-indigo-400' : 'bg-indigo-50 border-indigo-100 text-indigo-600') : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-600')}`}
+                                                title="Contas Funcionais"
                                             >
                                                 <Briefcase className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setExternalServiceUser(user);
+                                                    setExternalOm(user.external_om || '');
+                                                    setExternalSector(user.external_sector || '');
+                                                    setShowExternalServiceModal(true);
+                                                }}
+                                                className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm border ${user.external_service ? (isDarkMode ? 'bg-emerald-400/10 border-emerald-400 text-emerald-400' : 'bg-emerald-50 border-emerald-100 text-emerald-600') : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-600')}`}
+                                                title="Serviço Externo"
+                                            >
+                                                <PlaneTakeoff className="w-4 h-4" />
                                             </button>
                                             <button
                                                 onClick={() => { if (confirm('Desativar militar?')) onDeletePersonnel(user.id); }}
@@ -761,6 +792,90 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             <p className={`text-sm font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Nenhum militar encontrado</p>
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* Modal de Serviço Externo */}
+            {showExternalServiceModal && externalServiceUser && (
+                <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div className={`rounded-2xl max-w-md w-full shadow-2xl p-6 ${isDarkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white'}`}>
+                        <div className="flex justify-between items-start mb-6">
+                            <div>
+                                <h3 className={`text-lg font-bold flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                    <PlaneTakeoff className="w-5 h-5 text-emerald-500" />
+                                    Serviço Externo
+                                </h3>
+                                <p className={`text-sm mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                                    {externalServiceUser.rank} {externalServiceUser.warName}
+                                </p>
+                            </div>
+                            <button onClick={() => setShowExternalServiceModal(false)} className={`p-2 rounded-lg transition-colors ${isDarkMode ? 'text-slate-500 hover:bg-slate-800' : 'text-slate-400 hover:bg-slate-100'}`}>
+                                <CircleX className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${externalServiceUser.external_service ? (isDarkMode ? 'bg-emerald-900/20 border-emerald-500/30' : 'bg-emerald-50 border-emerald-200') : (isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200')}`}>
+                                <div className="flex flex-col">
+                                    <span className={`text-sm font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Prestando Serviço em Outra OM</span>
+                                    <span className={`text-xs mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Ativar para informar alocação</span>
+                                </div>
+                                <input
+                                    type="checkbox"
+                                    checked={!!externalServiceUser.external_service}
+                                    onChange={e => onUpdatePersonnel({ ...externalServiceUser, external_service: e.target.checked })}
+                                    className="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500"
+                                />
+                            </label>
+
+                            {externalServiceUser.external_service && (
+                                <>
+                                    <div className="space-y-2">
+                                        <label className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                            OM de Destino
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={externalOm}
+                                            onChange={e => setExternalOm(e.target.value.toUpperCase())}
+                                            placeholder="Ex: BASP, PAMASP, CELOG"
+                                            className={`w-full rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all uppercase ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                        />
+                                    </div>
+
+                                    {externalOm === 'BASP' && (
+                                        <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                                            <label className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                                Setor na BASP
+                                            </label>
+                                            <select
+                                                value={externalSector}
+                                                onChange={e => setExternalSector(e.target.value)}
+                                                className={`w-full rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                            >
+                                                <option value="">Selecione o setor...</option>
+                                                {sectorNames.map(s => <option key={s} value={s}>{s}</option>)}
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    <button
+                                        onClick={() => {
+                                            onUpdatePersonnel({ 
+                                                ...externalServiceUser, 
+                                                external_om: externalOm, 
+                                                external_sector: externalOm === 'BASP' ? externalSector : ''
+                                            });
+                                            setShowExternalServiceModal(false);
+                                        }}
+                                        className="w-full py-3 mt-2 rounded-xl font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-lg active:scale-95"
+                                    >
+                                        Salvar Dados Externos
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

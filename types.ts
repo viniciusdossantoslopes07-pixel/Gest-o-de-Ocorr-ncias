@@ -65,6 +65,9 @@ export interface User {
   workplace?: string;
   emergency_contact?: string;
   is_functional?: boolean;
+  external_service?: boolean;
+  external_om?: string;
+  external_sector?: string;
 }
 
 export interface UserFunction {
