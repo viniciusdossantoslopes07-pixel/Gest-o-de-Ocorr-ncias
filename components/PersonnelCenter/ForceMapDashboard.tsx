@@ -392,6 +392,9 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
             .filter(u => {
                 if (selectedStatusModal === 'EXTERNO') return u.external_service;
                 
+                // Se estiver em serviço externo, não deve aparecer em nenhuma outra categoria (como Faltas)
+                if (u.external_service) return false;
+                
                 if (!signedSectors.has(u.sector)) return false;
                 const record = currentRecordsMap.get(u.id);
                 const status = record?.status || 'A';
