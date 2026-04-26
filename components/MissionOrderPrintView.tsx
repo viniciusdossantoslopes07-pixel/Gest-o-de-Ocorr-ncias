@@ -253,9 +253,9 @@ ${content.outerHTML}
                             </div>
                         </div>
 
-                        {/* Signature Block - Only if signed */}
-                        {order.chSopSignature && (
-                            <div className="mb-6 border border-blue-100 bg-blue-50/30 rounded-xl p-6 mt-8 flex flex-col items-center print:hidden">
+                        {/* Signature Block - Only if digitally signed */}
+                        {order.chSopSignature && order.chSopSignature.includes('ASSINADO DIGITALMENTE') && (
+                            <div className="mb-6 border border-blue-100 bg-blue-50/30 rounded-xl p-6 mt-8 flex flex-col items-center">
                                 <div className="flex items-center gap-2 mb-2">
                                     <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
                                     <p className="text-[10px] font-black uppercase text-blue-900 tracking-widest">Documento Autenticado Digitalmente</p>
