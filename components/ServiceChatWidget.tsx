@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../services/supabase';
 import { User, ChatMessage } from '../types';
-import { MessageCircle, X, Send, Minus, Maximize2 } from 'lucide-react';
+import { MessageCircle, X, Send, Minus, Maximize2, Bell, BellOff } from 'lucide-react';
 
 interface ServiceChatWidgetProps {
   currentUser: User;
@@ -17,6 +17,18 @@ const ServiceChatWidget: React.FC<ServiceChatWidgetProps> = ({ currentUser, isDa
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('chat_sound_enabled') !== 'false';
+    }
+    return true;
+  });
+  const soundEnabledRef = useRef(isSoundEnabled);
+
+  useEffect(() => {
+    soundEnabledRef.current = isSoundEnabled;
+    localStorage.setItem('chat_sound_enabled', String(isSoundEnabled));
+  }, [isSoundEnabled]);
 
   // Inicializa o chat e busca histórico
   useEffect(() => {
@@ -60,10 +72,15 @@ const ServiceChatWidget: React.FC<ServiceChatWidgetProps> = ({ currentUser, isDa
           return [...prev, newMessage];
         });
         
-        // Se estiver fechado ou usuário não for o próprio, aumentar contador e tocar som
-        if (!isOpen && newMessage.user_id !== currentUser.id) {
-          setUnreadCount(prev => prev + 1);
-          playNotificationSound();
+        // Se não for o próprio usuário, tocar som se habilitado
+        if (newMessage.user_id !== currentUser.id) {
+          if (!isOpen || isMinimized) {
+            setUnreadCount(prev => prev + 1);
+          }
+          
+          if (soundEnabledRef.current) {
+            playNotificationSound();
+          }
         }
       })
       .subscribe(async (status) => {
@@ -91,11 +108,41 @@ const ServiceChatWidget: React.FC<ServiceChatWidgetProps> = ({ currentUser, isDa
 
   const playNotificationSound = () => {
     try {
-      const audio = new Audio('/notification.mp3'); // Fallback silently se não existir
-      audio.volume = 0.5;
-      audio.play().catch(() => {});
+      // Tenta tocar o arquivo mp3
+      const audio = new Audio('/notification.mp3');
+      audio.volume = 0.4;
+      audio.play().catch(() => {
+        // Se falhar (ex: arquivo não existe), usa um sintetizador simples como fallback
+        playSynthesizedDing();
+      });
     } catch (e) {
-      // Ignore
+      playSynthesizedDing();
+    }
+  };
+
+  const playSynthesizedDing = () => {
+    try {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContext) return;
+      
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime); // A5
+      osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.3);
+
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+    } catch (e) {
+      // Silent fail
     }
   };
 
@@ -217,7 +264,14 @@ const ServiceChatWidget: React.FC<ServiceChatWidgetProps> = ({ currentUser, isDa
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
+              <button 
+                onClick={(e) => { e.stopPropagation(); setIsSoundEnabled(!isSoundEnabled); }}
+                className={`p-1.5 rounded transition-all active:scale-90 ${isSoundEnabled ? (isDarkMode ? 'text-blue-400 hover:bg-blue-500/10' : 'text-blue-600 hover:bg-blue-50') : (isDarkMode ? 'text-slate-500 hover:bg-slate-700' : 'text-slate-400 hover:bg-slate-200')}`}
+                title={isSoundEnabled ? "Desativar som" : "Ativar som"}
+              >
+                {isSoundEnabled ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
+              </button>
               <button 
                 onClick={(e) => { e.stopPropagation(); setIsMinimized(!isMinimized); }}
                 className={`p-1.5 rounded hover:bg-black/10 transition-colors ${isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-black'}`}
