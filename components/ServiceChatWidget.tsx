@@ -266,7 +266,12 @@ const ServiceChatWidget: React.FC<ServiceChatWidgetProps> = ({ currentUser, isDa
             </div>
             <div className="flex items-center gap-0.5">
               <button 
-                onClick={(e) => { e.stopPropagation(); setIsSoundEnabled(!isSoundEnabled); }}
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  const nextState = !isSoundEnabled;
+                  setIsSoundEnabled(nextState);
+                  if (nextState) playNotificationSound();
+                }}
                 className={`p-1.5 rounded transition-all active:scale-90 ${isSoundEnabled ? (isDarkMode ? 'text-blue-400 hover:bg-blue-500/10' : 'text-blue-600 hover:bg-blue-50') : (isDarkMode ? 'text-slate-500 hover:bg-slate-700' : 'text-slate-400 hover:bg-slate-200')}`}
                 title={isSoundEnabled ? "Desativar som" : "Ativar som"}
               >
