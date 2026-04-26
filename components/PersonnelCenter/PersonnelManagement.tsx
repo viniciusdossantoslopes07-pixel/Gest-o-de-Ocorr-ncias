@@ -760,45 +760,37 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                     </div>
                                 </div>
 
-                                {/* Action Buttons */}
-                                <div className="px-4 pb-4 flex flex-col gap-2">
-                                    {/* Primary action */}
+                                {/* Action Buttons - Discreet Compact Layout */}
+                                <div className="px-4 pb-4 flex flex-wrap items-center gap-1.5">
                                     {user.active === false ? (
                                         <button
                                             onClick={() => { if (confirm('Deseja reativar este militar?')) onUpdatePersonnel({ ...user, active: true }); }}
-                                            className={`w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 ${isDarkMode ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-green-100 text-green-700 border border-green-200'}`}
+                                            className={`flex-1 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 ${isDarkMode ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-green-50 text-green-700 border border-green-100'}`}
                                         >
-                                            <Shield className="w-4 h-4" /> Reativar Militar
-                                        </button>
-                                    ) : user.sector === 'SEM SETOR' ? (
-                                        <button
-                                            onClick={() => handleEdit(user)}
-                                            className={`w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all animate-pulse active:scale-95 ${isDarkMode ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-red-100 text-red-700 border border-red-200'}`}
-                                        >
-                                            <TriangleAlert className="w-4 h-4" /> ⚠ Atribuir Setor
+                                            <Shield className="w-3.5 h-3.5" /> Reativar Militar
                                         </button>
                                     ) : (
-                                        <button
-                                            onClick={() => handleEdit(user)}
-                                            className={`w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 ${isDarkMode ? 'bg-slate-700 text-white border border-slate-600' : 'bg-slate-900 text-white border border-slate-800'}`}
-                                        >
-                                            <Pencil className="w-4 h-4" /> Editar Dados
-                                        </button>
-                                    )}
+                                        <>
+                                            {/* Main Action: Edit or Assign Sector */}
+                                            <button
+                                                onClick={() => handleEdit(user)}
+                                                className={`flex-1 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 ${user.sector === 'SEM SETOR' ? (isDarkMode ? 'bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse' : 'bg-red-50 text-red-700 border border-red-200 animate-pulse') : (isDarkMode ? 'bg-slate-800 text-slate-300 border border-slate-700' : 'bg-slate-100 text-slate-700 border border-slate-200 shadow-sm')}`}
+                                            >
+                                                {user.sector === 'SEM SETOR' ? <TriangleAlert className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5" />}
+                                                {user.sector === 'SEM SETOR' ? 'Alocar Setor' : 'Editar'}
+                                            </button>
 
-                                    {/* Secondary actions row */}
-                                    {user.active !== false && (
-                                        <div className="grid grid-cols-3 gap-2">
+                                            {/* Secondary Actions: Icon only for discretion */}
                                             <button
                                                 onClick={() => { if (confirm(user.is_functional ? 'Remover status funcional?' : 'Marcar como conta funcional?')) onUpdatePersonnel({ ...user, is_functional: !user.is_functional }); }}
-                                                className={`py-3 rounded-2xl font-bold text-[10px] flex flex-col items-center justify-center gap-1 transition-all active:scale-95 border ${user.is_functional
+                                                className={`p-2.5 rounded-xl transition-all active:scale-95 border ${user.is_functional
                                                     ? (isDarkMode ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-400' : 'bg-indigo-100 border-indigo-200 text-indigo-700')
-                                                    : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-600')}`}
+                                                    : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-500 hover:text-indigo-400' : 'bg-white border-slate-200 text-slate-400 hover:text-indigo-600')}`}
                                                 title="Conta Funcional"
                                             >
                                                 <Briefcase className="w-4 h-4" />
-                                                <span>Funcional</span>
                                             </button>
+
                                             <button
                                                 onClick={() => {
                                                     setExternalServiceUser(user);
@@ -807,32 +799,32 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                                     setExternalSector(user.external_sector || '');
                                                     setShowExternalServiceModal(true);
                                                 }}
-                                                className={`py-3 rounded-2xl font-bold text-[10px] flex flex-col items-center justify-center gap-1 transition-all active:scale-95 border ${user.external_service
+                                                className={`p-2.5 rounded-xl transition-all active:scale-95 border ${user.external_service
                                                     ? (isDarkMode ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-emerald-100 border-emerald-200 text-emerald-700')
-                                                    : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-600')}`}
+                                                    : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-500 hover:text-emerald-400' : 'bg-white border-slate-200 text-slate-400 hover:text-emerald-600')}`}
                                                 title="Serviço Externo"
                                             >
                                                 <PlaneTakeoff className="w-4 h-4" />
-                                                <span>Ext.</span>
                                             </button>
+
                                             <button
                                                 onClick={() => { if (confirm('Desativar militar?')) onDeletePersonnel(user.id); }}
-                                                className={`py-3 rounded-2xl font-bold text-[10px] flex flex-col items-center justify-center gap-1 transition-all active:scale-95 border ${isDarkMode ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-amber-50 border-amber-200 text-amber-600'}`}
+                                                className={`p-2.5 rounded-xl transition-all active:scale-95 border ${isDarkMode ? 'bg-amber-500/10 border-amber-500/20 text-slate-500 hover:text-amber-400' : 'bg-white border-slate-200 text-slate-400 hover:text-amber-500'}`}
+                                                title="Desativar"
                                             >
                                                 <CircleX className="w-4 h-4" />
-                                                <span>Desativar</span>
                                             </button>
-                                        </div>
-                                    )}
 
-                                    {/* Admin delete */}
-                                    {user.active !== false && currentUserRole === UserRole.ADMIN && onPermanentDeletePersonnel && (
-                                        <button
-                                            onClick={() => onPermanentDeletePersonnel(user.id)}
-                                            className={`w-full py-2.5 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 border ${isDarkMode ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-red-50 border-red-200 text-red-600'}`}
-                                        >
-                                            <Trash2 className="w-3.5 h-3.5" /> Excluir Permanentemente
-                                        </button>
+                                            {currentUserRole === UserRole.ADMIN && onPermanentDeletePersonnel && (
+                                                <button
+                                                    onClick={() => onPermanentDeletePersonnel(user.id)}
+                                                    className={`p-2.5 rounded-xl transition-all active:scale-95 border ${isDarkMode ? 'bg-red-500/10 border-red-500/20 text-slate-500 hover:text-red-400' : 'bg-white border-slate-200 text-slate-400 hover:text-red-500'}`}
+                                                    title="Excluir Definitivamente"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </>
                                     )}
                                 </div>
 
