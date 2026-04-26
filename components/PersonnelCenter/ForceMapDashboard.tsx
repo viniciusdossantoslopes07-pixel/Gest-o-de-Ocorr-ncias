@@ -6,7 +6,7 @@ import { useSectors } from '../../contexts/SectorsContext';
 import {
     BarChart3, Users, CheckCircle, AlertTriangle, ExternalLink, ShieldAlert,
     Clock, Filter, TrendingUp, TrendingDown, Minus, UserX, Shield, Award,
-    ChevronDown, ChevronUp, Briefcase, Activity, Eye, Printer, X
+    ChevronDown, ChevronUp, Briefcase, Activity, Eye, Printer, X, Plane
 } from 'lucide-react';
 import ForceMapPrintView from './ForceMapPrintView';
 import FilterSelect from '../Common/FilterSelect';
@@ -32,6 +32,7 @@ const STATUS_GROUPS = {
     CURSO: { codes: ['C-E'], label: 'Curso/Estágio', color: 'violet', icon: Award },
     LICENCA: { codes: ['LP', 'LM'], label: 'Licenças', color: 'pink', icon: Clock },
     SEM_EXP: { codes: ['NIL'], label: 'Sem Expediente', color: 'slate', icon: Minus },
+    EXTERNO: { codes: ['EXT'], label: 'Serviço Externo', color: 'emerald', icon: Plane },
     NAO_INFO: { codes: ['N'], label: 'Não Informado', color: 'gray', icon: Eye },
 } as const;
 
@@ -320,7 +321,8 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return relevantUsers.filter(u => {
             if (!signedSectors.has(u.sector)) return false;
             const record = currentRecordsMap.get(u.id);
-            return !record || record.status !== 'P';
+            // Um militar não é considerado ausente se estiver em serviço externo
+            return (!record || record.status !== 'P') && !u.external_service;
         }).length;
     }, [relevantUsers, signedSectors, currentRecordsMap]);
 
@@ -338,12 +340,22 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     // Status breakdown
     const statusBreakdown = useMemo(() => {
         return Object.entries(STATUS_GROUPS).map(([key, group]) => {
-            const count = getCount(allRecords, [...group.codes]);
-            const prevCount = getCount(prevRecords, [...group.codes]);
+            let count = 0;
+            let prevCount = 0;
+            
+            if (key === 'EXTERNO') {
+                count = relevantUsers.filter(u => u.external_service).length;
+                // Como não temos histórico da flag no banco de presenças, assumimos estável ou zero se preferir
+                prevCount = count; 
+            } else {
+                count = getCount(allRecords, [...group.codes]);
+                prevCount = getCount(prevRecords, [...group.codes]);
+            }
+
             const pct = totalEfetivo > 0 ? Math.round((count / totalEfetivo) * 100) : 0;
             return { key, ...group, count, prevCount, delta: count - prevCount, pct };
         }).filter(s => s.count > 0 || ['PRESENTES', 'FALTAS', 'MISSAO', 'SERVICO'].includes(s.key));
-    }, [allRecords, prevRecords, totalEfetivo]);
+    }, [allRecords, prevRecords, totalEfetivo, relevantUsers]);
 
     // Global absent list for the retractable section (only from signed sectors)
     const globalAbsentList = useMemo(() => {
@@ -353,7 +365,8 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 if (!signedSectors.has(u.sector)) return false;
 
                 const record = currentRecordsMap.get(u.id);
-                return !record || record.status !== 'P';
+                // Excluir serviço externo da lista global de ausentes
+                return (!record || record.status !== 'P') && !u.external_service;
             })
             .map(u => {
                 const record = currentRecordsMap.get(u.id);
@@ -377,6 +390,8 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         
         return relevantUsers
             .filter(u => {
+                if (selectedStatusModal === 'EXTERNO') return u.external_service;
+                
                 if (!signedSectors.has(u.sector)) return false;
                 const record = currentRecordsMap.get(u.id);
                 const status = record?.status || 'A';
@@ -414,7 +429,8 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
             const absentDetails = sectorUsers
                 .filter(u => {
                     const r = currentRecordsMap.get(u.id);
-                    return r && r.status !== 'P';
+                    // Excluir militares em serviço externo do detalhamento por setor
+                    return (r && r.status !== 'P') && !u.external_service;
                 })
                 .map(u => ({
                     user: u,
@@ -422,7 +438,12 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     label: (PRESENCE_STATUS as any)[currentRecordsMap.get(u.id)?.status] || 'N/A'
                 }));
 
-            return { sector, total, ready, absent: total - ready, pct, prevPct, delta: Math.round(pct - prevPct), absentDetails };
+            // Subtraímos serviço externo do contador de ausentes para que a visualização de setor 
+            // seja coerente com o dashboard global (Total - Prontos - Externos = Ausentes)
+            const extCount = sectorUsers.filter(u => u.external_service).length;
+            const finalAbsentCount = total - ready - extCount;
+
+            return { sector, total, ready, absent: Math.max(0, finalAbsentCount), pct, prevPct, delta: Math.round(pct - prevPct), absentDetails };
         });
     }, [users, currentRecordsMap, previousRecordsMap, selectedSector, rankFilter, displaySectors, GSD_SP_SECTORS, BASP_SECTORS, relevantUserIds]);
 

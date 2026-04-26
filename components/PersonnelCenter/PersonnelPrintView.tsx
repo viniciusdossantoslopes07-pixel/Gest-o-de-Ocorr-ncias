@@ -203,7 +203,9 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
                                         <td className="py-2 px-1 text-xs sm:text-[13px] font-black text-slate-800 whitespace-nowrap">{user.warName}</td>
                                         <td className="py-2 px-1 text-xs sm:text-[13px] font-semibold text-slate-700 uppercase tracking-tight">{user.name}</td>
                                         <td className="py-2 px-1 text-xs sm:text-[13px] font-mono font-medium text-slate-600 whitespace-nowrap">{user.saram}</td>
-                                        <td className="py-2 px-1 text-[10px] sm:text-xs text-right font-black uppercase tracking-wider text-slate-500 whitespace-nowrap">{user.sector}</td>
+                                        <td className="py-2 px-1 text-[10px] sm:text-xs text-right font-black uppercase tracking-wider text-slate-500 whitespace-nowrap">
+                                            {user.external_service ? `SERV. EXT: ${user.external_om}` : user.sector}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
