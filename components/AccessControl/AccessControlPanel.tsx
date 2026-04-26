@@ -1103,7 +1103,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                         <div className={`flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 p-2 rounded-xl border ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
                             <span className={`text-[10px] font-black uppercase pl-1 sm:pl-2 whitespace-nowrap ${textMuted}`}>Característica:</span>
                             <div className="flex flex-wrap gap-1">
-                                {(['all', 'CIVIL', 'MILITAR', 'PRESTADOR', 'ENTREGADOR'] as const).map(char => (
+                                {(['all', 'CIVIL', 'MILITAR', 'DEPENDENTE', 'PRESTADOR', 'ENTREGADOR'] as const).map(char => (
                                     <button
                                         key={char}
                                         onClick={() => setSearchFilterCharacteristic(char)}
