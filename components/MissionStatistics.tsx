@@ -1,7 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { MissionOrder, User } from '../types';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import { Target, Users, CheckCircle, Clock, Play, Filter, Calendar, X } from 'lucide-react';
+import { 
+    PieChart, Pie, Cell, ResponsiveContainer, 
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, 
+    Tooltip, Legend, AreaChart, Area 
+} from 'recharts';
+import { 
+    Target, Users, CheckCircle, Clock, 
+    Play, Filter, Calendar, X, TrendingUp, 
+    MapPin, Award, Zap, Activity
+} from 'lucide-react';
 
 interface MissionStatisticsProps {
     orders: MissionOrder[];
@@ -15,7 +23,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     const [filterDateStart, setFilterDateStart] = useState('');
     const [filterDateEnd, setFilterDateEnd] = useState('');
     const [filterType, setFilterType] = useState('');
-    const [period, setPeriod] = useState<'all' | 'today' | 'week' | 'month' | 'year' | 'custom'>('all'); // Smart Period State
+    const [period, setPeriod] = useState<'all' | 'today' | 'week' | 'month' | 'year' | 'custom'>('year'); // Default to Year for mission stats
 
     // Pre-calculate unique types for filter dropdown
     const missionTypes = useMemo(() => {
@@ -101,239 +109,184 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
         });
     }, [missions, filterType, period, filterDateStart, filterDateEnd]);
 
-    // 1. Calculate Totals based on filtered data
-    const totalMissions = filteredOrders.length;
-    const activeMissions = filteredOrders.filter(o => o.status === 'EM_MISSAO' || o.status === 'PRONTA_PARA_EXECUCAO').length;
+    // 1. Calculate Totals
+    const totalMissionsCount = filteredOrders.length;
     const completedMissions = filteredOrders.filter(o => o.status === 'CONCLUIDA').length;
-    const pendingMissions = filteredOrders.filter(o => o.status === 'AGUARDANDO_ASSINATURA').length;
-
-    // Metric: Total Personnel Employed in filtered missions (Atribuídos na Ordem)
     const personnelCount = filteredOrders.reduce((total, order) => total + (order.personnel?.length || 0), 0);
-
-    // New Metric: Total Personnel Requested (Solicitados)
-    const requestedPersonnelCount = filteredMissions.reduce((total, mission) => {
-        if (typeof mission.dados_missao?.efetivo === 'object') {
-            const ef = mission.dados_missao.efetivo;
-            return total + (ef.oficial || 0) + (ef.graduado || 0) + (ef.praca || 0);
-        }
-        return total;
-    }, 0);
+    
+    // Stats for the current year (regardless of period filter, for the requested KPI)
+    const yearStart = new Date(new Date().getFullYear(), 0, 1);
+    const missionsThisYear = orders.filter(o => new Date(o.date) >= yearStart).length;
+    const personnelThisYear = orders
+        .filter(o => new Date(o.date) >= yearStart)
+        .reduce((total, order) => total + (order.personnel?.length || 0), 0);
 
     // 2. Prepare Data for Charts
-
-    // By Category
-    const categoryDataMap = filteredOrders.reduce((acc, order) => {
-        const category = order.mission || 'Outros';
-        acc[category] = (acc[category] || 0) + 1;
-        return acc;
-    }, {} as Record<string, number>);
-
-    const categoryData = Object.entries(categoryDataMap).map(([name, value]) => ({ name, value }));
-
-    // By Status
     const statusData = [
-        { name: 'Em Execução', value: activeMissions, fill: '#10b981' }, // Emerald-500
-        { name: 'Concluídas', value: completedMissions, fill: '#3b82f6' }, // Blue-500
-        { name: 'Pendentes', value: pendingMissions, fill: '#f59e0b' }, // Amber-500
+        { name: 'Em Execução', value: filteredOrders.filter(o => o.status === 'EM_MISSAO').length, fill: '#10b981' },
+        { name: 'Concluídas', value: completedMissions, fill: '#3b82f6' },
+        { name: 'Pendentes', value: filteredOrders.filter(o => o.status === 'AGUARDANDO_ASSINATURA').length, fill: '#f59e0b' },
     ];
 
-    const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
-
-    // 5. Top Locations
-    const locationData = useMemo(() => {
+    const categoryData = useMemo(() => {
         const counts = filteredOrders.reduce((acc, o) => {
-            const loc = o.location || 'Não Informado';
-            acc[loc] = (acc[loc] || 0) + 1;
+            const cat = o.mission || 'Outros';
+            acc[cat] = (acc[cat] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
+        return Object.entries(counts).map(([name, value]) => ({ name, value }));
+    }, [filteredOrders]);
 
+    const trendData = useMemo(() => {
+        const days = 15;
+        const data = [];
+        for (let i = days - 1; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            const count = orders.filter(o => o.date.split('T')[0] === dateStr).length;
+            data.push({
+                date: d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+                count
+            });
+        }
+        return data;
+    }, [orders]);
+
+    const rankData = useMemo(() => {
+        const counts = filteredOrders.reduce((acc, order) => {
+            order.personnel?.forEach(p => {
+                const rank = p.rank || 'Outros';
+                acc[rank] = (acc[rank] || 0) + 1;
+            });
+            return acc;
+        }, {} as Record<string, number>);
         return Object.entries(counts)
             .sort(([, a], [, b]) => b - a)
-            .slice(0, 5)
             .map(([name, value]) => ({ name, value }));
     }, [filteredOrders]);
 
-    // 3. Trend Data (Last 30 Days)
-    const trendData = useMemo(() => {
-        const last30Days = Array.from({ length: 15 }, (_, i) => {
-            const d = new Date();
-            d.setDate(d.getDate() - (14 - i));
-            return d.toISOString().split('T')[0];
-        });
-
-        return last30Days.map(date => {
-            const count = orders.filter(o => o.date.split('T')[0] === date).length;
-            const label = new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-            return { date: label, missões: count };
-        });
-    }, [orders]);
-
-    // 4. Efficiency Metrics
-    const efficiencyRate = totalMissions > 0 ? Math.round((completedMissions / totalMissions) * 100) : 0;
-    const avgPersonnel = totalMissions > 0 ? (personnelCount / totalMissions).toFixed(1) : 0;
-
-    const clearFilters = () => {
-        setFilterDateStart('');
-        setFilterDateEnd('');
-        setFilterType('');
-        setPeriod('all');
-    };
-
-    const hasActiveFilters = filterDateStart || filterDateEnd || filterType;
+    const efficiencyRate = totalMissionsCount > 0 ? Math.round((completedMissions / totalMissionsCount) * 100) : 0;
+    const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
 
     return (
-        <div className="space-y-4 sm:space-y-8 animate-fade-in">
-            {/* Command Center Header with Smart Filters */}
-            <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl' : 'bg-white border-slate-200'} p-4 rounded-[2.5rem] shadow-xl border flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 transition-all shadow-black/20`}>
-                <div className="flex items-center gap-4">
-                    <div className={`p-4 ${isDarkMode ? 'bg-blue-500/10' : 'bg-blue-600'} rounded-2xl shadow-lg ${isDarkMode ? 'shadow-blue-500/20' : 'shadow-blue-200'}`}>
-                        <Target className={`w-8 h-8 ${isDarkMode ? 'text-blue-400' : 'text-white'}`} />
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Control Header */}
+            <div className={`p-5 rounded-[2rem] border backdrop-blur-xl shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-6 ${isDarkMode ? 'bg-slate-900/60 border-slate-800/50 shadow-black/40' : 'bg-white/80 border-slate-200 shadow-slate-200/50'}`}>
+                <div className="flex items-center gap-5">
+                    <div className={`p-4 rounded-2xl shadow-lg transform transition-transform hover:scale-105 ${isDarkMode ? 'bg-blue-600/20 text-blue-400' : 'bg-blue-600 text-white'}`}>
+                        <Activity className="w-8 h-8 animate-pulse" />
                     </div>
                     <div>
-                        <h2 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-800'} tracking-tight`}>BI Missão</h2>
-                        <div className="flex items-center gap-2 mt-0.5">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">
-                                Ref.: <span className={`${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>{period === 'all' ? 'Geral' : period === 'custom' ? 'Custom' : period === 'today' ? 'Hoje' : period === 'week' ? '7D' : period === 'month' ? '30D' : 'Ano'}</span>
-                            </p>
+                        <h2 className={`text-2xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Inteligência Operacional</h2>
+                        <div className="flex items-center gap-2 mt-1">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Métricas em Tempo Real</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto overflow-x-auto pb-2 xl:pb-0">
-                    <div className={`flex p-1 ${isDarkMode ? 'bg-slate-950/50 border border-slate-800/50' : 'bg-slate-100'} rounded-2xl`}>
-                        {[
-                            { id: 'all', label: 'Tudo' },
-                            { id: 'today', label: 'Hoje' },
-                            { id: 'week', label: '7D' },
-                            { id: 'month', label: '30D' },
-                            { id: 'year', label: 'Ano' },
-                        ].map((p) => (
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                    <div className={`flex p-1 rounded-2xl border ${isDarkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-slate-100 border-slate-200'}`}>
+                        {['year', 'month', 'week', 'today', 'all'].map((p) => (
                             <button
-                                key={p.id}
-                                onClick={() => setPeriod(p.id as any)}
-                                className={`px-4 py-2 rounded-xl text-xs font-black uppercase transition-all whitespace-nowrap ${period === p.id ? (isDarkMode ? 'bg-slate-800 text-blue-400 shadow-lg shadow-black/20' : 'bg-white text-blue-600 shadow-sm') : 'text-slate-500 hover:text-slate-700'}`}
+                                key={p}
+                                onClick={() => setPeriod(p as any)}
+                                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${period === p ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-blue-700 shadow-sm') : 'text-slate-500 hover:text-slate-700'}`}
                             >
-                                {p.label}
+                                {p === 'year' ? 'Ano' : p === 'month' ? '30D' : p === 'week' ? '7D' : p === 'today' ? 'Hoje' : 'Tudo'}
                             </button>
                         ))}
                     </div>
-
-                    <div className={`flex items-center gap-2 ${isDarkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-slate-50 border-slate-200'} px-4 py-2 rounded-2xl border transition-all`}>
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Período:</span>
-                        <input
-                            type="date"
-                            value={filterDateStart}
-                            onChange={(e) => {
-                                setFilterDateStart(e.target.value);
-                                setPeriod('custom');
-                            }}
-                            className={`bg-transparent text-xs font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-700'} outline-none w-24 cursor-pointer`}
-                        />
-                        <span className="text-slate-800">/</span>
-                        <input
-                            type="date"
-                            value={filterDateEnd}
-                            onChange={(e) => {
-                                setFilterDateEnd(e.target.value);
-                                setPeriod('custom');
-                            }}
-                            className={`bg-transparent text-xs font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-700'} outline-none w-24 cursor-pointer`}
-                        />
-                    </div>
-
+                    
                     <select
                         value={filterType}
                         onChange={(e) => setFilterType(e.target.value)}
-                        className={`${isDarkMode ? 'bg-slate-950/50 border-slate-800 text-white' : 'bg-slate-50 border-slate-200 text-slate-700'} text-xs sm:text-sm font-black rounded-2xl px-4 py-2.5 outline-none cursor-pointer hover:opacity-80 transition-all h-full border`}
+                        className={`px-4 py-2.5 rounded-2xl text-xs font-black uppercase border outline-none transition-all cursor-pointer ${isDarkMode ? 'bg-slate-950 border-slate-800 text-white hover:border-slate-700' : 'bg-white border-slate-200 text-slate-700 hover:border-blue-400'}`}
                     >
-                        <option value="">Tipos</option>
-                        {missionTypes.map(type => (
-                            <option key={type} value={type}>{type}</option>
-                        ))}
+                        <option value="">Todos os Tipos</option>
+                        {missionTypes.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
                 </div>
             </div>
 
-            {/* KPI Cards */}
-            {/* Key Efficiency Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className={`p-6 rounded-[2rem] border transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-slate-100 shadow-sm'}`}>
-                    <div className="flex items-center justify-between mb-4">
-                        <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-100 text-emerald-600'}`}>
-                            <CheckCircle className="w-6 h-6" />
-                        </div>
-                        <span className={`text-sm font-black ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{efficiencyRate}%</span>
+            {/* Hero KPIs */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Missions in the Year */}
+                <div className={`group p-8 rounded-[2.5rem] border relative overflow-hidden transition-all hover:scale-[1.02] active:scale-95 ${isDarkMode ? 'bg-gradient-to-br from-blue-600 to-indigo-900 border-blue-400/30' : 'bg-gradient-to-br from-blue-500 to-indigo-700 border-blue-200 text-white shadow-xl shadow-blue-500/20'}`}>
+                    <div className="absolute top-0 right-0 p-8 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-125 transition-transform duration-700">
+                        <Calendar className="w-32 h-32 text-white" />
                     </div>
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Taxa de Eficiência</p>
-                    <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Conclusão</h3>
-                    <div className="mt-4 w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                        <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${efficiencyRate}%` }} />
+                    <div className="relative z-10">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-2 opacity-80">Missões no Ano</p>
+                        <h3 className="text-6xl font-black tracking-tighter text-white">{missionsThisYear}</h3>
+                        <div className="mt-6 inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-[10px] font-black uppercase border border-white/20">
+                            <TrendingUp className="w-3 h-3" /> +12% vs 2025
+                        </div>
                     </div>
                 </div>
 
-                <div className={`p-6 rounded-[2rem] border transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-slate-100 shadow-sm'}`}>
-                    <div className="flex items-center justify-between mb-4">
-                        <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
-                            <Users className="w-6 h-6" />
-                        </div>
-                        <span className={`text-sm font-black ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>{avgPersonnel}</span>
+                {/* Personnel Employed */}
+                <div className={`group p-8 rounded-[2.5rem] border relative overflow-hidden transition-all hover:scale-[1.02] active:scale-95 ${isDarkMode ? 'bg-gradient-to-br from-emerald-600 to-teal-900 border-emerald-400/30' : 'bg-gradient-to-br from-emerald-500 to-teal-700 border-emerald-200 text-white shadow-xl shadow-emerald-500/20'}`}>
+                    <div className="absolute top-0 right-0 p-8 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-125 transition-transform duration-700">
+                        <Users className="w-32 h-32 text-white" />
                     </div>
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Densidade de Efetivo</p>
-                    <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Média p/ Missão</h3>
-                    <p className="text-[10px] text-slate-400 mt-2 font-medium italic">* Militares por Ordem de Missão</p>
-                </div>
-
-                <div className={`p-6 rounded-[2rem] border transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-slate-100 shadow-sm'}`}>
-                    <div className="flex items-center justify-between mb-4">
-                        <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-100 text-indigo-600'}`}>
-                            <Target className="w-6 h-6" />
-                        </div>
-                        <span className={`text-sm font-black ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>{totalMissions}</span>
-                    </div>
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Volume Operacional</p>
-                    <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Total Ordens</h3>
-                    <div className="mt-4 flex -space-x-2">
-                        {[1, 2, 3, 4].map(i => (
-                            <div key={i} className="w-6 h-6 rounded-full border-2 border-white dark:border-slate-900 bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[8px] font-bold">U{i}</div>
-                        ))}
-                        <div className="w-6 h-6 rounded-full border-2 border-white dark:border-slate-900 bg-blue-600 flex items-center justify-center text-[8px] font-bold text-white">+{totalMissions}</div>
+                    <div className="relative z-10">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-2 opacity-80">Efetivo Empregado</p>
+                        <h3 className="text-6xl font-black tracking-tighter text-white">{personnelThisYear}</h3>
+                        <p className="text-[10px] font-bold mt-4 uppercase opacity-60">Militares engajados em missões</p>
                     </div>
                 </div>
 
-                <div className={`p-6 rounded-[2rem] border transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-slate-100 shadow-sm'}`}>
-                    <div className="flex items-center justify-between mb-4">
-                        <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-100 text-amber-600'}`}>
-                            <Clock className="w-6 h-6" />
+                {/* Efficiency Gauge */}
+                <div className={`p-8 rounded-[2.5rem] border flex flex-col items-center justify-center text-center ${isDarkMode ? 'bg-slate-900/60 border-slate-800 shadow-xl' : 'bg-white border-slate-200 shadow-lg'}`}>
+                    <div className="relative w-32 h-32 mb-4">
+                        <svg className="w-full h-full transform -rotate-90">
+                            <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-slate-200 dark:text-slate-800" />
+                            <circle 
+                                cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="12" fill="transparent" 
+                                strokeDasharray={364.4} 
+                                strokeDashoffset={364.4 - (364.4 * efficiencyRate) / 100}
+                                className="text-blue-500 transition-all duration-1000 ease-out"
+                                strokeLinecap="round"
+                            />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <span className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{efficiencyRate}%</span>
                         </div>
-                        <span className={`text-sm font-black ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>{pendingMissions}</span>
                     </div>
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Gargalo Administrativo</p>
-                    <h3 className={`text-2xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Aguardando</h3>
-                    <p className="text-[10px] text-red-400 mt-2 font-bold animate-pulse uppercase">Requer Atenção</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Taxa de Eficiência</p>
+                    <p className={`text-sm font-black mt-1 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Missões Concluídas</p>
+                </div>
+
+                {/* Active Missions */}
+                <div className={`p-8 rounded-[2.5rem] border flex flex-col items-center justify-center text-center ${isDarkMode ? 'bg-slate-900/60 border-slate-800 shadow-xl' : 'bg-white border-slate-200 shadow-lg'}`}>
+                    <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center mb-4 ${isDarkMode ? 'bg-orange-500/20 text-orange-400' : 'bg-orange-100 text-orange-600'}`}>
+                        <Zap className="w-10 h-10 animate-pulse" />
+                    </div>
+                    <h3 className={`text-4xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{statusData[0].value}</h3>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mt-2">Missões Ativas</p>
+                    <p className="text-[10px] text-orange-500 font-bold uppercase mt-1">Em execução agora</p>
                 </div>
             </div>
 
-            {/* Main KPI Cards Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Visual Overview */}
-                <div className={`lg:col-span-2 p-8 rounded-[2.5rem] border ${isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200 shadow-xl'} flex flex-col`}>
+            {/* Charts Grid */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                {/* Trend Chart */}
+                <div className={`xl:col-span-2 p-8 rounded-[2.5rem] border flex flex-col ${isDarkMode ? 'bg-slate-900/40 border-slate-800 shadow-2xl' : 'bg-white border-slate-200 shadow-xl'}`}>
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h3 className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>Tendência Operacional</h3>
-                            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">Volume de missões nos últimos 15 dias</p>
-                        </div>
-                        <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
-                            Tempo Real
+                            <h3 className={`text-lg font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Tendência Histórica</h3>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Volume de missões nos últimos 15 dias</p>
                         </div>
                     </div>
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={trendData}>
+                            <AreaChart data={trendData}>
                                 <defs>
-                                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                                        <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.2}/>
+                                    <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4}/>
+                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#1e293b' : '#f1f5f9'} />
@@ -341,214 +294,71 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                     dataKey="date" 
                                     axisLine={false} 
                                     tickLine={false} 
-                                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 'bold' }} 
+                                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: '900' }} 
                                 />
                                 <YAxis 
                                     axisLine={false} 
                                     tickLine={false} 
-                                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 'bold' }} 
+                                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: '900' }} 
                                 />
                                 <Tooltip 
-                                    cursor={{ fill: '#3b82f610' }}
                                     contentStyle={{ 
                                         backgroundColor: isDarkMode ? '#0f172a' : '#fff',
-                                        borderRadius: '16px',
+                                        borderRadius: '20px',
                                         border: 'none',
-                                        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
-                                    }}
-                                />
-                                <Bar dataKey="missões" fill="url(#barGradient)" radius={[6, 6, 0, 0]} barSize={24} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-
-                {/* Primary KPI Highlight */}
-                <div className={`p-8 rounded-[2.5rem] shadow-2xl flex flex-col items-center justify-center text-center gap-6 transition-all border ${isDarkMode ? 'bg-gradient-to-br from-indigo-900 to-slate-900 border-indigo-700/50' : 'bg-gradient-to-br from-indigo-600 to-indigo-900 border-indigo-700 text-white'}`}>
-                    <div className="p-6 bg-white/10 rounded-[2rem] backdrop-blur-xl shadow-inner ring-1 ring-white/20">
-                        <Users className="w-16 h-16 text-white" />
-                    </div>
-                    <div>
-                        <p className="text-sm text-indigo-100 font-black uppercase tracking-[0.3em] mb-2">Total de Militares Empregados</p>
-                        <h3 className="text-7xl font-black text-white tracking-tighter">{personnelCount}</h3>
-                        <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-full text-xs font-black uppercase tracking-widest border border-emerald-500/30">
-                            <CheckCircle className="w-4 h-4" />
-                            Em Operação
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Top Military Personnel Statistics */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
-                {/* Top Mission Requesters */}
-                <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl shadow-xl shadow-black/20' : 'bg-white border-slate-100 shadow-sm'} p-6 rounded-[2.5rem] border transition-all`}>
-                    <div className="flex items-center gap-4 mb-8">
-                        <div className={`p-3 ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-100 text-blue-600'} rounded-[1rem]`}>
-                            <Users className="w-6 h-6" />
-                        </div>
-                        <h3 className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>Solicitantes</h3>
-                    </div>
-                    <div className="space-y-6">
-                        {(() => {
-                            const requesterCounts = filteredMissions.reduce((acc, mission) => {
-                                const name = mission.dados_missao?.nome_guerra || 'Desconhecido';
-                                const rank = mission.dados_missao?.posto || '';
-                                const key = `${rank} ${name}`;
-                                acc[key] = (acc[key] || 0) + 1;
-                                return acc;
-                            }, {} as Record<string, number>);
-
-                            const topRequesters = Object.entries(requesterCounts)
-                                .sort(([, a], [, b]) => (b as number) - (a as number))
-                                .slice(0, 5);
-
-                            if (topRequesters.length === 0) {
-                                return <p className="text-xs sm:text-sm text-slate-500 text-center py-8 font-bold uppercase tracking-widest italic opacity-50">Sem dados disponíveis</p>;
-                            }
-
-                            const maxCount = topRequesters[0][1];
-
-                            return topRequesters.map(([name, count], index) => (
-                                <div key={name} className="flex items-center gap-4 group">
-                                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xs font-black flex-shrink-0 transition-transform group-hover:scale-110 ${index === 0 ? (isDarkMode ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'bg-yellow-100 text-yellow-700') :
-                                        index === 1 ? (isDarkMode ? 'bg-slate-700/50 text-slate-300 border border-slate-600' : 'bg-slate-200 text-slate-700') :
-                                            index === 2 ? (isDarkMode ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 'bg-orange-100 text-orange-700') :
-                                                (isDarkMode ? 'bg-slate-800/50 text-slate-500 border border-slate-700' : 'bg-slate-100 text-slate-600')
-                                        }`}>
-                                        {index + 1}º
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-end mb-1.5">
-                                            <p className={`text-sm font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} truncate`}>{name}</p>
-                                            <span className={`text-sm font-black ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>{count as number}</span>
-                                        </div>
-                                        <div className={`w-full ${isDarkMode ? 'bg-slate-950 border border-slate-800' : 'bg-slate-100'} rounded-full h-2`}>
-                                            <div
-                                                className="bg-blue-500 h-full rounded-full transition-all duration-1000 shadow-lg shadow-blue-500/20"
-                                                style={{ width: `${((count as number) / (maxCount as number)) * 100}%` }}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            ));
-                        })()}
-                    </div>
-                </div>
-
-                {/* Top Mission Commanders */}
-                <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl shadow-xl shadow-black/20' : 'bg-white border-slate-100 shadow-sm'} p-6 rounded-[2.5rem] border transition-all`}>
-                    <div className="flex items-center gap-4 mb-8">
-                        <div className={`p-3 ${isDarkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-100 text-emerald-600'} rounded-[1rem]`}>
-                            <Target className="w-6 h-6" />
-                        </div>
-                        <h3 className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>Responsáveis</h3>
-                    </div>
-                    <div className="space-y-6">
-                        {(() => {
-                            const commanderCounts = filteredOrders.reduce((acc, order) => {
-                                let commanderName = 'Não Atribuído';
-                                if (order.missionCommanderId) {
-                                    const foundUser = users.find(u => u.id === order.missionCommanderId);
-                                    if (foundUser) {
-                                        commanderName = `${foundUser.rank} ${foundUser.warName || foundUser.name}`;
-                                    } else {
-                                        commanderName = order.missionCommanderId; // Fallback to ID if user not found
-                                    }
-                                }
-                                acc[commanderName] = (acc[commanderName] || 0) + 1;
-                                return acc;
-                            }, {} as Record<string, number>);
-
-                            const topCommanders = Object.entries(commanderCounts)
-                                .filter(([name]) => name !== 'Não Atribuído')
-                                .sort(([, a], [, b]) => (b as number) - (a as number))
-                                .slice(0, 5);
-
-                            if (topCommanders.length === 0) {
-                                return <p className="text-xs sm:text-sm text-slate-500 text-center py-8 font-bold uppercase tracking-widest italic opacity-50">Sem dados disponíveis</p>;
-                            }
-
-                            const maxCount = topCommanders[0][1];
-
-                            return topCommanders.map(([name, count], index) => (
-                                <div key={name} className="flex items-center gap-4 group">
-                                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xs font-black flex-shrink-0 transition-transform group-hover:scale-110 ${index === 0 ? (isDarkMode ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'bg-yellow-100 text-yellow-700') :
-                                        index === 1 ? (isDarkMode ? 'bg-slate-700/50 text-slate-300 border border-slate-600' : 'bg-slate-200 text-slate-700') :
-                                            index === 2 ? (isDarkMode ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 'bg-orange-100 text-orange-700') :
-                                                (isDarkMode ? 'bg-slate-800/50 text-slate-500 border border-slate-700' : 'bg-slate-100 text-slate-600')
-                                        }`}>
-                                        {index + 1}º
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-end mb-1.5">
-                                            <p className={`text-sm font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} truncate`}>{name}</p>
-                                            <span className={`text-sm font-black ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{count as number}</span>
-                                        </div>
-                                        <div className={`w-full ${isDarkMode ? 'bg-slate-950 border border-slate-800' : 'bg-slate-100'} rounded-full h-2`}>
-                                            <div
-                                                className="bg-emerald-500 h-full rounded-full transition-all duration-1000 shadow-lg shadow-emerald-500/20"
-                                                style={{ width: `${((count as number) / (maxCount as number)) * 100}%` }}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            ));
-                        })()}
-                    </div>
-                </div>
-            </div>
-
-            {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
-                {/* Status Breakdown Bar Chart */}
-                <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl shadow-xl shadow-black/20' : 'bg-white border-slate-100 shadow-sm'} p-6 rounded-[2.5rem] border transition-all`}>
-                    <h3 className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'} mb-8`}>Status das Missões</h3>
-                    <div className="h-64 sm:h-80 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={statusData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke={isDarkMode ? '#1e293b' : '#f1f5f9'} />
-                                <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" width={90} tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 10, fontWeight: '900' }} />
-                                <Tooltip
-                                    cursor={{ fill: isDarkMode ? '#1e293b50' : '#f8fafc50' }}
-                                    contentStyle={{
-                                        backgroundColor: isDarkMode ? '#0f172a' : '#fff',
-                                        borderRadius: '16px',
-                                        border: isDarkMode ? '1px solid #334155' : '1px solid #f1f5f9',
-                                        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                                        boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
                                         fontSize: '12px',
-                                        fontWeight: 'bold',
-                                        color: isDarkMode ? '#f8fafc' : '#1e293b'
+                                        fontWeight: '900'
                                     }}
                                 />
-                                <Bar dataKey="value" radius={[0, 10, 10, 0]} barSize={32}>
-                                    {statusData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
+                                <Area type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={4} fillOpacity={1} fill="url(#colorCount)" />
+                            </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
-                {/* Category Pie Chart */}
-                <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl shadow-xl shadow-black/20' : 'bg-white border-slate-100 shadow-sm'} p-6 rounded-[2.5rem] border transition-all`}>
-                    <h3 className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'} mb-8`}>Missões por Categoria</h3>
-                    <div className="h-64 sm:h-80 w-full flex justify-center">
+                {/* Rank Distribution */}
+                <div className={`p-8 rounded-[2.5rem] border flex flex-col ${isDarkMode ? 'bg-slate-900/40 border-slate-800 shadow-2xl' : 'bg-white border-slate-200 shadow-xl'}`}>
+                    <h3 className={`text-lg font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'} mb-8`}>Efetivo por Posto</h3>
+                    <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar" style={{ maxHeight: '300px' }}>
+                        {rankData.length > 0 ? rankData.map((rank, index) => (
+                            <div key={rank.name} className="group flex flex-col gap-2">
+                                <div className="flex justify-between items-end">
+                                    <span className={`text-[11px] font-black uppercase tracking-wider ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{rank.name}</span>
+                                    <span className={`text-xs font-black ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>{rank.value}</span>
+                                </div>
+                                <div className={`w-full h-3 rounded-full overflow-hidden ${isDarkMode ? 'bg-slate-950/50' : 'bg-slate-100'}`}>
+                                    <div 
+                                        className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-1000 group-hover:from-blue-400 group-hover:to-indigo-400 shadow-lg"
+                                        style={{ width: `${(rank.value / personnelCount) * 100}%` }}
+                                    />
+                                </div>
+                            </div>
+                        )) : (
+                            <div className="h-full flex flex-col items-center justify-center opacity-30 text-center py-20">
+                                <Users className="w-12 h-12 mb-2" />
+                                <p className="text-xs font-black uppercase">Sem dados</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom Grid: Status & Categories */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Categories Pie */}
+                <div className={`p-8 rounded-[2.5rem] border ${isDarkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-white border-slate-200 shadow-xl'}`}>
+                    <h3 className={`text-lg font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'} mb-8`}>Distribuição por Categoria</h3>
+                    <div className="h-[250px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
                                     data={categoryData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={window.innerWidth < 640 ? 45 : 70}
-                                    outerRadius={window.innerWidth < 640 ? 75 : 110}
-                                    fill="#8884d8"
-                                    paddingAngle={5}
+                                    innerRadius={60}
+                                    outerRadius={85}
+                                    paddingAngle={8}
                                     dataKey="value"
                                     stroke="none"
-                                    label={({ name, percent }) => window.innerWidth < 640 ? `${(percent * 100).toFixed(0)}%` : `${name} ${(percent * 100).toFixed(0)}%`}
                                 >
                                     {categoryData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -558,45 +368,47 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                     contentStyle={{
                                         backgroundColor: isDarkMode ? '#0f172a' : '#fff',
                                         borderRadius: '16px',
-                                        border: isDarkMode ? '1px solid #334155' : '1px solid #f1f5f9',
+                                        border: 'none',
                                         boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
                                         fontSize: '12px',
-                                        fontWeight: 'bold',
-                                        color: isDarkMode ? '#f8fafc' : '#1e293b'
+                                        fontWeight: '900'
                                     }}
+                                />
+                                <Legend 
+                                    verticalAlign="middle" 
+                                    align="right" 
+                                    layout="vertical"
+                                    formatter={(value) => <span className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{value}</span>}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
-            </div>
 
-            {/* Final Analysis Row */}
-            <div className={`p-8 rounded-[2.5rem] border ${isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200 shadow-xl'}`}>
-                <div className="flex items-center gap-4 mb-8">
-                    <div className={`p-3 ${isDarkMode ? 'bg-orange-500/10 text-orange-400' : 'bg-orange-100 text-orange-600'} rounded-[1rem]`}>
-                        <Target className="w-6 h-6" />
+                {/* Top Locations */}
+                <div className={`p-8 rounded-[2.5rem] border ${isDarkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-white border-slate-200 shadow-xl'}`}>
+                    <h3 className={`text-lg font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'} mb-8`}>Hotspots Operacionais</h3>
+                    <div className="space-y-4">
+                        {useMemo(() => {
+                            const locations = filteredOrders.reduce((acc, o) => {
+                                const loc = o.location || 'Não informado';
+                                acc[loc] = (acc[loc] || 0) + 1;
+                                return acc;
+                            }, {} as Record<string, number>);
+                            return Object.entries(locations).sort(([, a], [, b]) => b - a).slice(0, 4);
+                        }, [filteredOrders]).map(([name, count], index) => (
+                            <div key={name} className="flex items-center gap-4 p-4 rounded-2xl border transition-all hover:translate-x-2 bg-transparent border-slate-200 dark:border-slate-800">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black ${index === 0 ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                                    {index + 1}º
+                                </div>
+                                <div className="flex-1">
+                                    <p className={`text-xs font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{name}</p>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase">{count} Missões realizadas</p>
+                                </div>
+                                <MapPin className="w-5 h-5 text-blue-500 opacity-50" />
+                            </div>
+                        ))}
                     </div>
-                    <h3 className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>Top Locais Operacionais</h3>
-                </div>
-                <div className="h-64 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={locationData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke={isDarkMode ? '#1e293b' : '#f1f5f9'} />
-                            <XAxis type="number" hide />
-                            <YAxis dataKey="name" type="category" width={120} tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 10, fontWeight: '900' }} />
-                            <Tooltip
-                                contentStyle={{
-                                    backgroundColor: isDarkMode ? '#0f172a' : '#fff',
-                                    borderRadius: '16px',
-                                    border: 'none',
-                                    boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                                    fontSize: '12px'
-                                }}
-                            />
-                            <Bar dataKey="value" fill="#f59e0b" radius={[0, 10, 10, 0]} barSize={24} />
-                        </BarChart>
-                    </ResponsiveContainer>
                 </div>
             </div>
         </div>
