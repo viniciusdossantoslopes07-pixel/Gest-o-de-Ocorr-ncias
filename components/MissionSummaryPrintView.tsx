@@ -313,8 +313,8 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                         )}
 
                         {/* Signature — visível em print e telas maiores */}
-                        <div className="hidden sm:grid print:grid mt-6 pt-4 border-t border-slate-200 grid-cols-3 gap-10 print-section">
-                            {['Seção de Operações - SAP-01\nResponsável pela Emissão', 'CH-SOP\nChefe de Seg. e Operações', 'Comandante do GSD-SP\nHomologação'].map((sig, i) => {
+                        <div className="hidden sm:grid print:grid mt-6 pt-4 border-t border-slate-200 grid-cols-2 gap-10 print-section">
+                            {['Seção de Operações - SAP-01\nResponsável pela Emissão', 'Comandante do GSD-SP\nHomologação'].map((sig, i) => {
                                 const [title, sub] = sig.split('\n');
                                 return (
                                     <div key={i} className="text-center">
