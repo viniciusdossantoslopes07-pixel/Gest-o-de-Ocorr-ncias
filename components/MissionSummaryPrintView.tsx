@@ -79,7 +79,7 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
 
     return (
         <div onClick={handleBackdropClick} className="fixed inset-0 bg-black/80 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light backdrop-blur-sm msp-root-container">
-            <div ref={modalRef} className="bg-white w-full sm:max-w-5xl sm:rounded-2xl print:rounded-none h-[96dvh] sm:h-[92vh] print:h-auto flex flex-col overflow-hidden print:overflow-visible shadow-2xl">
+            <div ref={modalRef} className="msp-modal-wrapper bg-white w-full sm:max-w-5xl sm:rounded-2xl print:rounded-none h-[96dvh] sm:h-[92vh] print:h-auto flex flex-col overflow-hidden print:overflow-visible shadow-2xl">
 
                 {/* ── Mobile-first top bar ── */}
                 <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between print:hidden shrink-0 gap-3 print-hidden">
@@ -106,14 +106,15 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                     </div>
                 </div>
 
-                {/* ── Print styles (Lógica idêntica ao ForceMapPrintView + Fix de Scroll) ── */}
+                {/* ── Print styles (Definitivo) ── */}
                 <style>{`
                     @media print {
                         * {
                             -webkit-print-color-adjust: exact !important;
                             print-color-adjust: exact !important;
                         }
-                        /* Reset de Scroll e Overflow para evitar cortes */
+
+                        /* 1. Ocultar tudo no body */
                         html, body {
                             visibility: hidden !important;
                             background: white !important;
@@ -122,57 +123,84 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                             height: auto !important;
                             overflow: visible !important;
                         }
-                        
-                        /* Reset do modal wrapper para não interferir no posicionamento */
+
+                        /* 2. Toda a cadeia de containers do modal: resetar para fluxo normal */
                         .msp-root-container {
-                            display: block !important;
+                            visibility: visible !important;
                             position: static !important;
+                            display: block !important;
                             background: white !important;
                             padding: 0 !important;
                             margin: 0 !important;
-                            visibility: visible !important;
+                            backdrop-filter: none !important;
+                            inset: auto !important;
                         }
-                        
+                        .msp-modal-wrapper {
+                            visibility: visible !important;
+                            position: static !important;
+                            display: block !important;
+                            overflow: visible !important;
+                            height: auto !important;
+                            max-height: none !important;
+                            background: white !important;
+                            box-shadow: none !important;
+                            border-radius: 0 !important;
+                            padding: 0 !important;
+                            margin: 0 !important;
+                            width: 100% !important;
+                            max-width: none !important;
+                        }
+                        .msp-scroll {
+                            visibility: visible !important;
+                            overflow: visible !important;
+                            background: white !important;
+                            padding: 0 !important;
+                            flex: none !important;
+                            height: auto !important;
+                        }
+
+                        /* 3. O documento em si — fluxo natural, sem position trick */
                         .mission-summary-printable {
                             visibility: visible !important;
-                            position: absolute !important;
-                            left: 0 !important;
-                            top: 0 !important;
+                            position: static !important;
+                            display: block !important;
                             width: 100% !important;
+                            max-width: none !important;
                             margin: 0 !important;
-                            padding: 5mm 0 !important;
+                            padding: 8mm 10mm !important;
                             height: auto !important;
                             background: white !important;
+                            box-shadow: none !important;
                         }
-                        
-                        /* Tabelas compactas militares */
+
+                        /* 4. Tabelas militares */
                         .mission-summary-printable table {
                             font-size: 7.5pt !important;
                             border-collapse: collapse !important;
                             width: 100% !important;
                             border: 1px solid #000 !important;
                         }
-                        .mission-summary-printable th, .mission-summary-printable td {
+                        .mission-summary-printable th,
+                        .mission-summary-printable td {
                             padding: 3px 5px !important;
                             border: 1px solid #000 !important;
                             color: #000 !important;
                         }
                         .mission-summary-printable th {
                             background-color: #f1f5f9 !important;
-                            -webkit-print-color-adjust: exact !important;
                         }
-                        
-                        /* Seções não quebram no meio */
-                        .mission-summary-printable .print-section {
+
+                        /* 5. Sem quebra de página no meio das seções */
+                        .print-section {
                             page-break-inside: avoid !important;
                             break-inside: avoid !important;
                         }
-                        
-                        /* Esconde elementos de controle */
-                        .print-hidden, .modals-container, .print-header, .print-footer {
+
+                        /* 6. Ocultar controles de UI */
+                        .print-hidden {
                             display: none !important;
                         }
-                        
+
                         @page {
                             size: A4 landscape;
                             margin: 0;
@@ -181,7 +209,7 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                 `}</style>
 
                 {/* ── Scrollable content ── */}
-                <div className="flex-1 overflow-y-auto overflow-x-hidden print:overflow-visible bg-slate-100 print:bg-white p-4 print:p-0">
+                <div className="msp-scroll flex-1 overflow-y-auto overflow-x-hidden print:overflow-visible bg-slate-100 print:bg-white p-4 print:p-0">
                     <div className="bg-white print:shadow-none mx-auto p-4 sm:p-8 print:p-0 max-w-[297mm] print:max-w-none mission-summary-printable">
 
                         {/* Military Header */}
