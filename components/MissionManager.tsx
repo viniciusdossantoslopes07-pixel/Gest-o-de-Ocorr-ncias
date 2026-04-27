@@ -502,14 +502,14 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 .update({
                     status: 'CANCELADA',
                     mission_report: `MISSÃO CANCELADA: ${cancelReason}`,
-                    omis_number: null, // Apagar o número da OMIS conforme solicitado
+                    omis_number: `CAN-${missionCancelling.omisNumber || missionCancelling.id.substring(0, 5)}`, // Evita null e marca como cancelada
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', missionCancelling.id);
 
             if (error) throw error;
 
-            alert('Missão cancelada com sucesso. O número da OMIS foi removido.');
+            alert('Missão cancelada com sucesso e movida para o histórico.');
             setShowCancelModal(false);
             setMissionCancelling(null);
             fetchOrders();
