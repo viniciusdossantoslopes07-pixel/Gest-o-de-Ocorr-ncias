@@ -138,6 +138,7 @@ export interface MissionOrderSchedule {
   startTime: string;
   endTime: string;
   event: string;
+  location?: string;
 }
 
 export interface MissionOrder {

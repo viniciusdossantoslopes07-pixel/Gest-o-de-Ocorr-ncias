@@ -2,6 +2,7 @@
 import { type FC, useEffect } from 'react';
 import { MissionOrder } from '../types';
 import { X, Printer, FileDown, FileSignature, Zap } from 'lucide-react';
+import { formatDisplayDate } from '../utils/formatters';
 
 interface MissionOrderPrintViewProps {
     order: MissionOrder;
@@ -136,7 +137,7 @@ ${content.outerHTML}
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-32 uppercase text-[8px]">Nº da OMIS:</td>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-bold">{order.omisNumber}</td>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-24 uppercase text-[8px]">Data:</td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 font-bold">{new Date(order.date).toLocaleDateString('pt-BR')}</td>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-bold">{formatDisplayDate(order.date)}</td>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-24 uppercase text-[8px]">Interna:</td>
                                     <td className="border border-slate-950 px-1.5 py-0.5 w-12 text-center font-bold">
                                         {order.isInternal ? '☑' : '☐'}
@@ -222,8 +223,8 @@ ${content.outerHTML}
                                         order.schedule.map((s, idx) => (
                                             <tr key={s.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
                                                 <td className="border border-slate-950 px-1.5 py-0.5 font-bold uppercase">{formatValue(s.event)}</td>
-                                                <td className="border border-slate-950 px-1.5 py-0.5 text-center">-</td>
-                                                <td className="border border-slate-950 px-1.5 py-0.5 text-center font-medium">{new Date(order.date).toLocaleDateString('pt-BR')}</td>
+                                                <td className="border border-slate-950 px-1.5 py-0.5 text-center font-bold">{formatValue(s.location)}</td>
+                                                <td className="border border-slate-950 px-1.5 py-0.5 text-center font-medium">{formatDisplayDate(order.date)}</td>
                                                 <td className="border border-slate-950 px-1.5 py-0.5 text-center font-black">{formatValue(s.startTime)}</td>
                                             </tr>
                                         ))

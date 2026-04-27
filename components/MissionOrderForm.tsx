@@ -73,7 +73,8 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
             id: Math.random().toString(),
             startTime: '',
             endTime: '',
-            event: ''
+            event: '',
+            location: ''
         }]);
     };
 
@@ -595,7 +596,8 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                     <tr>
                                         <th className="px-3 py-3 text-left font-black uppercase tracking-tighter w-24">Início</th>
                                         <th className="px-3 py-3 text-left font-black uppercase tracking-tighter w-24">Fim</th>
-                                        <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">Evento/Local</th>
+                                        <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">Atividade</th>
+                                        <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">Local</th>
                                         <th className="px-3 py-3"></th>
                                     </tr>
                                 </thead>
@@ -623,7 +625,16 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                     type="text"
                                                     value={s.event}
                                                     onChange={e => updateSchedule(s.id, 'event', e.target.value)}
-                                                    placeholder="Ex: Briefing na Sala 01"
+                                                    placeholder="Ex: Briefing"
+                                                    className={`w-full px-2 py-1.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-xs focus:ring-2 focus:ring-blue-500/50 outline-none`}
+                                                />
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <input
+                                                    type="text"
+                                                    value={s.location || ''}
+                                                    onChange={e => updateSchedule(s.id, 'location', e.target.value)}
+                                                    placeholder="Ex: Sala 01"
                                                     className={`w-full px-2 py-1.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-xs focus:ring-2 focus:ring-blue-500/50 outline-none`}
                                                 />
                                             </td>
@@ -678,14 +689,24 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                 className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm outline-none focus:border-blue-500/50`}
                                             />
                                         </div>
-                                        <div className="col-span-2">
-                                            <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase mb-1.5`}>Evento/Local</label>
+                                        <div className="col-span-1">
+                                            <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase mb-1.5`}>Atividade</label>
                                             <input
                                                 type="text"
                                                 value={s.event}
                                                 onChange={e => updateSchedule(s.id, 'event', e.target.value)}
                                                 className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm outline-none focus:border-blue-500/50`}
-                                                placeholder="Local ou atividade..."
+                                                placeholder="Atividade..."
+                                            />
+                                        </div>
+                                        <div className="col-span-1">
+                                            <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase mb-1.5`}>Local</label>
+                                            <input
+                                                type="text"
+                                                value={s.location || ''}
+                                                onChange={e => updateSchedule(s.id, 'location', e.target.value)}
+                                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm outline-none focus:border-blue-500/50`}
+                                                placeholder="Local..."
                                             />
                                         </div>
                                     </div>
