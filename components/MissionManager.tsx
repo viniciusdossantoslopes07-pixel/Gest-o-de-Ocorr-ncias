@@ -43,6 +43,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
     const [showEndMissionModal, setShowEndMissionModal] = useState(false);
     const [missionEnding, setMissionEnding] = useState<MissionOrder | null>(null);
     const [endReport, setEndReport] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
 
     // Permission checks
     // Refactored to use granular permissions instead of AccessLevel
@@ -258,6 +259,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
 
     // 2. Submit Order (SOP) -> Moves to AGUARDANDO_ASSINATURA
     const handleOrderSubmit = async (orderData: Partial<MissionOrder>) => {
+        setIsSaving(true);
         try {
             const omisNumber = orderData.omisNumber || await generateOMISNumber();
 
@@ -347,6 +349,8 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
         } catch (error: any) {
             console.error('Erro detalhado:', error);
             alert('Erro ao criar OM: ' + error.message);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -738,6 +742,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                     onSubmit={handleOrderSubmit}
                     order={selectedOrder || (initialOrderData as any)}
                     users={users}
+                    isSubmitting={isSaving}
                 />
             </div>
         );

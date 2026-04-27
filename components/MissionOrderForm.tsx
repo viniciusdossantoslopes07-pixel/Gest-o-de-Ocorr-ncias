@@ -1,7 +1,7 @@
 
 import { useState, type FC, type FormEvent } from 'react';
 import { MissionOrder, MissionOrderPersonnel, MissionOrderSchedule } from '../types';
-import { Save, X, Plus, Trash2, Search, Shield } from 'lucide-react';
+import { Save, X, Plus, Trash2, Search, Shield, Loader2 } from 'lucide-react';
 import { RANKS, ARMAMENT_OPTIONS, MISSION_FUNCTIONS, TIPOS_MISSAO } from '../constants';
 
 interface MissionOrderFormProps {
@@ -11,9 +11,10 @@ interface MissionOrderFormProps {
     currentUser: string;
     users: { id: string; name: string; rank: string; warName?: string; saram: string }[];
     isDarkMode?: boolean;
+    isSubmitting?: boolean;
 }
 
-const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel, currentUser, users, isDarkMode }) => {
+const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel, currentUser, users, isDarkMode, isSubmitting }) => {
     const [formData, setFormData] = useState({
         date: order?.date || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
         isInternal: order?.isInternal ?? true,
@@ -749,10 +750,15 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
             <div className="flex flex-col sm:flex-row gap-3">
                 <button
                     type="submit"
-                    className={`w-full sm:flex-1 py-4 ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500 shadow-xl shadow-blue-900/20' : 'bg-slate-900 hover:bg-slate-800'} text-white rounded-2xl font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95`}
+                    disabled={isSubmitting}
+                    className={`w-full sm:flex-1 py-4 ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500 shadow-xl shadow-blue-900/20' : 'bg-slate-900 hover:bg-slate-800'} text-white rounded-2xl font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
-                    <Save className="w-5 h-5" />
-                    {order && order.id ? 'Salvar Alterações' : 'Criar Ordem de Missão'}
+                    {isSubmitting ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                        <Save className="w-5 h-5" />
+                    )}
+                    {isSubmitting ? (order && order.id ? 'Salvando...' : 'Gerando...') : (order && order.id ? 'Salvar Alterações' : 'Criar Ordem de Missão')}
                 </button>
                 <button
                     type="button"
