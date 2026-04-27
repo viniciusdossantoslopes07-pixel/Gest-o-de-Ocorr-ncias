@@ -1,5 +1,5 @@
 
-import { type FC } from 'react';
+import { type FC, useEffect, useRef } from 'react';
 import { Printer, X, FileText } from 'lucide-react';
 import { MissionOrder, User } from '../types';
 import { formatDisplayDate } from '../utils/formatters';
@@ -61,9 +61,21 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
     const now = new Date();
     const emissao = `${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}h`;
 
+    const modalRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', handleKey);
+        return () => document.removeEventListener('keydown', handleKey);
+    }, [onClose]);
+
+    const handleBackdropClick = (e: React.MouseEvent) => {
+        if (modalRef.current && !modalRef.current.contains(e.target as Node)) onClose();
+    };
+
     return (
-        <div className="fixed inset-0 bg-black/80 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light backdrop-blur-sm msp-overlay">
-            <div className="bg-white w-full sm:max-w-5xl sm:rounded-2xl print:rounded-none h-[96dvh] sm:h-[92vh] print:h-auto flex flex-col overflow-hidden shadow-2xl">
+        <div onClick={handleBackdropClick} className="fixed inset-0 bg-black/80 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light backdrop-blur-sm">
+            <div ref={modalRef} className="bg-white w-full sm:max-w-5xl sm:rounded-2xl print:rounded-none h-[96dvh] sm:h-[92vh] print:h-auto flex flex-col overflow-hidden print:overflow-visible shadow-2xl">
 
                 {/* ── Mobile-first top bar ── */}
                 <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between print:hidden shrink-0 gap-3">
@@ -94,18 +106,15 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                 <style>{`
                     @media print {
                         * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-                        body > *:not(.msp-overlay) { display: none !important; }
-                        .msp-overlay { display: flex !important; position: fixed !important; inset: 0 !important; background: white !important; z-index: 9999 !important; }
-                        .msp-overlay > * { display: flex !important; flex-direction: column !important; }
-                        .print\:hidden { display: none !important; }
-                        .msp-doc { display: block !important; padding: 0 !important; }
+                        body { visibility: hidden !important; background: white !important; margin: 0 !important; padding: 0 !important; }
+                        .msp-doc { visibility: visible !important; position: absolute !important; left: 8mm !important; top: 6mm !important; width: calc(100% - 16mm) !important; background: white !important; }
                         .msp-doc * { visibility: visible !important; }
+                        table { font-size: 7.5pt !important; border-collapse: collapse !important; width: 100% !important; }
+                        th, td { padding: 2.5px 4px !important; }
                         .hidden { display: none !important; }
                         .sm\:block { display: block !important; }
                         .sm\:grid { display: grid !important; }
                         .sm\:hidden { display: none !important; }
-                        table { font-size: 7.5pt !important; border-collapse: collapse !important; width: 100% !important; }
-                        th, td { padding: 2.5px 4px !important; }
                         .ps { page-break-inside: avoid !important; break-inside: avoid !important; }
                         @page { size: A4 landscape; margin: 6mm 8mm; }
                     }
