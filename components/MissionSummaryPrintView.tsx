@@ -74,11 +74,11 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
     };
 
     return (
-        <div onClick={handleBackdropClick} className="fixed inset-0 bg-black/80 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light backdrop-blur-sm">
+        <div onClick={handleBackdropClick} className="fixed inset-0 bg-black/80 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light backdrop-blur-sm msp-root-container">
             <div ref={modalRef} className="bg-white w-full sm:max-w-5xl sm:rounded-2xl print:rounded-none h-[96dvh] sm:h-[92vh] print:h-auto flex flex-col overflow-hidden print:overflow-visible shadow-2xl">
 
                 {/* ── Mobile-first top bar ── */}
-                <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between print:hidden shrink-0 gap-3">
+                <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between print:hidden shrink-0 gap-3 print-hidden">
                     <div className="flex items-center gap-2.5 min-w-0">
                         <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center shrink-0">
                             <FileText className="w-4 h-4 text-white" />
@@ -106,34 +106,54 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                 <style>{`
                     @media print {
                         * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-                        body { visibility: hidden !important; background: white !important; margin: 0 !important; padding: 0 !important; }
-                        .msp-doc { 
-                            visibility: visible !important; 
-                            position: absolute !important; 
-                            left: 0 !important; 
-                            top: 0 !important; 
-                            width: 100% !important; 
-                            background: white !important;
-                            padding: 0 !important;
-                            margin: 0 !important;
+                        
+                        /* Esconder absolutamente tudo que não seja o documento de resumo */
+                        body > *:not(.msp-root-container) { display: none !important; }
+                        .print-hidden { display: none !important; }
+                        
+                        /* Resetar o body para a impressão */
+                        body { 
+                            background: white !important; 
+                            margin: 0 !important; 
+                            padding: 0 !important; 
+                            width: 100% !important;
+                            height: auto !important;
                         }
-                        .msp-doc * { visibility: visible !important; }
                         
-                        /* Forçar exibição de elementos que usamos para mobile/desktop */
-                        .print-visible { display: block !important; visibility: visible !important; }
-                        .print-grid { display: grid !important; visibility: visible !important; }
-                        .print-table { display: table !important; visibility: visible !important; }
-                        .print-flex { display: flex !important; visibility: visible !important; }
+                        /* Posicionamento absoluto no topo da folha */
+                        .msp-doc { 
+                            display: block !important;
+                            position: absolute !important; 
+                            top: 0 !important; 
+                            left: 0 !important; 
+                            width: 100% !important; 
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            background: white !important;
+                        }
                         
-                        table { font-size: 7pt !important; border-collapse: collapse !important; width: 100% !important; table-layout: auto !important; }
-                        th, td { padding: 2px 4px !important; border: 1px solid #000 !important; }
-                        th { background-color: #f1f5f9 !important; color: #000 !important; }
+                        /* Forçar visibilidade de elementos internos */
+                        .print-visible { display: block !important; }
+                        .print-grid { display: grid !important; }
+                        
+                        table { 
+                            font-size: 7.5pt !important; 
+                            border-collapse: collapse !important; 
+                            width: 100% !important; 
+                            border: 1.5px solid #000 !important;
+                        }
+                        th, td { 
+                            padding: 3px 5px !important; 
+                            border: 1px solid #000 !important; 
+                            color: #000 !important;
+                        }
+                        th { background-color: #f1f5f9 !important; font-weight: bold !important; }
                         
                         .ps { page-break-inside: avoid !important; break-inside: avoid !important; }
-                        @page { size: A4 landscape; margin: 5mm; }
-                        
-                        /* Garantir que o conteúdo caiba em uma página se possível */
-                        .msp-doc { transform: scale(0.98); transform-origin: top left; }
+                        @page { 
+                            size: A4 landscape; 
+                            margin: 10mm; 
+                        }
                     }
                 `}</style>
 
@@ -300,7 +320,7 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                 </div>
 
                 {/* Mobile sticky footer */}
-                <div className="sm:hidden print:hidden bg-white border-t border-slate-200 p-3 flex gap-2 shrink-0">
+                <div className="sm:hidden print:hidden bg-white border-t border-slate-200 p-3 flex gap-2 shrink-0 print-hidden">
                     <button
                         onClick={onClose}
                         className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-700 font-black text-sm active:scale-95 transition-all"
