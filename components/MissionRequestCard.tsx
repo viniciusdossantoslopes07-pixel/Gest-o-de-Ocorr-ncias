@@ -3,7 +3,7 @@ import { Mission, User, HistoricoItem } from '../types';
 import { RANKS, SETORES, TIPOS_MISSAO } from '../constants';
 import { X, Save, Calendar, Clock, MapPin, Users as UsersIcon, Truck, Coffee, MessageSquare, Edit2, History, Trash2, Ban, CheckCircle } from 'lucide-react';
 import { supabase } from '../services/supabase';
-import { formatViaturas, formatEfetivo } from '../utils/formatters';
+import { formatViaturas, formatEfetivo, formatDisplayDate } from '../utils/formatters';
 
 interface MissionRequestCardProps {
     mission: Mission;
@@ -312,7 +312,7 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                             />
                                         ) : (
                                             <p className={`text-sm font-medium ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} p-2 ${isDarkMode ? 'bg-slate-800/30' : 'bg-slate-50'} rounded-lg`}>
-                                                {formData.data ? new Date(formData.data).toLocaleDateString() : 'Não informada'}
+                                                {formatDisplayDate(formData.data)}
                                             </p>
                                         )}
                                     </div>

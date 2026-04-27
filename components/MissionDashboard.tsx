@@ -2,6 +2,7 @@
 import React, { FC, useState } from 'react';
 import { MissionOrder, Mission, User } from '../types';
 import { BarChart, Activity, CheckCircle, Clock, FileBarChart, Calendar, MapPin, User as UserIcon, FileText } from 'lucide-react';
+import { formatDisplayDate } from '../utils/formatters';
 import MissionReportView from './MissionReportView';
 import { MISSION_STATUS_COLORS, MISSION_STATUS_LABELS } from '../constants';
 import MissionOrderPrintView from './MissionOrderPrintView';
@@ -138,7 +139,7 @@ const MissionDashboard: FC<MissionDashboardProps> = ({ orders, requests, user })
                                                     <h4 className="font-bold text-slate-900">{order.mission}</h4>
                                                     <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
                                                         <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {order.location}</span>
-                                                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(order.date).toLocaleDateString()}</span>
+                                                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {formatDisplayDate(order.date)}</span>
                                                         <span className="font-mono text-slate-400">#{order.omisNumber}</span>
                                                     </div>
                                                 </div>
@@ -181,7 +182,7 @@ const MissionDashboard: FC<MissionDashboardProps> = ({ orders, requests, user })
                                             <p className="text-xs text-slate-500 mb-2">{order.location}</p>
                                             <div className="flex items-center justify-between text-[10px]">
                                                 <span className="font-bold text-emerald-700">{order.requester}</span>
-                                                <span className="text-slate-400">{new Date(order.date).toLocaleDateString()}</span>
+                                                <span className="text-slate-400">{formatDisplayDate(order.date)}</span>
                                             </div>
                                         </div>
                                     ))

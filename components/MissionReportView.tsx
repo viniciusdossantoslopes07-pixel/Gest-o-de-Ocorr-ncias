@@ -1,6 +1,7 @@
 import React, { FC, useState } from 'react';
 import { MissionOrder } from '../types';
 import { PieChart, FileText, Download, Filter, ChevronLeft, Calendar } from 'lucide-react';
+import { formatDisplayDate } from '../utils/formatters';
 import { jsPDF } from 'jspdf';
 
 interface MissionReportViewProps {
@@ -41,7 +42,7 @@ const MissionReportView: FC<MissionReportViewProps> = ({ orders, onBack }) => {
         let y = 50;
         filteredOrders.forEach((o, i) => {
             if (y > 270) { doc.addPage(); y = 20; }
-            doc.text(`${o.omisNumber} - ${o.mission} (${new Date(o.date).toLocaleDateString()}) - ${o.location}`, 20, y);
+            doc.text(`${o.omisNumber} - ${o.mission} (${formatDisplayDate(o.date)}) - ${o.location}`, 20, y);
             doc.text(`Status: ${o.status} | Cmd: ${o.requester}`, 20, y + 5);
             y += 15;
         });
@@ -118,7 +119,7 @@ const MissionReportView: FC<MissionReportViewProps> = ({ orders, onBack }) => {
                                 <tr key={order.id} className="hover:bg-slate-50 transition-colors">
                                     <td className="px-4 py-3 font-medium text-slate-900">{order.omisNumber}</td>
                                     <td className="px-4 py-3 text-slate-700">{order.mission}</td>
-                                    <td className="px-4 py-3 text-slate-500 font-medium">{new Date(order.date).toLocaleDateString()}</td>
+                                    <td className="px-4 py-3 text-slate-500 font-medium">{formatDisplayDate(order.date)}</td>
                                     <td className="px-4 py-3 text-slate-500">{order.location}</td>
                                     <td className="px-4 py-3 text-slate-500">{order.requester}</td>
                                     <td className="px-4 py-3">
@@ -158,7 +159,7 @@ const MissionReportView: FC<MissionReportViewProps> = ({ orders, onBack }) => {
                             <div className="grid grid-cols-2 gap-2 text-xs">
                                 <div>
                                     <span className="text-slate-400 block text-[10px] uppercase font-bold">Data</span>
-                                    <span className="text-slate-700 font-medium">{new Date(order.date).toLocaleDateString()}</span>
+                                    <span className="text-slate-700 font-medium">{formatDisplayDate(order.date)}</span>
                                 </div>
                                 <div>
                                     <span className="text-slate-400 block text-[10px] uppercase font-bold">Local</span>

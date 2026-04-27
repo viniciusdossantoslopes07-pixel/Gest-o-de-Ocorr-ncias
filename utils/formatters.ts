@@ -45,3 +45,22 @@ export const formatEfetivo = (efetivo: string | { oficial: number; graduado: num
 
     return parts.length > 0 ? parts.join(', ') : 'Nenhum efetivo especificado';
 };
+
+
+/**
+ * Formata uma string de data YYYY-MM-DD para o formato brasileiro DD/MM/YYYY
+ * sem problemas de fuso horário.
+ */
+export const formatDisplayDate = (dateStr: string | undefined | null): string => {
+    if (!dateStr) return 'N/A';
+    
+    // Se for uma data ISO completa, pega apenas a parte da data
+    const onlyDate = dateStr.split('T')[0];
+    const parts = onlyDate.split('-');
+    
+    if (parts.length !== 3) return dateStr;
+    
+    const [year, month, day] = parts;
+    return `${day}/${month}/${year}`;
+};
+

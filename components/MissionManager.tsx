@@ -13,6 +13,7 @@ import { PERMISSIONS, hasPermission } from '../constants/permissions';
 import MissionOrderPrintView from './MissionOrderPrintView';
 import MissionRequestList from './MissionRequestList';
 import { notificationService } from '../services/notificationService';
+import { formatDisplayDate } from '../utils/formatters';
 
 interface MissionManagerProps {
     user: User;
@@ -213,7 +214,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
         const confirmSend = confirm(
             `Confirma o envio desta solicitação para análise do SOP?\n\n` +
             `Tipo: ${mission.dados_missao.tipo_missao}\n` +
-            `Data: ${new Date(mission.dados_missao.data).toLocaleDateString()}\n` +
+            `Data: ${formatDisplayDate(mission.dados_missao.data)}\n` +
             `Local: ${mission.dados_missao.local}`
         );
 
@@ -492,7 +493,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 </div>
                                 <p className={`text-xs sm:text-sm mb-4 sm:mb-5 line-clamp-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{order.description}</p>
                                 <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-[11px] sm:text-sm">
-                                    <span className={`flex items-center gap-1.5 whitespace-nowrap ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}><Clock className="w-3.5 h-3.5" /> {new Date(order.date).toLocaleDateString()}</span>
+                                    <span className={`flex items-center gap-1.5 whitespace-nowrap ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}><Clock className="w-3.5 h-3.5" /> {formatDisplayDate(order.date)}</span>
                                     <span className={`flex items-center gap-1.5 rounded px-2.5 py-1 whitespace-nowrap font-black uppercase tracking-tighter ${isDarkMode ? 'bg-slate-950 text-blue-400 border border-slate-800' : 'bg-slate-100 text-slate-500'}`}><Shield className="w-3.5 h-3.5" /> OM #{order.omisNumber}</span>
                                 </div>
                             </div>
@@ -588,7 +589,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                     <span className="truncate">{m.dados_missao.local}</span>
                                 </div>
                                 <div className={`flex items-center gap-4 text-[10px] font-bold uppercase tracking-wider flex-wrap ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>
-                                    <span className="flex items-center gap-2"><Calendar className="w-3.5 h-3.5 text-blue-500" /> {m.dados_missao.data ? new Date(m.dados_missao.data).toLocaleDateString() : 'N/A'}</span>
+                                    <span className="flex items-center gap-2"><Calendar className="w-3.5 h-3.5 text-blue-500" /> {formatDisplayDate(m.dados_missao.data)}</span>
                                     <span className="flex items-center gap-2"><Clock className="w-3.5 h-3.5 text-blue-500" /> {m.dados_missao.inicio} - {m.dados_missao.termino}</span>
                                 </div>
                             </div>
@@ -644,7 +645,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 </div>
                                 <div className={`text-base font-black shadow-sm uppercase mt-1 mb-4 line-clamp-2 leading-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{o.mission}</div>
                                 <div className={`text-[10px] font-bold uppercase tracking-wider flex flex-col gap-2.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>
-                                    <span className="flex items-center gap-2"><Calendar className="w-3.5 h-3.5 text-blue-500" /> {new Date(o.date).toLocaleDateString()}</span>
+                                    <span className="flex items-center gap-2"><Calendar className="w-3.5 h-3.5 text-blue-500" /> {formatDisplayDate(o.date)}</span>
                                     <span className="flex items-center gap-2"><UserIcon className="w-3.5 h-3.5 text-blue-500" /> {o.createdBy}</span>
                                 </div>
                             </div>
@@ -827,7 +828,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                             </div>
                                             <p className={`text-xs sm:text-sm mb-5 line-clamp-2 md:line-clamp-none ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{order.description}</p>
                                             <div className="flex flex-wrap items-center gap-4 sm:gap-8 text-[11px] sm:text-sm">
-                                                <span className={`flex items-center gap-1.5 whitespace-nowrap ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}><Clock className="w-3.5 h-3.5" /> {new Date(order.date).toLocaleDateString()}</span>
+                                                <span className={`flex items-center gap-1.5 whitespace-nowrap ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}><Clock className="w-3.5 h-3.5" /> {formatDisplayDate(order.date)}</span>
                                                 <span className={`flex items-center gap-1.5 rounded px-2.5 py-1 whitespace-nowrap font-black uppercase tracking-tighter ${isDarkMode ? 'bg-slate-950 text-blue-400 border border-slate-800' : 'bg-slate-100 text-slate-600'}`}><Shield className="w-3.5 h-3.5" /> OM #{order.omisNumber}</span>
                                             </div>
                                         </div>
@@ -936,7 +937,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                             </div>
                                             <p className={`text-xs sm:text-sm mb-4 line-clamp-2 md:line-clamp-none ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{order.description}</p>
                                             <div className="flex flex-wrap items-center gap-4 sm:gap-8 text-[11px] sm:text-sm border-t border-slate-800/30 pt-3 mt-1">
-                                                <span className="flex items-center gap-1.5 whitespace-nowrap text-slate-500 font-medium"><Clock className="w-3.5 h-3.5" /> Finalizada em: {new Date(order.date).toLocaleDateString()}</span>
+                                                <span className="flex items-center gap-1.5 whitespace-nowrap text-slate-500 font-medium"><Clock className="w-3.5 h-3.5" /> Finalizada em: {formatDisplayDate(order.date)}</span>
                                                 <span className={`flex items-center gap-1.5 rounded px-2 py-0.5 whitespace-nowrap font-black uppercase tracking-tighter ${isDarkMode ? 'bg-slate-950 text-blue-400 border border-slate-800' : 'bg-slate-100 text-slate-500'}`}><Shield className="w-3 h-3" /> OM #{order.omisNumber}</span>
                                             </div>
                                         </div>
