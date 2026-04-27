@@ -533,9 +533,10 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 )}
                                 <button
                                     onClick={() => handlePrintOrder(order)}
-                                    className={`flex-1 sm:flex-none px-5 py-3 rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2.5 active:scale-95 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                                    className={`p-3 rounded-xl transition-all flex items-center justify-center active:scale-95 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                                    title="Visualizar"
                                 >
-                                    <FileText className="w-4 h-4" /> Imprimir
+                                    <FileText className="w-4 h-4" />
                                 </button>
                             </div>
                         </div>
@@ -670,9 +671,10 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                             <div className={`mt-6 pt-5 border-t ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'} flex items-center justify-between gap-2 relative z-10`}>
                                 <button 
                                     onClick={() => handlePrintOrder(o)}
-                                    className={`flex-1 px-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-1.5 ${isDarkMode ? 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/80 border border-slate-700/50' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'}`}
+                                    className={`p-3 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/80 border border-slate-700/50' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'}`}
+                                    title="Visualizar"
                                 >
-                                    <Eye className="w-4 h-4" /> Visualizar
+                                    <Eye className="w-4 h-4" />
                                 </button>
                                 <button 
                                     onClick={(e) => { e.stopPropagation(); handleEditOrder(o); }}
@@ -882,9 +884,10 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                             )}
                                             <button
                                                 onClick={() => handlePrintOrder(order)}
-                                                className={`flex-1 sm:flex-none px-5 py-3.5 rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2.5 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                                                className={`p-3.5 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                                                title="Visualizar"
                                             >
-                                                <FileText className="w-4.5 h-4.5" /> Detalhes
+                                                <FileText className="w-4.5 h-4.5" />
                                             </button>
                                         </div>
                                     </div>
@@ -974,9 +977,10 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                         </div>
                                         <button
                                             onClick={() => handlePrintOrder(order)}
-                                            className={`w-full sm:w-auto px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg flex items-center justify-center gap-2 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 shadow-black/20' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'}`}
+                                            className={`p-3 rounded-xl transition-all active:scale-[0.98] shadow-lg flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 shadow-black/20' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'}`}
+                                            title="Visualizar"
                                         >
-                                            <FileText className="w-4 h-4" /> Detalhes
+                                            <FileText className="w-4 h-4" />
                                         </button>
                                     </div>
                                 </div>
