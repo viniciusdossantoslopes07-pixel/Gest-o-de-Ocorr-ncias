@@ -102,67 +102,67 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                     </div>
                 </div>
 
-                {/* ── Print styles ── */}
+                {/* ── Print styles (Lógica idêntica ao ForceMapPrintView) ── */}
                 <style>{`
                     @media print {
-                        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-                        
-                        /* Esconder absolutamente tudo que não seja o documento de resumo */
-                        body > *:not(.msp-root-container) { display: none !important; }
-                        .print-hidden { display: none !important; }
-                        
-                        /* Resetar o body para a impressão */
-                        body { 
-                            background: white !important; 
-                            margin: 0 !important; 
-                            padding: 0 !important; 
-                            width: 100% !important;
-                            height: auto !important;
+                        * {
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                            color-adjust: exact !important;
                         }
-                        
-                        /* Posicionamento absoluto no topo da folha */
-                        .msp-doc { 
-                            display: block !important;
-                            position: absolute !important; 
-                            top: 0 !important; 
-                            left: 0 !important; 
-                            width: 100% !important; 
+                        body {
+                            visibility: hidden !important;
+                            background: white !important;
                             margin: 0 !important;
                             padding: 0 !important;
-                            background: white !important;
                         }
-                        
-                        /* Forçar visibilidade de elementos internos */
-                        .print-visible { display: block !important; }
-                        .print-grid { display: grid !important; }
-                        
-                        table { 
-                            font-size: 7.5pt !important; 
-                            border-collapse: collapse !important; 
-                            width: 100% !important; 
-                            border: 1.5px solid #000 !important;
+                        .mission-summary-printable {
+                            visibility: visible !important;
+                            position: absolute !important;
+                            left: 10mm !important;
+                            top: 8mm !important;
+                            width: calc(100% - 20mm) !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            height: auto !important;
                         }
-                        th, td { 
-                            padding: 3px 5px !important; 
-                            border: 1px solid #000 !important; 
-                            color: #000 !important;
+                        /* Tabelas compactas militares */
+                        .mission-summary-printable table {
+                            font-size: 7.5pt !important;
+                            border-collapse: collapse !important;
+                            width: 100% !important;
+                            border: 1px solid #000 !important;
                         }
-                        th { background-color: #f1f5f9 !important; font-weight: bold !important; }
-                        
-                        .ps { page-break-inside: avoid !important; break-inside: avoid !important; }
-                        @page { 
-                            size: A4 landscape; 
-                            margin: 10mm; 
+                        .mission-summary-printable th, .mission-summary-printable td {
+                            padding: 3px 5px !important;
+                            border: 1px solid #000 !important;
+                        }
+                        .mission-summary-printable th {
+                            background-color: #f1f5f9 !important;
+                            -webkit-print-color-adjust: exact !important;
+                        }
+                        /* Seções não quebram no meio */
+                        .mission-summary-printable .print-section {
+                            page-break-inside: avoid !important;
+                            break-inside: avoid !important;
+                        }
+                        /* Esconde elementos de controle */
+                        .print-hidden, .modals-container, .print-header, .print-footer {
+                            display: none !important;
+                        }
+                        @page {
+                            size: A4 landscape;
+                            margin: 0;
                         }
                     }
                 `}</style>
 
                 {/* ── Scrollable content ── */}
-                <div className="flex-1 overflow-y-auto overflow-x-hidden print:overflow-visible bg-slate-100 print:bg-white">
-                    <div className="bg-white print:shadow-none mx-auto p-4 sm:p-8 print:p-0 max-w-[297mm] print:max-w-none msp-doc">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden print:overflow-visible bg-slate-100 print:bg-white p-4 print:p-0">
+                    <div className="bg-white print:shadow-none mx-auto p-4 sm:p-8 print:p-0 max-w-[297mm] print:max-w-none mission-summary-printable">
 
                         {/* Military Header */}
-                        <div className="flex items-center justify-between mb-3 border-b-2 border-slate-900 pb-2 ps">
+                        <div className="flex items-center justify-between mb-3 border-b-2 border-slate-900 pb-2 print-section">
                             <img src="/logo_basp_optimized.png" alt="BASP" className="w-10 h-10 sm:w-14 sm:h-14 object-contain shrink-0" />
                             <div className="flex-1 text-center px-2">
                                 <p className="text-[7px] sm:text-[9px] font-bold uppercase tracking-widest text-slate-500">Ministério da Defesa</p>
@@ -177,7 +177,7 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                         </div>
 
                         {/* Meta row */}
-                        <div className="flex flex-col sm:flex-row justify-between gap-1 mb-3 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-slate-600 border-l-4 border-slate-900 pl-2 ps">
+                        <div className="flex flex-col sm:flex-row justify-between gap-1 mb-3 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-slate-600 border-l-4 border-slate-900 pl-2 print-section">
                             <div>
                                 <p>Período: <span className="text-slate-900">{periodLabel}</span></p>
                                 <p>Total de Missões: <span className="text-slate-900">{orders.length}</span> &nbsp;·&nbsp; Efetivo: <span className="text-slate-900">{totalPersonnel} militares</span></p>
@@ -186,7 +186,7 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                         </div>
 
                         {/* KPI strip — 2x2 on mobile, 4x1 on sm+ */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 mb-4 ps">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 mb-4 print-section">
                             {[
                                 { label: 'Total OMIS', value: orders.length, cls: 'bg-slate-900 text-white' },
                                 { label: 'Prontas', value: orders.filter(o => o.status === 'PRONTA_PARA_EXECUCAO').length, cls: 'bg-blue-50 border border-blue-200 text-blue-900' },
@@ -203,7 +203,7 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                         {/* ── MOBILE: card list; DESKTOP/PRINT: table ── */}
 
                         {/* Section title */}
-                        <div className="flex items-center gap-2 mb-2 border-b-2 border-slate-900 pb-1 ps">
+                        <div className="flex items-center gap-2 mb-2 border-b-2 border-slate-900 pb-1 print-section">
                             <h3 className="font-black uppercase tracking-widest text-slate-900 text-[9px]">Missões Previstas</h3>
                         </div>
 
@@ -247,8 +247,8 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                                     </div>
                                 </div>
 
-                                {/* Desktop table — hidden on mobile, visible on sm+ and in print */}
-                                <div className="hidden sm:block print-visible overflow-x-auto">
+                                {/* Desktop table — visível em print e telas maiores */}
+                                <div className="hidden sm:block print:block overflow-x-auto print-section">
                                     <table className="w-full text-left border-collapse border border-slate-900">
                                         <thead>
                                             <tr className="bg-slate-900 text-white">
@@ -296,8 +296,8 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                             </>
                         )}
 
-                        {/* Signature — hidden on mobile screens, visible in print */}
-                        <div className="hidden sm:grid print-grid mt-6 pt-4 border-t border-slate-200 grid-cols-3 gap-10 ps">
+                        {/* Signature — visível em print e telas maiores */}
+                        <div className="hidden sm:grid print:grid mt-6 pt-4 border-t border-slate-200 grid-cols-3 gap-10 print-section">
                             {['Seção de Operações - SAP-01\nResponsável pela Emissão', 'CH-SOP\nChefe de Seg. e Operações', 'Comandante do GSD-SP\nHomologação'].map((sig, i) => {
                                 const [title, sub] = sig.split('\n');
                                 return (
