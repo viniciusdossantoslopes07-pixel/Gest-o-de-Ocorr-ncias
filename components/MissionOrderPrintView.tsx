@@ -288,9 +288,8 @@ ${content.outerHTML}
                         </div>
 
                         {/* Footer */}
-                        <div className="text-[10px] sm:text-xs text-slate-500 mt-4 pt-4 border-t border-slate-300">
-                            <p>Criado por: {order.createdBy}</p>
-                            <p>Data de criação: {new Date(order.createdAt).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</p>
+                        <div className="text-[8px] text-slate-400 mt-12 pt-2 border-t border-slate-100 italic">
+                            <p>Criado por: {order.createdBy} em {new Date(order.createdAt).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</p>
                             {order.updatedAt !== order.createdAt && (
                                 <p>Última atualização: {new Date(order.updatedAt).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</p>
                             )}
