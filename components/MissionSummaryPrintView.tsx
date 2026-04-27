@@ -62,7 +62,7 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
     const emissao = `${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}h`;
 
     return (
-        <div className="fixed inset-0 bg-black/80 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light backdrop-blur-sm">
+        <div className="fixed inset-0 bg-black/80 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light backdrop-blur-sm msp-overlay">
             <div className="bg-white w-full sm:max-w-5xl sm:rounded-2xl print:rounded-none h-[96dvh] sm:h-[92vh] print:h-auto flex flex-col overflow-hidden shadow-2xl">
 
                 {/* ── Mobile-first top bar ── */}
@@ -94,10 +94,18 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                 <style>{`
                     @media print {
                         * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-                        body { visibility: hidden !important; background: white !important; margin: 0 !important; padding: 0 !important; }
-                        .msp-doc { visibility: visible !important; position: absolute !important; left: 8mm !important; top: 6mm !important; width: calc(100% - 16mm) !important; }
-                        .msp-doc table { font-size: 7.5pt !important; border-collapse: collapse !important; width: 100% !important; }
-                        .msp-doc th, .msp-doc td { padding: 2.5px 4px !important; }
+                        body > *:not(.msp-overlay) { display: none !important; }
+                        .msp-overlay { display: flex !important; position: fixed !important; inset: 0 !important; background: white !important; z-index: 9999 !important; }
+                        .msp-overlay > * { display: flex !important; flex-direction: column !important; }
+                        .print\:hidden { display: none !important; }
+                        .msp-doc { display: block !important; padding: 0 !important; }
+                        .msp-doc * { visibility: visible !important; }
+                        .hidden { display: none !important; }
+                        .sm\:block { display: block !important; }
+                        .sm\:grid { display: grid !important; }
+                        .sm\:hidden { display: none !important; }
+                        table { font-size: 7.5pt !important; border-collapse: collapse !important; width: 100% !important; }
+                        th, td { padding: 2.5px 4px !important; }
                         .ps { page-break-inside: avoid !important; break-inside: avoid !important; }
                         @page { size: A4 landscape; margin: 6mm 8mm; }
                     }
@@ -244,7 +252,7 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
 
                         {/* Signature — hidden on mobile screens, visible in print */}
                         <div className="hidden sm:grid print:grid mt-6 pt-4 border-t border-slate-200 grid-cols-3 gap-10 ps">
-                            {['Secretaria do GSD-SP\nResponsável pela Emissão', 'CH-SOP\nChefe de Seg. e Operações', 'Comandante do GSD-SP\nHomologação'].map((sig, i) => {
+                            {['Seção de Operações - SAP-01\nResponsável pela Emissão', 'CH-SOP\nChefe de Seg. e Operações', 'Comandante do GSD-SP\nHomologação'].map((sig, i) => {
                                 const [title, sub] = sig.split('\n');
                                 return (
                                     <div key={i} className="text-center">
