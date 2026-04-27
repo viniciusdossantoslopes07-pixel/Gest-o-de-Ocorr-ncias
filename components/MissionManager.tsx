@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { Mission, User, MissionOrder, UserRole } from '../types';
-import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint, Filter, MapPin, User as UserIcon, PlayCircle, History, Zap } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint, Filter, MapPin, User as UserIcon, PlayCircle, History, Zap, Edit2 } from 'lucide-react';
 import { authenticateBiometrics } from '../services/webauthn';
 import MissionStatistics from './MissionStatistics';
 import MissionOrderForm from './MissionOrderForm';
@@ -250,6 +250,12 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
         return `${(count || 0) + 1}/GSD-SP`;
     };
 
+    const handleEditOrder = (order: MissionOrder) => {
+        setSelectedOrder(order);
+        setSelectedMission(null);
+        setShowOrderForm(true);
+    };
+
     // 2. Submit Order (SOP) -> Moves to AGUARDANDO_ASSINATURA
     const handleOrderSubmit = async (orderData: Partial<MissionOrder>) => {
         try {
@@ -263,8 +269,11 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 missionCommanderId = null;
             }
 
+            const isEditing = !!selectedOrder;
+            const orderId = isEditing ? selectedOrder!.id : crypto.randomUUID();
+
             const dbOrder = {
-                id: crypto.randomUUID(), // Generate UUID for the order
+                id: orderId,
                 omis_number: omisNumber,
                 date: orderData.date,
                 is_internal: orderData.isInternal,
@@ -280,16 +289,16 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 special_orders: orderData.specialOrders,
                 mission_commander_id: missionCommanderId,
                 status: 'AGUARDANDO_ASSINATURA', // Ready for CH-SOP
-                created_at: new Date().toISOString(),
-                created_by: user.name,
+                created_at: isEditing ? selectedOrder!.createdAt : new Date().toISOString(),
+                created_by: isEditing ? selectedOrder!.createdBy : user.name,
                 updated_at: new Date().toISOString()
             };
 
-            console.log('Enviando ordem para o banco:', dbOrder);
+            console.log(isEditing ? 'Atualizando ordem no banco:' : 'Inserindo nova ordem no banco:', dbOrder);
 
-            const { error: orderError } = await supabase
-                .from('mission_orders')
-                .insert([dbOrder]);
+            const { error: orderError } = isEditing 
+                ? await supabase.from('mission_orders').update(dbOrder).eq('id', orderId)
+                : await supabase.from('mission_orders').insert([dbOrder]);
 
             if (orderError) throw orderError;
 
@@ -514,6 +523,14 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                         <Square className="w-4 h-4 fill-current" /> Finalizar
                                     </button>
                                 )}
+                                {order.status === 'AGUARDANDO_ASSINATURA' && !order.chSopSignature && (
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleEditOrder(order); }}
+                                        className={`flex-1 sm:flex-none px-5 py-3 rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2.5 active:scale-95 ${isDarkMode ? 'bg-blue-900/30 text-blue-400 border border-blue-800/50 hover:bg-blue-800/40' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'}`}
+                                    >
+                                        <Edit2 className="w-4 h-4" /> Editar
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => handlePrintOrder(order)}
                                     className={`flex-1 sm:flex-none px-5 py-3 rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2.5 active:scale-95 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
@@ -657,6 +674,12 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 >
                                     <Eye className="w-4 h-4" /> Visualizar
                                 </button>
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); handleEditOrder(o); }}
+                                    className={`flex-1 px-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-1.5 ${isDarkMode ? 'bg-blue-900/30 text-blue-400 border border-blue-800/50 hover:bg-blue-800/40' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'}`}
+                                >
+                                    <Edit2 className="w-4 h-4" /> Editar
+                                </button>
                                 {canSign && (
                                     <>
                                         <button 
@@ -683,27 +706,35 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
         );
     };
 
-    if (showOrderForm && selectedMission) {
-        // Pre-fill order form
-        const initialOrderData: Partial<MissionOrder> = {
-            mission: selectedMission.dados_missao.tipo_missao,
-            location: selectedMission.dados_missao.local,
-            description: '',
-            requester: `${selectedMission.dados_missao.posto} ${selectedMission.dados_missao.nome_guerra}`,
-            date: selectedMission.dados_missao.data,
-            food: Object.values(selectedMission.dados_missao.alimentacao).some(v => v === true),
-            transport: false,
-            omisNumber: draftOmisNumber
-        };
+    if (showOrderForm) {
+        // Pre-fill order form data if coming from a request
+        let initialOrderData: Partial<MissionOrder> | undefined = undefined;
+        
+        if (selectedMission) {
+            initialOrderData = {
+                mission: selectedMission.dados_missao.tipo_missao,
+                location: selectedMission.dados_missao.local,
+                description: '',
+                requester: `${selectedMission.dados_missao.posto} ${selectedMission.dados_missao.nome_guerra}`,
+                date: selectedMission.dados_missao.data,
+                food: Object.values(selectedMission.dados_missao.alimentacao).some(v => v === true),
+                transport: false,
+                omisNumber: draftOmisNumber
+            };
+        }
 
         return (
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto py-8">
                 <MissionOrderForm
                     currentUser={user.name}
                     isDarkMode={isDarkMode}
-                    onCancel={() => { setShowOrderForm(false); setSelectedMission(null); }}
+                    onCancel={() => { 
+                        setShowOrderForm(false); 
+                        setSelectedMission(null); 
+                        setSelectedOrder(null); 
+                    }}
                     onSubmit={handleOrderSubmit}
-                    order={initialOrderData as any}
+                    order={selectedOrder || (initialOrderData as any)}
                     users={users}
                 />
             </div>
