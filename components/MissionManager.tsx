@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { Mission, User, MissionOrder, UserRole } from '../types';
-import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint, Filter, MapPin, User as UserIcon, PlayCircle, History, Zap, Edit2 } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint, Filter, MapPin, User as UserIcon, PlayCircle, History, Zap, Edit2, Mail } from 'lucide-react';
 import { authenticateBiometrics } from '../services/webauthn';
 import MissionStatistics from './MissionStatistics';
 import MissionOrderForm from './MissionOrderForm';
@@ -323,29 +323,6 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
 
             alert(`Ordem de Missão ${omisNumber} gerada e enviada para assinatura do Ch SOP.`);
 
-            // Enviar notificações para a equipe escalada
-            const missionCommander = users.find(u => u.id === missionCommanderId);
-            const commanderName = missionCommander ? `${missionCommander.rank} ${missionCommander.warName || missionCommander.name}` : undefined;
-
-            if (orderData.personnel) {
-                console.log(`[Notification] Iniciando disparos de e-mail para ${orderData.personnel.length} militares.`);
-                for (const p of orderData.personnel) {
-                    // Buscar o usuário pelo SARAM para obter o e-mail
-                    const foundUser = users.find(u => u.saram === p.saram);
-                    if (foundUser && foundUser.email) {
-                        await notificationService.sendMissionAssignmentNotification({
-                            militarEmail: foundUser.email,
-                            militarName: foundUser.warName || foundUser.name,
-                            missionTitle: orderData.mission || 'Missão Sem Título',
-                            missionDate: orderData.date || '',
-                            missionLocation: orderData.location || '',
-                            omisNumber: omisNumber,
-                            commanderName: commanderName
-                        });
-                    }
-                }
-            }
-
             setShowOrderForm(false);
             setSelectedMission(null);
             fetchData();
@@ -466,6 +443,41 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
         } catch (e: any) { alert(e.message); }
     };
 
+    const handleSendNotifications = async (order: MissionOrder) => {
+        if (!confirm(`Deseja enviar notificações por e-mail para os ${order.personnel.length} militares desta missão?`)) return;
+        
+        try {
+            const missionCommander = users.find(u => u.id === order.missionCommanderId);
+            const commanderName = order.isExternalCommander 
+                ? order.externalCommanderName 
+                : (missionCommander ? `${missionCommander.rank} ${missionCommander.warName || missionCommander.name}` : undefined);
+
+            let sentCount = 0;
+            // Garantir unicidade de SARAM para evitar emails duplicados
+            const uniqueSarams = Array.from(new Set(order.personnel.map(p => p.saram)));
+            
+            for (const saram of uniqueSarams) {
+                const foundUser = users.find(u => u.saram === saram);
+                if (foundUser && foundUser.email) {
+                    await notificationService.sendMissionAssignmentNotification({
+                        militarEmail: foundUser.email,
+                        militarName: foundUser.warName || foundUser.name,
+                        missionTitle: order.mission || 'Missão Sem Título',
+                        missionDate: order.date || '',
+                        missionLocation: order.location || '',
+                        omisNumber: order.omisNumber,
+                        commanderName: commanderName
+                    });
+                    sentCount++;
+                }
+            }
+            alert(`Comunicação enviada com sucesso para ${sentCount} militares.`);
+        } catch (error: any) {
+            console.error('Erro ao enviar notificações:', error);
+            alert('Erro ao enviar notificações: ' + error.message);
+        }
+    };
+
     // Helper to check if user can manage (start/end) a mission
     const canManageMission = (order: MissionOrder) => {
         // 1. SOP/CH-SOP or ADMIN (Chefia e Setores Técnicos)
@@ -524,12 +536,20 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                     </button>
                                 )}
                                 {order.status === 'EM_MISSAO' && canManageMission(order) && (
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleMissionEnd(order); }}
-                                        className="flex-1 sm:flex-none px-5 py-3 bg-red-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-red-500 transition-all flex items-center justify-center gap-2.5 shadow-lg shadow-red-600/20 active:scale-95"
-                                    >
-                                        <Square className="w-4 h-4 fill-current" /> Finalizar
-                                    </button>
+                                    <>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleSendNotifications(order); }}
+                                            className="flex-1 sm:flex-none px-5 py-3 bg-indigo-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-indigo-500 transition-all flex items-center justify-center gap-2.5 shadow-lg shadow-indigo-600/20 active:scale-95"
+                                        >
+                                            <Mail className="w-4 h-4" /> Notificar
+                                        </button>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleMissionEnd(order); }}
+                                            className="flex-1 sm:flex-none px-5 py-3 bg-red-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-red-500 transition-all flex items-center justify-center gap-2.5 shadow-lg shadow-red-600/20 active:scale-95"
+                                        >
+                                            <Square className="w-4 h-4 fill-current" /> Finalizar
+                                        </button>
+                                    </>
                                 )}
                                 {order.status === 'AGUARDANDO_ASSINATURA' && !order.chSopSignature && (
                                     <button
@@ -891,6 +911,14 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                                     <Square className="w-4.5 h-4.5 fill-current" /> Finalizar
                                                 </button>
                                             )}
+                                            {order.status === 'EM_MISSAO' && canManageMission(order) && (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleSendNotifications(order); }}
+                                                    className="flex-1 sm:flex-none px-5 py-3.5 bg-indigo-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20 active:scale-95 flex items-center justify-center gap-2.5"
+                                                >
+                                                    <Mail className="w-4.5 h-4.5" /> Notificar
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={() => handlePrintOrder(order)}
                                                 className={`p-3.5 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
@@ -1019,6 +1047,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                         setShowPrintView(false);
                         handleForceActivateOrder(selectedOrder);
                     }}
+                    onSendNotifications={handleSendNotifications}
                 />
             )}
 

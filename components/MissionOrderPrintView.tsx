@@ -11,9 +11,10 @@ interface MissionOrderPrintViewProps {
     onForceActivate?: () => void;
     canSign?: boolean;
     users?: any[];
+    onSendNotifications?: (order: MissionOrder) => void;
 }
 
-const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose, onSign, onForceActivate, canSign, users = [] }) => {
+const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose, onSign, onForceActivate, canSign, users = [], onSendNotifications }) => {
     const handlePrint = () => {
         const content = document.getElementById('omis-print-content');
         if (!content) return;
@@ -339,6 +340,15 @@ ${content.outerHTML}
                             >
                                 <Zap className="w-4 h-4" />
                                 <span>Iniciar</span>
+                            </button>
+                        )}
+                        {order.status === 'EM_MISSAO' && onSendNotifications && (
+                            <button
+                                onClick={() => onSendNotifications(order)}
+                                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all active:scale-95"
+                            >
+                                <Mail className="w-4 h-4" />
+                                <span>Enviar Comunicação</span>
                             </button>
                         )}
                         {order.status === 'AGUARDANDO_ASSINATURA' && canSign && onSign && (
