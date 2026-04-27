@@ -137,7 +137,7 @@ ${content.outerHTML}
                             <tbody>
                                 <tr>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-32 uppercase text-[8px]">Nº da OMIS:</td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 font-bold">{order.omisNumber}</td>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-bold">{order.omisNumber || (order.status === 'CANCELADA' ? 'CANCELADA' : '')}</td>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-24 uppercase text-[8px]">Data:</td>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-bold">{formatDisplayDate(order.date)}</td>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-24 uppercase text-[8px]">Interna:</td>
@@ -308,8 +308,11 @@ ${content.outerHTML}
                                 <p>Última atualização: {new Date(order.updatedAt).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</p>
                             )}
                             {order.missionReport && (
-                                <div className="mt-4 p-2 bg-slate-50 border border-slate-200 rounded">
-                                    <span className="font-bold">Relato Operacional:</span> {order.missionReport}
+                                <div className="mt-4 p-2 bg-slate-50 border border-slate-200 rounded text-[9px] sm:text-[10px]">
+                                    <span className="font-bold uppercase tracking-tighter mr-2">
+                                        {order.status === 'CANCELADA' ? 'Motivo do Cancelamento:' : 'Relato Operacional:'}
+                                    </span> 
+                                    {order.missionReport.replace('MISSÃO CANCELADA: ', '')}
                                 </div>
                             )}
                         </div>
@@ -342,7 +345,7 @@ ${content.outerHTML}
                                 <span>Iniciar</span>
                             </button>
                         )}
-                        {order.status === 'EM_MISSAO' && onSendNotifications && (
+                        {(order.status === 'EM_MISSAO' || order.status === 'PRONTA_PARA_EXECUCAO') && onSendNotifications && (
                             <button
                                 onClick={() => onSendNotifications(order)}
                                 className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all active:scale-95"
