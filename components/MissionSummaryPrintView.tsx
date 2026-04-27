@@ -107,16 +107,33 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                     @media print {
                         * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
                         body { visibility: hidden !important; background: white !important; margin: 0 !important; padding: 0 !important; }
-                        .msp-doc { visibility: visible !important; position: absolute !important; left: 8mm !important; top: 6mm !important; width: calc(100% - 16mm) !important; background: white !important; }
+                        .msp-doc { 
+                            visibility: visible !important; 
+                            position: absolute !important; 
+                            left: 0 !important; 
+                            top: 0 !important; 
+                            width: 100% !important; 
+                            background: white !important;
+                            padding: 0 !important;
+                            margin: 0 !important;
+                        }
                         .msp-doc * { visibility: visible !important; }
-                        table { font-size: 7.5pt !important; border-collapse: collapse !important; width: 100% !important; }
-                        th, td { padding: 2.5px 4px !important; }
-                        .hidden { display: none !important; }
-                        .sm\:block { display: block !important; }
-                        .sm\:grid { display: grid !important; }
-                        .sm\:hidden { display: none !important; }
+                        
+                        /* Forçar exibição de elementos que usamos para mobile/desktop */
+                        .print-visible { display: block !important; visibility: visible !important; }
+                        .print-grid { display: grid !important; visibility: visible !important; }
+                        .print-table { display: table !important; visibility: visible !important; }
+                        .print-flex { display: flex !important; visibility: visible !important; }
+                        
+                        table { font-size: 7pt !important; border-collapse: collapse !important; width: 100% !important; table-layout: auto !important; }
+                        th, td { padding: 2px 4px !important; border: 1px solid #000 !important; }
+                        th { background-color: #f1f5f9 !important; color: #000 !important; }
+                        
                         .ps { page-break-inside: avoid !important; break-inside: avoid !important; }
-                        @page { size: A4 landscape; margin: 6mm 8mm; }
+                        @page { size: A4 landscape; margin: 5mm; }
+                        
+                        /* Garantir que o conteúdo caiba em uma página se possível */
+                        .msp-doc { transform: scale(0.98); transform-origin: top left; }
                     }
                 `}</style>
 
@@ -211,7 +228,7 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                                 </div>
 
                                 {/* Desktop table — hidden on mobile, visible on sm+ and in print */}
-                                <div className="hidden sm:block print:block overflow-x-auto">
+                                <div className="hidden sm:block print-visible overflow-x-auto">
                                     <table className="w-full text-left border-collapse border border-slate-900">
                                         <thead>
                                             <tr className="bg-slate-900 text-white">
@@ -260,7 +277,7 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                         )}
 
                         {/* Signature — hidden on mobile screens, visible in print */}
-                        <div className="hidden sm:grid print:grid mt-6 pt-4 border-t border-slate-200 grid-cols-3 gap-10 ps">
+                        <div className="hidden sm:grid print-grid mt-6 pt-4 border-t border-slate-200 grid-cols-3 gap-10 ps">
                             {['Seção de Operações - SAP-01\nResponsável pela Emissão', 'CH-SOP\nChefe de Seg. e Operações', 'Comandante do GSD-SP\nHomologação'].map((sig, i) => {
                                 const [title, sub] = sig.split('\n');
                                 return (
