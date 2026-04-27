@@ -559,6 +559,15 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                     <span className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${MISSION_STATUS_COLORS[order.status || ''] || 'bg-slate-100'}`}>
                                         {MISSION_STATUS_LABELS[order.status || ''] || order.status}
                                     </span>
+                                    {(order.status === 'EM_MISSAO' || order.status === 'PRONTA_PARA_EXECUCAO') && canManageMission(order) && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleSendNotifications(order); }}
+                                            className={`p-1.5 rounded-lg transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20' : 'bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-100'}`}
+                                            title="Enviar Notificações"
+                                        >
+                                            <Mail className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
                                 </div>
                                 <p className={`text-xs sm:text-sm mb-4 sm:mb-5 line-clamp-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{order.description}</p>
                                 <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-[11px] sm:text-sm">
@@ -576,20 +585,12 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                     </button>
                                 )}
                                 {(order.status === 'EM_MISSAO' || order.status === 'PRONTA_PARA_EXECUCAO') && canManageMission(order) && (
-                                    <>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleSendNotifications(order); }}
-                                            className="flex-1 sm:flex-none px-5 py-3 bg-indigo-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-indigo-500 transition-all flex items-center justify-center gap-2.5 shadow-lg shadow-indigo-600/20 active:scale-95"
-                                        >
-                                            <Mail className="w-4 h-4" /> Notificar
-                                        </button>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleCancelMission(order); }}
-                                            className="flex-1 sm:flex-none px-5 py-3 bg-slate-800 text-red-500 rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-slate-700 transition-all flex items-center justify-center gap-2.5 border border-red-500/30 active:scale-95"
-                                        >
-                                            <XCircle className="w-4 h-4" /> Cancelar
-                                        </button>
-                                    </>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleCancelMission(order); }}
+                                        className="flex-1 sm:flex-none px-5 py-3 bg-slate-800 text-red-500 rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-slate-700 transition-all flex items-center justify-center gap-2.5 border border-red-500/30 active:scale-95"
+                                    >
+                                        <XCircle className="w-4 h-4" /> Cancelar
+                                    </button>
                                 )}
                                 {order.status === 'EM_MISSAO' && canManageMission(order) && (
                                     <button
@@ -612,7 +613,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                     className={`p-3 rounded-xl transition-all flex items-center justify-center active:scale-95 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
                                     title="Visualizar"
                                 >
-                                    <FileText className="w-4 h-4" />
+                                    <Eye className="w-4 h-4" />
                                 </button>
                             </div>
                         </div>
@@ -935,6 +936,15 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                                 <span className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${MISSION_STATUS_COLORS[order.status || ''] || 'bg-slate-100'}`}>
                                                     {MISSION_STATUS_LABELS[order.status || ''] || order.status}
                                                 </span>
+                                                {(order.status === 'EM_MISSAO' || order.status === 'PRONTA_PARA_EXECUCAO') && canManageMission(order) && (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleSendNotifications(order); }}
+                                                        className={`p-2 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20' : 'bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-100'}`}
+                                                        title="Enviar Notificações"
+                                                    >
+                                                        <Mail className="w-4.5 h-4.5" />
+                                                    </button>
+                                                )}
                                             </div>
                                             <p className={`text-xs sm:text-sm mb-5 line-clamp-2 md:line-clamp-none ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{order.description}</p>
                                             <div className="flex flex-wrap items-center gap-4 sm:gap-8 text-[11px] sm:text-sm">
@@ -967,20 +977,12 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                                     <XCircle className="w-4.5 h-4.5" /> Cancelar
                                                 </button>
                                             )}
-                                            {(order.status === 'EM_MISSAO' || order.status === 'PRONTA_PARA_EXECUCAO') && canManageMission(order) && (
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); handleSendNotifications(order); }}
-                                                    className="flex-1 sm:flex-none px-5 py-3.5 bg-indigo-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20 active:scale-95 flex items-center justify-center gap-2.5"
-                                                >
-                                                    <Mail className="w-4.5 h-4.5" /> Notificar
-                                                </button>
-                                            )}
                                             <button
                                                 onClick={() => handlePrintOrder(order)}
                                                 className={`p-3.5 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
                                                 title="Visualizar"
                                             >
-                                                <FileText className="w-4.5 h-4.5" />
+                                                <Eye className="w-4.5 h-4.5" />
                                             </button>
                                         </div>
                                     </div>
@@ -1082,7 +1084,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                             className={`p-3 rounded-xl transition-all active:scale-[0.98] shadow-lg flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 shadow-black/20' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'}`}
                                             title="Visualizar"
                                         >
-                                            <FileText className="w-4 h-4" />
+                                            <Eye className="w-4 h-4" />
                                         </button>
                                     </div>
                                 </div>
