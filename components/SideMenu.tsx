@@ -463,7 +463,6 @@ export default function SideMenu({
                                         <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
                                             <MenuItem id="access-control" label="Acesso Visitantes" icon={DoorOpen} />
                                             <MenuItem id="access-temp" label="Acessos Temporários" icon={QrCode} />
-                                            {canViewAccessControl && <MenuItem id="access-scanner" label="Leitor de QR" icon={Smartphone} />}
                                             <MenuItem id="parking-request" label="Estacionamento" icon={Car} />
                                             <MenuItem id="events" label="Eventos" icon={CalendarDays} />
                                         </div>
@@ -491,6 +490,7 @@ export default function SideMenu({
                                     {(!isCollapsed && isOccurrencesOpen) && (
                                         <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
                                             {canManageUsers && <MenuItem id="users" label="Gerir Usuários" icon={ShieldCheck} />}
+                                            {canViewAccessControl && <MenuItem id="access-scanner" label="Leitor de QR" icon={Smartphone} />}
                                             {hasPermission(currentUser, PERMISSIONS.VIEW_SERVICE_QUEUE) && <MenuItem id="kanban" label="Fila de Serviço" icon={LayoutDashboard} />}
                                             <MenuItem id="dashboard" label="Estatísticas BI" icon={BarChart3} />
                                             <MenuItem id="list" label="Arquivo Geral" icon={FileText} />

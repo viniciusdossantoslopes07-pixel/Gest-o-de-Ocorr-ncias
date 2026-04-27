@@ -173,6 +173,23 @@ export default function UserMenu({
                                     <Shield className="w-4 h-4" />
                                     Gerir Permissões
                                 </button>
+                                <button
+                                    onClick={() => handleAction(() => setActiveTab('access-scanner'))}
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${isDarkMode ? 'text-slate-200 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-100'}`}
+                                >
+                                    <Shield className="w-4 h-4" />
+                                    Leitor QR
+                                </button>
+                                <button
+                                    onClick={() => handleAction(() => {
+                                        alert("Iniciando download do APK do Leitor QR...\n\nInstruções:\n1. Baixe o arquivo .apk\n2. Habilite 'Fontes Desconhecidas' no Android\n3. Instale e faça login com sua conta admin.");
+                                        window.open('https://github.com/viniciusdossantoslopes07-pixel/Gest-o-de-Ocorr-ncias/releases/download/v1.5.0/leitor-qrcode.apk', '_blank');
+                                    })}
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${isDarkMode ? 'text-indigo-300 hover:bg-indigo-900/20' : 'text-indigo-700 hover:bg-indigo-50'}`}
+                                >
+                                    <Settings className="w-4 h-4" />
+                                    Baixar Leitor (APK)
+                                </button>
                                 <div className={`my-2 border-t ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`} />
                             </>
                         )}
