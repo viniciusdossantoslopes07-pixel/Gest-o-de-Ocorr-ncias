@@ -1,7 +1,7 @@
 
 import { type FC, useEffect } from 'react';
 import { MissionOrder } from '../types';
-import { X, Printer, FileDown, FileSignature, Zap } from 'lucide-react';
+import { X, Printer, FileDown, FileSignature, Zap, Mail, Eye } from 'lucide-react';
 import { formatDisplayDate } from '../utils/formatters';
 
 interface MissionOrderPrintViewProps {
@@ -200,7 +200,7 @@ ${content.outerHTML}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {order.personnel.map((person, idx) => {
+                                    {(order.personnel || []).map((person, idx) => {
                                         const warName = person.warName || (person as any).war_name || '';
 
                                         return (
@@ -232,8 +232,8 @@ ${content.outerHTML}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {order.schedule.length > 0 ? (
-                                        order.schedule.map((s, idx) => (
+                                    {(order.schedule || []).length > 0 ? (
+                                        (order.schedule || []).map((s, idx) => (
                                             <tr key={s.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
                                                 <td className="border border-slate-950 px-1.5 py-0.5 font-bold uppercase">{formatValue(s.event)}</td>
                                                 <td className="border border-slate-950 px-1.5 py-0.5 text-center font-bold">{formatValue(s.location)}</td>
@@ -312,7 +312,7 @@ ${content.outerHTML}
                                     <span className="font-bold uppercase tracking-tighter mr-2">
                                         {order.status === 'CANCELADA' ? 'Motivo do Cancelamento:' : 'Relato Operacional:'}
                                     </span> 
-                                    {order.missionReport.replace('MISSÃO CANCELADA: ', '')}
+                                    {(order.missionReport || '').replace('MISSÃO CANCELADA: ', '')}
                                 </div>
                             )}
                         </div>
