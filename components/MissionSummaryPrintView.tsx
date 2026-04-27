@@ -39,6 +39,10 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
             ? formatDisplayDate(dateStart)
             : `${formatDisplayDate(dateStart)}_a_${formatDisplayDate(dateEnd)}`;
         document.title = `resumo_missoes_${label}`;
+        
+        // Garantir que o scroll esteja no topo para não cortar na impressão
+        window.scrollTo(0, 0);
+        
         window.print();
         setTimeout(() => { document.title = originalTitle; }, 1500);
     };
@@ -102,7 +106,7 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                     </div>
                 </div>
 
-                {/* ── Print styles (Lógica idêntica ao ForceMapPrintView) ── */}
+                {/* ── Print styles (Lógica idêntica ao ForceMapPrintView + Fix de Scroll) ── */}
                 <style>{`
                     @media print {
                         * {
@@ -110,22 +114,30 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                             print-color-adjust: exact !important;
                             color-adjust: exact !important;
                         }
-                        body {
+                        
+                        /* Reset de Scroll e Overflow para evitar cortes */
+                        html, body {
                             visibility: hidden !important;
                             background: white !important;
                             margin: 0 !important;
                             padding: 0 !important;
+                            height: auto !important;
+                            overflow: visible !important;
                         }
+                        
                         .mission-summary-printable {
                             visibility: visible !important;
-                            position: absolute !important;
-                            left: 10mm !important;
-                            top: 8mm !important;
-                            width: calc(100% - 20mm) !important;
+                            position: fixed !important; /* Mudar de absolute para fixed resolve problemas de scroll */
+                            left: 0 !important;
+                            top: 0 !important;
+                            width: 100% !important;
                             margin: 0 !important;
-                            padding: 0 !important;
+                            padding: 10mm !important; /* Margem interna para o conteúdo */
                             height: auto !important;
+                            background: white !important;
+                            z-index: 999999 !important;
                         }
+                        
                         /* Tabelas compactas militares */
                         .mission-summary-printable table {
                             font-size: 7.5pt !important;
@@ -136,20 +148,24 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                         .mission-summary-printable th, .mission-summary-printable td {
                             padding: 3px 5px !important;
                             border: 1px solid #000 !important;
+                            color: #000 !important;
                         }
                         .mission-summary-printable th {
                             background-color: #f1f5f9 !important;
                             -webkit-print-color-adjust: exact !important;
                         }
+                        
                         /* Seções não quebram no meio */
                         .mission-summary-printable .print-section {
                             page-break-inside: avoid !important;
                             break-inside: avoid !important;
                         }
+                        
                         /* Esconde elementos de controle */
                         .print-hidden, .modals-container, .print-header, .print-footer {
                             display: none !important;
                         }
+                        
                         @page {
                             size: A4 landscape;
                             margin: 0;
