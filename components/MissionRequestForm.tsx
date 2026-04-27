@@ -8,13 +8,14 @@ import { Mission } from '../types';
 
 interface MissionRequestFormProps {
     user: User;
+    users: User[];
     onSubmit: (data: any, isDraft?: boolean) => void;
     onCancel: () => void;
     initialData?: Mission;
     isDarkMode?: boolean;
 }
 
-const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCancel, initialData, isDarkMode }) => {
+const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, users, onSubmit, onCancel, initialData, isDarkMode }) => {
     const [requesterId, setRequesterId] = useState(initialData?.solicitante_id || user.id);
 
     const generateId = () => {
@@ -25,7 +26,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
     };
 
     const [formData, setFormData] = useState({
-        saram: initialData ? '' : (user.saram || ''), // Don't overwrite if editing, but we might need to lookup user again if not provided
+        saram: initialData ? '' : (user.saram || ''), 
         posto: initialData?.dados_missao.posto || user.rank || '',
         nome_guerra: initialData?.dados_missao.nome_guerra || user.warName || user.name || '',
         setor: initialData?.dados_missao.setor || user.sector || '',
@@ -54,37 +55,27 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
         }
     });
 
-    // Populate SARAM if not present and we have requesterId (for edit mode context, though we primarily use ID)
-    // Actually, saram is used to lookup. If editing, we assume data is there. 
-    // Let's just keep saram field for lookup if user wants to change requester.
-
-    // Convert string to Date for input if needed, but we store as string YYYY-MM-DD
-
-    const handleSaramBlur = async () => {
-        if (!formData.saram) return;
-
-        try {
-            const { data, error } = await supabase
-                .from('users')
-                .select('*')
-                .eq('saram', formData.saram)
-                .single();
-
-            if (error) throw error;
-
-            if (data) {
-                setRequesterId(data.id);
-                setFormData(prev => ({
-                    ...prev,
-                    posto: data.rank || '',
-                    nome_guerra: data.war_name || data.warName || data.name.split(' ').pop() || '',
-                    setor: data.sector || ''
-                }));
-            }
-        } catch (error) {
-            console.error('Erro ao buscar usuário por SARAM:', error);
-            alert('Usuário não encontrado com este SARAM.');
+    const [searchTerm, setSearchTerm] = useState(() => {
+        if (initialData) {
+            return `${initialData.dados_missao.posto} ${initialData.dados_missao.nome_guerra}`;
         }
+        return `${user.rank || ''} ${user.warName || user.name || ''}`.trim();
+    });
+
+    const [suggestions, setSuggestions] = useState<User[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
+    const handleSelectUser = (selectedUser: User) => {
+        setRequesterId(selectedUser.id);
+        setFormData(prev => ({
+            ...prev,
+            saram: selectedUser.saram || '',
+            posto: selectedUser.rank || '',
+            nome_guerra: selectedUser.warName || selectedUser.name || '',
+            setor: selectedUser.sector || ''
+        }));
+        setSearchTerm(`${selectedUser.rank} ${selectedUser.warName || selectedUser.name}`);
+        setShowSuggestions(false);
     };
 
     const [isExternalCmd, setIsExternalCmd] = useState(!!initialData?.dados_missao.responsavel?.nome);
@@ -149,63 +140,71 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, onSubmit, onCan
                 {/* 1. Identificação */}
                 <section className="space-y-4">
                     <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest flex items-center gap-2`}>
-                        <Users className="w-4 h-4 text-blue-600" /> Identificação
+                        <Users className="w-4 h-4 text-blue-600" /> Identificação do Solicitante
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                            <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>SARAM</label>
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    value={formData.saram}
-                                    onChange={e => setFormData({ ...formData, saram: e.target.value })}
-                                    onBlur={handleSaramBlur}
-                                    className={`w-full pl-3 pr-10 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
-                                    placeholder="Digite..."
-                                />
-                                <button
-                                    type="button"
-                                    onClick={handleSaramBlur}
-                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600"
-                                >
-                                    <Search className="w-4 h-4" />
-                                </button>
-                            </div>
-                        </div>
-                        <div>
-                            <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Posto/Graduação</label>
-                            <select
-                                value={formData.posto}
-                                onChange={e => setFormData({ ...formData, posto: e.target.value })}
-                                className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
-                                required
-                            >
-                                <option value="">Selecione</option>
-                                {RANKS.map(g => <option key={g} value={g}>{g}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                            <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Nome de Guerra</label>
+                    <div className="relative">
+                        <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Buscar Militar (Nome, Guerra, SARAM ou Posto)</label>
+                        <div className="relative">
                             <input
                                 type="text"
-                                value={formData.nome_guerra}
-                                onChange={e => setFormData({ ...formData, nome_guerra: e.target.value })}
-                                className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
-                                required
+                                value={searchTerm}
+                                onChange={e => {
+                                    const term = e.target.value;
+                                    setSearchTerm(term);
+                                    if (term.length > 0) {
+                                        const upperTerm = term.toUpperCase();
+                                        const matches = users.filter(u =>
+                                            u.saram.includes(term) ||
+                                            (u.warName || '').toUpperCase().includes(upperTerm) ||
+                                            (u.name || '').toUpperCase().includes(upperTerm) ||
+                                            (`${u.rank || ''} ${u.warName || u.name || ''}`).toUpperCase().includes(upperTerm)
+                                        ).slice(0, 5);
+                                        setSuggestions(matches);
+                                        setShowSuggestions(true);
+                                    } else {
+                                        setSuggestions([]);
+                                        setShowSuggestions(false);
+                                    }
+                                }}
+                                onFocus={() => searchTerm && suggestions.length > 0 && setShowSuggestions(true)}
+                                className={`w-full pl-4 pr-10 py-3 glass-input rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold`}
+                                placeholder="Digite para buscar..."
                             />
+                            <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         </div>
-                        <div>
-                            <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Setor</label>
-                            <select
-                                value={formData.setor}
-                                onChange={e => setFormData({ ...formData, setor: e.target.value })}
-                                className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
-                                required
-                            >
-                                <option value="">Selecione</option>
-                                {SETORES.map(s => <option key={s} value={s}>{s}</option>)}
-                            </select>
-                        </div>
+
+                        {showSuggestions && suggestions.length > 0 && (
+                            <ul className={`absolute z-50 w-full mt-1 border rounded-xl shadow-2xl overflow-hidden ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                                {suggestions.map(s => (
+                                    <li
+                                        key={s.id}
+                                        onClick={() => handleSelectUser(s)}
+                                        className={`px-4 py-3 cursor-pointer flex items-center justify-between transition-colors ${isDarkMode ? 'hover:bg-slate-700 text-slate-200 border-b border-slate-700' : 'hover:bg-blue-50 text-slate-700 border-b border-slate-100'} last:border-b-0`}
+                                    >
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-black uppercase">{s.rank} {s.warName || s.name}</span>
+                                            <span className="text-[10px] opacity-60">{s.name}</span>
+                                        </div>
+                                        <span className={`text-[10px] font-mono px-2 py-1 rounded-lg ${isDarkMode ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{s.saram}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+
+                        {/* Visual Feedback of Selection */}
+                        {requesterId && !showSuggestions && (
+                            <div className={`mt-3 p-4 rounded-xl border flex items-center gap-4 ${isDarkMode ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'} animate-in fade-in zoom-in-95 duration-200`}>
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm ${isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-600 text-white'}`}>
+                                    {formData.posto}
+                                </div>
+                                <div className="flex-1">
+                                    <h4 className={`text-xs font-black uppercase ${isDarkMode ? 'text-blue-400' : 'text-blue-700'}`}>{formData.nome_guerra}</h4>
+                                    <div className="flex gap-4 mt-1">
+                                        <span className={`text-[10px] font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>SARAM: {formData.saram}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </section>
 

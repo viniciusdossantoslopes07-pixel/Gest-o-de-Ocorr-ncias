@@ -912,6 +912,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                     <div>
                         <MissionRequestForm
                             user={user}
+                            users={users}
                             initialData={editingDraft || undefined}
                             isDarkMode={isDarkMode}
                             onCancel={() => {
