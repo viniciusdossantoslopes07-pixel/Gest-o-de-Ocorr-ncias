@@ -112,9 +112,7 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                         * {
                             -webkit-print-color-adjust: exact !important;
                             print-color-adjust: exact !important;
-                            color-adjust: exact !important;
                         }
-                        
                         /* Reset de Scroll e Overflow para evitar cortes */
                         html, body {
                             visibility: hidden !important;
@@ -125,17 +123,26 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                             overflow: visible !important;
                         }
                         
+                        /* Reset do modal wrapper para não interferir no posicionamento */
+                        .msp-root-container {
+                            display: block !important;
+                            position: static !important;
+                            background: white !important;
+                            padding: 0 !important;
+                            margin: 0 !important;
+                            visibility: visible !important;
+                        }
+                        
                         .mission-summary-printable {
                             visibility: visible !important;
-                            position: fixed !important; /* Mudar de absolute para fixed resolve problemas de scroll */
+                            position: absolute !important;
                             left: 0 !important;
                             top: 0 !important;
                             width: 100% !important;
                             margin: 0 !important;
-                            padding: 10mm !important; /* Margem interna para o conteúdo */
+                            padding: 5mm 0 !important;
                             height: auto !important;
                             background: white !important;
-                            z-index: 999999 !important;
                         }
                         
                         /* Tabelas compactas militares */
@@ -185,8 +192,11 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                                 <p className="text-xs sm:text-sm font-black uppercase tracking-tight text-slate-900">Comando da Aeronáutica</p>
                                 <p className="text-[9px] sm:text-xs font-bold uppercase text-slate-800">Base Aérea de São Paulo</p>
                                 <p className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-700">Grupo de Segurança e Defesa de São Paulo</p>
-                                <div className="mt-1 inline-block px-2 py-0.5 bg-slate-900 text-white text-[7px] sm:text-[8px] font-black uppercase tracking-widest rounded">
-                                    Resumo de Missões Previstas
+                                <div className="mt-1 flex flex-col items-center">
+                                    <div className="px-2 py-0.5 bg-slate-900 text-white text-[7px] sm:text-[8px] font-black uppercase tracking-widest rounded">
+                                        Resumo de Missões Previstas
+                                    </div>
+                                    <p className="mt-0.5 text-[6px] font-black text-slate-500 uppercase tracking-tighter">SOP-01</p>
                                 </div>
                             </div>
                             <img src="/logo_gsd.png" alt="GSD-SP" className="w-10 h-10 sm:w-14 sm:h-14 object-contain shrink-0" />
@@ -312,18 +322,11 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
                             </>
                         )}
 
-                        {/* Signature — visível em print e telas maiores */}
-                        <div className="hidden sm:grid print:grid mt-6 pt-4 border-t border-slate-200 grid-cols-2 gap-10 print-section">
-                            {['Seção de Operações - SOP-01\nResponsável pela Emissão', 'Comandante do GSD-SP\nHomologação'].map((sig, i) => {
-                                const [title, sub] = sig.split('\n');
-                                return (
-                                    <div key={i} className="text-center">
-                                        <div className="w-36 h-px bg-slate-400 mx-auto mb-1.5" />
-                                        <p className="text-[8px] font-black uppercase text-slate-700">{title}</p>
-                                        <p className="text-[6px] uppercase text-slate-400">{sub}</p>
-                                    </div>
-                                );
-                            })}
+                        {/* Simple ID Footer — visível em print e telas maiores */}
+                        <div className="hidden sm:flex print:flex mt-10 items-center justify-center print-section">
+                            <div className="text-center border-t border-slate-900 pt-2 px-10">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-900">Seção de Operações — SOP-01</p>
+                            </div>
                         </div>
 
                         <div className="hidden sm:block print:block mt-4 text-center text-[6px] text-slate-400 uppercase tracking-widest font-bold">
