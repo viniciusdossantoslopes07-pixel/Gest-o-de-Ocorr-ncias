@@ -2,14 +2,15 @@ import React, { useState, useMemo } from 'react';
 import { MissionOrder, User } from '../types';
 import {
     AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import {
-    Target, Users, CheckCircle, Clock, Calendar, TrendingUp,
+    Target, Users, CheckCircle, Clock, Calendar,
     MapPin, Zap, Activity, XCircle, ChevronDown, ChevronUp,
-    AlertCircle, PlayCircle, ShieldCheck, ArrowRight
+    ShieldCheck, ArrowRight, Printer, Search
 } from 'lucide-react';
 import { formatDisplayDate } from '../utils/formatters';
+import MissionSummaryPrintView from './MissionSummaryPrintView';
 
 interface MissionStatisticsProps {
     orders: MissionOrder[];
@@ -35,6 +36,21 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
 export default function MissionStatistics({ orders, missions = [], users = [], isDarkMode }: MissionStatisticsProps) {
     const [period, setPeriod] = useState<'all' | 'today' | 'week' | 'month' | 'year'>('year');
     const [expandFuture, setExpandFuture] = useState(true);
+
+    // --- Print Summary State ---
+    const todayStr = new Date().toISOString().split('T')[0];
+    const [printDateStart, setPrintDateStart] = useState(todayStr);
+    const [printDateEnd, setPrintDateEnd] = useState(todayStr);
+    const [showPrintSummary, setShowPrintSummary] = useState(false);
+
+    const printOrders = useMemo(() => {
+        if (!printDateStart) return [];
+        const end = printDateEnd || printDateStart;
+        return orders.filter(o => {
+            const d = o.date.split('T')[0];
+            return d >= printDateStart && d <= end && o.status !== 'REJEITADA';
+        }).sort((a, b) => a.date.localeCompare(b.date));
+    }, [orders, printDateStart, printDateEnd]);
 
     const today = useMemo(() => {
         const d = new Date();
@@ -356,6 +372,68 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                     </div>
                 </div>
             </div>
+
+            {/* ===== DATE FILTER + PRINT SUMMARY ===== */}
+            <div className={`p-6 rounded-[2.5rem] border ${isDarkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-5">
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDarkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                            <Printer className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h3 className={`text-sm font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Imprimir Resumo de Missões</h3>
+                            <p className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Filtre por data e gere o documento oficial</p>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-end gap-3 flex-1">
+                        <div>
+                            <label className={`block text-[9px] font-black uppercase tracking-widest mb-1.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Data Inicial</label>
+                            <input
+                                type="date"
+                                value={printDateStart}
+                                onChange={e => setPrintDateStart(e.target.value)}
+                                className={`px-4 py-2.5 rounded-xl text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-500/30 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            />
+                        </div>
+                        <div>
+                            <label className={`block text-[9px] font-black uppercase tracking-widest mb-1.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Data Final</label>
+                            <input
+                                type="date"
+                                value={printDateEnd}
+                                min={printDateStart}
+                                onChange={e => setPrintDateEnd(e.target.value)}
+                                className={`px-4 py-2.5 rounded-xl text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-500/30 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            />
+                        </div>
+                        <div className="flex items-end gap-2">
+                            <div className={`px-4 py-2.5 rounded-xl text-[11px] font-black uppercase border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
+                                <Search className="w-4 h-4 inline mr-1" />
+                                {printOrders.length} missão(ões)
+                            </div>
+                            <button
+                                onClick={() => setShowPrintSummary(true)}
+                                disabled={!printDateStart}
+                                className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                <Printer className="w-4 h-4" />
+                                Gerar Resumo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Print Modal */}
+            {showPrintSummary && (
+                <MissionSummaryPrintView
+                    orders={printOrders}
+                    users={users}
+                    dateStart={printDateStart}
+                    dateEnd={printDateEnd || printDateStart}
+                    onClose={() => setShowPrintSummary(false)}
+                />
+            )}
         </div>
     );
 }
