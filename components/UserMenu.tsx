@@ -182,13 +182,12 @@ export default function UserMenu({
                                 </button>
                                 <button
                                     onClick={() => handleAction(() => {
-                                        alert("Iniciando download do APK do Leitor QR...\n\nInstruções:\n1. Baixe o arquivo .apk\n2. Habilite 'Fontes Desconhecidas' no Android\n3. Instale e faça login com sua conta admin.");
-                                        window.open('https://github.com/viniciusdossantoslopes07-pixel/Gest-o-de-Ocorr-ncias/releases/download/v1.5.0/leitor-qrcode.apk', '_blank');
+                                        alert("💡 INSTALAÇÃO DO LEITOR (PWA)\n\nPara ter o leitor como um aplicativo em seu celular:\n\n1. Abra este site no Chrome (Android) ou Safari (iOS).\n2. Toque nos 3 pontos (Chrome) ou no botão 'Compartilhar' (Safari).\n3. Selecione 'Adicionar à Tela de Início' ou 'Instalar Aplicativo'.\n4. O Guardião aparecerá na sua lista de apps, funcionando de forma estável e em tela cheia!");
                                     })}
                                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${isDarkMode ? 'text-indigo-300 hover:bg-indigo-900/20' : 'text-indigo-700 hover:bg-indigo-50'}`}
                                 >
                                     <Settings className="w-4 h-4" />
-                                    Baixar Leitor (APK)
+                                    Instalar Leitor (App)
                                 </button>
                                 <div className={`my-2 border-t ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`} />
                             </>

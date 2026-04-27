@@ -244,13 +244,11 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
         {currentUser?.role === UserRole.ADMIN && (
           <button
             onClick={() => {
-              alert("Iniciando download do APK do Leitor QR...\n\nInstruções:\n1. Baixe o arquivo .apk\n2. Habilite 'Fontes Desconhecidas' no Android\n3. Instale e faça login com sua conta admin.");
-              // Placeholder link
-              window.open('https://github.com/viniciusdossantoslopes07-pixel/Gest-o-de-Ocorr-ncias/releases/download/v1.5.0/leitor-qrcode.apk', '_blank');
+              alert("💡 INSTALAÇÃO DO LEITOR (PWA)\n\nComo o sistema é uma aplicação web moderna, você pode instalá-lo como um App nativo:\n\n1. Abra o Guardião no Chrome (Android) ou Safari (iOS).\n2. Clique nos 3 pontos ou no ícone de Compartilhar.\n3. Selecione 'Instalar Aplicativo' ou 'Adicionar à Tela de Início'.\n\nIsso garantirá que o leitor de QR Code funcione em tela cheia e com máxima performance.");
             }}
             className={`flex items-center gap-2 px-6 py-2.5 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all shadow-lg ${isDarkMode ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-900/40' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200'}`}
           >
-            <Download className="w-4 h-4 md:w-5 md:h-5" /> Baixar Leitor (APK)
+            <Download className="w-4 h-4 md:w-5 md:h-5" /> Instalar Leitor (App)
           </button>
         )}
       </div>

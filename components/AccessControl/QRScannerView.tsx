@@ -84,6 +84,15 @@ export default function QRScannerView({ currentUser, isDarkMode }: QRScannerView
         setLoading(true);
         setError(null);
         try {
+            // Haptic feedback if available
+            if ('vibrate' in navigator) {
+                navigator.vibrate(100);
+            }
+
+            // Play scan sound
+            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
+            audio.play().catch(() => {});
+
             const { data, error: reqError } = await supabase
                 .from('temporary_access_requests')
                 .select('*, visitor:visitor_catalog(*), requester:users(*)')
@@ -103,8 +112,11 @@ export default function QRScannerView({ currentUser, isDarkMode }: QRScannerView
 
             setAccessData(data);
         } catch (err: any) {
-            setError(err.message);
-            setScannerActive(true);
+            setError(err.message || 'Erro ao processar QR Code.');
+            // Restart scanner after a short delay if error
+            setTimeout(() => {
+                if (!accessData) setScannerActive(true);
+            }, 2000);
         } finally {
             setLoading(false);
         }
@@ -166,7 +178,21 @@ export default function QRScannerView({ currentUser, isDarkMode }: QRScannerView
 
             {!accessData ? (
                 <div className={`p-6 rounded-[2.5rem] border overflow-hidden transition-all ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 shadow-xl'}`}>
-                    <div id="reader" className="overflow-hidden rounded-2xl bg-black border-2 border-slate-800"></div>
+                    <div className="relative aspect-square max-w-sm mx-auto overflow-hidden rounded-3xl border-4 border-blue-500/30">
+                        <div id="reader" className="w-full h-full"></div>
+                        
+                        {/* Overlay elements */}
+                        <div className="absolute inset-0 border-[40px] border-black/40 pointer-events-none"></div>
+                        <div className="absolute inset-x-[40px] inset-y-[40px] border-2 border-blue-500/50 rounded-xl pointer-events-none">
+                            <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-blue-500 -mt-1 -ml-1"></div>
+                            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-blue-500 -mt-1 -mr-1"></div>
+                            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-blue-500 -mb-1 -ml-1"></div>
+                            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-blue-500 -mb-1 -mr-1"></div>
+                        </div>
+                        
+                        {/* Scanning Line Animation */}
+                        <div className="absolute top-[40px] left-[40px] right-[40px] h-0.5 bg-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.8)] animate-scan-line pointer-events-none"></div>
+                    </div>
                     <div className="mt-6 flex flex-col items-center gap-3 text-center">
                         <Camera className="w-5 h-5 text-blue-500 animate-pulse" />
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Aponte a câmera para o QR Code</p>
