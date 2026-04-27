@@ -329,9 +329,14 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
             <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl' : 'bg-white border-slate-200'} rounded-2xl p-4 sm:p-6 border shadow-sm space-y-6 animate-in fade-in slide-in-from-top-4 duration-500 delay-75`}>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
+                        <button
+                            type="button"
+                            onClick={addPersonnel}
+                            className={`p-2 rounded-lg ${isDarkMode ? 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'} transition-all active:scale-90`}
+                            title="Adicionar Militar"
+                        >
                             <Plus className="w-4 h-4" />
-                        </div>
+                        </button>
                         <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-700'} uppercase tracking-widest`}>Pessoal e Material</h3>
                     </div>
                     <button
@@ -574,9 +579,14 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
             <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl' : 'bg-white border-slate-200'} rounded-2xl p-4 sm:p-6 border shadow-sm space-y-6 animate-in fade-in slide-in-from-top-4 duration-500 delay-150`}>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                        <button
+                            type="button"
+                            onClick={addSchedule}
+                            className={`p-2 rounded-lg ${isDarkMode ? 'bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'} transition-all active:scale-90`}
+                            title="Adicionar Evento"
+                        >
                             <Plus className="w-4 h-4" />
-                        </div>
+                        </button>
                         <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-700'} uppercase tracking-widest`}>Quadro Horário</h3>
                     </div>
                     <button
