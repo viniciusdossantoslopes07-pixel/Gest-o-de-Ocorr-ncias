@@ -1066,11 +1066,13 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                             <p className={`text-xs sm:text-sm mb-4 line-clamp-2 md:line-clamp-none ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{order.description}</p>
                                             <div className="flex flex-wrap items-center gap-4 sm:gap-8 text-[11px] sm:text-sm border-t border-slate-800/30 pt-3 mt-1">
                                                 <span className="flex items-center gap-1.5 whitespace-nowrap text-slate-500 font-medium"><Clock className="w-3.5 h-3.5" /> Finalizada em: {formatDisplayDate(order.date)}</span>
-                                                <span className={`flex items-center gap-1.5 rounded px-2 py-0.5 whitespace-nowrap font-black uppercase tracking-tighter ${isDarkMode ? 'bg-slate-950 text-blue-400 border border-slate-800' : 'bg-slate-100 text-slate-500'}`}><Shield className="w-3 h-3" /> {order.omisNumber ? `OM #${order.omisNumber}` : 'OM: CANCELADA'}</span>
+                                                <span className={`flex items-center gap-1.5 rounded px-2 py-0.5 whitespace-nowrap font-black uppercase tracking-tighter ${order.status === 'CANCELADA' ? (isDarkMode ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-red-50 text-red-600 border border-red-200') : (isDarkMode ? 'bg-slate-950 text-blue-400 border border-slate-800' : 'bg-slate-100 text-slate-500')}`}>
+                                                    <Shield className="w-3 h-3" /> {order.omisNumber ? `OM #${order.omisNumber}` : 'OM: CANCELADA'}
+                                                </span>
                                             </div>
                                             {order.missionReport && (
-                                                <div className={`mt-3 p-3 rounded-xl border-l-2 ${isDarkMode ? 'bg-slate-950/50 border-slate-700 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500'} text-xs italic line-clamp-2 md:line-clamp-none`}>
-                                                    <span className="font-bold not-italic mr-2 uppercase text-[10px] tracking-widest">{order.status === 'CANCELADA' ? 'Motivo:' : 'Relato:'}</span>
+                                                <div className={`mt-3 p-3 rounded-xl border-l-2 ${order.status === 'CANCELADA' ? (isDarkMode ? 'bg-red-500/10 border-red-500/50 text-red-200' : 'bg-red-50 border-red-200 text-red-700') : (isDarkMode ? 'bg-slate-950/50 border-slate-700 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500')} text-xs italic line-clamp-2 md:line-clamp-none`}>
+                                                    <span className={`font-bold not-italic mr-2 uppercase text-[10px] tracking-widest ${order.status === 'CANCELADA' ? (isDarkMode ? 'text-red-400' : 'text-red-600') : ''}`}>{order.status === 'CANCELADA' ? 'Motivo do Cancelamento:' : 'Relato Operacional:'}</span>
                                                     {order.missionReport.replace('MISSÃO CANCELADA: ', '')}
                                                 </div>
                                             )}
@@ -1295,7 +1297,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 </div>
                                 <div>
                                     <h3 className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-900'}`}>Cancelar Missão</h3>
-                                    <p className="text-[10px] text-red-600 font-black uppercase tracking-widest mt-1">A OMIS SERÁ APAGADA</p>
+                                    <p className="text-[10px] text-red-600 font-black uppercase tracking-widest mt-1">A OMIS SERÁ CANCELADA</p>
                                 </div>
                             </div>
                             <button onClick={() => setShowCancelModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors"><XCircle className="w-8 h-8" /></button>
