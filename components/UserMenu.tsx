@@ -4,6 +4,7 @@ import {
     User as UserIcon,
     Settings,
     Shield,
+    QrCode,
     Moon,
     Sun,
     HelpCircle,
@@ -179,6 +180,13 @@ export default function UserMenu({
                                 >
                                     <Shield className="w-4 h-4" />
                                     Leitor QR
+                                </button>
+                                <button
+                                    onClick={() => handleAction(() => setActiveTab('access-temp'))}
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${isDarkMode ? 'text-slate-200 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-100'}`}
+                                >
+                                    <QrCode className="w-4 h-4" />
+                                    Acessos Temporários
                                 </button>
                                 <button
                                     onClick={() => handleAction(() => {
