@@ -58,6 +58,8 @@ const VacationManagement = lazy(() => import('./components/PersonnelCenter/Vacat
 const VacationStats = lazy(() => import('./components/PersonnelCenter/VacationStats'));
 const VacationPortal = lazy(() => import('./components/PersonnelCenter/VacationPortal'));
 const ServiceChatWidget = lazy(() => import('./components/ServiceChatWidget'));
+const TemporaryAccessManager = lazy(() => import('./components/AccessControl/TemporaryAccessManager'));
+const QRScannerView = lazy(() => import('./components/AccessControl/QRScannerView'));
 
 // Fallback de carregamento para Suspense
 const LazyFallback = () => (
@@ -110,7 +112,7 @@ const App: FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [vacations, setVacations] = useState<Vacation[]>([]);
   // Added 'settings' to activeTab type
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'vacation-management' | 'vacation-stats' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'vacation-management' | 'vacation-stats' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs' | 'access-temp' | 'access-scanner'>('home');
   const [showVacationPortal, setShowVacationPortal] = useState(false);
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [attendanceHistory, setAttendanceHistory] = useState<DailyAttendance[]>([]);
@@ -1702,6 +1704,14 @@ const App: FC = () => {
 
           {activeTab === 'access-statistics' && canViewAccessControl && (
             <AccessStatistics isDarkMode={isDarkMode} />
+          )}
+
+          {activeTab === 'access-temp' && currentUser && (
+            <TemporaryAccessManager currentUser={currentUser} isDarkMode={isDarkMode} />
+          )}
+
+          {activeTab === 'access-scanner' && canViewAccessControl && currentUser && (
+            <QRScannerView currentUser={currentUser} isDarkMode={isDarkMode} />
           )}
 
           {activeTab === 'parking-request' && canViewAccessControl && (

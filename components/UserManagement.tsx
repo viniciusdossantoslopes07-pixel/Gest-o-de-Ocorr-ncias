@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, type FC, type FormEvent } from 'react';
 import { User, UserRole } from '../types';
 import { RANKS } from '../constants';
 import { useSectors } from '../contexts/SectorsContext';
-import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown, ShieldCheck, Settings, Search, X, Users, Briefcase } from 'lucide-react';
+import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown, ShieldCheck, Settings, Search, X, Users, Briefcase, Download } from 'lucide-react';
 import PermissionManagement from './PermissionManagement';
 import SectorManagement from './SectorManagement';
 
@@ -240,6 +240,19 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
             Setores
           </button>
         </div>
+
+        {currentUser?.role === UserRole.ADMIN && (
+          <button
+            onClick={() => {
+              alert("Iniciando download do APK do Leitor QR...\n\nInstruções:\n1. Baixe o arquivo .apk\n2. Habilite 'Fontes Desconhecidas' no Android\n3. Instale e faça login com sua conta admin.");
+              // Placeholder link
+              window.open('https://github.com/viniciusdossantoslopes07-pixel/Gest-o-de-Ocorr-ncias/releases/download/v1.5.0/leitor-qrcode.apk', '_blank');
+            }}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all shadow-lg ${isDarkMode ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-900/40' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200'}`}
+          >
+            <Download className="w-4 h-4 md:w-5 md:h-5" /> Baixar Leitor (APK)
+          </button>
+        )}
       </div>
 
       {activeTab === 'users' && (

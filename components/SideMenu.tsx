@@ -6,7 +6,7 @@ import {
     LayoutDashboard, FileText, LogOut, ChevronLeft, ChevronRight,
     User as UserIcon, Settings, HelpCircle, Moon, Sun, Lock, Siren, BarChart3,
     ChevronUp, ChevronDown, Check, Settings2, DoorOpen, Car, MapPin, CalendarDays, Volume2,
-    Calendar, TrendingUp, Shield
+    Calendar, TrendingUp, Shield, QrCode, Smartphone, Download
 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { USER_FUNCTIONS, PERMISSIONS, hasPermission } from '../constants/permissions';
@@ -15,7 +15,7 @@ interface SideMenuProps {
     isOpen: boolean;
     onClose: () => void;
     activeTab: string;
-    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'vacation-management' | 'vacation-stats' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs'>>;
+    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'vacation-management' | 'vacation-stats' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs' | 'access-temp' | 'access-scanner'>>;
     currentUser: User;
     onLogout: () => void;
     onToggleTheme: () => void;
@@ -462,6 +462,8 @@ export default function SideMenu({
                                     {(!isCollapsed && isAccessControlOpen) && (
                                         <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
                                             <MenuItem id="access-control" label="Acesso Visitantes" icon={DoorOpen} />
+                                            <MenuItem id="access-temp" label="Acessos Temporários" icon={QrCode} />
+                                            {canViewAccessControl && <MenuItem id="access-scanner" label="Leitor de QR" icon={Smartphone} />}
                                             <MenuItem id="parking-request" label="Estacionamento" icon={Car} />
                                             <MenuItem id="events" label="Eventos" icon={CalendarDays} />
                                         </div>
