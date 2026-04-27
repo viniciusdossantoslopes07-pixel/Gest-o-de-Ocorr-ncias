@@ -48,7 +48,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
         const end = printDateEnd || printDateStart;
         return orders.filter(o => {
             const d = o.date.split('T')[0];
-            return d >= printDateStart && d <= end && o.status !== 'REJEITADA';
+            return d >= printDateStart && d <= end && o.status !== 'REJEITADA' && o.status !== 'CANCELADA';
         }).sort((a, b) => a.date.localeCompare(b.date));
     }, [orders, printDateStart, printDateEnd]);
 
