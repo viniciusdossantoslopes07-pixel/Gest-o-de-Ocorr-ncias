@@ -33,18 +33,163 @@ const STATUS_COLOR: Record<string, string> = {
 
 const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, users, dateStart, dateEnd, onClose }) => {
 
+    const docRef = useRef<HTMLDivElement>(null);
+
     const handlePrint = () => {
-        const originalTitle = document.title;
+        if (!docRef.current) return;
+
         const label = dateStart === dateEnd
             ? formatDisplayDate(dateStart)
             : `${formatDisplayDate(dateStart)}_a_${formatDisplayDate(dateEnd)}`;
-        document.title = `resumo_missoes_${label}`;
-        
-        // Garantir que o scroll esteja no topo para não cortar na impressão
-        window.scrollTo(0, 0);
-        
-        window.print();
-        setTimeout(() => { document.title = originalTitle; }, 1500);
+
+        const docHtml = docRef.current.innerHTML;
+
+        const printWindow = window.open('', '_blank', 'width=1200,height=900');
+        if (!printWindow) return;
+
+        printWindow.document.write(`
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>resumo_missoes_${label}</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            margin: 0; padding: 8mm 10mm;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            background: white; color: #000;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        img { max-width: 100%; }
+        /* Tailwind utilitários usados no documento */
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .flex-1 { flex: 1 1 0%; }
+        .items-center { align-items: center; }
+        .items-end { align-items: flex-end; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-1 { gap: 4px; }
+        .gap-2 { gap: 8px; }
+        .gap-1\\.5 { gap: 6px; }
+        .gap-10 { gap: 40px; }
+        .grid { display: grid; }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .text-right { text-align: right; }
+        .uppercase { text-transform: uppercase; }
+        .tracking-wide { letter-spacing: 0.025em; }
+        .tracking-widest { letter-spacing: 0.1em; }
+        .tracking-tight { letter-spacing: -0.025em; }
+        .font-bold { font-weight: 700; }
+        .font-black { font-weight: 900; }
+        .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .whitespace-nowrap { white-space: nowrap; }
+        .shrink-0 { flex-shrink: 0; }
+        .min-w-0 { min-width: 0; }
+        .w-full { width: 100%; }
+        .overflow-x-auto { overflow-x: auto; }
+        .px-2 { padding-left: 8px; padding-right: 8px; }
+        .py-1\\.5 { padding-top: 6px; padding-bottom: 6px; }
+        .py-2 { padding-top: 8px; padding-bottom: 8px; }
+        .px-2 { padding-left: 8px; padding-right: 8px; }
+        .py-0\\.5 { padding-top: 2px; padding-bottom: 2px; }
+        .py-2\\.5 { padding-top: 10px; padding-bottom: 10px; }
+        .py-1 { padding-top: 4px; padding-bottom: 4px; }
+        .pt-2 { padding-top: 8px; }
+        .px-10 { padding-left: 40px; padding-right: 40px; }
+        .pb-2 { padding-bottom: 8px; }
+        .pb-1 { padding-bottom: 4px; }
+        .pl-2 { padding-left: 8px; }
+        .mb-3 { margin-bottom: 12px; }
+        .mb-4 { margin-bottom: 16px; }
+        .mb-2 { margin-bottom: 8px; }
+        .mb-1\\.5 { margin-bottom: 6px; }
+        .mb-0\\.5 { margin-bottom: 2px; }
+        .mt-1 { margin-top: 4px; }
+        .mt-0\\.5 { margin-top: 2px; }
+        .mt-10 { margin-top: 40px; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .space-y-1 > * + * { margin-top: 4px; }
+        .border { border: 1px solid; }
+        .border-2 { border-width: 2px; }
+        .border-b-2 { border-bottom-width: 2px; }
+        .border-l-4 { border-left-width: 4px; }
+        .border-t { border-top-width: 1px; }
+        .border-t-2 { border-top-width: 2px; }
+        .rounded { border-radius: 4px; }
+        .rounded-lg { border-radius: 8px; }
+        .w-36 { width: 144px; }
+        .h-px { height: 1px; }
+        .opacity-70 { opacity: 0.7; }
+        /* Text sizes */
+        .text-\\[6px\\] { font-size: 6px; }
+        .text-\\[7px\\] { font-size: 7px; }
+        .text-\\[7\\.5px\\] { font-size: 7.5px; }
+        .text-\\[8px\\] { font-size: 8px; }
+        .text-\\[9px\\] { font-size: 9px; }
+        .text-\\[10px\\] { font-size: 10px; }
+        .text-xs { font-size: 12px; }
+        .text-sm { font-size: 14px; }
+        .text-base { font-size: 16px; }
+        .text-lg { font-size: 18px; }
+        /* Colors */
+        .text-white { color: #fff; }
+        .text-slate-900 { color: #0f172a; }
+        .text-slate-800 { color: #1e293b; }
+        .text-slate-700 { color: #334155; }
+        .text-slate-600 { color: #475569; }
+        .text-slate-500 { color: #64748b; }
+        .text-slate-400 { color: #94a3b8; }
+        .text-blue-700 { color: #1d4ed8; }
+        .text-blue-900 { color: #1e3a8a; }
+        .text-emerald-700 { color: #047857; }
+        .text-emerald-900 { color: #064e3b; }
+        .text-indigo-900 { color: #1e1b4b; }
+        .text-amber-700 { color: #b45309; }
+        .text-red-600 { color: #dc2626; }
+        .bg-white { background: #fff; }
+        .bg-slate-50 { background: #f8fafc; }
+        .bg-slate-100 { background: #f1f5f9; }
+        .bg-slate-900 { background: #0f172a; }
+        .bg-blue-50 { background: #eff6ff; }
+        .bg-emerald-50 { background: #ecfdf5; }
+        .bg-indigo-50 { background: #eef2ff; }
+        .border-slate-200 { border-color: #e2e8f0; }
+        .border-slate-300 { border-color: #cbd5e1; }
+        .border-slate-400 { border-color: #94a3b8; }
+        .border-slate-900 { border-color: #0f172a; }
+        .border-blue-200 { border-color: #bfdbfe; }
+        .border-emerald-200 { border-color: #a7f3d0; }
+        .border-indigo-200 { border-color: #c7d2fe; }
+        /* Tabela */
+        table { width: 100%; border-collapse: collapse; font-size: 7.5pt; }
+        th, td { padding: 3px 5px; border: 1px solid #000; }
+        th { background: #f1f5f9; font-weight: bold; text-transform: uppercase; font-size: 7pt; }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
+        /* Print */
+        .print-section { page-break-inside: avoid; break-inside: avoid; }
+        /* Esconder elementos de mobile */
+        .sm\\:hidden { display: none; }
+        .hidden { display: none; }
+        @page { size: A4 landscape; margin: 0; }
+    </style>
+</head>
+<body>
+${docHtml}
+</body>
+</html>`);
+
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 500);
     };
 
     const getCommanderName = (order: MissionOrder): string => {
@@ -210,7 +355,7 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
 
                 {/* ── Scrollable content ── */}
                 <div className="msp-scroll flex-1 overflow-y-auto overflow-x-hidden print:overflow-visible bg-slate-100 print:bg-white p-4 print:p-0">
-                    <div className="bg-white print:shadow-none mx-auto p-4 sm:p-8 print:p-0 max-w-[297mm] print:max-w-none mission-summary-printable">
+                    <div ref={docRef} className="bg-white print:shadow-none mx-auto p-4 sm:p-8 print:p-0 max-w-[297mm] print:max-w-none mission-summary-printable">
 
                         {/* Military Header */}
                         <div className="flex items-center justify-between mb-3 border-b-2 border-slate-900 pb-2 print-section">
