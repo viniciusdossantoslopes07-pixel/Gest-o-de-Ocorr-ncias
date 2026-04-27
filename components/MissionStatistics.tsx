@@ -128,17 +128,15 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
         { name: 'Concluídas', value: filteredOrders.filter(o => o.status === 'CONCLUIDA').length, fill: '#10b981' }
     ];
 
-    const functionData = useMemo(() => {
+    const missionTypeData = useMemo(() => {
         const counts = filteredOrders.reduce((acc, order) => {
-            order.personnel?.forEach(p => {
-                const func = p.function || 'Outras';
-                acc[func] = (acc[func] || 0) + 1;
-            });
+            const type = order.mission || 'Outras';
+            acc[type] = (acc[type] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
         return Object.entries(counts)
             .sort(([, a], [, b]) => b - a)
-            .slice(0, 5)
+            .slice(0, 6)
             .map(([name, value]) => ({ name, value }));
     }, [filteredOrders]);
 
@@ -342,33 +340,64 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
 
             {/* Bottom Details Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Personnel Roles */}
-                <div className={`p-8 rounded-[3rem] border ${isDarkMode ? 'bg-slate-900/40 border-slate-800 shadow-2xl' : 'bg-white border-slate-200 shadow-xl'}`}>
-                    <h3 className={`text-lg font-black uppercase tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'} mb-8`}>Efetivo por Função</h3>
-                    <div className="space-y-5">
-                        {functionData.length > 0 ? functionData.map((func, index) => (
-                            <div key={func.name} className="flex items-center gap-4 group">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black ${isDarkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600'}`}>
-                                    {index + 1}
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex justify-between items-center mb-1.5">
-                                        <span className={`text-[11px] font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{func.name}</span>
-                                        <span className={`text-[11px] font-black ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>{func.value} Militares</span>
-                                    </div>
-                                    <div className={`h-2 rounded-full ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} overflow-hidden`}>
+                {/* Mission Types - PIE CHART */}
+                <div className={`p-8 rounded-[3rem] border flex flex-col ${isDarkMode ? 'bg-slate-900/40 border-slate-800 shadow-2xl' : 'bg-white border-slate-200 shadow-xl'}`}>
+                    <div className="flex items-center justify-between mb-8">
+                        <h3 className={`text-lg font-black uppercase tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Missões por Tipo</h3>
+                        <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                            Top 6
+                        </div>
+                    </div>
+                    
+                    <div className="flex-1 flex flex-col md:flex-row items-center gap-8">
+                        <div className="w-full h-[240px] md:w-1/2">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={missionTypeData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={90}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                        stroke="none"
+                                    >
+                                        {missionTypeData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip 
+                                        contentStyle={{ 
+                                            backgroundColor: isDarkMode ? '#0f172a' : '#fff',
+                                            borderRadius: '20px',
+                                            border: 'none',
+                                            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+                                            fontSize: '11px',
+                                            fontWeight: '900'
+                                        }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                        
+                        <div className="w-full md:w-1/2 space-y-3">
+                            {missionTypeData.map((type, index) => (
+                                <div key={type.name} className="flex items-center justify-between group">
+                                    <div className="flex items-center gap-3">
                                         <div 
-                                            className="h-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-1000"
-                                            style={{ width: `${(func.value / personnelCount) * 100}%` }}
+                                            className="w-2.5 h-2.5 rounded-full" 
+                                            style={{ backgroundColor: COLORS[index % COLORS.length] }}
                                         />
+                                        <span className={`text-[10px] font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>{type.name}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className={`text-[11px] font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{type.value}</span>
+                                        <span className="text-[9px] font-bold text-slate-500">{Math.round((type.value / (totalOrders || 1)) * 100)}%</span>
                                     </div>
                                 </div>
-                            </div>
-                        )) : (
-                            <div className="py-20 text-center opacity-30">
-                                <p className="text-[10px] font-black uppercase">Aguardando dados</p>
-                            </div>
-                        )}
+                            ))}
+                        </div>
                     </div>
                 </div>
 
