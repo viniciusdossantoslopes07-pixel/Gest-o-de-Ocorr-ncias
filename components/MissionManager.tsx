@@ -44,6 +44,11 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
     const [missionEnding, setMissionEnding] = useState<MissionOrder | null>(null);
     const [endReport, setEndReport] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    
+    // Cancellation State
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [missionCancelling, setMissionCancelling] = useState<MissionOrder | null>(null);
+    const [cancelReason, setCancelReason] = useState('');
 
     // Permission checks
     // Refactored to use granular permissions instead of AccessLevel
@@ -478,6 +483,41 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
         }
     };
 
+    const handleCancelMission = (order: MissionOrder) => {
+        setMissionCancelling(order);
+        setCancelReason('');
+        setShowCancelModal(true);
+    };
+
+    const confirmMissionCancel = async () => {
+        if (!missionCancelling) return;
+        if (!cancelReason.trim()) {
+            alert('O motivo do cancelamento é obrigatório.');
+            return;
+        }
+
+        try {
+            const { error } = await supabase
+                .from('mission_orders')
+                .update({
+                    status: 'CANCELADA',
+                    mission_report: `MISSÃO CANCELADA: ${cancelReason}`,
+                    omis_number: null, // Apagar o número da OMIS conforme solicitado
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', missionCancelling.id);
+
+            if (error) throw error;
+
+            alert('Missão cancelada com sucesso. O número da OMIS foi removido.');
+            setShowCancelModal(false);
+            setMissionCancelling(null);
+            fetchOrders();
+        } catch (e: any) {
+            alert('Erro ao cancelar missão: ' + e.message);
+        }
+    };
+
     // Helper to check if user can manage (start/end) a mission
     const canManageMission = (order: MissionOrder) => {
         // 1. SOP/CH-SOP or ADMIN (Chefia e Setores Técnicos)
@@ -549,7 +589,23 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                         >
                                             <Square className="w-4 h-4 fill-current" /> Finalizar
                                         </button>
+                                        {(isSop || isChSop || user.role === UserRole.ADMIN) && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleCancelMission(order); }}
+                                                className="flex-1 sm:flex-none px-5 py-3 bg-slate-800 text-red-500 rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-slate-700 transition-all flex items-center justify-center gap-2.5 border border-red-500/30 active:scale-95"
+                                            >
+                                                <XCircle className="w-4 h-4" /> Cancelar
+                                            </button>
+                                        )}
                                     </>
+                                )}
+                                {order.status === 'PRONTA_PARA_EXECUCAO' && canManageMission(order) && (
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleCancelMission(order); }}
+                                        className="flex-1 sm:flex-none px-5 py-3 bg-slate-800 text-red-500 rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-slate-700 transition-all flex items-center justify-center gap-2.5 border border-red-500/30 active:scale-95"
+                                    >
+                                        <XCircle className="w-4 h-4" /> Cancelar
+                                    </button>
                                 )}
                                 {order.status === 'AGUARDANDO_ASSINATURA' && !order.chSopSignature && (
                                     <button
@@ -911,6 +967,14 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                                     <Square className="w-4.5 h-4.5 fill-current" /> Finalizar
                                                 </button>
                                             )}
+                                            {(order.status === 'EM_MISSAO' || order.status === 'PRONTA_PARA_EXECUCAO') && canManageMission(order) && (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleCancelMission(order); }}
+                                                    className="flex-1 sm:flex-none px-5 py-3.5 bg-slate-800 text-red-500 rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-slate-700 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2.5 border border-red-500/30"
+                                                >
+                                                    <XCircle className="w-4.5 h-4.5" /> Cancelar
+                                                </button>
+                                            )}
                                             {order.status === 'EM_MISSAO' && canManageMission(order) && (
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); handleSendNotifications(order); }}
@@ -1222,6 +1286,48 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                     </div>
                 )
             }
+            {/* Modal de Motivo de Cancelamento */}
+            {showCancelModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className={`w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300 ${isDarkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white'}`}>
+                        <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-red-50 dark:bg-red-900/10">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600">
+                                    <AlertTriangle className="w-7 h-7" />
+                                </div>
+                                <div>
+                                    <h3 className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-900'}`}>Cancelar Missão</h3>
+                                    <p className="text-[10px] text-red-600 font-black uppercase tracking-widest mt-1">A OMIS SERÁ APAGADA</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowCancelModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors"><XCircle className="w-8 h-8" /></button>
+                        </div>
+                        <div className="p-8">
+                            <label className={`block text-[10px] font-black uppercase tracking-[0.2em] mb-4 ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>Motivo do Cancelamento</label>
+                            <textarea
+                                value={cancelReason}
+                                onChange={(e) => setCancelReason(e.target.value)}
+                                placeholder="Descreva o motivo pelo qual esta missão está sendo cancelada..."
+                                className={`w-full h-40 p-5 rounded-3xl text-sm transition-all resize-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 outline-none ${isDarkMode ? 'bg-slate-950 border-slate-800 text-slate-200 placeholder:text-slate-700' : 'bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400'} border font-medium`}
+                            />
+                            <div className="mt-8 flex flex-col gap-3">
+                                <button
+                                    onClick={confirmMissionCancel}
+                                    className="w-full py-5 bg-red-600 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] hover:bg-red-500 transition-all shadow-xl shadow-red-600/20 active:scale-95 flex items-center justify-center gap-3"
+                                >
+                                    Confirmar Cancelamento
+                                </button>
+                                <button
+                                    onClick={() => setShowCancelModal(false)}
+                                    className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isDarkMode ? 'text-slate-500 hover:text-slate-400' : 'text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    Voltar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     );
 }
