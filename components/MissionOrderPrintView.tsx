@@ -10,9 +10,10 @@ interface MissionOrderPrintViewProps {
     onSign?: () => void;
     onForceActivate?: () => void;
     canSign?: boolean;
+    users?: any[];
 }
 
-const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose, onSign, onForceActivate, canSign }) => {
+const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose, onSign, onForceActivate, canSign, users = [] }) => {
     const handlePrint = () => {
         const content = document.getElementById('omis-print-content');
         if (!content) return;
@@ -152,6 +153,17 @@ ${content.outerHTML}
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-bold" colSpan={3}>{formatValue(order.mission)}</td>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 uppercase text-[8px]">Local:</td>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-bold" colSpan={3}>{formatValue(order.location)}</td>
+                                </tr>
+                                <tr>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 uppercase text-[8px]">Comandante:</td>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-bold uppercase" colSpan={7}>
+                                        {order.isExternalCommander 
+                                            ? order.externalCommanderName 
+                                            : (users.find(u => u.id === order.missionCommanderId) 
+                                                ? `${users.find(u => u.id === order.missionCommanderId)?.rank} ${users.find(u => u.id === order.missionCommanderId)?.warName || users.find(u => u.id === order.missionCommanderId)?.name}`
+                                                : '---')
+                                        }
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 uppercase text-[8px]">Descrição:</td>

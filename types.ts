@@ -169,6 +169,8 @@ export interface MissionOrder {
     type: 'STATUS_CHANGE' | 'REPORT';
   }[];
   missionCommanderId?: string;
+  isExternalCommander?: boolean;
+  externalCommanderName?: string;
   observation?: string;
   chSopSignature?: string;
   startTime?: string;

@@ -129,6 +129,8 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 permanentOrders: o.permanent_orders,
                 specialOrders: o.special_orders,
                 missionCommanderId: o.mission_commander_id,
+                isExternalCommander: o.is_external_commander,
+                externalCommanderName: o.external_commander_name,
                 chSopSignature: o.ch_sop_signature,
                 startTime: o.start_time,
                 endTime: o.end_time,
@@ -290,6 +292,8 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 permanent_orders: orderData.permanentOrders,
                 special_orders: orderData.specialOrders,
                 mission_commander_id: missionCommanderId,
+                is_external_commander: orderData.isExternalCommander,
+                external_commander_name: orderData.externalCommanderName,
                 status: 'AGUARDANDO_ASSINATURA', // Ready for CH-SOP
                 created_at: isEditing ? selectedOrder!.createdAt : new Date().toISOString(),
                 created_by: isEditing ? selectedOrder!.createdBy : user.name,
@@ -1006,6 +1010,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                         setSelectedOrder(null);
                     }}
                     canSign={canSign}
+                    users={users}
                     onSign={() => {
                         setShowPrintView(false);
                         handleChSopSign(selectedOrder);

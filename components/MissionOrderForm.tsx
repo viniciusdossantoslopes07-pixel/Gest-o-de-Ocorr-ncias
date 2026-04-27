@@ -28,7 +28,9 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
         specialOrders: order?.specialOrders || '',
         omisNumber: order?.omisNumber || '',
 
-        missionCommanderId: order?.missionCommanderId || ''
+        missionCommanderId: order?.missionCommanderId || '',
+        isExternalCommander: order?.isExternalCommander || false,
+        externalCommanderName: order?.externalCommanderName || ''
     });
 
     const [personnel, setPersonnel] = useState<MissionOrderPersonnel[]>(order?.personnel || []);
@@ -189,73 +191,126 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase tracking-wider mb-2`}>Comandante da Missão (Responsável)</label>
+                    <div className="flex items-center justify-between mb-2">
+                        <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase tracking-wider`}>Comandante da Missão (Responsável)</label>
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                            <input
+                                type="checkbox"
+                                checked={formData.isExternalCommander}
+                                onChange={e => {
+                                    const checked = e.target.checked;
+                                    setFormData({ 
+                                        ...formData, 
+                                        isExternalCommander: checked,
+                                        missionCommanderId: checked ? '' : formData.missionCommanderId,
+                                        externalCommanderName: checked ? formData.externalCommanderName : ''
+                                    });
+                                    if (checked) {
+                                        setCommanderSearchQuery(formData.externalCommanderName);
+                                    } else {
+                                        const u = users.find(u => u.id === formData.missionCommanderId);
+                                        setCommanderSearchQuery(u ? (u.warName || u.name) : '');
+                                    }
+                                }}
+                                className="w-4 h-4 rounded border-slate-700 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className={`text-[10px] font-bold uppercase tracking-tight ${isDarkMode ? 'text-slate-400 group-hover:text-slate-200' : 'text-slate-600 group-hover:text-slate-900'}`}>CMT Externo</span>
+                        </label>
+                    </div>
+
                     <div className="flex gap-2 relative">
-                        <input
-                            type="text"
-                            value={commanderSearchQuery}
-                            placeholder="Nome, Guerra ou SARAM"
-                            className={`w-full px-4 py-2.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all pr-10`}
-                            onChange={(e) => {
-                                const term = e.target.value;
-                                setCommanderSearchQuery(term);
-                                if (!term) {
-                                    setCommanderSuggestions([]);
-                                    setShowCommanderSuggestions(false);
-                                    setFormData({ ...formData, missionCommanderId: '' });
-                                    return;
-                                }
-                                const upperTerm = term.toUpperCase();
-                                const matches = users.filter(u => 
-                                    u.saram.includes(term) || 
-                                    (u.warName || '').toUpperCase().includes(upperTerm) ||
-                                    (u.name || '').toUpperCase().includes(upperTerm) ||
-                                    (`${u.rank || ''} ${u.warName || ''}`).toUpperCase().includes(upperTerm) ||
-                                    (`${u.rank || ''} ${u.name || ''}`).toUpperCase().includes(upperTerm)
-                                );
-                                setCommanderSuggestions(matches);
-                                setShowCommanderSuggestions(true);
-                                setFormData({ ...formData, missionCommanderId: '' });
-                            }}
-                            onFocus={() => {
-                                if (commanderSuggestions.length > 0) setShowCommanderSuggestions(true);
-                            }}
-                            onBlur={() => {
-                                setTimeout(() => setShowCommanderSuggestions(false), 200);
-                            }}
-                        />
-                        <Search className={`w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} pointer-events-none`} />
-                        
-                        {showCommanderSuggestions && commanderSuggestions.length > 0 && (
-                            <ul className={`absolute z-10 w-full top-full mt-1 max-h-48 overflow-y-auto rounded-xl shadow-lg border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} custom-scrollbar`}>
-                                {commanderSuggestions.map(u => (
-                                    <li 
-                                        key={u.id}
-                                        onClick={() => {
-                                            setFormData({ ...formData, missionCommanderId: u.id });
-                                            setCommanderSearchQuery(u.warName || u.name);
+                        {formData.isExternalCommander ? (
+                            <div className="w-full relative">
+                                <input
+                                    type="text"
+                                    value={formData.externalCommanderName}
+                                    placeholder="Nome do Comandante Externo (ex: 1T LIVIA)"
+                                    className={`w-full px-4 py-2.5 border ${isDarkMode ? 'border-blue-500/50 bg-slate-800/50 text-white' : 'border-blue-200 bg-blue-50/30 text-slate-900'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all pr-10 font-bold`}
+                                    onChange={(e) => {
+                                        const val = e.target.value.toUpperCase();
+                                        setFormData({ ...formData, externalCommanderName: val });
+                                        setCommanderSearchQuery(val);
+                                    }}
+                                />
+                                <Shield className={`w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 ${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`} />
+                            </div>
+                        ) : (
+                            <div className="w-full relative">
+                                <input
+                                    type="text"
+                                    value={commanderSearchQuery}
+                                    placeholder="Nome, Guerra ou SARAM"
+                                    className={`w-full px-4 py-2.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all pr-10`}
+                                    onChange={(e) => {
+                                        const term = e.target.value;
+                                        setCommanderSearchQuery(term);
+                                        if (!term) {
+                                            setCommanderSuggestions([]);
                                             setShowCommanderSuggestions(false);
-                                        }}
-                                        className={`px-4 py-3 cursor-pointer flex items-center justify-between transition-colors border-b last:border-b-0 ${isDarkMode ? 'hover:bg-slate-700/50 text-slate-300 border-slate-700' : 'hover:bg-slate-50 text-slate-700 border-slate-100'}`}
-                                    >
-                                        <div className="flex flex-col">
-                                            <span className={`text-xs font-black uppercase ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{u.rank} {u.warName || u.name}</span>
-                                            {u.name !== u.warName && <span className={`text-[10px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{u.name}</span>}
-                                        </div>
-                                        <span className={`text-[10px] font-mono px-2 py-1 rounded-lg ${isDarkMode ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{u.saram}</span>
-                                    </li>
-                                ))}
-                            </ul>
+                                            setFormData({ ...formData, missionCommanderId: '' });
+                                            return;
+                                        }
+                                        const upperTerm = term.toUpperCase();
+                                        const matches = users.filter(u => 
+                                            u.saram.includes(term) || 
+                                            (u.warName || '').toUpperCase().includes(upperTerm) ||
+                                            (u.name || '').toUpperCase().includes(upperTerm) ||
+                                            (`${u.rank || ''} ${u.warName || ''}`).toUpperCase().includes(upperTerm) ||
+                                            (`${u.rank || ''} ${u.name || ''}`).toUpperCase().includes(upperTerm)
+                                        );
+                                        setCommanderSuggestions(matches);
+                                        setShowCommanderSuggestions(true);
+                                        setFormData({ ...formData, missionCommanderId: '' });
+                                    }}
+                                    onFocus={() => {
+                                        if (commanderSuggestions.length > 0) setShowCommanderSuggestions(true);
+                                    }}
+                                    onBlur={() => {
+                                        setTimeout(() => setShowCommanderSuggestions(false), 200);
+                                    }}
+                                />
+                                <Search className={`w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} pointer-events-none`} />
+                                
+                                {showCommanderSuggestions && commanderSuggestions.length > 0 && (
+                                    <ul className={`absolute z-10 w-full top-full mt-1 max-h-48 overflow-y-auto rounded-xl shadow-lg border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} custom-scrollbar`}>
+                                        {commanderSuggestions.map(u => (
+                                            <li 
+                                                key={u.id}
+                                                onClick={() => {
+                                                    setFormData({ ...formData, missionCommanderId: u.id });
+                                                    setCommanderSearchQuery(u.warName || u.name);
+                                                    setShowCommanderSuggestions(false);
+                                                }}
+                                                className={`px-4 py-3 cursor-pointer flex items-center justify-between transition-colors border-b last:border-b-0 ${isDarkMode ? 'hover:bg-slate-700/50 text-slate-300 border-slate-700' : 'hover:bg-slate-50 text-slate-700 border-slate-100'}`}
+                                            >
+                                                <div className="flex flex-col">
+                                                    <span className={`text-xs font-black uppercase ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{u.rank} {u.warName || u.name}</span>
+                                                    {u.name !== u.warName && <span className={`text-[10px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{u.name}</span>}
+                                                </div>
+                                                <span className={`text-[10px] font-mono px-2 py-1 rounded-lg ${isDarkMode ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{u.saram}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
                         )}
                     </div>
-                    {formData.missionCommanderId && (
+                    {formData.missionCommanderId && !formData.isExternalCommander && (
                         <div className={`mt-3 p-3 ${isDarkMode ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-blue-50 border-blue-100 text-blue-700'} border rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 animate-in zoom-in-95 duration-200`}>
                             <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
                             Selecionado: {users.find(u => u.id === formData.missionCommanderId)?.rank} {users.find(u => u.id === formData.missionCommanderId)?.warName || users.find(u => u.id === formData.missionCommanderId)?.name}
                         </div>
                     )}
+                    {formData.isExternalCommander && formData.externalCommanderName && (
+                        <div className={`mt-3 p-3 ${isDarkMode ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-amber-50 border-amber-100 text-amber-700'} border rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 animate-in zoom-in-95 duration-200`}>
+                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                            Responsável Externo: {formData.externalCommanderName}
+                        </div>
+                    )}
                     <p className={`text-[10px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} mt-2 leading-relaxed`}>
-                        Digite o Nome, Guerra ou SARAM para selecionar o Comandante.
+                        {formData.isExternalCommander 
+                            ? "Informe o nome e posto do comandante externo responsável."
+                            : "Digite o Nome, Guerra ou SARAM para selecionar o Comandante."}
                     </p>
                 </div>
 
@@ -428,8 +483,8 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                                 });
                                                             }
                                                         }}
-                                                        className={`w-full px-2 py-1.5 pr-7 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-[10px] sm:text-xs focus:border-blue-500/50 outline-none`}
-                                                        placeholder="Nome"
+                                                        className={`w-full px-2 py-1.5 pr-7 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-[10px] sm:text-xs focus:border-blue-500/50 outline-none ${p.function.includes('Comandante') ? 'font-bold' : ''}`}
+                                                        placeholder={p.function.includes('Comandante') ? "Nome Completo" : "Nome"}
                                                     />
                                                     <Search className={`w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} />
                                                 </div>

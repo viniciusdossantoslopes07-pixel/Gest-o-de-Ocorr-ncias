@@ -1052,7 +1052,9 @@ const App: FC = () => {
         updatedAt: mo.updated_at,
         status: mo.status,
         timeline: mo.timeline || [],
-        missionCommanderId: mo.mission_commander_id
+        missionCommanderId: mo.mission_commander_id,
+        isExternalCommander: mo.is_external_commander,
+        externalCommanderName: mo.external_commander_name
       })));
     }
   };
@@ -1087,7 +1089,9 @@ const App: FC = () => {
       created_by: currentUser?.name || 'Sistema',
       status: 'GERADA',
       timeline: [],
-      mission_commander_id: orderData.missionCommanderId || currentUser?.id
+      mission_commander_id: orderData.missionCommanderId || currentUser?.id,
+      is_external_commander: orderData.isExternalCommander,
+      external_commander_name: orderData.externalCommanderName
     };
 
     const { data, error } = await supabase
@@ -1145,6 +1149,8 @@ const App: FC = () => {
       status: orderData.status,
       timeline: orderData.timeline,
       ch_sop_signature: orderData.chSopSignature,
+      is_external_commander: orderData.isExternalCommander,
+      external_commander_name: orderData.externalCommanderName,
       updated_at: new Date().toISOString()
     };
 
@@ -1754,7 +1760,7 @@ const App: FC = () => {
           {/* Mission Management (Legacy / Optional if everything is in MissionManager) */}
           {activeTab === 'mission-management' && canManageMissions && (
             <div className="space-y-8">
-              <MissionDashboard orders={missionOrders} requests={missionRequests} user={currentUser!} />
+              <MissionDashboard orders={missionOrders} requests={missionRequests} user={currentUser!} users={users} />
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 {/* ... */}
                 <MissionRequestList

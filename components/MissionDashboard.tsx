@@ -11,9 +11,10 @@ interface MissionDashboardProps {
     orders: MissionOrder[];
     requests: Mission[];
     user: User;
+    users?: User[];
 }
 
-const MissionDashboard: FC<MissionDashboardProps> = ({ orders, requests, user }) => {
+const MissionDashboard: FC<MissionDashboardProps> = ({ orders, requests, user, users = [] }) => {
     const [showReports, setShowReports] = useState(false);
     const [selectedOrderToPrint, setSelectedOrderToPrint] = useState<MissionOrder | null>(null);
 
@@ -45,6 +46,7 @@ const MissionDashboard: FC<MissionDashboardProps> = ({ orders, requests, user })
             <MissionOrderPrintView
                 order={selectedOrderToPrint}
                 onClose={() => setSelectedOrderToPrint(null)}
+                users={users}
             />
         );
     }
