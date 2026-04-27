@@ -74,9 +74,11 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     // KPIs
     const total = filteredOrders.length;
     const completed = filteredOrders.filter(o => o.status === 'CONCLUIDA').length;
-    const active = filteredOrders.filter(o => o.status === 'EM_MISSAO').length;
+    const active = filteredOrders.filter(o => ['EM_MISSAO', 'PRONTA_PARA_EXECUCAO'].includes(o.status || '')).length;
+    const inMission = filteredOrders.filter(o => o.status === 'EM_MISSAO').length;
+    const readyToStart = filteredOrders.filter(o => o.status === 'PRONTA_PARA_EXECUCAO').length;
     const cancelled = filteredOrders.filter(o => o.status === 'CANCELADA').length;
-    const pending = filteredOrders.filter(o => ['GERADA','PENDENTE_SOP','EM_ELABORACAO','AGUARDANDO_ASSINATURA','PRONTA_PARA_EXECUCAO'].includes(o.status || '')).length;
+    const pending = filteredOrders.filter(o => ['GERADA','PENDENTE_SOP','EM_ELABORACAO','AGUARDANDO_ASSINATURA'].includes(o.status || '')).length;
     const successRate = total > 0 ? Math.round((completed / total) * 100) : 0;
     const totalPersonnel = filteredOrders.reduce((s, o) => s + (o.personnel?.length || 0), 0);
 
@@ -165,9 +167,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             {/* KPI Row */}
             <div className="grid grid-cols-2 xl:grid-cols-6 gap-4">
                 {[
-                    { icon: <Target className="w-5 h-5" />, lbl: 'Total', val: total, color: 'blue' },
+                    { icon: <Target className="w-5 h-5" />, lbl: 'Total OMIS', val: total, color: 'blue' },
                     { icon: <CheckCircle className="w-5 h-5" />, lbl: 'Concluídas', val: completed, color: 'emerald' },
-                    { icon: <Zap className="w-5 h-5" />, lbl: 'Ativas', val: active, color: 'indigo', pulse: true },
                     { icon: <Clock className="w-5 h-5" />, lbl: 'Pendentes', val: pending, color: 'amber' },
                     { icon: <XCircle className="w-5 h-5" />, lbl: 'Canceladas', val: cancelled, color: 'red' },
                     { icon: <Users className="w-5 h-5" />, lbl: 'Efetivo', val: totalPersonnel, color: 'purple' },
@@ -178,9 +179,25 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                         </div>
                         <p className={label}>{kpi.lbl}</p>
                         <h3 className={`text-3xl font-black tracking-tighter mt-0.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{kpi.val}</h3>
-                        {kpi.pulse && <span className="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />}
                     </div>
                 ))}
+                {/* KPI Ativas - detalhado */}
+                <div className={`${card} relative overflow-hidden group`}>
+                    <span className="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${isDarkMode ? 'text-indigo-400 bg-indigo-500/10' : 'text-indigo-600 bg-indigo-50'}`}>
+                        <Zap className="w-5 h-5" />
+                    </div>
+                    <p className={label}>Ativas</p>
+                    <h3 className={`text-3xl font-black tracking-tighter mt-0.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{active}</h3>
+                    <div className="mt-2 space-y-0.5">
+                        <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                            {inMission} em campo
+                        </p>
+                        <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                            {readyToStart} prontas
+                        </p>
+                    </div>
+                </div>
             </div>
 
             {/* Taxa de Sucesso + Missões Futuras destaque */}
