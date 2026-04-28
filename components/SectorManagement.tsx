@@ -14,7 +14,7 @@ interface SectorManagementProps {
 const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode = false, users }) => {
     const { sectors, addSector, removeSector, reorderSectors, loading } = useSectors();
     const [newSectorName, setNewSectorName] = useState('');
-    const [newSectorUnit, setNewSectorUnit] = useState<'GSD-SP' | 'BASP'>('GSD-SP');
+    const [newSectorUnit, setNewSectorUnit] = useState<'GSD-SP'>('GSD-SP');
     const [isAdding, setIsAdding] = useState(false);
     const [addError, setAddError] = useState('');
     const [addSuccess, setAddSuccess] = useState('');
@@ -224,16 +224,9 @@ const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode =
                         />
                         <div className={`flex rounded-xl p-1 border ${dk ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
                             <button
-                                onClick={() => setNewSectorUnit('GSD-SP')}
-                                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${newSectorUnit === 'GSD-SP' ? (dk ? 'bg-slate-600 text-white shadow' : 'bg-white text-slate-900 shadow') : (dk ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
+                                className={`px-4 py-1.5 text-xs font-bold rounded-lg bg-blue-600 text-white shadow`}
                             >
                                 GSD-SP
-                            </button>
-                            <button
-                                onClick={() => setNewSectorUnit('BASP')}
-                                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${newSectorUnit === 'BASP' ? (dk ? 'bg-slate-600 text-white shadow' : 'bg-white text-slate-900 shadow') : (dk ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
-                            >
-                                BASP
                             </button>
                         </div>
                         <button
@@ -277,24 +270,10 @@ const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode =
                     <div className={`divide-y divide-y-4 ${dk ? 'divide-slate-800/50' : 'divide-slate-200/50'}`}>
                         {/* GSD-SP Group */}
                         <div className={`divide-y ${dk ? 'divide-slate-700/50' : 'divide-slate-100'} pb-4`}>
-                            <div className="px-6 py-2 bg-slate-900/10 dark:bg-slate-900/40">
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${dk ? 'text-blue-400' : 'text-blue-600'}`}>Unidade GSD-SP</span>
-                            </div>
-                            {sectors.filter(s => s.unit !== 'BASP').length === 0 && (
-                                <p className={`px-6 py-4 text-xs font-medium ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Nenhum setor GSD-SP.</p>
+                            {sectors.length === 0 && (
+                                <p className={`px-6 py-4 text-xs font-medium ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Nenhum setor cadastrado.</p>
                             )}
-                            {sectors.filter(s => s.unit !== 'BASP').map(sector => renderSectorItem(sector))}
-                        </div>
-                        
-                        {/* BASP Group */}
-                        <div className={`divide-y ${dk ? 'divide-slate-700/50' : 'divide-slate-100'} pb-4`}>
-                            <div className="px-6 py-2 bg-slate-900/10 dark:bg-slate-900/40">
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${dk ? 'text-emerald-400' : 'text-emerald-600'}`}>Unidade BASP</span>
-                            </div>
-                            {sectors.filter(s => s.unit === 'BASP').length === 0 && (
-                                <p className={`px-6 py-4 text-xs font-medium ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Nenhum setor BASP.</p>
-                            )}
-                            {sectors.filter(s => s.unit === 'BASP').map(sector => renderSectorItem(sector))}
+                            {sectors.map(sector => renderSectorItem(sector))}
                         </div>
                     </div>
                 )}

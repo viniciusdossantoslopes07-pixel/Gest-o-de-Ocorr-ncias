@@ -33,7 +33,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     const [externalSector, setExternalSector] = useState('');
     const [selectedUserForPanel, setSelectedUserForPanel] = useState<User | null>(null);
 
-    const [activeUnitFilter, setActiveUnitFilter] = useState<'TODAS' | 'GSD-SP' | 'BASP'>('TODAS');
+    const [activeUnitFilter, setActiveUnitFilter] = useState<'TODAS' | 'GSD-SP'>('TODAS');
 
     const { sectors, sectorNames } = useSectors();
     const [formData, setFormData] = useState({
@@ -78,9 +78,6 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
         } else if (filterSector === 'TODOS GSD-SP') {
             const gsdSectors = sectors.filter(s => s.unit === 'GSD-SP').map(s => s.name);
             sectorMatch = gsdSectors.includes(u.sector || '');
-        } else if (filterSector === 'TODOS BASP') {
-            const baspSectors = sectors.filter(s => s.unit === 'BASP').map(s => s.name);
-            sectorMatch = baspSectors.includes(u.sector || '');
         } else {
             sectorMatch = u.sector === filterSector;
         }
@@ -89,9 +86,6 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
         if (activeUnitFilter === 'GSD-SP') {
             const gsdSectors = sectors.filter(s => s.unit === 'GSD-SP').map(s => s.name);
             unitMatch = gsdSectors.includes(u.sector || '');
-        } else if (activeUnitFilter === 'BASP') {
-            const gsdSectors = sectors.filter(s => s.unit === 'GSD-SP').map(s => s.name);
-            unitMatch = !gsdSectors.includes(u.sector || '') && u.sector !== 'SEM SETOR' && Boolean(u.sector);
         }
 
         const searchMatch = (u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
