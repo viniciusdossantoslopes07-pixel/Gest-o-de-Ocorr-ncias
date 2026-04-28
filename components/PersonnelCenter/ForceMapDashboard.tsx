@@ -52,17 +52,19 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const [isPrinting, setIsPrinting] = useState(false);
     const { sectors, displaySectors } = useSectors();
 
+    const normalize = (val: string) => val.trim().toUpperCase();
+
     const GSD_SP_SECTORS_LIST = useMemo(() => [
         'SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA',
-        'ESI-SECAO', 'ESI SEÇÃO', 'ESI SECAO' // Variações para segurança
+        'ESI-SECAO', 'ESI SEÇÃO', 'ESI SECAO' 
     ], []);
 
     const GSD_SP_SECTORS = useMemo(() => sectors.filter(s => 
-        GSD_SP_SECTORS_LIST.some(gsd => s.name.trim().toUpperCase() === gsd)
+        GSD_SP_SECTORS_LIST.some(gsd => normalize(s.name) === gsd)
     ).map(s => s.name), [sectors, GSD_SP_SECTORS_LIST]);
 
     const BASP_SECTORS = useMemo(() => sectors.filter(s => 
-        !GSD_SP_SECTORS_LIST.some(gsd => s.name.trim().toUpperCase() === gsd)
+        !GSD_SP_SECTORS_LIST.some(gsd => normalize(s.name) === gsd)
     ).map(s => s.name), [sectors, GSD_SP_SECTORS_LIST]);
 
     // Previous day for delta comparison
@@ -158,8 +160,6 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
     }, [selectedDate]);
 
-    const normalize = (val: string) => val.trim().toUpperCase();
-
     // Sectors to show based on filter
     const relevantSectors = useMemo(() => {
         if (selectedUnit === 'VISÃO GLOBAL') return sectors.map(s => s.name);
@@ -167,6 +167,13 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         if (selectedUnit === 'UNIDADE GSD-SP' || selectedUnit === 'GSD-SP') return GSD_SP_SECTORS;
         return GSD_SP_SECTORS;
     }, [selectedUnit, GSD_SP_SECTORS, BASP_SECTORS, sectors]);
+
+    const activeSectorsToShow = useMemo(() => {
+        if (selectedSector === 'TODOS') return relevantSectors;
+        if (selectedSector === 'GSD-SP') return GSD_SP_SECTORS.filter(s => relevantSectors.includes(s));
+        if (selectedSector === 'BASP') return BASP_SECTORS.filter(s => relevantSectors.includes(s));
+        return [selectedSector];
+    }, [selectedSector, relevantSectors, GSD_SP_SECTORS, BASP_SECTORS]);
 
     // Filter users by rank
     const filterUsersByRank = (userList: User[]) => {
@@ -200,10 +207,10 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         const sectorFiltered = selectedSector === 'TODOS'
             ? activeAndInRoster
             : selectedSector === 'GSD-SP'
-                ? activeAndInRoster.filter(u => GSD_SP_SECTORS.includes(u.sector))
+                ? activeAndInRoster.filter(u => GSD_SP_SECTORS.some(gsd => normalize(u.sector || '') === normalize(gsd)))
                 : selectedSector === 'BASP'
-                    ? activeAndInRoster.filter(u => BASP_SECTORS.includes(u.sector))
-                    : activeAndInRoster.filter(u => u.sector === selectedSector);
+                    ? activeAndInRoster.filter(u => BASP_SECTORS.some(basp => normalize(u.sector || '') === normalize(basp)))
+                    : activeAndInRoster.filter(u => normalize(u.sector || '') === normalize(selectedSector));
 
         return filterUsersByRank(sectorFiltered);
     }, [users, selectedSector, rankFilter, relevantSectors, GSD_SP_SECTORS, BASP_SECTORS]);
@@ -216,9 +223,10 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         const dayHistory = historyByDate.get(date) || [];
         const filtered = dayHistory.filter(a => {
             let matchesSector = true;
-            if (selectedSector === 'GSD-SP') matchesSector = GSD_SP_SECTORS.includes(a.sector);
-            else if (selectedSector === 'BASP') matchesSector = BASP_SECTORS.includes(a.sector);
-            else if (selectedSector !== 'TODOS') matchesSector = a.sector === selectedSector;
+            const sectorName = normalize(a.sector);
+            if (selectedSector === 'GSD-SP') matchesSector = GSD_SP_SECTORS.some(gsd => normalize(gsd) === sectorName);
+            else if (selectedSector === 'BASP') matchesSector = BASP_SECTORS.some(basp => normalize(basp) === sectorName);
+            else if (selectedSector !== 'TODOS') matchesSector = sectorName === normalize(selectedSector);
             
             const isSigned = !!a.signedBy;
 
