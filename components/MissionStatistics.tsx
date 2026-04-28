@@ -82,7 +82,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
         orders
             .filter(o => {
                 const d = new Date(o.date.split('T')[0]);
-                return d > today && !['CONCLUIDA', 'CANCELADA', 'REJEITADA'].includes(o.status || '');
+                return d >= today && !['CONCLUIDA', 'CANCELADA', 'REJEITADA'].includes(o.status || '');
             })
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
     [orders, today]);
@@ -115,7 +115,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     // Future trend: next 14 days
     const futureTrend = useMemo(() => {
         const rows = [];
-        for (let i = 1; i <= 14; i++) {
+        for (let i = 0; i <= 14; i++) {
             const d = new Date(today);
             d.setDate(today.getDate() + i);
             const ds = d.toISOString().split('T')[0];
