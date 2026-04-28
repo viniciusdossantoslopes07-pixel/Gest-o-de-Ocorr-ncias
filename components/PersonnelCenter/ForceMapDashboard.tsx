@@ -53,6 +53,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const { sectors, displaySectors } = useSectors();
 
     const GSD_SP_SECTORS = useMemo(() => sectors.filter(s => s.unit === 'GSD-SP').map(s => s.name), [sectors]);
+    const BASP_SECTORS = useMemo(() => sectors.filter(s => s.unit === 'BASP').map(s => s.name), [sectors]);
 
     // Previous day for delta comparison
     const previousDate = useMemo(() => {
@@ -168,8 +169,9 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const activeSectorsToShow = useMemo(() => {
         if (selectedSector === 'TODOS') return displaySectors;
         if (selectedSector === 'GSD-SP') return GSD_SP_SECTORS.filter(s => displaySectors.includes(s));
+        if (selectedSector === 'BASP') return BASP_SECTORS.filter(s => displaySectors.includes(s));
         return [selectedSector];
-    }, [selectedSector, displaySectors, GSD_SP_SECTORS]);
+    }, [selectedSector, displaySectors, GSD_SP_SECTORS, BASP_SECTORS]);
 
     // Relevant users
     const relevantUsers = useMemo(() => {
@@ -187,10 +189,12 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
             ? activeAndInRoster
             : selectedSector === 'GSD-SP'
                 ? activeAndInRoster.filter(u => GSD_SP_SECTORS.includes(u.sector))
-                : activeAndInRoster.filter(u => u.sector === selectedSector);
+                : selectedSector === 'BASP'
+                    ? activeAndInRoster.filter(u => BASP_SECTORS.includes(u.sector))
+                    : activeAndInRoster.filter(u => u.sector === selectedSector);
 
         return filterUsersByRank(sectorFiltered);
-    }, [users, selectedSector, rankFilter, displaySectors, GSD_SP_SECTORS]);
+    }, [users, selectedSector, rankFilter, displaySectors, GSD_SP_SECTORS, BASP_SECTORS]);
 
     // Pre-index by user ID for O(1) matching later
     const relevantUserIds = useMemo(() => new Set(relevantUsers.map(u => u.id)), [relevantUsers]);
@@ -201,6 +205,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         const filtered = dayHistory.filter(a => {
             let matchesSector = true;
             if (selectedSector === 'GSD-SP') matchesSector = GSD_SP_SECTORS.includes(a.sector);
+            else if (selectedSector === 'BASP') matchesSector = BASP_SECTORS.includes(a.sector);
             else if (selectedSector !== 'TODOS') matchesSector = a.sector === selectedSector;
             
             const isSigned = !!a.signedBy;
@@ -251,7 +256,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
             return flattenedMap;
         }
         return getRecordsForDate(selectedDate);
-    }, [selectedDate, selectedSector, callTypeFilter, historyByDate, viewMode, currentWeekRange, GSD_SP_SECTORS]);
+    }, [selectedDate, selectedSector, callTypeFilter, historyByDate, viewMode, currentWeekRange, GSD_SP_SECTORS, BASP_SECTORS]);
 
     // Weekly average readiness logic
     const weeklyProntidaoData = useMemo(() => {
@@ -455,7 +460,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 
             return { sector, total, ready, absent: Math.max(0, finalAbsentCount), pct, prevPct, delta: Math.round(pct - prevPct), absentDetails };
         });
-    }, [users, currentRecordsMap, previousRecordsMap, selectedSector, rankFilter, displaySectors, GSD_SP_SECTORS, relevantUserIds]);
+    }, [users, currentRecordsMap, previousRecordsMap, selectedSector, rankFilter, displaySectors, GSD_SP_SECTORS, BASP_SECTORS, relevantUserIds]);
 
     // Rank breakdown
     const rankBreakdown = useMemo(() => {
@@ -627,6 +632,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                             options={[
                                 { label: 'TODO EFETIVO', value: 'TODOS' },
                                 { label: 'UNIDADE GSD-SP', value: 'GSD-SP' },
+                                { label: 'UNIDADE BASP', value: 'BASP' },
                                 ...displaySectors.map(s => ({ label: s, value: s }))
                             ]}
                         />
@@ -860,6 +866,10 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                             <div>
                                                 <h4 className={`text-[10px] font-black uppercase tracking-widest text-blue-500 mb-2 pl-2`}>UNIDADE GSD-SP</h4>
                                                 <div className="space-y-2">{renderSectors(GSD_SP_SECTORS.filter(s => displaySectors.includes(s)))}</div>
+                                            </div>
+                                            <div>
+                                                <h4 className={`text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-2 pl-2`}>UNIDADE BASP</h4>
+                                                <div className="space-y-2">{renderSectors(BASP_SECTORS.filter(s => displaySectors.includes(s)))}</div>
                                             </div>
                                         </div>
                                     );
