@@ -52,14 +52,17 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const [isPrinting, setIsPrinting] = useState(false);
     const { sectors, displaySectors } = useSectors();
 
-    const GSD_SP_SECTORS_LIST = useMemo(() => ['SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'], []);
+    const GSD_SP_SECTORS_LIST = useMemo(() => [
+        'SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA',
+        'ESI-SECAO', 'ESI SEÇÃO', 'ESI SECAO' // Variações para segurança
+    ], []);
 
     const GSD_SP_SECTORS = useMemo(() => sectors.filter(s => 
-        GSD_SP_SECTORS_LIST.includes(s.name.trim().toUpperCase())
+        GSD_SP_SECTORS_LIST.some(gsd => s.name.trim().toUpperCase() === gsd)
     ).map(s => s.name), [sectors, GSD_SP_SECTORS_LIST]);
 
     const BASP_SECTORS = useMemo(() => sectors.filter(s => 
-        !GSD_SP_SECTORS_LIST.includes(s.name.trim().toUpperCase())
+        !GSD_SP_SECTORS_LIST.some(gsd => s.name.trim().toUpperCase() === gsd)
     ).map(s => s.name), [sectors, GSD_SP_SECTORS_LIST]);
 
     // Previous day for delta comparison
@@ -155,6 +158,16 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
     }, [selectedDate]);
 
+    const normalize = (val: string) => val.trim().toUpperCase();
+
+    // Sectors to show based on filter
+    const relevantSectors = useMemo(() => {
+        if (selectedUnit === 'VISÃO GLOBAL') return sectors.map(s => s.name);
+        if (selectedUnit === 'BASP') return BASP_SECTORS;
+        if (selectedUnit === 'UNIDADE GSD-SP' || selectedUnit === 'GSD-SP') return GSD_SP_SECTORS;
+        return GSD_SP_SECTORS;
+    }, [selectedUnit, GSD_SP_SECTORS, BASP_SECTORS, sectors]);
+
     // Filter users by rank
     const filterUsersByRank = (userList: User[]) => {
         if (rankFilter === 'TODOS') return userList;
@@ -172,24 +185,16 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return map;
     }, [attendanceHistory]);
 
-    // Sectors to show based on filter
-    const activeSectorsToShow = useMemo(() => {
-        if (selectedSector === 'TODOS') return displaySectors;
-        if (selectedSector === 'GSD-SP') return GSD_SP_SECTORS.filter(s => displaySectors.includes(s));
-        if (selectedSector === 'BASP') return BASP_SECTORS.filter(s => displaySectors.includes(s));
-        return [selectedSector];
-    }, [selectedSector, displaySectors, GSD_SP_SECTORS, BASP_SECTORS]);
-
     // Relevant users
     const relevantUsers = useMemo(() => {
         const activeAndInRoster = users.filter(u => {
-            // Militares em serviço externo (outras OMs que não BASP) não devem contabilizar no mapa de força
             const isExternalOtherOM = u.external_service && u.external_om !== 'BASP';
+            const userSector = normalize(u.sector || '');
             
             return u.active !== false &&
                 !u.is_functional &&
                 !isExternalOtherOM &&
-                displaySectors.includes(u.sector);
+                relevantSectors.some(rs => normalize(rs) === userSector);
         });
 
         const sectorFiltered = selectedSector === 'TODOS'
@@ -201,7 +206,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     : activeAndInRoster.filter(u => u.sector === selectedSector);
 
         return filterUsersByRank(sectorFiltered);
-    }, [users, selectedSector, rankFilter, displaySectors, GSD_SP_SECTORS, BASP_SECTORS]);
+    }, [users, selectedSector, rankFilter, relevantSectors, GSD_SP_SECTORS, BASP_SECTORS]);
 
     // Pre-index by user ID for O(1) matching later
     const relevantUserIds = useMemo(() => new Set(relevantUsers.map(u => u.id)), [relevantUsers]);
