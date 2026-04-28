@@ -894,7 +894,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                             missions={myMissions}
                             currentUser={user}
                             onMissionUpdated={fetchMissions}
-                            onMissionDeleted={fetchMissions}
+                            onDelete={handleDeleteRequest}
                             onProcess={(id, decision) => {
                                 const m = missions.find(mission => mission.id === id);
                                 if (m && decision === 'REJEITADA') handleRejectRequest(m);

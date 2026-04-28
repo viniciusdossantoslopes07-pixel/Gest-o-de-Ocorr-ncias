@@ -1,6 +1,6 @@
 import { useState, FC } from 'react';
 import { Mission, User } from '../types';
-import { CheckCircle, XCircle, ArrowUpCircle, Clock, Calendar, MapPin, User as UserIcon, FileText, X, Eye, ChevronRight, Package, Filter, Users as UsersIcon, Edit2 } from 'lucide-react';
+import { CheckCircle, XCircle, ArrowUpCircle, Clock, Calendar, MapPin, User as UserIcon, FileText, X, Eye, ChevronRight, Package, Filter, Users as UsersIcon, Edit2, Trash2 } from 'lucide-react';
 import { formatViaturas, formatEfetivo } from '../utils/formatters';
 import MissionRequestCard from './MissionRequestCard';
 import RejectionModal from './RejectionModal';
@@ -9,7 +9,7 @@ interface MissionRequestListProps {
     missions: Mission[];
     currentUser: User;
     onMissionUpdated: (mission: Mission) => void;
-    onMissionDeleted?: () => void;
+    onDelete?: (mission: Mission) => void;
     onProcess?: (id: string, decision: 'APROVADA' | 'REJEITADA' | 'ESCALONADA', parecer?: string) => void;
     onGenerateOrder?: (mission: Mission) => void;
     onEditDraft?: (mission: Mission) => void;
@@ -20,7 +20,7 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
     missions,
     currentUser,
     onMissionUpdated,
-    onMissionDeleted,
+    onDelete,
     onProcess,
     onGenerateOrder,
     onEditDraft,
@@ -239,12 +239,27 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
                                     )}
 
                                     {selectedMission.status === 'RASCUNHO' && onEditDraft && (
-                                        <button
-                                            onClick={() => { onEditDraft(selectedMission); setSelectedMission(null); }}
-                                            className={`w-full py-4 ${isDarkMode ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/20' : 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20'} text-white rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg`}
-                                        >
-                                            <Edit2 className="w-4 h-4" /> Continuar Editando
-                                        </button>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => { onEditDraft(selectedMission); setSelectedMission(null); }}
+                                                className={`flex-1 py-4 ${isDarkMode ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/20' : 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20'} text-white rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg`}
+                                            >
+                                                <Edit2 className="w-4 h-4" /> Continuar Editando
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    const confirmDelete = confirm('Tem certeza que deseja EXCLUIR este rascunho permanentemente?');
+                                                    if (confirmDelete && onDelete) {
+                                                        onDelete(selectedMission); 
+                                                        setSelectedMission(null);
+                                                    }
+                                                }}
+                                                className={`p-4 ${isDarkMode ? 'bg-slate-800 text-red-500 hover:bg-red-500/10' : 'bg-slate-100 text-red-600 hover:bg-red-50'} rounded-2xl transition-all flex items-center justify-center active:scale-95`}
+                                                title="Excluir Rascunho"
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                        </div>
                                     )}
 
                                     {/* Botão de Ver Detalhes / Editar para o Usuário */}
@@ -294,10 +309,10 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
                         onMissionUpdated(updated);
                         setSelectedMission(updated);
                     }}
-                    onDelete={onMissionDeleted ? () => {
+                    onDelete={onDelete ? (m) => {
                         const confirmDelete = confirm('Tem certeza que deseja excluir esta solicitação?');
                         if (confirmDelete) {
-                            onMissionDeleted();
+                            onDelete(m);
                             setSelectedMission(null);
                         }
                     } : undefined}
