@@ -169,7 +169,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         if (selectedSector === 'TODOS') return displaySectors;
         if (selectedSector === 'GSD-SP') return GSD_SP_SECTORS.filter(s => displaySectors.includes(s));
         return [selectedSector];
-    }, [selectedSector, displaySectors, GSD_SP_SECTORS, BASP_SECTORS]);
+    }, [selectedSector, displaySectors, GSD_SP_SECTORS]);
 
     // Relevant users
     const relevantUsers = useMemo(() => {
@@ -190,7 +190,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 : activeAndInRoster.filter(u => u.sector === selectedSector);
 
         return filterUsersByRank(sectorFiltered);
-    }, [users, selectedSector, rankFilter, displaySectors, GSD_SP_SECTORS, BASP_SECTORS]);
+    }, [users, selectedSector, rankFilter, displaySectors, GSD_SP_SECTORS]);
 
     // Pre-index by user ID for O(1) matching later
     const relevantUserIds = useMemo(() => new Set(relevantUsers.map(u => u.id)), [relevantUsers]);
@@ -251,7 +251,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
             return flattenedMap;
         }
         return getRecordsForDate(selectedDate);
-    }, [selectedDate, selectedSector, callTypeFilter, historyByDate, viewMode, currentWeekRange, GSD_SP_SECTORS, BASP_SECTORS]);
+    }, [selectedDate, selectedSector, callTypeFilter, historyByDate, viewMode, currentWeekRange, GSD_SP_SECTORS]);
 
     // Weekly average readiness logic
     const weeklyProntidaoData = useMemo(() => {
@@ -455,7 +455,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 
             return { sector, total, ready, absent: Math.max(0, finalAbsentCount), pct, prevPct, delta: Math.round(pct - prevPct), absentDetails };
         });
-    }, [users, currentRecordsMap, previousRecordsMap, selectedSector, rankFilter, displaySectors, GSD_SP_SECTORS, BASP_SECTORS, relevantUserIds]);
+    }, [users, currentRecordsMap, previousRecordsMap, selectedSector, rankFilter, displaySectors, GSD_SP_SECTORS, relevantUserIds]);
 
     // Rank breakdown
     const rankBreakdown = useMemo(() => {
@@ -860,10 +860,6 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                             <div>
                                                 <h4 className={`text-[10px] font-black uppercase tracking-widest text-blue-500 mb-2 pl-2`}>UNIDADE GSD-SP</h4>
                                                 <div className="space-y-2">{renderSectors(GSD_SP_SECTORS.filter(s => displaySectors.includes(s)))}</div>
-                                            </div>
-                                            <div>
-                                                <h4 className={`text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-2 pl-2`}>UNIDADE BASP</h4>
-                                                <div className="space-y-2">{renderSectors(BASP_SECTORS.filter(s => displaySectors.includes(s)))}</div>
                                             </div>
                                         </div>
                                     );
