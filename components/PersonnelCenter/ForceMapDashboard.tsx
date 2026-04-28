@@ -654,8 +654,8 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                             isDarkMode={dk}
                             options={[
                                 { label: 'VISÃO GLOBAL', value: 'VISÃO GLOBAL' },
-                                { label: 'UNIDADE GSD-SP', value: 'GSD-SP' },
-                                { label: 'UNIDADE BASP', value: 'BASP' }
+                                { label: 'GSD-SP', value: 'GSD-SP' },
+                                { label: 'BASP', value: 'BASP' }
                             ]}
                         />
                     </div>
@@ -900,11 +900,11 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                     return (
                                         <div className="space-y-4">
                                             <div>
-                                                <h4 className={`text-[10px] font-black uppercase tracking-widest text-blue-500 mb-2 pl-2`}>UNIDADE GSD-SP</h4>
+                                                <h4 className={`text-[10px] font-black uppercase tracking-widest text-blue-500 mb-2 pl-2`}>GSD-SP</h4>
                                                 <div className="space-y-2">{renderSectors(GSD_SP_SECTORS.filter(s => displaySectors.includes(s)))}</div>
                                             </div>
                                             <div>
-                                                <h4 className={`text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-2 pl-2`}>UNIDADE BASP</h4>
+                                                <h4 className={`text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-2 pl-2`}>BASP</h4>
                                                 <div className="space-y-2">{renderSectors(BASP_SECTORS.filter(s => displaySectors.includes(s)))}</div>
                                             </div>
                                         </div>

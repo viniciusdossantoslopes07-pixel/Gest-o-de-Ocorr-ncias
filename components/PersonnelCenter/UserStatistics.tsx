@@ -205,7 +205,7 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
                         </div>
                         <div>
                             <h3 className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Composição Hierárquica</h3>
-                            <p className={`text-[9px] font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{activeUnitFilter === 'TODAS' ? 'Visão Geral' : `Unidade ${activeUnitFilter}`}</p>
+                            <p className={`text-[9px] font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{activeUnitFilter === 'TODAS' ? 'Visão Geral' : activeUnitFilter}</p>
                         </div>
                     </div>
 

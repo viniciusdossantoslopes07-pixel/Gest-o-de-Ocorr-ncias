@@ -278,7 +278,7 @@ const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode =
                         {/* GSD-SP Group */}
                         <div className={`divide-y ${dk ? 'divide-slate-700/50' : 'divide-slate-100'} pb-4`}>
                             <div className="px-6 py-2 bg-slate-900/10 dark:bg-slate-900/40">
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${dk ? 'text-blue-400' : 'text-blue-600'}`}>Unidade GSD-SP</span>
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${dk ? 'text-blue-400' : 'text-blue-600'}`}>GSD-SP</span>
                             </div>
                             {sectors.filter(s => s.unit !== 'BASP').length === 0 && (
                                 <p className={`px-6 py-4 text-xs font-medium ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Nenhum setor GSD-SP.</p>
@@ -289,7 +289,7 @@ const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode =
                         {/* BASP Group */}
                         <div className={`divide-y ${dk ? 'divide-slate-700/50' : 'divide-slate-100'} pb-4`}>
                             <div className="px-6 py-2 bg-slate-900/10 dark:bg-slate-900/40">
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${dk ? 'text-emerald-400' : 'text-emerald-600'}`}>Unidade BASP</span>
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${dk ? 'text-emerald-400' : 'text-emerald-600'}`}>BASP</span>
                             </div>
                             {sectors.filter(s => s.unit === 'BASP').length === 0 && (
                                 <p className={`px-6 py-4 text-xs font-medium ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Nenhum setor BASP.</p>
