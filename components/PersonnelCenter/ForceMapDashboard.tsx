@@ -175,11 +175,15 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 
     // Relevant users
     const relevantUsers = useMemo(() => {
-        const activeAndInRoster = users.filter(u =>
-            u.active !== false &&
-            !u.is_functional &&
-            displaySectors.includes(u.sector)
-        );
+        const activeAndInRoster = users.filter(u => {
+            // Militares em serviço externo (outras OMs que não BASP) não devem contabilizar no mapa de força
+            const isExternalOtherOM = u.external_service && u.external_om !== 'BASP';
+            
+            return u.active !== false &&
+                !u.is_functional &&
+                !isExternalOtherOM &&
+                displaySectors.includes(u.sector);
+        });
 
         const sectorFiltered = selectedSector === 'TODOS'
             ? activeAndInRoster
@@ -321,8 +325,10 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return relevantUsers.filter(u => {
             if (!signedSectors.has(u.sector)) return false;
             const record = currentRecordsMap.get(u.id);
-            // Um militar não é considerado ausente se estiver em serviço externo
-            return (!record || record.status !== 'P') && !u.external_service;
+            // Militares em serviço externo (outras OMs) não contam como ausentes pois estão fora do mapa.
+            // Militares alocados na BASP devem ter sua presença conferida no setor alocado.
+            const isExternalOtherOM = u.external_service && u.external_om !== 'BASP';
+            return (!record || record.status !== 'P') && !isExternalOtherOM;
         }).length;
     }, [relevantUsers, signedSectors, currentRecordsMap]);
 
@@ -344,8 +350,11 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
             let prevCount = 0;
             
             if (key === 'EXTERNO') {
+                // Contamos apenas quem está em serviço externo fora da BASP? 
+                // Na verdade, como filtramos relevantUsers acima, os não-BASP já saíram do mapa.
+                // Se quisermos mostrar os BASP como "Externo" mas mantê-los no total, usamos relevantUsers.
+                // No entanto, para não duplicar com "Presentes", filtramos quem não tem status 'P'.
                 count = relevantUsers.filter(u => u.external_service).length;
-                // Como não temos histórico da flag no banco de presenças, assumimos estável ou zero se preferir
                 prevCount = count; 
             } else {
                 count = getCount(allRecords, [...group.codes]);
@@ -365,8 +374,9 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 if (!signedSectors.has(u.sector)) return false;
 
                 const record = currentRecordsMap.get(u.id);
-                // Excluir serviço externo da lista global de ausentes
-                return (!record || record.status !== 'P') && !u.external_service;
+                // Militares BASP devem aparecer se estiverem ausentes no setor alocado
+                const isExternalOtherOM = u.external_service && u.external_om !== 'BASP';
+                return (!record || record.status !== 'P') && !isExternalOtherOM;
             })
             .map(u => {
                 const record = currentRecordsMap.get(u.id);
@@ -419,7 +429,10 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     // Sector breakdown
     const sectorBreakdown = useMemo(() => {
         return activeSectorsToShow.map(sector => {
-            const sectorUsers = users.filter(u => u.sector === sector && u.active !== false && u.is_functional !== true);
+            const sectorUsers = users.filter(u => {
+                const isExternalOtherOM = u.external_service && u.external_om !== 'BASP';
+                return u.sector === sector && u.active !== false && u.is_functional !== true && !isExternalOtherOM;
+            });
             const total = sectorUsers.length;
             const sectorRecords = Array.from(currentRecordsMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
             const ready = sectorRecords.filter(r => r.status === 'P').length;
@@ -432,8 +445,8 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
             const absentDetails = sectorUsers
                 .filter(u => {
                     const r = currentRecordsMap.get(u.id);
-                    // Excluir militares em serviço externo do detalhamento por setor
-                    return (r && r.status !== 'P') && !u.external_service;
+                    const isExternalOtherOM = u.external_service && u.external_om !== 'BASP';
+                    return (r && r.status !== 'P') && !isExternalOtherOM;
                 })
                 .map(u => ({
                     user: u,
@@ -441,10 +454,9 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     label: (PRESENCE_STATUS as any)[currentRecordsMap.get(u.id)?.status] || 'N/A'
                 }));
 
-            // Subtraímos serviço externo do contador de ausentes para que a visualização de setor 
-            // seja coerente com o dashboard global (Total - Prontos - Externos = Ausentes)
-            const extCount = sectorUsers.filter(u => u.external_service).length;
-            const finalAbsentCount = total - ready - extCount;
+            // Militares BASP não abatem do contador de ausentes, pois eles contam no setor
+            const isExternalOtherOMCount = sectorUsers.filter(u => u.external_service && u.external_om !== 'BASP').length;
+            const finalAbsentCount = total - ready - isExternalOtherOMCount;
 
             return { sector, total, ready, absent: Math.max(0, finalAbsentCount), pct, prevPct, delta: Math.round(pct - prevPct), absentDetails };
         });
