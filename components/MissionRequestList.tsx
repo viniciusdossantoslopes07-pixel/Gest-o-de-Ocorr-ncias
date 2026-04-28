@@ -1,6 +1,6 @@
 import { useState, FC } from 'react';
 import { Mission, User } from '../types';
-import { CheckCircle, XCircle, ArrowUpCircle, Clock, Calendar, MapPin, User as UserIcon, FileText, X, Eye, ChevronRight, Package, Filter, Users as UsersIcon } from 'lucide-react';
+import { CheckCircle, XCircle, ArrowUpCircle, Clock, Calendar, MapPin, User as UserIcon, FileText, X, Eye, ChevronRight, Package, Filter, Users as UsersIcon, Edit2 } from 'lucide-react';
 import { formatViaturas, formatEfetivo } from '../utils/formatters';
 import MissionRequestCard from './MissionRequestCard';
 import RejectionModal from './RejectionModal';
@@ -236,6 +236,15 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
                                                 <ArrowUpCircle className="w-4 h-4" /> Escalonar
                                             </button>
                                         </div>
+                                    )}
+
+                                    {selectedMission.status === 'RASCUNHO' && onEditDraft && (
+                                        <button
+                                            onClick={() => { onEditDraft(selectedMission); setSelectedMission(null); }}
+                                            className={`w-full py-4 ${isDarkMode ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/20' : 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20'} text-white rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg`}
+                                        >
+                                            <Edit2 className="w-4 h-4" /> Continuar Editando
+                                        </button>
                                     )}
 
                                     {/* Botão de Ver Detalhes / Editar para o Usuário */}
