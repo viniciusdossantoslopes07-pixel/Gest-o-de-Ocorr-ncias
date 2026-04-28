@@ -50,6 +50,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const [expandedSector, setExpandedSector] = useState<string | null>(null);
     const [isAbsencesExpanded, setIsAbsencesExpanded] = useState(false);
     const [isPrinting, setIsPrinting] = useState(false);
+    const [selectedUnit, setSelectedUnit] = useState<string>('GSD-SP');
     const { sectors, displaySectors } = useSectors();
 
     const normalize = (val: string | null | undefined) => (val || '').trim().toUpperCase();
@@ -646,6 +647,21 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 
                     <div className="min-w-[160px]">
                         <FilterSelect
+                            icon={Shield}
+                            placeholder="Unidade"
+                            value={selectedUnit}
+                            onChange={setSelectedUnit}
+                            isDarkMode={dk}
+                            options={[
+                                { label: 'VISÃO GLOBAL', value: 'VISÃO GLOBAL' },
+                                { label: 'UNIDADE GSD-SP', value: 'GSD-SP' },
+                                { label: 'UNIDADE BASP', value: 'BASP' }
+                            ]}
+                        />
+                    </div>
+
+                    <div className="min-w-[160px]">
+                        <FilterSelect
                             icon={Filter}
                             placeholder="Setor"
                             value={selectedSector}
@@ -653,9 +669,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                             isDarkMode={dk}
                             options={[
                                 { label: 'TODO EFETIVO', value: 'TODOS' },
-                                { label: 'UNIDADE GSD-SP', value: 'GSD-SP' },
-                                { label: 'UNIDADE BASP', value: 'BASP' },
-                                ...displaySectors.map(s => ({ label: s, value: s }))
+                                ...relevantSectors.map(s => ({ label: s, value: s }))
                             ]}
                         />
                     </div>
