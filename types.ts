@@ -204,6 +204,7 @@ export interface Mission {
       ceia: boolean;
       lanche: boolean;
     };
+    informacoes_complementares?: string;
   };
   status: 'RASCUNHO' | 'PENDENTE' | 'APROVADA' | 'REJEITADA' | 'ESCALONADA' | 'AGUARDANDO_ORDEM' | 'ATRIBUIDA' | 'FINALIZADA';
   parecer_sop?: string;
