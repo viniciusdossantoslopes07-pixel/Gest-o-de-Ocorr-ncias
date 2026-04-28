@@ -294,7 +294,12 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     
     // Filtro de setores ativos da unidade selecionada
     const unitSectors = useMemo(() => 
-        sectors.filter(s => !s.hidden_from_attendance && s.unit === selectedUnit).map(s => s.name),
+        sectors.filter(s => {
+            if (s.hidden_from_attendance) return false;
+            const u = s.unit?.trim().toUpperCase();
+            if (selectedUnit === 'BASP') return u === 'BASP';
+            return u === 'GSD-SP' || !u;
+        }).map(s => s.name),
     [sectors, selectedUnit]);
 
     const [selectedSector, setSelectedSector] = useState('');

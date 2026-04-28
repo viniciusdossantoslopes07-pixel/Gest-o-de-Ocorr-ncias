@@ -52,8 +52,12 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const [isPrinting, setIsPrinting] = useState(false);
     const { sectors, displaySectors } = useSectors();
 
-    const GSD_SP_SECTORS = useMemo(() => sectors.filter(s => s.unit === 'GSD-SP').map(s => s.name), [sectors]);
-    const BASP_SECTORS = useMemo(() => sectors.filter(s => s.unit === 'BASP').map(s => s.name), [sectors]);
+    const GSD_SP_SECTORS = useMemo(() => sectors.filter(s => {
+        const u = s.unit?.trim().toUpperCase();
+        return u === 'GSD-SP' || !u;
+    }).map(s => s.name), [sectors]);
+
+    const BASP_SECTORS = useMemo(() => sectors.filter(s => s.unit?.trim().toUpperCase() === 'BASP').map(s => s.name), [sectors]);
 
     // Previous day for delta comparison
     const previousDate = useMemo(() => {
