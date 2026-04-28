@@ -1,7 +1,7 @@
 import { useState, type FC, type FormEvent } from 'react';
 import { User } from '../types';
 import { RANKS, SETORES, TIPOS_MISSAO } from '../constants';
-import { Save, X, Calendar, Clock, MapPin, Users, Truck, Coffee, Search } from 'lucide-react';
+import { Save, X, Calendar, Clock, MapPin, Users, Truck, Coffee, Search, FileText } from 'lucide-react';
 import { supabase } from '../services/supabase';
 
 import { Mission } from '../types';
@@ -52,7 +52,8 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, users, onSubmit
             janta: false,
             ceia: false,
             lanche: false
-        }
+        },
+        informacoes_complementares: initialData?.dados_missao.informacoes_complementares || ''
     });
 
     const [searchTerm, setSearchTerm] = useState(() => {
@@ -469,6 +470,23 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, users, onSubmit
                         </div>
                     </section>
                 </div>
+
+                {/* Informações Complementares */}
+                <section className="space-y-3">
+                    <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest flex items-center gap-2`}>
+                        <FileText className="w-4 h-4 text-blue-600" /> Informações Complementares
+                    </h3>
+                    <textarea
+                        value={formData.informacoes_complementares}
+                        onChange={e => setFormData({ ...formData, informacoes_complementares: e.target.value })}
+                        rows={4}
+                        placeholder="Descreva aqui quaisquer informações adicionais relevantes para esta missão: contexto, restrições, observações especiais, contatos, etc."
+                        className={`w-full px-4 py-3 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white placeholder-slate-600' : 'border-slate-200 bg-white text-slate-900 placeholder-slate-400'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all resize-none`}
+                    />
+                    <p className={`text-[10px] ${isDarkMode ? 'text-slate-600' : 'text-slate-400'} leading-relaxed`}>
+                        Campo opcional. Use para detalhar informações que não se encaixam nos campos anteriores.
+                    </p>
+                </section>
             </div>
 
             <div className={`p-4 sm:p-6 border-t glass-panel flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 shrink-0`}>

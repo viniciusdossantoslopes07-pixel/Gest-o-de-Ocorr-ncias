@@ -12,12 +12,13 @@ interface MissionRequestCardProps {
     onReject?: (mission: Mission) => void;
     onDelete?: (mission: Mission) => void;
     onApprove?: (mission: Mission) => void;
+    onEditDraft?: (mission: Mission) => void;
     currentUser: User;
     canEdit: boolean;
     isDarkMode?: boolean;
 }
 
-const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onUpdate, onReject, onDelete, onApprove, currentUser, canEdit, isDarkMode }) => {
+const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onUpdate, onReject, onDelete, onApprove, onEditDraft, currentUser, canEdit, isDarkMode }) => {
     const [activeTab, setActiveTab] = useState<'dados' | 'historico'>('dados');
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
@@ -594,6 +595,15 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                         >
                             Fechar
                         </button>
+                        {mission.status === 'RASCUNHO' && onEditDraft && (
+                            <button
+                                onClick={() => { onEditDraft(mission); onClose(); }}
+                                className={`w-full sm:w-auto ${isDarkMode ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/20' : 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20'} px-8 py-3 rounded-xl font-black text-white shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95 text-sm uppercase tracking-widest`}
+                            >
+                                <Edit2 className="w-4 h-4" />
+                                Continuar Editando
+                            </button>
+                        )}
                         {isEditing && (
                             <button
                                 onClick={handleSave}

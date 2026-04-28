@@ -12,6 +12,7 @@ interface MissionRequestListProps {
     onMissionDeleted?: () => void;
     onProcess?: (id: string, decision: 'APROVADA' | 'REJEITADA' | 'ESCALONADA', parecer?: string) => void;
     onGenerateOrder?: (mission: Mission) => void;
+    onEditDraft?: (mission: Mission) => void;
     isDarkMode?: boolean;
 }
 
@@ -22,6 +23,7 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
     onMissionDeleted,
     onProcess,
     onGenerateOrder,
+    onEditDraft,
     isDarkMode
 }) => {
     const [filterStatus, setFilterStatus] = useState<string>('TODOS');
@@ -293,6 +295,7 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
                     onReject={onProcess ? (m) => onProcess(m.id, 'REJEITADA') : undefined}
                     currentUser={currentUser}
                     canEdit={selectedMission.status === 'PENDENTE' || selectedMission.status === 'RASCUNHO'}
+                    onEditDraft={onEditDraft}
                     isDarkMode={isDarkMode}
                 />
             )}

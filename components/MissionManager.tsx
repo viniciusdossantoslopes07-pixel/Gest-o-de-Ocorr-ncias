@@ -894,10 +894,14 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                             missions={myMissions}
                             currentUser={user}
                             onMissionUpdated={fetchMissions}
-                            onMissionDeleted={fetchMissions} // Keep this for list refresh
+                            onMissionDeleted={fetchMissions}
                             onProcess={(id, decision) => {
                                 const m = missions.find(mission => mission.id === id);
                                 if (m && decision === 'REJEITADA') handleRejectRequest(m);
+                            }}
+                            onEditDraft={(mission) => {
+                                setEditingDraft(mission);
+                                setActiveTab('solicitar_missao');
                             }}
                             isDarkMode={isDarkMode}
                         />
