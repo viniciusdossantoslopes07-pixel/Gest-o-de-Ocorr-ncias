@@ -291,16 +291,16 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 }) => {
     const { sectors, displaySectors } = useSectors();
     const [selectedUnit, setSelectedUnit] = useState<'GSD-SP' | 'BASP'>('GSD-SP');
+    const GSD_SP_SECTORS_LIST = useMemo(() => ['SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'], []);
     
     // Filtro de setores ativos da unidade selecionada
     const unitSectors = useMemo(() => 
         sectors.filter(s => {
             if (s.hidden_from_attendance) return false;
-            const u = s.unit?.trim().toUpperCase();
-            if (selectedUnit === 'BASP') return u === 'BASP';
-            return u === 'GSD-SP' || !u;
+            const isGsd = GSD_SP_SECTORS_LIST.includes(s.name.trim().toUpperCase());
+            return selectedUnit === 'BASP' ? !isGsd : isGsd;
         }).map(s => s.name),
-    [sectors, selectedUnit]);
+    [sectors, selectedUnit, GSD_SP_SECTORS_LIST]);
 
     const [selectedSector, setSelectedSector] = useState('');
     const [callType, setCallType] = useState<CallTypeCode>('INICIO');

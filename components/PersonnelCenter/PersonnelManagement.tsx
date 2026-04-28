@@ -36,6 +36,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     const [activeUnitFilter, setActiveUnitFilter] = useState<'TODAS' | 'GSD-SP' | 'BASP'>('TODAS');
 
     const { sectors, sectorNames } = useSectors();
+    const GSD_SP_SECTORS_LIST = useMemo(() => ['SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'], []);
     const [formData, setFormData] = useState({
         name: '',
         warName: '',
@@ -76,13 +77,14 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
         } else if (filterSector === 'SEM SETOR') {
             sectorMatch = !u.sector || u.sector === 'SEM SETOR';
         } else if (filterSector === 'TODOS GSD-SP') {
-            const gsdSectors = sectors.filter(s => {
-                const u = s.unit?.trim().toUpperCase();
-                return u === 'GSD-SP' || !u;
-            }).map(s => s.name);
+            const gsdSectors = sectors.filter(s => 
+                GSD_SP_SECTORS_LIST.includes(s.name.trim().toUpperCase())
+            ).map(s => s.name);
             sectorMatch = gsdSectors.includes(u.sector || '');
         } else if (filterSector === 'TODOS BASP') {
-            const baspSectors = sectors.filter(s => s.unit?.trim().toUpperCase() === 'BASP').map(s => s.name);
+            const baspSectors = sectors.filter(s => 
+                !GSD_SP_SECTORS_LIST.includes(s.name.trim().toUpperCase())
+            ).map(s => s.name);
             sectorMatch = baspSectors.includes(u.sector || '');
         } else {
             sectorMatch = u.sector === filterSector;
@@ -90,13 +92,14 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
 
         let unitMatch = true;
         if (activeUnitFilter === 'GSD-SP') {
-            const gsdSectors = sectors.filter(s => {
-                const u = s.unit?.trim().toUpperCase();
-                return u === 'GSD-SP' || !u;
-            }).map(s => s.name);
+            const gsdSectors = sectors.filter(s => 
+                GSD_SP_SECTORS_LIST.includes(s.name.trim().toUpperCase())
+            ).map(s => s.name);
             unitMatch = gsdSectors.includes(u.sector || '');
         } else if (activeUnitFilter === 'BASP') {
-            const baspSectors = sectors.filter(s => s.unit?.trim().toUpperCase() === 'BASP').map(s => s.name);
+            const baspSectors = sectors.filter(s => 
+                !GSD_SP_SECTORS_LIST.includes(s.name.trim().toUpperCase())
+            ).map(s => s.name);
             unitMatch = baspSectors.includes(u.sector || '');
         }
 
