@@ -52,7 +52,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const [isPrinting, setIsPrinting] = useState(false);
     const { sectors, displaySectors } = useSectors();
 
-    const normalize = (val: string) => val.trim().toUpperCase();
+    const normalize = (val: string | null | undefined) => (val || '').trim().toUpperCase();
 
     const GSD_SP_SECTORS_LIST = useMemo(() => [
         'SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA',
@@ -162,16 +162,18 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 
     // Sectors to show based on filter
     const relevantSectors = useMemo(() => {
+        if (!sectors) return [];
         if (selectedUnit === 'VISÃO GLOBAL') return sectors.map(s => s.name);
-        if (selectedUnit === 'BASP') return BASP_SECTORS;
-        if (selectedUnit === 'UNIDADE GSD-SP' || selectedUnit === 'GSD-SP') return GSD_SP_SECTORS;
-        return GSD_SP_SECTORS;
+        if (selectedUnit === 'BASP') return BASP_SECTORS || [];
+        if (selectedUnit === 'UNIDADE GSD-SP' || selectedUnit === 'GSD-SP') return GSD_SP_SECTORS || [];
+        return GSD_SP_SECTORS || [];
     }, [selectedUnit, GSD_SP_SECTORS, BASP_SECTORS, sectors]);
 
     const activeSectorsToShow = useMemo(() => {
-        if (selectedSector === 'TODOS') return relevantSectors;
-        if (selectedSector === 'GSD-SP') return GSD_SP_SECTORS.filter(s => relevantSectors.includes(s));
-        if (selectedSector === 'BASP') return BASP_SECTORS.filter(s => relevantSectors.includes(s));
+        const base = relevantSectors || [];
+        if (selectedSector === 'TODOS') return base;
+        if (selectedSector === 'GSD-SP') return (GSD_SP_SECTORS || []).filter(s => base.includes(s));
+        if (selectedSector === 'BASP') return (BASP_SECTORS || []).filter(s => base.includes(s));
         return [selectedSector];
     }, [selectedSector, relevantSectors, GSD_SP_SECTORS, BASP_SECTORS]);
 
