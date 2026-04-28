@@ -164,10 +164,14 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     // Sectors to show based on filter
     const relevantSectors = useMemo(() => {
         if (!sectors) return [];
-        if (selectedUnit === 'VISÃO GLOBAL') return sectors.map(s => s.name);
-        if (selectedUnit === 'BASP') return BASP_SECTORS || [];
-        if (selectedUnit === 'UNIDADE GSD-SP' || selectedUnit === 'GSD-SP') return GSD_SP_SECTORS || [];
-        return GSD_SP_SECTORS || [];
+        let base: string[] = [];
+        if (selectedUnit === 'VISÃO GLOBAL') base = sectors.map(s => s.name);
+        else if (selectedUnit === 'BASP') base = BASP_SECTORS || [];
+        else if (selectedUnit === 'GSD-SP') base = GSD_SP_SECTORS || [];
+        else base = GSD_SP_SECTORS || [];
+
+        // Ocultar setores técnicos/funcionais
+        return base.filter(s => normalize(s) !== 'EQP DE SERVIÇO');
     }, [selectedUnit, GSD_SP_SECTORS, BASP_SECTORS, sectors]);
 
     const activeSectorsToShow = useMemo(() => {
