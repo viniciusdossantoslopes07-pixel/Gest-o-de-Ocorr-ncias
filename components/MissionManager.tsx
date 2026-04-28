@@ -814,6 +814,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                     }}
                     onSubmit={handleOrderSubmit}
                     order={selectedOrder || (initialOrderData as any)}
+                    requestContext={selectedMission?.dados_missao.informacoes_complementares}
                     users={users}
                     isSubmitting={isSaving}
                 />

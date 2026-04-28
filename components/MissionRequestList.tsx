@@ -211,6 +211,17 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
                                         </div>
                                     </div>
 
+                                    {/* Informações Complementares */}
+                                    {selectedMission.dados_missao.informacoes_complementares && (
+                                        <div className="space-y-4 pt-4">
+                                            <h4 className={`text-xs font-black uppercase tracking-widest flex items-center gap-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                                                <FileText className="w-4 h-4 text-blue-600" /> Informações Complementares
+                                            </h4>
+                                            <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-100 text-slate-700'} text-xs leading-relaxed whitespace-pre-wrap font-medium`}>
+                                                {selectedMission.dados_missao.informacoes_complementares}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Ações */}

@@ -151,7 +151,8 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
             viaturas: 'Viaturas',
             posto: 'Posto/Graduação',
             nome_guerra: 'Nome de Guerra',
-            setor: 'Setor'
+            setor: 'Setor',
+            informacoes_complementares: 'Informações Complementares'
         };
         return fieldNames[field] || field;
     };
@@ -484,6 +485,28 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                             </div>
                                         )}
                                     </div>
+                                </div>
+                            </section>
+
+                            {/* Complementary Information */}
+                            <section className="space-y-4">
+                                <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-400' : 'text-slate-700'} uppercase tracking-widest flex items-center gap-2`}>
+                                    <MessageSquare className="w-4 h-4 text-blue-600" /> Informações Complementares
+                                </h3>
+                                <div className="col-span-2">
+                                    {isEditing ? (
+                                        <textarea
+                                            value={formData.informacoes_complementares || ''}
+                                            onChange={e => setFormData({ ...formData, informacoes_complementares: e.target.value })}
+                                            rows={4}
+                                            placeholder="Informações adicionais relevantes..."
+                                            className={`w-full px-4 py-3 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white placeholder-slate-600' : 'border-slate-200 bg-white text-slate-900 placeholder-slate-400'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none`}
+                                        />
+                                    ) : (
+                                        <div className={`${isDarkMode ? 'bg-slate-800/30 text-slate-200' : 'bg-slate-50 text-slate-800'} p-4 rounded-xl text-sm font-medium whitespace-pre-wrap min-h-[60px]`}>
+                                            {formData.informacoes_complementares || 'Nenhuma informação complementar registrada.'}
+                                        </div>
+                                    )}
                                 </div>
                             </section>
                         </div>

@@ -1,7 +1,7 @@
 
 import { useState, type FC, type FormEvent } from 'react';
 import { MissionOrder, MissionOrderPersonnel, MissionOrderSchedule } from '../types';
-import { Save, X, Plus, Trash2, Search, Shield, Loader2 } from 'lucide-react';
+import { Save, X, Plus, Trash2, Search, Shield, Loader2, FileText } from 'lucide-react';
 import { RANKS, ARMAMENT_OPTIONS, MISSION_FUNCTIONS, TIPOS_MISSAO } from '../constants';
 
 interface MissionOrderFormProps {
@@ -12,9 +12,10 @@ interface MissionOrderFormProps {
     users: { id: string; name: string; rank: string; warName?: string; saram: string }[];
     isDarkMode?: boolean;
     isSubmitting?: boolean;
+    requestContext?: string;
 }
 
-const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel, currentUser, users, isDarkMode, isSubmitting }) => {
+const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel, currentUser, users, isDarkMode, isSubmitting, requestContext }) => {
     const [formData, setFormData] = useState({
         date: order?.date || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
         isInternal: order?.isInternal ?? true,
@@ -343,6 +344,18 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                             />
                         </div>
                     </div>
+
+                    {requestContext && (
+                        <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-blue-600/5 border-blue-500/20' : 'bg-blue-50/50 border-blue-100'} mb-4 animate-in slide-in-from-left-4 duration-300`}>
+                            <div className="flex items-center gap-2 mb-2">
+                                <FileText className="w-3 h-3 text-blue-500" />
+                                <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Informações da Solicitação (Referência)</span>
+                            </div>
+                            <p className={`text-xs leading-relaxed whitespace-pre-wrap ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} italic font-medium`}>
+                                "{requestContext}"
+                            </p>
+                        </div>
+                    )}
 
                     <div>
                         <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase tracking-wider mb-2`}>Descrição da Missão *</label>
