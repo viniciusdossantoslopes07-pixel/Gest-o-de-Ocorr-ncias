@@ -1014,11 +1014,12 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 setEditingDraft(null);
                             }}
                             onSubmit={async (data, isDraft) => {
-                                // check if updating existing draft
                                 if (editingDraft) {
+                                    // Remove id from update payload to avoid PK errors
+                                    const { id, ...updateData } = data;
                                     const { error } = await supabase
                                         .from('missoes_gsd')
-                                        .update(data)
+                                        .update(updateData)
                                         .eq('id', editingDraft.id);
 
                                     if (!error) {

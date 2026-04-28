@@ -26,7 +26,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, users, onSubmit
     };
 
     const [formData, setFormData] = useState({
-        saram: initialData ? '' : (user.saram || ''), 
+        saram: (initialData?.dados_missao as any)?.saram || (initialData ? '' : (user.saram || '')), 
         posto: initialData?.dados_missao.posto || user.rank || '',
         nome_guerra: initialData?.dados_missao.nome_guerra || user.warName || user.name || '',
         setor: initialData?.dados_missao.setor || user.sector || '',
@@ -447,6 +447,22 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, users, onSubmit
 
                     <section className="space-y-4">
                         <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest flex items-center gap-2`}>
+                            <FileText className="w-4 h-4 text-blue-600" /> Informações Complementares
+                        </h3>
+                        <textarea
+                            value={formData.informacoes_complementares}
+                            onChange={e => setFormData({ ...formData, informacoes_complementares: e.target.value })}
+                            rows={4}
+                            placeholder="Descreva aqui quaisquer informações adicionais relevantes para esta missão: contexto, restrições, observações especiais, contatos, etc."
+                            className={`w-full px-4 py-3 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white placeholder-slate-600' : 'border-slate-200 bg-white text-slate-900 placeholder-slate-400'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all resize-none`}
+                        />
+                        <p className={`text-[10px] ${isDarkMode ? 'text-slate-600' : 'text-slate-400'} leading-relaxed`}>
+                            Campo opcional. Use para detalhar informações que não se encaixam nos campos anteriores.
+                        </p>
+                    </section>
+
+                    <section className="space-y-4">
+                        <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest flex items-center gap-2`}>
                             <Coffee className="w-4 h-4 text-blue-600" /> Alimentação
                         </h3>
                         <div className="grid grid-cols-2 gap-3">
@@ -471,22 +487,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, users, onSubmit
                     </section>
                 </div>
 
-                {/* Informações Complementares */}
-                <section className="space-y-3">
-                    <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest flex items-center gap-2`}>
-                        <FileText className="w-4 h-4 text-blue-600" /> Informações Complementares
-                    </h3>
-                    <textarea
-                        value={formData.informacoes_complementares}
-                        onChange={e => setFormData({ ...formData, informacoes_complementares: e.target.value })}
-                        rows={4}
-                        placeholder="Descreva aqui quaisquer informações adicionais relevantes para esta missão: contexto, restrições, observações especiais, contatos, etc."
-                        className={`w-full px-4 py-3 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white placeholder-slate-600' : 'border-slate-200 bg-white text-slate-900 placeholder-slate-400'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all resize-none`}
-                    />
-                    <p className={`text-[10px] ${isDarkMode ? 'text-slate-600' : 'text-slate-400'} leading-relaxed`}>
-                        Campo opcional. Use para detalhar informações que não se encaixam nos campos anteriores.
-                    </p>
-                </section>
+                {/* Seção removida daqui e movida para cima */}
             </div>
 
             <div className={`p-4 sm:p-6 border-t glass-panel flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 shrink-0`}>

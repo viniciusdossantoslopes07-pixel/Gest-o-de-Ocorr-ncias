@@ -81,8 +81,9 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     const futureMissions = useMemo(() =>
         orders
             .filter(o => {
-                const d = new Date(o.date.split('T')[0]);
-                return d >= today && !['CONCLUIDA', 'CANCELADA', 'REJEITADA'].includes(o.status || '');
+                const orderDateStr = o.date.split('T')[0];
+                const todayStr = today.toISOString().split('T')[0];
+                return orderDateStr >= todayStr && !['CONCLUIDA', 'CANCELADA', 'REJEITADA'].includes(o.status || '');
             })
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
     [orders, today]);
@@ -115,11 +116,15 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     // Future trend: next 14 days
     const futureTrend = useMemo(() => {
         const rows = [];
+        const todayStr = today.toISOString().split('T')[0];
         for (let i = 0; i <= 14; i++) {
             const d = new Date(today);
             d.setDate(today.getDate() + i);
             const ds = d.toISOString().split('T')[0];
-            const count = orders.filter(o => o.date.split('T')[0] === ds && !['CONCLUIDA','CANCELADA','REJEITADA'].includes(o.status || '')).length;
+            const count = orders.filter(o => {
+                const orderDateStr = o.date.split('T')[0];
+                return orderDateStr === ds && !['CONCLUIDA','CANCELADA','REJEITADA'].includes(o.status || '');
+            }).length;
             rows.push({ date: d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }), previstas: count });
         }
         return rows;
