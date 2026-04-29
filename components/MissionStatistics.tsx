@@ -133,7 +133,10 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     // Mission types
     const typeData = useMemo(() => {
         const counts: Record<string, number> = {};
-        filteredOrders.forEach(o => { const t = o.mission || 'Outros'; counts[t] = (counts[t] || 0) + 1; });
+        filteredOrders.forEach(o => { 
+            const t = (o.mission || 'Outros').split(' (')[0]; 
+            counts[t] = (counts[t] || 0) + 1; 
+        });
         return Object.entries(counts).sort(([,a],[,b]) => b - a).slice(0, 6).map(([name, value]) => ({ name, value }));
     }, [filteredOrders]);
 
