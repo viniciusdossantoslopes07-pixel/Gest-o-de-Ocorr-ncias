@@ -322,8 +322,15 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 missionCommanderId = null;
             }
 
-            const isEditing = !!selectedOrder;
-            const orderId = isEditing ? selectedOrder!.id : crypto.randomUUID();
+            const generateId = () => {
+                if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+                    return crypto.randomUUID();
+                }
+                return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+            };
+
+            const isEditing = !!selectedOrder && !!selectedOrder.id;
+            const orderId = isEditing ? selectedOrder!.id : generateId();
 
             const dbOrder = {
                 id: orderId,
@@ -343,6 +350,8 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 mission_commander_id: missionCommanderId,
                 is_external_commander: orderData.isExternalCommander,
                 external_commander_name: orderData.externalCommanderName,
+                start_time: orderData.startTime,
+                end_time: orderData.endTime,
                 status: 'AGUARDANDO_ASSINATURA', // Ready for CH-SOP
                 created_at: isEditing ? selectedOrder!.createdAt : new Date().toISOString(),
                 created_by: isEditing ? selectedOrder!.createdBy : user.name,
@@ -1121,7 +1130,15 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                             }}
                             onDirectOrder={async (data) => {
                                 const newOmis = await generateOMISNumber();
+                                const generateId = () => {
+                                    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+                                        return crypto.randomUUID();
+                                    }
+                                    return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+                                };
+
                                 const directOrder: Partial<MissionOrder> = {
+                                    id: generateId(),
                                     mission: data.dados_missao.tipo_missao,
                                     description: data.dados_missao.informacoes_complementares || 'SOBREAVISO DIÁRIO',
                                     location: data.dados_missao.local || 'GSD-SP',
