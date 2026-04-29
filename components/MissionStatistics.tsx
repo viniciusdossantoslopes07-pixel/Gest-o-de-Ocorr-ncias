@@ -198,7 +198,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
         return Object.entries(locs).sort(([,a],[,b]) => b - a).slice(0, 5);
     }, [filteredOrders]);
 
-    const card = `p-7 rounded-[2.5rem] border transition-all hover:scale-[1.02] ${isDarkMode ? 'bg-slate-900/50 border-slate-800 shadow-2xl' : 'bg-white border-slate-200 shadow-xl shadow-slate-100/80'}`;
+    const card = `p-5 rounded-[2rem] border transition-all hover:scale-[1.02] ${isDarkMode ? 'bg-slate-900/50 border-slate-800 shadow-2xl' : 'bg-white border-slate-200 shadow-xl shadow-slate-100/80'}`;
     const label = `text-[9px] font-black uppercase tracking-[0.2em] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`;
     const value = `text-4xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`;
     const chartBg = isDarkMode ? '#1e293b' : '#fff';
@@ -242,7 +242,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             </div>
 
             {/* KPI Row */}
-            <div className="grid grid-cols-2 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
                 {[
                     { icon: <Target className="w-5 h-5" />, lbl: 'Total OMIS', val: total, color: 'blue' },
                     { icon: <CheckCircle className="w-5 h-5" />, lbl: 'Concluídas', val: completed, color: 'emerald' },
