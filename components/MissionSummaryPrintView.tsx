@@ -153,7 +153,13 @@ tbody tr:nth-child(even) td{background:#f8fafc}
 
 /* ── PRINT ── */
 .print-section{page-break-inside:avoid;break-inside:avoid}
-@page{size:A4 landscape;margin:0}
+@page{size:A4 landscape;margin:5mm}
+@media print {
+    body { padding: 0; margin: 0; }
+    .no-print { display: none !important; }
+    table { width: 100% !important; table-layout: fixed; }
+    th, td { word-wrap: break-word; overflow-wrap: break-word; }
+}
 </style>
 </head>
 <body>
@@ -230,21 +236,20 @@ ${docHtml}
                     <div ref={docRef} className="bg-white shadow-sm mx-auto p-6 max-w-[297mm]">
 
                         {/* Military Header */}
-                        <div className="flex items-center justify-between mb-3 border-b-2 border-slate-900 pb-2 print-section">
-                            <img src="/logo_basp_optimized.png" alt="BASP" className="w-10 h-10 sm:w-14 sm:h-14 object-contain shrink-0" />
-                            <div className="flex-1 text-center px-2">
-                                <p className="text-[7px] sm:text-[9px] font-bold uppercase tracking-widest text-slate-500">Ministério da Defesa</p>
-                                <p className="text-xs sm:text-sm font-black uppercase tracking-tight text-slate-900">Comando da Aeronáutica</p>
-                                <p className="text-[9px] sm:text-xs font-bold uppercase text-slate-800">Base Aérea de São Paulo</p>
-                                <p className="text-[8px] sm:text-[10px] font-bold uppercase text-slate-700">Grupo de Segurança e Defesa de São Paulo</p>
+                        <div className="flex flex-row items-center justify-between mb-4 border-b-2 border-slate-900 pb-3 print-section gap-2">
+                            <img src="/logo_basp_optimized.png" alt="BASP" className="w-8 h-8 sm:w-14 sm:h-14 object-contain shrink-0" />
+                            <div className="flex-1 text-center px-1 sm:px-2">
+                                <p className="text-[6px] sm:text-[9px] font-bold uppercase tracking-widest text-slate-500">Ministério da Defesa</p>
+                                <p className="text-[10px] sm:text-sm font-black uppercase tracking-tight text-slate-900 leading-tight">Comando da Aeronáutica</p>
+                                <p className="text-[8px] sm:text-xs font-bold uppercase text-slate-800">Base Aérea de São Paulo</p>
+                                <p className="text-[7px] sm:text-[10px] font-bold uppercase text-slate-700">GSD-SP</p>
                                 <div className="mt-1 flex flex-col items-center">
-                                    <div className="px-2 py-0.5 bg-slate-900 text-white text-[7px] sm:text-[8px] font-black uppercase tracking-widest rounded">
+                                    <div className="px-2 py-0.5 bg-slate-900 text-white text-[6px] sm:text-[8px] font-black uppercase tracking-widest rounded">
                                         Resumo de Missões Previstas
                                     </div>
-                                    <p className="mt-0.5 text-[6px] font-black text-slate-500 uppercase tracking-tighter">SOP-01</p>
                                 </div>
                             </div>
-                            <img src="/logo_gsd.png" alt="GSD-SP" className="w-10 h-10 sm:w-14 sm:h-14 object-contain shrink-0" />
+                            <img src="/logo_gsd.png" alt="GSD-SP" className="w-8 h-8 sm:w-14 sm:h-14 object-contain shrink-0" />
                         </div>
 
                         {/* Meta row */}
@@ -257,16 +262,16 @@ ${docHtml}
                         </div>
 
                         {/* KPI strip */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 mb-4 print-section">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 print-section">
                             {[
                                 { label: 'Total OMIS', value: orders.length, cls: 'bg-slate-900 text-white' },
                                 { label: 'Prontas', value: orders.filter(o => o.status === 'PRONTA_PARA_EXECUCAO').length, cls: 'bg-blue-50 border border-blue-200 text-blue-900' },
                                 { label: 'Em Missão', value: orders.filter(o => o.status === 'EM_MISSAO').length, cls: 'bg-emerald-50 border border-emerald-200 text-emerald-900' },
                                 { label: 'Efetivo', value: totalPersonnel, cls: 'bg-indigo-50 border border-indigo-200 text-indigo-900' },
                             ].map(kpi => (
-                                <div key={kpi.label} className={`rounded-lg p-2 text-center ${kpi.cls}`}>
-                                    <p className="text-lg sm:text-base font-black tabular-nums">{kpi.value}</p>
-                                    <p className="text-[8px] sm:text-[7px] font-black uppercase tracking-wide opacity-70 mt-0.5">{kpi.label}</p>
+                                <div key={kpi.label} className={`rounded-xl p-2 sm:p-3 text-center ${kpi.cls} shadow-sm`}>
+                                    <p className="text-base sm:text-xl font-black tabular-nums">{kpi.value}</p>
+                                    <p className="text-[7px] sm:text-[8px] font-black uppercase tracking-wide opacity-70 mt-0.5">{kpi.label}</p>
                                 </div>
                             ))}
                         </div>
@@ -281,8 +286,8 @@ ${docHtml}
                                 Nenhuma missão encontrada para o período selecionado.
                             </div>
                         ) : (
-                            <div className="overflow-x-auto print-section">
-                                <table className="w-full text-left border-collapse border border-slate-900">
+                            <div className="overflow-x-auto -mx-6 px-6 pb-4 print-section">
+                                <table className="min-w-[850px] w-full text-left border-collapse border border-slate-900">
                                     <thead>
                                         <tr className="bg-slate-900 text-white">
                                             <th className="px-2 py-2 text-[7px] font-black uppercase tracking-widest border border-slate-700 text-center w-8">Nº</th>
