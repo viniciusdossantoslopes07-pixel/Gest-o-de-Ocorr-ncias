@@ -17,6 +17,14 @@ interface MissionRequestFormProps {
 
 const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, users, onSubmit, onCancel, initialData, isDarkMode }) => {
     const [requesterId, setRequesterId] = useState(initialData?.solicitante_id || user.id);
+    const [missionSubtype, setMissionSubtype] = useState(() => {
+        const currentMission = (initialData?.dados_missao as any)?.tipo_missao || '';
+        if (currentMission.startsWith('FORMATURA (')) {
+            const match = currentMission.match(/\((.*)\)/);
+            return match ? match[1] : '';
+        }
+        return '';
+    });
 
     const generateId = () => {
         if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -220,13 +228,38 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, users, onSubmit
                         <div className="col-span-1 md:col-span-2">
                             <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Tipo de Missão</label>
                             <select
-                                value={formData.tipo_missao}
-                                onChange={e => setFormData({ ...formData, tipo_missao: e.target.value })}
+                                value={formData.tipo_missao.split(' (')[0]}
+                                onChange={e => {
+                                    const val = e.target.value;
+                                    setFormData({ ...formData, tipo_missao: val });
+                                    setMissionSubtype('');
+                                }}
                                 className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
                                 required
                             >
                                 {TIPOS_MISSAO.map(t => <option key={t} value={t}>{t}</option>)}
                             </select>
+
+                            {formData.tipo_missao.startsWith('FORMATURA') && (
+                                <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+                                    <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase tracking-wider mb-2`}>Subtipo de Formatura *</label>
+                                    <select
+                                        value={missionSubtype}
+                                        onChange={e => {
+                                            const sub = e.target.value;
+                                            setMissionSubtype(sub);
+                                            setFormData(prev => ({ ...prev, tipo_missao: `FORMATURA (${sub})` }));
+                                        }}
+                                        className={`w-full px-3 py-2 border ${isDarkMode ? 'border-blue-500/30 bg-blue-500/5 text-blue-400' : 'border-blue-200 bg-blue-50/30 text-blue-700'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500/50 outline-none transition-all font-bold`}
+                                        required
+                                    >
+                                        <option value="">Selecione o subtipo</option>
+                                        <option value="GUARDA BANDEIRA">GUARDA BANDEIRA</option>
+                                        <option value="TROPA ARMADA">TROPA ARMADA</option>
+                                        <option value="ACÓLITOS">ACÓLITOS</option>
+                                    </select>
+                                </div>
+                            )}
                         </div>
 
                         <div>
