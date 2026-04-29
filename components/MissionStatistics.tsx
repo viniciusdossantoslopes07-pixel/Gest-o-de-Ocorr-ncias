@@ -242,9 +242,36 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             </div>
 
             {/* KPI Row */}
+            {/* KPI Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+                {/* 1. Total OMIS */}
+                <div className={`${card} relative overflow-hidden group`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${isDarkMode ? 'text-blue-400 bg-blue-500/10' : 'text-blue-600 bg-blue-50'}`}>
+                        <Target className="w-5 h-5" />
+                    </div>
+                    <p className={label}>Total OMIS</p>
+                    <h3 className={`text-3xl font-black tracking-tighter mt-0.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{total}</h3>
+                </div>
+
+                {/* 2. KPI Ativas - Mover para aqui */}
+                <div className={`${card} relative overflow-hidden group`}>
+                    <span className="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${isDarkMode ? 'text-emerald-400 bg-emerald-500/10' : 'text-emerald-600 bg-emerald-50'}`}>
+                        <Zap className="w-5 h-5" />
+                    </div>
+                    <p className={label}>Ativas</p>
+                    <h3 className={`text-3xl font-black tracking-tighter mt-0.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{active}</h3>
+                    <div className="mt-2 space-y-0.5">
+                        <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                            {inMission} em campo
+                        </p>
+                        <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                            {readyToStart} prontas
+                        </p>
+                    </div>
+                </div>
+
                 {[
-                    { icon: <Target className="w-5 h-5" />, lbl: 'Total OMIS', val: total, color: 'blue' },
                     { icon: <CheckCircle className="w-5 h-5" />, lbl: 'Concluídas', val: completed, color: 'emerald' },
                     { icon: <Clock className="w-5 h-5" />, lbl: 'Pendentes', val: pending, color: 'amber' },
                     { icon: <XCircle className="w-5 h-5" />, lbl: 'Canceladas', val: cancelled, color: 'red' },
@@ -273,23 +300,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                     </div>
                 </div>
 
-                {/* KPI Ativas - detalhado */}
-                <div className={`${card} relative overflow-hidden group`}>
-                    <span className="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${isDarkMode ? 'text-emerald-400 bg-emerald-500/10' : 'text-emerald-600 bg-emerald-50'}`}>
-                        <Zap className="w-5 h-5" />
-                    </div>
-                    <p className={label}>Ativas</p>
-                    <h3 className={`text-3xl font-black tracking-tighter mt-0.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{active}</h3>
-                    <div className="mt-2 space-y-0.5">
-                        <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                            {inMission} em campo
-                        </p>
-                        <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                            {readyToStart} prontas
-                        </p>
-                    </div>
-                </div>
+
             </div>
 
             {/* Taxa de Sucesso + Missões Futuras destaque */}
