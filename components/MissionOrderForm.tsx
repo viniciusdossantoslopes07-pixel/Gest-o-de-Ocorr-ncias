@@ -9,7 +9,7 @@ interface MissionOrderFormProps {
     onSubmit: (order: Partial<MissionOrder>) => void;
     onCancel: () => void;
     currentUser: string;
-    users: { id: string; name: string; rank: string; warName?: string; saram: string }[];
+    users: { id: string; name: string; rank: string; warName?: string; saram: string; phoneNumber?: string }[];
     isDarkMode?: boolean;
     isSubmitting?: boolean;
     requestContext?: string;
