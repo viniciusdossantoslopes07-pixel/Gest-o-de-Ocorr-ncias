@@ -498,7 +498,9 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                         <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">SARAM</th>
                                         <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">{formData.mission === 'SOBREAVISO' ? 'Situação' : 'UNIF'}</th>
                                         <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">{formData.mission === 'SOBREAVISO' ? 'Contato' : 'ARMT'}</th>
-                                        <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">Munição</th>
+                                        {formData.mission !== 'SOBREAVISO' && (
+                                            <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">Munição</th>
+                                        )}
                                         <th className="px-3 py-3"></th>
                                     </tr>
                                 </thead>
@@ -649,15 +651,17 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                     </select>
                                                 )}
                                             </td>
-                                            <td className="px-3 py-2">
-                                                <input
-                                                    type="text"
-                                                    value={p.ammunition}
-                                                    onChange={e => updatePersonnel(p.id, 'ammunition', e.target.value)}
-                                                    className={`w-full px-2 py-1.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-xs focus:ring-2 focus:ring-blue-500/50 outline-none`}
-                                                    placeholder="Qtd"
-                                                />
-                                            </td>
+                                            {formData.mission !== 'SOBREAVISO' && (
+                                                <td className="px-3 py-2">
+                                                    <input
+                                                        type="text"
+                                                        value={p.ammunition}
+                                                        onChange={e => updatePersonnel(p.id, 'ammunition', e.target.value)}
+                                                        className={`w-full px-2 py-1.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-xs focus:ring-2 focus:ring-blue-500/50 outline-none`}
+                                                        placeholder="Qtd"
+                                                    />
+                                                </td>
+                                            )}
                                             <td className="px-3 py-2 text-right">
                                                 <button
                                                     type="button"
