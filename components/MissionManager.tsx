@@ -50,6 +50,10 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
     const [missionCancelling, setMissionCancelling] = useState<MissionOrder | null>(null);
     const [cancelReason, setCancelReason] = useState('');
 
+    // History Filters & Search
+    const [historySearch, setHistorySearch] = useState('');
+    const [historyFilter, setHistoryFilter] = useState<'ALL' | 'CONCLUIDA' | 'CANCELADA'>('ALL');
+
     // Permission checks
     // Refactored to use granular permissions instead of AccessLevel
     const canApprove = hasPermission(user, PERMISSIONS.APPROVE_MISSION) || user.role === UserRole.ADMIN;
@@ -1054,48 +1058,157 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
 
                 {/* 6. Missões Finalizadas */}
                 {activeTab === 'missoes_finalizadas' && (
-                    <div className="space-y-4">
-                        {orders.filter(o => o.status === 'CONCLUIDA' || o.status === 'CANCELADA').length === 0 ? (
-                            <div className={`text-center py-12 rounded-2xl border ${isDarkMode ? 'text-slate-500 bg-slate-900/40 border-slate-800/50 backdrop-blur-md' : 'text-slate-400 bg-slate-50 border-slate-200'} text-xs font-bold uppercase tracking-widest`}>Nenhuma missão finalizada encontrada.</div>
-                        ) : (
-                            orders.filter(o => o.status === 'CONCLUIDA' || o.status === 'CANCELADA').map(order => (
-                                <div 
-                                    key={order.id} 
-                                    onClick={() => handlePrintOrder(order)}
-                                    className={`p-4 sm:p-5 rounded-2xl border border-l-4 transition-all cursor-pointer ${order.status === 'CONCLUIDA' ? 'border-l-emerald-500 shadow-emerald-500/5' : 'border-l-red-500 shadow-red-500/5'} ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-md hover:bg-slate-900/60 shadow-lg' : 'bg-slate-50 border-slate-200 hover:bg-white hover:shadow-md'}`}>
-                                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex flex-wrap items-center gap-3 mb-3">
-                                                <h3 className={`text-base sm:text-lg font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} truncate`}>{order.mission}</h3>
-                                                <span className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${order.status === 'CONCLUIDA' ? (isDarkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-green-100 text-green-700') : (isDarkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-700')}`}>
-                                                    {order.status === 'CONCLUIDA' ? 'Concluída' : 'Cancelada'}
-                                                </span>
-                                            </div>
-                                            <p className={`text-xs sm:text-sm mb-4 line-clamp-2 md:line-clamp-none ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{order.description}</p>
-                                            <div className="flex flex-wrap items-center gap-4 sm:gap-8 text-[11px] sm:text-sm border-t border-slate-800/30 pt-3 mt-1">
-                                                <span className="flex items-center gap-1.5 whitespace-nowrap text-slate-500 font-medium"><Clock className="w-3.5 h-3.5" /> Finalizada em: {formatDisplayDate(order.date)}</span>
-                                                <span className={`flex items-center gap-1.5 rounded px-2 py-0.5 whitespace-nowrap font-black uppercase tracking-tighter ${order.status === 'CANCELADA' ? (isDarkMode ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-red-50 text-red-600 border border-red-200') : (isDarkMode ? 'bg-slate-950 text-blue-400 border border-slate-800' : 'bg-slate-100 text-slate-500')}`}>
-                                                    <Shield className="w-3 h-3" /> {order.omisNumber ? `OM #${order.omisNumber}` : 'OM: CANCELADA'}
-                                                </span>
-                                            </div>
-                                            {order.missionReport && (
-                                                <div className={`mt-3 p-3 rounded-xl border-l-2 ${order.status === 'CANCELADA' ? (isDarkMode ? 'bg-red-500/10 border-red-500/50 text-red-200' : 'bg-red-50 border-red-200 text-red-700') : (isDarkMode ? 'bg-slate-950/50 border-slate-700 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500')} text-xs italic line-clamp-2 md:line-clamp-none`}>
-                                                    <span className={`font-bold not-italic mr-2 uppercase text-[10px] tracking-widest ${order.status === 'CANCELADA' ? (isDarkMode ? 'text-red-400' : 'text-red-600') : ''}`}>{order.status === 'CANCELADA' ? 'Motivo do Cancelamento:' : 'Relato Operacional:'}</span>
-                                                    {order.missionReport.replace('MISSÃO CANCELADA: ', '')}
-                                                </div>
-                                            )}
+                    <div className="space-y-6 animate-in fade-in duration-500">
+                        {/* Summary Stats for History */}
+                        {(() => {
+                            const completed = orders.filter(o => o.status === 'CONCLUIDA');
+                            const cancelled = orders.filter(o => o.status === 'CANCELADA');
+                            const total = completed.length + cancelled.length;
+
+                            return (
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                                    <div className={`${isDarkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-slate-50 border-slate-200'} p-4 rounded-3xl border flex items-center gap-4`}>
+                                        <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
+                                            <History className="w-5 h-5" />
                                         </div>
-                                        <button
-                                            onClick={() => handlePrintOrder(order)}
-                                            className={`p-3 rounded-xl transition-all active:scale-[0.98] shadow-lg flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 shadow-black/20' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'}`}
-                                            title="Visualizar"
-                                        >
-                                            <Eye className="w-4 h-4" />
-                                        </button>
+                                        <div>
+                                            <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Total Histórico</p>
+                                            <p className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{total}</p>
+                                        </div>
+                                    </div>
+                                    <div className={`${isDarkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-slate-50 border-slate-200'} p-4 rounded-3xl border flex items-center gap-4`}>
+                                        <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-100 text-emerald-600'}`}>
+                                            <CheckCircle className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Concluídas</p>
+                                            <p className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{completed.length}</p>
+                                        </div>
+                                    </div>
+                                    <div className={`${isDarkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-slate-50 border-slate-200'} p-4 rounded-3xl border flex items-center gap-4`}>
+                                        <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-600'}`}>
+                                            <XCircle className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Canceladas</p>
+                                            <p className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{cancelled.length}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            ))
-                        )}
+                            );
+                        })()}
+
+                        {/* Search and Filters Bar */}
+                        <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-8">
+                            <div className="relative w-full md:max-w-md">
+                                <Filter className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`} />
+                                <input 
+                                    type="text"
+                                    placeholder="Buscar por Tipo (ex: FORMATURA) ou OMIS..."
+                                    value={historySearch}
+                                    onChange={(e) => setHistorySearch(e.target.value)}
+                                    className={`w-full pl-12 pr-6 py-4 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-950/50 border-slate-800 text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500' : 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:shadow-lg'}`}
+                                />
+                            </div>
+
+                            <div className={`flex p-1 rounded-2xl ${isDarkMode ? 'bg-slate-950/80 border border-slate-800' : 'bg-slate-100 border border-slate-200'}`}>
+                                <button 
+                                    onClick={() => setHistoryFilter('ALL')}
+                                    className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${historyFilter === 'ALL' ? (isDarkMode ? 'bg-slate-800 text-white shadow-lg' : 'bg-white text-slate-900 shadow-sm') : 'text-slate-500 hover:text-slate-300'}`}
+                                >
+                                    Todos
+                                </button>
+                                <button 
+                                    onClick={() => setHistoryFilter('CONCLUIDA')}
+                                    className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${historyFilter === 'CONCLUIDA' ? (isDarkMode ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white text-emerald-700 shadow-sm') : 'text-slate-500 hover:text-emerald-500'}`}
+                                >
+                                    Concluídas
+                                </button>
+                                <button 
+                                    onClick={() => setHistoryFilter('CANCELADA')}
+                                    className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${historyFilter === 'CANCELADA' ? (isDarkMode ? 'bg-red-600 text-white shadow-lg' : 'bg-white text-red-700 shadow-sm') : 'text-slate-500 hover:text-red-500'}`}
+                                >
+                                    Canceladas
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* List of Filtered Missions */}
+                        <div className="space-y-4">
+                            {(() => {
+                                const filtered = orders.filter(o => {
+                                    // Status Filter
+                                    if (historyFilter !== 'ALL' && o.status !== historyFilter) return false;
+                                    
+                                    // Only show finished/cancelled
+                                    if (o.status !== 'CONCLUIDA' && o.status !== 'CANCELADA') return false;
+
+                                    // Search logic
+                                    if (historySearch.trim()) {
+                                        const search = historySearch.toLowerCase();
+                                        const typeMatch = o.mission?.toLowerCase().includes(search);
+                                        const omisMatch = o.omisNumber?.toLowerCase().includes(search);
+                                        const descMatch = o.description?.toLowerCase().includes(search);
+                                        
+                                        return typeMatch || omisMatch || descMatch;
+                                    }
+
+                                    return true;
+                                });
+
+                                if (filtered.length === 0) {
+                                    return (
+                                        <div className={`text-center py-20 rounded-[2.5rem] border border-dashed ${isDarkMode ? 'text-slate-500 bg-slate-950/20 border-slate-800' : 'text-slate-400 bg-slate-50 border-slate-200'}`}>
+                                            <div className="mb-4 flex justify-center">
+                                                <div className={`p-4 rounded-full ${isDarkMode ? 'bg-slate-900' : 'bg-slate-100'}`}>
+                                                    <History className="w-10 h-10 opacity-20" />
+                                                </div>
+                                            </div>
+                                            <p className="text-xs font-black uppercase tracking-[0.2em]">Nenhuma missão encontrada no histórico.</p>
+                                            {historySearch && <p className="text-[10px] mt-2 opacity-60">Tente buscar por termos diferentes ou verifique os filtros.</p>}
+                                        </div>
+                                    );
+                                }
+
+                                return filtered.map(order => (
+                                    <div 
+                                        key={order.id} 
+                                        onClick={() => handlePrintOrder(order)}
+                                        className={`group p-6 sm:p-7 rounded-[2rem] border transition-all duration-300 cursor-pointer ${order.status === 'CONCLUIDA' ? (isDarkMode ? 'border-l-4 border-l-emerald-500 hover:border-emerald-500/50' : 'border-l-4 border-l-emerald-500 hover:shadow-xl') : (isDarkMode ? 'border-l-4 border-l-red-500 hover:border-red-500/50' : 'border-l-4 border-l-red-500 hover:shadow-xl')} ${isDarkMode ? 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-950/60 shadow-xl shadow-black/20' : 'bg-white border-slate-100 hover:border-blue-200 shadow-sm'}`}>
+                                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex flex-wrap items-center gap-3 mb-4">
+                                                    <h3 className={`text-base sm:text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-900'} truncate group-hover:text-blue-500 transition-colors`}>{order.mission}</h3>
+                                                    <span className={`px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm ${order.status === 'CONCLUIDA' ? (isDarkMode ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border border-emerald-100') : (isDarkMode ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-700 border border-red-100')}`}>
+                                                        {order.status === 'CONCLUIDA' ? 'Concluída' : 'Cancelada'}
+                                                    </span>
+                                                </div>
+                                                <p className={`text-xs sm:text-sm mb-6 line-clamp-2 md:line-clamp-none ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} leading-relaxed`}>{order.description}</p>
+                                                <div className="flex flex-wrap items-center gap-4 sm:gap-8 text-[11px] sm:text-sm pt-4 border-t border-slate-800/20">
+                                                    <span className="flex items-center gap-2 text-slate-500 font-bold uppercase tracking-widest text-[10px]"><Clock className="w-3.5 h-3.5 text-blue-500" /> Finalizada em: {formatDisplayDate(order.date)}</span>
+                                                    <span className={`flex items-center gap-2 rounded-xl px-3 py-1.5 whitespace-nowrap font-black uppercase tracking-widest text-[10px] ${order.status === 'CANCELADA' ? (isDarkMode ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-200') : (isDarkMode ? 'bg-slate-950 text-blue-400 border border-slate-800' : 'bg-slate-100 text-slate-600 border border-slate-200')}`}>
+                                                        <Shield className="w-3.5 h-3.5" /> {order.omisNumber ? `OM #${order.omisNumber}` : 'OM: CANCELADA'}
+                                                    </span>
+                                                </div>
+                                                {order.missionReport && (
+                                                    <div className={`mt-5 p-5 rounded-[1.5rem] border transition-all ${order.status === 'CANCELADA' ? (isDarkMode ? 'bg-red-500/5 border-red-500/20 text-red-200' : 'bg-red-50/50 border-red-100 text-red-700 shadow-inner') : (isDarkMode ? 'bg-slate-950 border-slate-800 text-slate-400' : 'bg-slate-50/80 border-slate-100 text-slate-500 shadow-inner')} text-xs italic`}>
+                                                        <span className={`font-black not-italic mr-3 uppercase text-[9px] tracking-[0.2em] px-2 py-1 rounded-lg ${order.status === 'CANCELADA' ? (isDarkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-600') : (isDarkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-200 text-slate-600')}`}>{order.status === 'CANCELADA' ? 'Motivo do Cancelamento' : 'Relato Operacional'}</span>
+                                                        <span className="leading-loose">{order.missionReport.replace('MISSÃO CANCELADA: ', '')}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handlePrintOrder(order); }}
+                                                className={`p-4 rounded-2xl transition-all active:scale-95 shadow-xl group-hover:scale-110 flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-blue-600 hover:text-white border border-slate-700 shadow-black/40' : 'bg-white text-slate-700 hover:bg-blue-600 hover:text-white border border-slate-200 shadow-slate-200/50'}`}
+                                                title="Visualizar Detalhes"
+                                            >
+                                                <Eye className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ));
+                            })()}
+                        </div>
                     </div>
                 )}
 
