@@ -137,6 +137,19 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
         return Object.entries(counts).sort(([,a],[,b]) => b - a).slice(0, 6).map(([name, value]) => ({ name, value }));
     }, [filteredOrders]);
 
+    // Internal vs External distribution
+    const internalExternalData = useMemo(() => {
+        const counts = { Interna: 0, Externa: 0 };
+        filteredOrders.forEach(o => {
+            if (o.isInternal) counts.Interna++;
+            else counts.Externa++;
+        });
+        return [
+            { name: 'Interna', value: counts.Interna, color: '#3b82f6' },
+            { name: 'Externa', value: counts.Externa, color: '#10b981' }
+        ];
+    }, [filteredOrders]);
+
     // Status distribution
     const statusData = useMemo(() => {
         const counts: Record<string, number> = {};
@@ -311,8 +324,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 </div>
             </div>
 
-            {/* Type + Status + Locations */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Type + Status + Internal/External + Locations */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Tipo de Missão */}
                 <div className={`${card}`}>
                     <h3 className={`text-sm font-black uppercase tracking-tighter mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Por Tipo</h3>
@@ -352,6 +365,32 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                 <div className={`h-2 rounded-full ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} overflow-hidden`}>
                                     <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${(s.value / (total || 1)) * 100}%`, backgroundColor: s.color }} />
                                 </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Interna vs Externa */}
+                <div className={`${card}`}>
+                    <h3 className={`text-sm font-black uppercase tracking-tighter mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Abrangência</h3>
+                    <div className="h-[180px] mb-4">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie data={internalExternalData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={4} dataKey="value" stroke="none">
+                                    {internalExternalData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                                </Pie>
+                                <Tooltip contentStyle={{ backgroundColor: chartBg, borderRadius: 14, border: 'none', fontSize: 11, fontWeight: 900 }} />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                    <div className="space-y-2">
+                        {internalExternalData.map((t) => (
+                            <div key={t.name} className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: t.color }} />
+                                    <span className={`text-[10px] font-bold uppercase truncate ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{t.name}</span>
+                                </div>
+                                <span className={`text-[11px] font-black flex-shrink-0 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{t.value}</span>
                             </div>
                         ))}
                     </div>
