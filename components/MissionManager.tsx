@@ -1109,8 +1109,8 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                     omisNumber: newOmis,
                                     status: 'GERADA',
                                     personnel: [],
-                                    viaturas: data.dados_missao.viaturas,
-                                    alimentacao: data.dados_missao.alimentacao,
+                                    transport: !!data.dados_missao.viaturas,
+                                    food: data.dados_missao.alimentacao ? Object.values(data.dados_missao.alimentacao).some(v => !!v) : false,
                                     createdBy: user.name,
                                     requester: `${user.rank} ${user.warName || user.name}`,
                                     sector: user.sector || ''
