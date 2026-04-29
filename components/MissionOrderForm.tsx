@@ -558,11 +558,15 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                                 (u.warName || '').toUpperCase().includes(val)
                                                             );
                                                             if (found) {
-                                                                updatePersonnelFields(p.id, {
+                                                                const updates: any = {
                                                                     rank: found.rank,
                                                                     warName: found.warName || found.name,
                                                                     saram: found.saram
-                                                                });
+                                                                };
+                                                                if (formData.mission === 'SOBREAVISO' && found.phoneNumber) {
+                                                                    updates.armament = found.phoneNumber;
+                                                                }
+                                                                updatePersonnelFields(p.id, updates);
                                                             }
                                                         }}
                                                         className={`w-full px-2 py-1.5 pr-7 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-[10px] sm:text-xs focus:border-blue-500/50 outline-none ${p.function.includes('Comandante') ? 'font-bold' : ''}`}
@@ -582,10 +586,14 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                             if (val.length >= 4) {
                                                                 const found = users.find(u => u.saram === val);
                                                                 if (found) {
-                                                                    updatePersonnelFields(p.id, {
+                                                                    const updates: any = {
                                                                         rank: found.rank,
                                                                         warName: found.warName || found.name
-                                                                    });
+                                                                    };
+                                                                    if (formData.mission === 'SOBREAVISO' && found.phoneNumber) {
+                                                                        updates.armament = found.phoneNumber;
+                                                                    }
+                                                                    updatePersonnelFields(p.id, updates);
                                                                 }
                                                             }
                                                         }}
@@ -593,11 +601,15 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                             const val = e.target.value;
                                                             const found = users.find(u => u.saram === val);
                                                             if (found) {
-                                                                updatePersonnelFields(p.id, {
+                                                                const updates: any = {
                                                                     rank: found.rank,
                                                                     warName: found.warName || found.name,
                                                                     saram: found.saram
-                                                                });
+                                                                };
+                                                                if (formData.mission === 'SOBREAVISO' && found.phoneNumber) {
+                                                                    updates.armament = found.phoneNumber;
+                                                                }
+                                                                updatePersonnelFields(p.id, updates);
                                                             }
                                                         }}
                                                         className={`w-full px-2 py-1.5 pr-7 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-[10px] sm:text-xs focus:border-blue-500/50 outline-none`}
