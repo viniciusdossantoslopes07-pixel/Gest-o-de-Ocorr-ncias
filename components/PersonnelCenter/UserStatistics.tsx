@@ -174,12 +174,17 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
 
     const tlpTotal = useMemo(() => {
         const totalPrevisto = tlpStats.reduce((acc, cat) => acc + cat.previsto, 0);
-        const totalActual = tlpStats.reduce((acc, cat) => acc + cat.actual, 0);
+        // Usar o total de militares do GSD-SP para evitar discrepância com outros contadores
+        const gsdUsers = statsUsers.filter(u => {
+            const sectorObj = sectors.find(s => s.name === u.sector);
+            return !sectorObj || sectorObj.unit === 'GSD-SP' || !sectorObj.unit;
+        });
+        const totalActual = gsdUsers.length;
         const diff = totalActual - totalPrevisto;
         const pct = totalPrevisto > 0 ? Math.round((totalActual / totalPrevisto) * 100) : 0;
         const defasagemPct = 100 - pct;
         return { totalPrevisto, totalActual, diff, pct, defasagemPct };
-    }, [tlpStats]);
+    }, [tlpStats, statsUsers, sectors]);
 
     const card = `p-5 rounded-2xl border ${isDarkMode ? 'bg-slate-800/60 border-slate-700/80' : 'bg-white border-slate-100 shadow-sm'}`;
 
