@@ -1112,8 +1112,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                     transport: !!data.dados_missao.viaturas,
                                     food: data.dados_missao.alimentacao ? Object.values(data.dados_missao.alimentacao).some(v => !!v) : false,
                                     createdBy: user.name,
-                                    requester: `${user.rank} ${user.warName || user.name}`,
-                                    sector: user.sector || ''
+                                    requester: `${user.rank} ${user.warName || user.name}`
                                 };
                                 setSelectedOrder(directOrder as MissionOrder);
                                 setSelectedMission(null);
