@@ -30,6 +30,14 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
             ? mission.dados_missao.viaturas
             : { operacional: 0, descaracterizada: 0, caminhao_tropa: 0 }
     });
+    const [missionSubtype, setMissionSubtype] = useState(() => {
+        const currentMission = mission.dados_missao.tipo_missao || '';
+        if (currentMission.startsWith('FORMATURA (')) {
+            const match = currentMission.match(/\((.*)\)/);
+            return match ? match[1] : '';
+        }
+        return '';
+    });
     const [newComment, setNewComment] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
@@ -290,13 +298,40 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                     <div className="col-span-2">
                                         <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} mb-2`}>Tipo de Missão</label>
                                         {isEditing ? (
-                                            <select
-                                                value={formData.tipo_missao}
-                                                onChange={e => setFormData({ ...formData, tipo_missao: e.target.value })}
-                                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
-                                            >
-                                                {TIPOS_MISSAO.map(t => <option key={t} value={t}>{t}</option>)}
-                                            </select>
+                                            <>
+                                                <select
+                                                    value={formData.tipo_missao.split(' (')[0]}
+                                                    onChange={e => {
+                                                        const val = e.target.value;
+                                                        setFormData({ ...formData, tipo_missao: val });
+                                                        setMissionSubtype('');
+                                                    }}
+                                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
+                                                >
+                                                    {TIPOS_MISSAO.map(t => <option key={t} value={t}>{t}</option>)}
+                                                </select>
+
+                                                {formData.tipo_missao.startsWith('FORMATURA') && (
+                                                    <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+                                                        <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase tracking-wider mb-2`}>Subtipo de Formatura *</label>
+                                                        <select
+                                                            value={missionSubtype}
+                                                            onChange={e => {
+                                                                const sub = e.target.value;
+                                                                setMissionSubtype(sub);
+                                                                setFormData(prev => ({ ...prev, tipo_missao: `FORMATURA (${sub})` }));
+                                                            }}
+                                                            className={`w-full px-3 py-2 border ${isDarkMode ? 'border-blue-500/30 bg-blue-500/5 text-blue-400' : 'border-blue-200 bg-blue-50/30 text-blue-700'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500/50 outline-none transition-all font-bold`}
+                                                            required
+                                                        >
+                                                            <option value="">Selecione o subtipo</option>
+                                                            <option value="GUARDA BANDEIRA">GUARDA BANDEIRA</option>
+                                                            <option value="TROPA ARMADA">TROPA ARMADA</option>
+                                                            <option value="ACÓLITOS">ACÓLITOS</option>
+                                                        </select>
+                                                    </div>
+                                                )}
+                                            </>
                                         ) : (
                                             <p className={`text-sm font-medium ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} p-2 ${isDarkMode ? 'bg-slate-800/30' : 'bg-slate-50'} rounded-lg`}>{formData.tipo_missao}</p>
                                         )}
