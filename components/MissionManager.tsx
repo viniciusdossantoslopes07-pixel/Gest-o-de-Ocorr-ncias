@@ -910,12 +910,6 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                         <PlusCircle className={`w-4 h-4 ${activeTab === 'solicitar_missao' ? '' : 'opacity-70'}`} /> Solicitar
                     </button>
                     <button
-                        onClick={handleDirectSobreaviso}
-                        className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${isDarkMode ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'bg-indigo-50 text-indigo-700 border border-indigo-100'} hover:scale-105 active:scale-95`}
-                    >
-                        <Shield className="w-4 h-4" /> Sobreaviso
-                    </button>
-                    <button
                         onClick={() => setActiveTab('minhas_solicitacoes')}
                         className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'minhas_solicitacoes' ? (isDarkMode ? 'bg-blue-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white text-blue-700 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
                     >
