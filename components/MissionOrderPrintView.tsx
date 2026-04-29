@@ -286,7 +286,6 @@ ${content.outerHTML}
                                     })()}
                                 </tbody>
                             </table>
-                        </div>>
                         </div>
 
                         {/* Schedule Table */}
@@ -385,9 +384,9 @@ ${content.outerHTML}
                                     {(order.missionReport || '').replace('MISSÃO CANCELADA: ', '')}
                                 </div>
                             )}
-                        </div>
                     </div>
                 </div>
+            </div>
 
                 {/* Rodapé fixo com botão de impressão e assinatura */}
                 <div className="bg-white border-t border-slate-200 p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 print:hidden flex-shrink-0 relative overflow-hidden">
