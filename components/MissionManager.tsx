@@ -1097,6 +1097,28 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                     }
                                 }
                             }}
+                            onDirectOrder={async (data) => {
+                                const newOmis = await generateOMISNumber();
+                                const directOrder: Partial<MissionOrder> = {
+                                    mission: data.dados_missao.tipo_missao,
+                                    description: data.dados_missao.informacoes_complementares || 'SOBREAVISO DIÁRIO',
+                                    location: data.dados_missao.local || 'GSD-SP',
+                                    date: data.dados_missao.data,
+                                    startTime: data.dados_missao.inicio,
+                                    endTime: data.dados_missao.termino,
+                                    omisNumber: newOmis,
+                                    status: 'GERADA',
+                                    personnel: [],
+                                    viaturas: data.dados_missao.viaturas,
+                                    alimentacao: data.dados_missao.alimentacao,
+                                    createdBy: user.name,
+                                    requester: `${user.rank} ${user.warName || user.name}`,
+                                    sector: user.sector || ''
+                                };
+                                setSelectedOrder(directOrder as MissionOrder);
+                                setSelectedMission(null);
+                                setShowOrderForm(true);
+                            }}
                         />
                     </div>
                 )}

@@ -1,5 +1,5 @@
 
-import { useState, type FC, type FormEvent } from 'react';
+import { useState, useEffect, type FC, type FormEvent } from 'react';
 import { MissionOrder, MissionOrderPersonnel, MissionOrderSchedule } from '../types';
 import { Save, X, Plus, Trash2, Search, Shield, Loader2, FileText } from 'lucide-react';
 import { RANKS, ARMAMENT_OPTIONS, MISSION_FUNCTIONS, TIPOS_MISSAO } from '../constants';
@@ -54,6 +54,12 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
         }
         return '';
     });
+
+    useEffect(() => {
+        if (formData.mission === 'SOBREAVISO' && personnel.length === 0 && !order?.id) {
+            populateSobreavisoPersonnel();
+        }
+    }, []);
 
     const addPersonnel = () => {
         setPersonnel([...personnel, {
@@ -116,7 +122,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
         setPersonnel(standardPersonnel);
         setFormData(prev => ({
             ...prev,
-            description: 'SOBREAVISO DIÁRIO',
+            description: 'SOBREAVISO OPERACIONAL DIÁRIO DO GSD-SP.',
             permanentOrders: 'O militar deverá estar pronto em até duas horas após ser acionado.',
             location: 'GSD-SP'
         }));

@@ -10,12 +10,13 @@ interface MissionRequestFormProps {
     user: User;
     users: User[];
     onSubmit: (data: any, isDraft?: boolean) => void;
+    onDirectOrder?: (data: any) => void;
     onCancel: () => void;
     initialData?: Mission;
     isDarkMode?: boolean;
 }
 
-const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, users, onSubmit, onCancel, initialData, isDarkMode }) => {
+const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, users, onSubmit, onDirectOrder, onCancel, initialData, isDarkMode }) => {
     const [requesterId, setRequesterId] = useState(initialData?.solicitante_id || user.id);
     const [missionSubtype, setMissionSubtype] = useState(() => {
         const currentMission = (initialData?.dados_missao as any)?.tipo_missao || '';
@@ -25,6 +26,8 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, users, onSubmit
         }
         return '';
     });
+
+    const [isDirectSobreaviso, setIsDirectSobreaviso] = useState(false);
 
     const generateId = () => {
         if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -130,7 +133,11 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, users, onSubmit
             id: initialData?.id || generateId() // Ensure unique ID
         };
 
-        onSubmit(submissionData, isDraft);
+        if (!isDraft && isDirectSobreaviso && onDirectOrder) {
+            onDirectOrder(submissionData);
+        } else {
+            onSubmit(submissionData, isDraft);
+        }
     };
 
     return (
@@ -239,6 +246,9 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, users, onSubmit
                                             local: 'GSD-SP',
                                             informacoes_complementares: 'SOBREAVISO DIÁRIO'
                                         }));
+                                        setIsDirectSobreaviso(true);
+                                    } else {
+                                        setIsDirectSobreaviso(false);
                                     }
                                 }}
                                 className={`w-full px-3 py-2 glass-input rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none`}
@@ -246,6 +256,27 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, users, onSubmit
                             >
                                 {TIPOS_MISSAO.map(t => <option key={t} value={t}>{t}</option>)}
                             </select>
+
+                            {formData.tipo_missao === 'SOBREAVISO' && (
+                                <div className="mt-4 p-4 rounded-xl border border-blue-500/30 bg-blue-500/5 animate-in slide-in-from-top-2 duration-300">
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <div className="relative">
+                                            <input
+                                                type="checkbox"
+                                                checked={isDirectSobreaviso}
+                                                onChange={e => setIsDirectSobreaviso(e.target.checked)}
+                                                className="peer sr-only"
+                                            />
+                                            <div className="w-10 h-6 bg-slate-400 rounded-full peer peer-checked:bg-blue-600 transition-colors"></div>
+                                            <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>Fluxo Direto (Sobreaviso Diário)</span>
+                                            <span className={`text-[10px] ${isDarkMode ? 'text-slate-500' : 'text-slate-500'} font-bold`}>Ao marcar, você preencherá o efetivo imediatamente, pulando a análise da SOP.</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            )}
 
                             {formData.tipo_missao.startsWith('FORMATURA') && (
                                 <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
@@ -533,10 +564,18 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, users, onSubmit
             <div className={`p-4 sm:p-6 border-t glass-panel flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 shrink-0`}>
                 <button
                     type="submit"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        if (isDirectSobreaviso) {
+                            onDirectOrder?.(formData);
+                        } else {
+                            handleSubmit(e as any);
+                        }
+                    }}
                     className="w-full sm:w-auto bg-blue-600 px-8 py-3 rounded-xl font-bold text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 transition-all active:scale-95 order-1 sm:order-3"
                 >
                     <Save className="w-4 h-4" />
-                    Enviar Solicitação
+                    {isDirectSobreaviso ? 'Definir Efetivo →' : 'Enviar Solicitação'}
                 </button>
                 <button
                     type="button"
