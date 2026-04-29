@@ -106,18 +106,18 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
 
     const populateSobreavisoPersonnel = () => {
         const standardPersonnel: MissionOrderPersonnel[] = [
-            { id: Math.random().toString(), function: 'Comandante', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
-            { id: Math.random().toString(), function: 'Graduado', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
-            { id: Math.random().toString(), function: 'Cabo', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
-            { id: Math.random().toString(), function: 'Motorista missões (D)', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
-            { id: Math.random().toString(), function: 'Motorista missões (B)', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
-            { id: Math.random().toString(), function: 'Patrulha P1', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
-            { id: Math.random().toString(), function: 'Patrulha P2/P3', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
-            { id: Math.random().toString(), function: 'Monitoramento', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
-            ...Array(10).fill(null).map(() => ({ id: Math.random().toString(), function: 'Missões / Ala', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' })),
-            { id: Math.random().toString(), function: 'CH (SEG AUT)', rank: 'CH', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
-            { id: Math.random().toString(), function: 'ASP (SEG AUT)', rank: 'ASP', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
-            { id: Math.random().toString(), function: 'CVS (SEG AUT)', rank: 'CVS', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
+            { id: Math.random().toString(), function: 'Comandante', rank: '', warName: '', saram: '', uniform: 'NIL', armament: '', ammunition: '' },
+            { id: Math.random().toString(), function: 'Graduado', rank: '', warName: '', saram: '', uniform: 'NIL', armament: '', ammunition: '' },
+            { id: Math.random().toString(), function: 'Cabo', rank: '', warName: '', saram: '', uniform: 'NIL', armament: '', ammunition: '' },
+            { id: Math.random().toString(), function: 'Motorista missões (D)', rank: '', warName: '', saram: '', uniform: 'NIL', armament: '', ammunition: '' },
+            { id: Math.random().toString(), function: 'Motorista missões (B)', rank: '', warName: '', saram: '', uniform: 'NIL', armament: '', ammunition: '' },
+            { id: Math.random().toString(), function: 'Patrulha P1', rank: '', warName: '', saram: '', uniform: 'NIL', armament: '', ammunition: '' },
+            { id: Math.random().toString(), function: 'Patrulha P2/P3', rank: '', warName: '', saram: '', uniform: 'NIL', armament: '', ammunition: '' },
+            { id: Math.random().toString(), function: 'Monitoramento', rank: '', warName: '', saram: '', uniform: 'NIL', armament: '', ammunition: '' },
+            ...Array(10).fill(null).map(() => ({ id: Math.random().toString(), function: 'Missões / Ala', rank: '', warName: '', saram: '', uniform: 'NIL', armament: '', ammunition: '' })),
+            { id: Math.random().toString(), function: 'SEG AUT', rank: 'CH', warName: 'NIL', saram: 'NIL', uniform: 'NIL', armament: 'NIL', ammunition: '' },
+            { id: Math.random().toString(), function: 'SEG AUT', rank: 'ASP', warName: 'NIL', saram: 'NIL', uniform: 'NIL', armament: 'NIL', ammunition: '' },
+            { id: Math.random().toString(), function: 'SEG AUT', rank: 'CVS', warName: 'NIL', saram: 'NIL', uniform: 'NIL', armament: 'NIL', ammunition: '' },
         ];
         setPersonnel(standardPersonnel);
         setFormData(prev => ({
@@ -496,8 +496,8 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                         <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">Posto/Grad</th>
                                         <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">Nome de Guerra</th>
                                         <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">SARAM</th>
-                                        <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">UNIF</th>
-                                        <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">ARMT</th>
+                                        <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">{formData.mission === 'SOBREAVISO' ? 'Situação' : 'UNIF'}</th>
+                                        <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">{formData.mission === 'SOBREAVISO' ? 'Contato' : 'ARMT'}</th>
                                         <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">Munição</th>
                                         <th className="px-3 py-3"></th>
                                     </tr>
@@ -612,20 +612,30 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                                     value={p.uniform}
                                                     onChange={e => updatePersonnel(p.id, 'uniform', e.target.value)}
                                                     className={`w-full px-2 py-1.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-xs focus:ring-2 focus:ring-blue-500/50 outline-none`}
-                                                    placeholder="10ª"
+                                                    placeholder={formData.mission === 'SOBREAVISO' ? "NIL" : "10ª"}
                                                 />
                                             </td>
-                                            <td className="px-3 py-2">
-                                                <select
-                                                    value={p.armament}
-                                                    onChange={e => updatePersonnel(p.id, 'armament', e.target.value)}
-                                                    className={`w-full px-2 py-1.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-xs focus:ring-2 focus:ring-blue-500/50 outline-none`}
-                                                >
-                                                    <option value="">Selecione</option>
-                                                    {ARMAMENT_OPTIONS.map(opt => (
-                                                        <option key={opt} value={opt}>{opt}</option>
-                                                    ))}
-                                                </select>
+                                             <td className="px-3 py-2">
+                                                {formData.mission === 'SOBREAVISO' ? (
+                                                    <input
+                                                        type="text"
+                                                        value={p.armament}
+                                                        onChange={e => updatePersonnel(p.id, 'armament', e.target.value)}
+                                                        className={`w-full px-2 py-1.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-xs focus:ring-2 focus:ring-blue-500/50 outline-none`}
+                                                        placeholder="(00) 00000-0000"
+                                                    />
+                                                ) : (
+                                                    <select
+                                                        value={p.armament}
+                                                        onChange={e => updatePersonnel(p.id, 'armament', e.target.value)}
+                                                        className={`w-full px-2 py-1.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-xs focus:ring-2 focus:ring-blue-500/50 outline-none`}
+                                                    >
+                                                        <option value="">Selecione</option>
+                                                        {ARMAMENT_OPTIONS.map(opt => (
+                                                            <option key={opt} value={opt}>{opt}</option>
+                                                        ))}
+                                                    </select>
+                                                )}
                                             </td>
                                             <td className="px-3 py-2">
                                                 <input

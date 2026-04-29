@@ -165,11 +165,18 @@ export const MISSION_STATUS_COLORS: Record<string, string> = {
 
 export const MISSION_FUNCTIONS = [
   'Comandante',
+  'Graduado',
+  'Cabo',
+  'Motorista missões (D)',
+  'Motorista missões (B)',
+  'Patrulha P1',
+  'Patrulha P2/P3',
+  'Monitoramento',
+  'Missões / Ala',
+  'SEG AUT',
   'Aux Comandante',
   'Efetivo S.I',
-  'Efetivo PA',
-  'Motorista (D)',
-  'Motorista (B)'
+  'Efetivo PA'
 ];
 
 export const MATERIAL_TYPES = [

@@ -133,7 +133,28 @@ ${content.outerHTML}
                         </div>
 
                         {/* Basic Info Table */}
-                        <table className="w-full border-[1.5px] border-slate-950 mb-4 text-[9px] sm:text-[10px] leading-tight">
+                        {order.mission === 'SOBREAVISO' && (
+                            <div className="grid grid-cols-2 gap-0 mb-2 border-[1.5px] border-slate-950 text-[9px] sm:text-[10px] leading-tight">
+                                <div className="border-r border-slate-950 flex">
+                                    <div className="bg-slate-50 px-2 py-1 font-black uppercase text-[8px] border-r border-slate-950 flex items-center w-32">Ordem de missão:</div>
+                                    <div className="px-2 py-1 font-bold flex items-center">{order.omisNumber}</div>
+                                </div>
+                                <div className="flex">
+                                    <div className="bg-slate-50 px-2 py-1 font-black uppercase text-[8px] border-r border-slate-950 flex items-center w-32">Início:</div>
+                                    <div className="px-2 py-1 font-bold flex items-center">{formatDisplayDate(order.date)} 08h</div>
+                                </div>
+                                <div className="border-t border-r border-slate-950 flex">
+                                    <div className="bg-slate-50 px-2 py-1 font-black uppercase text-[8px] border-r border-slate-950 flex items-center w-32">Ordem permanente:</div>
+                                    <div className="px-2 py-1 font-bold flex items-center text-[8px] leading-[1.1]">{order.permanentOrders}</div>
+                                </div>
+                                <div className="border-t border-slate-950 flex">
+                                    <div className="bg-slate-50 px-2 py-1 font-black uppercase text-[8px] border-r border-slate-950 flex items-center w-32">Término:</div>
+                                    <div className="px-2 py-1 font-bold flex items-center">{formatDisplayDate(new Date(new Date(order.date).getTime() + 86400000).toISOString())} 08h</div>
+                                </div>
+                            </div>
+                        )}
+
+                        <table className={`w-full border-[1.5px] border-slate-950 mb-4 text-[9px] sm:text-[10px] leading-tight ${order.mission === 'SOBREAVISO' ? 'hidden' : ''}`}>
                             <tbody>
                                 <tr>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-32 uppercase text-[8px]">Nº da OMIS:</td>
@@ -186,37 +207,86 @@ ${content.outerHTML}
 
                         {/* Personnel Table */}
                         <div className="mb-4">
-                            <h3 className="text-center font-black text-[10px] sm:text-[11px] mb-1.5 uppercase tracking-wider">Pessoal e Material</h3>
+                            <h3 className={`text-center font-black text-[10px] sm:text-[11px] mb-1.5 uppercase tracking-wider ${order.mission === 'SOBREAVISO' ? 'hidden' : ''}`}>Pessoal e Material</h3>
                             <table className="w-full border-[1.5px] border-slate-950 text-[8px] sm:text-[9px]">
                                 <thead>
                                     <tr className="bg-slate-50">
-                                        <th className="border border-slate-950 px-1 py-0.5 font-black uppercase tracking-tighter">Função</th>
-                                        <th className="border border-slate-950 px-1 py-0.5 font-black uppercase tracking-tighter">P/G</th>
-                                        <th className="border border-slate-950 px-1 py-0.5 font-black uppercase tracking-tighter">Nome de Guerra</th>
-                                        <th className="border border-slate-950 px-1 py-0.5 font-black uppercase tracking-tighter">SARAM</th>
-                                        <th className="border border-slate-950 px-1 py-0.5 font-black uppercase tracking-tighter">Unif.</th>
-                                        <th className="border border-slate-950 px-1 py-0.5 font-black uppercase tracking-tighter">Armt</th>
-                                        <th className="border border-slate-950 px-1 py-0.5 font-black uppercase tracking-tighter">Mun.</th>
+                                        <th className="border border-slate-950 px-1 py-0.5 font-black uppercase tracking-tighter w-[15%]">Função</th>
+                                        <th className="border border-slate-950 px-1 py-0.5 font-black uppercase tracking-tighter w-[8%]">P/G</th>
+                                        <th className="border border-slate-950 px-1 py-0.5 font-black uppercase tracking-tighter w-[35%]">Nome de Guerra</th>
+                                        <th className={`border border-slate-950 px-1 py-0.5 font-black uppercase tracking-tighter ${order.mission === 'SOBREAVISO' ? 'w-[15%]' : 'w-[10%]'}`}>
+                                            {order.mission === 'SOBREAVISO' ? 'Situação' : 'SARAM'}
+                                        </th>
+                                        <th className={`border border-slate-950 px-1 py-0.5 font-black uppercase tracking-tighter ${order.mission === 'SOBREAVISO' ? 'w-[27%]' : 'w-[8%]'}`}>
+                                            {order.mission === 'SOBREAVISO' ? 'Contato' : 'Unif.'}
+                                        </th>
+                                        {!order.mission.includes('SOBREAVISO') && (
+                                            <>
+                                                <th className="border border-slate-950 px-1 py-0.5 font-black uppercase tracking-tighter w-[12%]">Armt</th>
+                                                <th className="border border-slate-950 px-1 py-0.5 font-black uppercase tracking-tighter w-[12%]">Mun.</th>
+                                            </>
+                                        )}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {(order.personnel || []).map((person, idx) => {
-                                        const warName = person.warName || (person as any).war_name || '';
+                                    {(() => {
+                                        const personnel = order.personnel || [];
+                                        const renderedFunctions = new Set();
 
-                                        return (
-                                            <tr key={person.id || idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
-                                                <td className="border border-slate-950 px-1 py-0.5 font-bold uppercase">{person.function}</td>
-                                                <td className="border border-slate-950 px-1 py-0.5 text-center font-bold">{formatValue(person.rank)}</td>
-                                                <td className="border border-slate-950 px-1 py-0.5 font-bold uppercase">{formatValue(warName)}</td>
-                                                <td className="border border-slate-950 px-1 py-0.5 text-center">{formatValue(person.saram)}</td>
-                                                <td className="border border-slate-950 px-1 py-0.5 text-center uppercase">{formatValue(person.uniform)}</td>
-                                                <td className="border border-slate-950 px-1 py-0.5 text-center uppercase">{formatValue(person.armament)}</td>
-                                                <td className="border border-slate-950 px-1 py-0.5 text-center uppercase">{formatValue(person.ammunition)}</td>
-                                            </tr>
-                                        );
-                                    })}
+                                        return personnel.map((person, idx) => {
+                                            const warName = person.warName || (person as any).war_name || '';
+                                            const isSobreaviso = order.mission === 'SOBREAVISO';
+                                            
+                                            // Lógica de agrupamento para funções específicas no Sobreaviso
+                                            const shouldGroup = isSobreaviso && (person.function === 'Missões / Ala' || person.function === 'SEG AUT');
+                                            const isFirstInGroup = shouldGroup && !renderedFunctions.has(person.function);
+                                            if (isFirstInGroup) renderedFunctions.add(person.function);
+
+                                            const rowspan = isFirstInGroup 
+                                                ? personnel.filter(p => p.function === person.function).length 
+                                                : 1;
+
+                                            if (shouldGroup && !isFirstInGroup) {
+                                                return (
+                                                    <tr key={person.id || idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
+                                                        <td className="border border-slate-950 px-1 py-0.5 text-center font-bold">{formatValue(person.rank)}</td>
+                                                        <td className="border border-slate-950 px-1 py-0.5 font-bold uppercase">{formatValue(warName)}</td>
+                                                        <td className="border border-slate-950 px-1 py-0.5 text-center uppercase">{formatValue(person.uniform)}</td>
+                                                        <td className="border border-slate-950 px-1 py-0.5 text-center font-bold">{formatValue(person.armament)}</td>
+                                                    </tr>
+                                                );
+                                            }
+
+                                            return (
+                                                <tr key={person.id || idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
+                                                    <td 
+                                                        className={`border border-slate-950 px-1 py-0.5 font-bold uppercase text-center ${shouldGroup ? 'bg-slate-50' : ''}`}
+                                                        rowSpan={rowspan}
+                                                        style={shouldGroup ? { writingMode: 'vertical-rl', transform: 'rotate(180deg)', padding: '10px 2px' } : {}}
+                                                    >
+                                                        {person.function}
+                                                    </td>
+                                                    <td className="border border-slate-950 px-1 py-0.5 text-center font-bold">{formatValue(person.rank)}</td>
+                                                    <td className="border border-slate-950 px-1 py-0.5 font-bold uppercase">{formatValue(warName)}</td>
+                                                    <td className="border border-slate-950 px-1 py-0.5 text-center uppercase">
+                                                        {isSobreaviso ? formatValue(person.uniform) : formatValue(person.saram)}
+                                                    </td>
+                                                    <td className={`border border-slate-950 px-1 py-0.5 text-center font-bold ${isSobreaviso ? '' : 'uppercase'}`}>
+                                                        {isSobreaviso ? formatValue(person.armament) : formatValue(person.uniform)}
+                                                    </td>
+                                                    {!isSobreaviso && (
+                                                        <>
+                                                            <td className="border border-slate-950 px-1 py-0.5 text-center uppercase">{formatValue(person.armament)}</td>
+                                                            <td className="border border-slate-950 px-1 py-0.5 text-center uppercase">{formatValue(person.ammunition)}</td>
+                                                        </>
+                                                    )}
+                                                </tr>
+                                            );
+                                        });
+                                    })()}
                                 </tbody>
                             </table>
+                        </div>>
                         </div>
 
                         {/* Schedule Table */}
