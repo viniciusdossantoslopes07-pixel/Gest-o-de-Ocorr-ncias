@@ -318,7 +318,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
 
 
                                     <div className="space-y-1">
-                                        <label className={label}>Nome Completo *</label>
+                                        <label className={label}>Nome do Condutor *</label>
                                         <input
                                             placeholder="EX: JOÃO DA SILVA"
                                             value={parkData.nome}
