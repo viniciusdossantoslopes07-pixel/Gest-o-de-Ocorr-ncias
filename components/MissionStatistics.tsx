@@ -363,11 +363,11 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                     cx="50%" 
                                     cy="50%" 
                                     innerRadius={50} 
-                                    outerRadius={75} 
+                                    outerRadius={85} 
                                     paddingAngle={4} 
                                     dataKey="value" 
                                     stroke="none"
-                                    label={({ value }) => value}
+                                    label={{ position: 'inside', fill: '#fff', fontSize: 12, fontWeight: 'bold' }}
                                     labelLine={false}
                                 >
                                     {typeData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
@@ -418,11 +418,11 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                     cx="50%" 
                                     cy="50%" 
                                     innerRadius={50} 
-                                    outerRadius={75} 
+                                    outerRadius={85} 
                                     paddingAngle={4} 
                                     dataKey="value" 
                                     stroke="none"
-                                    label={({ value }) => value}
+                                    label={{ position: 'inside', fill: '#fff', fontSize: 12, fontWeight: 'bold' }}
                                     labelLine={false}
                                 >
                                     {internalExternalData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
