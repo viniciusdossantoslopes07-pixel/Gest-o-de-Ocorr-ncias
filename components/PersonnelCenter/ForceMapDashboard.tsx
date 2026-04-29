@@ -50,7 +50,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const [expandedSector, setExpandedSector] = useState<string | null>(null);
     const [isAbsencesExpanded, setIsAbsencesExpanded] = useState(false);
     const [isPrinting, setIsPrinting] = useState(false);
-    const [selectedUnit, setSelectedUnit] = useState<string>('GSD-SP');
+    const [selectedUnit, setSelectedUnit] = useState<string>('VISÃO GLOBAL');
     const { sectors, displaySectors } = useSectors();
 
     const normalize = (val: string | null | undefined) => (val || '').trim().toUpperCase();
@@ -654,12 +654,15 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                             icon={Shield}
                             placeholder="Unidade"
                             value={selectedUnit}
-                            onChange={setSelectedUnit}
+                            onChange={(val) => {
+                                setSelectedUnit(val);
+                                setSelectedSector('TODOS');
+                            }}
                             isDarkMode={dk}
                             options={[
                                 { label: 'VISÃO GLOBAL', value: 'VISÃO GLOBAL' },
-                                { label: 'GSD-SP', value: 'GSD-SP' },
-                                { label: 'BASP', value: 'BASP' }
+                                { label: 'BASP', value: 'BASP' },
+                                { label: 'GSD-SP', value: 'GSD-SP' }
                             ]}
                         />
                     </div>
@@ -903,14 +906,18 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                 if (selectedSector === 'TODOS') {
                                     return (
                                         <div className="space-y-4">
-                                            <div>
-                                                <h4 className={`text-[10px] font-black uppercase tracking-widest text-blue-500 mb-2 pl-2`}>GSD-SP</h4>
-                                                <div className="space-y-2">{renderSectors(GSD_SP_SECTORS.filter(s => displaySectors.includes(s)))}</div>
-                                            </div>
-                                            <div>
-                                                <h4 className={`text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-2 pl-2`}>BASP</h4>
-                                                <div className="space-y-2">{renderSectors(BASP_SECTORS.filter(s => displaySectors.includes(s)))}</div>
-                                            </div>
+                                            {(selectedUnit === 'VISÃO GLOBAL' || selectedUnit === 'GSD-SP') && (
+                                                <div>
+                                                    <h4 className={`text-[10px] font-black uppercase tracking-widest text-blue-500 mb-2 pl-2`}>GSD-SP</h4>
+                                                    <div className="space-y-2">{renderSectors(GSD_SP_SECTORS.filter(s => displaySectors.includes(s)))}</div>
+                                                </div>
+                                            )}
+                                            {(selectedUnit === 'VISÃO GLOBAL' || selectedUnit === 'BASP') && (
+                                                <div>
+                                                    <h4 className={`text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-2 pl-2`}>BASP</h4>
+                                                    <div className="space-y-2">{renderSectors(BASP_SECTORS.filter(s => displaySectors.includes(s)))}</div>
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 }
