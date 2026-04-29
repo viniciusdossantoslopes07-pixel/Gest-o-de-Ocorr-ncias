@@ -172,6 +172,15 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
         });
     }, [statsUsers, sectors]);
 
+    const tlpTotal = useMemo(() => {
+        const totalPrevisto = tlpStats.reduce((acc, cat) => acc + cat.previsto, 0);
+        const totalActual = tlpStats.reduce((acc, cat) => acc + cat.actual, 0);
+        const diff = totalActual - totalPrevisto;
+        const pct = totalPrevisto > 0 ? Math.round((totalActual / totalPrevisto) * 100) : 0;
+        const defasagemPct = 100 - pct;
+        return { totalPrevisto, totalActual, diff, pct, defasagemPct };
+    }, [tlpStats]);
+
     const card = `p-5 rounded-2xl border ${isDarkMode ? 'bg-slate-800/60 border-slate-700/80' : 'bg-white border-slate-100 shadow-sm'}`;
 
     return (
@@ -390,6 +399,35 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
                                 </div>
                             );
                         })}
+
+                        {/* Card de Resumo Total */}
+                        <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-blue-600/10 border-blue-500/30' : 'bg-blue-50 border-blue-200'} lg:col-span-1`}>
+                            <div className="flex justify-between items-start mb-3">
+                                <span className={`text-[10px] font-black uppercase tracking-wider ${isDarkMode ? 'text-blue-400' : 'text-blue-700'}`}>DEFASAGEM TOTAL</span>
+                                <div className={`p-1 rounded-lg ${tlpTotal.diff < 0 ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white'}`}>
+                                    <TrendingUp className="w-3 h-3" />
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                <div className="flex items-baseline gap-2">
+                                    <span className={`text-3xl font-black ${tlpTotal.diff < 0 ? 'text-red-500' : 'text-emerald-500'}`}>
+                                        {tlpTotal.defasagemPct > 0 ? `${tlpTotal.defasagemPct}%` : '0%'}
+                                    </span>
+                                    <span className={`text-[10px] font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>DE DÉFICIT</span>
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="flex justify-between text-[10px] font-bold">
+                                        <span className={isDarkMode ? 'text-slate-500' : 'text-slate-400'}>Efetivo: {tlpTotal.totalActual} / {tlpTotal.totalPrevisto}</span>
+                                    </div>
+                                    <div className={`w-full h-2 rounded-full ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'} overflow-hidden`}>
+                                        <div 
+                                            className={`h-full transition-all duration-1000 ${tlpTotal.diff < 0 ? 'bg-red-500' : 'bg-emerald-500'}`}
+                                            style={{ width: `${tlpTotal.pct}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
