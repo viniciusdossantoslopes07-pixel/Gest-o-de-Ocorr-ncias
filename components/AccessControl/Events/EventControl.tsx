@@ -168,10 +168,10 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
             : status === 'REJECTED'
                 ? (dk ? 'bg-red-900/40 text-red-400' : 'bg-red-100 text-red-700')
                 : status === 'FINALIZED'
-                    ? (dk ? 'bg-slate-800 text-slate-500 border border-slate-700' : 'bg-slate-100 text-slate-500 border border-slate-200')
+                    ? (dk ? 'bg-slate-900 text-slate-100 border border-slate-700' : 'bg-slate-100 text-slate-500 border border-slate-200')
                     : (dk ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-100 text-amber-700')
         }`}>
-            {status === 'APPROVED' ? 'Aprovado' : status === 'FINALIZED' ? 'Finalizado' : status === 'REJECTED' ? 'Rejeitado' : 'Pendente (Cmd)'}
+            {status === 'APPROVED' ? 'APROVADO' : status === 'FINALIZED' ? 'FINALIZADO' : status === 'REJECTED' ? 'REJEITADO' : 'PENDENTE (CMD)'}
         </span>
     );
 

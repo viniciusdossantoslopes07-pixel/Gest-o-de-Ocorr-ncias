@@ -16,9 +16,16 @@ export const eventService = {
       `);
 
         if (filter === 'upcoming') {
-            query = query.gte('date', localDate).order('date', { ascending: true }).limit(200);
+            query = query
+                .gte('date', localDate)
+                .not('status', 'in', '("FINALIZED","REJECTED")')
+                .order('date', { ascending: true })
+                .limit(200);
         } else if (filter === 'history') {
-            query = query.lt('date', localDate).order('date', { ascending: false }).limit(100);
+            query = query
+                .or(`date.lt.${localDate},status.in.("FINALIZED","REJECTED")`)
+                .order('date', { ascending: false })
+                .limit(100);
         } else {
             query = query.order('date', { ascending: false }).limit(200);
         }
