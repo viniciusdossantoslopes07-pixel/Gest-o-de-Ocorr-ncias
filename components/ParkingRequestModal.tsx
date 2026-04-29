@@ -69,7 +69,10 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
         cor: '',
         inicio: '',
         termino: '',
-        obs: ''
+        obs: '',
+        isThirdParty: false,
+        thirdPartyName: '',
+        thirdPartyContact: ''
     });
 
     const [identityFile, setIdentityFile] = useState<File | null>(null);
@@ -109,6 +112,12 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
         // 1. Campos obrigatórios
         if (!parkData.nome.trim() || !parkData.marcaModelo.trim() || !parkData.placa.trim() || !parkData.inicio || !parkData.termino || !parkData.email.trim()) {
             setError('Preencha todos os campos obrigatórios (marcados com *).');
+            return;
+        }
+
+        // 1.1 Terceiro
+        if (parkData.isThirdParty && (!parkData.thirdPartyName.trim() || !parkData.thirdPartyContact.trim())) {
+            setError('Preencha o nome e contato do solicitante (Solicitação 3º).');
             return;
         }
 
@@ -187,7 +196,9 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                 ext_cor: parkData.cor.trim().toUpperCase(),
                 inicio: parkData.inicio,
                 termino: parkData.termino,
-                observacao: parkData.obs.trim(),
+                observacao: parkData.isThirdParty 
+                    ? `[SOLICITAÇÃO 3º - Nome: ${parkData.thirdPartyName.toUpperCase()} | Contato: ${parkData.thirdPartyContact}] ${parkData.obs.trim()}`.trim()
+                    : parkData.obs.trim(),
                 cnh_url: cnhUrl,
                 crlv_url: crlvUrl,
                 identidade_url: idUrl,
@@ -209,7 +220,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
     const handleClose = () => {
         if (isLoading) return; // bloqueia fechar enquanto envia
         setParkSuccess(false);
-        setParkData({ nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', telefone: '', email: '', identidade: '', marcaModelo: '', placa: '', cor: '', inicio: '', termino: '', obs: '' });
+        setParkData({ nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', telefone: '', email: '', identidade: '', marcaModelo: '', placa: '', cor: '', inicio: '', termino: '', obs: '', isThirdParty: false, thirdPartyName: '', thirdPartyContact: '' });
         setIdentityFile(null);
         setCnhFile(null);
         setCrlvFile(null);
@@ -303,7 +314,47 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                             <div className="space-y-4">
                                 {/* Dados Pessoais */}
                                 <div className={section}>
-                                    <h3 className={sectionTitle}>Dados Pessoais</h3>
+                                    <div className="flex items-center justify-between border-b pb-2 mb-2">
+                                        <h3 className={`text-[10px] font-black ${dk ? 'text-slate-500' : 'text-slate-400'} uppercase tracking-widest`}>Dados Pessoais</h3>
+                                        <label className="flex items-center gap-2 cursor-pointer group">
+                                            <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${parkData.isThirdParty ? 'bg-blue-600 border-blue-600' : 'bg-transparent border-slate-400 group-hover:border-blue-400'}`}>
+                                                {parkData.isThirdParty && <CheckCircle className="w-3 h-3 text-white" />}
+                                            </div>
+                                            <input
+                                                type="checkbox"
+                                                className="hidden"
+                                                checked={parkData.isThirdParty}
+                                                onChange={e => setParkData({ ...parkData, isThirdParty: e.target.checked })}
+                                            />
+                                            <span className={`text-[10px] font-black uppercase tracking-wider transition-colors ${parkData.isThirdParty ? 'text-blue-500' : 'text-slate-500 group-hover:text-blue-400'}`}>Solicitação 3º</span>
+                                        </label>
+                                    </div>
+
+                                    {parkData.isThirdParty && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100/50 dark:border-blue-900/20 animate-in slide-in-from-top-2 duration-300">
+                                            <div className="space-y-1">
+                                                <label className={label}>Nome do Solicitante *</label>
+                                                <input
+                                                    placeholder="NOME DE QUEM SOLICITA"
+                                                    value={parkData.thirdPartyName}
+                                                    onChange={e => setParkData({ ...parkData, thirdPartyName: e.target.value })}
+                                                    style={{ textTransform: 'uppercase' }}
+                                                    className={input}
+                                                    disabled={isLoading}
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className={label}>Contato do Solicitante *</label>
+                                                <input
+                                                    placeholder="(11) 99999-9999"
+                                                    value={parkData.thirdPartyContact}
+                                                    onChange={e => setParkData({ ...parkData, thirdPartyContact: formatPhone(e.target.value) })}
+                                                    className={input}
+                                                    disabled={isLoading}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
 
                                     <div className="space-y-1">
                                         <label className={label}>Nome Completo *</label>
