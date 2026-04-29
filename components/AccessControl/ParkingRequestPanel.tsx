@@ -945,11 +945,27 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                     </div>
                                 </div>
 
-                                {/* Responsável pela Aprovação */}
+                                {/* Responsável pela Aprovação / Rejeição */}
                                 <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-slate-100 border-dashed flex flex-col items-center gap-2">
-                                    <div className="w-full bg-slate-50 rounded-xl p-2 sm:p-3 border border-slate-100 flex flex-col items-center gap-1">
-                                        <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 mb-1" />
-                                        <p className="text-[7px] sm:text-[8px] font-bold text-slate-400 uppercase tracking-widest">Aprovado por</p>
+                                    {showingCoupon.status === 'Rejeitado' && showingCoupon.observacao && (
+                                        <div className="w-full bg-red-50 rounded-xl p-3 border border-red-100 flex flex-col items-center gap-1 mb-2">
+                                            <AlertTriangle className="w-4 h-4 text-red-600 mb-1" />
+                                            <p className="text-[7px] sm:text-[8px] font-black text-red-400 uppercase tracking-widest">Motivo da Rejeição</p>
+                                            <p className="text-[10px] sm:text-xs font-black text-red-700 uppercase text-center leading-tight">
+                                                {showingCoupon.observacao}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    <div className={`w-full ${showingCoupon.status === 'Rejeitado' ? 'bg-slate-50 border-slate-200' : 'bg-slate-50 border-slate-100'} rounded-xl p-2 sm:p-3 border flex flex-col items-center gap-1`}>
+                                        {showingCoupon.status === 'Rejeitado' ? (
+                                            <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 mb-1" />
+                                        ) : (
+                                            <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 mb-1" />
+                                        )}
+                                        <p className="text-[7px] sm:text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                                            {showingCoupon.status === 'Rejeitado' ? 'Rejeitado por' : 'Aprovado por'}
+                                        </p>
                                         <p className="text-[9px] sm:text-[11px] font-black text-slate-800 uppercase text-center leading-tight">
                                             {showingCoupon.aprovado_por || 'AUTORIDADE COMPETENTE'}
                                         </p>
