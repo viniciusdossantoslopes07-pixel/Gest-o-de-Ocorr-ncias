@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { MissionOrder, User } from '../types';
 import {
     AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList
 } from 'recharts';
 import {
     Target, Users, CheckCircle, Clock, Calendar,
@@ -174,7 +174,20 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     const card = `p-7 rounded-[2.5rem] border transition-all hover:scale-[1.02] ${isDarkMode ? 'bg-slate-900/50 border-slate-800 shadow-2xl' : 'bg-white border-slate-200 shadow-xl shadow-slate-100/80'}`;
     const label = `text-[9px] font-black uppercase tracking-[0.2em] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`;
     const value = `text-4xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`;
-    const chartBg = isDarkMode ? '#0f172a' : '#fff';
+    const chartBg = isDarkMode ? '#1e293b' : '#fff';
+    const tooltipContentStyle = {
+        backgroundColor: chartBg,
+        borderRadius: '12px',
+        border: 'none',
+        boxShadow: isDarkMode ? '0 20px 40px rgba(0,0,0,0.4)' : '0 10px 20px rgba(0,0,0,0.1)',
+        padding: '8px 12px'
+    };
+    const tooltipTextStyle = {
+        color: isDarkMode ? '#f8fafc' : '#1e293b',
+        fontSize: '11px',
+        fontWeight: '900',
+        textTransform: 'uppercase' as const
+    };
 
     return (
         <div className="space-y-6 pb-16 animate-in fade-in duration-500">
@@ -302,7 +315,11 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#1e293b' : '#f1f5f9'} />
                                 <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} dy={8} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} />
-                                <Tooltip contentStyle={{ backgroundColor: chartBg, borderRadius: 16, border: 'none', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', fontSize: 11, fontWeight: 900 }} />
+                                <Tooltip 
+                                    contentStyle={tooltipContentStyle}
+                                    itemStyle={tooltipTextStyle}
+                                    cursor={{ fill: isDarkMode ? '#334155' : '#f1f5f9', opacity: 0.4 }}
+                                />
                                 <Area type="monotone" dataKey="total" name="Total" stroke="#3b82f6" strokeWidth={3} fill="url(#gTotal)" />
                                 <Area type="monotone" dataKey="concluded" name="Concluídas" stroke="#10b981" strokeWidth={3} fill="url(#gConcluded)" />
                             </AreaChart>
@@ -319,8 +336,14 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#1e293b' : '#f1f5f9'} />
                                 <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} dy={8} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} allowDecimals={false} />
-                                <Tooltip contentStyle={{ backgroundColor: chartBg, borderRadius: 16, border: 'none', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', fontSize: 11, fontWeight: 900 }} />
-                                <Bar dataKey="previstas" name="Previstas" fill="#8b5cf6" radius={[8, 8, 0, 0]} />
+                                <Tooltip 
+                                    contentStyle={tooltipContentStyle}
+                                    itemStyle={tooltipTextStyle}
+                                    cursor={{ fill: 'transparent' }}
+                                />
+                                <Bar dataKey="previstas" name="Previstas" fill="#8b5cf6" radius={[8, 8, 0, 0]}>
+                                    <LabelList dataKey="previstas" position="top" fill={isDarkMode ? '#a78bfa' : '#7c3aed'} fontSize={10} fontWeight={900} />
+                                </Bar>
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -335,10 +358,21 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                     <div className="h-[180px] mb-4">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
-                                <Pie data={typeData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={4} dataKey="value" stroke="none">
+                                <Pie 
+                                    data={typeData} 
+                                    cx="50%" 
+                                    cy="50%" 
+                                    innerRadius={50} 
+                                    outerRadius={75} 
+                                    paddingAngle={4} 
+                                    dataKey="value" 
+                                    stroke="none"
+                                    label={({ value }) => value}
+                                    labelLine={false}
+                                >
                                     {typeData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                                 </Pie>
-                                <Tooltip contentStyle={{ backgroundColor: chartBg, borderRadius: 14, border: 'none', fontSize: 11, fontWeight: 900 }} />
+                                <Tooltip contentStyle={tooltipContentStyle} itemStyle={tooltipTextStyle} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
@@ -379,10 +413,21 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                     <div className="h-[180px] mb-4">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
-                                <Pie data={internalExternalData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={4} dataKey="value" stroke="none">
+                                <Pie 
+                                    data={internalExternalData} 
+                                    cx="50%" 
+                                    cy="50%" 
+                                    innerRadius={50} 
+                                    outerRadius={75} 
+                                    paddingAngle={4} 
+                                    dataKey="value" 
+                                    stroke="none"
+                                    label={({ value }) => value}
+                                    labelLine={false}
+                                >
                                     {internalExternalData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                                 </Pie>
-                                <Tooltip contentStyle={{ backgroundColor: chartBg, borderRadius: 14, border: 'none', fontSize: 11, fontWeight: 900 }} />
+                                <Tooltip contentStyle={tooltipContentStyle} itemStyle={tooltipTextStyle} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
