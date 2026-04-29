@@ -197,7 +197,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                 inicio: parkData.inicio,
                 termino: parkData.termino,
                 observacao: parkData.isThirdParty 
-                    ? `[SOLICITAÇÃO 3º - Nome: ${parkData.thirdPartyName.toUpperCase()} | Contato: ${parkData.thirdPartyContact}] ${parkData.obs.trim()}`.trim()
+                    ? `[SOLICITAÇÃO 3º - Condutor: ${parkData.thirdPartyName.toUpperCase()} | Contato: ${parkData.thirdPartyContact}] ${parkData.obs.trim()}`.trim()
                     : parkData.obs.trim(),
                 cnh_url: cnhUrl,
                 crlv_url: crlvUrl,
@@ -318,7 +318,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
 
 
                                     <div className="space-y-1">
-                                        <label className={label}>Nome do Condutor *</label>
+                                        <label className={label}>NOME COMPLETO *</label>
                                         <input
                                             placeholder="EX: JOÃO DA SILVA"
                                             value={parkData.nome}
@@ -422,9 +422,9 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                                     {parkData.isThirdParty && (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100/50 dark:border-blue-900/20 animate-in slide-in-from-top-2 duration-300">
                                             <div className="space-y-1">
-                                                <label className={label}>Nome do Solicitante *</label>
+                                                <label className={label}>Nome do Condutor *</label>
                                                 <input
-                                                    placeholder="NOME DE QUEM SOLICITA"
+                                                    placeholder="NOME DO CONDUTOR"
                                                     value={parkData.thirdPartyName}
                                                     onChange={e => setParkData({ ...parkData, thirdPartyName: e.target.value })}
                                                     style={{ textTransform: 'uppercase' }}
@@ -433,7 +433,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                                                 />
                                             </div>
                                             <div className="space-y-1">
-                                                <label className={label}>Contato do Solicitante *</label>
+                                                <label className={label}>Contato do Condutor *</label>
                                                 <input
                                                     placeholder="(11) 99999-9999"
                                                     value={parkData.thirdPartyContact}

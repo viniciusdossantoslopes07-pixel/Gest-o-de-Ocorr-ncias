@@ -837,9 +837,9 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                         Informo a V.S.ª que a área coberta do Hotel de Trânsito é destinada aos Residentes, Usuários do Hotel em Trânsito, Of. Superiores da OM e Of. Generais.
                                     </p>
                                     <div className="mb-8">
-                                        <h3 className="font-black text-lg mb-3 border-b border-black pb-1">DADOS DO CONDUTOR:</h3>
+                                        <h3 className="font-black text-lg mb-3 border-b border-black pb-1">DADOS DO SOLICITANTE:</h3>
                                         <div className="space-y-1.5 text-base">
-                                            <p>Nome do Condutor: <strong>{printRequest.nome_completo}</strong></p>
+                                            <p>Nome Completo: <strong>{printRequest.nome_completo}</strong></p>
                                             <p>Posto/Grad: <strong>{printRequest.posto_graduacao}</strong> ({printRequest.tipo_pessoa} — {printRequest.forca})</p>
                                             <p>Veículo: <strong>{(veiculo as any).marca_modelo}</strong></p>
                                             <p>Placa: <strong>{(veiculo as any).placa}</strong></p>
@@ -909,7 +909,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                             <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-900 rounded-full z-10"></div>
 
                             <div className="text-center space-y-1">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase">Condutor</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase">Solicitante</p>
                                 <p className="text-sm sm:text-base font-black text-slate-800">{showingCoupon.nome_completo}</p>
                                 <p className="text-[10px] sm:text-[11px] font-bold text-blue-600 uppercase">{showingCoupon.posto_graduacao} • {showingCoupon.om}</p>
                             </div>
