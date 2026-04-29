@@ -229,129 +229,131 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
             </div >
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <div className="flex items-center justify-between mb-2">
-                        <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase tracking-wider`}>Comandante da Missão (Responsável)</label>
-                        <label className="flex items-center gap-2 cursor-pointer group">
-                            <input
-                                type="checkbox"
-                                checked={formData.isExternalCommander}
-                                onChange={e => {
-                                    const checked = e.target.checked;
-                                    setFormData({ 
-                                        ...formData, 
-                                        isExternalCommander: checked,
-                                        missionCommanderId: checked ? '' : formData.missionCommanderId,
-                                        externalCommanderName: checked ? formData.externalCommanderName : ''
-                                    });
-                                    if (checked) {
-                                        setCommanderSearchQuery(formData.externalCommanderName);
-                                    } else {
-                                        const u = users.find(u => u.id === formData.missionCommanderId);
-                                        setCommanderSearchQuery(u ? (u.warName || u.name) : '');
-                                    }
-                                }}
-                                className="w-4 h-4 rounded border-slate-700 text-blue-600 focus:ring-blue-500"
-                            />
-                            <span className={`text-[10px] font-bold uppercase tracking-tight ${isDarkMode ? 'text-slate-400 group-hover:text-slate-200' : 'text-slate-600 group-hover:text-slate-900'}`}>CMT Externo</span>
-                        </label>
-                    </div>
-
-                    <div className="flex gap-2 relative">
-                        {formData.isExternalCommander ? (
-                            <div className="w-full relative">
+                {formData.mission !== 'SOBREAVISO' && (
+                    <div>
+                        <div className="flex items-center justify-between mb-2">
+                            <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase tracking-wider`}>Comandante da Missão (Responsável)</label>
+                            <label className="flex items-center gap-2 cursor-pointer group">
                                 <input
-                                    type="text"
-                                    value={formData.externalCommanderName}
-                                    placeholder="Nome do Comandante Externo (ex: 1T LIVIA)"
-                                    className={`w-full px-4 py-2.5 border ${isDarkMode ? 'border-blue-500/50 bg-slate-800/50 text-white' : 'border-blue-200 bg-blue-50/30 text-slate-900'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all pr-10 font-bold`}
-                                    onChange={(e) => {
-                                        const val = e.target.value.toUpperCase();
-                                        setFormData({ ...formData, externalCommanderName: val });
-                                        setCommanderSearchQuery(val);
-                                    }}
-                                />
-                                <Shield className={`w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 ${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`} />
-                            </div>
-                        ) : (
-                            <div className="w-full relative">
-                                <input
-                                    type="text"
-                                    value={commanderSearchQuery}
-                                    placeholder="Nome, Guerra ou SARAM"
-                                    className={`w-full px-4 py-2.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all pr-10`}
-                                    onChange={(e) => {
-                                        const term = e.target.value;
-                                        setCommanderSearchQuery(term);
-                                        if (!term) {
-                                            setCommanderSuggestions([]);
-                                            setShowCommanderSuggestions(false);
-                                            setFormData({ ...formData, missionCommanderId: '' });
-                                            return;
+                                    type="checkbox"
+                                    checked={formData.isExternalCommander}
+                                    onChange={e => {
+                                        const checked = e.target.checked;
+                                        setFormData({ 
+                                            ...formData, 
+                                            isExternalCommander: checked,
+                                            missionCommanderId: checked ? '' : formData.missionCommanderId,
+                                            externalCommanderName: checked ? formData.externalCommanderName : ''
+                                        });
+                                        if (checked) {
+                                            setCommanderSearchQuery(formData.externalCommanderName);
+                                        } else {
+                                            const u = users.find(u => u.id === formData.missionCommanderId);
+                                            setCommanderSearchQuery(u ? (u.warName || u.name) : '');
                                         }
-                                        const upperTerm = term.toUpperCase();
-                                        const matches = users.filter(u => 
-                                            u.saram.includes(term) || 
-                                            (u.warName || '').toUpperCase().includes(upperTerm) ||
-                                            (u.name || '').toUpperCase().includes(upperTerm) ||
-                                            (`${u.rank || ''} ${u.warName || ''}`).toUpperCase().includes(upperTerm) ||
-                                            (`${u.rank || ''} ${u.name || ''}`).toUpperCase().includes(upperTerm)
-                                        );
-                                        setCommanderSuggestions(matches);
-                                        setShowCommanderSuggestions(true);
-                                        setFormData({ ...formData, missionCommanderId: '' });
                                     }}
-                                    onFocus={() => {
-                                        if (commanderSuggestions.length > 0) setShowCommanderSuggestions(true);
-                                    }}
-                                    onBlur={() => {
-                                        setTimeout(() => setShowCommanderSuggestions(false), 200);
-                                    }}
+                                    className="w-4 h-4 rounded border-slate-700 text-blue-600 focus:ring-blue-500"
                                 />
-                                <Search className={`w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} pointer-events-none`} />
-                                
-                                {showCommanderSuggestions && commanderSuggestions.length > 0 && (
-                                    <ul className={`absolute z-10 w-full top-full mt-1 max-h-48 overflow-y-auto rounded-xl shadow-lg border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} custom-scrollbar`}>
-                                        {commanderSuggestions.map(u => (
-                                            <li 
-                                                key={u.id}
-                                                onClick={() => {
-                                                    setFormData({ ...formData, missionCommanderId: u.id });
-                                                    setCommanderSearchQuery(u.warName || u.name);
-                                                    setShowCommanderSuggestions(false);
-                                                }}
-                                                className={`px-4 py-3 cursor-pointer flex items-center justify-between transition-colors border-b last:border-b-0 ${isDarkMode ? 'hover:bg-slate-700/50 text-slate-300 border-slate-700' : 'hover:bg-slate-50 text-slate-700 border-slate-100'}`}
-                                            >
-                                                <div className="flex flex-col">
-                                                    <span className={`text-xs font-black uppercase ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{u.rank} {u.warName || u.name}</span>
-                                                    {u.name !== u.warName && <span className={`text-[10px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{u.name}</span>}
-                                                </div>
-                                                <span className={`text-[10px] font-mono px-2 py-1 rounded-lg ${isDarkMode ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{u.saram}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
+                                <span className={`text-[10px] font-bold uppercase tracking-tight ${isDarkMode ? 'text-slate-400 group-hover:text-slate-200' : 'text-slate-600 group-hover:text-slate-900'}`}>CMT Externo</span>
+                            </label>
+                        </div>
+
+                        <div className="flex gap-2 relative">
+                            {formData.isExternalCommander ? (
+                                <div className="w-full relative">
+                                    <input
+                                        type="text"
+                                        value={formData.externalCommanderName}
+                                        placeholder="Nome do Comandante Externo (ex: 1T LIVIA)"
+                                        className={`w-full px-4 py-2.5 border ${isDarkMode ? 'border-blue-500/50 bg-slate-800/50 text-white' : 'border-blue-200 bg-blue-50/30 text-slate-900'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all pr-10 font-bold`}
+                                        onChange={(e) => {
+                                            const val = e.target.value.toUpperCase();
+                                            setFormData({ ...formData, externalCommanderName: val });
+                                            setCommanderSearchQuery(val);
+                                        }}
+                                    />
+                                    <Shield className={`w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 ${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`} />
+                                </div>
+                            ) : (
+                                <div className="w-full relative">
+                                    <input
+                                        type="text"
+                                        value={commanderSearchQuery}
+                                        placeholder="Nome, Guerra ou SARAM"
+                                        className={`w-full px-4 py-2.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all pr-10`}
+                                        onChange={(e) => {
+                                            const term = e.target.value;
+                                            setCommanderSearchQuery(term);
+                                            if (!term) {
+                                                setCommanderSuggestions([]);
+                                                setShowCommanderSuggestions(false);
+                                                setFormData({ ...formData, missionCommanderId: '' });
+                                                return;
+                                            }
+                                            const upperTerm = term.toUpperCase();
+                                            const matches = users.filter(u => 
+                                                u.saram.includes(term) || 
+                                                (u.warName || '').toUpperCase().includes(upperTerm) ||
+                                                (u.name || '').toUpperCase().includes(upperTerm) ||
+                                                (`${u.rank || ''} ${u.warName || ''}`).toUpperCase().includes(upperTerm) ||
+                                                (`${u.rank || ''} ${u.name || ''}`).toUpperCase().includes(upperTerm)
+                                            );
+                                            setCommanderSuggestions(matches);
+                                            setShowCommanderSuggestions(true);
+                                            setFormData({ ...formData, missionCommanderId: '' });
+                                        }}
+                                        onFocus={() => {
+                                            if (commanderSuggestions.length > 0) setShowCommanderSuggestions(true);
+                                        }}
+                                        onBlur={() => {
+                                            setTimeout(() => setShowCommanderSuggestions(false), 200);
+                                        }}
+                                    />
+                                    <Search className={`w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} pointer-events-none`} />
+                                    
+                                    {showCommanderSuggestions && commanderSuggestions.length > 0 && (
+                                        <ul className={`absolute z-10 w-full top-full mt-1 max-h-48 overflow-y-auto rounded-xl shadow-lg border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} custom-scrollbar`}>
+                                            {commanderSuggestions.map(u => (
+                                                <li 
+                                                    key={u.id}
+                                                    onClick={() => {
+                                                        setFormData({ ...formData, missionCommanderId: u.id });
+                                                        setCommanderSearchQuery(u.warName || u.name);
+                                                        setShowCommanderSuggestions(false);
+                                                    }}
+                                                    className={`px-4 py-3 cursor-pointer flex items-center justify-between transition-colors border-b last:border-b-0 ${isDarkMode ? 'hover:bg-slate-700/50 text-slate-300 border-slate-700' : 'hover:bg-slate-50 text-slate-700 border-slate-100'}`}
+                                                >
+                                                    <div className="flex flex-col">
+                                                        <span className={`text-xs font-black uppercase ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{u.rank} {u.warName || u.name}</span>
+                                                        {u.name !== u.warName && <span className={`text-[10px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{u.name}</span>}
+                                                    </div>
+                                                    <span className={`text-[10px] font-mono px-2 py-1 rounded-lg ${isDarkMode ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{u.saram}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        {formData.missionCommanderId && !formData.isExternalCommander && (
+                            <div className={`mt-3 p-3 ${isDarkMode ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-blue-50 border-blue-100 text-blue-700'} border rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 animate-in zoom-in-95 duration-200`}>
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                                Selecionado: {users.find(u => u.id === formData.missionCommanderId)?.rank} {users.find(u => u.id === formData.missionCommanderId)?.warName || users.find(u => u.id === formData.missionCommanderId)?.name}
                             </div>
                         )}
+                        {formData.isExternalCommander && formData.externalCommanderName && (
+                            <div className={`mt-3 p-3 ${isDarkMode ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-amber-50 border-amber-100 text-amber-700'} border rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 animate-in zoom-in-95 duration-200`}>
+                                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                Responsável Externo: {formData.externalCommanderName}
+                            </div>
+                        )}
+                        <p className={`text-[10px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} mt-2 leading-relaxed`}>
+                            {formData.isExternalCommander 
+                                ? "Informe o nome e posto do comandante externo responsável."
+                                : "Digite o Nome, Guerra ou SARAM para selecionar o Comandante."}
+                        </p>
                     </div>
-                    {formData.missionCommanderId && !formData.isExternalCommander && (
-                        <div className={`mt-3 p-3 ${isDarkMode ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-blue-50 border-blue-100 text-blue-700'} border rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 animate-in zoom-in-95 duration-200`}>
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                            Selecionado: {users.find(u => u.id === formData.missionCommanderId)?.rank} {users.find(u => u.id === formData.missionCommanderId)?.warName || users.find(u => u.id === formData.missionCommanderId)?.name}
-                        </div>
-                    )}
-                    {formData.isExternalCommander && formData.externalCommanderName && (
-                        <div className={`mt-3 p-3 ${isDarkMode ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-amber-50 border-amber-100 text-amber-700'} border rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 animate-in zoom-in-95 duration-200`}>
-                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                            Responsável Externo: {formData.externalCommanderName}
-                        </div>
-                    )}
-                    <p className={`text-[10px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} mt-2 leading-relaxed`}>
-                        {formData.isExternalCommander 
-                            ? "Informe o nome e posto do comandante externo responsável."
-                            : "Digite o Nome, Guerra ou SARAM para selecionar o Comandante."}
-                    </p>
-                </div>
+                )}
 
                 <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -739,157 +741,159 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
             </div>
 
             {/* Schedule Table / Cards */}
-            <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl' : 'bg-white border-slate-200'} rounded-2xl p-4 sm:p-6 border shadow-sm space-y-6 animate-in fade-in slide-in-from-top-4 duration-500 delay-150`}>
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+            {formData.mission !== 'SOBREAVISO' && (
+                <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl' : 'bg-white border-slate-200'} rounded-2xl p-4 sm:p-6 border shadow-sm space-y-6 animate-in fade-in slide-in-from-top-4 duration-500 delay-150`}>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={addSchedule}
+                                className={`p-2 rounded-lg ${isDarkMode ? 'bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'} transition-all active:scale-90`}
+                                title="Adicionar Evento"
+                            >
+                                <Plus className="w-4 h-4" />
+                            </button>
+                            <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-700'} uppercase tracking-widest`}>Quadro Horário</h3>
+                        </div>
                         <button
                             type="button"
                             onClick={addSchedule}
-                            className={`p-2 rounded-lg ${isDarkMode ? 'bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'} transition-all active:scale-90`}
-                            title="Adicionar Evento"
+                            className={`flex items-center gap-2 px-4 py-2 ${isDarkMode ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-indigo-600 hover:bg-indigo-700'} text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 active:scale-95`}
                         >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="w-4 h-4" /> Adicionar Evento
                         </button>
-                        <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-700'} uppercase tracking-widest`}>Quadro Horário</h3>
                     </div>
-                    <button
-                        type="button"
-                        onClick={addSchedule}
-                        className={`flex items-center gap-2 px-4 py-2 ${isDarkMode ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-indigo-600 hover:bg-indigo-700'} text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 active:scale-95`}
-                    >
-                        <Plus className="w-4 h-4" /> Adicionar Evento
-                    </button>
-                </div>
 
-                {schedule.length > 0 && (
-                    <>
-                        {/* Desktop View */}
-                        <div className="hidden lg:block overflow-hidden rounded-xl border border-slate-800/50">
-                            <table className="w-full text-xs">
-                                <thead className={`${isDarkMode ? 'bg-slate-800/80 text-slate-300' : 'bg-slate-50 text-slate-600'}`}>
-                                    <tr>
-                                        <th className="px-3 py-3 text-left font-black uppercase tracking-tighter w-24">Início</th>
-                                        <th className="px-3 py-3 text-left font-black uppercase tracking-tighter w-24">Fim</th>
-                                        <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">Atividade</th>
-                                        <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">Local</th>
-                                        <th className="px-3 py-3"></th>
-                                    </tr>
-                                </thead>
-                                <tbody className={`divide-y ${isDarkMode ? 'divide-slate-800/50' : 'divide-slate-100'}`}>
-                                    {schedule.map(s => (
-                                        <tr key={s.id} className={`${isDarkMode ? 'hover:bg-slate-800/30' : 'hover:bg-slate-50'} transition-colors group`}>
-                                            <td className="px-3 py-2">
+                    {schedule.length > 0 && (
+                        <>
+                            {/* Desktop View */}
+                            <div className="hidden lg:block overflow-hidden rounded-xl border border-slate-800/50">
+                                <table className="w-full text-xs">
+                                    <thead className={`${isDarkMode ? 'bg-slate-800/80 text-slate-300' : 'bg-slate-50 text-slate-600'}`}>
+                                        <tr>
+                                            <th className="px-3 py-3 text-left font-black uppercase tracking-tighter w-24">Início</th>
+                                            <th className="px-3 py-3 text-left font-black uppercase tracking-tighter w-24">Fim</th>
+                                            <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">Atividade</th>
+                                            <th className="px-3 py-3 text-left font-black uppercase tracking-tighter">Local</th>
+                                            <th className="px-3 py-3"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className={`divide-y ${isDarkMode ? 'divide-slate-800/50' : 'divide-slate-100'}`}>
+                                        {schedule.map(s => (
+                                            <tr key={s.id} className={`${isDarkMode ? 'hover:bg-slate-800/30' : 'hover:bg-slate-50'} transition-colors group`}>
+                                                <td className="px-3 py-2">
+                                                    <input
+                                                        type="time"
+                                                        value={s.startTime}
+                                                        onChange={e => updateSchedule(s.id, 'startTime', e.target.value)}
+                                                        className={`w-full px-2 py-1.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-xs focus:ring-2 focus:ring-blue-500/50 outline-none`}
+                                                    />
+                                                </td>
+                                                <td className="px-3 py-2">
+                                                    <input
+                                                        type="time"
+                                                        value={s.endTime}
+                                                        onChange={e => updateSchedule(s.id, 'endTime', e.target.value)}
+                                                        className={`w-full px-2 py-1.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-xs focus:ring-2 focus:ring-blue-500/50 outline-none`}
+                                                    />
+                                                </td>
+                                                <td className="px-3 py-2">
+                                                    <input
+                                                        type="text"
+                                                        value={s.event}
+                                                        onChange={e => updateSchedule(s.id, 'event', e.target.value)}
+                                                        placeholder="Ex: Briefing"
+                                                        className={`w-full px-2 py-1.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-xs focus:ring-2 focus:ring-blue-500/50 outline-none`}
+                                                    />
+                                                </td>
+                                                <td className="px-3 py-2">
+                                                    <input
+                                                        type="text"
+                                                        value={s.location || ''}
+                                                        onChange={e => updateSchedule(s.id, 'location', e.target.value)}
+                                                        placeholder="Ex: Sala 01"
+                                                        className={`w-full px-2 py-1.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-xs focus:ring-2 focus:ring-blue-500/50 outline-none`}
+                                                    />
+                                                </td>
+                                                <td className="px-3 py-2 text-right">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeSchedule(s.id)}
+                                                        className={`p-1.5 text-red-500 ${isDarkMode ? 'hover:bg-red-500/20' : 'hover:bg-red-50'} rounded-lg transition-all active:scale-90`}
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Mobile View */}
+                            <div className="lg:hidden space-y-4">
+                                {schedule.map((s, idx) => (
+                                    <div key={s.id} className={`p-4 rounded-2xl border ${isDarkMode ? 'border-slate-800 bg-slate-800/20' : 'border-slate-200 bg-slate-50'} relative group animate-in slide-in-from-right-4 duration-300`} style={{ animationDelay: `${idx * 50}ms` }}>
+                                        <div className="flex justify-between items-center mb-4">
+                                            <div className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                                                Evento #{idx + 1}
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeSchedule(s.id)}
+                                                className={`p-2 text-red-500 ${isDarkMode ? 'bg-red-500/10' : 'bg-red-50'} rounded-xl hover:scale-110 transition-all`}
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase mb-1.5`}>Início</label>
                                                 <input
                                                     type="time"
                                                     value={s.startTime}
                                                     onChange={e => updateSchedule(s.id, 'startTime', e.target.value)}
-                                                    className={`w-full px-2 py-1.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-xs focus:ring-2 focus:ring-blue-500/50 outline-none`}
+                                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm outline-none focus:border-blue-500/50`}
                                                 />
-                                            </td>
-                                            <td className="px-3 py-2">
+                                            </div>
+                                            <div>
+                                                <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase mb-1.5`}>Fim</label>
                                                 <input
                                                     type="time"
                                                     value={s.endTime}
                                                     onChange={e => updateSchedule(s.id, 'endTime', e.target.value)}
-                                                    className={`w-full px-2 py-1.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-xs focus:ring-2 focus:ring-blue-500/50 outline-none`}
+                                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm outline-none focus:border-blue-500/50`}
                                                 />
-                                            </td>
-                                            <td className="px-3 py-2">
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase mb-1.5`}>Atividade</label>
                                                 <input
                                                     type="text"
                                                     value={s.event}
                                                     onChange={e => updateSchedule(s.id, 'event', e.target.value)}
-                                                    placeholder="Ex: Briefing"
-                                                    className={`w-full px-2 py-1.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-xs focus:ring-2 focus:ring-blue-500/50 outline-none`}
+                                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm outline-none focus:border-blue-500/50`}
+                                                    placeholder="Atividade..."
                                                 />
-                                            </td>
-                                            <td className="px-3 py-2">
+                                            </div>
+                                            <div className="col-span-1">
+                                                <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase mb-1.5`}>Local</label>
                                                 <input
                                                     type="text"
                                                     value={s.location || ''}
                                                     onChange={e => updateSchedule(s.id, 'location', e.target.value)}
-                                                    placeholder="Ex: Sala 01"
-                                                    className={`w-full px-2 py-1.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-xs focus:ring-2 focus:ring-blue-500/50 outline-none`}
+                                                    className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm outline-none focus:border-blue-500/50`}
+                                                    placeholder="Local..."
                                                 />
-                                            </td>
-                                            <td className="px-3 py-2 text-right">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeSchedule(s.id)}
-                                                    className={`p-1.5 text-red-500 ${isDarkMode ? 'hover:bg-red-500/20' : 'hover:bg-red-50'} rounded-lg transition-all active:scale-90`}
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Mobile View */}
-                        <div className="lg:hidden space-y-4">
-                            {schedule.map((s, idx) => (
-                                <div key={s.id} className={`p-4 rounded-2xl border ${isDarkMode ? 'border-slate-800 bg-slate-800/20' : 'border-slate-200 bg-slate-50'} relative group animate-in slide-in-from-right-4 duration-300`} style={{ animationDelay: `${idx * 50}ms` }}>
-                                    <div className="flex justify-between items-center mb-4">
-                                        <div className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
-                                            Evento #{idx + 1}
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => removeSchedule(s.id)}
-                                            className={`p-2 text-red-500 ${isDarkMode ? 'bg-red-500/10' : 'bg-red-50'} rounded-xl hover:scale-110 transition-all`}
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase mb-1.5`}>Início</label>
-                                            <input
-                                                type="time"
-                                                value={s.startTime}
-                                                onChange={e => updateSchedule(s.id, 'startTime', e.target.value)}
-                                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm outline-none focus:border-blue-500/50`}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase mb-1.5`}>Fim</label>
-                                            <input
-                                                type="time"
-                                                value={s.endTime}
-                                                onChange={e => updateSchedule(s.id, 'endTime', e.target.value)}
-                                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm outline-none focus:border-blue-500/50`}
-                                            />
-                                        </div>
-                                        <div className="col-span-1">
-                                            <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase mb-1.5`}>Atividade</label>
-                                            <input
-                                                type="text"
-                                                value={s.event}
-                                                onChange={e => updateSchedule(s.id, 'event', e.target.value)}
-                                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm outline-none focus:border-blue-500/50`}
-                                                placeholder="Atividade..."
-                                            />
-                                        </div>
-                                        <div className="col-span-1">
-                                            <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase mb-1.5`}>Local</label>
-                                            <input
-                                                type="text"
-                                                value={s.location || ''}
-                                                onChange={e => updateSchedule(s.id, 'location', e.target.value)}
-                                                className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800/40 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm outline-none focus:border-blue-500/50`}
-                                                placeholder="Local..."
-                                            />
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    </>
-                )}
-            </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
+                </div>
+            )}
 
 
             {/* Orders */}
@@ -907,16 +911,18 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                     />
                 </div>
 
-                <div>
-                    <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Ordens Especiais</label>
-                    <textarea
-                        value={formData.specialOrders}
-                        onChange={e => setFormData({ ...formData, specialOrders: e.target.value })}
-                        rows={3}
-                        className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none`}
-                        placeholder="Ordens especiais (opcional)"
-                    />
-                </div>
+                {formData.mission !== 'SOBREAVISO' && (
+                    <div>
+                        <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Ordens Especiais</label>
+                        <textarea
+                            value={formData.specialOrders}
+                            onChange={e => setFormData({ ...formData, specialOrders: e.target.value })}
+                            rows={3}
+                            className={`w-full px-3 py-2 border ${isDarkMode ? 'border-slate-700 bg-slate-800 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none`}
+                            placeholder="Ordens especiais (opcional)"
+                        />
+                    </div>
+                )}
             </div>
 
             {/* Actions */}

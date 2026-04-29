@@ -59,6 +59,31 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
 
     const filteredOrders = useMemo(() => {
         return orders.filter(order => {
+            // Excluir Sobreaviso da contagem de missões convencionais
+            if (order.mission === 'SOBREAVISO') return false;
+
+            if (period === 'all') return true;
+            const orderDay = new Date(order.date.split('T')[0]);
+            if (period === 'today') return orderDay.getTime() === today.getTime();
+            if (period === 'week') {
+                const w = new Date(today); w.setDate(today.getDate() - 7);
+                return orderDay >= w && orderDay <= today;
+            }
+            if (period === 'month') {
+                const m = new Date(today); m.setDate(today.getDate() - 30);
+                return orderDay >= m && orderDay <= today;
+            }
+            if (period === 'year') {
+                return orderDay >= new Date(today.getFullYear(), 0, 1);
+            }
+            return true;
+        });
+    }, [orders, period, today]);
+
+    const sobreavisoOrders = useMemo(() => {
+        return orders.filter(order => {
+            if (order.mission !== 'SOBREAVISO') return false;
+
             if (period === 'all') return true;
             const orderDay = new Date(order.date.split('T')[0]);
             if (period === 'today') return orderDay.getTime() === today.getTime();
@@ -98,6 +123,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     const pending = filteredOrders.filter(o => ['GERADA','PENDENTE_SOP','EM_ELABORACAO','AGUARDANDO_ASSINATURA'].includes(o.status || '')).length;
     const successRate = total > 0 ? Math.round((completed / total) * 100) : 0;
     const totalPersonnel = filteredOrders.reduce((s, o) => s + (o.personnel?.length || 0), 0);
+    const sobreavisoCount = sobreavisoOrders.length;
+    const sobreavisoPersonnel = sobreavisoOrders.reduce((s, o) => s + (o.personnel?.length || 0), 0);
 
     // Trend: last 14 days
     const trendData = useMemo(() => {
@@ -231,10 +258,25 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                         <h3 className={`text-3xl font-black tracking-tighter mt-0.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{kpi.val}</h3>
                     </div>
                 ))}
+                
+                {/* KPI Sobreaviso - Novo Card */}
+                <div className={`${card} relative overflow-hidden group border-indigo-500/30`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${isDarkMode ? 'text-indigo-400 bg-indigo-500/10' : 'text-indigo-600 bg-indigo-50'}`}>
+                        <Clock className="w-5 h-5" />
+                    </div>
+                    <p className={label}>Sobreaviso</p>
+                    <h3 className={`text-3xl font-black tracking-tighter mt-0.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{sobreavisoCount}</h3>
+                    <div className="mt-2">
+                        <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
+                            {sobreavisoPersonnel} militares escalados
+                        </p>
+                    </div>
+                </div>
+
                 {/* KPI Ativas - detalhado */}
                 <div className={`${card} relative overflow-hidden group`}>
                     <span className="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${isDarkMode ? 'text-indigo-400 bg-indigo-500/10' : 'text-indigo-600 bg-indigo-50'}`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${isDarkMode ? 'text-emerald-400 bg-emerald-500/10' : 'text-emerald-600 bg-emerald-50'}`}>
                         <Zap className="w-5 h-5" />
                     </div>
                     <p className={label}>Ativas</p>
