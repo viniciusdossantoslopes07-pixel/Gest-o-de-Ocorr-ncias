@@ -1187,6 +1187,22 @@ const App: FC = () => {
     }
   };
 
+  const handleCloneMissionOrder = async (order: MissionOrder) => {
+    const newOmis = await generateOMISNumber();
+    const clonedOrder: Partial<MissionOrder> = {
+      ...order,
+      id: undefined,
+      omisNumber: newOmis,
+      status: 'GERADA',
+      timeline: [],
+      createdAt: undefined,
+      updatedAt: undefined
+    };
+    setSelectedMissionOrder(clonedOrder as MissionOrder);
+    setShowMissionOrderForm(true);
+    setActiveTab('mission-orders');
+  };
+
   // Helper for password update (passed to SettingsView)
   const handlePasswordChange = async (current: string, newPass: string): Promise<boolean> => {
     if (!currentUser) return false;
@@ -1380,6 +1396,7 @@ const App: FC = () => {
             <div className="max-w-4xl mx-auto">
               <MissionRequestForm
                 user={currentUser}
+                users={users}
                 onCancel={() => setActiveTab('home')}
                 onSubmit={handleCreateMissionRequest}
                 isDarkMode={isDarkMode}
@@ -1805,6 +1822,7 @@ const App: FC = () => {
                   onView={(order) => {
                     alert("Para visualizar/imprimir, acesse a Central de Missões.");
                   }}
+                  onClone={handleCloneMissionOrder}
                   onDelete={handleDeleteMissionOrder}
                 />
               )}
