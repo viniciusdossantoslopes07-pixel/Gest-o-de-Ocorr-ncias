@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { Mission, User, MissionOrder, UserRole } from '../types';
-import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint, Filter, MapPin, User as UserIcon, PlayCircle, History, Zap, Edit2, Mail } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint, Filter, MapPin, User as UserIcon, PlayCircle, History, Zap, Edit2, Mail, Copy } from 'lucide-react';
 import { authenticateBiometrics } from '../services/webauthn';
 import MissionStatistics from './MissionStatistics';
 import MissionOrderForm from './MissionOrderForm';
