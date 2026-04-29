@@ -342,7 +342,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                     cursor={{ fill: 'transparent' }}
                                 />
                                 <Bar dataKey="previstas" name="Previstas" fill="#8b5cf6" radius={[8, 8, 0, 0]}>
-                                    <LabelList dataKey="previstas" position="top" fill={isDarkMode ? '#a78bfa' : '#7c3aed'} fontSize={10} fontWeight={900} />
+                                    <LabelList dataKey="previstas" position="center" fill="#fff" fontSize={10} fontWeight={900} />
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>
