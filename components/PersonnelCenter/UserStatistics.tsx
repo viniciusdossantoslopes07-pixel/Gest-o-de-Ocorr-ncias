@@ -142,7 +142,7 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
     // Sem setor
     const semSetor = statsUsers.filter(u => !u.sector || u.sector === 'SEM SETOR').length;
 
-    // Comparativo TLP vs Efetivo Real
+    // Comparativo TLP vs Efetivo Real (Exclusivo GSD-SP)
     const tlpStats = useMemo(() => {
         const categories = [
             { label: 'TEN CEL', ranks: ['TEN CEL'], previsto: 1 },
@@ -154,8 +154,14 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
             { label: 'S1/S2', ranks: ['S1', 'S2'], previsto: 361 },
         ];
 
+        // Garantir que estamos contando apenas pessoal do GSD-SP para a TLP
+        const gsdUsers = statsUsers.filter(u => {
+            const sectorObj = sectors.find(s => s.name === u.sector);
+            return !sectorObj || sectorObj.unit === 'GSD-SP' || !sectorObj.unit;
+        });
+
         return categories.map(cat => {
-            const actual = statsUsers.filter(u => u.rank && cat.ranks.includes(u.rank)).length;
+            const actual = gsdUsers.filter(u => u.rank && cat.ranks.includes(u.rank)).length;
             const diff = actual - cat.previsto;
             return {
                 ...cat,
@@ -164,7 +170,7 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
                 pct: cat.previsto > 0 ? Math.round((actual / cat.previsto) * 100) : 0
             };
         });
-    }, [statsUsers]);
+    }, [statsUsers, sectors]);
 
     const card = `p-5 rounded-2xl border ${isDarkMode ? 'bg-slate-800/60 border-slate-700/80' : 'bg-white border-slate-100 shadow-sm'}`;
 
@@ -327,64 +333,66 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
                 </div>
             </div>
 
-            {/* Comparativo TLP (Tabela de Lotação de Pessoal) */}
-            <div className={card}>
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-xl ${isDarkMode ? 'bg-orange-500/20 text-orange-400' : 'bg-orange-50 text-orange-600'}`}>
-                            <Users className="w-4 h-4" />
-                        </div>
-                        <div>
-                            <h3 className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>TLP — Tabela de Lotação de Pessoal</h3>
-                            <p className={`text-[9px] font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Previsto vs Atual: Análise de Defasagem Operacional</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1.5">
-                            <div className="w-2.5 h-2.5 rounded-sm bg-slate-700" />
-                            <span className="text-[8px] font-black uppercase text-slate-500">Previsto</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            <div className="w-2.5 h-2.5 rounded-sm bg-blue-500" />
-                            <span className="text-[8px] font-black uppercase text-slate-500">Atual</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {tlpStats.map((cat) => {
-                        const isDeficient = cat.diff < 0;
-                        return (
-                            <div key={cat.label} className={`p-4 rounded-xl border ${isDarkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-50 border-slate-100'}`}>
-                                <div className="flex justify-between items-start mb-3">
-                                    <span className={`text-[10px] font-black uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{cat.label}</span>
-                                    <span className={`px-2 py-0.5 rounded text-[9px] font-black ${isDeficient ? 'bg-red-500/10 text-red-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
-                                        {cat.diff > 0 ? `+${cat.diff}` : cat.diff === 0 ? 'OK' : `${cat.diff}`}
-                                    </span>
-                                </div>
-                                <div className="flex items-end justify-between gap-4">
-                                    <div className="flex-1 space-y-2">
-                                        <div className="flex justify-between text-[10px] font-bold">
-                                            <span className={isDarkMode ? 'text-slate-500' : 'text-slate-400'}>Real: {cat.actual}</span>
-                                            <span className={isDarkMode ? 'text-slate-300' : 'text-slate-600'}>{cat.pct}%</span>
-                                        </div>
-                                        <div className={`w-full h-2 rounded-full ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'} overflow-hidden`}>
-                                            <div 
-                                                className={`h-full transition-all duration-1000 ${isDeficient ? 'bg-red-500' : 'bg-emerald-500'}`}
-                                                style={{ width: `${Math.min(cat.pct, 100)}%` }}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className={`text-[8px] font-black uppercase ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Previsto</p>
-                                        <p className={`text-xl font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{cat.previsto}</p>
-                                    </div>
-                                </div>
+            {/* Comparativo TLP (Exclusivo GSD-SP) */}
+            {activeUnitFilter !== 'BASP' && (
+                <div className={card}>
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-xl ${isDarkMode ? 'bg-orange-500/20 text-orange-400' : 'bg-orange-50 text-orange-600'}`}>
+                                <Users className="w-4 h-4" />
                             </div>
-                        );
-                    })}
+                            <div>
+                                <h3 className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>TLP — GSD-SP</h3>
+                                <p className={`text-[9px] font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Previsto vs Atual: Análise de Defasagem Operacional (Exclusivo GSD-SP)</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-2.5 h-2.5 rounded-sm bg-slate-700" />
+                                <span className="text-[8px] font-black uppercase text-slate-500">Previsto</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-2.5 h-2.5 rounded-sm bg-blue-500" />
+                                <span className="text-[8px] font-black uppercase text-slate-500">Atual</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {tlpStats.map((cat) => {
+                            const isDeficient = cat.diff < 0;
+                            return (
+                                <div key={cat.label} className={`p-4 rounded-xl border ${isDarkMode ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-50 border-slate-100'}`}>
+                                    <div className="flex justify-between items-start mb-3">
+                                        <span className={`text-[10px] font-black uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{cat.label}</span>
+                                        <span className={`px-2 py-0.5 rounded text-[9px] font-black ${isDeficient ? 'bg-red-500/10 text-red-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                                            {cat.diff > 0 ? `+${cat.diff}` : cat.diff === 0 ? 'OK' : `${cat.diff}`}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-end justify-between gap-4">
+                                        <div className="flex-1 space-y-2">
+                                            <div className="flex justify-between text-[10px] font-bold">
+                                                <span className={isDarkMode ? 'text-slate-500' : 'text-slate-400'}>Real: {cat.actual}</span>
+                                                <span className={isDarkMode ? 'text-slate-300' : 'text-slate-600'}>{cat.pct}%</span>
+                                            </div>
+                                            <div className={`w-full h-2 rounded-full ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'} overflow-hidden`}>
+                                                <div 
+                                                    className={`h-full transition-all duration-1000 ${isDeficient ? 'bg-red-500' : 'bg-emerald-500'}`}
+                                                    style={{ width: `${Math.min(cat.pct, 100)}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className={`text-[8px] font-black uppercase ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Previsto</p>
+                                            <p className={`text-xl font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{cat.previsto}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Gráfico de Barras Detalhado — Postos Individuais */}
             <div className={card}>
