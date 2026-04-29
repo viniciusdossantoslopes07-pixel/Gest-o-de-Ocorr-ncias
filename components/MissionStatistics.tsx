@@ -245,22 +245,22 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             {/* KPI Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
                 {/* 1. Total OMIS */}
-                <div className={`${card} relative overflow-hidden group`}>
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${isDarkMode ? 'text-blue-400 bg-blue-500/10' : 'text-blue-600 bg-blue-50'}`}>
+                <div className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/10 cursor-default border-transparent hover:border-blue-500/20`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-all duration-300 group-hover:scale-110 ${isDarkMode ? 'text-blue-400 bg-blue-500/10' : 'text-blue-600 bg-blue-50'}`}>
                         <Target className="w-5 h-5" />
                     </div>
                     <p className={label}>Total OMIS</p>
-                    <h3 className={`text-3xl font-black tracking-tighter mt-0.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{total}</h3>
+                    <h3 className={`text-3xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{total}</h3>
                 </div>
 
                 {/* 2. KPI Ativas - Mover para aqui */}
-                <div className={`${card} relative overflow-hidden group`}>
+                <div className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-emerald-500/10 cursor-default border-transparent hover:border-emerald-500/20`}>
                     <span className="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${isDarkMode ? 'text-emerald-400 bg-emerald-500/10' : 'text-emerald-600 bg-emerald-50'}`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-all duration-300 group-hover:scale-110 ${isDarkMode ? 'text-emerald-400 bg-emerald-500/10' : 'text-emerald-600 bg-emerald-50'}`}>
                         <Zap className="w-5 h-5" />
                     </div>
                     <p className={label}>Ativas</p>
-                    <h3 className={`text-3xl font-black tracking-tighter mt-0.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{active}</h3>
+                    <h3 className={`text-3xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{active}</h3>
                     <div className="mt-2 space-y-0.5">
                         <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
                             {inMission} em campo
@@ -271,28 +271,29 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                     </div>
                 </div>
 
+                {/* Other KPIs */}
                 {[
                     { icon: <CheckCircle className="w-5 h-5" />, lbl: 'Concluídas', val: completed, color: 'emerald' },
                     { icon: <Clock className="w-5 h-5" />, lbl: 'Pendentes', val: pending, color: 'amber' },
                     { icon: <XCircle className="w-5 h-5" />, lbl: 'Canceladas', val: cancelled, color: 'red' },
                     { icon: <Users className="w-5 h-5" />, lbl: 'Efetivo', val: totalPersonnel, color: 'purple' },
                 ].map(kpi => (
-                    <div key={kpi.lbl} className={`${card} relative overflow-hidden group`}>
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 text-${kpi.color}-${isDarkMode ? '400' : '600'} bg-${kpi.color}-${isDarkMode ? '500/10' : '50'}`}>
+                    <div key={kpi.lbl} className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-${kpi.color}-500/10 cursor-default border-transparent hover:border-${kpi.color}-500/20`}>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-all duration-300 group-hover:scale-110 text-${kpi.color}-${isDarkMode ? '400' : '600'} bg-${kpi.color}-${isDarkMode ? '500/10' : '50'}`}>
                             {kpi.icon}
                         </div>
                         <p className={label}>{kpi.lbl}</p>
-                        <h3 className={`text-3xl font-black tracking-tighter mt-0.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{kpi.val}</h3>
+                        <h3 className={`text-3xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{kpi.val}</h3>
                     </div>
                 ))}
                 
                 {/* KPI Sobreaviso - Novo Card */}
-                <div className={`${card} relative overflow-hidden group border-indigo-500/30`}>
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${isDarkMode ? 'text-indigo-400 bg-indigo-500/10' : 'text-indigo-600 bg-indigo-50'}`}>
+                <div className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-500/10 cursor-default border-transparent hover:border-indigo-500/20`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-all duration-300 group-hover:scale-110 ${isDarkMode ? 'text-indigo-400 bg-indigo-500/10' : 'text-indigo-600 bg-indigo-50'}`}>
                         <Clock className="w-5 h-5" />
                     </div>
                     <p className={label}>Sobreaviso</p>
-                    <h3 className={`text-3xl font-black tracking-tighter mt-0.5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{sobreavisoCount}</h3>
+                    <h3 className={`text-3xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{sobreavisoCount}</h3>
                     <div className="mt-2">
                         <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
                             {sobreavisoPersonnel} militares escalados
@@ -443,7 +444,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 </div>
 
                 {/* Status */}
-                <div className={`${card}`}>
+                <div className={`${card} transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl`}>
                     <h3 className={`text-sm font-black uppercase tracking-tighter mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Por Status</h3>
                     <div className="space-y-3">
                         {statusData.map(s => (

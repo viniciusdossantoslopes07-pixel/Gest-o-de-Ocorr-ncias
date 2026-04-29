@@ -1,4 +1,4 @@
-// Guardião GSD-SP v1.5.0 - Otimização Geral e Módulo de Férias
+// Guardião GSD-SP v2.0.0 - Versão 2.0: Estabilidade e BI Avançado
 import { useState, useEffect, useCallback, useMemo, lazy, Suspense, FC } from 'react';
 import { supabase } from './services/supabase';
 import {

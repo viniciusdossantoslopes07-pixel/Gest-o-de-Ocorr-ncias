@@ -252,14 +252,14 @@ const Dashboard: FC<DashboardProps> = ({ occurrences, isDarkMode }) => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-        <div className={`glass-card p-6 rounded-2xl transition-all duration-300 group`}>
+        <div className={`glass-card p-6 rounded-2xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/10 group cursor-default border border-transparent hover:border-blue-500/20`}>
           <div className="flex items-center justify-between mb-4">
             <span className="text-slate-500 text-xs font-bold uppercase tracking-wider">Total</span>
-            <div className={`p-2 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors ${isDarkMode ? 'bg-blue-900/20 text-blue-400' : 'bg-blue-50 text-blue-500'}`}>
+            <div className={`p-2 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 ${isDarkMode ? 'bg-blue-900/20 text-blue-400' : 'bg-blue-50 text-blue-500'}`}>
               <TrendingUp className="w-5 h-5" />
             </div>
           </div>
-          <div className={`text-4xl font-black ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{stats.total}</div>
+          <div className={`text-4xl font-black ${isDarkMode ? 'text-white' : 'text-slate-800'} tracking-tighter transition-all group-hover:scale-105 origin-left`}>{stats.total}</div>
           <p className="text-[10px] text-slate-400 mt-2 font-medium">ocorrências registradas</p>
         </div>
 
