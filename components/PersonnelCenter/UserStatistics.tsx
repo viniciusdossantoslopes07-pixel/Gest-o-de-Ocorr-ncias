@@ -400,31 +400,35 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
                             );
                         })}
 
-                        {/* Card de Resumo Total */}
-                        <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-blue-600/10 border-blue-500/30' : 'bg-blue-50 border-blue-200'} lg:col-span-1`}>
+                        {/* Card de Resumo Total - Destaque */}
+                        <div className={`p-4 rounded-xl border-2 ${isDarkMode ? 'bg-indigo-600/10 border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.1)]' : 'bg-indigo-50 border-indigo-200'} transition-all hover:scale-[1.02]`}>
                             <div className="flex justify-between items-start mb-3">
-                                <span className={`text-[10px] font-black uppercase tracking-wider ${isDarkMode ? 'text-blue-400' : 'text-blue-700'}`}>DEFASAGEM TOTAL</span>
-                                <div className={`p-1 rounded-lg ${tlpTotal.diff < 0 ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white'}`}>
-                                    <TrendingUp className="w-3 h-3" />
+                                <span className={`text-[10px] font-black uppercase tracking-wider ${isDarkMode ? 'text-indigo-400' : 'text-indigo-700'}`}>Defasagem Total (GSD-SP)</span>
+                                <div className={`p-1.5 rounded-lg ${tlpTotal.diff < 0 ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white'} shadow-sm`}>
+                                    <TrendingUp className="w-3.5 h-3.5" />
                                 </div>
                             </div>
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 <div className="flex items-baseline gap-2">
-                                    <span className={`text-3xl font-black ${tlpTotal.diff < 0 ? 'text-red-500' : 'text-emerald-500'}`}>
+                                    <span className={`text-4xl font-black tracking-tighter ${tlpTotal.diff < 0 ? 'text-red-500' : 'text-emerald-500'}`}>
                                         {tlpTotal.defasagemPct > 0 ? `${tlpTotal.defasagemPct}%` : '0%'}
                                     </span>
-                                    <span className={`text-[10px] font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>DE DÉFICIT</span>
+                                    <span className={`text-[10px] font-black uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Déficit Geral</span>
                                 </div>
-                                <div className="space-y-1">
-                                    <div className="flex justify-between text-[10px] font-bold">
-                                        <span className={isDarkMode ? 'text-slate-500' : 'text-slate-400'}>Efetivo: {tlpTotal.totalActual} / {tlpTotal.totalPrevisto}</span>
+                                <div className="space-y-2">
+                                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                                        <span className={isDarkMode ? 'text-slate-500' : 'text-slate-400'}>Efetivo Real: {tlpTotal.totalActual}</span>
+                                        <span className={isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}>Meta: {tlpTotal.totalPrevisto}</span>
                                     </div>
-                                    <div className={`w-full h-2 rounded-full ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'} overflow-hidden`}>
+                                    <div className={`w-full h-3 rounded-full ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'} overflow-hidden border ${isDarkMode ? 'border-slate-700' : 'border-slate-300/30'}`}>
                                         <div 
-                                            className={`h-full transition-all duration-1000 ${tlpTotal.diff < 0 ? 'bg-red-500' : 'bg-emerald-500'}`}
+                                            className={`h-full transition-all duration-1000 ${tlpTotal.diff < 0 ? 'bg-gradient-to-r from-red-600 to-red-400' : 'bg-gradient-to-r from-emerald-600 to-emerald-400'}`}
                                             style={{ width: `${tlpTotal.pct}%` }}
                                         />
                                     </div>
+                                    <p className={`text-[9px] font-medium text-center ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                        Preenchimento: {tlpTotal.pct}% da TLP
+                                    </p>
                                 </div>
                             </div>
                         </div>
