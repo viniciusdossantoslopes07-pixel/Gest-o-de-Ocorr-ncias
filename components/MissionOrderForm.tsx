@@ -31,7 +31,10 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
 
         missionCommanderId: order?.missionCommanderId || '',
         isExternalCommander: order?.isExternalCommander || false,
-        externalCommanderName: order?.externalCommanderName || ''
+        externalCommanderName: order?.externalCommanderName || '',
+        
+        startTime: order?.startTime || '',
+        endTime: order?.endTime || ''
     });
 
     const [personnel, setPersonnel] = useState<MissionOrderPersonnel[]>(order?.personnel || []);
@@ -119,12 +122,19 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
             { id: Math.random().toString(), function: 'SEG AUT', rank: 'ASP', warName: 'NIL', saram: 'NIL', uniform: 'NIL', armament: 'NIL', ammunition: '' },
             { id: Math.random().toString(), function: 'SEG AUT', rank: 'CVS', warName: 'NIL', saram: 'NIL', uniform: 'NIL', armament: 'NIL', ammunition: '' },
         ];
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+        const tomorrow = new Date(now.getTime() + 86400000);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
         setPersonnel(standardPersonnel);
         setFormData(prev => ({
             ...prev,
             description: 'SOBREAVISO OPERACIONAL DIÁRIO DO GSD-SP.',
             permanentOrders: 'O militar deverá estar pronto em até duas horas após ser acionado.',
-            location: 'GSD-SP'
+            location: 'GSD-SP',
+            startTime: prev.startTime || `${todayStr}T08:00`,
+            endTime: prev.endTime || `${tomorrowStr}T08:00`
         }));
     };
 
@@ -439,6 +449,31 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                             required
                         />
                     </div>
+
+                    {formData.mission === 'SOBREAVISO' && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
+                            <div>
+                                <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase tracking-wider mb-2`}>Início do Sobreaviso *</label>
+                                <input
+                                    type="datetime-local"
+                                    value={formData.startTime}
+                                    onChange={e => setFormData({ ...formData, startTime: e.target.value })}
+                                    className={`w-full px-4 py-2.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all`}
+                                    required={formData.mission === 'SOBREAVISO'}
+                                />
+                            </div>
+                            <div>
+                                <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase tracking-wider mb-2`}>Término do Sobreaviso *</label>
+                                <input
+                                    type="datetime-local"
+                                    value={formData.endTime}
+                                    onChange={e => setFormData({ ...formData, endTime: e.target.value })}
+                                    className={`w-full px-4 py-2.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all`}
+                                    required={formData.mission === 'SOBREAVISO'}
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 

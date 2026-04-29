@@ -79,6 +79,24 @@ ${content.outerHTML}
         return val;
     };
 
+    const formatDateTime = (isoString: string | undefined) => {
+        if (!isoString) return '---';
+        try {
+            const d = new Date(isoString);
+            if (isNaN(d.getTime())) return isoString;
+            const day = d.getDate();
+            const month = d.getMonth() + 1;
+            const year = d.getFullYear();
+            const hours = d.getHours().toString().padStart(2, '0');
+            const minutes = d.getMinutes().toString().padStart(2, '0');
+            
+            const timeStr = minutes === '00' ? `${hours}h` : `${hours}h${minutes}`;
+            return `${day}/${month}/${year} ${timeStr}`;
+        } catch {
+            return isoString;
+        }
+    };
+
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') onClose();
@@ -141,7 +159,7 @@ ${content.outerHTML}
                                 </div>
                                 <div className="flex">
                                     <div className="bg-slate-50 px-2 py-1 font-black uppercase text-[8px] border-r border-slate-950 flex items-center w-32">Início:</div>
-                                    <div className="px-2 py-1 font-bold flex items-center">{formatDisplayDate(order.date)} 08h</div>
+                                    <div className="px-2 py-1 font-bold flex items-center">{formatDateTime(order.startTime)}</div>
                                 </div>
                                 <div className="border-t border-r border-slate-950 flex">
                                     <div className="bg-slate-50 px-2 py-1 font-black uppercase text-[8px] border-r border-slate-950 flex items-center w-32">Ordem permanente:</div>
@@ -149,7 +167,7 @@ ${content.outerHTML}
                                 </div>
                                 <div className="border-t border-slate-950 flex">
                                     <div className="bg-slate-50 px-2 py-1 font-black uppercase text-[8px] border-r border-slate-950 flex items-center w-32">Término:</div>
-                                    <div className="px-2 py-1 font-bold flex items-center">{formatDisplayDate(new Date(new Date(order.date).getTime() + 86400000).toISOString())} 08h</div>
+                                    <div className="px-2 py-1 font-bold flex items-center">{formatDateTime(order.endTime)}</div>
                                 </div>
                             </div>
                         )}
