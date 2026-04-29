@@ -98,6 +98,30 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
         setSchedule(schedule.map(s => s.id === id ? { ...s, [field]: value } : s));
     };
 
+    const populateSobreavisoPersonnel = () => {
+        const standardPersonnel: MissionOrderPersonnel[] = [
+            { id: Math.random().toString(), function: 'Comandante', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
+            { id: Math.random().toString(), function: 'Graduado', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
+            { id: Math.random().toString(), function: 'Cabo', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
+            { id: Math.random().toString(), function: 'Motorista missões (D)', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
+            { id: Math.random().toString(), function: 'Motorista missões (B)', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
+            { id: Math.random().toString(), function: 'Patrulha P1', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
+            { id: Math.random().toString(), function: 'Patrulha P2/P3', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
+            { id: Math.random().toString(), function: 'Monitoramento', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
+            ...Array(10).fill(null).map(() => ({ id: Math.random().toString(), function: 'Missões / Ala', rank: '', warName: '', saram: '', uniform: '', armament: '', ammunition: '' })),
+            { id: Math.random().toString(), function: 'CH (SEG AUT)', rank: 'CH', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
+            { id: Math.random().toString(), function: 'ASP (SEG AUT)', rank: 'ASP', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
+            { id: Math.random().toString(), function: 'CVS (SEG AUT)', rank: 'CVS', warName: '', saram: '', uniform: '', armament: '', ammunition: '' },
+        ];
+        setPersonnel(standardPersonnel);
+        setFormData(prev => ({
+            ...prev,
+            description: 'SOBREAVISO DIÁRIO',
+            permanentOrders: 'O militar deverá estar pronto em até duas horas após ser acionado.',
+            location: 'GSD-SP'
+        }));
+    };
+
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
 
@@ -333,6 +357,12 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                                     const val = e.target.value;
                                     setFormData({ ...formData, mission: val });
                                     setMissionSubtype('');
+                                    
+                                    if (val === 'SOBREAVISO') {
+                                        if (personnel.length === 0 || confirm('Deseja preencher automaticamente o efetivo padrão para SOBREAVISO?')) {
+                                            populateSobreavisoPersonnel();
+                                        }
+                                    }
                                 }}
                                 className={`w-full px-4 py-2.5 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white' : 'border-slate-200 bg-white text-slate-900'} rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all`}
                                 required

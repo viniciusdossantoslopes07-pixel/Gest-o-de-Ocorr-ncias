@@ -268,6 +268,24 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
         setShowOrderForm(true);
     };
 
+    const handleCloneOrder = async (order: MissionOrder) => {
+        const newOmis = await generateOMISNumber();
+        const clonedOrder: Partial<MissionOrder> = {
+            ...order,
+            id: undefined, // Remove ID to create a new one
+            omisNumber: newOmis,
+            status: 'GERADA',
+            date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0], // Default to today
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            chSopSignature: undefined // Remove signature
+        };
+        
+        setSelectedOrder(clonedOrder as MissionOrder);
+        setSelectedMission(null);
+        setShowOrderForm(true);
+    };
+
     // 2. Submit Order (SOP) -> Moves to AGUARDANDO_ASSINATURA
     const handleOrderSubmit = async (orderData: Partial<MissionOrder>) => {
         setIsSaving(true);
@@ -612,13 +630,22 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                         <Edit2 className="w-4 h-4" /> Editar
                                     </button>
                                 )}
-                                <button
-                                    onClick={() => handlePrintOrder(order)}
-                                    className={`p-3 rounded-xl transition-all flex items-center justify-center active:scale-95 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
-                                    title="Visualizar"
-                                >
-                                    <Eye className="w-4 h-4" />
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => handlePrintOrder(order)}
+                                        className={`p-3 rounded-xl transition-all flex items-center justify-center active:scale-95 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-blue-600 hover:text-white border border-slate-700' : 'bg-white text-slate-700 hover:bg-blue-600 hover:text-white border border-slate-200'}`}
+                                        title="Visualizar"
+                                    >
+                                        <Eye className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleCloneOrder(order); }}
+                                        className={`p-3 rounded-xl transition-all flex items-center justify-center active:scale-95 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white border border-slate-700' : 'bg-white text-slate-700 hover:bg-indigo-600 hover:text-white border border-slate-200'}`}
+                                        title="Clonar Missão"
+                                    >
+                                        <Copy className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -750,13 +777,22 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                             </div>
                             
                             <div className={`mt-6 pt-5 border-t ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'} flex items-center justify-between gap-2 relative z-10`}>
-                                <button 
-                                    onClick={() => handlePrintOrder(o)}
-                                    className={`p-3 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/80 border border-slate-700/50' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'}`}
-                                    title="Visualizar"
-                                >
-                                    <Eye className="w-4 h-4" />
-                                </button>
+                                <div className="flex gap-2">
+                                    <button 
+                                        onClick={() => handlePrintOrder(o)}
+                                        className={`p-3 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800/50 text-slate-300 hover:bg-blue-600 hover:text-white border border-slate-700/50' : 'bg-white text-slate-700 hover:bg-blue-600 hover:text-white border border-slate-200'}`}
+                                        title="Visualizar"
+                                    >
+                                        <Eye className="w-4 h-4" />
+                                    </button>
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); handleCloneOrder(o); }}
+                                        className={`p-3 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800/50 text-slate-300 hover:bg-indigo-600 hover:text-white border border-slate-700/50' : 'bg-white text-slate-700 hover:bg-indigo-600 hover:text-white border border-slate-200'}`}
+                                        title="Clonar Missão"
+                                    >
+                                        <Copy className="w-4 h-4" />
+                                    </button>
+                                </div>
                                 <button 
                                     onClick={(e) => { e.stopPropagation(); handleEditOrder(o); }}
                                     className={`flex-1 px-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-1.5 ${isDarkMode ? 'bg-blue-900/30 text-blue-400 border border-blue-800/50 hover:bg-blue-800/40' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'}`}
@@ -986,13 +1022,22 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                                     <XCircle className="w-4.5 h-4.5" /> Cancelar
                                                 </button>
                                             )}
-                                            <button
-                                                onClick={() => handlePrintOrder(order)}
-                                                className={`p-3.5 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
-                                                title="Visualizar"
-                                            >
-                                                <Eye className="w-4.5 h-4.5" />
-                                            </button>
+                                            <div className="flex gap-2 w-full">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handlePrintOrder(order); }}
+                                                    className={`flex-1 p-3.5 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-blue-600 hover:text-white border border-slate-700' : 'bg-white text-slate-700 hover:bg-blue-600 hover:text-white border border-slate-200'}`}
+                                                    title="Visualizar"
+                                                >
+                                                    <Eye className="w-4.5 h-4.5" />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleCloneOrder(order); }}
+                                                    className={`flex-1 p-3.5 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white border border-slate-700' : 'bg-white text-slate-700 hover:bg-indigo-600 hover:text-white border border-slate-200'}`}
+                                                    title="Clonar Missão"
+                                                >
+                                                    <Copy className="w-4.5 h-4.5" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1197,14 +1242,24 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                                     </div>
                                                 )}
                                             </div>
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); handlePrintOrder(order); }}
-                                                className={`p-3.5 sm:p-4 rounded-xl sm:rounded-2xl transition-all active:scale-95 shadow-xl group-hover:scale-110 flex items-center justify-center w-full sm:w-auto mt-2 sm:mt-0 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-blue-600 hover:text-white border border-slate-700 shadow-black/40' : 'bg-white text-slate-700 hover:bg-blue-600 hover:text-white border border-slate-200 shadow-slate-200/50'}`}
-                                                title="Visualizar Detalhes"
-                                            >
-                                                <Eye className="w-5 h-5 sm:w-5 sm:h-5 mr-2 sm:mr-0" />
-                                                <span className="sm:hidden font-black uppercase text-[10px] tracking-widest">Visualizar Detalhes</span>
-                                            </button>
+                                            <div className="flex flex-col sm:flex-col gap-2.5 w-full sm:w-auto mt-2 sm:mt-0">
+                                                <div className="flex sm:flex-col gap-2 w-full">
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handlePrintOrder(order); }}
+                                                        className={`flex-1 p-3 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-blue-600 hover:text-white' : 'bg-white text-slate-700 hover:bg-blue-600 hover:text-white border border-slate-200'}`}
+                                                        title="Visualizar"
+                                                    >
+                                                        <Eye className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleCloneOrder(order); }}
+                                                        className={`flex-1 p-3 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white' : 'bg-white text-slate-700 hover:bg-indigo-600 hover:text-white border border-slate-200'}`}
+                                                        title="Clonar Missão"
+                                                    >
+                                                        <Copy className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 ));
