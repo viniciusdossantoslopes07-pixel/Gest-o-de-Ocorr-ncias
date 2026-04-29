@@ -314,47 +314,8 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                             <div className="space-y-4">
                                 {/* Dados Pessoais */}
                                 <div className={section}>
-                                    <div className="flex items-center justify-between border-b pb-2 mb-2">
-                                        <h3 className={`text-[10px] font-black ${dk ? 'text-slate-500' : 'text-slate-400'} uppercase tracking-widest`}>Dados Pessoais</h3>
-                                        <label className="flex items-center gap-2 cursor-pointer group">
-                                            <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${parkData.isThirdParty ? 'bg-blue-600 border-blue-600' : 'bg-transparent border-slate-400 group-hover:border-blue-400'}`}>
-                                                {parkData.isThirdParty && <CheckCircle className="w-3 h-3 text-white" />}
-                                            </div>
-                                            <input
-                                                type="checkbox"
-                                                className="hidden"
-                                                checked={parkData.isThirdParty}
-                                                onChange={e => setParkData({ ...parkData, isThirdParty: e.target.checked })}
-                                            />
-                                            <span className={`text-[10px] font-black uppercase tracking-wider transition-colors ${parkData.isThirdParty ? 'text-blue-500' : 'text-slate-500 group-hover:text-blue-400'}`}>Solicitação 3º</span>
-                                        </label>
-                                    </div>
+                                    <h3 className={sectionTitle}>Dados Pessoais</h3>
 
-                                    {parkData.isThirdParty && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100/50 dark:border-blue-900/20 animate-in slide-in-from-top-2 duration-300">
-                                            <div className="space-y-1">
-                                                <label className={label}>Nome do Solicitante *</label>
-                                                <input
-                                                    placeholder="NOME DE QUEM SOLICITA"
-                                                    value={parkData.thirdPartyName}
-                                                    onChange={e => setParkData({ ...parkData, thirdPartyName: e.target.value })}
-                                                    style={{ textTransform: 'uppercase' }}
-                                                    className={input}
-                                                    disabled={isLoading}
-                                                />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <label className={label}>Contato do Solicitante *</label>
-                                                <input
-                                                    placeholder="(11) 99999-9999"
-                                                    value={parkData.thirdPartyContact}
-                                                    onChange={e => setParkData({ ...parkData, thirdPartyContact: formatPhone(e.target.value) })}
-                                                    className={input}
-                                                    disabled={isLoading}
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
 
                                     <div className="space-y-1">
                                         <label className={label}>Nome Completo *</label>
@@ -441,6 +402,48 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                                             <p className="text-[10px] text-red-500 font-bold pl-1">E-mail inválido</p>
                                         )}
                                     </div>
+
+                                    {/* Solicitação 3º - Abaixo de Email */}
+                                    <div className="pt-2">
+                                        <label className="flex items-center gap-2 cursor-pointer group w-fit">
+                                            <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${parkData.isThirdParty ? 'bg-blue-600 border-blue-600' : 'bg-transparent border-slate-400 group-hover:border-blue-400'}`}>
+                                                {parkData.isThirdParty && <CheckCircle className="w-3 h-3 text-white" />}
+                                            </div>
+                                            <input
+                                                type="checkbox"
+                                                className="hidden"
+                                                checked={parkData.isThirdParty}
+                                                onChange={e => setParkData({ ...parkData, isThirdParty: e.target.checked })}
+                                            />
+                                            <span className={`text-[11px] font-black uppercase tracking-wider transition-colors ${parkData.isThirdParty ? 'text-blue-500' : 'text-slate-500 group-hover:text-blue-400'}`}>Solicitação 3º</span>
+                                        </label>
+                                    </div>
+
+                                    {parkData.isThirdParty && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100/50 dark:border-blue-900/20 animate-in slide-in-from-top-2 duration-300">
+                                            <div className="space-y-1">
+                                                <label className={label}>Nome do Solicitante *</label>
+                                                <input
+                                                    placeholder="NOME DE QUEM SOLICITA"
+                                                    value={parkData.thirdPartyName}
+                                                    onChange={e => setParkData({ ...parkData, thirdPartyName: e.target.value })}
+                                                    style={{ textTransform: 'uppercase' }}
+                                                    className={input}
+                                                    disabled={isLoading}
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className={label}>Contato do Solicitante *</label>
+                                                <input
+                                                    placeholder="(11) 99999-9999"
+                                                    value={parkData.thirdPartyContact}
+                                                    onChange={e => setParkData({ ...parkData, thirdPartyContact: formatPhone(e.target.value) })}
+                                                    className={input}
+                                                    disabled={isLoading}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Veículo */}
