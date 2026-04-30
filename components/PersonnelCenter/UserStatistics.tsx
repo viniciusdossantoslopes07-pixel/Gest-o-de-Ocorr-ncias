@@ -348,7 +348,7 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
             </div>
 
             {/* Comparativo TLP (Exclusivo GSD-SP) */}
-            {activeUnitFilter !== 'BASP' && (
+            {activeUnitFilter === 'GSD-SP' && (
                 <div className={card}>
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
