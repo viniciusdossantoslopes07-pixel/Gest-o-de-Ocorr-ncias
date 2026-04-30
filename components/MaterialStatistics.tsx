@@ -20,6 +20,8 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
     // Dashboard Data
     const [topUsers, setTopUsers] = useState<any[]>([]);
     const [materialTypeData, setMaterialTypeData] = useState<any[]>([]);
+    const [rankLoanData, setRankLoanData] = useState<any[]>([]);
+    const [sectorLoanData, setSectorLoanData] = useState<any[]>([]);
 
     // View State
     const [selectedView, setSelectedView] = useState<'none' | 'low-stock' | 'active-loans'>('none');
@@ -41,7 +43,7 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
         setLoading(true);
         try {
             // 1. Fetch Users for mapping
-            const { data: usersData } = await supabase.from('users').select('id, name, rank, war_name');
+            const { data: usersData } = await supabase.from('users').select('id, name, rank, war_name, sector');
             const userMapping: Record<string, string> = {};
             if (usersData) {
                 usersData.forEach((u: any) => {
@@ -117,6 +119,29 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
                 .map(([name, value]) => ({ name, value }))
                 .sort((a, b) => b.value - a.value);
             setMaterialTypeData(pieData);
+
+            // Top Ranks (Pie Chart)
+            const rankCounts: Record<string, number> = {};
+            const sectorCounts: Record<string, number> = {};
+            loans?.forEach((l: any) => {
+                const user = usersData?.find(u => u.id === l.id_usuario);
+                if (user) {
+                    const rank = user.rank || 'Outros';
+                    const sector = user.sector || 'Outros';
+                    rankCounts[rank] = (rankCounts[rank] || 0) + 1;
+                    sectorCounts[sector] = (sectorCounts[sector] || 0) + 1;
+                }
+            });
+
+            const rankPieData = Object.entries(rankCounts)
+                .map(([name, value]) => ({ name, value }))
+                .sort((a, b) => b.value - a.value);
+            setRankLoanData(rankPieData);
+
+            const sectorPieData = Object.entries(sectorCounts)
+                .map(([name, value]) => ({ name, value }))
+                .sort((a, b) => b.value - a.value);
+            setSectorLoanData(sectorPieData);
 
 
             setStats({
@@ -389,7 +414,7 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
                     </div>
                 </div>
 
-                {/* Pie Chart */}
+                {/* Pie Chart: Categoria */}
                 <div className={`lg:col-span-2 p-8 rounded-3xl border transition-all duration-300 flex flex-col ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-xl shadow-none' : 'bg-white border-slate-100 shadow-sm'}`}>
                     <h3 className={`font-black uppercase tracking-tight text-sm ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Distribuição por Categoria</h3>
                     <p className="text-sm text-slate-500 font-medium mt-1 mb-8">Análise de utilização proporcional de recursos por tipo.</p>
@@ -435,6 +460,70 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
                                             letterSpacing: '0.05em'
                                         }}
                                     />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        )}
+                    </div>
+                </div>
+
+                {/* Pie Chart: Por Posto */}
+                <div className={`lg:col-span-1 p-8 rounded-3xl border transition-all duration-300 flex flex-col ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-xl shadow-none' : 'bg-white border-slate-100 shadow-sm'}`}>
+                    <h3 className={`font-black uppercase tracking-tight text-sm ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Cautelas por Posto</h3>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 mb-8">Concentração por hierarquia.</p>
+
+                    <div className="flex-1 w-full min-h-[300px]">
+                        {rankLoanData.length === 0 ? (
+                            <div className="h-full flex items-center justify-center text-slate-400">Sem dados.</div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={rankLoanData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={90}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                        label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
+                                    >
+                                        {rankLoanData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <RechartsTooltip />
+                                    <Legend wrapperStyle={{ fontSize: '10px', fontWeight: 'bold' }} />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        )}
+                    </div>
+                </div>
+
+                {/* Pie Chart: Por Setor */}
+                <div className={`lg:col-span-2 p-8 rounded-3xl border transition-all duration-300 flex flex-col ${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-xl shadow-none' : 'bg-white border-slate-100 shadow-sm'}`}>
+                    <h3 className={`font-black uppercase tracking-tight text-sm ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Demanda por Setor</h3>
+                    <p className="text-sm text-slate-500 font-medium mt-1 mb-8">Distribuição de solicitações por área operacional.</p>
+
+                    <div className="flex-1 w-full min-h-[300px]">
+                        {sectorLoanData.length === 0 ? (
+                            <div className="h-full flex items-center justify-center text-slate-400">Sem dados para exibir.</div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={sectorLoanData}
+                                        cx="50%"
+                                        cy="50%"
+                                        outerRadius={100}
+                                        dataKey="value"
+                                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                    >
+                                        {sectorLoanData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[(index + 4) % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <RechartsTooltip />
+                                    <Legend verticalAlign="bottom" height={36} wrapperStyle={{ paddingTop: '20px', fontSize: '11px', fontWeight: 'bold' }} />
                                 </PieChart>
                             </ResponsiveContainer>
                         )}
