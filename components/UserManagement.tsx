@@ -40,7 +40,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     password_status: 'ACTIVE' as 'ACTIVE' | 'EXPIRED' | 'PENDING_RESET',
     is_functional: false,
     workplace: '',
-    administrativeRole: null as 'CMT_GSD_SP' | 'CH_OP_GSD_SP' | 'CMT_BASP' | 'CH_SAP' | null
+    administrativeRole: null as 'CMT_GSD_SP' | 'CH_OP_GSD_SP' | 'CMT_BASP' | 'CH_SAP' | 'EFETIVO_REC' | null
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -434,6 +434,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                       <option value="CH_OP_GSD_SP">CHEFE DA SEÇÃO DE OPERAÇÕES</option>
                       <option value="CMT_BASP">CMT DA BASP</option>
                       <option value="CH_SAP">CHEFE DA SAP</option>
+                      <option value="EFETIVO_REC">EFETIVO REC</option>
                     </select>
                   </div>
                 )}

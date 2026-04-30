@@ -68,7 +68,7 @@ export interface User {
   external_service?: boolean;
   external_om?: string;
   external_sector?: string;
-  administrativeRole?: 'CMT_GSD_SP' | 'CH_OP_GSD_SP' | 'CMT_BASP' | 'CH_SAP' | null;
+  administrativeRole?: 'CMT_GSD_SP' | 'CH_OP_GSD_SP' | 'CMT_BASP' | 'CH_SAP' | 'EFETIVO_REC' | null;
 }
 
 export interface UserFunction {
