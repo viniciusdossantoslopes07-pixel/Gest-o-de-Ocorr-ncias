@@ -99,7 +99,8 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                     warName: u.war_name,
                     militarId: u.militar_id,
                     displayOrder: u.display_order,
-                    phoneNumber: u.phone_number
+                    phoneNumber: u.phone_number,
+                    administrativeRole: u.administrative_role
                 }));
                 setUsers(mappedUsers as User[]);
             }
