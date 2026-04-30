@@ -740,6 +740,25 @@ const App: FC = () => {
       password_status: newUser.password_status || 'ACTIVE'
     };
 
+    // Exclusividade de Função Administrativa: remover de outros usuários se estiver sendo atribuída
+    if (newUser.administrativeRole) {
+      try {
+        await supabase
+          .from('users')
+          .update({ administrative_role: null })
+          .eq('administrative_role', newUser.administrativeRole);
+        
+        // Atualizar estado local para refletir que outros usuários perderam a função
+        setUsers(prev => prev.map(u => 
+          u.administrativeRole === newUser.administrativeRole 
+            ? { ...u, administrativeRole: null } 
+            : u
+        ));
+      } catch (err) {
+        console.error('Erro ao garantir exclusividade de função:', err);
+      }
+    }
+
     const { data, error } = await supabase
       .from('users')
       .insert([dbUser])
@@ -840,6 +859,27 @@ const App: FC = () => {
     // If updating strictly password (from SettingsView), we only send password
     // But this function generally updates user profile data.
     // Let's ensure we map everything back to snake_case for DB
+    
+    // Exclusividade de Função Administrativa: remover de outros usuários se estiver sendo atribuída
+    if (updatedUser.administrativeRole) {
+      try {
+        await supabase
+          .from('users')
+          .update({ administrative_role: null })
+          .eq('administrative_role', updatedUser.administrativeRole)
+          .neq('id', updatedUser.id);
+        
+        // Atualizar estado local para refletir que outros usuários perderam a função
+        setUsers(prev => prev.map(u => 
+          (u.administrativeRole === updatedUser.administrativeRole && u.id !== updatedUser.id)
+            ? { ...u, administrativeRole: null } 
+            : u
+        ));
+      } catch (err) {
+        console.error('Erro ao garantir exclusividade de função:', err);
+      }
+    }
+
     const { error } = await supabase
       .from('users')
       .update({
