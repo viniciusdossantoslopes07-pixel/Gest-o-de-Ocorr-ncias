@@ -179,13 +179,17 @@ ${content.outerHTML}
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-bold">{order.omisNumber || (order.status === 'CANCELADA' ? 'CANCELADA' : '')}</td>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-24 uppercase text-[8px]">Data:</td>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-bold">{formatDisplayDate(order.date)}</td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-24 uppercase text-[8px]">Interna:</td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 w-12 text-center font-bold">
-                                        {order.isInternal ? '☑' : '☐'}
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-16 uppercase text-[7px]">Interna:</td>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 w-8 text-center font-bold">
+                                        {(order.missionCategory === 'INTERNA' || (!order.missionCategory && order.isInternal)) ? '☑' : '☐'}
                                     </td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-24 uppercase text-[8px]">Externa:</td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 w-12 text-center font-bold">
-                                        {!order.isInternal ? '☑' : '☐'}
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-16 uppercase text-[7px]">Externa:</td>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 w-8 text-center font-bold">
+                                        {(order.missionCategory === 'EXTERNA' || (!order.missionCategory && !order.isInternal)) ? '☑' : '☐'}
+                                    </td>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-20 uppercase text-[7px]">Fora Sede:</td>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 w-8 text-center font-bold">
+                                        {order.missionCategory === 'FORA_DE_SEDE' ? '☑' : '☐'}
                                     </td>
                                 </tr>
                                 <tr>

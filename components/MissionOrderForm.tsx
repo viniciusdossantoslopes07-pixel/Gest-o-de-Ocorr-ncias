@@ -19,6 +19,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
     const [formData, setFormData] = useState({
         date: order?.date || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
         isInternal: order?.isInternal ?? true,
+        missionCategory: order?.missionCategory || (order?.isInternal === false ? 'EXTERNA' : 'INTERNA'),
         mission: order?.mission || '',
         location: order?.location || '',
         description: order?.description || '',
@@ -195,17 +196,24 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                         <div className={`flex p-1 ${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-100'} rounded-xl w-fit`}>
                             <button
                                 type="button"
-                                onClick={() => setFormData({ ...formData, isInternal: true })}
-                                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${formData.isInternal ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-white text-blue-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
+                                onClick={() => setFormData({ ...formData, isInternal: true, missionCategory: 'INTERNA' })}
+                                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${formData.missionCategory === 'INTERNA' ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-white text-blue-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
                             >
                                 Interna
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setFormData({ ...formData, isInternal: false })}
-                                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${!formData.isInternal ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-white text-blue-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
+                                onClick={() => setFormData({ ...formData, isInternal: false, missionCategory: 'EXTERNA' })}
+                                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${formData.missionCategory === 'EXTERNA' ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-white text-blue-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
                             >
                                 Externa
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setFormData({ ...formData, isInternal: false, missionCategory: 'FORA_DE_SEDE' })}
+                                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${formData.missionCategory === 'FORA_DE_SEDE' ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-white text-blue-600 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
+                            >
+                                Fora de Sede
                             </button>
                         </div>
                     </div>

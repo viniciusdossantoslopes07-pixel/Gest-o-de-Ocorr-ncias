@@ -1037,6 +1037,7 @@ const App: FC = () => {
         omisNumber: mo.omis_number,
         date: mo.date,
         isInternal: mo.is_internal,
+        missionCategory: mo.mission_category || (mo.is_internal === false ? 'EXTERNA' : 'INTERNA'),
         mission: mo.mission,
         location: mo.location,
         description: mo.description,

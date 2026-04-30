@@ -146,6 +146,7 @@ export interface MissionOrder {
   omisNumber: string;
   date: string;
   isInternal: boolean;
+  missionCategory?: 'INTERNA' | 'EXTERNA' | 'FORA_DE_SEDE';
   mission: string;
   location: string;
   description: string;
