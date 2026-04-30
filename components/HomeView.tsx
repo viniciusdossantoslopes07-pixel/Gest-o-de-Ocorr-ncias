@@ -117,7 +117,7 @@ const HomeView: React.FC<HomeViewProps> = ({
   };
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto pb-12">
+    <div className="space-y-8 max-w-7xl mx-auto pb-12">
       {/* Welcome Section */}
       <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-900 border-transparent'} rounded-[2rem] lg:rounded-[2.5rem] p-4 lg:p-8 text-white shadow-2xl relative overflow-hidden transition-all duration-500 border`}>
         {/* Glow Effects */}
@@ -191,7 +191,7 @@ const HomeView: React.FC<HomeViewProps> = ({
             {isEditMode ? <><Check className="w-4 h-4" /> Salvar Ordem</> : <><Settings2 className="w-4 h-4" /> Personalizar</>}
           </button>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 lg:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-10 gap-3 lg:gap-3">
           {customOrder.map((categoryId, idx) => {
             const action = getQuickActionData(categoryId);
 
@@ -208,15 +208,15 @@ const HomeView: React.FC<HomeViewProps> = ({
                     if (action.id === 'EVENTOS_2') return onNewOccurrence('EVENTOS_2');
                     onNewOccurrence(action.id);
                   }}
-                  className={`w-full h-full flex flex-col items-center justify-center p-4 lg:p-7 rounded-[1.5rem] lg:rounded-[2.5rem] shadow-xl border transition-all relative overflow-hidden active:scale-95 ${isEditMode ? 'cursor-default opacity-80' : 'group hover:shadow-2xl hover:-translate-y-1.5'} ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 backdrop-blur-md hover:border-blue-500/50 shadow-black/40' : 'bg-white border-slate-100 hover:shadow-blue-500/10'}`}
+                  className={`w-full h-full flex flex-col items-center justify-center p-3 lg:p-5 rounded-[1.5rem] lg:rounded-[2rem] shadow-xl border transition-all relative overflow-hidden active:scale-95 ${isEditMode ? 'cursor-default opacity-80' : 'group hover:shadow-2xl hover:-translate-y-1.5'} ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 backdrop-blur-md hover:border-blue-500/50 shadow-black/40' : 'bg-white border-slate-100 hover:shadow-blue-500/10'}`}
                 >
                   {/* Subtle Top Indicator or Glow */}
                   <div className={`absolute top-0 left-0 w-full h-1.5 opacity-20 ${action.glow}`}></div>
 
-                  <div className={`p-4 lg:p-6 rounded-2xl lg:rounded-3xl mb-3 lg:mb-5 transition-transform shadow-lg ${!isEditMode && 'group-hover:scale-110 group-hover:rotate-3'} ${action.color} border`}>
-                    {React.cloneElement(action.icon as React.ReactElement<any>, { className: 'w-6 h-6 lg:w-9 lg:h-9' })}
+                  <div className={`p-3 lg:p-4 rounded-2xl lg:rounded-2xl mb-2 lg:mb-3 transition-transform shadow-lg ${!isEditMode && 'group-hover:scale-110 group-hover:rotate-3'} ${action.color} border`}>
+                    {React.cloneElement(action.icon as React.ReactElement<any>, { className: 'w-5 h-5 lg:w-7 lg:h-7' })}
                   </div>
-                  <span className={`text-[10px] lg:text-[13px] font-black text-center uppercase tracking-wider leading-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{action.title}</span>
+                  <span className={`text-[9px] lg:text-[11px] font-black text-center uppercase tracking-wider leading-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{action.title}</span>
 
                   {!isEditMode && (
                     <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-40 transition-opacity">
