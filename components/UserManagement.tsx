@@ -39,7 +39,8 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     reset_password_at_login: false,
     password_status: 'ACTIVE' as 'ACTIVE' | 'EXPIRED' | 'PENDING_RESET',
     is_functional: false,
-    workplace: ''
+    workplace: '',
+    administrativeRole: null as 'CMT_GSD_SP' | 'CH_OP_GSD_SP' | 'CMT_BASP' | 'CH_SAP' | null
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -183,7 +184,8 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
       reset_password_at_login: user.reset_password_at_login || false,
       password_status: user.password_status || 'ACTIVE',
       is_functional: user.is_functional || false,
-      workplace: user.workplace || ''
+      workplace: user.workplace || '',
+      administrativeRole: user.administrativeRole || null
     });
     setShowForm(true); // Abre o formulário ao editar
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -416,6 +418,25 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                   />
                   <p className="text-[9px] text-slate-400">Formato: 55 + DDD + Número (ex: 5511999998888)</p>
                 </div>
+
+                {currentUser?.role === UserRole.ADMIN && (
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <Shield className="w-3 h-3" /> Função Especial
+                    </label>
+                    <select
+                      value={formData.administrativeRole || ''}
+                      onChange={e => setFormData({ ...formData, administrativeRole: e.target.value as any || null })}
+                      className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                    >
+                      <option value="">Nenhuma</option>
+                      <option value="CMT_GSD_SP">CMT DO GSD-SP</option>
+                      <option value="CH_OP_GSD_SP">CHEFE DA SEÇÃO DE OPERAÇÕES</option>
+                      <option value="CMT_BASP">CMT DA BASP</option>
+                      <option value="CH_SAP">CHEFE DA SAP</option>
+                    </select>
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">

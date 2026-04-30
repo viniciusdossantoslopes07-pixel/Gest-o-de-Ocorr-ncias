@@ -679,7 +679,8 @@ const App: FC = () => {
         is_functional: !!u.is_functional,
         external_service: !!u.external_service,
         external_om: u.external_om,
-        external_sector: u.external_sector
+        external_sector: u.external_sector,
+        administrativeRole: u.administrative_role
       }));
       setUsers(mappedUsers);
     }
@@ -733,6 +734,7 @@ const App: FC = () => {
       external_service: newUser.external_service || false,
       external_om: newUser.external_om || '',
       external_sector: newUser.external_sector || '',
+      administrative_role: newUser.administrativeRole || null,
       pending_password_reset: newUser.pending_password_reset || false,
       reset_password_at_login: newUser.reset_password_at_login || false,
       password_status: newUser.password_status || 'ACTIVE'
@@ -781,6 +783,7 @@ const App: FC = () => {
         external_service: !!data.external_service,
         external_om: data.external_om,
         external_sector: data.external_sector,
+        administrativeRole: data.administrative_role,
         pending_password_reset: data.pending_password_reset,
         reset_password_at_login: data.reset_password_at_login,
         password_status: data.password_status
@@ -881,7 +884,8 @@ const App: FC = () => {
         is_functional: updatedUser.is_functional,
         external_service: updatedUser.external_service,
         external_om: updatedUser.external_om,
-        external_sector: updatedUser.external_sector
+        external_sector: updatedUser.external_sector,
+        administrative_role: updatedUser.administrativeRole || null
       })
       .eq('id', updatedUser.id);
 
