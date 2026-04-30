@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, AccessEvent, EventGuest } from '../../../types';
 import { eventService } from '../../../services/eventService';
-import { Save, UserPlus, X, Calendar, MapPin, CheckCircle, RefreshCw, AlertCircle, Users, Info, Phone, CreditCard, Hash, Lock, ShieldCheck } from 'lucide-react';
+import { Save, UserPlus, X, Calendar, MapPin, CheckCircle, RefreshCw, AlertCircle, Users, Info, Phone, CreditCard, Hash, Lock, ShieldCheck, Camera, Upload } from 'lucide-react';
 import { Combobox } from '../../Combobox';
 
 interface EventFormProps {
@@ -49,6 +49,21 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
     const [guestAge, setGuestAge] = useState('');
     const [guestHasVehicle, setGuestHasVehicle] = useState(false);
     const [guestPlate, setGuestPlate] = useState('');
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
+    const removeImage = () => {
+        setImageFile(null);
+        setImagePreview(null);
+    };
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let value = e.target.value.replace(/\D/g, '');
@@ -83,6 +98,11 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
         const calculatedStatus: 'APPROVED' | 'PENDING' = qty < 20 ? 'APPROVED' : 'PENDING';
         setSubmitting(true);
         try {
+            let imageUrl = undefined;
+            if (imageFile) {
+                imageUrl = await eventService.uploadEventImage(imageFile);
+            }
+
             await eventService.createEvent({
                 name: eventName ? eventName.toUpperCase() : undefined,
                 location,
@@ -93,7 +113,8 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
                 date,
                 status: calculatedStatus,
                 registered_by: user.id,
-                manage_password: managePassword || undefined
+                manage_password: managePassword || undefined,
+                image_url: imageUrl
             }, guests);
             alert(`Evento registrado! Status: ${calculatedStatus === 'APPROVED' ? 'Aprovado' : 'Requer Aprovação do Comando'}`);
             onSave();
@@ -265,6 +286,37 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
                                 <p className="text-[10px] font-bold uppercase">Locais disponíveis</p>
                                 <p className={`text-[10px] mt-0.5 ${dk ? 'text-blue-400/80' : 'text-blue-600/80'}`}>
                                     {LOCATIONS.join(' · ')}
+                                </p>
+                            </div>
+
+                            {/* Upload de Imagem */}
+                            <div className="pt-2">
+                                <label className={labelClass}>Anexar Imagem do Evento <span className={`normal-case font-medium ${textMuted}`}>(opcional)</span></label>
+                                {imagePreview ? (
+                                    <div className="relative rounded-xl overflow-hidden border border-slate-300 dark:border-slate-600 group aspect-video bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
+                                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={removeImage}
+                                            className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-colors"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <p className="text-[10px] text-white font-black uppercase">Clique no X para remover</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <label className={`cursor-pointer border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all group ${dk ? 'bg-slate-800/50 border-slate-700 hover:border-blue-500 hover:bg-slate-800' : 'bg-slate-50 border-slate-300 hover:border-blue-400 hover:bg-white'}`}>
+                                        <div className={`p-3 rounded-full mb-2 ${dk ? 'bg-slate-700 text-slate-400 group-hover:text-blue-400' : 'bg-white text-slate-300 group-hover:text-blue-500'} shadow-sm transition-colors`}>
+                                            <Camera className="w-6 h-6" />
+                                        </div>
+                                        <span className={`text-[10px] font-black uppercase tracking-wider transition-colors ${dk ? 'text-slate-500 group-hover:text-blue-400' : 'text-slate-400 group-hover:text-blue-500'}`}>Anexar Foto / Banner</span>
+                                        <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                                    </label>
+                                )}
+                                <p className={`text-[9px] mt-2 font-bold uppercase ${textMuted}`}>
+                                    * Esta imagem aparecerá no link de convite dos convidados.
                                 </p>
                             </div>
                         </div>

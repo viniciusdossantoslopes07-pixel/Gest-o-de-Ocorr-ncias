@@ -93,12 +93,15 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
     const formatPlate = (v: string) =>
         v.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 7);
 
-    const copyLink = (id: string) => {
-        const link = `${window.location.origin}/?guestEvent=${id}`;
-        navigator.clipboard.writeText(link).then(() => {
-            setCopyFeedback(id);
+    const copyLink = (ev: AccessEvent) => {
+        const url = `${window.location.origin}/?guestEvent=${ev.id}`;
+        const name = ev.name || 'Evento';
+        const text = `Convite (${name.toUpperCase()}): ${url}`;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            setCopyFeedback(ev.id);
             setTimeout(() => setCopyFeedback(null), 2500);
-        }).catch(() => prompt('Copie o link:', link));
+        }).catch(() => prompt('Copie o link:', text));
     };
 
     const handleStatusChange = async (ev: AccessEvent, next: 'PENDING' | 'APPROVED' | 'REJECTED') => {
@@ -204,7 +207,7 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                         {/* Share Link – todos veem, oculto se finalizado */}
                         {selectedEvent.status !== 'FINALIZED' && (
                             <button
-                                onClick={() => copyLink(selectedEvent.id)}
+                                onClick={() => copyLink(selectedEvent)}
                                 className={`px-4 py-2 rounded-xl text-xs font-black uppercase flex items-center gap-2 transition-all
                                 ${copyFeedback === selectedEvent.id
                                     ? 'bg-emerald-500 text-white'
@@ -251,11 +254,11 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                                 {selectedEvent.status === 'APPROVED' && (
                                     <button
                                         onClick={async () => {
-                                            if (!window.confirm('Finalizar este evento? Nenhuma alteração poderá ser feita após isso.')) return;
+                                            if (!window.confirm('Finalizar este evento? A imagem de convite será excluída e nenhuma alteração poderá ser feita após isso.')) return;
                                             try {
-                                                await eventService.updateEventStatus(selectedEvent.id, 'FINALIZED');
-                                                setEvents(prev => prev.map(e => e.id === selectedEvent.id ? { ...e, status: 'FINALIZED' } : e));
-                                                setSelectedEvent(prev => prev?.id === selectedEvent.id ? { ...prev, status: 'FINALIZED' } : prev);
+                                                await eventService.finalizeEvent(selectedEvent.id, selectedEvent.image_url);
+                                                setEvents(prev => prev.map(e => e.id === selectedEvent.id ? { ...e, status: 'FINALIZED', image_url: undefined } : e));
+                                                setSelectedEvent(prev => prev?.id === selectedEvent.id ? { ...prev, status: 'FINALIZED', image_url: undefined } : prev);
                                             } catch { alert('Erro ao finalizar evento.'); }
                                         }}
                                         className="px-4 py-2 rounded-xl text-xs font-black uppercase bg-slate-900 text-white border border-slate-700 hover:bg-black transition-all"

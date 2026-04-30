@@ -320,6 +320,7 @@ export interface AccessEvent {
   registered_by?: string;
   guests?: EventGuest[];
   manage_password?: string;
+  image_url?: string;
 }
 
 export interface EmergencyLog {

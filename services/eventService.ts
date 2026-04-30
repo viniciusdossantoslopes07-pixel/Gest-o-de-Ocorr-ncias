@@ -88,6 +88,27 @@ export const eventService = {
         }
     },
 
+    async finalizeEvent(eventId: string, imageUrl?: string): Promise<void> {
+        // 1. Se houver imagem, remove do storage
+        if (imageUrl) {
+            await eventService.deleteEventImage(imageUrl);
+        }
+
+        // 2. Atualiza status para FINALIZED e remove image_url do banco
+        const { error } = await supabase
+            .from('events')
+            .update({ 
+                status: 'FINALIZED',
+                image_url: null 
+            })
+            .eq('id', eventId);
+
+        if (error) {
+            console.error('Erro ao finalizar evento no banco:', error);
+            throw error;
+        }
+    },
+
     async deleteEvent(eventId: string): Promise<void> {
         const { error } = await supabase
             .from('events')
@@ -199,6 +220,46 @@ export const eventService = {
             console.error('Erro ao buscar evento por ID/SeqId:', error);
             // Retorna silently fail se for formato incorreto ao invés de quebrar a Promise
             return null;
+        }
+    },
+
+    async uploadEventImage(file: File): Promise<string> {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { data, error } = await supabase.storage
+            .from('event-images')
+            .upload(filePath, file);
+
+        if (error) {
+            console.error('Erro ao fazer upload da imagem:', error);
+            throw error;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('event-images')
+            .getPublicUrl(filePath);
+
+        return publicUrl;
+    },
+
+    async deleteEventImage(imageUrl: string): Promise<void> {
+        if (!imageUrl) return;
+        try {
+            // Extrair o nome do arquivo da URL pública do Supabase Storage
+            const parts = imageUrl.split('/');
+            const fileName = parts[parts.length - 1];
+            
+            const { error } = await supabase.storage
+                .from('event-images')
+                .remove([fileName]);
+
+            if (error) {
+                console.error('Erro ao excluir imagem do storage:', error);
+            }
+        } catch (err) {
+            console.error('Erro ao processar exclusão de imagem:', err);
         }
     }
 };
