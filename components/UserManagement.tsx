@@ -46,6 +46,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedRank, setSelectedRank] = useState<string>('');
   const [showInactive, setShowInactive] = useState(false);
   const [showFunctional, setShowFunctional] = useState(false);
   const [showNewUserForm, setShowNewUserForm] = useState(false);
@@ -60,7 +61,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
 
   // Rank Categories for Filtering (Consistent with PermissionManagement)
   const RANK_CATEGORIES = {
-    OFICIAIS: ['TB', 'MB', 'BR', 'CEL', 'TEN CEL', 'MAJ', 'CAP', '1T', '2T', 'ASP'],
+    OFICIAIS: ['TB', 'MB', 'BR', 'CEL', 'TEN CEL', 'MAJ', 'CAP', '1T', '2T', 'ASP', 'Coronel', 'CL', 'TC', 'MJ', 'CP', 'AP'],
     GRADUADOS: ['SO', '1S', '2S', '3S'],
     PRACAS: ['CB', 'S1', 'S2']
   };
@@ -94,12 +95,15 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
       if (selectedCategory === 'GRADUADOS') matchesCategory = isGraduated;
       if (selectedCategory === 'PRACAS') matchesCategory = isSoldier;
 
+      // Rank match
+      const matchesRank = selectedRank ? user.rank === selectedRank : true;
+
       // Functional filter
       const matchesFunctional = showFunctional ? user.is_functional === true : user.is_functional !== true;
 
-      return matchesSearch && matchesCategory && matchesFunctional;
+      return matchesSearch && matchesCategory && matchesRank && matchesFunctional;
     });
-  }, [users, searchTerm, selectedCategory, showFunctional]);
+  }, [users, searchTerm, selectedCategory, selectedRank, showFunctional]);
 
   const pendingUsers = useMemo(() => filteredUsers.filter(u => u.approved === false), [filteredUsers]);
   const approvedUsers = useMemo(() => {
@@ -558,6 +562,17 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                     {cat.label}
                   </button>
                 ))}
+
+                <div className={`w-px h-6 mx-2 hidden md:block ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+
+                <select
+                  value={selectedRank}
+                  onChange={(e) => setSelectedRank(e.target.value)}
+                  className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-slate-200 text-slate-600'}`}
+                >
+                  <option value="">Todos os Postos</option>
+                  {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
 
                 <div className={`w-px h-6 mx-2 hidden md:block ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
 
