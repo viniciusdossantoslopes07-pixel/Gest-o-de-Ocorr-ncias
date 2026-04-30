@@ -323,7 +323,6 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
                             </div>
                         </div>
                     </div>
-                </div>
 
                 {/* Indicador de Status */}
                 <div className={`p-4 rounded-xl border flex items-center gap-4 transition-all duration-300 ${isPending

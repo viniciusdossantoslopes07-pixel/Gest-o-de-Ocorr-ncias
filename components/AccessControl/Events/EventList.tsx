@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, AccessEvent } from '../../../types';
 import { eventService } from '../../../services/eventService';
+import { supabase } from '../../../services/supabase';
 import { Calendar, MapPin, Users, ChevronRight, RefreshCw, Info, CalendarDays, Printer, Camera } from 'lucide-react';
 import { formatDisplayDate } from '../../../utils/formatters';
 import EventPrintView from './EventPrintView';
@@ -127,9 +128,12 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
                                             if (!window.confirm('Deseja remover a imagem atual?')) return;
                                             try {
                                                 await eventService.deleteEventImage(selectedEvent.image_url!);
-                                                const { error } = await eventService.updateEventStatus(selectedEvent.id, selectedEvent.status); // This is just to trigger refresh, not ideal
-                                                // Actually I'll just use the supabase update logic if I had it here, but I'll use the service I added
-                                                await eventService.finalizeEvent(selectedEvent.id, undefined); 
+                                                // Update local status to remove image_url
+                                                const { error } = await supabase.from('events').update({ image_url: null }).eq('id', selectedEvent.id);
+                                                if (!error) {
+                                                    setSelectedEvent({ ...selectedEvent, image_url: undefined });
+                                                    setEvents(prev => prev.map(ev => ev.id === selectedEvent.id ? { ...ev, image_url: undefined } : ev));
+                                                }
                                                 // setSelectedEvent({ ...selectedEvent, image_url: undefined });
                                             } catch { alert('Erro ao remover imagem.'); }
                                         }}

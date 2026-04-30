@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { User, AccessEvent, EventGuest, UserRole } from '../../../types';
 import { eventService } from '../../../services/eventService';
+import { supabase } from '../../../services/supabase';
 import {
     List, Plus, BarChart3, RefreshCw, Calendar, MapPin, Users,
     ChevronRight, Printer, Share2, Copy, CheckCircle, UserPlus,
@@ -316,10 +317,11 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                                         if (!window.confirm('Deseja remover a imagem atual?')) return;
                                         try {
                                             await eventService.deleteEventImage(selectedEvent.image_url!);
-                                            await eventService.finalizeEvent(selectedEvent.id, undefined); // This was not the best way to clear, I should have a dedicated update method.
-                                            // Actually I'll use eventService.finalizeEvent's logic but just for the image.
-                                            // Let's just do it manually for now.
-                                            // setSelectedEvent({ ...selectedEvent, image_url: undefined });
+                                            const { error } = await supabase.from('events').update({ image_url: null }).eq('id', selectedEvent.id);
+                                            if (!error) {
+                                                setSelectedEvent({ ...selectedEvent, image_url: undefined });
+                                                setEvents(prev => prev.map(ev => ev.id === selectedEvent.id ? { ...ev, image_url: undefined } : ev));
+                                            }
                                         } catch { alert('Erro ao remover imagem.'); }
                                     }}
                                     className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
