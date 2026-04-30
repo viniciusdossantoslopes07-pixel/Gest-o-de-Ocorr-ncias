@@ -6,7 +6,7 @@ import { useSectors } from '../../contexts/SectorsContext';
 import {
     BarChart3, Users, CheckCircle, AlertTriangle, ExternalLink, ShieldAlert,
     Clock, Filter, TrendingUp, TrendingDown, Minus, UserX, Shield, Award,
-    ChevronDown, ChevronUp, Briefcase, Activity, Eye, Printer, X, Plane
+    ChevronDown, ChevronUp, Briefcase, Activity, Eye, Printer, X, Plane, FileCheck
 } from 'lucide-react';
 import ForceMapPrintView from './ForceMapPrintView';
 import FilterSelect from '../Common/FilterSelect';
@@ -47,6 +47,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const [callTypeFilter, setCallTypeFilter] = useState<'INICIO' | 'TERMINO' | 'LATEST'>('LATEST');
     const [rankFilter, setRankFilter] = useState<'TODOS' | 'OFICIAIS' | 'GRADUADOS' | 'PRACAS'>('TODOS');
     const [selectedStatusModal, setSelectedStatusModal] = useState<keyof typeof STATUS_GROUPS | null>(null);
+    const [selectedSectorForSignatures, setSelectedSectorForSignatures] = useState<string | null>(null);
     const [expandedSector, setExpandedSector] = useState<string | null>(null);
     const [isAbsencesExpanded, setIsAbsencesExpanded] = useState(false);
     const [isPrinting, setIsPrinting] = useState(false);
@@ -605,7 +606,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     </div>
                     <div>
                         <div className="flex items-center gap-2">
-                            <h2 className={`text-lg font-black tracking-tight ${textPrimary}`}>MAPA DE FORÇA</h2>
+                            <h2 className={`text-lg font-black tracking-tight ${textPrimary}`}>MAPA DE DISPONIBILIDADE</h2>
                             <div className={`px-2 py-0.5 rounded-full text-[8px] font-black border ${dk ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' : 'bg-slate-100 border-slate-200 text-slate-600'}`}>
                                 V2.0 AO VIVO
                             </div>
@@ -696,8 +697,8 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-500/5 blur-[100px] rounded-full"></div>
                     <div className="flex flex-col h-full justify-between relative z-10">
                         <div>
-                            <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-1">Status de Prontidão</p>
-                            <h3 className={`text-2xl font-black italic tracking-tighter ${textPrimary}`}>PRONTIDÃO OPERACIONAL</h3>
+                            <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-1">Status de Disponibilidade</p>
+                            <h3 className={`text-2xl font-black italic tracking-tighter ${textPrimary}`}>DISPONIBILIDADE OPERACIONAL</h3>
                         </div>
 
                         <div className="flex items-center justify-center my-8">
@@ -802,7 +803,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     <div className={`p-6 border-b flex justify-between items-center ${dk ? 'border-slate-700/50 bg-slate-800/30' : 'border-slate-100 bg-slate-50/50'}`}>
                         <div className="flex items-center gap-3">
                             <Activity className="text-blue-500" />
-                            <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Pulso de Prontidão por Setor</h3>
+                            <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Pulso de Disponibilidade por Setor</h3>
                         </div>
                     </div>
 
@@ -889,16 +890,20 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                         const hasInicio = sectorCalls.some(c => c.callType === 'INICIO');
                                         const hasTermino = sectorCalls.some(c => c.callType === 'TERMINO');
                                         return (
-                                            <div key={sector} className={`flex items-center justify-between p-3 rounded-2xl border ${dk ? 'bg-slate-800/30 border-slate-700/50' : 'bg-slate-50 border-slate-100'}`}>
+                                            <button 
+                                                key={sector} 
+                                                onClick={() => setSelectedSectorForSignatures(sector)}
+                                                className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all active:scale-95 group/sector ${dk ? 'bg-slate-800/30 border-slate-700/50 hover:border-blue-500/50 hover:bg-slate-800/50' : 'bg-slate-50 border-slate-100 hover:border-blue-200 hover:bg-white'}`}
+                                            >
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`w-1.5 h-1.5 rounded-full ${hasTermino ? 'bg-emerald-500' : hasInicio ? 'bg-amber-500' : 'bg-red-500'} animate-pulse`} />
-                                                    <span className={`text-[10px] font-black uppercase ${textPrimary}`}>{sector}</span>
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${hasTermino ? 'bg-emerald-500' : hasInicio ? 'bg-amber-500' : 'bg-red-500'} ${hasInicio || hasTermino ? 'animate-pulse' : ''}`} />
+                                                    <span className={`text-[10px] font-black uppercase transition-colors ${dk ? 'text-white group-hover/sector:text-blue-400' : 'text-slate-900 group-hover/sector:text-blue-600'}`}>{sector}</span>
                                                 </div>
                                                 <div className="flex gap-1">
-                                                    <div className={`w-5 h-5 rounded-lg flex items-center justify-center text-[8px] font-black ${hasInicio ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-500/10 text-slate-500'}`}>1</div>
-                                                    <div className={`w-5 h-5 rounded-lg flex items-center justify-center text-[8px] font-black ${hasTermino ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-500/10 text-slate-500'}`}>2</div>
+                                                    <div className={`w-5 h-5 rounded-lg flex items-center justify-center text-[8px] font-black transition-all ${hasInicio ? 'bg-emerald-500/20 text-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.2)]' : 'bg-slate-500/10 text-slate-500'}`}>1</div>
+                                                    <div className={`w-5 h-5 rounded-lg flex items-center justify-center text-[8px] font-black transition-all ${hasTermino ? 'bg-emerald-500/20 text-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.2)]' : 'bg-slate-500/10 text-slate-500'}`}>2</div>
                                                 </div>
-                                            </div>
+                                            </button>
                                         );
                                     });
                                 };
@@ -996,7 +1001,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                         </div>
                         <div>
                             <h3 className={`text-2xl font-black uppercase tracking-widest ${textPrimary}`}>Análise Hierárquica</h3>
-                            <p className={`text-[10px] font-bold ${textSecondary}`}>PRONTIDÃO POR POSTO E GRADUAÇÃO</p>
+                            <p className={`text-[10px] font-bold ${textSecondary}`}>DISPONIBILIDADE POR POSTO E GRADUAÇÃO</p>
                         </div>
                     </div>
                 </div>
@@ -1134,6 +1139,92 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                     })
                                 )}
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Sector Signature Details Modal */}
+            {selectedSectorForSignatures && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setSelectedSectorForSignatures(null)} />
+                    <div className={`${gls} w-full max-w-md rounded-[3rem] border shadow-2xl overflow-hidden relative animate-in zoom-in-95 duration-300`}>
+                        <div className="p-8 border-b border-slate-500/10 flex items-center justify-between bg-gradient-to-br from-blue-600/5 to-transparent">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 rounded-2xl bg-blue-500 text-white shadow-lg shadow-blue-500/20">
+                                    <FileCheck className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className={`text-xl font-black uppercase tracking-tight ${textPrimary}`}>
+                                        Assinaturas Digitais
+                                    </h3>
+                                    <p className={`text-[10px] font-black uppercase tracking-widest ${textMuted}`}>
+                                        {selectedSectorForSignatures} — {new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR')}
+                                    </p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setSelectedSectorForSignatures(null)}
+                                className={`p-2 rounded-xl transition-all ${dk ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        
+                        <div className="p-8 space-y-4">
+                            {(() => {
+                                const calls: ('INICIO' | 'TERMINO')[] = ['INICIO', 'TERMINO'];
+                                return calls.map(type => {
+                                    const sig = attendanceHistory?.find(a => 
+                                        a.date === selectedDate && 
+                                        a.sector === selectedSectorForSignatures && 
+                                        a.callType === type && 
+                                        !!a.signedBy
+                                    );
+
+                                    return (
+                                        <div key={type} className={`p-5 rounded-[2rem] border transition-all ${sig ? (dk ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-emerald-50/50 border-emerald-200') : (dk ? 'bg-slate-800/20 border-slate-700/50 opacity-60' : 'bg-slate-50 border-slate-100 opacity-60')}`}>
+                                            <div className="flex justify-between items-center mb-3">
+                                                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${dk ? 'text-slate-400' : 'text-slate-500'}`}>
+                                                    {type === 'INICIO' ? '1ª Chamada' : '2ª Chamada'}
+                                                </span>
+                                                {sig ? (
+                                                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-emerald-500 text-white text-[8px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20">
+                                                        <CheckCircle className="w-2.5 h-2.5" /> Autenticado
+                                                    </div>
+                                                ) : (
+                                                    <div className="px-2 py-1 rounded-lg bg-red-500/10 text-red-500 text-[8px] font-black uppercase tracking-widest border border-red-500/20">
+                                                        Pendente
+                                                    </div>
+                                                )}
+                                            </div>
+                                            
+                                            {sig ? (
+                                                <div className="space-y-1">
+                                                    <p className={`text-xs font-black uppercase ${textPrimary}`}>
+                                                        {sig.signedBy}
+                                                    </p>
+                                                    <div className="flex items-center gap-2">
+                                                        <Clock className={`w-3 h-3 ${textMuted}`} />
+                                                        <p className={`text-[10px] font-bold ${textSecondary}`}>
+                                                            {new Date(sig.signedAt || sig.createdAt || '').toLocaleString('pt-BR')}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <p className={`text-[10px] font-bold italic ${textMuted}`}>
+                                                    Aguardando assinatura do responsável...
+                                                </p>
+                                            )}
+                                        </div>
+                                    );
+                                });
+                            })()}
+                        </div>
+
+                        <div className={`px-8 py-5 text-center ${dk ? 'bg-slate-800/30' : 'bg-slate-50'} border-t ${dk ? 'border-slate-700/30' : 'border-slate-100'}`}>
+                            <p className={`text-[9px] font-bold uppercase tracking-tighter ${textMuted}`}>
+                                Verificação de integridade via GSD-SP Protocolo Digital
+                            </p>
                         </div>
                     </div>
                 </div>
