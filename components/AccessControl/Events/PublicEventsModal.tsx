@@ -119,10 +119,6 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
                                                 {ev.status === 'APPROVED' ? 'Aprovado' : ev.status === 'FINALIZED' ? 'Finalizado' : 'Cmd'}
                                             </span>
                                         </div>
-                                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 shadow-md font-black text-sm transition-all ${dk ? 'bg-blue-600 text-white border-blue-400' : 'bg-blue-600 text-white border-blue-800'}`}>
-                                            <span className="text-blue-200 text-[10px] font-black uppercase tracking-widest">Nº</span>
-                                            <span className="text-base tracking-tight">{ev.seq_id ?? ev.id.split('-')[0]}</span>
-                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -144,7 +140,7 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
                         <div className="flex flex-col gap-1.5">
                             <label className={`text-[10px] font-black uppercase tracking-widest ${dk ? 'text-blue-400' : 'text-blue-600'}`}>Gerenciar meu Evento</label>
                             <p className={`text-[9px] font-bold uppercase leading-relaxed ${dk ? 'text-slate-400' : 'text-slate-500'}`}>
-                                Digite o <strong>Nº do Evento</strong> que aparece no badge azul de cada card acima.
+                                Digite o <strong>Nº do Evento</strong> que você anotou ou printou no momento da criação.
                             </p>
                             <div className={`flex items-center gap-1.5 text-[9px] font-bold uppercase px-2 py-1 rounded-lg w-fit ${dk ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
                                 <span>Exemplo:</span>

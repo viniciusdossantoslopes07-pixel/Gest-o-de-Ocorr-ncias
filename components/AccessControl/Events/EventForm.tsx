@@ -60,6 +60,7 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
 
     const addGuest = () => {
         if (!guestName.trim()) { alert('Nome do convidado é obrigatório.'); return; }
+        if (!guestCpf || guestCpf.replace(/\D/g, '').length < 11) { alert('CPF válido (11 dígitos) é obrigatório.'); return; }
         setGuests([...guests, {
             name: guestName.toUpperCase(),
             cpf: guestCpf.replace(/\D/g, ''),
@@ -76,6 +77,7 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
         if (!location) return alert('Selecione um local.');
         if (location === 'RESIDÊNCIA DO MORADOR' && !address) return alert('O endereço é obrigatório para residências.');
         if (!responsibleName) return alert('O nome do responsável é obrigatório.');
+        if (!responsibleSaram) return alert('O SARAM é obrigatório.');
         if (!date) return alert('Selecione a data do evento.');
         if (guests.length === 0) return alert('Adicione pelo menos um convidado.');
 
@@ -164,7 +166,7 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className={labelClass}>SARAM</label>
+                                    <label className={labelClass}>SARAM *</label>
                                     <div className="relative">
                                         <Hash className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${textMuted}`} />
                                         <input
@@ -342,7 +344,7 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
                                     type="text"
                                     value={guestCpf}
                                     onChange={(e) => setGuestCpf(e.target.value)}
-                                    placeholder="CPF"
+                                    placeholder="CPF * (OBRIGATÓRIO)"
                                     maxLength={14}
                                     className={`w-full pl-9 pr-3 py-2.5 border rounded-xl font-bold text-xs uppercase outline-none focus:ring-2 transition-all ${inputTheme}`}
                                 />

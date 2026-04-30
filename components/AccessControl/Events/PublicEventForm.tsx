@@ -65,6 +65,7 @@ export default function PublicEventForm({ isDarkMode = false, onSubmit, onCancel
         if (!location) return alert('Selecione um local.');
         if (location === 'RESIDÊNCIA DO MORADOR' && !address) return alert('O endereço é obrigatório para residências.');
         if (!responsibleName) return alert('O nome do responsável é obrigatório.');
+        if (!responsibleSaram) return alert('O SARAM / Identidade é obrigatório.');
         if (!date) return alert('Selecione a data do evento.');
 
         setSubmitting(true);
@@ -93,6 +94,7 @@ export default function PublicEventForm({ isDarkMode = false, onSubmit, onCancel
 
     const handleAddGuestManual = async () => {
         if (!guestName.trim()) return alert('Nome do convidado é obrigatório.');
+        if (!guestCpf || guestCpf.replace(/\D/g, '').length < 11) return alert('CPF válido (11 dígitos) é obrigatório.');
         if (!successEvent) return;
 
         setSubmitting(true);
@@ -148,8 +150,17 @@ export default function PublicEventForm({ isDarkMode = false, onSubmit, onCancel
                 </div>
                 <h2 className={`text-2xl font-black uppercase mb-2 ${textTitle}`}>Evento Reservado!</h2>
                 <p className={`text-sm mb-4 ${textSub}`}>Seu código de gerenciamento (número do evento) é:</p>
-                <div className={`px-8 py-4 rounded-2xl border bg-slate-900 border-slate-700 mb-8 shadow-xl shadow-blue-500/10 transition-all hover:scale-105`}>
+                <div className={`px-8 py-4 rounded-2xl border bg-slate-900 border-slate-700 mb-4 shadow-xl shadow-blue-500/10 transition-all hover:scale-105`}>
                     <p className="text-blue-400 font-mono font-black text-4xl tracking-widest leading-none">{successEvent.seq_id || successEvent.id.split('-')[0]}</p>
+                </div>
+
+                <div className="mb-8 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                    <p className="text-[11px] font-black uppercase text-amber-500 tracking-tighter">
+                        ⚠️ COPIE SEU CÓDIGO OU TIRE UM PRINT DESSA TELA.
+                    </p>
+                    <p className="text-[9px] font-bold text-amber-400/80 uppercase mt-1">
+                        Você precisará deste número para gerenciar seu evento futuramente.
+                    </p>
                 </div>
 
                 <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
@@ -221,7 +232,7 @@ export default function PublicEventForm({ isDarkMode = false, onSubmit, onCancel
                                 />
                             </div>
                             <div className="md:col-span-3 space-y-1.5">
-                                <label className={`text-[10px] font-bold ${textSub} uppercase tracking-widest pl-1`}>CPF</label>
+                                <label className={`text-[10px] font-bold ${textSub} uppercase tracking-widest pl-1`}>CPF *</label>
                                 <input
                                     placeholder="SOMENTE NÚMEROS"
                                     className={`w-full rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold text-xs uppercase transition-all ${inputBg}`}
@@ -363,9 +374,10 @@ export default function PublicEventForm({ isDarkMode = false, onSubmit, onCancel
                             />
                         </div>
                         <div className="space-y-1.5">
-                            <label className={`text-[10px] font-bold ${textSub} uppercase tracking-widest pl-1`}>SARAM / IDENTIDADE</label>
+                            <label className={`text-[10px] font-bold ${textSub} uppercase tracking-widest pl-1`}>SARAM / IDENTIDADE *</label>
                             <input
-                                placeholder="OPCIONAL"
+                                required
+                                placeholder="OBRIGATÓRIO"
                                 className={`w-full rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold text-sm uppercase transition-all ${inputBg}`}
                                 value={responsibleSaram}
                                 onChange={e => setResponsibleSaram(e.target.value.replace(/\D/g, ''))}
