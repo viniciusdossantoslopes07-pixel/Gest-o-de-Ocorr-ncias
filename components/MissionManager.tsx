@@ -335,12 +335,12 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
             const dbOrder = {
                 id: orderId,
                 omis_number: omisNumber,
-                date: orderData.date,
+                date: orderData.date || null,
                 is_internal: orderData.isInternal,
                 mission: orderData.mission,
                 location: orderData.location,
                 description: orderData.description,
-                requester: orderData.requester,
+                requester: orderData.requester || null,
                 transport: orderData.transport,
                 food: orderData.food,
                 personnel: orderData.personnel || [],
@@ -350,8 +350,8 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 mission_commander_id: missionCommanderId,
                 is_external_commander: orderData.isExternalCommander,
                 external_commander_name: orderData.externalCommanderName,
-                start_time: orderData.startTime,
-                end_time: orderData.endTime,
+                start_time: orderData.startTime || null,
+                end_time: orderData.endTime || null,
                 status: 'AGUARDANDO_ASSINATURA', // Ready for CH-SOP
                 created_at: isEditing ? selectedOrder!.createdAt : new Date().toISOString(),
                 created_by: isEditing ? selectedOrder!.createdBy : user.name,
@@ -1363,7 +1363,13 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
 
             {/* Signature Modal */}
             {showSignatureModal && orderToSign && (
-                <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div 
+                    className="fixed top-0 left-0 w-full h-full bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4"
+                    style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 9999 }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) setShowSignatureModal(false);
+                    }}
+                >
                     <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl shadow-blue-500/5' : 'bg-white border-slate-200'} rounded-[2rem] shadow-2xl p-6 w-full max-w-md border animate-in fade-in zoom-in duration-300`}>
                         <div className="flex items-center gap-3 mb-6 text-orange-600">
                             <div className={`${isDarkMode ? 'bg-orange-500/10' : 'bg-orange-100'} p-3 rounded-xl`}>
@@ -1474,9 +1480,19 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 )
             }
             {/* End Mission Modal (Cupom Style) */}
+            {/* End Mission Modal (Cupom Style) */}
             {
                 showEndMissionModal && missionEnding && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+                    <div 
+                        className="fixed top-0 left-0 w-full h-full z-[9999] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm"
+                        style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 9999 }}
+                        onClick={(e) => {
+                            if (e.target === e.currentTarget) {
+                                setShowEndMissionModal(false);
+                                setMissionEnding(null);
+                            }
+                        }}
+                    >
                         <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl' : 'bg-white border-slate-200'} w-full max-w-md shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden relative border animate-in fade-in zoom-in duration-300`}
                             style={{
                                 borderRadius: '2rem',
@@ -1534,7 +1550,13 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
             }
             {/* Modal de Motivo de Cancelamento */}
             {showCancelModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                <div 
+                    className="fixed top-0 left-0 w-full h-full z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+                    style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 9999 }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) setShowCancelModal(false);
+                    }}
+                >
                     <div className={`w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300 ${isDarkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white'}`}>
                         <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-red-50 dark:bg-red-900/10">
                             <div className="flex items-center gap-4">

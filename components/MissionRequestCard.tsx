@@ -172,7 +172,13 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
     };
 
     return (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-50 p-0 sm:p-4 animate-in fade-in duration-200">
+        <div 
+            className="fixed top-0 left-0 w-full h-full bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-0 sm:p-4 animate-in fade-in duration-200"
+            style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 9999 }}
+            onClick={(e) => {
+                if (e.target === e.currentTarget) onClose();
+            }}
+        >
             <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} shadow-2xl w-full h-full sm:h-auto sm:max-w-4xl sm:max-h-[90vh] sm:rounded-2xl flex flex-col overflow-hidden border animate-in slide-in-from-bottom-4 duration-300`}>
                 {/* Header */}
                 <div className={`${isDarkMode ? 'bg-slate-800/50 border-b border-slate-700' : 'bg-gradient-to-r from-indigo-600 to-blue-700'} p-4 sm:p-6 text-white flex justify-between items-center shrink-0`}>

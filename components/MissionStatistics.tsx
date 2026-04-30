@@ -631,7 +631,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             {/* KPI Detail Modal (Estilo Cupom) */}
             {selectedKpi && (
                 <div 
-                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300"
+                    className="fixed top-0 left-0 w-full h-full z-[9999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300"
+                    style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 9999 }}
                     onClick={() => setSelectedKpi(null)}
                 >
                     <div 
