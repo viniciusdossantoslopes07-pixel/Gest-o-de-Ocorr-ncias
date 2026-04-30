@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback, FC } from 'react';
 import { User, UserRole } from '../../types';
 import { RANKS, getRankPriority } from '../../constants';
 import { useSectors } from '../../contexts/SectorsContext';
-import { UserPlus, Search, Pencil, Trash2, Shield, User as UserIcon, Hash, Building2, Users, TriangleAlert, CircleX, Briefcase, ChartNoAxesColumn, ChevronDown, ChevronUp, Printer, PlaneTakeoff, ArrowLeft } from 'lucide-react';
+import { UserPlus, Search, Pencil, Trash2, Shield, User as UserIcon, Hash, Building2, Users, TriangleAlert, CircleX, Briefcase, ChartNoAxesColumn, ChevronDown, ChevronUp, Printer, PlaneTakeoff, ArrowLeft, Crown } from 'lucide-react';
 import UserStatistics from './UserStatistics';
 import PersonnelPrintView from './PersonnelPrintView';
 import MeuPlanoView from '../MeuPlanoView';
@@ -488,8 +488,20 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                     {filteredUsers.map(user => (
                                         <tr key={user.id} onClick={() => setSelectedUserForPanel(user)} className={`transition-all cursor-pointer hover:bg-slate-500/5`}>
                                             <td className="px-6 py-4">
-                                                <div className="font-bold dark:text-white">{user.name}</div>
-                                                <div className="text-[10px] font-black uppercase text-blue-500">{user.rank} {user.warName}</div>
+                                                <div className="font-bold flex flex-wrap items-center gap-2">
+                                                    <span className={`dark:text-white ${user.administrativeRole ? 'text-amber-600 dark:text-amber-400' : ''}`}>
+                                                        {user.name}
+                                                    </span>
+                                                    {user.administrativeRole && (
+                                                        <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50" title="Função Especial">
+                                                            <Crown className="w-2.5 h-2.5" />
+                                                            {user.administrativeRole.replace(/_/g, ' ')}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className={`text-[10px] font-black uppercase ${user.administrativeRole ? 'text-amber-500' : 'text-blue-500'}`}>
+                                                    {user.rank} {user.warName}
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="text-xs font-bold dark:text-slate-400">SARAM: {user.saram}</div>
@@ -518,8 +530,20 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                 <div key={user.id} onClick={() => setSelectedUserForPanel(user)} className="p-4 active:bg-slate-500/5">
                                     <div className="flex justify-between items-start mb-3">
                                         <div>
-                                            <div className="font-bold text-base dark:text-white leading-tight">{user.name}</div>
-                                            <div className="text-[10px] font-black uppercase text-blue-500 mt-1">{user.rank} {user.warName}</div>
+                                            <div className="font-bold text-base flex flex-wrap items-center gap-2 leading-tight">
+                                                <span className={`dark:text-white ${user.administrativeRole ? 'text-amber-600 dark:text-amber-400' : ''}`}>
+                                                    {user.name}
+                                                </span>
+                                                {user.administrativeRole && (
+                                                    <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50" title="Função Especial">
+                                                        <Crown className="w-2.5 h-2.5" />
+                                                        {user.administrativeRole.replace(/_/g, ' ')}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className={`text-[10px] font-black uppercase mt-1 ${user.administrativeRole ? 'text-amber-500' : 'text-blue-500'}`}>
+                                                {user.rank} {user.warName}
+                                            </div>
                                         </div>
                                         <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase border ${user.external_service ? 'bg-emerald-500 text-white' : 'bg-slate-100 dark:bg-slate-800'}`}>
                                             {user.external_service ? `EXT` : user.sector}
