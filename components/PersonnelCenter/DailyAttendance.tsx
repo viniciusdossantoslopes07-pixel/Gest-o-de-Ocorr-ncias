@@ -1247,7 +1247,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                             <button
                                                                 onClick={() => handleSignDate(date, type)}
                                                                 disabled={isFutureDate(date) || !canSign}
-                                                                className={`w-full py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-lg active:scale-95 ${isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-900/40' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'}`}
+                                                                className={`w-full py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-lg active:scale-95 ${isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-900/40' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'}`}
                                                             >
                                                                 {canSign ? 'Assinar' : 'Bloqueado'}
                                                             </button>
@@ -1777,7 +1777,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                         </button>
                                         <button
                                             onClick={confirmSignature}
-                                            className="py-4 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/30 active:scale-95"
+                                            className="py-4 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/30 active:scale-95"
                                         >
                                             Confirmar
                                         </button>

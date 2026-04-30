@@ -33,7 +33,7 @@ const MissionOrderList: FC<MissionOrderListProps> = ({ orders, onCreate, onEdit,
                 </div>
                 <button
                     onClick={onCreate}
-                    className="w-full md:w-auto flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 text-white rounded-xl font-black uppercase text-xs tracking-widest hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                    className="w-full md:w-auto flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 text-white rounded-xl font-black uppercase text-xs tracking-wider hover:bg-slate-800 transition-all shadow-lg active:scale-95"
                 >
                     <Plus className="w-4 h-4" />
                     Nova OMIS

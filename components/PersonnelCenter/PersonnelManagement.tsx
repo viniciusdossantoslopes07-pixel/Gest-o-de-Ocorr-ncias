@@ -562,7 +562,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                     onUpdatePersonnel({ ...externalServiceUser, external_service: isExternalService, external_om: isExternalService ? externalOm : '' });
                                     setShowExternalServiceModal(false);
                                 }}
-                                className="w-full py-4 rounded-xl bg-emerald-600 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-emerald-900/20 active:scale-95 transition-all"
+                                className="w-full py-4 rounded-xl bg-emerald-600 text-white font-black uppercase tracking-wider text-xs shadow-lg shadow-emerald-900/20 active:scale-95 transition-all"
                             >
                                 Confirmar Alteração
                             </button>

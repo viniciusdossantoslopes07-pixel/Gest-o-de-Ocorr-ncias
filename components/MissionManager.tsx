@@ -632,7 +632,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 {order.status === 'PRONTA_PARA_EXECUCAO' && canManageMission(order) && (
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleMissionStart(order); }}
-                                        className="flex-1 sm:flex-none px-5 py-3 bg-emerald-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-emerald-500 transition-all flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-600/20 active:scale-95"
+                                        className="flex-1 sm:flex-none px-3 sm:px-5 py-3 bg-emerald-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider hover:bg-emerald-500 transition-all flex items-center justify-center gap-2 sm:gap-2.5 shadow-lg shadow-emerald-600/20 active:scale-95"
                                     >
                                         <Play className="w-4 h-4 fill-current" /> Iniciar
                                     </button>
@@ -640,7 +640,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 {(order.status === 'EM_MISSAO' || order.status === 'PRONTA_PARA_EXECUCAO') && canManageMission(order) && (
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleCancelMission(order); }}
-                                        className="flex-1 sm:flex-none px-5 py-3 bg-slate-800 text-red-500 rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-slate-700 transition-all flex items-center justify-center gap-2.5 border border-red-500/30 active:scale-95"
+                                        className="flex-1 sm:flex-none px-3 sm:px-5 py-3 bg-slate-800 text-red-500 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider hover:bg-slate-700 transition-all flex items-center justify-center gap-2 sm:gap-2.5 border border-red-500/30 active:scale-95"
                                     >
                                         <XCircle className="w-4 h-4" /> Cancelar
                                     </button>
@@ -648,7 +648,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 {order.status === 'EM_MISSAO' && canManageMission(order) && (
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleMissionEnd(order); }}
-                                        className="flex-1 sm:flex-none px-5 py-3 bg-red-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-red-500 transition-all flex items-center justify-center gap-2.5 shadow-lg shadow-red-600/20 active:scale-95"
+                                        className="flex-1 sm:flex-none px-3 sm:px-5 py-3 bg-red-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider hover:bg-red-500 transition-all flex items-center justify-center gap-2 sm:gap-2.5 shadow-lg shadow-red-600/20 active:scale-95"
                                     >
                                         <Square className="w-4 h-4 fill-current" /> Finalizar
                                     </button>
@@ -656,7 +656,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 {order.status === 'AGUARDANDO_ASSINATURA' && !order.chSopSignature && (
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleEditOrder(order); }}
-                                        className={`flex-1 sm:flex-none px-5 py-3 rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2.5 active:scale-95 ${isDarkMode ? 'bg-blue-900/30 text-blue-400 border border-blue-800/50 hover:bg-blue-800/40' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'}`}
+                                        className={`flex-1 sm:flex-none px-3 sm:px-5 py-3 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 sm:gap-2.5 active:scale-95 ${isDarkMode ? 'bg-blue-900/30 text-blue-400 border border-blue-800/50 hover:bg-blue-800/40' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'}`}
                                     >
                                         <Edit2 className="w-4 h-4" /> Editar
                                     </button>
@@ -761,7 +761,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                         e.stopPropagation();
                                         handleAnalyzeRequest(m);
                                     }}
-                                    className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-500 shadow-lg shadow-blue-500/30 transition-all active:scale-95 flex items-center gap-2 flex-shrink-0"
+                                     className="px-3 sm:px-5 py-2.5 bg-blue-600 text-white rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider hover:bg-blue-500 shadow-lg shadow-blue-500/30 transition-all active:scale-95 flex items-center gap-1.5 sm:gap-2 flex-shrink-0"
                                 >
                                     Analisar &rarr;
                                 </button>
@@ -826,7 +826,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 </div>
                                 <button 
                                     onClick={(e) => { e.stopPropagation(); handleEditOrder(o); }}
-                                    className={`flex-1 px-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-1.5 ${isDarkMode ? 'bg-blue-900/30 text-blue-400 border border-blue-800/50 hover:bg-blue-800/40' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'}`}
+                                    className={`flex-1 px-1.5 sm:px-2 py-3 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1 sm:gap-1.5 ${isDarkMode ? 'bg-blue-900/30 text-blue-400 border border-blue-800/50 hover:bg-blue-800/40' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'}`}
                                 >
                                     <Edit2 className="w-4 h-4" /> Editar
                                 </button>
@@ -834,14 +834,14 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                     <>
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); handleForceActivateOrder(o); }} 
-                                            className={`flex-1 px-2 py-3 ${isDarkMode ? 'bg-emerald-900/30 text-emerald-400 border-emerald-800/50 hover:bg-emerald-800/40' : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'} rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border shadow-lg shadow-emerald-500/10 active:scale-95 flex items-center justify-center gap-1.5`}
+                                            className={`flex-1 px-1.5 sm:px-2 py-3 ${isDarkMode ? 'bg-emerald-900/30 text-emerald-400 border-emerald-800/50 hover:bg-emerald-800/40' : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'} rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all border shadow-lg shadow-emerald-500/10 active:scale-95 flex items-center justify-center gap-1 sm:gap-1.5`}
                                             title="Liberar sem assinatura digital (Física)"
                                         >
                                             <Zap className="w-4 h-4" /> Iniciar
                                         </button>
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); handleChSopSign(o); }} 
-                                            className="flex-1 px-2 py-3 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/25 active:scale-95 flex items-center justify-center gap-1.5" 
+                                            className="flex-1 px-1.5 sm:px-2 py-3 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/25 active:scale-95 flex items-center justify-center gap-1 sm:gap-1.5" 
                                             title="Assinar Digitalmente"
                                         >
                                             <FileSignature className="w-4 h-4" /> Assinar
@@ -1032,7 +1032,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                             {order.status === 'PRONTA_PARA_EXECUCAO' && canManageMission(order) && (
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); handleMissionStart(order); }}
-                                                    className="flex-1 sm:flex-none px-5 py-3.5 bg-emerald-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-600/20 active:scale-95 flex items-center justify-center gap-2.5"
+                                                    className="flex-1 sm:flex-none px-3 sm:px-5 py-3.5 bg-emerald-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-600/20 active:scale-95 flex items-center justify-center gap-2 sm:gap-2.5"
                                                 >
                                                     <Play className="w-4.5 h-4.5 fill-current" /> Iniciar
                                                 </button>
@@ -1040,7 +1040,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                             {order.status === 'EM_MISSAO' && canManageMission(order) && (
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); handleMissionEnd(order); }}
-                                                    className="flex-1 sm:flex-none px-5 py-3.5 bg-red-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-red-500 transition-all shadow-lg shadow-red-600/20 active:scale-95 flex items-center justify-center gap-2.5"
+                                                    className="flex-1 sm:flex-none px-3 sm:px-5 py-3.5 bg-red-600 text-white rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider hover:bg-red-500 transition-all shadow-lg shadow-red-600/20 active:scale-95 flex items-center justify-center gap-2 sm:gap-2.5"
                                                 >
                                                     <Square className="w-4.5 h-4.5 fill-current" /> Finalizar
                                                 </button>
@@ -1048,7 +1048,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                             {(order.status === 'EM_MISSAO' || order.status === 'PRONTA_PARA_EXECUCAO') && canManageMission(order) && (
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); handleCancelMission(order); }}
-                                                    className="flex-1 sm:flex-none px-5 py-3.5 bg-slate-800 text-red-500 rounded-xl text-xs sm:text-sm font-black uppercase tracking-widest hover:bg-slate-700 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2.5 border border-red-500/30"
+                                                    className="flex-1 sm:flex-none px-3 sm:px-5 py-3.5 bg-slate-800 text-red-500 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider hover:bg-slate-700 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 sm:gap-2.5 border border-red-500/30"
                                                 >
                                                     <XCircle className="w-4.5 h-4.5" /> Cancelar
                                                 </button>

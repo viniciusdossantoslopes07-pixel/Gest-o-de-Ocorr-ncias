@@ -230,19 +230,19 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
                                         <div className="grid grid-cols-2 gap-3">
                                             <button
                                                 onClick={() => handleAction('APROVADA')}
-                                                className="py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-emerald-500 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-emerald-600/20"
+                                                className="py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-wider text-[10px] hover:bg-emerald-500 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-emerald-600/20"
                                             >
                                                 <CheckCircle className="w-4 h-4" /> Aprovar
                                             </button>
                                             <button
                                                 onClick={() => handleAction('REJEITADA')}
-                                                className="py-4 bg-red-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-red-500 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-red-600/20"
+                                                className="py-4 bg-red-600 text-white rounded-2xl font-black uppercase tracking-wider text-[10px] hover:bg-red-500 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-red-600/20"
                                             >
                                                 <XCircle className="w-4 h-4" /> Rejeitar
                                             </button>
                                             <button
                                                 onClick={() => handleAction('ESCALONADA')}
-                                                className="col-span-2 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-500 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-blue-600/20"
+                                                className="col-span-2 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-wider text-[10px] hover:bg-blue-500 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-blue-600/20"
                                             >
                                                 <ArrowUpCircle className="w-4 h-4" /> Escalonar
                                             </button>
@@ -253,7 +253,7 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={() => { onEditDraft(selectedMission); setSelectedMission(null); }}
-                                                className={`flex-1 py-4 ${isDarkMode ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/20' : 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20'} text-white rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg`}
+                                                className={`flex-1 py-4 ${isDarkMode ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/20' : 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20'} text-white rounded-2xl font-black uppercase tracking-wider text-[10px] transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg`}
                                             >
                                                 <Edit2 className="w-4 h-4" /> Continuar Editando
                                             </button>
@@ -277,7 +277,7 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
                                     {!onProcess && (
                                         <button
                                             onClick={() => setSelectedMission(null)} // Or open a more detailed card
-                                            className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 active:scale-95 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                                            className={`w-full py-4 rounded-2xl font-black uppercase tracking-wider text-[10px] transition-all flex items-center justify-center gap-2 active:scale-95 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                                         >
                                             <Eye className="w-4 h-4" /> Ver Ficha Completa
                                         </button>
@@ -286,7 +286,7 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
                                     {selectedMission.status === 'APROVADA' && onGenerateOrder && (
                                         <button
                                             onClick={() => onGenerateOrder(selectedMission)}
-                                            className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-500 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-blue-600/20"
+                                            className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-wider text-[10px] hover:bg-blue-500 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-blue-600/20"
                                         >
                                             <FileText className="w-5 h-5" /> Gerar Ordem de Missão
                                         </button>
