@@ -990,17 +990,17 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
                     <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'} text-center`}>
                         <div className="w-full h-px bg-slate-300 dark:bg-slate-600 mb-3 mx-auto w-3/4"></div>
-                        <p className={`text-[10px] sm:text-xs font-black uppercase ${cmtNameStr ? (isDarkMode ? 'text-slate-200' : 'text-slate-800') : 'text-red-500'}`}>
-                            {cmtNameStr || 'ATENÇÃO: NENHUM CMT GSD-SP ATRIBUÍDO'}
-                        </p>
-                        <p className={`text-[9px] sm:text-[10px] font-bold mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>CMT DO GSD-SP</p>
-                    </div>
-                    <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'} text-center`}>
-                        <div className="w-full h-px bg-slate-300 dark:bg-slate-600 mb-3 mx-auto w-3/4"></div>
                         <p className={`text-[10px] sm:text-xs font-black uppercase ${chSopNameStr ? (isDarkMode ? 'text-slate-200' : 'text-slate-800') : 'text-red-500'}`}>
                             {chSopNameStr || 'ATENÇÃO: NENHUM CHEFE SOP ATRIBUÍDO'}
                         </p>
                         <p className={`text-[9px] sm:text-[10px] font-bold mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>CHEFE DA SEÇÃO DE OPERAÇÕES</p>
+                    </div>
+                    <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'} text-center`}>
+                        <div className="w-full h-px bg-slate-300 dark:bg-slate-600 mb-3 mx-auto w-3/4"></div>
+                        <p className={`text-[10px] sm:text-xs font-black uppercase ${cmtNameStr ? (isDarkMode ? 'text-slate-200' : 'text-slate-800') : 'text-red-500'}`}>
+                            {cmtNameStr || 'ATENÇÃO: NENHUM CMT GSD-SP ATRIBUÍDO'}
+                        </p>
+                        <p className={`text-[9px] sm:text-[10px] font-bold mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>CMT DO GSD-SP</p>
                     </div>
                 </div>
             </div>
