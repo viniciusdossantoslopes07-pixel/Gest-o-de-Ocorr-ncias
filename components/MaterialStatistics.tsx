@@ -33,7 +33,11 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
         dateEnd: ''
     });
 
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+    const COLORS = [
+        '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d',
+        '#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#6366f1', '#8b5cf6',
+        '#d946ef', '#f43f5e', '#14b8a6', '#f97316'
+    ];
 
     useEffect(() => {
         fetchStats();
@@ -42,8 +46,8 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
     const fetchStats = async () => {
         setLoading(true);
         try {
-            // 1. Fetch Users for mapping
-            const { data: usersData } = await supabase.from('users').select('id, name, rank, war_name, sector');
+            // 1. Fetch Users for mapping (aumentando limite para garantir todos os usuários)
+            const { data: usersData } = await supabase.from('users').select('id, name, rank, war_name, sector').limit(5000);
             const userMapping: Record<string, string> = {};
             if (usersData) {
                 usersData.forEach((u: any) => {
@@ -56,7 +60,8 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
             const { data: inventory, error: invError } = await supabase
                 .from('gestao_estoque')
                 .select('id, material, setor, entrada, saida, tipo_de_material')
-                .order('material');
+                .order('material')
+                .limit(5000);
 
             if (invError) throw invError;
 
@@ -85,7 +90,9 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
                     .lte('created_at', new Date(filters.dateEnd).toISOString());
             }
 
-            const { data: loans, error: loanError } = await loanQuery.order('created_at', { ascending: false });
+            const { data: loans, error: loanError } = await loanQuery
+                .order('created_at', { ascending: false })
+                .limit(5000);
 
             if (loanError) throw loanError;
 
@@ -133,15 +140,20 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
                 }
             });
 
-            const rankPieData = Object.entries(rankCounts)
-                .map(([name, value]) => ({ name, value }))
-                .sort((a, b) => b.value - a.value);
-            setRankLoanData(rankPieData);
+            const processPieData = (counts: Record<string, number>, limit = 8) => {
+                const sorted = Object.entries(counts)
+                    .map(([name, value]) => ({ name, value }))
+                    .sort((a, b) => b.value - a.value);
+                
+                if (sorted.length <= limit) return sorted;
 
-            const sectorPieData = Object.entries(sectorCounts)
-                .map(([name, value]) => ({ name, value }))
-                .sort((a, b) => b.value - a.value);
-            setSectorLoanData(sectorPieData);
+                const main = sorted.slice(0, limit - 1);
+                const others = sorted.slice(limit - 1).reduce((acc, curr) => acc + curr.value, 0);
+                return [...main, { name: 'OUTROS', value: others }];
+            };
+
+            setRankLoanData(processPieData(rankCounts));
+            setSectorLoanData(processPieData(sectorCounts));
 
 
             setStats({
