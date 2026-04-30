@@ -9,6 +9,7 @@ import {
 import EventForm from './EventForm';
 import EventStatistics from './EventStatistics';
 import EventPrintView from './EventPrintView';
+import { formatDisplayDate } from '../../../utils/formatters';
 
 interface EventControlProps {
     user: User;
@@ -334,7 +335,7 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                         </div>
                         <div>
                             <p className={`text-[10px] font-bold uppercase mb-0.5 ${tm}`}>Data Prevista</p>
-                            <p className={`font-black text-sm uppercase ${tp}`}>{new Date(selectedEvent.date).toLocaleDateString('pt-BR')}</p>
+                            <p className={`font-black text-sm uppercase ${tp}`}>{formatDisplayDate(selectedEvent.date)}</p>
                         </div>
                     </div>
                 </div>
@@ -535,7 +536,7 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                                 </div>
                                 <span className={`flex items-center gap-1 text-[11px] font-bold uppercase ${tm}`}>
                                     <Calendar className="w-3.5 h-3.5" />
-                                    {new Date(ev.date).toLocaleDateString('pt-BR')}
+                                    {formatDisplayDate(ev.date)}
                                 </span>
                             </div>
 

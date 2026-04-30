@@ -1,6 +1,7 @@
 import { type FC } from 'react';
 import { Printer, X, Users, MapPin, Calendar, CheckCircle, AlertCircle } from 'lucide-react';
 import { AccessEvent } from '../../../types';
+import { formatDisplayDate } from '../../../utils/formatters';
 
 interface EventPrintViewProps {
     event: AccessEvent;
@@ -123,7 +124,7 @@ const EventPrintView: FC<EventPrintViewProps> = ({ event, onClose }) => {
                             <div className="space-y-1">
                                 <p><strong>Evento:</strong> <span className="text-slate-900 text-xs">{eventNameDisplay}</span></p>
                                 <p><strong>Localização:</strong> <span className="text-slate-900">{event.location} {event.address ? `(${event.address})` : ''}</span></p>
-                                <p><strong>Data Programada:</strong> <span className="text-slate-900">{new Date(event.date + 'T12:00:00').toLocaleDateString('pt-BR')}</span></p>
+                                <p><strong>Data Programada:</strong> <span className="text-slate-900">{formatDisplayDate(event.date)}</span></p>
                             </div>
                             <div className="text-right space-y-1">
                                 <p>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../services/supabase';
 import { AccessEvent, EventGuest } from '../../../types';
 import { ArrowLeft, UserPlus, X, Car, Calendar, MapPin, Users, Printer, Share2, CheckCircle, AlertCircle, Lock } from 'lucide-react';
+import { formatDisplayDate } from '../../../utils/formatters';
 import { eventService } from '../../../services/eventService';
 import EventPrintView from './EventPrintView';
 
@@ -262,7 +263,7 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
                         </div>
                         <div>
                             <span className={`block text-[10px] font-bold uppercase tracking-widest ${textSub}`}>Data</span>
-                            <p className="font-medium text-sm">{new Date(event.date + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+                            <p className="font-medium text-sm">{formatDisplayDate(event.date)}</p>
                         </div>
                     </div>
                 </div>

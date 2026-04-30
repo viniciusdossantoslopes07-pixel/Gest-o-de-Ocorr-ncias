@@ -175,20 +175,20 @@ ${content.outerHTML}
                         <table className={`w-full border-[1.5px] border-slate-950 mb-4 text-[9px] sm:text-[10px] leading-tight ${order.mission === 'SOBREAVISO' ? 'hidden' : ''}`}>
                             <tbody>
                                 <tr>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-32 uppercase text-[8px]">Nº da OMIS:</td>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-24 uppercase text-[8px]">Nº da OMIS:</td>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-bold">{order.omisNumber || (order.status === 'CANCELADA' ? 'CANCELADA' : '')}</td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-24 uppercase text-[8px]">Data:</td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 font-bold">{formatDisplayDate(order.date)}</td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-16 uppercase text-[7px]">Interna:</td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 w-8 text-center font-bold">
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-16 uppercase text-[8px]">Data:</td>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-bold w-24">{formatDisplayDate(order.date)}</td>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-14 uppercase text-[7px]">Interna:</td>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 w-6 text-center font-bold">
                                         {(order.missionCategory === 'INTERNA' || (!order.missionCategory && order.isInternal)) ? '☑' : '☐'}
                                     </td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-16 uppercase text-[7px]">Externa:</td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 w-8 text-center font-bold">
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-14 uppercase text-[7px]">Externa:</td>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 w-6 text-center font-bold">
                                         {(order.missionCategory === 'EXTERNA' || (!order.missionCategory && !order.isInternal)) ? '☑' : '☐'}
                                     </td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-20 uppercase text-[7px]">Fora Sede:</td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 w-8 text-center font-bold">
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 w-16 uppercase text-[7px]">F. Sede:</td>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 w-6 text-center font-bold">
                                         {order.missionCategory === 'FORA_DE_SEDE' ? '☑' : '☐'}
                                     </td>
                                 </tr>
@@ -196,11 +196,11 @@ ${content.outerHTML}
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 uppercase text-[8px]">Missão:</td>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-bold" colSpan={3}>{formatValue(order.mission)}</td>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 uppercase text-[8px]">Local:</td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 font-bold" colSpan={3}>{formatValue(order.location)}</td>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-bold" colSpan={5}>{formatValue(order.location)}</td>
                                 </tr>
                                 <tr>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 uppercase text-[8px]">Comandante:</td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 font-bold uppercase" colSpan={7}>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-bold uppercase" colSpan={9}>
                                         {order.isExternalCommander 
                                             ? order.externalCommanderName 
                                             : (users.find(u => u.id === order.missionCommanderId) 
@@ -211,16 +211,16 @@ ${content.outerHTML}
                                 </tr>
                                 <tr>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 uppercase text-[8px]">Descrição:</td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 font-medium leading-snug" colSpan={7}>{formatValue(order.description)}</td>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-medium leading-snug" colSpan={9}>{formatValue(order.description)}</td>
                                 </tr>
                                 <tr>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 uppercase text-[8px]">Solicitante:</td>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-bold uppercase" colSpan={3}>{formatValue(order.requester)}</td>
                                     <td className="border border-slate-950 px-1.5 py-0.5 font-black bg-slate-50 uppercase text-[8px]">Transp./Alim.:</td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 font-bold text-center" colSpan={2}>
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-bold text-center" colSpan={3}>
                                         T: {order.transport ? 'SIM' : 'NÃO'}
                                     </td>
-                                    <td className="border border-slate-950 px-1.5 py-0.5 font-bold text-center">
+                                    <td className="border border-slate-950 px-1.5 py-0.5 font-bold text-center" colSpan={2}>
                                         A: {order.food ? 'SIM' : 'NÃO'}
                                     </td>
                                 </tr>

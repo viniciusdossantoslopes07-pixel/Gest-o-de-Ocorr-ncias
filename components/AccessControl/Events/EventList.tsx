@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, AccessEvent } from '../../../types';
 import { eventService } from '../../../services/eventService';
 import { Calendar, MapPin, Users, ChevronRight, RefreshCw, Info, CalendarDays, Printer } from 'lucide-react';
+import { formatDisplayDate } from '../../../utils/formatters';
 import EventPrintView from './EventPrintView';
 
 interface EventListProps {
@@ -137,7 +138,7 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
                         <div>
                             <p className={`text-[10px] font-bold uppercase ${textMuted}`}>Data</p>
                             <p className={`font-black text-sm uppercase ${textPrimary}`}>
-                                {new Date(selectedEvent.date).toLocaleDateString('pt-BR')}
+                                {formatDisplayDate(selectedEvent.date)}
                             </p>
                         </div>
                         <div>
@@ -290,7 +291,7 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
 
                                 <span className={`flex items-center gap-1 text-[11px] font-bold uppercase ${textMuted}`}>
                                     <Calendar className="w-3.5 h-3.5" />
-                                    {new Date(event.date).toLocaleDateString('pt-BR')}
+                                    {formatDisplayDate(event.date)}
                                 </span>
                             </div>
 

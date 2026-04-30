@@ -1,7 +1,7 @@
 import { useState, FC } from 'react';
 import { Mission, User } from '../types';
 import { CheckCircle, XCircle, ArrowUpCircle, Clock, Calendar, MapPin, User as UserIcon, FileText, X, Eye, ChevronRight, Package, Filter, Users as UsersIcon, Edit2, Trash2 } from 'lucide-react';
-import { formatViaturas, formatEfetivo } from '../utils/formatters';
+import { formatViaturas, formatEfetivo, formatDisplayDate } from '../utils/formatters';
 import MissionRequestCard from './MissionRequestCard';
 import RejectionModal from './RejectionModal';
 
@@ -111,7 +111,7 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
                             <div className={`grid grid-cols-2 gap-2 text-[11px] mb-3 ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>
                                 <span className="flex items-center gap-1.5 font-bold">
                                     <Calendar className="w-3.5 h-3.5 text-blue-500" />
-                                    {mission.dados_missao.data ? new Date(mission.dados_missao.data).toLocaleDateString('pt-BR') : 'Não informada'}
+                                    {mission.dados_missao.data ? formatDisplayDate(mission.dados_missao.data) : 'Não informada'}
                                 </span>
                                 <span className="flex items-center gap-1.5 font-bold">
                                     <Clock className="w-3.5 h-3.5 text-blue-500" />
@@ -162,7 +162,7 @@ const MissionRequestList: FC<MissionRequestListProps> = ({
                                         <div className={`p-3 rounded-xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
                                             <label className="block text-[10px] font-black text-slate-500 uppercase mb-1">Data</label>
                                             <div className={`flex items-center gap-2 text-sm font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
-                                                <Calendar className="w-4 h-4 text-blue-500" /> {selectedMission.dados_missao.data ? new Date(selectedMission.dados_missao.data).toLocaleDateString('pt-BR') : 'N/A'}
+                                                <Calendar className="w-4 h-4 text-blue-500" /> {selectedMission.dados_missao.data ? formatDisplayDate(selectedMission.dados_missao.data) : 'N/A'}
                                             </div>
                                         </div>
                                     </div>

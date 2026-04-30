@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AccessEvent } from '../../../types';
 import { eventService } from '../../../services/eventService';
+import { formatDisplayDate } from '../../../utils/formatters';
 import { Calendar, MapPin, Users, X, RefreshCw, Send, Plus, Search } from 'lucide-react';
 import PublicEventForm from './PublicEventForm';
 import PublicEventManageView from './PublicEventManageView';
@@ -91,7 +92,7 @@ export default function PublicEventsModal({ onClose, isDarkMode = false }: Publi
                                         </span>
                                         <span className={`flex items-center gap-1 text-[11px] font-bold ${tm}`}>
                                             <Calendar className="w-3.5 h-3.5" />
-                                            {new Date(ev.date).toLocaleDateString('pt-BR')}
+                                            {formatDisplayDate(ev.date)}
                                         </span>
                                     </div>
 

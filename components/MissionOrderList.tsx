@@ -3,6 +3,7 @@ import { useState, type FC } from 'react';
 import { MissionOrder } from '../types';
 import { FileText, Plus, Edit, Trash2, Eye, Calendar, MapPin, Copy } from 'lucide-react';
 import { MISSION_STATUS_LABELS, MISSION_STATUS_COLORS } from '../constants';
+import { formatDisplayDate } from '../utils/formatters';
 
 interface MissionOrderListProps {
     orders: MissionOrder[];
@@ -102,7 +103,7 @@ const MissionOrderList: FC<MissionOrderListProps> = ({ orders, onCreate, onEdit,
                                     <div className="flex flex-wrap items-center gap-3 md:gap-6 text-xs font-medium text-slate-500">
                                         <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
                                             <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                                            {new Date(order.date).toLocaleDateString('pt-BR')}
+                                            {formatDisplayDate(order.date)}
                                         </div>
                                         <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-md border border-slate-100 truncate max-w-[150px]">
                                             <MapPin className="w-3.5 h-3.5 text-slate-400" />

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AccessEvent } from '../../../types';
 import { eventService } from '../../../services/eventService';
+import { formatDisplayDate } from '../../../utils/formatters';
 import { CalendarDays, MapPin, User, CheckCircle, CarFront, Loader2, AlertCircle, X } from 'lucide-react';
 
 interface GuestRegistrationViewProps {
@@ -212,7 +213,7 @@ export default function GuestRegistrationView({ eventId, onComplete }: GuestRegi
                             </div>
                             <div className="flex items-center gap-2">
                                 <CalendarDays className="w-4 h-4 opacity-70" />
-                                <span>{new Date(event.date).toLocaleDateString('pt-BR')}</span>
+                                <span>{formatDisplayDate(event.date)}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <MapPin className="w-4 h-4 opacity-70" />
