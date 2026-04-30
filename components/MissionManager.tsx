@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { Mission, User, MissionOrder, UserRole } from '../types';
-import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint, Filter, MapPin, User as UserIcon, PlayCircle, History, Zap, Edit2, Mail, Copy } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint, Filter, MapPin, User as UserIcon, PlayCircle, History, Zap, Edit2, Mail, Copy, Trash2 } from 'lucide-react';
 import { authenticateBiometrics } from '../services/webauthn';
 import MissionStatistics from './MissionStatistics';
 import MissionOrderForm from './MissionOrderForm';
@@ -291,6 +291,32 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
         setSelectedOrder(clonedOrder as MissionOrder);
         setSelectedMission(null);
         setShowOrderForm(true);
+    };
+
+    const handleDeleteOrder = async (order: MissionOrder) => {
+        const confirmDelete = confirm(
+            `Tem certeza que deseja EXCLUIR permanentemente esta Ordem de Missão?\n\n` +
+            `OM: #${order.omisNumber}\n` +
+            `Missão: ${order.mission}\n\n` +
+            `Esta ação NÃO pode ser desfeita e removerá os dados do banco.`
+        );
+
+        if (!confirmDelete) return;
+
+        try {
+            const { error } = await supabase
+                .from('mission_orders')
+                .delete()
+                .eq('id', order.id);
+
+            if (error) throw error;
+
+            alert('Ordem de Missão excluída com sucesso.');
+            fetchOrders();
+        } catch (error: any) {
+            console.error('Erro ao excluir OM:', error);
+            alert('Erro ao excluir Ordem de Missão: ' + error.message);
+        }
     };
 
     const handleDirectSobreaviso = async () => {
@@ -732,47 +758,49 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                 setSelectedMission(m);
                                 setShowMissionCard(true);
                             }}
-                            className={`p-6 rounded-[2rem] border transition-all duration-300 ${isDarkMode ? 'bg-slate-900/40 border-slate-800/80 hover:border-blue-500/50 hover:bg-slate-900/60 shadow-[0_8px_30px_rgb(0,0,0,0.12)]' : 'bg-white border-slate-100 hover:border-blue-200 hover:shadow-xl'} flex flex-col justify-between cursor-pointer group relative overflow-hidden`}
+                            className={`p-5 rounded-[1.8rem] border transition-all duration-300 ${isDarkMode ? 'bg-slate-900/40 border-slate-800/80 hover:border-blue-500/50 hover:bg-slate-900/60 shadow-[0_8px_30px_rgb(0,0,0,0.12)]' : 'bg-white border-slate-100 hover:border-blue-200 hover:shadow-xl'} flex flex-col justify-between cursor-pointer group relative overflow-hidden`}
                         >
                             {/* Decorative background glow */}
                             <div className={`absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 pointer-events-none transition-all duration-500 ${isDarkMode ? 'bg-blue-500 group-hover:opacity-40' : 'bg-blue-400 group-hover:opacity-30'}`}></div>
 
-                            <div className="flex justify-between items-start mb-4 relative z-10">
-                                <div className="flex-1 min-w-0 pr-2">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <span className={`px-2.5 py-1 text-[9px] rounded-full uppercase tracking-widest font-black ${m.status === 'PENDENTE' ? (isDarkMode ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' : 'bg-yellow-50 text-yellow-600 border border-yellow-100') : (isDarkMode ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-blue-50 text-blue-600 border border-blue-100')}`}>
-                                            {m.status}
-                                        </span>
-                                        <span className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[10px] font-mono tracking-widest ${isDarkMode ? 'bg-slate-950 text-slate-400 border border-slate-800/50' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}>#{m.id.slice(0, 8)}</span>
-                                    </div>
-                                    <h4 className={`text-base font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-900'} line-clamp-2 leading-tight group-hover:text-blue-500 transition-colors mb-4`}>{m.dados_missao.tipo_missao}</h4>
+                            <div className="flex-1 min-w-0 relative z-10">
+                                <div className="flex justify-between items-start mb-3">
+                                    <span className={`px-2 py-0.5 text-[8px] rounded-full uppercase tracking-widest font-black ${m.status === 'PENDENTE' ? (isDarkMode ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' : 'bg-yellow-50 text-yellow-600 border border-yellow-100') : (isDarkMode ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-blue-50 text-blue-600 border border-blue-100')}`}>
+                                        {m.status}
+                                    </span>
+                                </div>
+                                <div className={`text-sm font-black shadow-sm uppercase mt-1 mb-3 line-clamp-2 leading-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{m.dados_missao.tipo_missao}</div>
+                                <div className={`text-[9px] font-bold uppercase tracking-wider flex flex-col gap-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                                    <span className="flex items-center gap-2"><Calendar className="w-3 h-3 text-blue-500" /> {formatDisplayDate(m.dados_missao.data)}</span>
+                                    <span className="flex items-center gap-2"><MapPin className="w-3 h-3 text-blue-500" /> {m.dados_missao.local}</span>
+                                    <span className="flex items-center gap-2"><UserIcon className="w-3 h-3 text-blue-500" /> {m.dados_missao.posto} {m.dados_missao.nome_guerra}</span>
                                 </div>
                             </div>
 
-                            <div className="space-y-3 relative z-10">
-                                <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                                    <MapPin className="w-3.5 h-3.5 text-blue-500" />
-                                    <span className="truncate">{m.dados_missao.local}</span>
-                                </div>
-                                <div className={`flex items-center gap-4 text-[10px] font-bold uppercase tracking-wider flex-wrap ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>
-                                    <span className="flex items-center gap-2"><Calendar className="w-3.5 h-3.5 text-blue-500" /> {formatDisplayDate(m.dados_missao.data)}</span>
-                                    <span className="flex items-center gap-2"><Clock className="w-3.5 h-3.5 text-blue-500" /> {m.dados_missao.inicio} - {m.dados_missao.termino}</span>
-                                </div>
-                            </div>
-
-                            <div className={`mt-6 pt-5 border-t ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'} flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10`}>
-                                <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} w-full sm:w-auto sm:flex-1 min-w-0 pr-2`}>
-                                    <UserIcon className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
-                                    <span className="truncate">{m.dados_missao.nome_guerra}</span>
+                            <div className={`mt-5 pt-4 border-t ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'} flex items-center justify-between gap-1.5 relative z-10`}>
+                                <div className="flex gap-1.5">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setSelectedMission(m); setShowMissionCard(true); }}
+                                        className={`p-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800/50 text-slate-300 hover:bg-blue-600 hover:text-white border border-slate-700/50' : 'bg-white text-slate-700 hover:bg-blue-600 hover:text-white border border-slate-200'}`}
+                                        title="Analisar Detalhes"
+                                    >
+                                        <Eye className="w-3.5 h-3.5" />
+                                    </button>
+                                    {(user.role === UserRole.ADMIN || user.sector === 'CH-SOP') && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleDeleteRequest(m); }}
+                                            className={`p-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/20' : 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-100'}`}
+                                            title="Excluir Permanentemente"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
                                 </div>
                                 <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleAnalyzeRequest(m);
-                                    }}
-                                     className="px-3 sm:px-5 py-2.5 bg-blue-600 text-white rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider hover:bg-blue-500 shadow-lg shadow-blue-500/30 transition-all active:scale-95 flex items-center gap-1.5 sm:gap-2 flex-shrink-0"
+                                    onClick={(e) => { e.stopPropagation(); handleStartOrder(m); }}
+                                    className={`flex-1 px-1 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-[8px] font-black uppercase tracking-wider hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-500/20 transition-all active:scale-95 flex items-center justify-center gap-1`}
                                 >
-                                    Analisar &rarr;
+                                    <PlusCircle className="w-3.5 h-3.5" /> Gerar OMIS
                                 </button>
                             </div>
                         </div>
@@ -799,64 +827,74 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                         <div 
                             key={o.id} 
                             onClick={() => handlePrintOrder(o)}
-                            className={`p-6 rounded-[2rem] border transition-all duration-300 cursor-pointer ${isDarkMode ? 'bg-slate-900/40 border-slate-800/80 hover:border-orange-500/50 hover:bg-slate-900/60 shadow-[0_8px_30px_rgb(0,0,0,0.12)]' : 'bg-white border-slate-100 hover:border-orange-200 hover:shadow-xl'} flex flex-col justify-between group relative overflow-hidden`}
+                            className={`p-5 rounded-[1.8rem] border transition-all duration-300 cursor-pointer ${isDarkMode ? 'bg-slate-900/40 border-slate-800/80 hover:border-orange-500/50 hover:bg-slate-900/60 shadow-[0_8px_30px_rgb(0,0,0,0.12)]' : 'bg-white border-slate-100 hover:border-orange-200 hover:shadow-xl'} flex flex-col justify-between group relative overflow-hidden`}
                         >
                             {/* Decorative background glow */}
                             <div className={`absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 pointer-events-none transition-all duration-500 ${isDarkMode ? 'bg-orange-500 group-hover:opacity-40' : 'bg-orange-400 group-hover:opacity-30'}`}></div>
                             
                             <div className="flex-1 min-w-0 pr-2 relative z-10">
-                                <div className={`font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} flex justify-between items-start mb-4`}>
-                                    <span className={`px-2.5 py-1 text-[9px] rounded-full uppercase tracking-widest font-black ${isDarkMode ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-orange-50 text-orange-600 border border-orange-100'}`}>Pendente</span>
-                                    <span className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[10px] font-mono tracking-widest ${isDarkMode ? 'bg-slate-950 text-blue-400 border border-slate-800/50' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}>OM #{o.omisNumber}</span>
+                                <div className={`font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} flex justify-between items-start mb-3`}>
+                                    <span className={`px-2 py-0.5 text-[8px] rounded-full uppercase tracking-widest font-black ${isDarkMode ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-orange-50 text-orange-600 border border-orange-100'}`}>Pendente</span>
+                                    <span className={`flex items-center gap-1.5 rounded-lg px-2 py-0.5 text-[9px] font-mono tracking-widest ${isDarkMode ? 'bg-slate-950 text-blue-400 border border-slate-800/50' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}>OM #{o.omisNumber}</span>
                                 </div>
-                                <div className={`text-base font-black shadow-sm uppercase mt-1 mb-4 line-clamp-2 leading-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{o.mission}</div>
-                                <div className={`text-[10px] font-bold uppercase tracking-wider flex flex-col gap-2.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>
-                                    <span className="flex items-center gap-2"><Calendar className="w-3.5 h-3.5 text-blue-500" /> {formatDisplayDate(o.date)}</span>
-                                    <span className="flex items-center gap-2"><UserIcon className="w-3.5 h-3.5 text-blue-500" /> {o.createdBy}</span>
+                                <div className={`text-sm font-black shadow-sm uppercase mt-1 mb-3 line-clamp-2 leading-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{o.mission}</div>
+                                <div className={`text-[9px] font-bold uppercase tracking-wider flex flex-col gap-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                                    <span className="flex items-center gap-2"><Calendar className="w-3 h-3 text-blue-500" /> {formatDisplayDate(o.date)}</span>
+                                    <span className="flex items-center gap-2"><UserIcon className="w-3 h-3 text-blue-500" /> {o.createdBy}</span>
                                 </div>
                             </div>
                             
-                            <div className={`mt-6 pt-5 border-t ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'} flex items-center justify-between gap-2 relative z-10`}>
-                                <div className="flex gap-2">
+                            <div className={`mt-5 pt-4 border-t ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'} flex items-center justify-between gap-1.5 relative z-10`}>
+                                <div className="flex gap-1.5">
                                     <button 
                                         onClick={() => handlePrintOrder(o)}
-                                        className={`p-3 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800/50 text-slate-300 hover:bg-blue-600 hover:text-white border border-slate-700/50' : 'bg-white text-slate-700 hover:bg-blue-600 hover:text-white border border-slate-200'}`}
+                                        className={`p-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800/50 text-slate-300 hover:bg-blue-600 hover:text-white border border-slate-700/50' : 'bg-white text-slate-700 hover:bg-blue-600 hover:text-white border border-slate-200'}`}
                                         title="Visualizar"
                                     >
-                                        <Eye className="w-4 h-4" />
+                                        <Eye className="w-3.5 h-3.5" />
                                     </button>
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); handleCloneOrder(o); }}
-                                        className={`p-3 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800/50 text-slate-300 hover:bg-indigo-600 hover:text-white border border-slate-700/50' : 'bg-white text-slate-700 hover:bg-indigo-600 hover:text-white border border-slate-200'}`}
+                                        className={`p-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800/50 text-slate-300 hover:bg-indigo-600 hover:text-white border border-slate-700/50' : 'bg-white text-slate-700 hover:bg-indigo-600 hover:text-white border border-slate-200'}`}
                                         title="Clonar Missão"
                                     >
-                                        <Copy className="w-4 h-4" />
+                                        <Copy className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); handleDeleteOrder(o); }}
+                                        className={`p-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/20' : 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-100'}`}
+                                        title="Excluir Permanentemente"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
-                                <button 
-                                    onClick={(e) => { e.stopPropagation(); handleEditOrder(o); }}
-                                    className={`flex-1 px-1.5 sm:px-2 py-3 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1 sm:gap-1.5 ${isDarkMode ? 'bg-blue-900/30 text-blue-400 border border-blue-800/50 hover:bg-blue-800/40' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'}`}
-                                >
-                                    <Edit2 className="w-4 h-4" /> Editar
-                                </button>
-                                {canSign && (
-                                    <>
-                                        <button 
-                                            onClick={(e) => { e.stopPropagation(); handleForceActivateOrder(o); }} 
-                                            className={`flex-1 px-1.5 sm:px-2 py-3 ${isDarkMode ? 'bg-emerald-900/30 text-emerald-400 border-emerald-800/50 hover:bg-emerald-800/40' : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'} rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all border shadow-lg shadow-emerald-500/10 active:scale-95 flex items-center justify-center gap-1 sm:gap-1.5`}
-                                            title="Liberar sem assinatura digital (Física)"
-                                        >
-                                            <Zap className="w-4 h-4" /> Iniciar
-                                        </button>
-                                        <button 
-                                            onClick={(e) => { e.stopPropagation(); handleChSopSign(o); }} 
-                                            className="flex-1 px-1.5 sm:px-2 py-3 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/25 active:scale-95 flex items-center justify-center gap-1 sm:gap-1.5" 
-                                            title="Assinar Digitalmente"
-                                        >
-                                            <FileSignature className="w-4 h-4" /> Assinar
-                                        </button>
-                                    </>
-                                )}
+                                
+                                <div className="flex gap-1.5 flex-1">
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); handleEditOrder(o); }}
+                                        className={`flex-1 px-1 py-2.5 rounded-xl text-[8px] font-black uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1 ${isDarkMode ? 'bg-blue-900/30 text-blue-400 border border-blue-800/50 hover:bg-blue-800/40' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'}`}
+                                    >
+                                        <Edit2 className="w-3.5 h-3.5" /> Editar
+                                    </button>
+                                    {canSign && (
+                                        <>
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); handleForceActivateOrder(o); }} 
+                                                className={`flex-1 px-1 py-2.5 ${isDarkMode ? 'bg-emerald-900/30 text-emerald-400 border-emerald-800/50 hover:bg-emerald-800/40' : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'} rounded-xl text-[8px] font-black uppercase tracking-wider transition-all border shadow-lg shadow-emerald-500/10 active:scale-95 flex items-center justify-center gap-1`}
+                                                title="Liberar sem assinatura digital (Física)"
+                                            >
+                                                <Zap className="w-3.5 h-3.5" /> Iniciar
+                                            </button>
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); handleChSopSign(o); }} 
+                                                className="flex-1 px-1 py-2.5 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl text-[8px] font-black uppercase tracking-wider hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/25 active:scale-95 flex items-center justify-center gap-1" 
+                                                title="Assinar Digitalmente"
+                                            >
+                                                <FileSignature className="w-3.5 h-3.5" /> Assinar
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))}
