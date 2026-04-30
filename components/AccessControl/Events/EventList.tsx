@@ -118,50 +118,6 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
 
                 <div className={`p-4 rounded-xl border mb-6 ${dk ? 'bg-slate-700/30 border-slate-600/50' : 'bg-slate-50 border-slate-200'}`}>
                     <div className="flex flex-col md:flex-row gap-6 items-start md:items-center mb-4">
-                        {/* Event Image */}
-                        {selectedEvent.image_url ? (
-                            <div className="w-full md:w-32 aspect-video md:aspect-square rounded-xl overflow-hidden shadow-lg border border-slate-300 dark:border-slate-600 shrink-0 relative group">
-                                <img src={selectedEvent.image_url} alt="Evento" className="w-full h-full object-cover" />
-                                {(user.role === 'Gestor Master / OSD' || user.role === 'Comandante OM') && (
-                                    <button 
-                                        onClick={async () => {
-                                            if (!window.confirm('Deseja remover a imagem atual?')) return;
-                                            try {
-                                                await eventService.deleteEventImage(selectedEvent.image_url!);
-                                                // Update local status to remove image_url
-                                                const { error } = await supabase.from('events').update({ image_url: null }).eq('id', selectedEvent.id);
-                                                if (!error) {
-                                                    setSelectedEvent({ ...selectedEvent, image_url: undefined });
-                                                    setEvents(prev => prev.map(ev => ev.id === selectedEvent.id ? { ...ev, image_url: undefined } : ev));
-                                                }
-                                                // setSelectedEvent({ ...selectedEvent, image_url: undefined });
-                                            } catch { alert('Erro ao remover imagem.'); }
-                                        }}
-                                        className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                                    >
-                                        <p className="text-[10px] text-white font-black uppercase text-center px-2">Remover Imagem</p>
-                                    </button>
-                                )}
-                            </div>
-                        ) : (
-                            (user.role === 'Gestor Master / OSD' || user.role === 'Comandante OM') && (
-                                <div className="w-full md:w-32 aspect-video md:aspect-square rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center shrink-0 hover:border-blue-500 transition-colors bg-white/50 dark:bg-slate-800/50">
-                                    <label className="cursor-pointer flex flex-col items-center gap-1 group w-full h-full justify-center">
-                                        <Camera className={`w-6 h-6 ${textMuted} group-hover:text-blue-500 transition-colors`} />
-                                        <span className="text-[8px] font-black uppercase text-center text-slate-400 group-hover:text-blue-500">Adicionar Imagem</span>
-                                        <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
-                                            if (e.target.files && e.target.files[0]) {
-                                                try {
-                                                    const url = await eventService.updateEventImage(selectedEvent.id, e.target.files[0]);
-                                                    setSelectedEvent({ ...selectedEvent, image_url: url });
-                                                    setEvents(prev => prev.map(ev => ev.id === selectedEvent.id ? { ...ev, image_url: url } : ev));
-                                                } catch { alert('Erro ao subir imagem.'); }
-                                            }
-                                        }} />
-                                    </label>
-                                </div>
-                            )
-                        )}
                         <div className="flex-1">
                             <h3 className={`text-xl font-black uppercase tracking-tight ${textPrimary}`}>
                                 {selectedEvent.name || 'Evento sem Nome'}

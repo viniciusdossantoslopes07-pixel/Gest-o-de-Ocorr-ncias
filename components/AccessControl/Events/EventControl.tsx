@@ -255,11 +255,11 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                                 {selectedEvent.status === 'APPROVED' && (
                                     <button
                                         onClick={async () => {
-                                            if (!window.confirm('Finalizar este evento? A imagem de convite será excluída e nenhuma alteração poderá ser feita após isso.')) return;
+                                            if (!window.confirm('Finalizar este evento? Nenhuma alteração poderá ser feita após isso.')) return;
                                             try {
-                                                await eventService.finalizeEvent(selectedEvent.id, selectedEvent.image_url);
-                                                setEvents(prev => prev.map(e => e.id === selectedEvent.id ? { ...e, status: 'FINALIZED', image_url: undefined } : e));
-                                                setSelectedEvent(prev => prev?.id === selectedEvent.id ? { ...prev, status: 'FINALIZED', image_url: undefined } : prev);
+                                                await eventService.finalizeEvent(selectedEvent.id);
+                                                setEvents(prev => prev.map(e => e.id === selectedEvent.id ? { ...e, status: 'FINALIZED' } : e));
+                                                setSelectedEvent(prev => prev?.id === selectedEvent.id ? { ...prev, status: 'FINALIZED' } : prev);
                                             } catch { alert('Erro ao finalizar evento.'); }
                                         }}
                                         className="px-4 py-2 rounded-xl text-xs font-black uppercase bg-slate-900 text-white border border-slate-700 hover:bg-black transition-all"
@@ -305,51 +305,7 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                     </div>
                 )}
 
-                {/* Event info header */}
                 <div className={`p-6 rounded-xl border mb-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 ${dk ? 'bg-slate-700/30 border-slate-600/50' : 'bg-slate-50 border-slate-200'}`}>
-                    {/* Event Image */}
-                    {selectedEvent.image_url ? (
-                        <div className="w-full md:w-32 aspect-video md:aspect-square rounded-xl overflow-hidden shadow-lg border border-slate-300 dark:border-slate-600 shrink-0 relative group">
-                            <img src={selectedEvent.image_url} alt="Evento" className="w-full h-full object-cover" />
-                            {owned && selectedEvent.status !== 'FINALIZED' && (
-                                <button 
-                                    onClick={async () => {
-                                        if (!window.confirm('Deseja remover a imagem atual?')) return;
-                                        try {
-                                            await eventService.deleteEventImage(selectedEvent.image_url!);
-                                            const { error } = await supabase.from('events').update({ image_url: null }).eq('id', selectedEvent.id);
-                                            if (!error) {
-                                                setSelectedEvent({ ...selectedEvent, image_url: undefined });
-                                                setEvents(prev => prev.map(ev => ev.id === selectedEvent.id ? { ...ev, image_url: undefined } : ev));
-                                            }
-                                        } catch { alert('Erro ao remover imagem.'); }
-                                    }}
-                                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                                >
-                                    <p className="text-[10px] text-white font-black uppercase">Remover Imagem</p>
-                                </button>
-                            )}
-                        </div>
-                    ) : (
-                        owned && selectedEvent.status !== 'FINALIZED' && (
-                            <div className="w-full md:w-32 aspect-video md:aspect-square rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center shrink-0 hover:border-blue-500 transition-colors bg-white/50 dark:bg-slate-800/50">
-                                <label className="cursor-pointer flex flex-col items-center gap-1 group w-full h-full justify-center">
-                                    <Camera className={`w-6 h-6 ${tm} group-hover:text-blue-500 transition-colors`} />
-                                    <span className="text-[8px] font-black uppercase text-center text-slate-400 group-hover:text-blue-500">Adicionar Imagem</span>
-                                    <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
-                                        if (e.target.files && e.target.files[0]) {
-                                            try {
-                                                const url = await eventService.updateEventImage(selectedEvent.id, e.target.files[0]);
-                                                setSelectedEvent({ ...selectedEvent, image_url: url });
-                                                setEvents(prev => prev.map(ev => ev.id === selectedEvent.id ? { ...ev, image_url: url } : ev));
-                                            } catch { alert('Erro ao subir imagem.'); }
-                                        }
-                                    }} />
-                                </label>
-                            </div>
-                        )
-                    )}
-
                     <div className="flex-1 w-full">
                         <div className="flex flex-wrap items-center gap-2 mb-3">
                              <div className={`text-[12px] font-black uppercase px-4 py-1.5 rounded-full border border-blue-500/30 shadow-lg ${dk ? 'bg-blue-500/20 text-blue-300' : 'bg-blue-600 text-white'}`}>

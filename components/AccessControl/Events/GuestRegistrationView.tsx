@@ -203,17 +203,6 @@ export default function GuestRegistrationView({ eventId, onComplete }: GuestRegi
                             </span>
                         </div>
 
-                        {event.image_url && (
-                            <div className="mb-6 -mx-6 sm:-mx-8 overflow-hidden border-y border-white/10 shadow-inner group relative">
-                                <img 
-                                    src={event.image_url} 
-                                    alt={event.name || 'Evento'} 
-                                    className="w-full h-auto max-h-[300px] object-cover transition-transform duration-700 group-hover:scale-105"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-blue-600/40 to-transparent"></div>
-                            </div>
-                        )}
-
                         <h2 className="text-2xl font-black uppercase tracking-tight leading-tight mb-2">
                             {event.name || 'Nome do Evento'}
                         </h2>
