@@ -136,7 +136,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
         } else {
             onAddPersonnel(formData);
         }
-        setFormData({ name: '', warName: '', rank: '', saram: '', cpf: '', sector: '', role: UserRole.OPERATIONAL });
+        setFormData({ name: '', warName: '', rank: '', saram: '', cpf: '', sector: '', role: UserRole.OPERATIONAL, administrativeRole: null });
         setIsAdding(false);
     };
 
@@ -156,7 +156,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
             rc: user.rc || '',
             workplace: user.workplace || '',
             emergency_contact: user.emergency_contact || '',
-            is_functional: user.is_functional || false
+            is_functional: user.is_functional || false,
+            administrativeRole: user.administrativeRole || null
         });
         setEditingId(user.id);
         setIsAdding(true);
@@ -305,6 +306,25 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                             <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Última Promoção</label>
                             <input type="date" value={formData.last_promotion_date || ''} onChange={e => setFormData({ ...formData, last_promotion_date: e.target.value })} className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} />
                         </div>
+
+                        {currentUserRole === UserRole.ADMIN && (
+                            <div className="space-y-1 lg:space-y-2">
+                                <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                    <Shield className="w-3 h-3" /> Função Especial
+                                </label>
+                                <select
+                                    value={formData.administrativeRole || ''}
+                                    onChange={e => setFormData({ ...formData, administrativeRole: e.target.value as any || null })}
+                                    className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                >
+                                    <option value="">Nenhuma</option>
+                                    <option value="CMT_GSD_SP">CMT DO GSD-SP</option>
+                                    <option value="CH_OP_GSD_SP">CHEFE DA SEÇÃO DE OPERAÇÕES</option>
+                                    <option value="CMT_BASP">CMT DA BASP</option>
+                                    <option value="CH_SAP">CHEFE DA SAP</option>
+                                </select>
+                            </div>
+                        )}
 
                         <div className="space-y-1 lg:space-y-2 flex items-end pb-3">
                             <label className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer ${formData.is_functional ? (isDarkMode ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400' : 'bg-indigo-50 border-indigo-200 text-indigo-700') : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-500')}`}>

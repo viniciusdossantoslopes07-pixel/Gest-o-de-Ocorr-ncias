@@ -382,12 +382,16 @@ ${content.outerHTML}
                         <div className="mt-16 sm:mt-24 mb-4 flex justify-between px-2 sm:px-8 text-center print:mt-20">
                             <div className="flex flex-col items-center w-1/2 px-2">
                                 <div className="w-48 h-px bg-slate-400 mb-2"></div>
-                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">JOÃO GABRIEL PICCOLI E SOUZA Maj Inf</p>
+                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">
+                                    {order.chSopName || (new Date(order.createdAt) < new Date('2026-05-01') ? 'JOÃO GABRIEL PICCOLI E SOUZA Maj Inf' : '________________________________________')}
+                                </p>
                                 <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">CHEFE DA SEÇÃO DE OPERAÇÕES</p>
                             </div>
                             <div className="flex flex-col items-center w-1/2 px-2">
                                 <div className="w-48 h-px bg-slate-400 mb-2"></div>
-                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">FELIPE BARBOSA ALVARENGA Ten Cel Inf</p>
+                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">
+                                    {order.cmtName || (new Date(order.createdAt) < new Date('2026-05-01') ? 'FELIPE BARBOSA ALVARENGA Ten Cel Inf' : '________________________________________')}
+                                </p>
                                 <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">CMT DO GSD-SP</p>
                             </div>
                         </div>

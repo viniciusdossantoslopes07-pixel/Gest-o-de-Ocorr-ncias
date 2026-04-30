@@ -142,6 +142,8 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 missionCommanderId: o.mission_commander_id,
                 isExternalCommander: o.is_external_commander,
                 externalCommanderName: o.external_commander_name,
+                cmtName: o.cmt_name,
+                chSopName: o.ch_sop_name,
                 chSopSignature: o.ch_sop_signature,
                 startTime: o.start_time,
                 endTime: o.end_time,
@@ -280,7 +282,9 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
             date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0], // Default to today
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            chSopSignature: undefined // Remove signature
+            chSopSignature: undefined, // Remove signature
+            cmtName: undefined,
+            chSopName: undefined
         };
         
         setSelectedOrder(clonedOrder as MissionOrder);
@@ -357,6 +361,8 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 status: 'AGUARDANDO_ASSINATURA', // Ready for CH-SOP
                 created_at: isEditing ? selectedOrder!.createdAt : new Date().toISOString(),
                 created_by: isEditing ? selectedOrder!.createdBy : user.name,
+                cmt_name: orderData.cmtName || null,
+                ch_sop_name: orderData.chSopName || null,
                 updated_at: new Date().toISOString()
             };
 

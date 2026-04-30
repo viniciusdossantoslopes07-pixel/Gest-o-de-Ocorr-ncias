@@ -9,7 +9,7 @@ interface MissionOrderFormProps {
     onSubmit: (order: Partial<MissionOrder>) => void;
     onCancel: () => void;
     currentUser: string;
-    users: { id: string; name: string; rank: string; warName?: string; saram: string; phoneNumber?: string }[];
+    users: { id: string; name: string; rank: string; warName?: string; saram: string; phoneNumber?: string; administrativeRole?: string | null }[];
     isDarkMode?: boolean;
     isSubmitting?: boolean;
     requestContext?: string;
@@ -147,14 +147,27 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
             return;
         }
 
+        const currentCmt = users.find(u => u.administrativeRole === 'CMT_GSD_SP');
+        const currentChSop = users.find(u => u.administrativeRole === 'CH_OP_GSD_SP');
+
+        const cmtNameStr = currentCmt ? `${currentCmt.name} ${currentCmt.rank}` : '';
+        const chSopNameStr = currentChSop ? `${currentChSop.name} ${currentChSop.rank}` : '';
+
         onSubmit({
             ...formData,
             personnel,
             schedule,
             createdBy: currentUser,
+            cmtName: order?.cmtName || cmtNameStr,
+            chSopName: order?.chSopName || chSopNameStr,
             updatedAt: new Date().toISOString()
         });
     };
+
+    const currentCmt = users.find(u => u.administrativeRole === 'CMT_GSD_SP');
+    const currentChSop = users.find(u => u.administrativeRole === 'CH_OP_GSD_SP');
+    const cmtNameStr = order?.cmtName || (currentCmt ? `${currentCmt.name} ${currentCmt.rank}` : '');
+    const chSopNameStr = order?.chSopName || (currentChSop ? `${currentChSop.name} ${currentChSop.rank}` : '');
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
@@ -966,6 +979,30 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                         />
                     </div>
                 )}
+            </div>
+
+            {/* Signatures */}
+            <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} rounded-xl p-6 border space-y-4`}>
+                <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest`}>Assinaturas</h3>
+                <p className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                    As assinaturas abaixo serão utilizadas na geração da OMIS. Elas são atribuídas automaticamente de acordo com as funções cadastradas no perfil dos militares.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
+                    <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'} text-center`}>
+                        <div className="w-full h-px bg-slate-300 dark:bg-slate-600 mb-3 mx-auto w-3/4"></div>
+                        <p className={`text-[10px] sm:text-xs font-black uppercase ${cmtNameStr ? (isDarkMode ? 'text-slate-200' : 'text-slate-800') : 'text-red-500'}`}>
+                            {cmtNameStr || 'ATENÇÃO: NENHUM CMT GSD-SP ATRIBUÍDO'}
+                        </p>
+                        <p className={`text-[9px] sm:text-[10px] font-bold mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>CMT DO GSD-SP</p>
+                    </div>
+                    <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'} text-center`}>
+                        <div className="w-full h-px bg-slate-300 dark:bg-slate-600 mb-3 mx-auto w-3/4"></div>
+                        <p className={`text-[10px] sm:text-xs font-black uppercase ${chSopNameStr ? (isDarkMode ? 'text-slate-200' : 'text-slate-800') : 'text-red-500'}`}>
+                            {chSopNameStr || 'ATENÇÃO: NENHUM CHEFE SOP ATRIBUÍDO'}
+                        </p>
+                        <p className={`text-[9px] sm:text-[10px] font-bold mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>CHEFE DA SEÇÃO DE OPERAÇÕES</p>
+                    </div>
+                </div>
             </div>
 
             {/* Actions */}
