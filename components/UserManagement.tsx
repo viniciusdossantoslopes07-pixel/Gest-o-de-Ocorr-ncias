@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useMemo, type FC, type FormEvent } from 'react';
 import { User, UserRole } from '../types';
-import { RANKS } from '../constants';
+import { RANKS, getRankPriority } from '../constants';
 import { useSectors } from '../contexts/SectorsContext';
 import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown, ShieldCheck, Settings, Search, X, Users, Briefcase, Download } from 'lucide-react';
 import PermissionManagement from './PermissionManagement';
@@ -102,6 +102,11 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
       const matchesFunctional = showFunctional ? user.is_functional === true : user.is_functional !== true;
 
       return matchesSearch && matchesCategory && matchesRank && matchesFunctional;
+    }).sort((a, b) => {
+      const priorityA = getRankPriority(a.rank || '');
+      const priorityB = getRankPriority(b.rank || '');
+      if (priorityA !== priorityB) return priorityA - priorityB;
+      return a.name.localeCompare(b.name);
     });
   }, [users, searchTerm, selectedCategory, selectedRank, showFunctional]);
 
@@ -727,8 +732,16 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                         {u.warName?.[0] || u.name?.[0]}
                       </div>
                       <div>
-                        <div className={`font-black uppercase tracking-tight text-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{u.rank} {u.warName || u.name.split(' ')[0]}</div>
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">@{u.username} • {u.saram}</div>
+                        <div className={`font-black uppercase tracking-tight text-sm flex flex-wrap items-center gap-2 ${u.administrativeRole ? 'text-amber-600 dark:text-amber-400' : (isDarkMode ? 'text-white' : 'text-slate-900')}`}>
+                          {u.rank} {u.warName || u.name.split(' ')[0]}
+                          {u.administrativeRole && (
+                            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50" title="Função Especial">
+                              <Crown className="w-2.5 h-2.5" />
+                              {u.administrativeRole.replace(/_/g, ' ')}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">@{u.username} • {u.saram}</div>
                         {u.is_functional && (
                           <div className={`mt-1 w-fit px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400 flex items-center gap-1`}>
                             <Briefcase className="w-2 h-2" /> CONTA FUNCIONAL
@@ -799,15 +812,21 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                         <div className="flex items-center gap-2">
                           <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-500'}`}>ID {u.militarId || '0'}</span>
                           <div>
-                            <div className={`font-bold flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                            <div className={`font-bold flex items-center flex-wrap gap-2 ${u.administrativeRole ? 'text-amber-600 dark:text-amber-400' : (isDarkMode ? 'text-white' : 'text-slate-900')}`}>
                               {u.name}
+                              {u.administrativeRole && (
+                                <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50" title="Função Especial">
+                                  <Crown className="w-2.5 h-2.5" />
+                                  {u.administrativeRole.replace(/_/g, ' ')}
+                                </span>
+                              )}
                               {u.is_functional && (
                                 <span className={`px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-widest bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400 flex items-center gap-1 border border-indigo-200 dark:border-indigo-800`}>
                                   <Briefcase className="w-2 h-2" /> FUNCIONAL
                                 </span>
                               )}
                             </div>
-                            <div className="text-[10px] text-slate-400 font-bold uppercase">{u.rank}</div>
+                            <div className={`text-[10px] font-bold uppercase ${u.administrativeRole ? 'text-amber-500' : 'text-slate-400'}`}>{u.rank}</div>
                           </div>
                         </div>
                       </td>
