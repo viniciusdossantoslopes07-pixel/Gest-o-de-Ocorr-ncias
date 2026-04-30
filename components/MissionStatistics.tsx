@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, Fragment } from 'react';
 import { MissionOrder, User } from '../types';
 import {
     AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -220,7 +220,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     };
 
     return (
-        <div className="space-y-6 pb-16 animate-in fade-in duration-500">
+        <Fragment>
+            <div className="space-y-6 pb-16 animate-in fade-in duration-500">
 
             {/* Header / Period Switcher */}
             <div className={`p-5 rounded-[2.5rem] border flex flex-col md:flex-row items-center justify-between gap-4 ${isDarkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
@@ -625,10 +626,18 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 />
             )}
 
+            </div>
+
             {/* KPI Detail Modal (Estilo Cupom) */}
             {selectedKpi && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} w-full max-w-lg shadow-2xl rounded-[2.5rem] border overflow-hidden flex flex-col max-h-[85vh] animate-in slide-in-from-bottom-8 duration-500`}>
+                <div 
+                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300"
+                    onClick={() => setSelectedKpi(null)}
+                >
+                    <div 
+                        className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} w-full max-w-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-[2.5rem] border overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-300`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <div className={`p-6 border-b border-dashed ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} flex items-center justify-between bg-gradient-to-r ${
                             selectedKpi.color === 'emerald' ? 'from-emerald-500/10' : 
                             selectedKpi.color === 'amber'   ? 'from-amber-500/10' : 
@@ -702,6 +711,6 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                     </div>
                 </div>
             )}
-        </div>
+        </Fragment>
     );
 }
