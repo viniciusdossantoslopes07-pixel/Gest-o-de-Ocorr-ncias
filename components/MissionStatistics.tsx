@@ -7,7 +7,7 @@ import {
 import {
     Target, Users, CheckCircle, Clock, Calendar,
     MapPin, Zap, Activity, XCircle, ChevronDown, ChevronUp,
-    ShieldCheck, ArrowRight, Printer, Search
+    ShieldCheck, ArrowRight, Printer, Search, List
 } from 'lucide-react';
 import { formatDisplayDate } from '../utils/formatters';
 import MissionSummaryPrintView from './MissionSummaryPrintView';
@@ -42,6 +42,9 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     const [printDateStart, setPrintDateStart] = useState(todayStr);
     const [printDateEnd, setPrintDateEnd] = useState(todayStr);
     const [showPrintSummary, setShowPrintSummary] = useState(false);
+    
+    // --- Detail Modal State ---
+    const [selectedKpi, setSelectedKpi] = useState<{ title: string; color: string; list: MissionOrder[] } | null>(null);
 
     const printOrders = useMemo(() => {
         if (!printDateStart) return [];
@@ -245,16 +248,26 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             {/* KPI Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
                 {/* 1. Total OMIS */}
-                <div className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/10 cursor-default border-transparent hover:border-blue-500/20`}>
+                <button 
+                    onClick={() => setSelectedKpi({ title: 'Total OMIS', color: 'blue', list: filteredOrders })}
+                    className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/10 text-left border-transparent hover:border-blue-500/20`}
+                >
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-all duration-300 group-hover:scale-110 ${isDarkMode ? 'text-blue-400 bg-blue-500/10' : 'text-blue-600 bg-blue-50'}`}>
                         <Target className="w-5 h-5" />
                     </div>
                     <p className={label}>Total OMIS</p>
                     <h3 className={`text-3xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{total}</h3>
-                </div>
+                </button>
 
-                {/* 2. KPI Ativas - Mover para aqui */}
-                <div className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-emerald-500/10 cursor-default border-transparent hover:border-emerald-500/20`}>
+                {/* 2. KPI Ativas */}
+                <button 
+                    onClick={() => setSelectedKpi({ 
+                        title: 'Missões Ativas', 
+                        color: 'emerald', 
+                        list: filteredOrders.filter(o => ['EM_MISSAO', 'PRONTA_PARA_EXECUCAO'].includes(o.status || ''))
+                    })}
+                    className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-emerald-500/10 text-left border-transparent hover:border-emerald-500/20`}
+                >
                     <span className="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-all duration-300 group-hover:scale-110 ${isDarkMode ? 'text-emerald-400 bg-emerald-500/10' : 'text-emerald-600 bg-emerald-50'}`}>
                         <Zap className="w-5 h-5" />
@@ -269,26 +282,57 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                             {readyToStart} prontas
                         </p>
                     </div>
-                </div>
+                </button>
 
                 {/* Other KPIs */}
                 {[
-                    { icon: <CheckCircle className="w-5 h-5" />, lbl: 'Concluídas', val: completed, color: 'emerald' },
-                    { icon: <Clock className="w-5 h-5" />, lbl: 'Pendentes', val: pending, color: 'amber' },
-                    { icon: <XCircle className="w-5 h-5" />, lbl: 'Canceladas', val: cancelled, color: 'red' },
-                    { icon: <Users className="w-5 h-5" />, lbl: 'Efetivo', val: totalPersonnel, color: 'purple' },
+                    { 
+                        icon: <CheckCircle className="w-5 h-5" />, 
+                        lbl: 'Concluídas', 
+                        val: completed, 
+                        color: 'emerald',
+                        list: filteredOrders.filter(o => o.status === 'CONCLUIDA')
+                    },
+                    { 
+                        icon: <Clock className="w-5 h-5" />, 
+                        lbl: 'Pendentes', 
+                        val: pending, 
+                        color: 'amber',
+                        list: filteredOrders.filter(o => ['GERADA','PENDENTE_SOP','EM_ELABORACAO','AGUARDANDO_ASSINATURA'].includes(o.status || ''))
+                    },
+                    { 
+                        icon: <XCircle className="w-5 h-5" />, 
+                        lbl: 'Canceladas', 
+                        val: cancelled, 
+                        color: 'red',
+                        list: filteredOrders.filter(o => o.status === 'CANCELADA')
+                    },
+                    { 
+                        icon: <Users className="w-5 h-5" />, 
+                        lbl: 'Efetivo', 
+                        val: totalPersonnel, 
+                        color: 'purple',
+                        list: filteredOrders
+                    },
                 ].map(kpi => (
-                    <div key={kpi.lbl} className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-${kpi.color}-500/10 cursor-default border-transparent hover:border-${kpi.color}-500/20`}>
+                    <button 
+                        key={kpi.lbl} 
+                        onClick={() => setSelectedKpi({ title: kpi.lbl, color: kpi.color, list: kpi.list })}
+                        className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-${kpi.color}-500/10 text-left border-transparent hover:border-${kpi.color}-500/20`}
+                    >
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-all duration-300 group-hover:scale-110 text-${kpi.color}-${isDarkMode ? '400' : '600'} bg-${kpi.color}-${isDarkMode ? '500/10' : '50'}`}>
                             {kpi.icon}
                         </div>
                         <p className={label}>{kpi.lbl}</p>
                         <h3 className={`text-3xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{kpi.val}</h3>
-                    </div>
+                    </button>
                 ))}
                 
                 {/* KPI Sobreaviso - Novo Card */}
-                <div className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-500/10 cursor-default border-transparent hover:border-indigo-500/20`}>
+                <button 
+                    onClick={() => setSelectedKpi({ title: 'Sobreaviso', color: 'indigo', list: sobreavisoOrders })}
+                    className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-500/10 text-left border-transparent hover:border-indigo-500/20`}
+                >
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-all duration-300 group-hover:scale-110 ${isDarkMode ? 'text-indigo-400 bg-indigo-500/10' : 'text-indigo-600 bg-indigo-50'}`}>
                         <Clock className="w-5 h-5" />
                     </div>
@@ -299,7 +343,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                             {sobreavisoPersonnel} militares escalados
                         </p>
                     </div>
-                </div>
+                </button>
 
 
             </div>
@@ -579,6 +623,84 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                     dateEnd={printDateEnd || printDateStart}
                     onClose={() => setShowPrintSummary(false)}
                 />
+            )}
+
+            {/* KPI Detail Modal (Estilo Cupom) */}
+            {selectedKpi && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} w-full max-w-lg shadow-2xl rounded-[2.5rem] border overflow-hidden flex flex-col max-h-[85vh] animate-in slide-in-from-bottom-8 duration-500`}>
+                        <div className={`p-6 border-b border-dashed ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} flex items-center justify-between bg-gradient-to-r ${
+                            selectedKpi.color === 'emerald' ? 'from-emerald-500/10' : 
+                            selectedKpi.color === 'amber'   ? 'from-amber-500/10' : 
+                            selectedKpi.color === 'red'     ? 'from-red-500/10' : 
+                            selectedKpi.color === 'purple'  ? 'from-purple-500/10' : 
+                            selectedKpi.color === 'indigo'  ? 'from-indigo-500/10' : 
+                            'from-blue-500/10'
+                        } to-transparent`}>
+                            <div className="flex items-center gap-4">
+                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${isDarkMode ? `bg-${selectedKpi.color}-500/20 text-${selectedKpi.color}-400` : `bg-${selectedKpi.color}-600 text-white`}`}>
+                                    <List className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{selectedKpi.title}</h3>
+                                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Listagem de Missões Vinculadas</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setSelectedKpi(null)}
+                                className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-slate-100 text-slate-400'}`}
+                            >
+                                <XCircle className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        {/* Corpo do Cupom (Lista) */}
+                        <div className="p-6 overflow-y-auto flex-1 scrollbar-hide space-y-3">
+                            {selectedKpi.list.length === 0 ? (
+                                <div className="py-12 text-center space-y-3">
+                                    <Search className="w-12 h-12 mx-auto opacity-10" />
+                                    <p className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-600' : 'text-slate-300'}`}>Nenhuma missão encontrada</p>
+                                </div>
+                            ) : (
+                                selectedKpi.list.map((order, i) => (
+                                    <div 
+                                        key={order.id}
+                                        className={`p-4 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-950/40 border-slate-800 hover:border-slate-700' : 'bg-slate-50/50 border-slate-100 hover:bg-white hover:shadow-lg'}`}
+                                    >
+                                        <div className="flex items-center justify-between gap-3 mb-2">
+                                            <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${isDarkMode ? 'bg-slate-900 border-slate-800 text-blue-400' : 'bg-white border-slate-200 text-blue-700'}`}>
+                                                OM #{order.omisNumber || 'S/N'}
+                                            </span>
+                                            <span className={`text-[10px] font-black uppercase tracking-tighter ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                                {formatDisplayDate(order.date)}
+                                            </span>
+                                        </div>
+                                        <h4 className={`text-sm font-black uppercase tracking-tight mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{order.mission}</h4>
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div className="flex items-center gap-2">
+                                                <MapPin className="w-3 h-3 text-slate-500" />
+                                                <span className={`text-[10px] font-bold uppercase truncate max-w-[150px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{order.location}</span>
+                                            </div>
+                                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full`} style={{ backgroundColor: (STATUS_META[order.status||'']?.color || '#64748b') + '22', color: STATUS_META[order.status||'']?.color || '#64748b' }}>
+                                                {STATUS_META[order.status||'']?.label || order.status}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        {/* Footer do Cupom */}
+                        <div className={`p-6 border-t border-dashed ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} bg-slate-950/20`}>
+                            <button 
+                                onClick={() => setSelectedKpi(null)}
+                                className={`w-full py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all ${isDarkMode ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-xl'}`}
+                            >
+                                Fechar Detalhes
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

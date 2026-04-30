@@ -1172,33 +1172,42 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
 
                             return (
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-                                    <div className={`${isDarkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-slate-50 border-slate-200'} p-3 sm:p-4 rounded-[1.5rem] sm:rounded-3xl border flex items-center gap-3 sm:gap-4`}>
-                                        <div className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
+                                    <button 
+                                        onClick={() => setHistoryFilter('ALL')}
+                                        className={`${isDarkMode ? 'bg-slate-950/50 border-slate-800 hover:bg-slate-900' : 'bg-slate-50 border-slate-200 hover:bg-white'} p-3 sm:p-4 rounded-[1.5rem] sm:rounded-3xl border flex items-center gap-3 sm:gap-4 transition-all hover:scale-[1.02] hover:shadow-lg text-left w-full group`}
+                                    >
+                                        <div className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl transition-all group-hover:scale-110 ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
                                             <History className="w-4 h-4 sm:w-5 sm:h-5" />
                                         </div>
                                         <div>
                                             <p className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Total Histórico</p>
                                             <p className={`text-lg sm:text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{total}</p>
                                         </div>
-                                    </div>
-                                    <div className={`${isDarkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-slate-50 border-slate-200'} p-3 sm:p-4 rounded-[1.5rem] sm:rounded-3xl border flex items-center gap-3 sm:gap-4`}>
-                                        <div className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl ${isDarkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-100 text-emerald-600'}`}>
+                                    </button>
+                                    <button 
+                                        onClick={() => setHistoryFilter('CONCLUIDA')}
+                                        className={`${isDarkMode ? 'bg-slate-950/50 border-slate-800 hover:bg-slate-900' : 'bg-slate-50 border-slate-200 hover:bg-white'} p-3 sm:p-4 rounded-[1.5rem] sm:rounded-3xl border flex items-center gap-3 sm:gap-4 transition-all hover:scale-[1.02] hover:shadow-lg text-left w-full group`}
+                                    >
+                                        <div className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl transition-all group-hover:scale-110 ${isDarkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-100 text-emerald-600'}`}>
                                             <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                                         </div>
                                         <div>
                                             <p className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Concluídas</p>
                                             <p className={`text-lg sm:text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{completed.length}</p>
                                         </div>
-                                    </div>
-                                    <div className={`${isDarkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-slate-50 border-slate-200'} p-3 sm:p-4 rounded-[1.5rem] sm:rounded-3xl border flex items-center gap-3 sm:gap-4`}>
-                                        <div className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl ${isDarkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-600'}`}>
+                                    </button>
+                                    <button 
+                                        onClick={() => setHistoryFilter('CANCELADA')}
+                                        className={`${isDarkMode ? 'bg-slate-950/50 border-slate-800 hover:bg-slate-900' : 'bg-slate-50 border-slate-200 hover:bg-white'} p-3 sm:p-4 rounded-[1.5rem] sm:rounded-3xl border flex items-center gap-3 sm:gap-4 transition-all hover:scale-[1.02] hover:shadow-lg text-left w-full group`}
+                                    >
+                                        <div className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl transition-all group-hover:scale-110 ${isDarkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-600'}`}>
                                             <XCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                                         </div>
                                         <div>
                                             <p className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Canceladas</p>
                                             <p className={`text-lg sm:text-xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{cancelled.length}</p>
                                         </div>
-                                    </div>
+                                    </button>
                                 </div>
                             );
                         })()}
