@@ -261,5 +261,15 @@ export const eventService = {
         } catch (err) {
             console.error('Erro ao processar exclusão de imagem:', err);
         }
+    },
+
+    async updateEventImage(eventId: string, file: File): Promise<string> {
+        const url = await eventService.uploadEventImage(file);
+        const { error } = await supabase
+            .from('events')
+            .update({ image_url: url })
+            .eq('id', eventId);
+        if (error) throw error;
+        return url;
     }
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../services/supabase';
 import { AccessEvent, EventGuest } from '../../../types';
-import { ArrowLeft, UserPlus, X, Car, Calendar, MapPin, Users, Printer, Share2, CheckCircle, AlertCircle, Lock } from 'lucide-react';
+import { ArrowLeft, UserPlus, X, Car, Calendar, MapPin, Users, Printer, Share2, CheckCircle, AlertCircle, Lock, Camera } from 'lucide-react';
 import { formatDisplayDate } from '../../../utils/formatters';
 import { eventService } from '../../../services/eventService';
 import EventPrintView from './EventPrintView';
@@ -202,8 +202,10 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
                     {event.status !== 'FINALIZED' && (
                         <button
                             onClick={() => {
-                                const link = `${window.location.origin}?guestEvent=${event.id}`;
-                                navigator.clipboard.writeText(link);
+                                const url = `${window.location.origin}?guestEvent=${event.id}`;
+                                const eventName = event.name ? ` (${event.name.toUpperCase()})` : '';
+                                const shareText = `Convite${eventName}: ${url}`;
+                                navigator.clipboard.writeText(shareText);
                                 setCopied(true);
                                 setTimeout(() => setCopied(false), 2000);
                             }}
@@ -237,9 +239,55 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
                 )}
 
                 <div className={`p-4 rounded-2xl border ${sectionBg} ${dk ? 'border-slate-700' : 'border-slate-200'}`}>
-                    <h3 className="text-lg font-bold uppercase mb-3 flex items-center gap-2">
-                        <Calendar className="w-5 h-5 text-blue-500" /> {event.name || 'Evento sem nome'}
-                    </h3>
+                    <div className="flex flex-col md:flex-row gap-6 items-start md:items-center mb-6">
+                        {/* Event Image */}
+                        {event.image_url ? (
+                            <div className="w-full md:w-32 aspect-video md:aspect-square rounded-2xl overflow-hidden shadow-lg border border-slate-300 dark:border-slate-600 shrink-0 relative group">
+                                <img src={event.image_url} alt="Evento" className="w-full h-full object-cover" />
+                                {event.status !== 'FINALIZED' && (
+                                    <button 
+                                        onClick={async () => {
+                                            if (!window.confirm('Deseja remover a imagem atual?')) return;
+                                            try {
+                                                await eventService.deleteEventImage(event.image_url!);
+                                                // Update local state to reflect removal
+                                                const { error } = await supabase.from('events').update({ image_url: null }).eq('id', event.id);
+                                                if (!error) setEvent({ ...event, image_url: undefined });
+                                            } catch { alert('Erro ao remover imagem.'); }
+                                        }}
+                                        className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                    >
+                                        <p className="text-[10px] text-white font-black uppercase text-center px-2">Remover Imagem</p>
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            event.status !== 'FINALIZED' && (
+                                <div className="w-full md:w-32 aspect-video md:aspect-square rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center shrink-0 hover:border-blue-500 transition-colors bg-white/50 dark:bg-slate-800/50">
+                                    <label className="cursor-pointer flex flex-col items-center gap-1 group w-full h-full justify-center">
+                                        <Camera className={`w-6 h-6 ${textSub} group-hover:text-blue-500 transition-colors`} />
+                                        <span className="text-[8px] font-black uppercase text-center text-slate-400 group-hover:text-blue-500 px-2">Adicionar Imagem</span>
+                                        <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                                            if (e.target.files && e.target.files[0]) {
+                                                try {
+                                                    const url = await eventService.updateEventImage(event.id, e.target.files[0]);
+                                                    setEvent({ ...event, image_url: url });
+                                                } catch { alert('Erro ao subir imagem.'); }
+                                            }
+                                        }} />
+                                    </label>
+                                </div>
+                            )
+                        )}
+                        <div className="flex-1">
+                            <h3 className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
+                                <Calendar className="w-5 h-5 text-blue-500" /> {event.name || 'Evento sem nome'}
+                            </h3>
+                            <p className={`text-xs font-bold ${textSub}`}>
+                                Painel de Gerenciamento do Organizador
+                            </p>
+                        </div>
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <span className={`block text-[10px] font-bold uppercase tracking-widest ${textSub}`}>Responsável</span>
