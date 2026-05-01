@@ -124,7 +124,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     const readyToStart = filteredOrders.filter(o => o.status === 'PRONTA_PARA_EXECUCAO').length;
     const cancelled = filteredOrders.filter(o => o.status === 'CANCELADA').length;
     const pending = filteredOrders.filter(o => ['GERADA','PENDENTE_SOP','EM_ELABORACAO','AGUARDANDO_ASSINATURA'].includes(o.status || '')).length;
-    const successRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+    // const successRate = total > 0 ? Math.round((completed / total) * 100) : 0;
     const totalPersonnel = filteredOrders.reduce((s, o) => s + (o.personnel?.length || 0), 0);
     const sobreavisoCount = sobreavisoOrders.length;
     const sobreavisoPersonnel = sobreavisoOrders.reduce((s, o) => s + (o.personnel?.length || 0), 0);
@@ -171,15 +171,26 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     }, [filteredOrders]);
 
     // Internal vs External distribution
-    const internalExternalData = useMemo(() => {
-        const counts = { Interna: 0, Externa: 0 };
-        filteredOrders.forEach(o => {
-            if (o.isInternal) counts.Interna++;
-            else counts.Externa++;
-        });
         return [
             { name: 'Interna', value: counts.Interna, color: '#3b82f6' },
             { name: 'Externa', value: counts.Externa, color: '#10b981' }
+        ];
+    }, [filteredOrders]);
+
+    // Specialized Personnel Employment comparison
+    const specializedPersonnelData = useMemo(() => {
+        const counts = { SI: 0, PA: 0, REC: 0 };
+        filteredOrders.forEach(o => {
+            o.personnel?.forEach(p => {
+                if (p.function === 'Efetivo S.I') counts.SI++;
+                else if (p.function === 'Efetivo PA') counts.PA++;
+                else if (p.function === 'Efetivo REC') counts.REC++;
+            });
+        });
+        return [
+            { name: 'SI',  value: counts.SI,  color: '#3b82f6' },
+            { name: 'PA',  value: counts.PA,  color: '#f59e0b' },
+            { name: 'REC', value: counts.REC, color: '#10b981' }
         ];
     }, [filteredOrders]);
 
@@ -351,12 +362,30 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
 
             {/* Taxa de Sucesso + Missões Futuras destaque */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className={`${card} flex flex-col items-center justify-center text-center`}>
-                    <ShieldCheck className={`w-10 h-10 mb-3 ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                    <p className={label}>Taxa de Sucesso</p>
-                    <h3 className={`text-5xl font-black tracking-tighter mt-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{successRate}%</h3>
-                    <div className={`w-full mt-4 h-2 rounded-full ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} overflow-hidden`}>
-                        <div className="h-full rounded-full bg-emerald-500 transition-all duration-1000" style={{ width: `${successRate}%` }} />
+                <div className={`${card} flex flex-col`}>
+                    <div className="flex items-center gap-3 mb-4">
+                        <Users className={`w-5 h-5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                        <h3 className={`text-sm font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Emprego de Efetivo</h3>
+                    </div>
+                    
+                    <div className="flex-1 space-y-3">
+                        {specializedPersonnelData.map(item => (
+                            <div key={item.name} className="space-y-1">
+                                <div className="flex justify-between items-center">
+                                    <span className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Efetivo {item.name}</span>
+                                    <span className={`text-[11px] font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.value} empenhos</span>
+                                </div>
+                                <div className={`h-2 rounded-full ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} overflow-hidden`}>
+                                    <div 
+                                        className="h-full rounded-full transition-all duration-1000" 
+                                        style={{ 
+                                            width: `${Math.min(100, (item.value / (totalPersonnel || 1)) * 100 * 3)}%`, 
+                                            backgroundColor: item.color 
+                                        }} 
+                                    />
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
                 <div className={`md:col-span-2 ${card} flex flex-col`}>
