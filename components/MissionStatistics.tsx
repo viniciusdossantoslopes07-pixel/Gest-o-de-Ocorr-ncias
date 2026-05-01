@@ -248,9 +248,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
         <Fragment>
             <div className="space-y-6 pb-16 animate-in fade-in duration-500">
 
-            {/* Header / Period Switcher */}
-            <div className={`p-5 rounded-[2.5rem] border flex flex-col md:flex-row items-center justify-between gap-4 ${isDarkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-                <div className="flex items-center gap-4">
+            <div className={`p-5 rounded-[2.5rem] border flex flex-col xl:flex-row items-center justify-between gap-4 ${isDarkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                <div className="flex items-center gap-4 flex-shrink-0">
                     <div className={`w-12 h-12 rounded-[1.2rem] flex items-center justify-center ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-600 text-white'}`}>
                         <Activity className="w-6 h-6" />
                     </div>
@@ -259,13 +258,47 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                         <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Central de Inteligência Operacional</p>
                     </div>
                 </div>
+
+                {/* Controles de Impressão Integrados */}
+                <div className={`flex items-center gap-2 p-1.5 rounded-2xl ${isDarkMode ? 'bg-slate-800/40' : 'bg-slate-50 border border-slate-200'}`}>
+                    <div className="flex items-center gap-2 px-2 border-r border-dashed border-slate-700/50">
+                        <input
+                            type="date"
+                            value={printDateStart}
+                            onChange={e => setPrintDateStart(e.target.value)}
+                            className={`bg-transparent text-[10px] font-black outline-none focus:text-blue-400 transition-colors uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}
+                        />
+                        <span className="opacity-30">/</span>
+                        <input
+                            type="date"
+                            value={printDateEnd}
+                            min={printDateStart}
+                            onChange={e => setPrintDateEnd(e.target.value)}
+                            className={`bg-transparent text-[10px] font-black outline-none focus:text-blue-400 transition-colors uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}
+                        />
+                    </div>
+                    <button
+                        onClick={() => setShowPrintSummary(true)}
+                        disabled={!printDateStart}
+                        className={`p-2.5 rounded-xl transition-all active:scale-95 disabled:opacity-30 ${isDarkMode ? 'bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/40' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-600/20'}`}
+                    >
+                        <Printer className="w-4 h-4" />
+                    </button>
+                </div>
+
                 <div className={`flex items-center gap-1 p-1.5 rounded-2xl ${isDarkMode ? 'bg-slate-800/60' : 'bg-slate-100'}`}>
                     {(['today','week','month','year','all'] as const).map(p => (
                         <button
                             key={p}
                             onClick={() => setPeriod(p)}
-                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${period === p ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-blue-700 shadow-sm border border-slate-200') : (isDarkMode ? 'text-slate-500 hover:text-white' : 'text-slate-500 hover:text-slate-800')}`}
-                        >{p === 'today' ? 'Hoje' : p === 'week' ? '7D' : p === 'month' ? '30D' : p === 'year' ? 'Ano' : 'Tudo'}</button>
+                            className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all uppercase tracking-widest ${
+                                period === p 
+                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 scale-105' 
+                                    : `${isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'}`
+                            }`}
+                        >
+                            {p === 'today' ? 'Hoje' : p === 'week' ? '7D' : p === 'month' ? '30D' : p === 'year' ? 'Ano' : 'Tudo'}
+                        </button>
                     ))}
                 </div>
             </div>
@@ -610,56 +643,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 </div>
             </div>
 
-            {/* ===== DATE FILTER + PRINT SUMMARY ===== */}
-            <div className={`p-6 rounded-[2.5rem] border ${isDarkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-5">
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDarkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
-                            <Printer className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h3 className={`text-sm font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Imprimir Resumo de Missões</h3>
-                            <p className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Filtre por data e gere o documento oficial</p>
-                        </div>
-                    </div>
 
-                    <div className="flex flex-wrap items-end gap-3 flex-1">
-                        <div>
-                            <label className={`block text-[9px] font-black uppercase tracking-widest mb-1.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Data Inicial</label>
-                            <input
-                                type="date"
-                                value={printDateStart}
-                                onChange={e => setPrintDateStart(e.target.value)}
-                                className={`px-4 py-2.5 rounded-xl text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-500/30 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
-                            />
-                        </div>
-                        <div>
-                            <label className={`block text-[9px] font-black uppercase tracking-widest mb-1.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Data Final</label>
-                            <input
-                                type="date"
-                                value={printDateEnd}
-                                min={printDateStart}
-                                onChange={e => setPrintDateEnd(e.target.value)}
-                                className={`px-4 py-2.5 rounded-xl text-sm font-bold border outline-none focus:ring-2 focus:ring-indigo-500/30 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
-                            />
-                        </div>
-                        <div className="flex items-end gap-2">
-                            <div className={`px-4 py-2.5 rounded-xl text-[11px] font-black uppercase border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
-                                <Search className="w-4 h-4 inline mr-1" />
-                                {printOrders.length} missão(ões)
-                            </div>
-                            <button
-                                onClick={() => setShowPrintSummary(true)}
-                                disabled={!printDateStart}
-                                className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-                            >
-                                <Printer className="w-4 h-4" />
-                                Gerar Resumo
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             {/* Print Modal */}
             {showPrintSummary && (
