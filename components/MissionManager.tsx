@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import { supabase } from '../services/supabase';
 import { Mission, User, MissionOrder, UserRole } from '../types';
 import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint, Filter, MapPin, User as UserIcon, PlayCircle, History, Zap, Edit2, Mail, Copy, Trash2 } from 'lucide-react';
@@ -1333,57 +1333,62 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                                     );
                                 }
 
-                                return filtered.map(order => (
-                                    <div 
-                                        key={order.id} 
-                                        onClick={() => handlePrintOrder(order)}
-                                        className={`group p-5 sm:p-7 rounded-[1.5rem] sm:rounded-[2rem] border transition-all duration-300 cursor-pointer ${order.status === 'CONCLUIDA' ? (isDarkMode ? 'border-l-4 border-l-emerald-500 hover:border-emerald-500/50' : 'border-l-4 border-l-emerald-500 hover:shadow-xl') : (isDarkMode ? 'border-l-4 border-l-red-500 hover:border-red-500/50' : 'border-l-4 border-l-red-500 hover:shadow-xl')} ${isDarkMode ? 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-950/60 shadow-xl shadow-black/20' : 'bg-white border-slate-100 hover:border-blue-200 shadow-sm'}`}>
-                                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                                            <div className="flex-1 min-w-0 w-full">
-                                                <div className="flex flex-wrap items-center justify-between sm:justify-start gap-3 mb-3 sm:mb-4">
-                                                    <h3 className={`text-sm sm:text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-900'} truncate group-hover:text-blue-500 transition-colors max-w-[70%] sm:max-w-none`}>{order.mission}</h3>
-                                                    <span className={`px-2 sm:px-3 py-1 rounded-full text-[8px] sm:text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm ${order.status === 'CONCLUIDA' ? (isDarkMode ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border border-emerald-100') : (isDarkMode ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-700 border border-red-100')}`}>
-                                                        {order.status === 'CONCLUIDA' ? 'Concluída' : 'Cancelada'}
-                                                    </span>
-                                                </div>
-                                                <p className={`text-[11px] sm:text-sm mb-4 sm:mb-6 line-clamp-2 md:line-clamp-none ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} leading-relaxed`}>{order.description}</p>
-                                                <div className="flex flex-wrap items-center gap-3 sm:gap-8 text-[9px] sm:text-sm pt-3 sm:pt-4 border-t border-slate-800/20">
-                                                    <span className="flex items-center gap-1.5 text-slate-500 font-bold uppercase tracking-widest text-[8px] sm:text-[10px]"><Clock className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-blue-500" /> {isDarkMode ? 'Finalizada em:' : 'Data:'} {formatDisplayDate(order.date)}</span>
-                                                    <span className={`flex items-center gap-1.5 rounded-lg sm:rounded-xl px-2 sm:px-3 py-1 sm:py-1.5 whitespace-nowrap font-black uppercase tracking-widest text-[8px] sm:text-[10px] ${order.status === 'CANCELADA' ? (isDarkMode ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-200') : (isDarkMode ? 'bg-slate-950 text-blue-400 border border-slate-800' : 'bg-slate-100 text-slate-600 border border-slate-200')}`}>
-                                                        <Shield className="w-3 sm:w-3.5 h-3 sm:h-3.5" /> {order.omisNumber ? `OM #${order.omisNumber}` : 'OM: CANCELADA'}
-                                                    </span>
-                                                </div>
-                                                {order.missionReport && (
-                                                    <div className={`mt-4 sm:mt-5 p-4 sm:p-5 rounded-2xl sm:rounded-[1.5rem] border transition-all ${order.status === 'CANCELADA' ? (isDarkMode ? 'bg-red-500/5 border-red-500/20 text-red-200' : 'bg-red-50/50 border-red-100 text-red-700 shadow-inner') : (isDarkMode ? 'bg-slate-950 border-slate-800 text-slate-400' : 'bg-slate-50/80 border-slate-100 text-slate-500 shadow-inner')} text-[10px] sm:text-xs italic`}>
-                                                        <span className={`block sm:inline font-black not-italic sm:mr-3 uppercase text-[8px] sm:text-[9px] tracking-[0.2em] px-2 py-1 rounded-lg mb-2 sm:mb-0 w-fit ${order.status === 'CANCELADA' ? (isDarkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-600') : (isDarkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-200 text-slate-600')}`}>{order.status === 'CANCELADA' ? 'Motivo do Cancelamento' : 'Relato Operacional'}</span>
-                                                        <span className="leading-relaxed sm:leading-loose">{order.missionReport.replace('MISSÃO CANCELADA: ', '')}</span>
+                                return (
+                                    <Fragment>
+                                        {filtered.map(order => (
+                                            <div 
+                                                key={order.id} 
+                                                onClick={() => handlePrintOrder(order)}
+                                                className={`group p-5 sm:p-7 rounded-[1.5rem] sm:rounded-[2rem] border transition-all duration-300 cursor-pointer ${order.status === 'CONCLUIDA' ? (isDarkMode ? 'border-l-4 border-l-emerald-500 hover:border-emerald-500/50' : 'border-l-4 border-l-emerald-500 hover:shadow-xl') : (isDarkMode ? 'border-l-4 border-l-red-500 hover:border-red-500/50' : 'border-l-4 border-l-red-500 hover:shadow-xl')} ${isDarkMode ? 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-950/60 shadow-xl shadow-black/20' : 'bg-white border-slate-100 hover:border-blue-200 shadow-sm'}`}>
+                                                <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                                                    <div className="flex-1 min-w-0 w-full">
+                                                        <div className="flex flex-wrap items-center justify-between sm:justify-start gap-3 mb-3 sm:mb-4">
+                                                            <h3 className={`text-sm sm:text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-900'} truncate group-hover:text-blue-500 transition-colors max-w-[70%] sm:max-w-none`}>{order.mission}</h3>
+                                                            <span className={`px-2 sm:px-3 py-1 rounded-full text-[8px] sm:text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm ${order.status === 'CONCLUIDA' ? (isDarkMode ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border border-emerald-100') : (isDarkMode ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-700 border border-red-100')}`}>
+                                                                {order.status === 'CONCLUIDA' ? 'Concluída' : 'Cancelada'}
+                                                            </span>
+                                                        </div>
+                                                        <p className={`text-[11px] sm:text-sm mb-4 sm:mb-6 line-clamp-2 md:line-clamp-none ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} leading-relaxed`}>{order.description}</p>
+                                                        <div className="flex flex-wrap items-center gap-3 sm:gap-8 text-[9px] sm:text-sm pt-3 sm:pt-4 border-t border-slate-800/20">
+                                                            <span className="flex items-center gap-1.5 text-slate-500 font-bold uppercase tracking-widest text-[8px] sm:text-[10px]"><Clock className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-blue-500" /> {isDarkMode ? 'Finalizada em:' : 'Data:'} {formatDisplayDate(order.date)}</span>
+                                                            <span className={`flex items-center gap-1.5 rounded-lg sm:rounded-xl px-2 sm:px-3 py-1 sm:py-1.5 whitespace-nowrap font-black uppercase tracking-widest text-[8px] sm:text-[10px] ${order.status === 'CANCELADA' ? (isDarkMode ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-200') : (isDarkMode ? 'bg-slate-950 text-blue-400 border border-slate-800' : 'bg-slate-100 text-slate-600 border border-slate-200')}`}>
+                                                                <Shield className="w-3 sm:w-3.5 h-3 sm:h-3.5" /> {order.omisNumber ? `OM #${order.omisNumber}` : 'OM: CANCELADA'}
+                                                            </span>
+                                                        </div>
+                                                        {order.missionReport && (
+                                                            <div className={`mt-4 sm:mt-5 p-4 sm:p-5 rounded-2xl sm:rounded-[1.5rem] border transition-all ${order.status === 'CANCELADA' ? (isDarkMode ? 'bg-red-500/5 border-red-500/20 text-red-200' : 'bg-red-50/50 border-red-100 text-red-700 shadow-inner') : (isDarkMode ? 'bg-slate-950 border-slate-800 text-slate-400' : 'bg-slate-50/80 border-slate-100 text-slate-500 shadow-inner')} text-[10px] sm:text-xs italic`}>
+                                                                <span className={`block sm:inline font-black not-italic sm:mr-3 uppercase text-[8px] sm:text-[9px] tracking-[0.2em] px-2 py-1 rounded-lg mb-2 sm:mb-0 w-fit ${order.status === 'CANCELADA' ? (isDarkMode ? 'bg-red-500/10 text-red-400' : 'bg-red-100 text-red-600') : (isDarkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-200 text-slate-600')}`}>{order.status === 'CANCELADA' ? 'Motivo do Cancelamento' : 'Relato Operacional'}</span>
+                                                                <span className="leading-relaxed sm:leading-loose">{order.missionReport.replace('MISSÃO CANCELADA: ', '')}</span>
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
-                                            <div className="flex flex-col sm:flex-col gap-2.5 w-full sm:w-auto mt-2 sm:mt-0">
-                                                <div className="flex sm:flex-col gap-2 w-full">
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); handlePrintOrder(order); }}
-                                                        className={`flex-1 p-3 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-blue-600 hover:text-white' : 'bg-white text-slate-700 hover:bg-blue-600 hover:text-white border border-slate-200'}`}
-                                                        title="Visualizar"
-                                                    >
-                                                        <Eye className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); handleCloneOrder(order); }}
-                                                        className={`flex-1 p-3 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white' : 'bg-white text-slate-700 hover:bg-indigo-600 hover:text-white border border-slate-200'}`}
-                                                        title="Clonar Missão"
-                                                    >
-                                                        <Copy className="w-4 h-4" />
-                                                    </button>
+                                                    <div className="flex flex-col sm:flex-col gap-2.5 w-full sm:w-auto mt-2 sm:mt-0">
+                                                        <div className="flex sm:flex-col gap-2 w-full">
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); handlePrintOrder(order); }}
+                                                                className={`flex-1 p-3 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-blue-600 hover:text-white' : 'bg-white text-slate-700 hover:bg-blue-600 hover:text-white border border-slate-200'}`}
+                                                                title="Visualizar"
+                                                            >
+                                                                <Eye className="w-4 h-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); handleCloneOrder(order); }}
+                                                                className={`flex-1 p-3 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white' : 'bg-white text-slate-700 hover:bg-indigo-600 hover:text-white border border-slate-200'}`}
+                                                                title="Clonar Missão"
+                                                            >
+                                                                <Copy className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                ));
+                                        ))}
+                                    </Fragment>
+                                );
                             })()}
                         </div>
                     </div>
+                    </Fragment>
                 )}
 
             </div>
@@ -1505,7 +1510,6 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                     </div>
                 </div>
             )}
-            </div>
 
             {/* Mission Request Card Modal */}
             {
@@ -1646,6 +1650,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                     </div>
                 </div>
             )}
+            </div>
         </Fragment>
     );
 }
