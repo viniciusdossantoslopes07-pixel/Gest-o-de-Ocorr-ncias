@@ -389,7 +389,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                     <span className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Efetivo {item.name}</span>
                                     <span className={`text-[11px] font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                                         {item.total > 0 ? Math.round((item.value / item.total) * 100) : 0}%
-                                        <span className={`ml-1.5 opacity-40 text-[9px] font-bold`}>({item.value} empenhos)</span>
+                                        <span className={`ml-1.5 opacity-40 text-[9px] font-bold`}>({item.value})</span>
                                     </span>
                                 </div>
                                 <div className={`h-2 rounded-full ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} overflow-hidden`}>
