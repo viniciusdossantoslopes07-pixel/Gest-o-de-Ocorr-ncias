@@ -7,7 +7,7 @@ import {
 import {
     Target, Users, CheckCircle, Clock, Calendar,
     MapPin, Zap, Activity, XCircle, ChevronDown, ChevronUp,
-    ShieldCheck, ArrowRight, Printer, Search, List
+    ShieldCheck, ArrowRight, Printer, Search, List, Medal
 } from 'lucide-react';
 import { formatDisplayDate } from '../utils/formatters';
 import MissionSummaryPrintView from './MissionSummaryPrintView';
@@ -669,20 +669,36 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                     <h3 className={`text-sm font-black uppercase tracking-tighter mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Top Militares</h3>
                     <div className="space-y-3">
                         {topPersonnelData.length === 0 && <p className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-slate-600' : 'text-slate-400'} text-center pt-4`}>Sem dados</p>}
-                        {topPersonnelData.map((p, i) => (
-                            <div key={p.name + i} className={`flex items-center gap-3 p-3 rounded-2xl ${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
-                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-[11px] font-black flex-shrink-0 ${i === 0 ? 'bg-emerald-600 text-white' : (isDarkMode ? 'bg-slate-700 text-slate-400' : 'bg-white text-slate-400 border border-slate-200')}`}>
-                                    {i + 1}
+                        {topPersonnelData.map((p, i) => {
+                            let badgeStyle = isDarkMode ? 'bg-slate-700 text-slate-400' : 'bg-white text-slate-400 border border-slate-200';
+                            let icon = <span className="text-[11px] font-black">{i + 1}</span>;
+                            
+                            if (i === 0) {
+                                badgeStyle = 'bg-amber-400 text-amber-900 shadow-lg shadow-amber-500/30';
+                                icon = <Medal className="w-4 h-4" />;
+                            } else if (i === 1) {
+                                badgeStyle = 'bg-slate-300 text-slate-800 shadow-lg shadow-slate-400/30';
+                                icon = <Medal className="w-4 h-4" />;
+                            } else if (i === 2) {
+                                badgeStyle = 'bg-orange-600 text-white shadow-lg shadow-orange-600/30';
+                                icon = <Medal className="w-4 h-4" />;
+                            }
+
+                            return (
+                                <div key={p.name + i} className={`flex items-center gap-3 p-3 rounded-2xl transition-all hover:scale-[1.02] ${isDarkMode ? 'bg-slate-800/50 hover:bg-slate-800/80' : 'bg-slate-50 hover:bg-white hover:shadow-md'}`}>
+                                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${badgeStyle}`}>
+                                        {icon}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className={`text-[11px] font-black uppercase truncate ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
+                                            <span className="opacity-70 mr-1">{p.rank}</span>{p.name}
+                                        </p>
+                                        <p className={`text-[9px] font-bold uppercase ${isDarkMode ? 'text-emerald-500' : 'text-emerald-600'}`}>{p.count} missões</p>
+                                    </div>
+                                    <ShieldCheck className={`w-4 h-4 flex-shrink-0 ${i === 0 ? 'text-amber-500' : i === 1 ? 'text-slate-400' : i === 2 ? 'text-orange-500' : 'text-slate-500'} opacity-50`} />
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className={`text-[11px] font-black uppercase truncate ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
-                                        <span className="opacity-70 mr-1">{p.rank}</span>{p.name}
-                                    </p>
-                                    <p className={`text-[9px] font-bold uppercase ${isDarkMode ? 'text-emerald-500' : 'text-emerald-600'}`}>{p.count} missões</p>
-                                </div>
-                                <ShieldCheck className={`w-4 h-4 flex-shrink-0 ${i === 0 ? 'text-emerald-500' : 'text-slate-400'} opacity-50`} />
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             </div>
