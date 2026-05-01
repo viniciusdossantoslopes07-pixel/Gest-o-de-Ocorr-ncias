@@ -186,17 +186,25 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     // Specialized Personnel Employment comparison
     const specializedPersonnelData = useMemo(() => {
         const counts = { SI: 0, PA: 0, REC: 0 };
-        filteredOrders.forEach(o => {
+        // Filtrar apenas ordens aprovadas e iniciadas (excluir canceladas, rascunhos, etc.)
+        const activeOrders = filteredOrders.filter(o => 
+            ['PRONTA_PARA_EXECUCAO', 'EM_MISSAO', 'CONCLUIDA'].includes(o.status || '')
+        );
+
+        activeOrders.forEach(o => {
             o.personnel?.forEach(p => {
                 if (p.function === 'Efetivo S.I') counts.SI++;
                 else if (p.function === 'Efetivo PA') counts.PA++;
                 else if (p.function === 'Efetivo REC') counts.REC++;
             });
         });
+        
+        const totalActiveSpecialized = counts.SI + counts.PA + counts.REC;
+
         return [
-            { name: 'SI',  value: counts.SI,  color: '#3b82f6' },
-            { name: 'PA',  value: counts.PA,  color: '#f59e0b' },
-            { name: 'REC', value: counts.REC, color: '#10b981' }
+            { name: 'SI',  value: counts.SI,  color: '#3b82f6', total: totalActiveSpecialized },
+            { name: 'PA',  value: counts.PA,  color: '#f59e0b', total: totalActiveSpecialized },
+            { name: 'REC', value: counts.REC, color: '#10b981', total: totalActiveSpecialized }
         ];
     }, [filteredOrders]);
 
@@ -385,7 +393,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                     <div 
                                         className="h-full rounded-full transition-all duration-1000" 
                                         style={{ 
-                                            width: `${Math.min(100, (item.value / (totalPersonnel || 1)) * 100 * 3)}%`, 
+                                            width: `${Math.min(100, (item.value / (item.total || 1)) * 100)}%`, 
                                             backgroundColor: item.color 
                                         }} 
                                     />
