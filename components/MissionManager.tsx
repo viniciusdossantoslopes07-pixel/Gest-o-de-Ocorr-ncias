@@ -949,7 +949,8 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
     );
 
     return (
-        <div className="max-w-7xl mx-auto space-y-6">
+        <Fragment>
+            <div className="max-w-7xl mx-auto space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h2 className={`text-xl sm:text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Central de Missões</h2>
@@ -1004,7 +1005,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
             </div>
 
             {/* Content Area */}
-            <div className={`${isDarkMode ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-xl' : 'bg-white border-slate-200'} rounded-2xl shadow-sm border p-2 sm:p-4 md:p-6 min-h-[400px]`}>
+            <div className={`${isDarkMode ? 'bg-slate-900/80 border-slate-800/50' : 'bg-white border-slate-200'} rounded-2xl shadow-sm border p-2 sm:p-4 md:p-6 min-h-[400px]`}>
 
                 {/* 1. Minhas Solicitações Tab */}
                 {activeTab === 'minhas_solicitacoes' && (
@@ -1210,7 +1211,8 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
 
                 {/* 6. Missões Finalizadas */}
                 {activeTab === 'missoes_finalizadas' && (
-                    <div className="space-y-6 animate-in fade-in duration-500">
+                    <Fragment>
+                        <div className="space-y-6 animate-in fade-in duration-500">
                         {/* Summary Stats for History */}
                         {(() => {
                             const completed = orders.filter(o => o.status === 'CONCLUIDA');
@@ -1503,6 +1505,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                     </div>
                 </div>
             )}
+            </div>
 
             {/* Mission Request Card Modal */}
             {
@@ -1643,6 +1646,6 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                     </div>
                 </div>
             )}
-        </div >
+        </Fragment>
     );
 }

@@ -642,8 +642,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                     </div>
                 </div>
             </div>
-
-
+        </div>
 
             {/* Print Modal */}
             {showPrintSummary && (
@@ -655,8 +654,6 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                     onClose={() => setShowPrintSummary(false)}
                 />
             )}
-
-            </div>
 
             {/* KPI Detail Modal (Estilo Cupom) */}
             {selectedKpi && (
