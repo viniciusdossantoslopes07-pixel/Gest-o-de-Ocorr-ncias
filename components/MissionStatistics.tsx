@@ -171,6 +171,12 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     }, [filteredOrders]);
 
     // Internal vs External distribution
+    const internalExternalData = useMemo(() => {
+        const counts = { Interna: 0, Externa: 0 };
+        filteredOrders.forEach(o => {
+            if (o.isInternal) counts.Interna++;
+            else counts.Externa++;
+        });
         return [
             { name: 'Interna', value: counts.Interna, color: '#3b82f6' },
             { name: 'Externa', value: counts.Externa, color: '#10b981' }
