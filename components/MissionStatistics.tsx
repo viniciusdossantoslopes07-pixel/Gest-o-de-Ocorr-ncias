@@ -550,8 +550,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 </div>
             </div>
 
-            {/* Type + Status + Internal/External + Locations + Top Personnel */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+            {/* Type + Internal/External + Locations + Top Personnel */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Tipo de Missão */}
                 <div className={`${card}`}>
                     <h3 className={`text-sm font-black uppercase tracking-tighter mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Por Tipo</h3>
@@ -584,24 +584,6 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                     <span className={`text-[10px] font-bold uppercase truncate ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{t.name}</span>
                                 </div>
                                 <span className={`text-[11px] font-black flex-shrink-0 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{t.value}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Status */}
-                <div className={`${card} transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl`}>
-                    <h3 className={`text-sm font-black uppercase tracking-tighter mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Por Status</h3>
-                    <div className="space-y-3">
-                        {statusData.map(s => (
-                            <div key={s.name}>
-                                <div className="flex justify-between mb-1">
-                                    <span className={`text-[10px] font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{s.name}</span>
-                                    <span className={`text-[11px] font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{s.value}</span>
-                                </div>
-                                <div className={`h-2 rounded-full ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'} overflow-hidden`}>
-                                    <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${(s.value / (total || 1)) * 100}%`, backgroundColor: s.color }} />
-                                </div>
                             </div>
                         ))}
                     </div>
