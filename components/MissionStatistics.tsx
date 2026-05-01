@@ -374,7 +374,63 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
 
             </div>
 
-            {/* Taxa de Sucesso + Missões Futuras destaque */}
+            {/* Charts: Fluxo Histórico + Previsão */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <div className={`${card}`}>
+                    <h3 className={`text-sm font-black uppercase tracking-tighter mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Histórico — Últimos 14 dias</h3>
+                    <p className={`text-[10px] font-bold uppercase mb-6 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Total vs. concluídas por dia</p>
+                    <div className="h-[220px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={trendData}>
+                                <defs>
+                                    <linearGradient id="gTotal" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                                    </linearGradient>
+                                    <linearGradient id="gConcluded" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#1e293b' : '#f1f5f9'} />
+                                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} dy={8} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} />
+                                <Tooltip 
+                                    contentStyle={tooltipContentStyle}
+                                    itemStyle={tooltipTextStyle}
+                                    cursor={{ fill: isDarkMode ? '#334155' : '#f1f5f9', opacity: 0.4 }}
+                                />
+                                <Area type="monotone" dataKey="total" name="Total" stroke="#3b82f6" strokeWidth={3} fill="url(#gTotal)" />
+                                <Area type="monotone" dataKey="concluded" name="Concluídas" stroke="#10b981" strokeWidth={3} fill="url(#gConcluded)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                <div className={`${card}`}>
+                    <h3 className={`text-sm font-black uppercase tracking-tighter mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Previsão — Próximos 14 dias</h3>
+                    <p className={`text-[10px] font-bold uppercase mb-6 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Missões programadas por dia</p>
+                    <div className="h-[220px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={futureTrend}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#1e293b' : '#f1f5f9'} />
+                                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} dy={8} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} allowDecimals={false} />
+                                <Tooltip 
+                                    contentStyle={tooltipContentStyle}
+                                    itemStyle={tooltipTextStyle}
+                                    cursor={{ fill: 'transparent' }}
+                                />
+                                <Bar dataKey="previstas" name="Previstas" fill="#8b5cf6" radius={[8, 8, 0, 0]}>
+                                    <LabelList dataKey="previstas" position="center" fill="#fff" fontSize={10} fontWeight={900} />
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </div>
+
+            {/* Emprego de Efetivo + Missões Futuras destaque */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className={`${card} flex flex-col`}>
                     <div className="flex items-center gap-3 mb-4">
@@ -436,62 +492,6 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                             ))}
                         </div>
                     )}
-                </div>
-            </div>
-
-            {/* Charts: Fluxo Histórico + Previsão */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                <div className={`${card}`}>
-                    <h3 className={`text-sm font-black uppercase tracking-tighter mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Histórico — Últimos 14 dias</h3>
-                    <p className={`text-[10px] font-bold uppercase mb-6 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Total vs. concluídas por dia</p>
-                    <div className="h-[220px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={trendData}>
-                                <defs>
-                                    <linearGradient id="gTotal" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                                    </linearGradient>
-                                    <linearGradient id="gConcluded" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#1e293b' : '#f1f5f9'} />
-                                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} dy={8} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} />
-                                <Tooltip 
-                                    contentStyle={tooltipContentStyle}
-                                    itemStyle={tooltipTextStyle}
-                                    cursor={{ fill: isDarkMode ? '#334155' : '#f1f5f9', opacity: 0.4 }}
-                                />
-                                <Area type="monotone" dataKey="total" name="Total" stroke="#3b82f6" strokeWidth={3} fill="url(#gTotal)" />
-                                <Area type="monotone" dataKey="concluded" name="Concluídas" stroke="#10b981" strokeWidth={3} fill="url(#gConcluded)" />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-
-                <div className={`${card}`}>
-                    <h3 className={`text-sm font-black uppercase tracking-tighter mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Previsão — Próximos 14 dias</h3>
-                    <p className={`text-[10px] font-bold uppercase mb-6 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Missões programadas por dia</p>
-                    <div className="h-[220px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={futureTrend}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#1e293b' : '#f1f5f9'} />
-                                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} dy={8} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} allowDecimals={false} />
-                                <Tooltip 
-                                    contentStyle={tooltipContentStyle}
-                                    itemStyle={tooltipTextStyle}
-                                    cursor={{ fill: 'transparent' }}
-                                />
-                                <Bar dataKey="previstas" name="Previstas" fill="#8b5cf6" radius={[8, 8, 0, 0]}>
-                                    <LabelList dataKey="previstas" position="center" fill="#fff" fontSize={10} fontWeight={900} />
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
                 </div>
             </div>
 
