@@ -226,6 +226,28 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
         return Object.entries(locs).sort(([,a],[,b]) => b - a).slice(0, 5);
     }, [filteredOrders]);
 
+    // Top 5 Militares
+    const topPersonnelData = useMemo(() => {
+        const counts: Record<string, { count: number; name: string; rank: string }> = {};
+        const validOrders = filteredOrders.filter(o => !['CANCELADA', 'REJEITADA'].includes(o.status || ''));
+        
+        validOrders.forEach(o => {
+            o.personnel?.forEach(p => {
+                const key = p.saram || p.id || p.warName;
+                if (!key) return;
+                
+                if (!counts[key]) {
+                    counts[key] = { count: 0, name: p.warName || p.id, rank: p.rank };
+                }
+                counts[key].count += 1;
+            });
+        });
+
+        return Object.values(counts)
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 5);
+    }, [filteredOrders]);
+
     const card = `p-5 rounded-[2rem] border transition-all hover:scale-[1.02] ${isDarkMode ? 'bg-slate-900/50 border-slate-800 shadow-2xl' : 'bg-white border-slate-200 shadow-xl shadow-slate-100/80'}`;
     const label = `text-[9px] font-black uppercase tracking-[0.2em] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`;
     const value = `text-4xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`;
@@ -528,8 +550,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 </div>
             </div>
 
-            {/* Type + Status + Internal/External + Locations */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Type + Status + Internal/External + Locations + Top Personnel */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                 {/* Tipo de Missão */}
                 <div className={`${card}`}>
                     <h3 className={`text-sm font-black uppercase tracking-tighter mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Por Tipo</h3>
@@ -637,6 +659,28 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                     <p className={`text-[9px] font-bold uppercase ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{count} missões</p>
                                 </div>
                                 <MapPin className={`w-4 h-4 flex-shrink-0 ${i === 0 ? 'text-blue-500' : 'text-slate-400'} opacity-50`} />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Top 5 Militares */}
+                <div className={`${card}`}>
+                    <h3 className={`text-sm font-black uppercase tracking-tighter mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Top Militares</h3>
+                    <div className="space-y-3">
+                        {topPersonnelData.length === 0 && <p className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-slate-600' : 'text-slate-400'} text-center pt-4`}>Sem dados</p>}
+                        {topPersonnelData.map((p, i) => (
+                            <div key={p.name + i} className={`flex items-center gap-3 p-3 rounded-2xl ${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
+                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-[11px] font-black flex-shrink-0 ${i === 0 ? 'bg-emerald-600 text-white' : (isDarkMode ? 'bg-slate-700 text-slate-400' : 'bg-white text-slate-400 border border-slate-200')}`}>
+                                    {i + 1}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className={`text-[11px] font-black uppercase truncate ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
+                                        <span className="opacity-70 mr-1">{p.rank}</span>{p.name}
+                                    </p>
+                                    <p className={`text-[9px] font-bold uppercase ${isDarkMode ? 'text-emerald-500' : 'text-emerald-600'}`}>{p.count} missões</p>
+                                </div>
+                                <ShieldCheck className={`w-4 h-4 flex-shrink-0 ${i === 0 ? 'text-emerald-500' : 'text-slate-400'} opacity-50`} />
                             </div>
                         ))}
                     </div>
