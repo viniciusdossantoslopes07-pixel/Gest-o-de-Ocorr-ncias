@@ -686,6 +686,78 @@ const App: FC = () => {
     }
   };
 
+  const fetchHistoricalAttendance = async (startDate: string, endDate: string) => {
+    try {
+      const [attendanceRes, justificationsRes] = await Promise.all([
+        supabase
+          .from('daily_attendance')
+          .select('*, attendance_records(*)')
+          .gte('date', startDate)
+          .lte('date', endDate),
+        supabase
+          .from('absence_justifications')
+          .select('*')
+          .gte('date', startDate)
+          .lte('date', endDate)
+      ]);
+
+      if (attendanceRes.data) {
+        const newAttendance = attendanceRes.data.map((a: any) => ({
+          id: a.id,
+          date: a.date,
+          sector: a.sector,
+          callType: a.call_type,
+          responsible: a.responsible,
+          signedAt: a.signed_at,
+          signedBy: a.signed_by,
+          createdAt: a.created_at,
+          records: (a.attendance_records || []).map((r: any) => ({
+            militarId: r.militar_id,
+            militarName: r.militar_name,
+            militarRank: r.militar_rank,
+            saram: r.saram,
+            status: r.status,
+            timestamp: r.timestamp
+          })),
+          observacao: a.observacao
+        }));
+
+        setAttendanceHistory(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const toAdd = newAttendance.filter((n: any) => !existingIds.has(n.id));
+          return [...prev, ...toAdd];
+        });
+      }
+
+      if (justificationsRes.data) {
+        const newJustifications = justificationsRes.data.map((j: any) => ({
+          id: j.id,
+          attendanceId: j.attendance_id,
+          militarId: j.militar_id,
+          militarName: j.militar_name,
+          militarRank: j.militar_rank,
+          saram: j.saram,
+          originalStatus: j.original_status,
+          newStatus: j.new_status,
+          justification: j.justification,
+          performedBy: j.performed_by,
+          timestamp: j.timestamp,
+          sector: j.sector,
+          date: j.date || j.initial_date || '',
+          callType: j.call_type
+        }));
+
+        setAbsenceJustifications(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const toAdd = newJustifications.filter((n: any) => !existingIds.has(n.id));
+          return [...prev, ...toAdd];
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching historical attendance:', err);
+    }
+  };
+
   const handlePublicAccess = () => {
     setCurrentUser(PUBLIC_USER);
     localStorage.setItem('gsdsp_user_session', JSON.stringify(PUBLIC_USER));
@@ -1533,6 +1605,7 @@ const App: FC = () => {
               attendanceHistory={attendanceHistory}
               absenceJustifications={absenceJustifications}
               isDarkMode={isDarkMode}
+              onLoadHistoricalData={fetchHistoricalAttendance}
               onSaveAttendance={async (a) => {
                 // Atualização otimista: atualizar estado local imediatamente para evitar race conditions em cliques rápidos
                 setAttendanceHistory(prev => {

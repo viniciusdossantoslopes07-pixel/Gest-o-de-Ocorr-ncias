@@ -22,6 +22,7 @@ interface DailyAttendanceProps {
     onReorderUsers: (reorderedUsers: User[]) => void;
     absenceJustifications: AbsenceJustification[];
     isDarkMode?: boolean;
+    onLoadHistoricalData?: (startDate: string, endDate: string) => Promise<void>;
 }
 
 const getStatusColor = (status: string, isDarkMode: boolean) => {
@@ -287,7 +288,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     onExcludeUser,
     onReorderUsers,
     absenceJustifications,
-    isDarkMode = false
+    isDarkMode = false,
+    onLoadHistoricalData
 }) => {
     const { sectors, displaySectors } = useSectors();
     const [selectedUnit, setSelectedUnit] = useState<'GSD-SP' | 'BASP'>('GSD-SP');
@@ -418,6 +420,26 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [showMoveModal, setShowMoveModal] = useState(false);
     const [soldierToMove, setSoldierToMove] = useState<User | null>(null);
     const [targetSector, setTargetSector] = useState('');
+
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+    
+    const isOldWeek = useMemo(() => {
+        if (!currentWeek || currentWeek.length === 0) return false;
+        const firstDay = parseISOToDate(currentWeek[0]);
+        const past15Days = new Date();
+        past15Days.setDate(past15Days.getDate() - 14); // 14 to be safe against timezone issues
+        return firstDay < past15Days;
+    }, [currentWeek]);
+
+    const handleLoadHistory = async () => {
+        if (!onLoadHistoricalData) return;
+        setIsLoadingHistory(true);
+        // Load the whole month of the current week just to be sure, or just the week
+        const start = currentWeek[0];
+        const end = currentWeek[4];
+        await onLoadHistoricalData(start, end);
+        setIsLoadingHistory(false);
+    };
 
     // Filtragem de contas funcionais
     const realPersonnel = useMemo(() =>
@@ -953,6 +975,22 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                         className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-indigo-100/50 text-indigo-600 hover:bg-indigo-50'}`}
                                     >
                                         Gerir Semana
+                                    </button>
+                                )}
+
+                                {isOldWeek && onLoadHistoricalData && (
+                                    <button
+                                        onClick={handleLoadHistory}
+                                        disabled={isLoadingHistory}
+                                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isDarkMode ? 'bg-amber-900/30 text-amber-400 border border-amber-800 hover:bg-amber-900/50' : 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100'}`}
+                                        title="Buscar registros antigos desta semana no Banco de Dados"
+                                    >
+                                        {isLoadingHistory ? (
+                                            <div className="w-3.5 h-3.5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                                        ) : (
+                                            <AlertTriangle className="w-3.5 h-3.5" />
+                                        )}
+                                        {isLoadingHistory ? 'Buscando...' : 'Carregar BD'}
                                     </button>
                                 )}
 
