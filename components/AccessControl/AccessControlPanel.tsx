@@ -126,8 +126,16 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
         const end = new Date();
         const start = new Date();
         start.setDate(start.getDate() - days);
-        setSearchEndDate(end.toISOString().split('T')[0]);
-        setSearchStartDate(start.toISOString().split('T')[0]);
+        
+        // Format to YYYY-MM-DD in local time, preventing timezone offset bugs
+        const formatLocal = (d: Date) => {
+            const temp = new Date(d);
+            temp.setMinutes(temp.getMinutes() - temp.getTimezoneOffset());
+            return temp.toISOString().split('T')[0];
+        };
+
+        setSearchEndDate(formatLocal(end));
+        setSearchStartDate(formatLocal(start));
     };
 
     const handleCustomDateChange = (type: 'start' | 'end', value: string) => {
