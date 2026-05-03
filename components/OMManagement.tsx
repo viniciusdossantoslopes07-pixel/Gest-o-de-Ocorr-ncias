@@ -60,10 +60,24 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         
         setGlobalPersonnel(globalCount || 0);
 
+        const GSD_SP_SECTORS = ['SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'];
+
         const newStats: any = {};
         for (const om of omList) {
-            const { count: usersCount } = await supabase.from('users').select('*', { count: 'exact', head: true }).eq('om_id', om.id).eq('active', true);
+            let query = supabase.from('users').select('*', { count: 'exact', head: true }).eq('active', true);
+            
+            // Intelligent logic: Check by ID OR by Sector if it's GSD-SP or BASP
+            if (om.acronym.toUpperCase() === 'GSD-SP') {
+                query = query.or(`om_id.eq.${om.id},sector.in.("${GSD_SP_SECTORS.join('","')}")`);
+            } else if (om.acronym.toUpperCase() === 'BASP') {
+                query = query.eq('om_id', om.id);
+            } else {
+                query = query.eq('om_id', om.id);
+            }
+
+            const { count: usersCount } = await query;
             const { count: occCount } = await supabase.from('occurrences').select('*', { count: 'exact', head: true }).eq('om_id', om.id);
+            
             newStats[om.id] = {
                 personnelCount: usersCount || 0,
                 occurrencesCount: occCount || 0
