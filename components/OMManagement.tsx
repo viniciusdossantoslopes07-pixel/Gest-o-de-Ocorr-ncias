@@ -320,7 +320,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                         <div style="padding: 2px 4px; text-align: center;">
                             <b style="color: #1e293b; font-size: 12px;">${om.acronym}</b><br/>
                             <span style="color: #64748b; font-size: 10px;">${om.host_unit || om.name}</span>
-                            ${om.url ? '<div style="margin-top: 4px; color: #2563eb; font-weight: 900; font-size: 8px; text-transform: uppercase;">Clique para Acessar Link</div>' : ''}
+                            <div style="margin-top: 4px; color: #2563eb; font-weight: 900; font-size: 8px; text-transform: uppercase;">Clique para Ações Rápidas</div>
                         </div>
                     `, { 
                         permanent: false, 
@@ -329,14 +329,32 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                         className: 'om-tooltip'
                     })
                     .bindPopup(`
-                        <div style="min-width: 150px; padding: 10px;">
-                            <div style="font-weight: 900; font-size: 14px; margin-bottom: 4px; color: #1e293b;">${om.acronym}</div>
-                            <div style="font-size: 11px; color: #64748b; margin-bottom: 8px;">${om.host_unit || om.name}</div>
-                            ${om.url ? `
-                                <a href="https://${om.url.replace(/^https?:\/\//, '')}" target="_blank" style="display: block; width: 100%; padding: 8px; background: #2563eb; color: white; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 900; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s;">
-                                    Acessar Unidade
+                        <div style="min-width: 180px; padding: 12px; font-family: sans-serif;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <div style="width: 32px; height: 32px; background: #2563eb; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 10px;">
+                                    ${om.acronym.substring(0, 3)}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 900; font-size: 14px; color: #1e293b; line-height: 1;">${om.acronym}</div>
+                                    <div style="font-size: 9px; color: #64748b; font-weight: 700; text-transform: uppercase; margin-top: 2px;">${om.host_unit || om.name}</div>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px;">
+                                <a href="?om=${om.acronym}" style="display: block; width: 100%; padding: 8px; background: #2563eb; color: white; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 900; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s; margin-bottom: 6px;">
+                                    Visualização Tática
                                 </a>
-                            ` : '<div style="font-size: 9px; color: #94a3b8; font-style: italic;">Link de acesso não configurado</div>'}
+                                
+                                ${om.url ? `
+                                    <a href="https://${om.url.replace(/^https?:\/\//, '')}" target="_blank" style="display: block; width: 100%; padding: 7px; background: #0f172a; color: #10b981; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 900; font-size: 10px; text-transform: uppercase; border: 1px solid #10b98133;">
+                                        Link de Produção
+                                    </a>
+                                ` : `
+                                    <div style="font-size: 9px; color: #94a3b8; font-style: italic; text-align: center; padding: 4px; background: #f8fafc; border-radius: 6px;">
+                                        URL de Produção não configurada
+                                    </div>
+                                `}
+                            </div>
                         </div>
                     `)
                     .on('click', () => handleSelectOm(om));
