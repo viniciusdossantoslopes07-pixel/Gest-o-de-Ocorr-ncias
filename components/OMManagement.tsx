@@ -119,15 +119,33 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
 
     const geocodeAddress = async (address: string, zip: string): Promise<{lat: number, lon: number} | null> => {
         try {
-            const query = encodeURIComponent(`${address} ${zip} Brasil`);
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
-            const data = await response.json();
+            // Try 1: Full Address + ZIP
+            let query = encodeURIComponent(`${address} ${zip} Brasil`);
+            let response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+            let data = await response.json();
+            
             if (data && data.length > 0) {
-                return {
-                    lat: parseFloat(data[0].lat),
-                    lon: parseFloat(data[0].lon)
-                };
+                return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
             }
+
+            // Try 2: Only ZIP (Fallback)
+            if (zip) {
+                query = encodeURIComponent(`${zip} Brasil`);
+                response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+                data = await response.json();
+                if (data && data.length > 0) {
+                    return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+                }
+            }
+
+            // Try 3: Simple Address (Fallback)
+            query = encodeURIComponent(`${address.split(',')[0]} Brasil`);
+            response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+            data = await response.json();
+            if (data && data.length > 0) {
+                return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+            }
+
             return null;
         } catch (err) {
             console.error('Geocoding error:', err);
