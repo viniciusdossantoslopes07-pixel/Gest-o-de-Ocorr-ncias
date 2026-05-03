@@ -35,6 +35,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
     const [stats, setStats] = useState<{
         [omId: string]: { personnelCount: number, occurrencesCount: number }
     }>({});
+    const [globalPersonnel, setGlobalPersonnel] = useState(0);
 
     useEffect(() => {
         fetchOms();
@@ -51,9 +52,17 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
     };
 
     const fetchStats = async (omList: MilitaryOrganization[]) => {
+        // Fetch total global personnel (active users)
+        const { count: globalCount } = await supabase
+            .from('users')
+            .select('*', { count: 'exact', head: true })
+            .eq('active', true);
+        
+        setGlobalPersonnel(globalCount || 0);
+
         const newStats: any = {};
         for (const om of omList) {
-            const { count: usersCount } = await supabase.from('users').select('*', { count: 'exact', head: true }).eq('om_id', om.id);
+            const { count: usersCount } = await supabase.from('users').select('*', { count: 'exact', head: true }).eq('om_id', om.id).eq('active', true);
             const { count: occCount } = await supabase.from('occurrences').select('*', { count: 'exact', head: true }).eq('om_id', om.id);
             newStats[om.id] = {
                 personnelCount: usersCount || 0,
@@ -393,7 +402,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                             {/* KPI Ribbon */}
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 {[
-                                    { label: 'Efetivo Global', val: Object.values(stats).reduce((acc, curr) => acc + curr.personnelCount, 0), icon: Users, color: 'blue' },
+                                    { label: 'Efetivo Global', val: globalPersonnel, icon: Users, color: 'blue' },
                                     { label: 'Alertas Ativos', val: Object.values(stats).reduce((acc, curr) => acc + curr.occurrencesCount, 0), icon: ShieldAlert, color: 'amber' },
                                     { label: 'Unidades', val: oms.length, icon: Building2, color: 'emerald' },
                                     { label: 'Monitoramento', val: '100%', icon: Map, color: 'purple' }
