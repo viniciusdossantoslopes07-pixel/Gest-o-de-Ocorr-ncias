@@ -5,6 +5,9 @@ import {
     PieChart, Pie, Cell, Legend, LineChart, Line, AreaChart, Area
 } from 'recharts';
 import { Car, Clock, Shield, Users, TrendingUp, Building2, UserCircle, Calendar, Filter, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
+import { useSectors } from '../../contexts/SectorsContext';
+import { User } from '../../types';
+
 
 interface ParkingRequest {
     id: string;
@@ -27,7 +30,7 @@ const getLocalDate = (d: Date = new Date()) => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
-export default function ParkingStatistics({ dk = false }: { dk?: boolean }) {
+export default function ParkingStatistics({ user, dk = false }: { user: User; dk?: boolean }) {
     const card = dk ? 'bg-slate-800/80 border-slate-700/50' : 'bg-white border-slate-200';
     const textPrimary = dk ? 'text-white' : 'text-slate-800';
     const textSecondary = dk ? 'text-slate-300' : 'text-slate-600';
@@ -35,6 +38,8 @@ export default function ParkingStatistics({ dk = false }: { dk?: boolean }) {
     const axisFill = dk ? '#94a3b8' : '#64748b';
     const gridStroke = dk ? '#334155' : '#e2e8f0';
     const tooltipStyle = { borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px -2px rgb(0 0 0 / 0.15)', fontSize: '11px', backgroundColor: dk ? '#1e293b' : '#fff', color: dk ? '#e2e8f0' : '#1e293b' };
+    const { omId: activeOmId } = useSectors();
+    const currentOmId = activeOmId || user.om_id;
 
     const [requests, setRequests] = useState<ParkingRequest[]>([]);
     const [loading, setLoading] = useState(true);
@@ -55,11 +60,13 @@ export default function ParkingStatistics({ dk = false }: { dk?: boolean }) {
 
     useEffect(() => {
         fetchStatistics();
-    }, []);
+    }, [currentOmId]);
 
     const fetchStatistics = async () => {
         setLoading(true);
-        const { data } = await supabase.from('parking_requests').select('id, status, om, tipo_pessoa, created_at, inicio, termino, nome_completo, posto_graduacao, ext_marca_modelo, ext_placa');
+        let query = supabase.from('parking_requests').select('id, status, om, tipo_pessoa, created_at, inicio, termino, nome_completo, posto_graduacao, ext_marca_modelo, ext_placa');
+        if (currentOmId) query = query.eq('om_id', currentOmId);
+        const { data } = await query;
         if (data) setRequests(data);
         setLoading(false);
     };

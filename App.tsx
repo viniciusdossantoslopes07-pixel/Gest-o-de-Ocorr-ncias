@@ -8,7 +8,7 @@ import {
   Loader2,
   Calendar
 } from 'lucide-react';
-import { Occurrence, User, UserRole, Status, Urgency, MissionOrder, Mission, DailyAttendance, AbsenceJustification, UserFunction, Vacation } from './types';
+import { Occurrence, User, UserRole, Status, Urgency, MissionOrder, Mission, DailyAttendance, AbsenceJustification, UserFunction, Vacation, MilitaryOrganization } from './types';
 import { useSectors } from './contexts/SectorsContext';
 import PublicEventsModal from './components/AccessControl/Events/PublicEventsModal';
 import { USER_FUNCTIONS, PERMISSIONS, hasPermission } from './constants/permissions';
@@ -24,6 +24,8 @@ import LoginView from './components/LoginView';
 import HomeView from './components/HomeView';
 import SideMenu from './components/SideMenu';
 import UserMenu from './components/UserMenu';
+
+const legacyIds = ['e5418770-62bd-49d7-9229-a608e3a2895b', 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c'];
 
 // Lazy Loading: Componentes carregados sob demanda por aba
 const Dashboard = lazy(() => import('./components/Dashboard'));
@@ -111,15 +113,62 @@ const App: FC = () => {
     }
     return null;
   });
-  const { setOmId } = useSectors();
+  const { omId, setOmId } = useSectors();
+
+  const [urlOm, setUrlOm] = useState<string | null>(null);
 
   useEffect(() => {
-    if (currentUser?.om_id) {
-      setOmId(currentUser.om_id);
-    } else {
-      setOmId(null);
+    const params = new URLSearchParams(window.location.search);
+    const om = params.get('om');
+    if (om) {
+      setUrlOm(om.toUpperCase());
     }
-  }, [currentUser, setOmId]);
+  }, []);
+
+  useEffect(() => {
+    const applyOmContext = async () => {
+      // 1. Check if there's an OM in the URL
+      if (urlOm) {
+        // Try to find this OM in the database by Acronym
+        const { data: omData } = await supabase
+          .from('military_organizations')
+          .select('id')
+          .ilike('acronym', urlOm.trim())
+          .single();
+
+        if (omData) {
+          setOmId(omData.id);
+          return;
+        }
+        
+        // If urlOm is present but NOT found, only force zero results if it's clearly an invalid attempt
+        // Otherwise, fallback to user's OM to avoid breaking the UI for common cases
+        if (urlOm.length > 10) { 
+            setOmId('00000000-0000-0000-0000-000000000000');
+            return;
+        }
+      }
+
+      // 2. Fallback to current user's OM if no URL OM or not found
+      if (currentUser?.om_id) {
+        setOmId(currentUser.om_id);
+      } else {
+        setOmId(null);
+      }
+    };
+
+    applyOmContext();
+  }, [currentUser, setOmId, urlOm]);
+
+  // Refetch users when omId changes
+  useEffect(() => {
+    if (currentUser && (hasPermission(currentUser, PERMISSIONS.MANAGE_USERS) ||
+      hasPermission(currentUser, PERMISSIONS.MANAGE_PERSONNEL) ||
+      hasPermission(currentUser, PERMISSIONS.VIEW_PERSONNEL) ||
+      hasPermission(currentUser, PERMISSIONS.VIEW_DAILY_ATTENDANCE))) {
+      fetchUsers();
+    }
+  }, [omId, currentUser]);
   const [users, setUsers] = useState<User[]>([]);
   const [vacations, setVacations] = useState<Vacation[]>([]);
   // Added 'settings' to activeTab type
@@ -190,7 +239,7 @@ const App: FC = () => {
     if (currentUser && currentUser.role !== UserRole.PUBLIC) {
       fetchOccurrences();
     }
-  }, [currentUser]);
+  }, [currentUser, omId]);
 
   // Fetch users when session is restored from localStorage (page refresh)
   useEffect(() => {
@@ -203,12 +252,26 @@ const App: FC = () => {
         fetchVacations();
       }
     }
-  }, [currentUser]);
+  }, [currentUser, omId]);
 
   const fetchVacations = async () => {
-    const { data, error } = await supabase
+    let query = supabase
       .from('vacations')
       .select('*, periods:vacation_periods(*)');
+    
+    const actualOmId = omId || currentUser?.om_id;
+
+    
+    if (actualOmId && legacyIds.includes(actualOmId)) {
+      query = query.in('om_id', legacyIds);
+    } else if (actualOmId) {
+      query = query.eq('om_id', actualOmId);
+    }
+    
+
+
+
+    const { data, error } = await query;
     if (data) setVacations(data as Vacation[]);
     if (error) console.error('Error fetching vacations:', error);
   };
@@ -236,15 +299,30 @@ const App: FC = () => {
       pastDaysForCache.setDate(pastDaysForCache.getDate() - 15);
       const dateFilter = pastDaysForCache.toISOString().split('T')[0];
 
+      const actualOmId = omId || currentUser?.om_id;
+  
+
+      let attendanceQuery = supabase
+        .from('daily_attendance')
+        .select('*, attendance_records(*)')
+        .gt('date', dateFilter);
+
+      let justificationsQuery = supabase
+        .from('absence_justifications')
+        .select('*')
+        .gt('date', dateFilter);
+
+      if (actualOmId && legacyIds.includes(actualOmId)) {
+        attendanceQuery = attendanceQuery.in('om_id', legacyIds);
+        justificationsQuery = justificationsQuery.in('om_id', legacyIds);
+      } else if (actualOmId) {
+        attendanceQuery = attendanceQuery.eq('om_id', actualOmId);
+        justificationsQuery = justificationsQuery.eq('om_id', actualOmId);
+      }
+
       const [attendanceRes, justificationsRes] = await Promise.all([
-        supabase
-          .from('daily_attendance')
-          .select('*, attendance_records(*)')
-          .gt('date', dateFilter),
-        supabase
-          .from('absence_justifications')
-          .select('*')
-          .gt('date', dateFilter)
+        attendanceQuery,
+        justificationsQuery
       ]);
 
       if (attendanceRes.data) {
@@ -320,7 +398,7 @@ const App: FC = () => {
       supabase.removeChannel(attendanceChannel);
       supabase.removeChannel(justificationsChannel);
     };
-  }, [currentUser]);
+  }, [currentUser, omId]);
 
   const toggleTheme = () => setIsDarkMode(prev => !prev);
 
@@ -330,9 +408,15 @@ const App: FC = () => {
       .select('id, title, type, category, status, urgency, date, location, description, creator, sector, assigned_to, attachments, timeline, sla_deadline, geolocation, om_id')
       .order('date', { ascending: false });
 
-    if (currentUser?.om_id) {
-      query = query.eq('om_id', currentUser.om_id);
+    const actualOmId = omId || currentUser?.om_id;
+
+
+    if (actualOmId && legacyIds.includes(actualOmId)) {
+      query = query.in('om_id', legacyIds);
+    } else if (actualOmId) {
+      query = query.eq('om_id', actualOmId);
     }
+
 
     const { data, error } = await query;
 
@@ -349,7 +433,7 @@ const App: FC = () => {
     if (currentUser && (canRequestMission || canManageMissions)) {
       fetchMissionRequests();
     }
-  }, [currentUser]);
+  }, [currentUser, omId]);
 
   const fetchMissionRequests = async () => {
     let query = supabase
@@ -357,9 +441,16 @@ const App: FC = () => {
       .select('id, solicitante_id, status, dados_missao, data_criacao, parecer_sop, om_id')
       .order('data_criacao', { ascending: false });
 
-    if (currentUser?.om_id) {
-      query = query.eq('om_id', currentUser.om_id);
+    const actualOmId = omId || currentUser?.om_id;
+
+
+    if (actualOmId && legacyIds.includes(actualOmId)) {
+      query = query.in('om_id', legacyIds);
+    } else if (actualOmId) {
+      query = query.eq('om_id', actualOmId);
     }
+
+
 
     const { data, error } = await query;
 
@@ -669,9 +760,16 @@ const App: FC = () => {
   const fetchUsers = async () => {
     let query = supabase.from('users').select('*').order('display_order', { ascending: true });
     
-    if (currentUser?.om_id) {
-      query = query.eq('om_id', currentUser.om_id);
+    const actualOmId = omId || currentUser?.om_id;
+
+
+    if (actualOmId && legacyIds.includes(actualOmId)) {
+      query = query.in('om_id', legacyIds);
+    } else if (actualOmId) {
+      query = query.eq('om_id', actualOmId);
     }
+
+
 
     const { data } = await query;
     if (data) {
@@ -726,17 +824,32 @@ const App: FC = () => {
 
   const fetchHistoricalAttendance = async (startDate: string, endDate: string) => {
     try {
+      const actualOmId = omId || currentUser?.om_id;
+  
+      
+      let attendanceQuery = supabase
+        .from('daily_attendance')
+        .select('*, attendance_records(*)')
+        .gte('date', startDate)
+        .lte('date', endDate);
+
+      let justificationsQuery = supabase
+        .from('absence_justifications')
+        .select('*')
+        .gte('date', startDate)
+        .lte('date', endDate);
+
+      if (actualOmId && legacyIds.includes(actualOmId)) {
+        attendanceQuery = attendanceQuery.in('om_id', legacyIds);
+        justificationsQuery = justificationsQuery.in('om_id', legacyIds);
+      } else if (actualOmId) {
+        attendanceQuery = attendanceQuery.eq('om_id', actualOmId);
+        justificationsQuery = justificationsQuery.eq('om_id', actualOmId);
+      }
+
       const [attendanceRes, justificationsRes] = await Promise.all([
-        supabase
-          .from('daily_attendance')
-          .select('*, attendance_records(*)')
-          .gte('date', startDate)
-          .lte('date', endDate),
-        supabase
-          .from('absence_justifications')
-          .select('*')
-          .gte('date', startDate)
-          .lte('date', endDate)
+        attendanceQuery,
+        justificationsQuery
       ]);
 
       if (attendanceRes.data) {
@@ -1182,10 +1295,21 @@ const App: FC = () => {
 
   // Mission Order Functions
   const fetchMissionOrders = async () => {
-    const { data, error } = await supabase
+    let query = supabase
       .from('mission_orders')
       .select('*')
       .order('created_at', { ascending: false });
+
+    const actualOmId = omId || currentUser?.om_id;
+
+
+    if (actualOmId && legacyIds.includes(actualOmId)) {
+      query = query.in('om_id', legacyIds);
+    } else if (actualOmId) {
+      query = query.eq('om_id', actualOmId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching mission orders:', error);
@@ -1220,12 +1344,26 @@ const App: FC = () => {
 
   const generateOMISNumber = async (): Promise<string> => {
     const year = new Date().getFullYear();
+    const actualOmId = omId || currentUser?.om_id;
+    
+    // Get acronym for the current OM
+    let acronym = 'GSD-SP';
+    if (actualOmId) {
+      const { data: omData } = await supabase
+        .from('military_organizations')
+        .select('acronym')
+        .eq('id', actualOmId)
+        .single();
+      if (omData?.acronym) acronym = omData.acronym;
+    }
+
     const { count } = await supabase
       .from('mission_orders')
       .select('*', { count: 'exact', head: true })
+      .eq('om_id', actualOmId)
       .gte('created_at', `${year}-01-01`);
 
-    return `${(count || 0) + 1}/GSD-SP`;
+    return `${(count || 0) + 1}/${acronym}`;
   };
 
   const handleCreateMissionOrder = async (orderData: Partial<MissionOrder>) => {
@@ -1426,6 +1564,7 @@ const App: FC = () => {
           onRequestPasswordReset={onRequestPasswordReset}
           onForcePasswordReset={handleForcePasswordReset}
           isDarkMode={isDarkMode}
+          urlOm={urlOm}
         />
         {showPublicEvents && <PublicEventsModal onClose={() => setShowPublicEvents(false)} isDarkMode={isDarkMode} />}
       </div>
@@ -1447,6 +1586,7 @@ const App: FC = () => {
         isDarkMode={isDarkMode}
         onOpenFAQ={() => setShowFAQ(true)}
         onOpenDestinometro={() => setShowDestinometro(true)}
+        urlOm={urlOm}
       />
 
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative z-10">
@@ -1546,7 +1686,6 @@ const App: FC = () => {
                     isPublic ? handleLogout() : setActiveTab('home');
                   }
                 }}
-                currentUser={currentUser}
               />
             </div>
           )}
@@ -1593,7 +1732,7 @@ const App: FC = () => {
                   username: `user_${Date.now()}`,
                   email: `user_${Date.now()}@system.local`,
                   approved: true,
-                  om_id: currentUser?.om_id
+                  om_id: (u as any).om_id || omId || currentUser?.om_id
                 } as any);
               }}
               onUpdatePersonnel={(u) => {
@@ -1623,7 +1762,7 @@ const App: FC = () => {
           {/* MISSION CENTER (Unified) */}
           {activeTab === 'mission-center' && (canManageMissions || canRequestMission) && (
             <div className="flex-1 overflow-auto p-4">
-              <MissionManager user={currentUser} isDarkMode={isDarkMode} />
+              <MissionManager user={currentUser} isDarkMode={isDarkMode} urlOm={urlOm} />
             </div>
           )}
 
@@ -1890,7 +2029,7 @@ const App: FC = () => {
           )}
 
           {activeTab === 'access-statistics' && canViewAccessControl && (
-            <AccessStatistics isDarkMode={isDarkMode} />
+            <AccessStatistics user={currentUser} isDarkMode={isDarkMode} />
           )}
 
           {activeTab === 'access-temp' && currentUser && (

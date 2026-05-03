@@ -16,10 +16,11 @@ interface LoginViewProps {
   onRequestPasswordReset?: (saram: string) => Promise<boolean>;
   onForcePasswordReset?: (username: string, newPassword: string) => Promise<boolean>;
   isDarkMode?: boolean;
+  urlOm?: string | null;
 }
 
-const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, onViewEvents, onRequestPasswordReset, onForcePasswordReset, isDarkMode }) => {
-  const { sectorNames } = useSectors();
+const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, onViewEvents, onRequestPasswordReset, onForcePasswordReset, isDarkMode, urlOm }) => {
+  const { sectorNames, oms } = useSectors();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -38,7 +39,8 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
     cpf: '',
     sector: '',
     email: '',
-    phoneNumber: ''
+    phoneNumber: '',
+    om_id: ''
   });
 
   const [forgotSaram, setForgotSaram] = useState('');
@@ -83,7 +85,8 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
           password,
           role: 'Lançador Operacional' as any,
           ...regData,
-          saram: regData.saram.replace(/\D/g, '')
+          saram: regData.saram.replace(/\D/g, ''),
+          om_id: regData.om_id || undefined
         };
         const res = await onRegister(newUser as any);
         if (res.success) {
@@ -232,7 +235,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
               </div>
             </div>
             <h1 className={`text-[22px] font-black italic tracking-tighter leading-none ${dk ? 'text-white' : 'text-slate-900'}`}>
-              <span className="text-blue-400">GUARDIÃO</span> <span className="not-italic">GSD-SP</span>
+              <span className="text-blue-400">GUARDIÃO</span> <span className="not-italic ml-1">{urlOm || 'GSD-SP'}</span>
             </h1>
             <p className={`${dk ? 'text-slate-500' : 'text-slate-400'} font-semibold text-[9px] uppercase tracking-[0.2em] mt-1`}>
               Sistema de Segurança e Defesa
@@ -256,9 +259,35 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-1">
                   <ShieldCheck className="w-3 h-3" /> Cadastro de Novo Militar
                 </p>
+                
+                <div>
+                  <label className={labelBase}>1. Organização Militar (OM)</label>
+                  <select 
+                    required 
+                    className={`${inputBase} px-3 py-2.5 border-blue-500/50 bg-blue-50/10`} 
+                    value={regData.om_id} 
+                    onChange={e => {
+                      const selectedOmId = e.target.value;
+                      setRegData({ ...regData, om_id: selectedOmId });
+                      
+                      // Lógica de redirecionamento sugerida pelo usuário
+                      const selectedOm = oms.find(o => o.id === selectedOmId);
+                      if (selectedOm && selectedOm.url && !window.location.href.includes(selectedOm.url)) {
+                        const confirmRedirect = window.confirm(`Você selecionou ${selectedOm.name}. Deseja ser redirecionado para o link oficial desta unidade?`);
+                        if (confirmRedirect) {
+                          window.location.href = `https://${selectedOm.url}`;
+                        }
+                      }
+                    }}
+                  >
+                    <option value="">Selecione a Unidade...</option>
+                    {oms.map(o => <option key={o.id} value={o.id}>{o.name} ({o.acronym})</option>)}
+                  </select>
+                </div>
 
                 <div>
-                  <label className={labelBase}>1. Posto/Grad</label>
+                  <label className={labelBase}>2. Posto/Grad</label>
+
                   <select required className={`${inputBase} px-3 py-2.5`} value={regData.rank} onChange={e => setRegData({ ...regData, rank: e.target.value })}>
                     <option value="">Selecione...</option>
                     {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
@@ -478,7 +507,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
           </form>
         </div>
 
-        <p className="mt-4 text-center text-[8px] font-black text-slate-600 uppercase tracking-[0.2em]">Ministério da Defesa · Uso Restrito · BASP</p>
+        <p className="mt-4 text-center text-[8px] font-black text-slate-600 uppercase tracking-[0.2em]">Ministério da Defesa · Uso Restrito · {urlOm || 'GSD-SP'}</p>
       </div>
 
       {/* Biometric Prompt Modal */}

@@ -14,13 +14,18 @@ import MissionOrderPrintView from './MissionOrderPrintView';
 import MissionRequestList from './MissionRequestList';
 import { notificationService } from '../services/notificationService';
 import { formatDisplayDate } from '../utils/formatters';
+import { useSectors } from '../contexts/SectorsContext';
+
+const legacyIds = ['e5418770-62bd-49d7-9229-a608e3a2895b', 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c'];
 
 interface MissionManagerProps {
     user: User;
     isDarkMode?: boolean;
+    urlOm?: string | null;
 }
 
-export default function MissionManager({ user, isDarkMode }: MissionManagerProps) {
+export default function MissionManager({ user, isDarkMode, urlOm }: MissionManagerProps) {
+    const { omId } = useSectors();
     const [missions, setMissions] = useState<Mission[]>([]);
     const [orders, setOrders] = useState<MissionOrder[]>([]);
     const [users, setUsers] = useState<User[]>([]);
@@ -67,11 +72,23 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
     const isChSop = canSign;
 
     useEffect(() => {
+        // If we are waiting for a specific OM from URL, don't fetch until omId is resolved
+        // This prevents flickering with GSD-SP data for admins
+        if (urlOm && !omId) {
+            console.log('MissionManager: Waiting for omId to resolve for', urlOm);
+            return;
+        }
+
+        // Clear state before fetching to prevent seeing old data from previous OM
+        setMissions([]);
+        setOrders([]);
+        setUsers([]);
+        
         fetchData();
         // Set default tab based on role
         if (isSop || isChSop) setActiveTab('painel_gestao');
         else setActiveTab('minhas_solicitacoes');
-    }, []);
+    }, [omId, urlOm]);
 
     // Helper to open print view
     const handlePrintOrder = (order: MissionOrder) => {
@@ -87,7 +104,15 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
 
     const fetchUsers = async () => {
         try {
-            const { data, error } = await supabase.from('users').select('*');
+            const actualOmId = omId || user?.om_id;
+            let query = supabase.from('users').select('*');
+            
+            if (actualOmId && legacyIds.includes(actualOmId)) {
+                query = query.in('om_id', legacyIds);
+            } else if (actualOmId) {
+                query = query.eq('om_id', actualOmId);
+            }
+            const { data, error } = await query;
             if (error) {
                 console.error('Erro ao buscar usuários:', error);
                 return;
@@ -102,11 +127,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                     administrativeRole: u.administrative_role,
                     om_id: u.om_id
                 }));
-                if (user.om_id) {
-                    setUsers(mappedUsers.filter(u => u.om_id === user.om_id) as User[]);
-                } else {
-                    setUsers(mappedUsers as User[]);
-                }
+                setUsers(mappedUsers as User[]);
             }
         } catch (err) {
             console.error('Exceção ao buscar usuários:', err);
@@ -115,12 +136,15 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
 
     const fetchMissions = async () => {
         try {
+            const actualOmId = omId || user?.om_id;
             let query = supabase
                 .from('missoes_gsd')
                 .select('*');
             
-            if (user.om_id) {
-                query = query.eq('om_id', user.om_id);
+            if (actualOmId && legacyIds.includes(actualOmId)) {
+                query = query.in('om_id', legacyIds);
+            } else if (actualOmId) {
+                query = query.eq('om_id', actualOmId);
             }
 
             const { data, error } = await query.order('data_criacao', { ascending: false });
@@ -133,12 +157,15 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
 
     const fetchOrders = async () => {
         try {
+            const actualOmId = omId || user?.om_id;
             let query = supabase
                 .from('mission_orders')
                 .select('*');
             
-            if (user.om_id) {
-                query = query.eq('om_id', user.om_id);
+            if (actualOmId && legacyIds.includes(actualOmId)) {
+                query = query.in('om_id', legacyIds);
+            } else if (actualOmId) {
+                query = query.eq('om_id', actualOmId);
             }
 
             const { data, error } = await query.order('created_at', { ascending: false });
@@ -278,8 +305,13 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
             .select('*', { count: 'exact', head: true })
             .gte('created_at', `${year}-01-01`);
 
-        if (user.om_id) {
-            query = query.eq('om_id', user.om_id);
+        const actualOmId = omId || user?.om_id;
+
+
+        if (actualOmId && legacyIds.includes(actualOmId)) {
+            query = query.in('om_id', legacyIds);
+        } else if (actualOmId) {
+            query = query.eq('om_id', actualOmId);
         }
 
         const { count } = await query;
@@ -411,7 +443,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 cmt_name: orderData.cmtName || null,
                 ch_sop_name: orderData.chSopName || null,
                 updated_at: new Date().toISOString(),
-                om_id: user.om_id
+                om_id: omId || user.om_id
             };
 
             console.log(isEditing ? 'Atualizando ordem no banco:' : 'Inserindo nova ordem no banco:', dbOrder);

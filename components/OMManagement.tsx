@@ -467,7 +467,12 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                                 <p className="text-sm font-black text-amber-500">{stats[selectedOm.id]?.occurrencesCount || 0}</p>
                                             </div>
                                         </div>
-                                        <button className="w-full py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-colors">
+                                        <button 
+                                            onClick={() => {
+                                                window.location.search = `?om=${selectedOm.acronym}`;
+                                            }}
+                                            className="w-full py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-colors"
+                                        >
                                             Visualização Tática
                                         </button>
                                     </div>

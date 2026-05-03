@@ -78,7 +78,7 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
         }
         
         return filtered;
-    }, [users, activeUnitFilter, sectors, statsFilter, presenceMap]);
+    }, [users, statsFilter, presenceMap]);
 
     const total = statsUsers.length;
 
@@ -199,7 +199,7 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
                     </div>
                     <div>
                         <h2 className={`text-sm font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Painel Analítico Inteligente</h2>
-                        <p className={`text-[10px] font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Dados filtrados para {activeUnitFilter}</p>
+                        <p className={`text-[10px] font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Dados filtrados para {activeUnitFilter === 'TODAS' ? 'VISÃO GLOBAL' : activeUnitFilter}</p>
                     </div>
                 </div>
                 
@@ -532,6 +532,7 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
             </div>
 
             {/* Composição por Unidade (apenas visão global) */}
+            {/* Composição por Unidade (apenas visão global) */}
             {activeUnitFilter === 'TODAS' && (
                 <div className={card}>
                     <div className="flex items-center gap-3 mb-5">
@@ -578,6 +579,7 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
                     </div>
                 </div>
             )}
+
         </div>
     );
 };

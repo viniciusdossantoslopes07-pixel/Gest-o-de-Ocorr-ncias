@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { supabase } from '../services/supabase';
+import { MilitaryOrganization } from '../types';
 
 export interface Sector {
     id: string;
@@ -14,6 +15,11 @@ export interface Sector {
 interface SectorsContextValue {
     /** Todos os setores ativos */
     sectors: Sector[];
+    /** Todas as OMs ativas */
+    oms: MilitaryOrganization[];
+    /** ID da OM atual selecionada */
+    omId: string | null;
+
     /** Setores visíveis na chamada diária (exclui os ocultos como "EQP DE SERVIÇO") */
     displaySectors: string[];
     /** Todos os nomes de setores ativos (equivalente ao antigo SETORES) */
@@ -35,8 +41,10 @@ const SectorsContext = createContext<SectorsContextValue | null>(null);
 
 export const SectorsProvider = ({ children }: { children: ReactNode }) => {
     const [sectors, setSectors] = useState<Sector[]>([]);
+    const [oms, setOms] = useState<MilitaryOrganization[]>([]);
     const [omId, setOmId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+
 
     const fetchSectors = useCallback(async () => {
         let query = supabase
@@ -44,7 +52,10 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
             .select('*')
             .eq('is_active', true);
         
-        if (omId) {
+        const legacyIds = ['e5418770-62bd-49d7-9229-a608e3a2895b', 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c'];
+        if (omId && legacyIds.includes(omId)) {
+            query = query.in('om_id', legacyIds);
+        } else if (omId) {
             query = query.eq('om_id', omId);
         }
 
@@ -53,11 +64,29 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
         if (!error && data) {
             setSectors(data as Sector[]);
         }
-        setLoading(false);
+    }, [omId]);
+
+    const fetchOms = useCallback(async () => {
+        const { data, error } = await supabase
+            .from('military_organizations')
+            .select('*')
+            .eq('is_active', true)
+            .order('name');
+        
+        if (!error && data) {
+            setOms(data as MilitaryOrganization[]);
+        }
     }, []);
 
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        await Promise.all([fetchSectors(), fetchOms()]);
+        setLoading(false);
+    }, [fetchSectors, fetchOms]);
+
+
     useEffect(() => {
-        fetchSectors();
+        fetchData();
 
         // Realtime: sincroniza quando outro usuário cria/remove setor
         const channel = supabase
@@ -65,10 +94,14 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
             .on('postgres_changes', { event: '*', schema: 'public', table: 'sectors' }, () => {
                 fetchSectors();
             })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'military_organizations' }, () => {
+                fetchOms();
+            })
             .subscribe();
 
         return () => { supabase.removeChannel(channel); };
-    }, [fetchSectors, omId]);
+    }, [fetchData, fetchSectors, fetchOms]);
+
 
     const addSector = useCallback(async (name: string, unit: string): Promise<{ error?: string }> => {
         const trimmed = name.trim().toUpperCase();
@@ -150,6 +183,7 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
     return (
         <SectorsContext.Provider value={{
             sectors,
+            oms,
             displaySectors,
             sectorNames,
             loading,
@@ -157,8 +191,10 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
             removeSector,
             reorderSectors,
             setOmId,
-            refetch: fetchSectors
+            omId,
+            refetch: fetchData
         }}>
+
             {children}
         </SectorsContext.Provider>
     );

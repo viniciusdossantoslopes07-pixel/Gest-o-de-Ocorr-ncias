@@ -8,6 +8,7 @@ import {
     ChevronUp, ChevronDown, Check, Settings2, DoorOpen, Car, MapPin, CalendarDays, Volume2,
     Calendar, TrendingUp, Shield, QrCode, Smartphone, Download
 } from 'lucide-react';
+import { useSectors } from '../contexts/SectorsContext';
 import { supabase } from '../services/supabase';
 import { USER_FUNCTIONS, PERMISSIONS, hasPermission } from '../constants/permissions';
 
@@ -22,12 +23,14 @@ interface SideMenuProps {
     isDarkMode: boolean;
     onOpenFAQ: () => void;
     onOpenDestinometro: () => void;
+    urlOm?: string | null;
 }
 
 export default function SideMenu({
     isOpen, onClose, activeTab, setActiveTab, currentUser, onLogout,
-    onToggleTheme, isDarkMode, onOpenFAQ, onOpenDestinometro
+    onToggleTheme, isDarkMode, onOpenFAQ, onOpenDestinometro, urlOm
 }: SideMenuProps) {
+    const { oms, omId } = useSectors();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMaterialMenuOpen, setIsMaterialMenuOpen] = useState(false);
     const [isOccurrencesOpen, setIsOccurrencesOpen] = useState(false);
@@ -334,11 +337,15 @@ export default function SideMenu({
                         className={`flex items-center gap-3 mb-8 overflow-hidden cursor-pointer hover:opacity-80 transition-all active:scale-95 group ${isCollapsed ? 'justify-center' : ''}`}
                     >
                         <div className="shrink-0 relative w-12 h-12 rounded-full overflow-hidden shadow-md ring-2 ring-white/10 group-hover:ring-blue-500/50 transition-all">
-                            <img src="/logo_gsd.png" alt="Logo" className="w-full h-full object-cover scale-125" />
+                            {(() => {
+                                const activeOm = oms.find(o => o.id === omId);
+                                const logoSrc = activeOm?.logo_url || '/logo_gsd.png';
+                                return <img src={logoSrc} alt="Logo" className="w-full h-full object-cover scale-125" />;
+                            })()}
                         </div>
                         {!isCollapsed && (
                             <h1 className="text-lg font-black italic tracking-tighter whitespace-nowrap text-white group-hover:text-blue-400 transition-colors">
-                                GUARDIÃO <span className="not-italic ml-1">GSD-SP</span>
+                                GUARDIÃO <span className="not-italic ml-1">{urlOm || currentUser?.workplace || 'GSD-SP'}</span>
                             </h1>
                         )}
                     </div>

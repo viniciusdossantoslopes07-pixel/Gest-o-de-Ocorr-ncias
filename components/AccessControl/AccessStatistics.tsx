@@ -9,6 +9,11 @@ import {
     Footprints, Car, X, TrendingUp, MapPin, Users, Shield, Building2,
     CalendarDays, CalendarRange, ChevronDown, Activity
 } from 'lucide-react';
+import { useSectors } from '../../contexts/SectorsContext';
+import { User } from '../../types';
+
+const legacyIds = ['e5418770-62bd-49d7-9229-a608e3a2895b', 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c'];
+
 
 interface AccessRecord {
     id: string;
@@ -43,7 +48,7 @@ const startOfYear = (date: Date) => new Date(date.getFullYear(), 0, 1);
 
 type DatePreset = 'TODAY' | '7D' | '30D' | 'MONTH' | 'YEAR' | 'CUSTOM';
 
-export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: boolean }) {
+export default function AccessStatistics({ user, isDarkMode = false }: { user: User; isDarkMode?: boolean }) {
     const dk = isDarkMode;
 
     // Custom Select for filters to handle dark mode dropdown correctly
@@ -86,6 +91,10 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
             </div>
         );
     };
+    
+    const { omId: activeOmId } = useSectors();
+    const currentOmId = activeOmId || user.om_id;
+
 
     const card = dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-100';
     const textPrimary = dk ? 'text-white' : 'text-slate-800';
@@ -113,7 +122,7 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
 
     useEffect(() => {
         fetchRecords();
-    }, [dateStart, dateEnd]);
+    }, [dateStart, dateEnd, currentOmId]);
 
     const handlePresetChange = (preset: DatePreset) => {
         setDatePreset(preset);
@@ -156,11 +165,20 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
         const endIso = new Date(ey, em - 1, ed, 23, 59, 59, 999).toISOString();
 
         while (hasMore) {
-            const { data, error } = await supabase
+            let query = supabase
                 .from('access_control')
                 .select('id, timestamp, guard_gate, name, characteristic, identification, access_mode, access_category, vehicle_model, vehicle_plate, destination')
                 .gte('timestamp', startIso)
-                .lte('timestamp', endIso)
+                .lte('timestamp', endIso);
+
+
+            if (currentOmId && legacyIds.includes(currentOmId)) {
+                query = query.in('om_id', legacyIds);
+            } else if (currentOmId) {
+                query = query.eq('om_id', currentOmId);
+            }
+
+            const { data, error } = await query
                 .order('timestamp', { ascending: false })
                 .range(page * pageSize, (page + 1) * pageSize - 1);
 
@@ -208,25 +226,35 @@ export default function AccessStatistics({ isDarkMode = false }: { isDarkMode?: 
             const prevEndIso = new Date(ey, em - 1, ed, 23, 59, 59, 999).toISOString();
 
             // Fetch summary stats for prev period to avoid massive download
-            const { count: prevTotal } = await supabase
+
+            const applyOmFilter = (q: any) => {
+                if (currentOmId && legacyIds.includes(currentOmId)) {
+                    return q.in('om_id', legacyIds);
+                } else if (currentOmId) {
+                    return q.eq('om_id', currentOmId);
+                }
+                return q;
+            };
+
+            const { count: prevTotal } = await applyOmFilter(supabase
                 .from('access_control')
                 .select('id', { count: 'exact', head: true })
                 .gte('timestamp', prevStartIso)
-                .lte('timestamp', prevEndIso);
+                .lte('timestamp', prevEndIso));
 
-            const { count: prevEntries } = await supabase
+            const { count: prevEntries } = await applyOmFilter(supabase
                 .from('access_control')
                 .select('id', { count: 'exact', head: true })
                 .gte('timestamp', prevStartIso)
                 .lte('timestamp', prevEndIso)
-                .eq('access_category', 'Entrada');
+                .eq('access_category', 'Entrada'));
 
-            const { count: prevExits } = await supabase
+            const { count: prevExits } = await applyOmFilter(supabase
                 .from('access_control')
                 .select('id', { count: 'exact', head: true })
                 .gte('timestamp', prevStartIso)
                 .lte('timestamp', prevEndIso)
-                .eq('access_category', 'Saída');
+                .eq('access_category', 'Saída'));
 
             setPrevInfo({
                 total: prevTotal || 0,

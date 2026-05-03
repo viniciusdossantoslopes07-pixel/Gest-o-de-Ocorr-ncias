@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { BarChart3, Package, ArrowUpRight, ArrowDownRight, AlertTriangle, X, User as UserIcon, Trophy, Calendar, Search } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
+import { useSectors } from '../contexts/SectorsContext';
+import { User } from '../types';
 
-export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
+
+export const MaterialStatistics = ({ user, isDarkMode }: { user: User; isDarkMode: boolean }) => {
     const [stats, setStats] = useState({
         totalItems: 0,
         lowStock: 0,
@@ -38,16 +41,30 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
         '#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#6366f1', '#8b5cf6',
         '#d946ef', '#f43f5e', '#14b8a6', '#f97316'
     ];
+    
+    const { omId: activeOmId } = useSectors();
+    const currentOmId = activeOmId || user.om_id;
+
 
     useEffect(() => {
         fetchStats();
-    }, [filters.period, filters.dateStart, filters.dateEnd]);
+    }, [filters.period, filters.dateStart, filters.dateEnd, currentOmId]);
+
 
     const fetchStats = async () => {
         setLoading(true);
         try {
-            // 1. Fetch Users for mapping (aumentando limite para garantir todos os usuários)
-            const { data: usersData } = await supabase.from('users').select('id, name, rank, war_name, sector').limit(5000);
+            const legacyIds = ['e5418770-62bd-49d7-9229-a608e3a2895b', 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c'];
+
+            // 1. Fetch Users for mapping
+            let usersQuery = supabase.from('users').select('id, name, rank, war_name, sector');
+            if (currentOmId && legacyIds.includes(currentOmId)) {
+                usersQuery = usersQuery.in('om_id', legacyIds);
+            } else if (currentOmId) {
+                usersQuery = usersQuery.eq('om_id', currentOmId);
+            }
+            const { data: usersData } = await usersQuery.limit(5000);
+
             const userMapping: Record<string, string> = {};
             if (usersData) {
                 usersData.forEach((u: any) => {
@@ -56,12 +73,19 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
             }
             setUserMap(userMapping);
 
-            // 2. Inventory Stats
-            const { data: inventory, error: invError } = await supabase
+            let invQuery = supabase
                 .from('gestao_estoque')
                 .select('id, material, setor, entrada, saida, tipo_de_material')
-                .order('material')
-                .limit(5000);
+                .order('material');
+            
+            if (currentOmId && legacyIds.includes(currentOmId)) {
+                invQuery = invQuery.in('om_id', legacyIds);
+            } else if (currentOmId) {
+                invQuery = invQuery.eq('om_id', currentOmId);
+            }
+            
+            const { data: inventory, error: invError } = await invQuery.limit(5000);
+
 
             if (invError) throw invError;
 
@@ -77,6 +101,13 @@ export const MaterialStatistics = ({ isDarkMode }: { isDarkMode: boolean }) => {
                     id, id_material, id_usuario, status, quantidade, created_at,
                     material:gestao_estoque(material, tipo_de_material)
                 `);
+            
+            if (currentOmId && legacyIds.includes(currentOmId)) {
+                loanQuery = loanQuery.in('om_id', legacyIds);
+            } else if (currentOmId) {
+                loanQuery = loanQuery.eq('om_id', currentOmId);
+            }
+
 
             // Apply Period Filter
             if (filters.period !== 'all' && filters.period !== 'custom') {

@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback, FC } from 'react';
 import { User, UserRole } from '../../types';
 import { RANKS, getRankPriority } from '../../constants';
 import { useSectors } from '../../contexts/SectorsContext';
+import { supabase } from '../../services/supabase';
 import { UserPlus, Search, Pencil, Trash2, Shield, User as UserIcon, Hash, Building2, Users, TriangleAlert, CircleX, Briefcase, ChartNoAxesColumn, ChevronDown, ChevronUp, Printer, PlaneTakeoff, ArrowLeft, Crown } from 'lucide-react';
 import UserStatistics from './UserStatistics';
 import PersonnelPrintView from './PersonnelPrintView';
@@ -34,9 +35,27 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
     const [selectedUserForPanel, setSelectedUserForPanel] = useState<User | null>(null);
 
     const [activeUnitFilter, setActiveUnitFilter] = useState<'TODAS' | 'GSD-SP' | 'BASP'>('TODAS');
-
-    const { sectors, sectorNames } = useSectors();
+    const { sectors, sectorNames, omId } = useSectors();
+    
+    // IDs das unidades legadas
+    const GSD_SP_ID = 'e5418770-62bd-49d7-9229-a608e3a2895b';
+    const BASP_ID = 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c';
+    
+    // Verificação robusta se é uma unidade legada
+    const currentActiveOmId = omId || (users.length > 0 ? users[0].om_id : null);
+    const isLegacyUnit = currentActiveOmId === GSD_SP_ID || currentActiveOmId === BASP_ID || !omId;
+    
     const GSD_SP_SECTORS_LIST = useMemo(() => ['SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'], []);
+
+    const [organizations, setOrganizations] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchOrgs = async () => {
+            const { data } = await supabase.from('military_organizations').select('*').order('acronym');
+            if (data) setOrganizations(data);
+        };
+        fetchOrgs();
+    }, []);
     const [formData, setFormData] = useState({
         name: '',
         warName: '',
@@ -91,17 +110,12 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
         }
 
         let unitMatch = true;
-        if (activeUnitFilter === 'GSD-SP') {
-            const gsdSectors = sectors.filter(s => 
-                GSD_SP_SECTORS_LIST.includes(s.name.trim().toUpperCase())
-            ).map(s => s.name);
-            unitMatch = gsdSectors.includes(u.sector || '');
-        } else if (activeUnitFilter === 'BASP') {
-            const baspSectors = sectors.filter(s => 
-                !GSD_SP_SECTORS_LIST.includes(s.name.trim().toUpperCase())
-            ).map(s => s.name);
-            unitMatch = baspSectors.includes(u.sector || '');
+        if (activeUnitFilter !== 'TODAS') {
+            if (activeUnitFilter === 'BASP') unitMatch = u.om_id === BASP_ID;
+            else unitMatch = u.om_id === GSD_SP_ID;
         }
+
+
 
         const searchMatch = (u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             u.warName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -128,13 +142,26 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
         return a.name.localeCompare(b.name);
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Ensure om_id is set
+        const finalOmId = formData.om_id || omId || (users[0]?.om_id);
+
         if (editingId) {
-            onUpdatePersonnel({ ...users.find(u => u.id === editingId)!, ...formData } as User);
+            onUpdatePersonnel({ ...users.find(u => u.id === editingId)!, ...formData, om_id: finalOmId } as User);
             setEditingId(null);
         } else {
-            onAddPersonnel(formData);
+            onAddPersonnel({ ...formData, om_id: finalOmId });
+            
+            // Redirect if the selected OM is different from current URL OM
+            if (finalOmId) {
+                const selectedOrg = organizations.find(o => o.id === finalOmId);
+                if (selectedOrg && selectedOrg.acronym !== new URLSearchParams(window.location.search).get('om')?.toUpperCase()) {
+                    alert(`Militar cadastrado com sucesso! Redirecionando para o painel de ${selectedOrg.acronym}...`);
+                    window.location.href = `${window.location.origin}${window.location.pathname}?om=${selectedOrg.acronym}`;
+                }
+            }
         }
         setFormData({ name: '', warName: '', rank: '', saram: '', cpf: '', sector: '', role: UserRole.OPERATIONAL, administrativeRole: null });
         setIsAdding(false);
@@ -269,6 +296,23 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
 
                         <div className="space-y-1 lg:space-y-2">
                             <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                <Building2 className="w-3 h-3" /> Organização Militar (OM)
+                            </label>
+                            <select
+                                required
+                                value={formData.om_id || omId || ''}
+                                onChange={e => setFormData({ ...formData, om_id: e.target.value })}
+                                className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                            >
+                                <option value="">Selecione a OM...</option>
+                                {organizations.map(org => (
+                                    <option key={org.id} value={org.id}>{org.acronym} - {org.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="space-y-1 lg:space-y-2">
+                            <label className={`text-[8px] lg:text-[10px] font-black uppercase tracking-widest flex items-center gap-2 px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                                 <Building2 className="w-3 h-3" /> Setor de Lotação
                             </label>
                             <select
@@ -277,7 +321,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                 onChange={e => setFormData({ ...formData, sector: e.target.value })}
                                 className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
                             >
-                                <option value="">Selecione...</option>
+                                <option value="">Selecione o Setor...</option>
                                 {sectorNames.map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
                         </div>
@@ -400,17 +444,19 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                         </div>
 
                         <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 mb-8">
-                            <div className={`flex rounded-xl p-1.5 border shadow-inner ${isDarkMode ? 'bg-slate-950 border-slate-800' : 'bg-slate-100 border-slate-200'}`}>
-                                {['TODAS', 'GSD-SP', 'BASP'].map(unit => (
-                                    <button
-                                        key={unit}
-                                        onClick={() => setActiveUnitFilter(unit as any)}
-                                        className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${activeUnitFilter === unit ? (isDarkMode ? 'bg-slate-800 text-white shadow-lg' : 'bg-white text-slate-800 shadow-sm') : 'text-slate-500 hover:text-slate-700'}`}
-                                    >
-                                        {unit === 'TODAS' ? 'Visão Global' : unit}
-                                    </button>
-                                ))}
-                            </div>
+                            {isLegacyUnit && (
+                                <div className="flex p-1 gap-1 rounded-2xl bg-slate-800/50 border border-slate-700">
+                                    {(['TODAS', 'GSD-SP', 'BASP'] as const).map((unit) => (
+                                        <button
+                                            key={unit}
+                                            onClick={() => setActiveUnitFilter(unit)}
+                                            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeUnitFilter === unit ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                                        >
+                                            {unit === 'TODAS' ? 'VISÃO GLOBAL' : unit}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                             <button
                                 onClick={() => setShowStatistics(!showStatistics)}
                                 className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
@@ -444,8 +490,12 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                                     className={`w-full md:w-64 border rounded-2xl px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200'}`}
                                 >
                                     <option value="TODOS">Todos os Setores</option>
-                                    <option value="TODOS GSD-SP">🔵 GSD-SP</option>
-                                    <option value="TODOS BASP">🟡 BASP</option>
+                                    {isLegacyUnit && (
+                                        <>
+                                            <option value="TODOS GSD-SP">🔵 GSD-SP</option>
+                                            <option value="TODOS BASP">🟡 BASP</option>
+                                        </>
+                                    )}
                                     {sectorNames.map(s => <option key={s} value={s}>{s}</option>)}
                                     <option value="SEM SETOR">⚠ Sem Setor</option>
                                 </select>

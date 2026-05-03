@@ -4,6 +4,10 @@ import { Package, CheckCircle, XCircle, Clock, Truck, ShieldCheck, AlertCircle, 
 import { authenticateBiometrics } from '../services/webauthn';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import RejectionModal from './RejectionModal';
+import { useSectors } from '../contexts/SectorsContext';
+
+const legacyIds = ['e5418770-62bd-49d7-9229-a608e3a2895b', 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c'];
+
 
 interface LoanRequest {
     id: string;
@@ -45,6 +49,10 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     const [selectedRequest, setSelectedRequest] = useState<LoanRequest | null>(null);
     const [requestToReject, setRequestToReject] = useState<LoanRequest | null>(null);
     const [activeTab, setActiveTab] = useState<'Em Uso' | 'Histórico'>('Em Uso');
+    
+    const { omId: activeOmId } = useSectors();
+    const currentOmId = activeOmId || user.om_id;
+
 
     const [historyFilterDay, setHistoryFilterDay] = useState('');
     const [historyFilterMonth, setHistoryFilterMonth] = useState('');
@@ -107,7 +115,8 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     useEffect(() => {
         fetchRequests();
         fetchInventory();
-    }, []);
+    }, [currentOmId]);
+
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -126,13 +135,23 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     }, [isMaterialDropdownOpen]);
 
     const fetchInventory = async () => {
-        const { data } = await supabase
+        let query = supabase
             .from('gestao_estoque')
             .select('id, material, qtdisponivel, endereco')
             .gt('qtdisponivel', 0)
             .order('material');
+        
+
+        if (currentOmId && legacyIds.includes(currentOmId)) {
+            query = query.in('om_id', legacyIds);
+        } else if (currentOmId) {
+            query = query.eq('om_id', currentOmId);
+        }
+        
+        const { data } = await query;
         if (data) setInventory(data);
     };
+
 
     const updateInventoryStock = async (materialId: string, quantity: number, type: 'release' | 'return') => {
         const { data: matData, error: fetchError } = await supabase
@@ -164,10 +183,9 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             fetchInventory();
         }
     };
-
     const fetchRequests = async () => {
         setLoading(true);
-        const { data: rawData, error } = await supabase
+        let query = supabase
             .from('movimentacao_cautela')
             .select(`
                 id, id_material, id_usuario, id_usuario_externo, status, observacao, quantidade, 
@@ -175,6 +193,15 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                 material:gestao_estoque(material, tipo_de_material, qtdisponivel, endereco)
             `)
             .order('created_at', { ascending: false });
+
+        if (currentOmId && legacyIds.includes(currentOmId)) {
+            query = query.in('om_id', legacyIds);
+        } else if (currentOmId) {
+            query = query.eq('om_id', currentOmId);
+        }
+
+        const { data: rawData, error } = await query;
+
 
         if (error) {
             console.error('Error fetching loans:', error);
@@ -232,11 +259,15 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
     const handleSaramSearch = async () => {
         setIsSearchingSaram(true);
         if (isExternalMilitar) {
-            const { data } = await supabase
+            let query = supabase
                 .from('external_users_cautela')
                 .select('id, rank, war_name, unit, contact')
-                .eq('saram', directSaram.replace(/\D/g, ''))
-                .single();
+                .eq('saram', directSaram.replace(/\D/g, ''));
+            
+            if (currentOmId) query = query.eq('om_id', currentOmId);
+            
+            const { data } = await query.single();
+
 
             if (data) {
                 setFoundUser({ ...data, isExternal: true });
@@ -248,11 +279,15 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                 setFoundUser(null);
             }
         } else {
-            const { data } = await supabase
+            let query = supabase
                 .from('users')
                 .select('id, name, rank, war_name, password')
-                .eq('saram', directSaram.replace(/\D/g, ''))
-                .single();
+                .eq('saram', directSaram.replace(/\D/g, ''));
+            
+            if (currentOmId) query = query.eq('om_id', currentOmId);
+            
+            const { data } = await query.single();
+
 
             if (data) {
                 setFoundUser(data);
@@ -346,8 +381,10 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                     rank: extRank,
                     war_name: extWarName,
                     unit: extUnit,
-                    contact: extContact
+                    contact: extContact,
+                    om_id: currentOmId
                 }).select('id').single();
+
 
                 if (extError) throw extError;
                 externalUserId = newUser.id;
@@ -371,8 +408,10 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                 autorizado_por: userName,
                 entregue_por: userName,
                 observacao: `[OM Externa: ${extUnit}] Liberado por ${userName} em ${new Date().toLocaleString()}`,
-                created_at: now
+                created_at: now,
+                om_id: currentOmId
             }));
+
 
             const { error } = await supabase.from('movimentacao_cautela').insert(inserts);
             if (error) throw error;
@@ -485,8 +524,10 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                     autorizado_por: userName,
                     entregue_por: userName,
                     observacao: `Assinado digitalmente por ${militaryName} em ${new Date().toLocaleString()}`,
-                    created_at: now
+                    created_at: now,
+                    om_id: currentOmId
                 }));
+
                 const { error } = await supabase.from('movimentacao_cautela').insert(inserts);
                 if (error) throw error;
 

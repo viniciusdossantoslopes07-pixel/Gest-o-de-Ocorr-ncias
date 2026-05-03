@@ -5,6 +5,8 @@ import {
     CheckCircle, BarChart3, FileText, Calendar, Filter, X,
     ChevronRight, Info, Fingerprint, MapPin
 } from 'lucide-react';
+import { useSectors } from '../contexts/SectorsContext';
+
 import { authenticateBiometrics } from '../services/webauthn';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 
@@ -37,6 +39,10 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user, isDarkMo
     const [showSignatureModal, setShowSignatureModal] = useState(false);
     const [signaturePassword, setSignaturePassword] = useState('');
     const [pendingAction, setPendingAction] = useState<{ id: string, status: string } | null>(null);
+    
+    const { omId: activeOmId } = useSectors();
+    const currentOmId = activeOmId || user.om_id;
+
 
     const [filterDateStart, setFilterDateStart] = useState('');
     const [filterDateEnd, setFilterDateEnd] = useState('');
@@ -48,20 +54,30 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user, isDarkMo
 
     useEffect(() => {
         if (user) fetchLoans();
-    }, [user]);
+    }, [user, currentOmId]);
+
 
     const fetchLoans = async () => {
         try {
             setLoading(true);
-            const { data, error } = await supabase
+            let query = supabase
                 .from('movimentacao_cautela')
                 .select(`
                     id, id_material, id_usuario, status, quantidade, 
                     autorizado_por, entregue_por, recebido_por, created_at,
                     material:gestao_estoque(material, tipo_de_material, endereco)
                 `)
-                .eq('id_usuario', user.id)
-                .order('created_at', { ascending: false });
+                .eq('id_usuario', user.id);
+            
+            const legacyIds = ['e5418770-62bd-49d7-9229-a608e3a2895b', 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c'];
+            if (currentOmId && legacyIds.includes(currentOmId)) {
+                query = query.in('om_id', legacyIds);
+            } else if (currentOmId) {
+                query = query.eq('om_id', currentOmId);
+            }
+            
+            const { data, error } = await query.order('created_at', { ascending: false });
+
 
             if (error) throw error;
             setLoans(data || []);

@@ -11,6 +11,8 @@ import html2canvas from 'html2canvas-pro';
 import { notificationService } from '../../services/notificationService';
 import { hasPermission, PERMISSIONS } from '../../constants/permissions';
 import ParkingStatistics from './ParkingStatistics';
+import { useSectors } from '../../contexts/SectorsContext';
+
 
 interface ParkingVehicle {
     id: string;
@@ -61,7 +63,12 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
     const textPrimary = dk ? 'text-white' : 'text-slate-800';
     const textSecondary = dk ? 'text-slate-300' : 'text-slate-600';
     const textMuted = dk ? 'text-slate-400' : 'text-slate-500';
+    const { omId: activeOmId, sectors } = useSectors();
+    const currentOmId = activeOmId || user.om_id;
+    const currentOmAcronym = sectors.find(s => s.id === currentOmId)?.acronym || 'OM';
+
     const [activeTab, setActiveTab] = useState<'gerenciar' | 'estatisticas'>('gerenciar');
+
     const [requests, setRequests] = useState<ParkingRequest[]>([]);
     const [allRequests, setAllRequests] = useState<ParkingRequest[]>([]);
     const [printRequest, setPrintRequest] = useState<ParkingRequest | null>(null);
@@ -92,7 +99,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
             setLoading(false);
         };
         fetchData();
-    }, [canViewAllParking]);
+    }, [canViewAllParking, currentOmId]);
 
     // Fechar modais com Escape
     useEffect(() => {
@@ -113,12 +120,16 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
     }, [printRequest, showingCoupon, analysingRequest, showPasswordModal, rejectingRequestId]);
 
     const fetchMyRequests = async () => {
-        const { data } = await supabase.from('parking_requests').select('*, vehicle:parking_vehicles(*)').eq('user_id', user.id).order('created_at', { ascending: false }).limit(500);
+        let query = supabase.from('parking_requests').select('*, vehicle:parking_vehicles(*)').eq('user_id', user.id).order('created_at', { ascending: false }).limit(500);
+        if (currentOmId) query = query.eq('om_id', currentOmId);
+        const { data } = await query;
         if (data) setRequests(data);
     };
 
     const fetchAllRequests = async () => {
-        const { data } = await supabase.from('parking_requests').select('*, vehicle:parking_vehicles(*)').order('created_at', { ascending: false }).limit(500);
+        let query = supabase.from('parking_requests').select('*, vehicle:parking_vehicles(*)').order('created_at', { ascending: false }).limit(500);
+        if (currentOmId) query = query.eq('om_id', currentOmId);
+        const { data } = await query;
         if (data) setAllRequests(data);
     };
 
@@ -357,7 +368,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                     </div>
                     <div>
                         <h2 className={`text-xl sm:text-2xl font-black tracking-tight leading-tight ${dk ? 'text-white' : 'text-slate-900'}`}>
-                            Estacionamento <span className={dk ? 'text-blue-400' : 'text-blue-600'}>BASP</span>
+                            Estacionamento <span className={dk ? 'text-blue-400' : 'text-blue-600'}>{currentOmAcronym}</span>
                         </h2>
                         <p className={`text-[10px] sm:text-xs font-bold uppercase mt-1 ${dk ? 'text-slate-400' : 'text-slate-500'}`}>
                             Gestão de Estacionamento
@@ -389,7 +400,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
             {/* ========== TAB: Estatísticas ========== */}
             {activeTab === 'estatisticas' && (
-                <ParkingStatistics dk={dk} />
+                <ParkingStatistics user={user} dk={dk} />
             )}
 
             {/* ========== TAB: Gerenciar Solicitações ========== */}

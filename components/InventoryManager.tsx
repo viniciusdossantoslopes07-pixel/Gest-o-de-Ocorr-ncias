@@ -3,6 +3,8 @@ import { supabase } from '../services/supabase';
 import { Plus, Edit2, Trash2, Search, Package, BarChart3 } from 'lucide-react';
 import { MATERIAL_TYPES, GESTAO_MATERIAL_SETORES } from '../constants';
 import { MaterialStatistics } from './MaterialStatistics';
+import { useSectors } from '../contexts/SectorsContext';
+
 
 interface StockItem {
     id: string;
@@ -27,8 +29,12 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('');
     const [filterSector, setFilterSector] = useState('');
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<StockItem | null>(null);
+    
+    const { omId: activeOmId } = useSectors();
+    const currentOmId = activeOmId || user.om_id;
+
 
     // Form State
     const [formData, setFormData] = useState({
@@ -42,7 +48,8 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
 
     useEffect(() => {
         fetchItems();
-    }, []);
+    }, [currentOmId]);
+
 
     const fetchItems = async () => {
         setLoading(true);
@@ -50,9 +57,14 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
             .from('gestao_estoque')
             .select('*');
         
-        if (user.om_id) {
-            query = query.eq('om_id', user.om_id);
+        const legacyIds = ['e5418770-62bd-49d7-9229-a608e3a2895b', 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c'];
+
+        if (currentOmId && legacyIds.includes(currentOmId)) {
+            query = query.in('om_id', legacyIds);
+        } else if (currentOmId) {
+            query = query.eq('om_id', currentOmId);
         }
+
 
         const { data, error } = await query.order('material');
 
@@ -87,7 +99,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
                 saida: 0
             });
         }
-        setIsModalOpen(true);
+        setIsInventoryModalOpen(true);
     };
 
     const [message, setMessage] = useState({ type: '', text: '' });
@@ -112,8 +124,9 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
             endereco: formData.endereco || null,
             entrada: formData.entrada || 0,
             saida: formData.saida || 0,
-            om_id: user.om_id
+            om_id: currentOmId
         };
+
 
 
         try {
@@ -126,7 +139,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
                 if (error) setMessage({ type: 'error', text: 'Erro ao atualizar: ' + error.message });
                 else {
                     setMessage({ type: 'success', text: 'Item atualizado com sucesso!' });
-                    setIsModalOpen(false);
+                    setIsInventoryModalOpen(false);
                     fetchItems();
                 }
             } else {
@@ -137,7 +150,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
                 if (error) setMessage({ type: 'error', text: 'Erro ao criar: ' + error.message });
                 else {
                     setMessage({ type: 'success', text: 'Item adicionado com sucesso!' });
-                    setIsModalOpen(false);
+                    setIsInventoryModalOpen(false);
                     fetchItems();
                 }
             }
@@ -152,7 +165,9 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
         const { error } = await supabase
             .from('gestao_estoque')
             .delete()
-            .eq('id', id);
+            .eq('id', id)
+            .eq('om_id', currentOmId);
+
 
         if (error) setMessage({ type: 'error', text: 'Erro ao excluir: ' + error.message });
         else {
@@ -237,8 +252,9 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
 
             {activeSubTab === 'estatisticas' && (
                 <div className="animate-in fade-in slide-in-from-bottom-4">
-                    <MaterialStatistics isDarkMode={isDarkMode} />
+                    <MaterialStatistics user={user} isDarkMode={isDarkMode} />
                 </div>
+
             )}
 
             {activeSubTab === 'estoque' && (<>
@@ -429,7 +445,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
 
                 {/* Modal */}
                 {
-                    isModalOpen && (
+                    isInventoryModalOpen && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
                             <div className={`rounded-2xl w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-white'}`}>
                                 <form onSubmit={handleSubmit}>
@@ -438,7 +454,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
                                             <Package className="w-4 h-4 text-blue-500" />
                                             {editingItem ? 'Editar Material' : 'Novo Material'}
                                         </h3>
-                                        <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors">
+                                        <button type="button" onClick={() => setIsInventoryModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors">
                                             <Trash2 className="w-5 h-5 auto-rotate-[45deg]" style={{ transform: 'rotate(45deg)' }} />
                                         </button>
                                     </div>
@@ -523,7 +539,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
                                     <div className={`px-6 py-4 rounded-b-2xl flex justify-end gap-3 ${isDarkMode ? 'bg-slate-900/80 border-t border-slate-700' : 'bg-slate-50/80 border-t border-slate-100'}`}>
                                         <button
                                             type="button"
-                                            onClick={() => setIsModalOpen(false)}
+                                            onClick={() => setIsInventoryModalOpen(false)}
                                             className={`px-5 py-2.5 font-bold text-sm rounded-xl transition-all ${isDarkMode ? 'bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}`}
                                         >
                                             Cancelar

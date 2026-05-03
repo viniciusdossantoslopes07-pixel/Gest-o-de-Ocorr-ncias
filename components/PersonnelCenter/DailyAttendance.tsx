@@ -291,23 +291,39 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     isDarkMode = false,
     onLoadHistoricalData
 }) => {
-    const { sectors, displaySectors } = useSectors();
-    const [selectedUnit, setSelectedUnit] = useState<string>(currentUser.om?.acronym || 'GSD-SP');
+    const { sectors, displaySectors, omId: contextOmId, oms } = useSectors();
+    const legacyIds = useMemo(() => ['e5418770-62bd-49d7-9229-a608e3a2895b', 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c'], []);
+    
+    // Determine the active OM acronym for the view
+    const currentViewOmAcronym = useMemo(() => {
+        if (contextOmId) {
+            const om = oms.find(o => o.id === contextOmId);
+            return om?.acronym || currentUser.om?.acronym || 'GSD-SP';
+        }
+        return currentUser.om?.acronym || 'GSD-SP';
+    }, [contextOmId, oms, currentUser.om]);
+
+    const [selectedUnit, setSelectedUnit] = useState<string>(currentViewOmAcronym);
     const GSD_SP_SECTORS_LIST = useMemo(() => ['SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'], []);
     
+    // Sync selectedUnit when currentViewOmAcronym changes (e.g. navigation)
+    useEffect(() => {
+        setSelectedUnit(currentViewOmAcronym);
+    }, [currentViewOmAcronym]);
+
     // Filtro de setores ativos da unidade selecionada
     const unitSectors = useMemo(() => 
         sectors.filter(s => {
             if (s.hidden_from_attendance) return false;
-            // Se for GSD-SP ou BASP, mantém a lógica legada de separação por lista
-            if (currentUser.om?.acronym === 'GSD-SP' || currentUser.om?.acronym === 'BASP') {
+            // Se for GSD-SP ou BASP (legacy cluster), mantém a lógica legada de separação por lista
+            if (legacyIds.includes(contextOmId || '')) {
                 const isGsd = GSD_SP_SECTORS_LIST.includes(s.name.trim().toUpperCase());
                 return selectedUnit === 'BASP' ? !isGsd : isGsd;
             }
             // Para outras OMs, mostra todos os setores daquela OM (já filtrados pelo context)
             return true;
         }).map(s => s.name),
-    [sectors, selectedUnit, GSD_SP_SECTORS_LIST, currentUser.om]);
+    [sectors, selectedUnit, GSD_SP_SECTORS_LIST, contextOmId, legacyIds]);
 
     const [selectedSector, setSelectedSector] = useState('');
     const [callType, setCallType] = useState<CallTypeCode>('INICIO');
@@ -1037,7 +1053,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         {/* Search Inline — Mobile Friendly */}
                         <div className="flex flex-col md:flex-row items-stretch gap-3 mt-5">
                             
-                            {(currentUser.om?.acronym === 'GSD-SP' || currentUser.om?.acronym === 'BASP') && (
+                            {legacyIds.includes(contextOmId || '') && (
                                 <div className="flex flex-col gap-1">
                                     <label className={`text-[9px] font-black uppercase tracking-widest px-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Unidade</label>
                                     <div className={`flex rounded-xl p-1 border ${isDarkMode ? 'bg-slate-900 border-slate-700/50' : 'bg-slate-100 border-indigo-100/50'}`}>

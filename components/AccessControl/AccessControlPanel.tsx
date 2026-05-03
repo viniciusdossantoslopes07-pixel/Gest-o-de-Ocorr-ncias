@@ -9,6 +9,10 @@ import {
 import AccessStatistics from './AccessStatistics';
 import { Combobox } from '../Combobox';
 import AdvancedSearchPrintView from './AdvancedSearchPrintView';
+import { useSectors } from '../../contexts/SectorsContext';
+
+const legacyIds = ['e5418770-62bd-49d7-9229-a608e3a2895b', 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c'];
+
 
 interface AccessControlPanelProps {
     user: User;
@@ -51,6 +55,9 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     const textSecondary = dk ? 'text-slate-300' : 'text-slate-600';
     const textMuted = dk ? 'text-slate-400' : 'text-slate-500';
     const hoverRow = dk ? 'hover:bg-slate-700/40' : 'hover:bg-slate-50';
+    const { omId: activeOmId } = useSectors();
+    const currentOmId = activeOmId || user.om_id;
+
     // Tab State
     const [activeTab, setActiveTab] = useState<'registrar' | 'estatisticas' | 'busca'>('registrar');
     const [showStats, setShowStats] = useState(true);
@@ -116,39 +123,62 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     useEffect(() => {
         fetchGates();
         fetchDestinations();
-    }, [user.om_id]);
+    }, [currentOmId]);
 
     const fetchDestinations = async () => {
-        if (!user.om_id) return;
-        const { data } = await supabase
+        if (!currentOmId) return;
+        let query = supabase
             .from('om_destinations')
             .select('name')
-            .eq('om_id', user.om_id)
-            .eq('is_active', true)
-            .order('name');
+            .eq('is_active', true);
+        
+
+        if (currentOmId && legacyIds.includes(currentOmId)) {
+            query = query.in('om_id', legacyIds);
+        } else if (currentOmId) {
+            query = query.eq('om_id', currentOmId);
+        }
+        
+        const { data } = await query.order('name');
         
         if (data && data.length > 0) {
             setDestinations(data.map(d => d.name));
         } else {
-            setDestinations(LEGACY_DESTINATIONS);
+            // Fallback for legacy units OR generic if new unit is empty
+            const isLegacy = currentOmId === 'e5418770-62bd-49d7-9229-a608e3a2895b' || 
+                             currentOmId === 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c' ||
+                             !currentOmId; // Fallback to legacy if no ID (prevent blank UI)
+            
+            if (isLegacy) {
+                setDestinations(LEGACY_DESTINATIONS);
+            } else {
+                // For new OMs like GSD-CT, provide generic options instead of empty list
+                setDestinations(['COMANDO', 'SOP', 'SAP', 'RANCHO', 'ALOJAMENTO', 'OUTROS (ESPECIFICAR)']);
+            }
         }
     };
 
     const fetchGates = async () => {
         try {
             let query = supabase.from('access_gates').select('*').eq('is_active', true);
-            if (user.om_id) {
-                query = query.eq('om_id', user.om_id);
+    
+            if (currentOmId && legacyIds.includes(currentOmId)) {
+                query = query.in('om_id', legacyIds);
+            } else if (currentOmId) {
+                query = query.eq('om_id', currentOmId);
             }
             const { data, error } = await query;
             if (data && data.length > 0) {
                 setGates(data);
                 if (!selectedGate) setSelectedGate(data[0].name);
             } else {
-                // Fallback for legacy
-                const fallbackGates = ['PORTÃO G1', 'PORTÃO G2', 'PORTÃO G3'];
+                // Fallback for legacy units OR generic if new unit is empty
+                const isLegacy = currentOmId === 'e5418770-62bd-49d7-9229-a608e3a2895b' || 
+                                 currentOmId === 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c' ||
+                                 !currentOmId;
+                const fallbackGates = isLegacy ? ['PORTÃO G1', 'PORTÃO G2', 'PORTÃO G3'] : ['PORTÃO PRINCIPAL'];
                 setGates(fallbackGates.map(name => ({ id: name, name })));
-                if (!selectedGate) setSelectedGate(fallbackGates[0]);
+                if (!selectedGate && fallbackGates.length > 0) setSelectedGate(fallbackGates[0]);
             }
         } catch (err) {
             console.error('Error fetching gates:', err);
@@ -203,6 +233,13 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 .from('access_control')
                 .select('*')
                 .order('timestamp', { ascending: false });
+
+    
+            if (currentOmId && legacyIds.includes(currentOmId)) {
+                query = query.in('om_id', legacyIds);
+            } else if (currentOmId) {
+                query = query.eq('om_id', currentOmId);
+            }
 
             if (searchType === 'identification') {
                 query = query.eq('identification', value.trim());
@@ -261,8 +298,11 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 .select('*')
                 .order('timestamp', { ascending: false });
 
-            if (user.om_id) {
-                query = query.eq('om_id', user.om_id);
+    
+            if (currentOmId && legacyIds.includes(currentOmId)) {
+                query = query.in('om_id', legacyIds);
+            } else if (currentOmId) {
+                query = query.eq('om_id', currentOmId);
             }
 
             if (filterDate) {
@@ -305,8 +345,11 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 .select('*')
                 .order('timestamp', { ascending: false });
 
-            if (user.om_id) {
-                query = query.eq('om_id', user.om_id);
+    
+            if (currentOmId && legacyIds.includes(currentOmId)) {
+                query = query.in('om_id', legacyIds);
+            } else if (currentOmId) {
+                query = query.eq('om_id', currentOmId);
             }
 
             // Apply Text Filter
@@ -431,7 +474,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 authorizer_id: authorizerId.trim() || null,
                 destination: destination.trim() || null,
                 registered_by: user.id,
-                om_id: user.om_id
+                om_id: currentOmId
             }]);
 
             if (error) throw error;
@@ -1024,7 +1067,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
 
             {/* TAB CONTENT: ESTATÍSTICAS */}
             {activeTab === 'estatisticas' && (
-                <AccessStatistics isDarkMode={isDarkMode} />
+                <AccessStatistics user={user} isDarkMode={isDarkMode} />
             )}
 
             {/* TAB CONTENT: BUSCA */}
