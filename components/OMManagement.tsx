@@ -70,7 +70,8 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
             if (om.acronym.toUpperCase() === 'GSD-SP') {
                 query = query.or(`om_id.eq.${om.id},sector.in.("${GSD_SP_SECTORS.join('","')}")`);
             } else if (om.acronym.toUpperCase() === 'BASP') {
-                query = query.eq('om_id', om.id);
+                // BASP uses sectors NOT in GSD_SP list
+                query = query.or(`om_id.eq.${om.id},and(sector.not.in.("${GSD_SP_SECTORS.join('","')}"),sector.neq.'',sector.is.not.null)`);
             } else {
                 query = query.eq('om_id', om.id);
             }
