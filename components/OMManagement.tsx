@@ -198,11 +198,10 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         if (!mapRef.current) {
             mapRef.current = L.map('main-map').setView([-15.7801, -47.9292], 4);
             
-            // Google Hybrid Tiles (Satellite + Roads)
-            L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
-                maxZoom: 20,
-                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-                attribution: '&copy; Google Maps'
+            // Reliable OpenStreetMap Tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
             }).addTo(mapRef.current);
         }
 
@@ -331,8 +330,8 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                     {viewMode === 'map' && (
                         <div className={`p-8 rounded-[2rem] border relative overflow-hidden flex flex-col items-center ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                             <h3 className={`text-lg font-black uppercase tracking-widest mb-10 w-full ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>Desdobramento Territorial (Brasil)</h3>
-                            <div className="relative w-full h-[600px] bg-slate-800/10 rounded-[2rem] overflow-hidden border border-slate-200 dark:border-slate-700 shadow-inner">
-                                <div id="main-map" className="w-full h-full z-0"></div>
+                            <div className="relative w-full h-[600px] bg-slate-800 rounded-[2rem] overflow-hidden border border-slate-700 shadow-inner">
+                                <div id="main-map" className="w-full h-full" style={{ zIndex: 1 }}></div>
                                 
                                 {!selectedOm && (
                                     <div className="absolute bottom-6 left-6 right-6 p-4 bg-slate-900/80 backdrop-blur-md border border-slate-700 rounded-2xl z-10 pointer-events-none">
