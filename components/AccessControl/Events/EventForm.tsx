@@ -18,7 +18,10 @@ const LOCATIONS = [
     'RESIDÊNCIA DO MORADOR',
     'QUIOSQUE IV ETA',
     'QUIOSQUE ILA',
-    'QUIOSQUE SEREP-SP'
+    'QUIOSQUE SEREP-SP',
+    'FORMATURA BASP',
+    'FORMATURA SEREP-SP',
+    'FORMATURA ILA'
 ];
 
 export default function EventForm({ user, isDarkMode = false, onSave }: EventFormProps) {
