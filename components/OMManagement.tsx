@@ -18,10 +18,12 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
 
     // Form states for new OM
     const [isCreatingOm, setIsCreatingOm] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     const [omForm, setOmForm] = useState({
         name: '',
         acronym: '',
         address: '',
+        zip_code: '',
         host_unit: '',
         latitude: '',
         longitude: ''
@@ -73,6 +75,22 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         setSelectedOm(om);
         fetchGates(om.id);
         setIsCreatingOm(false);
+        setIsEditing(false);
+    };
+
+    const startEditing = () => {
+        if (!selectedOm) return;
+        setOmForm({
+            name: selectedOm.name,
+            acronym: selectedOm.acronym,
+            address: selectedOm.address || '',
+            zip_code: selectedOm.zip_code || '',
+            host_unit: selectedOm.host_unit || '',
+            latitude: selectedOm.latitude?.toString() || '',
+            longitude: selectedOm.longitude?.toString() || ''
+        });
+        setLogoPreview(selectedOm.logo_url || null);
+        setIsEditing(true);
     };
 
     const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,39 +125,63 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         e.preventDefault();
         setLoading(true);
         try {
-            let logoUrl = null;
-            
-            // First save the OM to get its ID
-            const { data: newOm, error } = await supabase.from('military_organizations').insert([{
-                name: omForm.name,
-                acronym: omForm.acronym,
-                address: omForm.address,
-                host_unit: omForm.host_unit,
-                latitude: omForm.latitude ? parseFloat(omForm.latitude) : null,
-                longitude: omForm.longitude ? parseFloat(omForm.longitude) : null,
-                is_active: true
-            }]).select().single();
+            let finalLogoUrl = logoPreview;
 
-            if (error) throw error;
-
-            if (logoFile) {
-                logoUrl = await uploadLogo(newOm.id);
-                if (logoUrl) {
-                    await supabase.from('military_organizations').update({ logo_url: logoUrl }).eq('id', newOm.id);
+            if (isEditing && selectedOm) {
+                if (logoFile) {
+                    finalLogoUrl = await uploadLogo(selectedOm.id);
                 }
+
+                const { error } = await supabase.from('military_organizations').update({
+                    name: omForm.name,
+                    acronym: omForm.acronym,
+                    address: omForm.address,
+                    zip_code: omForm.zip_code,
+                    host_unit: omForm.host_unit,
+                    latitude: omForm.latitude ? parseFloat(omForm.latitude) : null,
+                    longitude: omForm.longitude ? parseFloat(omForm.longitude) : null,
+                    logo_url: finalLogoUrl
+                }).eq('id', selectedOm.id);
+
+                if (error) throw error;
+                alert('OM atualizada com sucesso!');
+                setIsEditing(false);
+            } else {
+                // Create logic
+                const { data: newOm, error } = await supabase.from('military_organizations').insert([{
+                    name: omForm.name,
+                    acronym: omForm.acronym,
+                    address: omForm.address,
+                    zip_code: omForm.zip_code,
+                    host_unit: omForm.host_unit,
+                    latitude: omForm.latitude ? parseFloat(omForm.latitude) : null,
+                    longitude: omForm.longitude ? parseFloat(omForm.longitude) : null,
+                    is_active: true
+                }]).select().single();
+
+                if (error) throw error;
+
+                if (logoFile && newOm) {
+                    const url = await uploadLogo(newOm.id);
+                    if (url) {
+                        await supabase.from('military_organizations').update({ logo_url: url }).eq('id', newOm.id);
+                    }
+                }
+                alert('OM cadastrada com sucesso!');
+                setIsCreatingOm(false);
             }
 
-            alert('Organização Militar cadastrada com sucesso!');
-            setOmForm({ name: '', acronym: '', address: '', host_unit: '', latitude: '', longitude: '' });
+            setOmForm({ name: '', acronym: '', address: '', zip_code: '', host_unit: '', latitude: '', longitude: '' });
             setLogoFile(null);
             setLogoPreview(null);
-            setIsCreatingOm(false);
             fetchOms();
-
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error saving OM:', err);
-            alert('Erro ao cadastrar OM.');
+            alert(`Erro ao salvar OM: ${err.message}`);
         } finally {
+            setLoading(false);
+        }
+    };
             setLoading(false);
         }
     };
@@ -411,9 +453,9 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
 
                 {/* Details Column */}
                 <div className="space-y-6">
-                    {isCreatingOm && (
+                    {(isCreatingOm || isEditing) && (
                         <div className={`p-6 rounded-[2rem] border shadow-sm animate-in fade-in slide-in-from-right-4 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-                            <h3 className={`text-lg font-black uppercase tracking-widest mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Nova OM</h3>
+                            <h3 className={`text-lg font-black uppercase tracking-widest mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{isEditing ? 'Editar OM' : 'Nova OM'}</h3>
                             <form onSubmit={handleSaveOm} className="space-y-4">
                                 {/* Logo Upload */}
                                 <div className="flex flex-col items-center justify-center mb-6">
@@ -447,6 +489,10 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                     <input type="text" className={`w-full p-3 rounded-xl border text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} value={omForm.address} onChange={e => setOmForm({...omForm, address: e.target.value})} />
                                 </div>
                                 <div className="space-y-1">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">CEP</label>
+                                    <input type="text" className={`w-full p-3 rounded-xl border text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} placeholder="Ex: 07241-901" value={omForm.zip_code} onChange={e => setOmForm({...omForm, zip_code: e.target.value})} />
+                                </div>
+                                <div className="space-y-1">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Unidade Sediada</label>
                                     <input type="text" className={`w-full p-3 rounded-xl border text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} placeholder="Ex: Base Aérea de São Paulo" value={omForm.host_unit} onChange={e => setOmForm({...omForm, host_unit: e.target.value})} />
                                 </div>
@@ -462,27 +508,40 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                 </div>
                                 <button disabled={loading} type="submit" className="w-full flex items-center justify-center gap-2 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black uppercase tracking-widest text-xs shadow-lg mt-4 disabled:opacity-50">
                                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                    Finalizar Cadastro
+                                    {isEditing ? 'Salvar Alterações' : 'Finalizar Cadastro'}
                                 </button>
+                                {isEditing && (
+                                    <button type="button" onClick={() => setIsEditing(false)} className="w-full py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white">Cancelar</button>
+                                )}
                             </form>
                         </div>
                     )}
 
-                    {selectedOm && !isCreatingOm && (
+                    {selectedOm && !isCreatingOm && !isEditing && (
                         <div className={`p-6 rounded-[2rem] border shadow-sm animate-in fade-in slide-in-from-right-4 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-                            <div className="flex items-center gap-4 mb-6">
-                                {selectedOm.logo_url && (
-                                    <img src={selectedOm.logo_url} alt="Logo" className="w-12 h-12 object-contain bg-white rounded-lg" />
-                                )}
-                                <div>
-                                    <h3 className={`text-xl font-black uppercase tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{selectedOm.acronym}</h3>
-                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{selectedOm.host_unit || selectedOm.name}</p>
+                                <div className="flex items-center justify-between gap-4 mb-6">
+                                    <div className="flex items-center gap-4">
+                                        {selectedOm.logo_url && (
+                                            <img src={selectedOm.logo_url} alt="Logo" className="w-12 h-12 object-contain bg-white rounded-lg" />
+                                        )}
+                                        <div>
+                                            <h3 className={`text-xl font-black uppercase tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{selectedOm.acronym}</h3>
+                                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{selectedOm.host_unit || selectedOm.name}</p>
+                                        </div>
+                                    </div>
+                                    <button onClick={startEditing} className={`p-2 rounded-xl border transition-all ${isDarkMode ? 'bg-slate-700 border-slate-600 text-white hover:bg-slate-600' : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'}`}>
+                                        <Plus className="w-4 h-4 transform rotate-45 scale-125" /> 
+                                    </button>
                                 </div>
-                            </div>
-                            
-                            {selectedOm.address && (
-                                <>
-                                    <p className="text-xs text-slate-500 mb-4 flex items-center gap-2"><MapPin className="w-4 h-4" /> {selectedOm.address}</p>
+                                
+                                <div className="space-y-2 mb-6">
+                                    {selectedOm.address && (
+                                        <p className="text-xs text-slate-500 flex items-center gap-2"><MapPin className="w-4 h-4 shrink-0" /> {selectedOm.address}</p>
+                                    )}
+                                    {selectedOm.zip_code && (
+                                        <p className="text-[10px] font-bold text-slate-400 flex items-center gap-2 uppercase tracking-widest ml-1">CEP: {selectedOm.zip_code}</p>
+                                    )}
+                                </div>
                                     <div className="w-full aspect-video rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 mb-6 bg-slate-100 dark:bg-slate-900">
                                         <iframe
                                             width="100%"

@@ -8,6 +8,7 @@ export interface MilitaryOrganization {
   longitude?: number;
   logo_url?: string;
   host_unit?: string;
+  zip_code?: string;
   is_active: boolean;
   created_at: string;
 }
