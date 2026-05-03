@@ -182,9 +182,6 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
             setLoading(false);
         }
     };
-            setLoading(false);
-        }
-    };
 
     const handleAddGate = async () => {
         if (!selectedOm) return;
@@ -553,8 +550,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                             src={`https://www.google.com/maps?q=${encodeURIComponent(selectedOm.address + ' ' + selectedOm.name)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                                         ></iframe>
                                     </div>
-                                </>
-                            )}
+
 
                             <div className="pt-6 border-t border-slate-200 dark:border-slate-700">
                                 <div className="flex items-center justify-between mb-4">
