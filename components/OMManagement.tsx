@@ -313,7 +313,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
     };
 
     useEffect(() => {
-        if (viewMode === 'map') {
+        if (viewMode === 'dashboard') {
             const timer = setTimeout(() => {
                 initMap();
             }, 100);
@@ -322,7 +322,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
     }, [viewMode, oms]);
 
     useEffect(() => {
-        if (selectedOm && mapRef.current && (window as any).L && viewMode === 'map') {
+        if (selectedOm && mapRef.current && (window as any).L && viewMode === 'dashboard') {
             if (selectedOm.latitude && selectedOm.longitude) {
                 mapRef.current.flyTo([selectedOm.latitude, selectedOm.longitude], 13);
             }
@@ -411,7 +411,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                             </div>
 
                             {/* Integrated Interactive Map */}
-                            <div className={`relative w-full h-[500px] lg:h-[600px] rounded-[3rem] overflow-hidden border shadow-2xl ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
+                            <div className={`relative w-full h-[350px] lg:h-[420px] rounded-[3rem] overflow-hidden border shadow-2xl ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
                                 <div id="main-map" className="w-full h-full z-0"></div>
                                 
                                 {/* Floating Selection Info */}
