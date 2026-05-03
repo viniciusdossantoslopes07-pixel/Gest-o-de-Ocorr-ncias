@@ -443,7 +443,20 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                             </div>
                             
                             {selectedOm.address && (
-                                <p className="text-xs text-slate-500 mb-6 flex items-center gap-2"><MapPin className="w-4 h-4" /> {selectedOm.address}</p>
+                                <>
+                                    <p className="text-xs text-slate-500 mb-4 flex items-center gap-2"><MapPin className="w-4 h-4" /> {selectedOm.address}</p>
+                                    <div className="w-full aspect-video rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 mb-6 bg-slate-100 dark:bg-slate-900">
+                                        <iframe
+                                            width="100%"
+                                            height="100%"
+                                            style={{ border: 0 }}
+                                            loading="lazy"
+                                            allowFullScreen
+                                            referrerPolicy="no-referrer-when-downgrade"
+                                            src={`https://www.google.com/maps?q=${encodeURIComponent(selectedOm.address + ' ' + selectedOm.name)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                                        ></iframe>
+                                    </div>
+                                </>
                             )}
 
                             <div className="pt-6 border-t border-slate-200 dark:border-slate-700">

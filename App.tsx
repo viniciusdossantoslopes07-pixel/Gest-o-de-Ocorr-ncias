@@ -1026,7 +1026,7 @@ const App: FC = () => {
         rc: updatedUser.rc,
         workplace: updatedUser.workplace,
         emergency_contact: updatedUser.emergency_contact || (updatedUser as any).emergencyContact,
-        om_id: updatedUser.om_id,
+        // om_id: updatedUser.om_id, // Removed duplicate
         // Proteger campos de senha: só enviar se explicitamente definidos (não undefined)
         ...(updatedUser.pending_password_reset !== undefined
             ? { pending_password_reset: updatedUser.pending_password_reset } : {}),

@@ -78,7 +78,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [destinations, setDestinations] = useState<string[]>([]);
-    const [gates, setGates] = useState<string[]>([]);
+    const [gates, setGates] = useState<any[]>([]);
 
     // Import Logic
     const [showImportModal, setShowImportModal] = useState(false);
@@ -111,7 +111,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     const [searchFilterCharacteristic, setSearchFilterCharacteristic] = useState<string>('all');
     const [searchFilterGate, setSearchFilterGate] = useState<string>('all');
     const [searchLimit, setSearchLimit] = useState(100);
-    const [gates, setGates] = useState<any[]>([]);
+
 
     useEffect(() => {
         fetchGates();
