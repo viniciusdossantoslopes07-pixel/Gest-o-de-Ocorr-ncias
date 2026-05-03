@@ -292,17 +292,22 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     onLoadHistoricalData
 }) => {
     const { sectors, displaySectors } = useSectors();
-    const [selectedUnit, setSelectedUnit] = useState<'GSD-SP' | 'BASP'>('GSD-SP');
+    const [selectedUnit, setSelectedUnit] = useState<string>(currentUser.om?.acronym || 'GSD-SP');
     const GSD_SP_SECTORS_LIST = useMemo(() => ['SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'], []);
     
     // Filtro de setores ativos da unidade selecionada
     const unitSectors = useMemo(() => 
         sectors.filter(s => {
             if (s.hidden_from_attendance) return false;
-            const isGsd = GSD_SP_SECTORS_LIST.includes(s.name.trim().toUpperCase());
-            return selectedUnit === 'BASP' ? !isGsd : isGsd;
+            // Se for GSD-SP ou BASP, mantém a lógica legada de separação por lista
+            if (currentUser.om?.acronym === 'GSD-SP' || currentUser.om?.acronym === 'BASP') {
+                const isGsd = GSD_SP_SECTORS_LIST.includes(s.name.trim().toUpperCase());
+                return selectedUnit === 'BASP' ? !isGsd : isGsd;
+            }
+            // Para outras OMs, mostra todos os setores daquela OM (já filtrados pelo context)
+            return true;
         }).map(s => s.name),
-    [sectors, selectedUnit, GSD_SP_SECTORS_LIST]);
+    [sectors, selectedUnit, GSD_SP_SECTORS_LIST, currentUser.om]);
 
     const [selectedSector, setSelectedSector] = useState('');
     const [callType, setCallType] = useState<CallTypeCode>('INICIO');
@@ -623,10 +628,11 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 sector: selectedSector,
                 records: [{ militarId: userId, militarName: user?.warName || '', militarRank: user?.rank || '', saram: user?.saram, status, timestamp: new Date().toISOString() }],
                 responsible: `${currentUser.rank} ${currentUser.warName || currentUser.name}`,
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                om_id: currentUser.om_id
             };
         }
-        onSaveAttendance(newAttendance);
+        onSaveAttendance({ ...newAttendance, om_id: currentUser.om_id });
     };
 
     const handleNoWorkDay = async (dates: string[], reason: string) => {
@@ -703,7 +709,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             timestamp: new Date().toISOString(),
             sector: selectedSector,
             date: justifyingSoldier.date,
-            callType: justifyingSoldier.callType
+            callType: justifyingSoldier.callType,
+            om_id: currentUser.om_id
         };
         handleWeeklyChange(justifyingSoldier.userId, justifyingSoldier.date, justifyingSoldier.callType, justificationForm.newStatus);
         onSaveJustification(justification);
@@ -1030,23 +1037,25 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         {/* Search Inline — Mobile Friendly */}
                         <div className="flex flex-col md:flex-row items-stretch gap-3 mt-5">
                             
-                            <div className="flex flex-col gap-1">
-                                <label className={`text-[9px] font-black uppercase tracking-widest px-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Unidade</label>
-                                <div className={`flex rounded-xl p-1 border ${isDarkMode ? 'bg-slate-900 border-slate-700/50' : 'bg-slate-100 border-indigo-100/50'}`}>
-                                    <button
-                                        onClick={() => setSelectedUnit('GSD-SP')}
-                                        className={`px-4 py-2 text-[10px] font-bold rounded-lg transition-all ${selectedUnit === 'GSD-SP' ? (isDarkMode ? 'bg-blue-600 text-white shadow' : 'bg-white text-slate-900 shadow') : (isDarkMode ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
-                                    >
-                                        GSD-SP
-                                    </button>
-                                    <button
-                                        onClick={() => setSelectedUnit('BASP')}
-                                        className={`px-4 py-2 text-[10px] font-bold rounded-lg transition-all ${selectedUnit === 'BASP' ? (isDarkMode ? 'bg-emerald-600 text-white shadow' : 'bg-white text-slate-900 shadow') : (isDarkMode ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
-                                    >
-                                        BASP
-                                    </button>
+                            {(currentUser.om?.acronym === 'GSD-SP' || currentUser.om?.acronym === 'BASP') && (
+                                <div className="flex flex-col gap-1">
+                                    <label className={`text-[9px] font-black uppercase tracking-widest px-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Unidade</label>
+                                    <div className={`flex rounded-xl p-1 border ${isDarkMode ? 'bg-slate-900 border-slate-700/50' : 'bg-slate-100 border-indigo-100/50'}`}>
+                                        <button
+                                            onClick={() => setSelectedUnit('GSD-SP')}
+                                            className={`px-4 py-2 text-[10px] font-bold rounded-lg transition-all ${selectedUnit === 'GSD-SP' ? (isDarkMode ? 'bg-blue-600 text-white shadow' : 'bg-white text-slate-900 shadow') : (isDarkMode ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
+                                        >
+                                            GSD-SP
+                                        </button>
+                                        <button
+                                            onClick={() => setSelectedUnit('BASP')}
+                                            className={`px-4 py-2 text-[10px] font-bold rounded-lg transition-all ${selectedUnit === 'BASP' ? (isDarkMode ? 'bg-emerald-600 text-white shadow' : 'bg-white text-slate-900 shadow') : (isDarkMode ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
+                                        >
+                                            BASP
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             <div className="flex flex-col gap-1 md:w-[220px]" ref={sectorDropdownRef}>
                                 <label className={`text-[9px] font-black uppercase tracking-widest px-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Setor Selecionado ({selectedUnit})</label>

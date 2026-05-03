@@ -10,7 +10,8 @@ import {
     HelpCircle,
     LogOut,
     ChevronDown,
-    Lightbulb
+    Lightbulb,
+    Building2
 } from 'lucide-react';
 
 interface UserMenuProps {
@@ -173,6 +174,13 @@ export default function UserMenu({
                                 >
                                     <Shield className="w-4 h-4" />
                                     Gerir Permissões
+                                </button>
+                                <button
+                                    onClick={() => handleAction(() => setActiveTab('om-management'))}
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${isDarkMode ? 'text-blue-300 hover:bg-blue-900/20' : 'text-blue-700 hover:bg-blue-50'}`}
+                                >
+                                    <Building2 className="w-4 h-4" />
+                                    Gerir OM's
                                 </button>
                                 <button
                                     onClick={() => handleAction(() => setActiveTab('access-scanner'))}

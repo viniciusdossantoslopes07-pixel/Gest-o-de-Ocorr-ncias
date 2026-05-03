@@ -46,10 +46,15 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
 
     const fetchItems = async () => {
         setLoading(true);
-        const { data, error } = await supabase
+        let query = supabase
             .from('gestao_estoque')
-            .select('*')
-            .order('material');
+            .select('*');
+        
+        if (user.om_id) {
+            query = query.eq('om_id', user.om_id);
+        }
+
+        const { data, error } = await query.order('material');
 
         if (error) {
             console.error('Error fetching inventory:', error);
@@ -107,6 +112,7 @@ export const InventoryManager: React.FC<InventoryManagerProps> = ({ user, isDark
             endereco: formData.endereco || null,
             entrada: formData.entrada || 0,
             saida: formData.saida || 0,
+            om_id: user.om_id
         };
 
 

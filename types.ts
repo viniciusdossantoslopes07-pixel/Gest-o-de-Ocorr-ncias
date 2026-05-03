@@ -1,4 +1,25 @@
 
+export interface MilitaryOrganization {
+  id: string;
+  name: string;
+  acronym: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  logo_url?: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface AccessGate {
+  id: string;
+  om_id: string;
+  name: string;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+}
+
 export enum Urgency {
   LOW = 'Baixa',
   MEDIUM = 'Média',
@@ -69,6 +90,8 @@ export interface User {
   external_om?: string;
   external_sector?: string;
   administrativeRole?: 'CMT_GSD_SP' | 'CH_OP_GSD_SP' | 'CMT_BASP' | 'CH_SAP' | null;
+  om_id?: string;
+  om?: MilitaryOrganization;
 }
 
 export interface UserFunction {
@@ -277,6 +300,7 @@ export interface DailyAttendance {
   signedBy?: string;
   createdAt: string;
   observacao?: string;
+  om_id?: string;
 }
 
 export interface AbsenceJustification {
@@ -285,6 +309,7 @@ export interface AbsenceJustification {
   militarId: string;
   militarName: string;
   militarRank: string;
+  om_id?: string;
   saram?: string;
   originalStatus: string;
   newStatus: string;

@@ -27,20 +27,28 @@ interface SectorsContextValue {
     refetch: () => Promise<void>;
     /** Atualiza a ordem de exibição dos setores */
     reorderSectors: (newOrderIds: string[]) => Promise<{ error?: string }>;
+    /** Define a OM atual para filtrar os setores */
+    setOmId: (id: string | null) => void;
 }
 
 const SectorsContext = createContext<SectorsContextValue | null>(null);
 
 export const SectorsProvider = ({ children }: { children: ReactNode }) => {
     const [sectors, setSectors] = useState<Sector[]>([]);
+    const [omId, setOmId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
 
     const fetchSectors = useCallback(async () => {
-        const { data, error } = await supabase
+        let query = supabase
             .from('sectors')
             .select('*')
-            .eq('is_active', true)
-            .order('display_order', { ascending: true });
+            .eq('is_active', true);
+        
+        if (omId) {
+            query = query.eq('om_id', omId);
+        }
+
+        const { data, error } = await query.order('display_order', { ascending: true });
 
         if (!error && data) {
             setSectors(data as Sector[]);
@@ -60,7 +68,7 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
             .subscribe();
 
         return () => { supabase.removeChannel(channel); };
-    }, [fetchSectors]);
+    }, [fetchSectors, omId]);
 
     const addSector = useCallback(async (name: string, unit: string): Promise<{ error?: string }> => {
         const trimmed = name.trim().toUpperCase();
@@ -88,7 +96,7 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
         const maxOrder = sectors.length > 0 ? Math.max(...sectors.map(s => s.display_order)) : 0;
         const { error } = await supabase
             .from('sectors')
-            .insert([{ name: trimmed, unit, display_order: maxOrder + 1, is_active: true }]);
+            .insert([{ name: trimmed, unit, display_order: maxOrder + 1, is_active: true, om_id: omId }]);
 
         if (error) return { error: error.message };
         await fetchSectors();
@@ -148,6 +156,7 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
             addSector,
             removeSector,
             reorderSectors,
+            setOmId,
             refetch: fetchSectors
         }}>
             {children}

@@ -9,6 +9,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { Occurrence, User, UserRole, Status, Urgency, MissionOrder, Mission, DailyAttendance, AbsenceJustification, UserFunction, Vacation } from './types';
+import { useSectors } from './contexts/SectorsContext';
 import PublicEventsModal from './components/AccessControl/Events/PublicEventsModal';
 import { USER_FUNCTIONS, PERMISSIONS, hasPermission } from './constants/permissions';
 import { formatViaturas, formatEfetivo } from './utils/formatters';
@@ -60,6 +61,7 @@ const VacationPortal = lazy(() => import('./components/PersonnelCenter/VacationP
 const ServiceChatWidget = lazy(() => import('./components/ServiceChatWidget'));
 const TemporaryAccessManager = lazy(() => import('./components/AccessControl/TemporaryAccessManager'));
 const QRScannerView = lazy(() => import('./components/AccessControl/QRScannerView'));
+const OMManagement = lazy(() => import('./components/OMManagement'));
 
 // Fallback de carregamento para Suspense
 const LazyFallback = () => (
@@ -109,10 +111,19 @@ const App: FC = () => {
     }
     return null;
   });
+  const { setOmId } = useSectors();
+
+  useEffect(() => {
+    if (currentUser?.om_id) {
+      setOmId(currentUser.om_id);
+    } else {
+      setOmId(null);
+    }
+  }, [currentUser, setOmId]);
   const [users, setUsers] = useState<User[]>([]);
   const [vacations, setVacations] = useState<Vacation[]>([]);
   // Added 'settings' to activeTab type
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'vacation-management' | 'vacation-stats' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs' | 'access-temp' | 'access-scanner'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'vacation-management' | 'vacation-stats' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs' | 'access-temp' | 'access-scanner' | 'om-management'>('home');
   const [showVacationPortal, setShowVacationPortal] = useState(false);
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [attendanceHistory, setAttendanceHistory] = useState<DailyAttendance[]>([]);
@@ -314,10 +325,16 @@ const App: FC = () => {
   const toggleTheme = () => setIsDarkMode(prev => !prev);
 
   const fetchOccurrences = async () => {
-    const { data, error } = await supabase
+    let query = supabase
       .from('occurrences')
-      .select('id, title, type, category, status, urgency, date, location, description, creator, sector, assigned_to, attachments, timeline, sla_deadline, geolocation')
+      .select('id, title, type, category, status, urgency, date, location, description, creator, sector, assigned_to, attachments, timeline, sla_deadline, geolocation, om_id')
       .order('date', { ascending: false });
+
+    if (currentUser?.om_id) {
+      query = query.eq('om_id', currentUser.om_id);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching occurrences:', error);
@@ -335,10 +352,16 @@ const App: FC = () => {
   }, [currentUser]);
 
   const fetchMissionRequests = async () => {
-    const { data, error } = await supabase
+    let query = supabase
       .from('missoes_gsd')
-      .select('id, solicitante_id, status, dados_missao, data_criacao, parecer_sop')
+      .select('id, solicitante_id, status, dados_missao, data_criacao, parecer_sop, om_id')
       .order('data_criacao', { ascending: false });
+
+    if (currentUser?.om_id) {
+      query = query.eq('om_id', currentUser.om_id);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching mission requests:', error);
@@ -350,7 +373,7 @@ const App: FC = () => {
   const handleCreateMissionRequest = async (missionData: any) => {
     const { error } = await supabase
       .from('missoes_gsd')
-      .insert([missionData]);
+      .insert([{ ...missionData, om_id: currentUser?.om_id }]);
 
     if (error) {
       console.error('Error creating mission request:', error);
@@ -483,8 +506,16 @@ const App: FC = () => {
         is_functional: !!data.is_functional,
         external_service: !!data.external_service,
         external_om: data.external_om,
-        external_sector: data.external_sector
+        external_sector: data.external_sector,
+        om_id: data.om_id
       };
+
+      if (user.om_id) {
+        const { data: omData } = await supabase.from('military_organizations').select('*').eq('id', user.om_id).single();
+        if (omData) {
+          user.om = omData as MilitaryOrganization;
+        }
+      }
 
       if (user.approved === false) {
         // App.tsx handleLogin doesn't return string, but we can alert here
@@ -636,7 +667,13 @@ const App: FC = () => {
   };
 
   const fetchUsers = async () => {
-    const { data } = await supabase.from('users').select('*').order('display_order', { ascending: true });
+    let query = supabase.from('users').select('*').order('display_order', { ascending: true });
+    
+    if (currentUser?.om_id) {
+      query = query.eq('om_id', currentUser.om_id);
+    }
+
+    const { data } = await query;
     if (data) {
       const mappedUsers = data.map((u: any) => ({
         id: u.id,
@@ -680,7 +717,8 @@ const App: FC = () => {
         external_service: !!u.external_service,
         external_om: u.external_om,
         external_sector: u.external_sector,
-        administrativeRole: u.administrative_role
+        administrativeRole: u.administrative_role,
+        om_id: u.om_id
       }));
       setUsers(mappedUsers);
     }
@@ -809,7 +847,8 @@ const App: FC = () => {
       administrative_role: newUser.administrativeRole || null,
       pending_password_reset: newUser.pending_password_reset || false,
       reset_password_at_login: newUser.reset_password_at_login || false,
-      password_status: newUser.password_status || 'ACTIVE'
+      password_status: newUser.password_status || 'ACTIVE',
+      om_id: newUser.om_id || currentUser?.om_id
     };
 
     // Exclusividade de Função Administrativa: remover de outros usuários se estiver sendo atribuída
@@ -877,7 +916,8 @@ const App: FC = () => {
         administrativeRole: data.administrative_role,
         pending_password_reset: data.pending_password_reset,
         reset_password_at_login: data.reset_password_at_login,
-        password_status: data.password_status
+        password_status: data.password_status,
+        om_id: data.om_id
       };
       setUsers([...users, createdUser]);
       return true;
@@ -986,6 +1026,7 @@ const App: FC = () => {
         rc: updatedUser.rc,
         workplace: updatedUser.workplace,
         emergency_contact: updatedUser.emergency_contact || (updatedUser as any).emergencyContact,
+        om_id: updatedUser.om_id,
         // Proteger campos de senha: só enviar se explicitamente definidos (não undefined)
         ...(updatedUser.pending_password_reset !== undefined
             ? { pending_password_reset: updatedUser.pending_password_reset } : {}),
@@ -997,6 +1038,7 @@ const App: FC = () => {
         external_service: updatedUser.external_service,
         external_om: updatedUser.external_om,
         external_sector: updatedUser.external_sector,
+        om_id: updatedUser.om_id,
         administrative_role: updatedUser.administrativeRole || null
       })
       .eq('id', updatedUser.id);
@@ -1429,7 +1471,8 @@ const App: FC = () => {
                                           activeTab === 'events' ? 'Eventos Programados' :
                                             activeTab === 'vacation-management' ? 'Gestão de Férias' :
                                               activeTab === 'vacation-stats' ? 'Estatísticas de Férias' :
-                                                activeTab === 'settings' ? 'Minhas Configurações' : 'Arquivo Digital'}
+                                                activeTab === 'settings' ? 'Minhas Configurações' : 
+                                                  activeTab === 'om-management' ? 'Gestão de OM''s' : 'Arquivo Digital'}
               </h2>
             </div>
 
@@ -1485,7 +1528,8 @@ const App: FC = () => {
                   const newOccStub = {
                     ...data,
                     timeline: data.timeline || [],
-                    status: Status.TRIAGE
+                    status: Status.TRIAGE,
+                    om_id: currentUser?.om_id
                   };
 
                   const { data: insertedData, error } = await supabase
@@ -1502,6 +1546,7 @@ const App: FC = () => {
                     isPublic ? handleLogout() : setActiveTab('home');
                   }
                 }}
+                currentUser={currentUser}
               />
             </div>
           )}
@@ -1547,7 +1592,8 @@ const App: FC = () => {
                   password: 'password123',
                   username: `user_${Date.now()}`,
                   email: `user_${Date.now()}@system.local`,
-                  approved: true
+                  approved: true,
+                  om_id: currentUser?.om_id
                 } as any);
               }}
               onUpdatePersonnel={(u) => {
@@ -1571,7 +1617,7 @@ const App: FC = () => {
           )}
 
           {activeTab === 'emergency-logs' && (
-            <EmergencyLogs />
+            <EmergencyLogs currentUser={currentUser} />
           )}
 
           {/* MISSION CENTER (Unified) */}
@@ -1857,6 +1903,10 @@ const App: FC = () => {
 
           {activeTab === 'parking-request' && canViewAccessControl && (
             <ParkingRequestPanel user={currentUser} isDarkMode={isDarkMode} />
+          )}
+
+          {activeTab === 'om-management' && (isAdmin || isOM) && (
+            <OMManagement currentUser={currentUser} isDarkMode={isDarkMode} />
           )}
 
           {activeTab === 'events' && canViewAccessControl && currentUser && (

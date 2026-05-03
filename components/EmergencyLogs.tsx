@@ -1,19 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/supabase';
-import { EmergencyLog } from '../types';
+import { EmergencyLog, User as UserType } from '../types';
 import { Siren, Clock, User, AlertCircle, RefreshCw } from 'lucide-react';
 
-export default function EmergencyLogs() {
+interface EmergencyLogsProps {
+  currentUser: UserType | null;
+}
+
+export default function EmergencyLogs({ currentUser }: EmergencyLogsProps) {
   const [logs, setLogs] = useState<EmergencyLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchLogs = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      let query = supabase
         .from('emergency_logs')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
+      
+      if (currentUser?.om_id) {
+        query = query.eq('om_id', currentUser.om_id);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
       setLogs(data || []);

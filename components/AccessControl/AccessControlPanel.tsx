@@ -32,9 +32,8 @@ interface AccessRecord {
     registered_by: string;
 }
 
-const GATES = ['PORTÃO G1', 'PORTÃO G2', 'PORTÃO G3'];
 const CHARACTERISTICS = ['MILITAR', 'CIVIL', 'DEPENDENTE', 'PRESTADOR', 'ENTREGADOR'];
-const DESTINATIONS = [
+const LEGACY_DESTINATIONS = [
     'BASP (Comando)', 'PCAN', 'PASP', 'ILA', 'SEREP-SP', 'GSD-SP', 'GECAMP',
     'BOMBEIRO', 'VILA OF.', 'VILA GRAD.', 'CAPELA', 'GSAU', 'RANCHO',
     'HOTEL DE TRÂNSITO BASP', 'HOTEL DE TRÂNSITO SEREP', 'HOTEL DE TRÂNSITO ILA'
@@ -78,6 +77,8 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     const [records, setRecords] = useState<AccessRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [destinations, setDestinations] = useState<string[]>([]);
+    const [gates, setGates] = useState<string[]>([]);
 
     // Import Logic
     const [showImportModal, setShowImportModal] = useState(false);
@@ -110,6 +111,48 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     const [searchFilterCharacteristic, setSearchFilterCharacteristic] = useState<string>('all');
     const [searchFilterGate, setSearchFilterGate] = useState<string>('all');
     const [searchLimit, setSearchLimit] = useState(100);
+    const [gates, setGates] = useState<any[]>([]);
+
+    useEffect(() => {
+        fetchGates();
+        fetchDestinations();
+    }, [user.om_id]);
+
+    const fetchDestinations = async () => {
+        if (!user.om_id) return;
+        const { data } = await supabase
+            .from('om_destinations')
+            .select('name')
+            .eq('om_id', user.om_id)
+            .eq('is_active', true)
+            .order('name');
+        
+        if (data && data.length > 0) {
+            setDestinations(data.map(d => d.name));
+        } else {
+            setDestinations(LEGACY_DESTINATIONS);
+        }
+    };
+
+    const fetchGates = async () => {
+        try {
+            let query = supabase.from('access_gates').select('*').eq('is_active', true);
+            if (user.om_id) {
+                query = query.eq('om_id', user.om_id);
+            }
+            const { data, error } = await query;
+            if (data && data.length > 0) {
+                setGates(data);
+                if (!selectedGate) setSelectedGate(data[0].name);
+            } else {
+                // Fallback for legacy
+                setGates(GATES.map(name => ({ id: name, name })));
+                if (!selectedGate) setSelectedGate(GATES[0]);
+            }
+        } catch (err) {
+            console.error('Error fetching gates:', err);
+        }
+    };
 
     // Reseta o limite se os filtros mudarem
     useEffect(() => {
@@ -217,6 +260,10 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 .select('*')
                 .order('timestamp', { ascending: false });
 
+            if (user.om_id) {
+                query = query.eq('om_id', user.om_id);
+            }
+
             if (filterDate) {
                 const [year, month, day] = filterDate.split('-').map(Number);
                 const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0).toISOString();
@@ -256,6 +303,10 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 .from('access_control')
                 .select('*')
                 .order('timestamp', { ascending: false });
+
+            if (user.om_id) {
+                query = query.eq('om_id', user.om_id);
+            }
 
             // Apply Text Filter
             if (isTextSearch) {
@@ -352,7 +403,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 alert('Por favor, informe o destino.');
                 return;
             }
-            if (!DESTINATIONS.includes(destination)) {
+            if (!destinations.includes(destination)) {
                 alert('Por favor, selecione um destino válido da lista.');
                 return;
             }
@@ -379,6 +430,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 authorizer_id: authorizerId.trim() || null,
                 destination: destination.trim() || null,
                 registered_by: user.id,
+                om_id: user.om_id
             }]);
 
             if (error) throw error;
@@ -621,24 +673,25 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
 
                             {/* Gate Selectors - Compact & Inline */}
                             <div className={`flex p-1 rounded-xl w-full ${dk ? 'bg-slate-600/50' : 'bg-slate-200/50'}`}>
-                                {GATES.map(gate => {
-                                    const isSelected = selectedGate === gate;
+                                {gates.map(gate => {
+                                    const isSelected = selectedGate === gate.name;
                                     let activeClass = '';
                                     if (isSelected) {
-                                        if (gate === 'PORTÃO G1') activeClass = 'bg-blue-600 text-white shadow-lg ring-2 ring-blue-100 scale-[1.02]';
-                                        else if (gate === 'PORTÃO G2') activeClass = 'bg-emerald-600 text-white shadow-lg ring-2 ring-emerald-100 scale-[1.02]';
-                                        else if (gate === 'PORTÃO G3') activeClass = 'bg-amber-600 text-white shadow-lg ring-2 ring-amber-100 scale-[1.02]';
+                                        if (gate.name === 'PORTÃO G1') activeClass = 'bg-blue-600 text-white shadow-lg ring-2 ring-blue-100 scale-[1.02]';
+                                        else if (gate.name === 'PORTÃO G2') activeClass = 'bg-emerald-600 text-white shadow-lg ring-2 ring-emerald-100 scale-[1.02]';
+                                        else if (gate.name === 'PORTÃO G3') activeClass = 'bg-amber-600 text-white shadow-lg ring-2 ring-amber-100 scale-[1.02]';
+                                        else activeClass = 'bg-blue-600 text-white shadow-lg scale-[1.02]';
                                     } else {
                                         activeClass = dk ? 'text-slate-400 hover:text-white hover:bg-slate-500/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/80';
                                     }
 
                                     return (
                                         <button
-                                            key={gate}
-                                            onClick={() => setSelectedGate(gate)}
+                                            key={gate.id}
+                                            onClick={() => setSelectedGate(gate.name)}
                                             className={`flex-1 px-3 py-2 rounded-lg text-xs font-black uppercase transition-all whitespace-nowrap z-10 ${activeClass}`}
                                         >
-                                            {gate.replace('PORTÃO ', '')}
+                                            {gate.name.replace('PORTÃO ', '')}
                                         </button>
                                     );
                                 })}
@@ -774,7 +827,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                                 <div className="relative">
                                     <Combobox
-                                        options={DESTINATIONS}
+                                        options={destinations}
                                         value={destination}
                                         onChange={setDestination}
                                         placeholder="DESTINO (OBRIGATÓRIO)"

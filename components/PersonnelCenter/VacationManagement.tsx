@@ -56,10 +56,16 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
     const fetchVacations = async () => {
         try {
             setLoading(true);
-            const { data, error } = await supabase
+            let query = supabase
                 .from('vacations')
                 .select('*, periods:vacation_periods(*)')
                 .eq('year', selectedYear);
+
+            if (currentUser?.om_id) {
+                query = query.eq('om_id', currentUser.om_id);
+            }
+
+            const { data, error } = await query;
 
             if (error) throw error;
             setVacations(data || []);
@@ -365,20 +371,22 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                     </div>
 
                     <div className="flex flex-col md:flex-row md:items-center gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                        <div className="flex flex-col gap-2">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Unidade</span>
-                            <div className="flex flex-wrap items-center gap-2">
-                                {(['TODAS', 'GSD-SP', 'BASP'] as const).map(u => (
-                                    <button
-                                        key={u}
-                                        onClick={() => setActiveUnit(u)}
-                                        className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${activeUnit === u ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-transparent border-slate-200 dark:border-slate-700 text-slate-500 dark:hover:border-slate-600'}`}
-                                    >
-                                        {u}
-                                    </button>
-                                ))}
+                        {(currentUser?.om?.acronym === 'GSD-SP' || currentUser?.om?.acronym === 'BASP') && (
+                            <div className="flex flex-col gap-2">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Unidade</span>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    {(['TODAS', 'GSD-SP', 'BASP'] as const).map(u => (
+                                        <button
+                                            key={u}
+                                            onClick={() => setActiveUnit(u)}
+                                            className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${activeUnit === u ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-transparent border-slate-200 dark:border-slate-700 text-slate-500 dark:hover:border-slate-600'}`}
+                                        >
+                                            {u}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         <div className="flex flex-col gap-2 flex-1">
                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Círculo Hierárquico</span>
@@ -422,6 +430,7 @@ const VacationManagement: FC<VacationManagementProps> = ({ currentUser, isDarkMo
                 users={users}
                 isDarkMode={dk}
                 initialData={editingVacation}
+                currentUser={currentUser}
             />
         </div>
     );

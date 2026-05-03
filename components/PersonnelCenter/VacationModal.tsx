@@ -12,6 +12,7 @@ interface VacationModalProps {
     users: User[];
     isDarkMode?: boolean;
     initialData?: Partial<Vacation> | null;
+    currentUser: User | null;
 }
 
 // Mapeamento de modelo para dias por parcela
@@ -67,7 +68,7 @@ const applyMask = (raw: string): string => {
     return masked;
 };
 
-const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, users, isDarkMode = false, initialData }) => {
+const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, users, isDarkMode = false, initialData, currentUser }) => {
     const [militarId, setMilitarId] = useState('');
     const [year, setYear] = useState(new Date().getFullYear());
     const [status, setStatus] = useState<VacationStatus>(VacationStatus.PLANEJADO);
@@ -166,7 +167,13 @@ const VacationModal: FC<VacationModalProps> = ({ isOpen, onClose, onSuccess, use
 
         setIsSaving(true);
         try {
-            const vacationData = { militar_id: militarId, year, status, installment_model: selectedModel };
+            const vacationData = { 
+                militar_id: militarId, 
+                year, 
+                status, 
+                installment_model: selectedModel,
+                om_id: currentUser?.om_id
+            };
             let vId = initialData?.id;
 
             if (vId) {

@@ -93,16 +93,20 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 return;
             }
             if (data) {
-                // Mapear snake_case para camelCase para consistência com os componentes
                 const mappedUsers = data.map((u: any) => ({
                     ...u,
                     warName: u.war_name,
                     militarId: u.militar_id,
                     displayOrder: u.display_order,
                     phoneNumber: u.phone_number,
-                    administrativeRole: u.administrative_role
+                    administrativeRole: u.administrative_role,
+                    om_id: u.om_id
                 }));
-                setUsers(mappedUsers as User[]);
+                if (user.om_id) {
+                    setUsers(mappedUsers.filter(u => u.om_id === user.om_id) as User[]);
+                } else {
+                    setUsers(mappedUsers as User[]);
+                }
             }
         } catch (err) {
             console.error('Exceção ao buscar usuários:', err);
@@ -111,10 +115,15 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
 
     const fetchMissions = async () => {
         try {
-            const { data, error } = await supabase
+            let query = supabase
                 .from('missoes_gsd')
-                .select('*')
-                .order('data_criacao', { ascending: false });
+                .select('*');
+            
+            if (user.om_id) {
+                query = query.eq('om_id', user.om_id);
+            }
+
+            const { data, error } = await query.order('data_criacao', { ascending: false });
             if (error) throw error;
             setMissions(data as Mission[]);
         } catch (error) {
@@ -124,10 +133,15 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
 
     const fetchOrders = async () => {
         try {
-            const { data, error } = await supabase
+            let query = supabase
                 .from('mission_orders')
-                .select('*')
-                .order('created_at', { ascending: false });
+                .select('*');
+            
+            if (user.om_id) {
+                query = query.eq('om_id', user.om_id);
+            }
+
+            const { data, error } = await query.order('created_at', { ascending: false });
             if (error) throw error;
 
             const mappedOrders = (data || []).map((o: any) => ({
@@ -259,12 +273,18 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
     // Helper to generate OMIS Number
     const generateOMISNumber = async (): Promise<string> => {
         const year = new Date().getFullYear();
-        const { count } = await supabase
+        let query = supabase
             .from('mission_orders')
             .select('*', { count: 'exact', head: true })
             .gte('created_at', `${year}-01-01`);
 
-        return `${(count || 0) + 1}/GSD-SP`;
+        if (user.om_id) {
+            query = query.eq('om_id', user.om_id);
+        }
+
+        const { count } = await query;
+        const acronym = user.om?.acronym || 'GSD-SP';
+        return `${(count || 0) + 1}/${acronym}`;
     };
 
     const handleEditOrder = (order: MissionOrder) => {
@@ -390,7 +410,8 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                 created_by: isEditing ? selectedOrder!.createdBy : user.name,
                 cmt_name: orderData.cmtName || null,
                 ch_sop_name: orderData.chSopName || null,
-                updated_at: new Date().toISOString()
+                updated_at: new Date().toISOString(),
+                om_id: user.om_id
             };
 
             console.log(isEditing ? 'Atualizando ordem no banco:' : 'Inserindo nova ordem no banco:', dbOrder);
@@ -1412,6 +1433,7 @@ export default function MissionManager({ user, isDarkMode }: MissionManagerProps
                         handleForceActivateOrder(selectedOrder);
                     }}
                     onSendNotifications={handleSendNotifications}
+                    currentUser={user}
                 />
             )}
 
