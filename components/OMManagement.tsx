@@ -22,6 +22,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         name: '',
         acronym: '',
         address: '',
+        host_unit: '',
         latitude: '',
         longitude: ''
     });
@@ -113,6 +114,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                 name: omForm.name,
                 acronym: omForm.acronym,
                 address: omForm.address,
+                host_unit: omForm.host_unit,
                 latitude: omForm.latitude ? parseFloat(omForm.latitude) : null,
                 longitude: omForm.longitude ? parseFloat(omForm.longitude) : null,
                 is_active: true
@@ -128,7 +130,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
             }
 
             alert('Organização Militar cadastrada com sucesso!');
-            setOmForm({ name: '', acronym: '', address: '', latitude: '', longitude: '' });
+            setOmForm({ name: '', acronym: '', address: '', host_unit: '', latitude: '', longitude: '' });
             setLogoFile(null);
             setLogoPreview(null);
             setIsCreatingOm(false);
@@ -236,7 +238,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                                 )}
                                                 <div>
                                                     <h4 className={`font-black uppercase tracking-wider ${selectedOm?.id === om.id ? 'text-white' : isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{om.acronym}</h4>
-                                                    <p className={`text-[10px] font-bold uppercase tracking-widest ${selectedOm?.id === om.id ? 'text-blue-200' : 'text-slate-500'}`}>{om.name}</p>
+                                                    <p className={`text-[10px] font-bold uppercase tracking-widest ${selectedOm?.id === om.id ? 'text-blue-200' : 'text-slate-500'}`}>{om.host_unit || om.name}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -342,7 +344,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                                             <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center font-black text-[10px] text-blue-400">
                                                                 {om.acronym.slice(0, 2)}
                                                             </div>
-                                                            <span className="text-sm font-black text-slate-200">{om.name}</span>
+                                                            <span className="text-sm font-black text-slate-200">{om.host_unit || om.name} ({om.acronym})</span>
                                                         </div>
                                                     </td>
                                                     <td className="py-4 px-2">
@@ -406,6 +408,10 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Endereço</label>
                                     <input type="text" className={`w-full p-3 rounded-xl border text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} value={omForm.address} onChange={e => setOmForm({...omForm, address: e.target.value})} />
                                 </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Unidade Sediada</label>
+                                    <input type="text" className={`w-full p-3 rounded-xl border text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} placeholder="Ex: Base Aérea de São Paulo" value={omForm.host_unit} onChange={e => setOmForm({...omForm, host_unit: e.target.value})} />
+                                </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Latitude</label>
@@ -432,7 +438,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                 )}
                                 <div>
                                     <h3 className={`text-xl font-black uppercase tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{selectedOm.acronym}</h3>
-                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{selectedOm.name}</p>
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{selectedOm.host_unit || selectedOm.name}</p>
                                 </div>
                             </div>
                             
