@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../services/supabase';
 import { MilitaryOrganization, AccessGate, User } from '../types';
-import { Building2, Map, ShieldAlert, Users, DoorOpen, Plus, Save, ImagePlus, Loader2, Trash2, ShieldCheck, MapPin, TrendingUp, BarChart2, PieChart as PieIcon, Activity, Pencil } from 'lucide-react';
+import { Building2, Map, ShieldAlert, Users, DoorOpen, Plus, Save, ImagePlus, Loader2, Trash2, ShieldCheck, MapPin, TrendingUp, BarChart2, PieChart as PieIcon, Activity, Pencil, ChevronLeft, X } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 interface OMManagementProps {
@@ -388,12 +388,21 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                     </div>
                     
                     <div className="flex items-center gap-3">
-                        <button 
-                            onClick={() => { setIsCreatingOm(true); setViewMode('form'); }}
-                            className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:scale-105 active:scale-95"
-                        >
-                            <Plus className="w-4 h-4" /> Ativar Nova OM
-                        </button>
+                        {viewMode === 'form' ? (
+                            <button 
+                                onClick={() => setViewMode('dashboard')}
+                                className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-2xl font-black uppercase tracking-widest text-[10px] border border-white/10 transition-all hover:scale-105 active:scale-95"
+                            >
+                                <ChevronLeft className="w-4 h-4" /> Voltar ao Mapa
+                            </button>
+                        ) : (
+                            <button 
+                                onClick={() => { setIsCreatingOm(true); setViewMode('form'); }}
+                                className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)] hover:scale-105 active:scale-95"
+                            >
+                                <Plus className="w-4 h-4" /> Ativar Nova OM
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -574,9 +583,17 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                     <div className="max-w-2xl mx-auto py-12">
                         <div className={`p-8 rounded-[3rem] border shadow-2xl ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
                             <div className="flex items-center justify-between mb-8">
-                                <h3 className="text-2xl font-black uppercase tracking-tighter">{isEditing ? 'Ajustar Comando' : 'Ativar Unidade'}</h3>
-                                <button onClick={() => { setViewMode('dashboard'); setIsEditing(false); setIsCreatingOm(false); }} className="text-slate-500 hover:text-red-500">
-                                    <Plus className="w-6 h-6 rotate-45" />
+                                <div className="flex items-center gap-4">
+                                    <button 
+                                        onClick={() => setViewMode('dashboard')}
+                                        className="p-2 hover:bg-white/10 rounded-xl transition-colors text-slate-400"
+                                    >
+                                        <ChevronLeft className="w-5 h-5" />
+                                    </button>
+                                    <h3 className="text-2xl font-black uppercase tracking-tighter">{isEditing ? 'Ajustar Comando' : 'Ativar Unidade'}</h3>
+                                </div>
+                                <button onClick={() => { setViewMode('dashboard'); setIsEditing(false); setIsCreatingOm(false); }} className="text-slate-500 hover:text-red-500 transition-colors">
+                                    <X className="w-6 h-6 rotate-45" />
                                 </button>
                             </div>
                             <form onSubmit={handleSaveOm} className="space-y-6">
