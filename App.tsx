@@ -1472,7 +1472,7 @@ const App: FC = () => {
                                             activeTab === 'vacation-management' ? 'Gestão de Férias' :
                                               activeTab === 'vacation-stats' ? 'Estatísticas de Férias' :
                                                 activeTab === 'settings' ? 'Minhas Configurações' : 
-                                                  activeTab === 'om-management' ? 'Gestão de OM''s' : 'Arquivo Digital'}
+                                                  activeTab === 'om-management' ? 'Gestão de OM\'s' : 'Arquivo Digital'}
               </h2>
             </div>
 

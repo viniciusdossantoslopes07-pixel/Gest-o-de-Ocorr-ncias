@@ -161,7 +161,7 @@ export default function UserMenu({
                         <div className={`my-2 border-t ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`} />
 
                         {/* Configurações Avançadas (Admin Only) */}
-                        {currentUser && (
+                        {(currentUser.role === UserRole.ADMIN || currentUser.accessLevel === 'OM') && (
                             <>
                                 <div className="px-3 py-2">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
@@ -174,6 +174,13 @@ export default function UserMenu({
                                 >
                                     <Building2 className="w-4 h-4 text-blue-500" />
                                     Gerir OM's
+                                </button>
+                                <button
+                                    onClick={() => handleAction(() => setActiveTab('users'))}
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${isDarkMode ? 'text-blue-300 hover:bg-blue-900/20' : 'text-blue-700 hover:bg-blue-50'}`}
+                                >
+                                    <Shield className="w-4 h-4 text-blue-500" />
+                                    Gerir Permissões
                                 </button>
 
                                 <button
