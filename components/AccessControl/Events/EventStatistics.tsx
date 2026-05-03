@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { AccessEvent } from '../../../types';
 import { eventService } from '../../../services/eventService';
-import { BarChart3, Users, CalendarDays, RefreshCw, Layers, TrendingUp, CheckCircle, Clock, Zap } from 'lucide-react';
+import { BarChart3, Users, CalendarDays, RefreshCw, Layers, TrendingUp, CheckCircle, Clock, Zap, Car } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LabelList } from 'recharts';
 
 interface EventStatisticsProps {
@@ -57,8 +57,25 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
     const approvedEvents = filteredEvents.filter(e => e.status === 'APPROVED').length;
     const pendingEvents = filteredEvents.filter(e => e.status === 'PENDING').length;
     const totalGuests = filteredEvents.reduce((acc, curr) => acc + (curr.guests?.length || 0), 0);
+    const totalVehicles = filteredEvents.reduce((acc, curr) => acc + (curr.guests?.filter(g => g.has_vehicle).length || 0), 0);
     const avgGuests = totalEvents > 0 ? Math.round(totalGuests / totalEvents) : 0;
     const approvalRate = totalEvents > 0 ? Math.round((approvedEvents / totalEvents) * 100) : 0;
+
+    const participationStats = useMemo(() => {
+        const data: Record<string, { events: number, guests: number, vehicles: number }> = {};
+        filteredEvents.forEach(e => {
+            if (!data[e.location]) data[e.location] = { events: 0, guests: 0, vehicles: 0 };
+            data[e.location].events++;
+            data[e.location].guests += (e.guests?.length || 0);
+            data[e.location].vehicles += (e.guests?.filter(g => g.has_vehicle).length || 0);
+        });
+        return Object.entries(data).map(([name, d]) => ({
+            name,
+            avgGuests: Math.round(d.guests / d.events),
+            vehicles: d.vehicles,
+            totalEvents: d.events
+        })).sort((a, b) => b.avgGuests - a.avgGuests).slice(0, 5);
+    }, [filteredEvents]);
 
     const locationStats = useMemo(() => {
         const counts: Record<string, number> = {};
@@ -137,6 +154,20 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
             progressColor: '#10b981',
             progress: approvalRate,
             badge: approvalRate > 0 ? `${approvalRate}%` : null,
+        },
+        {
+            label: 'Total Veículos',
+            value: totalVehicles,
+            icon: Car,
+            color: 'orange',
+            darkBg: 'bg-orange-900/20 border-orange-800/30',
+            lightBg: 'bg-gradient-to-br from-orange-50 via-orange-50 to-orange-100/70 border-orange-200',
+            textDark: 'text-orange-300',
+            textLight: 'text-orange-800',
+            labelDark: 'text-orange-400',
+            labelLight: 'text-orange-600',
+            progressColor: '#f59e0b',
+            progress: totalGuests > 0 ? Math.round((totalVehicles / totalGuests) * 100) : 0,
         },
         {
             label: 'Pendentes (Cmd)',
@@ -225,7 +256,7 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
             ) : (
                 <>
                     {/* KPI Cards */}
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
                         {kpiCards.map((kpi, i) => {
                             const Icon = kpi.icon;
                             return (
@@ -409,6 +440,99 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
                                     </p>
                                 </div>
                             )}
+                        </div>
+                    </div>
+
+                    {/* New Charts Row: Participation & Vehicles */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        {/* Chart 3: Média de Participantes por Local */}
+                        <div className={`p-5 rounded-xl border flex flex-col ${dk ? 'bg-slate-700/30 border-slate-600/60' : 'bg-slate-50/80 border-slate-200'}`}>
+                            <div className="flex items-center gap-2 mb-6">
+                                <div className={`p-1.5 rounded-lg ${dk ? 'bg-purple-500/20' : 'bg-purple-100'}`}>
+                                    <Users className={`w-3.5 h-3.5 ${dk ? 'text-purple-400' : 'text-purple-600'}`} />
+                                </div>
+                                <h3 className={`text-[11px] font-black uppercase tracking-wider ${textPrimary}`}>
+                                    Média de Participantes p/ Local
+                                </h3>
+                            </div>
+
+                            <div className="flex-1 w-full relative min-h-[200px]">
+                                {participationStats.length === 0 ? (
+                                    <div className="flex items-center justify-center h-full">
+                                        <p className={`text-xs ${textMuted}`}>Nenhum dado disponível</p>
+                                    </div>
+                                ) : (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={participationStats} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                            <XAxis 
+                                                dataKey="name" 
+                                                axisLine={false} 
+                                                tickLine={false} 
+                                                tick={{ fontSize: 9, fill: dk ? '#94a3b8' : '#64748b', fontWeight: 'bold' }}
+                                                interval={0}
+                                            />
+                                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: dk ? '#94a3b8' : '#64748b' }} />
+                                            <Tooltip
+                                                contentStyle={{
+                                                    backgroundColor: dk ? '#1e293b' : '#ffffff',
+                                                    borderColor: dk ? '#334155' : '#e2e8f0',
+                                                    borderRadius: '10px',
+                                                    fontSize: '11px',
+                                                    fontWeight: 'bold'
+                                                }}
+                                            />
+                                            <Bar dataKey="avgGuests" fill="#8b5cf6" radius={[4, 4, 0, 0]} barSize={25}>
+                                                <LabelList dataKey="avgGuests" position="top" style={{ fontSize: 10, fontWeight: 'bold', fill: dk ? '#a78bfa' : '#7c3aed' }} />
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Chart 4: Veículos por Local */}
+                        <div className={`p-5 rounded-xl border flex flex-col ${dk ? 'bg-slate-700/30 border-slate-600/60' : 'bg-slate-50/80 border-slate-200'}`}>
+                            <div className="flex items-center gap-2 mb-6">
+                                <div className={`p-1.5 rounded-lg ${dk ? 'bg-orange-500/20' : 'bg-orange-100'}`}>
+                                    <Car className={`w-3.5 h-3.5 ${dk ? 'text-orange-400' : 'text-orange-600'}`} />
+                                </div>
+                                <h3 className={`text-[11px] font-black uppercase tracking-wider ${textPrimary}`}>
+                                    Distribuição de Veículos p/ Local
+                                </h3>
+                            </div>
+
+                            <div className="flex-1 w-full relative min-h-[200px]">
+                                {participationStats.length === 0 ? (
+                                    <div className="flex items-center justify-center h-full">
+                                        <p className={`text-xs ${textMuted}`}>Nenhum dado disponível</p>
+                                    </div>
+                                ) : (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={participationStats} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                            <XAxis 
+                                                dataKey="name" 
+                                                axisLine={false} 
+                                                tickLine={false} 
+                                                tick={{ fontSize: 9, fill: dk ? '#94a3b8' : '#64748b', fontWeight: 'bold' }}
+                                                interval={0}
+                                            />
+                                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: dk ? '#94a3b8' : '#64748b' }} />
+                                            <Tooltip
+                                                contentStyle={{
+                                                    backgroundColor: dk ? '#1e293b' : '#ffffff',
+                                                    borderColor: dk ? '#334155' : '#e2e8f0',
+                                                    borderRadius: '10px',
+                                                    fontSize: '11px',
+                                                    fontWeight: 'bold'
+                                                }}
+                                            />
+                                            <Bar dataKey="vehicles" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={25}>
+                                                <LabelList dataKey="vehicles" position="top" style={{ fontSize: 10, fontWeight: 'bold', fill: dk ? '#fbbf24' : '#d97706' }} />
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </>
