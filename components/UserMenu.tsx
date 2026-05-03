@@ -175,13 +175,7 @@ export default function UserMenu({
                                     <Building2 className="w-4 h-4 text-blue-500" />
                                     Gerir OM's
                                 </button>
-                                <button
-                                    onClick={() => handleAction(() => setActiveTab('users'))}
-                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${isDarkMode ? 'text-blue-300 hover:bg-blue-900/20' : 'text-blue-700 hover:bg-blue-50'}`}
-                                >
-                                    <Shield className="w-4 h-4 text-blue-500" />
-                                    Gerir Permissões TESTE
-                                </button>
+
                                 <button
                                     onClick={() => handleAction(() => setActiveTab('access-scanner'))}
                                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${isDarkMode ? 'text-slate-200 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-100'}`}
