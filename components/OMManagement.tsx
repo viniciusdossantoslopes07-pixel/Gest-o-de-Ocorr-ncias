@@ -411,7 +411,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                             </div>
 
                             {/* Integrated Interactive Map */}
-                            <div className={`relative w-full h-[350px] lg:h-[420px] rounded-[3rem] overflow-hidden border shadow-2xl ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
+                            <div className={`relative w-full max-w-4xl mx-auto h-[500px] lg:h-[580px] rounded-[3.5rem] overflow-hidden border shadow-2xl ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
                                 <div id="main-map" className="w-full h-full z-0"></div>
                                 
                                 {/* Floating Selection Info */}
