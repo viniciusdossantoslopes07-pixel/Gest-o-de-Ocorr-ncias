@@ -329,12 +329,15 @@ export default function SideMenu({
 
                 {/* Header / Brand */}
                 <div className={`p-6 flex flex-col ${isCollapsed ? 'items-center px-4' : ''}`}>
-                    <div className={`flex items-center gap-3 mb-8 overflow-hidden ${isCollapsed ? 'justify-center' : ''}`}>
-                        <div className="shrink-0 relative w-12 h-12 rounded-full overflow-hidden shadow-md ring-2 ring-white/10">
+                    <div 
+                        onClick={() => { setActiveTab('home'); if (window.innerWidth < 1024) onClose(); }}
+                        className={`flex items-center gap-3 mb-8 overflow-hidden cursor-pointer hover:opacity-80 transition-all active:scale-95 group ${isCollapsed ? 'justify-center' : ''}`}
+                    >
+                        <div className="shrink-0 relative w-12 h-12 rounded-full overflow-hidden shadow-md ring-2 ring-white/10 group-hover:ring-blue-500/50 transition-all">
                             <img src="/logo_gsd.png" alt="Logo" className="w-full h-full object-cover scale-125" />
                         </div>
                         {!isCollapsed && (
-                            <h1 className="text-lg font-black italic tracking-tighter whitespace-nowrap text-white">
+                            <h1 className="text-lg font-black italic tracking-tighter whitespace-nowrap text-white group-hover:text-blue-400 transition-colors">
                                 GUARDIÃO <span className="not-italic ml-1">GSD-SP</span>
                             </h1>
                         )}
