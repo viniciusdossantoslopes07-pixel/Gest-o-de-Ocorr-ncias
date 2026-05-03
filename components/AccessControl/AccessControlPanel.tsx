@@ -97,6 +97,13 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     const [importText, setImportText] = useState('');
     const [importing, setImporting] = useState(false);
 
+    // Management State (Quick Add)
+    const [isAddingDestination, setIsAddingDestination] = useState(false);
+    const [newDestinationName, setNewDestinationName] = useState('');
+    const [isAddingGate, setIsAddingGate] = useState(false);
+    const [newGateName, setNewGateName] = useState('');
+    const isAdmin = user.role === 'Gestor Master / OSD';
+
     // Filter state (for the list)
     const [filterGate, setFilterGate] = useState('');
 
@@ -199,6 +206,60 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
             const fallbackGates = isLegacy ? ['PORTÃO G1', 'PORTÃO G2', 'PORTÃO G3'] : ['PORTÃO PRINCIPAL'];
             setGates(fallbackGates.map(name => ({ id: name, name })));
             if (!selectedGate && fallbackGates.length > 0) setSelectedGate(fallbackGates[0]);
+        }
+    };
+
+    const handleSaveDestination = async () => {
+        if (!newDestinationName.trim() || !currentOmId) return;
+        
+        try {
+            const { data, error } = await supabase
+                .from('om_destinations')
+                .insert({
+                    om_id: currentOmId,
+                    name: newDestinationName.trim().toUpperCase(),
+                    is_active: true
+                })
+                .select();
+
+            if (error) throw error;
+            
+            // Atualiza localmente
+            setDestinations(prev => [...prev, newDestinationName.trim().toUpperCase()].sort());
+            setDestination(newDestinationName.trim().toUpperCase());
+            setNewDestinationName('');
+            setIsAddingDestination(false);
+        } catch (err) {
+            console.error('Error saving destination:', err);
+            alert('Erro ao salvar destino. Verifique sua conexão.');
+        }
+    };
+
+    const handleSaveGate = async () => {
+        if (!newGateName.trim() || !currentOmId) return;
+        
+        try {
+            const { data, error } = await supabase
+                .from('access_gates')
+                .insert({
+                    om_id: currentOmId,
+                    name: newGateName.trim().toUpperCase(),
+                    is_active: true
+                })
+                .select();
+
+            if (error) throw error;
+            
+            // Atualiza localmente
+            if (data && data[0]) {
+                setGates(prev => [...prev, data[0]]);
+                setSelectedGate(data[0].name);
+            }
+            setNewGateName('');
+            setIsAddingGate(false);
+        } catch (err) {
+            console.error('Error saving gate:', err);
+            alert('Erro ao salvar portão. Verifique sua conexão.');
         }
     };
 
@@ -733,7 +794,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                             </div>
 
                             {/* Gate Selectors - Compact & Inline */}
-                            <div className={`flex p-1 rounded-xl w-full ${dk ? 'bg-slate-600/50' : 'bg-slate-200/50'}`}>
+                            <div className={`flex flex-wrap p-1 rounded-xl w-full gap-1 ${dk ? 'bg-slate-600/50' : 'bg-slate-200/50'}`}>
                                 {gates.map(gate => {
                                     const isSelected = selectedGate === gate.name;
                                     let activeClass = '';
@@ -750,12 +811,44 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                         <button
                                             key={gate.id}
                                             onClick={() => setSelectedGate(gate.name)}
-                                            className={`flex-1 px-3 py-2 rounded-lg text-xs font-black uppercase transition-all whitespace-nowrap z-10 ${activeClass}`}
+                                            className={`flex-1 min-w-[60px] px-3 py-2 rounded-lg text-xs font-black uppercase transition-all whitespace-nowrap z-10 ${activeClass}`}
                                         >
                                             {gate.name.replace('PORTÃO ', '')}
                                         </button>
                                     );
                                 })}
+
+                                {isAdmin && (
+                                    <div className="flex items-center gap-1 ml-auto">
+                                        {isAddingGate ? (
+                                            <div className="flex items-center gap-1 animate-in slide-in-from-right-2">
+                                                <input
+                                                    type="text"
+                                                    value={newGateName}
+                                                    onChange={(e) => setNewGateName(e.target.value)}
+                                                    placeholder="NOME PORTÃO"
+                                                    className="h-8 w-24 px-2 text-[10px] font-bold rounded-lg border border-blue-400 outline-none uppercase bg-white text-slate-900"
+                                                    onKeyDown={(e) => e.key === 'Enter' && handleSaveGate()}
+                                                    autoFocus
+                                                />
+                                                <button onClick={handleSaveGate} className="p-1.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors">
+                                                    <Check className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button onClick={() => setIsAddingGate(false)} className="p-1.5 bg-slate-400 text-white rounded-lg hover:bg-slate-500 transition-colors">
+                                                    <X className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <button 
+                                                onClick={() => setIsAddingGate(true)}
+                                                className={`p-2 rounded-lg transition-all ${dk ? 'text-slate-400 hover:text-white hover:bg-slate-500/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-300'}`}
+                                                title="Adicionar Portão"
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -884,9 +977,9 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                 </div>
                             )}
 
-                            {/* Row 5: Destination + Authorizer */}
+                             {/* Row 5: Destination + Authorizer */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                                <div className="relative">
+                                <div className="relative group">
                                     <Combobox
                                         options={destinations}
                                         value={destination}
@@ -895,6 +988,37 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                         disabled={accessCategory === 'Saída'}
                                         isDarkMode={isDarkMode}
                                     />
+                                    {isAdmin && (
+                                        <div className="absolute -right-1 -top-1 z-20">
+                                            {isAddingDestination ? (
+                                                <div className="flex items-center gap-1 bg-white dark:bg-slate-800 p-1 rounded-lg shadow-xl border border-blue-400 animate-in zoom-in-95">
+                                                    <input
+                                                        type="text"
+                                                        value={newDestinationName}
+                                                        onChange={(e) => setNewDestinationName(e.target.value)}
+                                                        placeholder="NOVO DESTINO"
+                                                        className="h-8 w-32 px-2 text-[10px] font-bold rounded border-none outline-none uppercase bg-transparent text-slate-900 dark:text-white"
+                                                        onKeyDown={(e) => e.key === 'Enter' && handleSaveDestination()}
+                                                        autoFocus
+                                                    />
+                                                    <button onClick={handleSaveDestination} className="p-1 bg-emerald-500 text-white rounded hover:bg-emerald-600">
+                                                        <Check className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button onClick={() => setIsAddingDestination(false)} className="p-1 bg-slate-400 text-white rounded hover:bg-slate-500">
+                                                        <X className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button 
+                                                    onClick={() => setIsAddingDestination(true)}
+                                                    className="p-1.5 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all scale-75 group-hover:scale-100 opacity-0 group-hover:opacity-100"
+                                                    title="Adicionar Destino"
+                                                >
+                                                    <Plus className="w-3.5 h-3.5" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                                 <input
                                     type="text"
