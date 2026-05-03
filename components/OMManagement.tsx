@@ -425,7 +425,10 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                                     <p className="text-[9px] text-blue-400 font-black uppercase tracking-widest">{selectedOm.zip_code}</p>
                                                 </div>
                                             </div>
-                                            <button onClick={startEditing} className="p-2 hover:bg-white/10 rounded-xl transition-colors text-slate-400">
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); setSelectedOm(null); }}
+                                                className="p-2 hover:bg-white/10 rounded-xl transition-colors text-slate-400"
+                                            >
                                                 <Plus className="w-4 h-4 rotate-45 scale-125" />
                                             </button>
                                         </div>
