@@ -328,35 +328,6 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                         opacity: 0.9,
                         className: 'om-tooltip'
                     })
-                    .bindPopup(`
-                        <div style="min-width: 180px; padding: 12px; font-family: sans-serif;">
-                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                                <div style="width: 32px; height: 32px; background: #2563eb; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 10px;">
-                                    ${om.acronym.substring(0, 3)}
-                                </div>
-                                <div>
-                                    <div style="font-weight: 900; font-size: 14px; color: #1e293b; line-height: 1;">${om.acronym}</div>
-                                    <div style="font-size: 9px; color: #64748b; font-weight: 700; text-transform: uppercase; margin-top: 2px;">${om.host_unit || om.name}</div>
-                                </div>
-                            </div>
-
-                            <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px;">
-                                <a href="?om=${om.acronym}" style="display: block; width: 100%; padding: 8px; background: #2563eb; color: white; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 900; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s; margin-bottom: 6px;">
-                                    Visualização Tática
-                                </a>
-                                
-                                ${om.url ? `
-                                    <a href="https://${om.url.replace(/^https?:\/\//, '')}" target="_blank" style="display: block; width: 100%; padding: 7px; background: #0f172a; color: #10b981; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 900; font-size: 10px; text-transform: uppercase; border: 1px solid #10b98133;">
-                                        Link de Produção
-                                    </a>
-                                ` : `
-                                    <div style="font-size: 9px; color: #94a3b8; font-style: italic; text-align: center; padding: 4px; background: #f8fafc; border-radius: 6px;">
-                                        URL de Produção não configurada
-                                    </div>
-                                `}
-                            </div>
-                        </div>
-                    `)
                     .on('click', () => handleSelectOm(om));
             }
         });
@@ -508,7 +479,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                                 <Activity className="w-3.5 h-3.5" /> Visualização Tática
                                             </button>
                                             
-                                            {selectedOm.url && (
+                                            {selectedOm.url ? (
                                                 <a 
                                                     href={`https://${selectedOm.url.replace(/^https?:\/\//, '')}`}
                                                     target="_blank"
@@ -517,6 +488,10 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                                 >
                                                     <DoorOpen className="w-3.5 h-3.5" /> Acessar Link de Produção
                                                 </a>
+                                            ) : (
+                                                <div className="w-full py-3 bg-white/5 border border-white/5 rounded-xl text-[9px] font-bold text-slate-500 text-center uppercase tracking-widest italic">
+                                                    URL de Produção não configurada
+                                                </div>
                                             )}
                                         </div>
                                     </div>
