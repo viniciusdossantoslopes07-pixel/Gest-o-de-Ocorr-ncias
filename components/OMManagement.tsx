@@ -192,49 +192,56 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
     const markersRef = useRef<any[]>([]);
 
     const initMap = () => {
-        if (typeof (window as any).L === 'undefined') return;
         const L = (window as any).L;
+        if (!L || !document.getElementById('main-map')) return;
 
-        if (!mapRef.current) {
-            mapRef.current = L.map('main-map').setView([-15.7801, -47.9292], 4);
-            
-            // Reliable OpenStreetMap Tiles
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(mapRef.current);
+        if (mapRef.current) {
+            mapRef.current.remove();
+            mapRef.current = null;
         }
 
-        // Clear existing markers
-        markersRef.current.forEach(m => m.remove());
-        markersRef.current = [];
+        mapRef.current = L.map('main-map', {
+            zoomControl: true,
+            scrollWheelZoom: true
+        }).setView([-15.7801, -47.9292], 4);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(mapRef.current);
 
         // Add markers for each OM
         oms.forEach(om => {
             if (om.latitude && om.longitude) {
-                const marker = L.marker([om.latitude, om.longitude])
+                L.marker([om.latitude, om.longitude])
                     .addTo(mapRef.current)
                     .bindPopup(`<b>${om.acronym}</b><br>${om.host_unit || om.name}`)
                     .on('click', () => handleSelectOm(om));
-                
-                markersRef.current.push(marker);
             }
         });
+
+        // Trigger resize to fix layout
+        setTimeout(() => {
+            mapRef.current?.invalidateSize();
+        }, 200);
     };
 
     useEffect(() => {
-        if (mapRef.current && (window as any).L) {
-            initMap();
+        if (viewMode === 'map') {
+            const timer = setTimeout(() => {
+                initMap();
+            }, 100);
+            return () => clearTimeout(timer);
         }
-    }, [oms]);
+    }, [viewMode, oms]);
 
     useEffect(() => {
-        if (selectedOm && mapRef.current && (window as any).L) {
+        if (selectedOm && mapRef.current && (window as any).L && viewMode === 'map') {
             if (selectedOm.latitude && selectedOm.longitude) {
                 mapRef.current.flyTo([selectedOm.latitude, selectedOm.longitude], 13);
             }
         }
-    }, [selectedOm]);
+    }, [selectedOm, viewMode]);
 
     return (
         <div className="max-w-7xl mx-auto space-y-8 animate-fade-in p-4 md:p-8">
