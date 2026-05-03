@@ -271,6 +271,17 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
             if (om.latitude && om.longitude) {
                 L.marker([om.latitude, om.longitude])
                     .addTo(mapRef.current)
+                    .bindTooltip(`
+                        <div style="padding: 2px 4px;">
+                            <b style="color: #1e293b; font-size: 12px;">${om.acronym}</b><br/>
+                            <span style="color: #64748b; font-size: 10px;">${om.host_unit || om.name}</span>
+                        </div>
+                    `, { 
+                        permanent: false, 
+                        direction: 'top',
+                        opacity: 0.9,
+                        className: 'om-tooltip'
+                    })
                     .bindPopup(`<b>${om.acronym}</b><br>${om.host_unit || om.name}`)
                     .on('click', () => handleSelectOm(om));
             }
