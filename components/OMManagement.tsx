@@ -25,8 +25,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         address: '',
         zip_code: '',
         host_unit: '',
-        latitude: '',
-        longitude: ''
+        zip_code: ''
     });
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -85,9 +84,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
             acronym: selectedOm.acronym,
             address: selectedOm.address || '',
             zip_code: selectedOm.zip_code || '',
-            host_unit: selectedOm.host_unit || '',
-            latitude: selectedOm.latitude?.toString() || '',
-            longitude: selectedOm.longitude?.toString() || ''
+            host_unit: selectedOm.host_unit || ''
         });
         setLogoPreview(selectedOm.logo_url || null);
         setIsEditing(true);
@@ -121,11 +118,32 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         }
     };
 
+    const geocodeAddress = async (address: string, zip: string): Promise<{lat: number, lon: number} | null> => {
+        try {
+            const query = encodeURIComponent(`${address} ${zip} Brasil`);
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+            const data = await response.json();
+            if (data && data.length > 0) {
+                return {
+                    lat: parseFloat(data[0].lat),
+                    lon: parseFloat(data[0].lon)
+                };
+            }
+            return null;
+        } catch (err) {
+            console.error('Geocoding error:', err);
+            return null;
+        }
+    };
+
     const handleSaveOm = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         try {
             let finalLogoUrl = logoPreview;
+            
+            // Auto-Geocode before saving
+            const coords = await geocodeAddress(omForm.address, omForm.zip_code);
 
             if (isEditing && selectedOm) {
                 if (logoFile) {
@@ -138,8 +156,8 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                     address: omForm.address,
                     zip_code: omForm.zip_code,
                     host_unit: omForm.host_unit,
-                    latitude: omForm.latitude ? parseFloat(omForm.latitude) : null,
-                    longitude: omForm.longitude ? parseFloat(omForm.longitude) : null,
+                    latitude: coords?.lat || null,
+                    longitude: coords?.lon || null,
                     logo_url: finalLogoUrl
                 }).eq('id', selectedOm.id);
 
@@ -154,8 +172,8 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                     address: omForm.address,
                     zip_code: omForm.zip_code,
                     host_unit: omForm.host_unit,
-                    latitude: omForm.latitude ? parseFloat(omForm.latitude) : null,
-                    longitude: omForm.longitude ? parseFloat(omForm.longitude) : null,
+                    latitude: coords?.lat || null,
+                    longitude: coords?.lon || null,
                     is_active: true
                 }]).select().single();
 
@@ -171,7 +189,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                 setIsCreatingOm(false);
             }
 
-            setOmForm({ name: '', acronym: '', address: '', zip_code: '', host_unit: '', latitude: '', longitude: '' });
+            setOmForm({ name: '', acronym: '', address: '', zip_code: '', host_unit: '' });
             setLogoFile(null);
             setLogoPreview(null);
             fetchOms();
@@ -492,16 +510,6 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Unidade Sediada</label>
                                     <input type="text" className={`w-full p-3 rounded-xl border text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} placeholder="Ex: Base Aérea de São Paulo" value={omForm.host_unit} onChange={e => setOmForm({...omForm, host_unit: e.target.value})} />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Latitude</label>
-                                        <input type="text" className={`w-full p-3 rounded-xl border text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} value={omForm.latitude} onChange={e => setOmForm({...omForm, latitude: e.target.value})} />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Longitude</label>
-                                        <input type="text" className={`w-full p-3 rounded-xl border text-sm ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} value={omForm.longitude} onChange={e => setOmForm({...omForm, longitude: e.target.value})} />
-                                    </div>
                                 </div>
                                 <button disabled={loading} type="submit" className="w-full flex items-center justify-center gap-2 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black uppercase tracking-widest text-xs shadow-lg mt-4 disabled:opacity-50">
                                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
