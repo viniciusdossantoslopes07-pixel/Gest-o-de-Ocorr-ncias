@@ -25,7 +25,8 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         acronym: '',
         address: '',
         zip_code: '',
-        host_unit: ''
+        host_unit: '',
+        url: ''
     });
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -108,7 +109,8 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
             acronym: selectedOm.acronym,
             address: selectedOm.address || '',
             zip_code: selectedOm.zip_code || '',
-            host_unit: selectedOm.host_unit || ''
+            host_unit: selectedOm.host_unit || '',
+            url: selectedOm.url || ''
         });
         setLogoPreview(selectedOm.logo_url || null);
         setIsEditing(true);
@@ -198,6 +200,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                     address: omForm.address,
                     zip_code: omForm.zip_code,
                     host_unit: omForm.host_unit,
+                    url: omForm.url,
                     latitude: coords?.lat || null,
                     longitude: coords?.lon || null,
                     logo_url: finalLogoUrl
@@ -214,8 +217,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                     address: omForm.address,
                     zip_code: omForm.zip_code,
                     host_unit: omForm.host_unit,
-                    latitude: coords?.lat || null,
-                    longitude: coords?.lon || null,
+                    url: omForm.url,
                     is_active: true
                 }]).select().single();
 
@@ -231,7 +233,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                 setIsCreatingOm(false);
             }
 
-            setOmForm({ name: '', acronym: '', address: '', zip_code: '', host_unit: '' });
+            setOmForm({ name: '', acronym: '', address: '', zip_code: '', host_unit: '', url: '' });
             setLogoFile(null);
             setLogoPreview(null);
             fetchOms();
@@ -315,9 +317,10 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                 L.marker([om.latitude, om.longitude])
                     .addTo(mapRef.current)
                     .bindTooltip(`
-                        <div style="padding: 2px 4px;">
+                        <div style="padding: 2px 4px; text-align: center;">
                             <b style="color: #1e293b; font-size: 12px;">${om.acronym}</b><br/>
                             <span style="color: #64748b; font-size: 10px;">${om.host_unit || om.name}</span>
+                            ${om.url ? '<div style="margin-top: 4px; color: #2563eb; font-weight: 900; font-size: 8px; text-transform: uppercase;">Clique para Acessar Link</div>' : ''}
                         </div>
                     `, { 
                         permanent: false, 
@@ -325,7 +328,17 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                         opacity: 0.9,
                         className: 'om-tooltip'
                     })
-                    .bindPopup(`<b>${om.acronym}</b><br>${om.host_unit || om.name}`)
+                    .bindPopup(`
+                        <div style="min-width: 150px; padding: 10px;">
+                            <div style="font-weight: 900; font-size: 14px; margin-bottom: 4px; color: #1e293b;">${om.acronym}</div>
+                            <div style="font-size: 11px; color: #64748b; margin-bottom: 8px;">${om.host_unit || om.name}</div>
+                            ${om.url ? `
+                                <a href="https://${om.url.replace(/^https?:\/\//, '')}" target="_blank" style="display: block; width: 100%; padding: 8px; background: #2563eb; color: white; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 900; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s;">
+                                    Acessar Unidade
+                                </a>
+                            ` : '<div style="font-size: 9px; color: #94a3b8; font-style: italic;">Link de acesso não configurado</div>'}
+                        </div>
+                    `)
                     .on('click', () => handleSelectOm(om));
             }
         });
@@ -467,14 +480,27 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                                 <p className="text-sm font-black text-amber-500">{stats[selectedOm.id]?.occurrencesCount || 0}</p>
                                             </div>
                                         </div>
-                                        <button 
-                                            onClick={() => {
-                                                window.location.search = `?om=${selectedOm.acronym}`;
-                                            }}
-                                            className="w-full py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-colors"
-                                        >
-                                            Visualização Tática
-                                        </button>
+                                        <div className="flex flex-col gap-2">
+                                            <button 
+                                                onClick={() => {
+                                                    window.location.search = `?om=${selectedOm.acronym}`;
+                                                }}
+                                                className="w-full py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                                            >
+                                                <Activity className="w-3.5 h-3.5" /> Visualização Tática
+                                            </button>
+                                            
+                                            {selectedOm.url && (
+                                                <a 
+                                                    href={`https://${selectedOm.url.replace(/^https?:\/\//, '')}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="w-full py-3 bg-slate-800 text-emerald-400 border border-emerald-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 no-underline"
+                                                >
+                                                    <DoorOpen className="w-3.5 h-3.5" /> Acessar Link de Produção
+                                                </a>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -571,8 +597,8 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                         <input required type="text" className={`w-full p-4 rounded-2xl border text-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} value={omForm.address} onChange={e => setOmForm({...omForm, address: e.target.value})} />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Unidade Sediada / Comando</label>
-                                        <input type="text" className={`w-full p-4 rounded-2xl border text-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} value={omForm.host_unit} onChange={e => setOmForm({...omForm, host_unit: e.target.value})} />
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Link de Produção (URL)</label>
+                                        <input type="text" placeholder="gsd-sp.fab.mil.br" className={`w-full p-4 rounded-2xl border text-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} value={omForm.url} onChange={e => setOmForm({...omForm, url: e.target.value})} />
                                     </div>
                                 </div>
 
