@@ -168,6 +168,75 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         }
     };
 
+    useEffect(() => {
+        // Load Leaflet CSS and JS
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        script.onload = () => {
+            initMap();
+        };
+        document.body.appendChild(script);
+
+        return () => {
+            document.head.removeChild(link);
+            document.body.removeChild(script);
+        };
+    }, []);
+
+    const mapRef = useRef<any>(null);
+    const markersRef = useRef<any[]>([]);
+
+    const initMap = () => {
+        if (typeof (window as any).L === 'undefined') return;
+        const L = (window as any).L;
+
+        if (!mapRef.current) {
+            mapRef.current = L.map('main-map').setView([-15.7801, -47.9292], 4);
+            
+            // Google Hybrid Tiles (Satellite + Roads)
+            L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                attribution: '&copy; Google Maps'
+            }).addTo(mapRef.current);
+        }
+
+        // Clear existing markers
+        markersRef.current.forEach(m => m.remove());
+        markersRef.current = [];
+
+        // Add markers for each OM
+        oms.forEach(om => {
+            if (om.latitude && om.longitude) {
+                const marker = L.marker([om.latitude, om.longitude])
+                    .addTo(mapRef.current)
+                    .bindPopup(`<b>${om.acronym}</b><br>${om.host_unit || om.name}`)
+                    .on('click', () => handleSelectOm(om));
+                
+                markersRef.current.push(marker);
+            }
+        });
+    };
+
+    useEffect(() => {
+        if (mapRef.current && (window as any).L) {
+            initMap();
+        }
+    }, [oms]);
+
+    useEffect(() => {
+        if (selectedOm && mapRef.current && (window as any).L) {
+            if (selectedOm.latitude && selectedOm.longitude) {
+                mapRef.current.flyTo([selectedOm.latitude, selectedOm.longitude], 13);
+            }
+        }
+    }, [selectedOm]);
+
     return (
         <div className="max-w-7xl mx-auto space-y-8 animate-fade-in p-4 md:p-8">
             
@@ -263,23 +332,12 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                         <div className={`p-8 rounded-[2rem] border relative overflow-hidden flex flex-col items-center ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                             <h3 className={`text-lg font-black uppercase tracking-widest mb-10 w-full ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>Desdobramento Territorial (Brasil)</h3>
                             <div className="relative w-full h-[600px] bg-slate-800/10 rounded-[2rem] overflow-hidden border border-slate-200 dark:border-slate-700 shadow-inner">
-                                <iframe
-                                    width="100%"
-                                    height="100%"
-                                    style={{ border: 0 }}
-                                    loading="lazy"
-                                    allowFullScreen
-                                    referrerPolicy="no-referrer-when-downgrade"
-                                    src={selectedOm 
-                                        ? `https://www.google.com/maps?q=${encodeURIComponent(selectedOm.address || selectedOm.name)}&t=&z=15&ie=UTF8&iwloc=&output=embed`
-                                        : `https://www.google.com/maps?q=Brasil&t=&z=4&ie=UTF8&iwloc=&output=embed`
-                                    }
-                                ></iframe>
-
+                                <div id="main-map" className="w-full h-full z-0"></div>
+                                
                                 {!selectedOm && (
-                                    <div className="absolute bottom-6 left-6 right-6 p-4 bg-slate-900/80 backdrop-blur-md border border-slate-700 rounded-2xl">
+                                    <div className="absolute bottom-6 left-6 right-6 p-4 bg-slate-900/80 backdrop-blur-md border border-slate-700 rounded-2xl z-10 pointer-events-none">
                                         <p className="text-[10px] font-black text-white uppercase tracking-widest text-center">
-                                            Selecione uma Organização na lista lateral para visualizar sua localização exata no mapa
+                                            Selecione uma Organização na lista lateral ou no mapa para visualizar detalhes
                                         </p>
                                     </div>
                                 )}
