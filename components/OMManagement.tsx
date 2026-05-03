@@ -328,10 +328,27 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
             attribution: '&copy; OpenStreetMap'
         }).addTo(mapRef.current);
 
+        // Fix for Leaflet default icon issues in some environments
+        const DefaultIcon = L.icon({
+            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+            iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            tooltipAnchor: [16, -28],
+            shadowSize: [41, 41]
+        });
+
         // Add markers for each OM
         oms.forEach(om => {
             if (om.latitude && om.longitude) {
-                L.marker([om.latitude, om.longitude])
+                const lat = Number(om.latitude);
+                const lon = Number(om.longitude);
+                
+                if (isNaN(lat) || isNaN(lon)) return;
+
+                L.marker([lat, lon], { icon: DefaultIcon })
                     .addTo(mapRef.current)
                     .bindTooltip(`
                         <div style="padding: 2px 4px; text-align: center;">
