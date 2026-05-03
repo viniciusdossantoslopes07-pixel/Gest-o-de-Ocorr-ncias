@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../services/supabase';
 import { MilitaryOrganization, AccessGate, User } from '../types';
-import { Building2, Map, ShieldAlert, Users, DoorOpen, Plus, Save, ImagePlus, Loader2, Trash2, ShieldCheck, MapPin, TrendingUp, BarChart2, PieChart as PieIcon, Activity } from 'lucide-react';
+import { Building2, Map, ShieldAlert, Users, DoorOpen, Plus, Save, ImagePlus, Loader2, Trash2, ShieldCheck, MapPin, TrendingUp, BarChart2, PieChart as PieIcon, Activity, Pencil } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 interface OMManagementProps {
@@ -26,8 +26,11 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         address: '',
         zip_code: '',
         host_unit: '',
-        url: ''
+        url: '',
+        commander_id: '',
+        founded_at: ''
     });
+    const [omUsers, setOmUsers] = useState<User[]>([]);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -95,11 +98,19 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         }
     };
 
-    const handleSelectOm = (om: MilitaryOrganization) => {
+    const handleSelectOm = async (om: MilitaryOrganization) => {
         setSelectedOm(om);
         fetchGates(om.id);
         setIsCreatingOm(false);
         setIsEditing(false);
+        
+        // Fetch users for commander selection
+        const { data: users } = await supabase
+            .from('users')
+            .select('*')
+            .eq('om_id', om.id)
+            .order('rank');
+        if (users) setOmUsers(users as any);
     };
 
     const startEditing = () => {
@@ -110,7 +121,9 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
             address: selectedOm.address || '',
             zip_code: selectedOm.zip_code || '',
             host_unit: selectedOm.host_unit || '',
-            url: selectedOm.url || ''
+            url: selectedOm.url || '',
+            commander_id: selectedOm.commander_id || '',
+            founded_at: selectedOm.founded_at || ''
         });
         setLogoPreview(selectedOm.logo_url || null);
         setIsEditing(true);
@@ -201,6 +214,8 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                     zip_code: omForm.zip_code,
                     host_unit: omForm.host_unit,
                     url: omForm.url,
+                    commander_id: omForm.commander_id || null,
+                    founded_at: omForm.founded_at || null,
                     latitude: coords?.lat || null,
                     longitude: coords?.lon || null,
                     logo_url: finalLogoUrl
@@ -218,6 +233,8 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                     zip_code: omForm.zip_code,
                     host_unit: omForm.host_unit,
                     url: omForm.url,
+                    commander_id: omForm.commander_id || null,
+                    founded_at: omForm.founded_at || null,
                     is_active: true
                 }]).select().single();
 
@@ -233,7 +250,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                 setIsCreatingOm(false);
             }
 
-            setOmForm({ name: '', acronym: '', address: '', zip_code: '', host_unit: '', url: '' });
+            setOmForm({ name: '', acronym: '', address: '', zip_code: '', host_unit: '', url: '', commander_id: '', founded_at: '' });
             setLogoFile(null);
             setLogoPreview(null);
             fetchOms();
@@ -447,8 +464,19 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                             <div className="flex items-center gap-3">
                                                 {selectedOm.logo_url && <img src={selectedOm.logo_url} className="w-10 h-10 object-contain bg-white rounded-lg p-1" />}
                                                 <div>
-                                                    <h4 className="text-lg font-black text-white uppercase tracking-tighter">{selectedOm.acronym}</h4>
-                                                    <p className="text-[9px] text-blue-400 font-black uppercase tracking-widest">{selectedOm.zip_code}</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <h4 className="text-lg font-black text-white uppercase tracking-tighter">{selectedOm.acronym}</h4>
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); startEditing(); setViewMode('form'); }}
+                                                            className="p-1 hover:bg-white/10 rounded-lg transition-colors text-slate-400 group"
+                                                            title="Editar OM"
+                                                        >
+                                                            <Pencil className="w-3.5 h-3.5 group-hover:text-blue-400" />
+                                                        </button>
+                                                    </div>
+                                                    <p className="text-[9px] text-blue-400 font-black uppercase tracking-widest">
+                                                        {selectedOm.zip_code} {selectedOm.founded_at && `• Criada em ${new Date(selectedOm.founded_at + 'T00:00:00').toLocaleDateString('pt-BR')}`}
+                                                    </p>
                                                 </div>
                                             </div>
                                             <button 
@@ -592,6 +620,26 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Link de Produção (URL)</label>
                                         <input type="text" placeholder="gsd-sp.fab.mil.br" className={`w-full p-4 rounded-2xl border text-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} value={omForm.url} onChange={e => setOmForm({...omForm, url: e.target.value})} />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Data de Criação (Fundação)</label>
+                                            <input type="date" className={`w-full p-4 rounded-2xl border text-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`} value={omForm.founded_at} onChange={e => setOmForm({...omForm, founded_at: e.target.value})} />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Comandante da Unidade (CMT)</label>
+                                            <select 
+                                                className={`w-full p-4 rounded-2xl border text-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`}
+                                                value={omForm.commander_id}
+                                                onChange={e => setOmForm({...omForm, commander_id: e.target.value})}
+                                            >
+                                                <option value="">Selecione o Comandante</option>
+                                                {omUsers.map(u => (
+                                                    <option key={u.id} value={u.id}>{u.rank} {u.warName || u.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
 

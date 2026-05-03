@@ -10,6 +10,8 @@ export interface MilitaryOrganization {
   host_unit?: string;
   zip_code?: string;
   url?: string;
+  commander_id?: string;
+  founded_at?: string;
   is_active: boolean;
   created_at: string;
 }
