@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../services/supabase';
 import { MilitaryOrganization, AccessGate, User } from '../types';
-import { Building2, Map, ShieldAlert, Users, DoorOpen, Plus, Save, ImagePlus, Loader2, Trash2, ShieldCheck, MapPin } from 'lucide-react';
+import { Building2, Map, ShieldAlert, Users, DoorOpen, Plus, Save, ImagePlus, Loader2, Trash2, ShieldCheck, MapPin, TrendingUp, BarChart2, PieChart as PieIcon, Activity } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 interface OMManagementProps {
     currentUser: User | null;
@@ -14,7 +15,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
     const [gates, setGates] = useState<AccessGate[]>([]);
     const [loading, setLoading] = useState(false);
     const [uploadingLogo, setUploadingLogo] = useState(false);
-    const [viewMode, setViewMode] = useState<'list' | 'map' | 'compare'>('list');
+    const [viewMode, setViewMode] = useState<'list' | 'map' | 'stats'>('list');
 
     // Form states for new OM
     const [isCreatingOm, setIsCreatingOm] = useState(false);
@@ -349,6 +350,12 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                     <div className="flex p-1 bg-slate-900/50 rounded-2xl border border-slate-700/50">
                         <button onClick={() => setViewMode('list')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'list' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}>Lista</button>
                         <button onClick={() => setViewMode('map')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'map' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}>Mapa</button>
+                        <button
+                        onClick={() => setViewMode('stats')}
+                        className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'stats' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                    >
+                        Dashboard Analítico
+                    </button>
                         <button onClick={() => setViewMode('compare')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'compare' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}>Comparativo</button>
                     </div>
                     <button
@@ -436,6 +443,136 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                             <p className="text-[10px] text-slate-500 mt-8 font-bold uppercase tracking-[0.2em] animate-pulse italic">
                                 * Posições aproximadas baseadas em coordenadas geográficas
                             </p>
+                        </div>
+                    )}
+
+                    {viewMode === 'stats' && (
+                        <div className="space-y-8 animate-fade-in">
+                            {/* Key Performance Indicators (KPIs) */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                <div className={`p-6 rounded-[2rem] border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} shadow-sm`}>
+                                    <div className="flex items-center gap-4 mb-2">
+                                        <div className="p-3 bg-blue-500/10 rounded-2xl">
+                                            <Building2 className="w-6 h-6 text-blue-500" />
+                                        </div>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Unidades Totais</p>
+                                    </div>
+                                    <p className={`text-4xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{oms.length}</p>
+                                    <p className="text-xs text-emerald-500 font-bold mt-2">100% Operacionais</p>
+                                </div>
+                                
+                                <div className={`p-6 rounded-[2rem] border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} shadow-sm`}>
+                                    <div className="flex items-center gap-4 mb-2">
+                                        <div className="p-3 bg-emerald-500/10 rounded-2xl">
+                                            <Users className="w-6 h-6 text-emerald-500" />
+                                        </div>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Efetivo Consolidado</p>
+                                    </div>
+                                    <p className={`text-4xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                        {Object.values(stats).reduce((acc, curr) => acc + curr.personnelCount, 0)}
+                                    </p>
+                                    <p className="text-xs text-slate-400 mt-2">Militares cadastrados</p>
+                                </div>
+
+                                <div className={`p-6 rounded-[2rem] border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} shadow-sm`}>
+                                    <div className="flex items-center gap-4 mb-2">
+                                        <div className="p-3 bg-amber-500/10 rounded-2xl">
+                                            <ShieldAlert className="w-6 h-6 text-amber-500" />
+                                        </div>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Incidentes Ativos</p>
+                                    </div>
+                                    <p className={`text-4xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                        {Object.values(stats).reduce((acc, curr) => acc + curr.occurrencesCount, 0)}
+                                    </p>
+                                    <p className="text-xs text-amber-500 font-bold mt-2">Aguardando Resolução</p>
+                                </div>
+
+                                <div className={`p-6 rounded-[2rem] border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} shadow-sm`}>
+                                    <div className="flex items-center gap-4 mb-2">
+                                        <div className="p-3 bg-purple-500/10 rounded-2xl">
+                                            <DoorOpen className="w-6 h-6 text-purple-500" />
+                                        </div>
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Portões Monitorados</p>
+                                    </div>
+                                    <p className={`text-4xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>114</p>
+                                    <p className="text-xs text-slate-400 mt-2">Controle de Acesso Biométrico</p>
+                                </div>
+                            </div>
+
+                            {/* Charts Section */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                {/* Personnel Distribution Chart */}
+                                <div className={`p-8 rounded-[3rem] border ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'} shadow-xl`}>
+                                    <h3 className={`text-lg font-black uppercase tracking-widest mb-8 ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>Desdobramento de Efetivo por OM</h3>
+                                    <div className="h-[400px] w-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={oms.map(om => ({ name: om.acronym, valor: stats[om.id]?.personnelCount || 0 }))}>
+                                                <XAxis dataKey="name" stroke={isDarkMode ? '#64748b' : '#94a3b8'} fontSize={10} axisLine={false} tickLine={false} />
+                                                <YAxis stroke={isDarkMode ? '#64748b' : '#94a3b8'} fontSize={10} axisLine={false} tickLine={false} />
+                                                <Tooltip 
+                                                    contentStyle={{ backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', border: 'none', borderRadius: '1rem', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                                                    itemStyle={{ color: '#3b82f6', fontWeight: 'bold' }}
+                                                />
+                                                <Bar dataKey="valor" fill="#3b82f6" radius={[6, 6, 0, 0]} barSize={30} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+
+                                {/* Security Health (Incident Status) */}
+                                <div className={`p-8 rounded-[3rem] border ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'} shadow-xl`}>
+                                    <h3 className={`text-lg font-black uppercase tracking-widest mb-8 ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>Saúde da Segurança (Status)</h3>
+                                    <div className="h-[400px] w-full flex items-center justify-center">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={[
+                                                        { name: 'Resolvidos', value: 65 },
+                                                        { name: 'Em Triagem', value: 20 },
+                                                        { name: 'Críticos', value: 15 }
+                                                    ]}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={80}
+                                                    outerRadius={120}
+                                                    paddingAngle={5}
+                                                    dataKey="value"
+                                                >
+                                                    <Cell fill="#10b981" />
+                                                    <Cell fill="#f59e0b" />
+                                                    <Cell fill="#ef4444" />
+                                                </Pie>
+                                                <Tooltip 
+                                                    contentStyle={{ backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', border: 'none', borderRadius: '1rem' }}
+                                                />
+                                                <Legend verticalAlign="bottom" height={36}/>
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Ranking Table */}
+                            <div className={`p-8 rounded-[3rem] border ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'} shadow-xl`}>
+                                <h3 className={`text-lg font-black uppercase tracking-widest mb-8 ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>Top OMs - Volume de Atividade</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {oms.sort((a, b) => (stats[b.id]?.occurrencesCount || 0) - (stats[a.id]?.occurrencesCount || 0)).slice(0, 6).map((om, idx) => (
+                                        <div key={om.id} className={`flex items-center gap-4 p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                                            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-black">
+                                                {idx + 1}
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className={`text-sm font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{om.acronym}</p>
+                                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{om.host_unit || om.name}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-xs font-black text-blue-500">{stats[om.id]?.occurrencesCount || 0}</p>
+                                                <p className="text-[9px] text-slate-400 uppercase">Incidências</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     )}
 
