@@ -146,8 +146,9 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 if (!selectedGate) setSelectedGate(data[0].name);
             } else {
                 // Fallback for legacy
-                setGates(GATES.map(name => ({ id: name, name })));
-                if (!selectedGate) setSelectedGate(GATES[0]);
+                const fallbackGates = ['PORTÃO G1', 'PORTÃO G2', 'PORTÃO G3'];
+                setGates(fallbackGates.map(name => ({ id: name, name })));
+                if (!selectedGate) setSelectedGate(fallbackGates[0]);
             }
         } catch (err) {
             console.error('Error fetching gates:', err);
