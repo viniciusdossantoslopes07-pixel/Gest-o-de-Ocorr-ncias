@@ -77,6 +77,7 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
     const removeGuest = (index: number) => setGuests(guests.filter((_, i) => i !== index));
 
     const handleSave = async () => {
+        if (!eventName) return alert('O nome do evento é obrigatório.');
         if (!location) return alert('Selecione um local.');
         if (location === 'RESIDÊNCIA DO MORADOR' && !address) return alert('O endereço é obrigatório para residências.');
         if (!responsibleName) return alert('O nome do responsável é obrigatório.');
@@ -146,12 +147,13 @@ export default function EventForm({ user, isDarkMode = false, onSave }: EventFor
 
                         <div className="space-y-3.5">
                             <div>
-                                <label className={labelClass}>Nome do Evento <span className={`normal-case font-medium ${textMuted}`}>(opcional)</span></label>
+                                <label className={labelClass}>Nome do Evento *</label>
                                 <input
                                     type="text"
                                     value={eventName}
                                     onChange={(e) => setEventName(e.target.value)}
                                     placeholder="Ex: ANIVERSÁRIO DO JOÃO"
+                                    required
                                     className={inputClass}
                                 />
                             </div>

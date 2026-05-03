@@ -65,6 +65,7 @@ export default function PublicEventForm({ isDarkMode = false, onSubmit, onCancel
 
     const handleCreateEvent = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!eventName) return alert('O nome do evento é obrigatório.');
         if (!location) return alert('Selecione um local.');
         if (location === 'RESIDÊNCIA DO MORADOR' && !address) return alert('O endereço é obrigatório para residências.');
         if (!responsibleName) return alert('O nome do responsável é obrigatório.');
@@ -344,11 +345,12 @@ export default function PublicEventForm({ isDarkMode = false, onSubmit, onCancel
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                            <label className={`text-[10px] font-bold ${textSub} uppercase tracking-widest pl-1`}>Nome / Tipo do Evento</label>
+                            <label className={`text-[10px] font-bold ${textSub} uppercase tracking-widest pl-1`}>Nome / Tipo do Evento *</label>
                             <input
                                 placeholder="EX: ANIVERSÁRIO, CHURRASCO..."
                                 className={`w-full rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold text-sm uppercase transition-all ${inputBg}`}
                                 value={eventName}
+                                required
                                 onChange={e => setEventName(e.target.value)}
                             />
                         </div>
