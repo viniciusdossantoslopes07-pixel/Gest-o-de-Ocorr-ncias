@@ -262,54 +262,28 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                     {viewMode === 'map' && (
                         <div className={`p-8 rounded-[2rem] border relative overflow-hidden flex flex-col items-center ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                             <h3 className={`text-lg font-black uppercase tracking-widest mb-10 w-full ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>Desdobramento Territorial (Brasil)</h3>
-                            
-                            <div className="relative w-full max-w-[500px] aspect-[480/500] bg-slate-800/10 rounded-3xl p-8 border border-dashed border-slate-700/30 flex items-center justify-center">
-                                {/* Placeholder for Map - Using a styled container representing Brazil */}
-                                <div className="absolute inset-0 flex items-center justify-center opacity-10">
-                                    <MapPin className="w-64 h-64 text-slate-500" />
-                                </div>
-                                
-                                {/* Brazil Map Silhouette (Simplified) */}
-                                <svg viewBox="0 0 500 500" className="w-full h-full text-slate-700 opacity-20">
-                                    <path d="M150,50 L200,40 L300,60 L400,100 L450,200 L400,350 L350,450 L250,480 L150,450 L50,350 L20,200 L80,100 Z" fill="currentColor" />
-                                </svg>
+                            <div className="relative w-full h-[600px] bg-slate-800/10 rounded-[2rem] overflow-hidden border border-slate-200 dark:border-slate-700 shadow-inner">
+                                <iframe
+                                    width="100%"
+                                    height="100%"
+                                    style={{ border: 0 }}
+                                    loading="lazy"
+                                    allowFullScreen
+                                    referrerPolicy="no-referrer-when-downgrade"
+                                    src={selectedOm 
+                                        ? `https://www.google.com/maps?q=${encodeURIComponent(selectedOm.address || selectedOm.name)}&t=&z=15&ie=UTF8&iwloc=&output=embed`
+                                        : `https://www.google.com/maps?q=Brasil&t=&z=4&ie=UTF8&iwloc=&output=embed`
+                                    }
+                                ></iframe>
 
-                                {/* Pins for OMs */}
-                                {oms.map(om => {
-                                    if (!om.latitude || !om.longitude) return null;
-                                    
-                                    // Mapping lat/lng to local SVG coords (very simplified mapping for Brazil)
-                                    // Brazil roughly: Lat 5N to 33S, Lng 35W to 74W
-                                    // Let's normalize for a 500x500 box
-                                    const x = ((74 + om.longitude) / (74 - 35)) * 400 + 50;
-                                    const y = ((5 - om.latitude) / (5 + 33)) * 400 + 50;
-
-                                    return (
-                                        <button
-                                            key={om.id}
-                                            onClick={() => handleSelectOm(om)}
-                                            className="absolute group transition-all"
-                                            style={{ left: `${x}px`, top: `${y}px` }}
-                                        >
-                                            <div className="relative -translate-x-1/2 -translate-y-full">
-                                                <div className={`p-1 rounded-lg bg-blue-600 text-white shadow-lg group-hover:scale-110 transition-transform ${selectedOm?.id === om.id ? 'ring-4 ring-blue-500/30 scale-110' : ''}`}>
-                                                    <MapPin className="w-6 h-6" />
-                                                </div>
-                                                <div className={`absolute left-1/2 -translate-x-1/2 top-full mt-2 whitespace-nowrap px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${selectedOm?.id === om.id ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-300 border border-slate-700'}`}>
-                                                    {om.acronym}
-                                                </div>
-                                            </div>
-                                        </button>
-                                    );
-                                })}
-                                
-                                {oms.filter(o => !o.latitude).length > 0 && (
-                                    <div className="absolute bottom-4 right-4 text-[9px] font-bold text-slate-500 uppercase tracking-widest bg-slate-900/80 px-4 py-2 rounded-full border border-slate-700">
-                                        {oms.filter(o => !o.latitude).length} OMs sem coordenadas
+                                {!selectedOm && (
+                                    <div className="absolute bottom-6 left-6 right-6 p-4 bg-slate-900/80 backdrop-blur-md border border-slate-700 rounded-2xl">
+                                        <p className="text-[10px] font-black text-white uppercase tracking-widest text-center">
+                                            Selecione uma Organização na lista lateral para visualizar sua localização exata no mapa
+                                        </p>
                                     </div>
                                 )}
                             </div>
-                            
                             <p className="text-[10px] text-slate-500 mt-8 font-bold uppercase tracking-[0.2em] animate-pulse italic">
                                 * Posições aproximadas baseadas em coordenadas geográficas
                             </p>
