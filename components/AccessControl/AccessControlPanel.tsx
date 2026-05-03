@@ -11,7 +11,10 @@ import { Combobox } from '../Combobox';
 import AdvancedSearchPrintView from './AdvancedSearchPrintView';
 import { useSectors } from '../../contexts/SectorsContext';
 
-const legacyIds = ['e5418770-62bd-49d7-9229-a608e3a2895b', 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c'];
+const GSD_SP_ID = 'e5418770-62bd-49d7-9229-a608e3a2895b';
+const BASP_ID = 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c';
+const LEGACY_OM_IDS = [GSD_SP_ID, BASP_ID];
+
 
 
 interface AccessControlPanelProps {
@@ -37,6 +40,8 @@ interface AccessRecord {
 }
 
 const CHARACTERISTICS = ['MILITAR', 'CIVIL', 'DEPENDENTE', 'PRESTADOR', 'ENTREGADOR'];
+const GENERIC_DESTINATIONS = ['COMANDO', 'SOP', 'SAP', 'RANCHO', 'ALOJAMENTO', 'OUTROS (ESPECIFICAR)'];
+
 const LEGACY_DESTINATIONS = [
     'BASP (Comando)', 'PCAN', 'PASP', 'ILA', 'SEREP-SP', 'GSD-SP', 'GECAMP',
     'BOMBEIRO', 'VILA OF.', 'VILA GRAD.', 'CAPELA', 'GSAU', 'RANCHO',
@@ -126,62 +131,74 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     }, [currentOmId]);
 
     const fetchDestinations = async () => {
-        if (!currentOmId) return;
-        let query = supabase
-            .from('om_destinations')
-            .select('name')
-            .eq('is_active', true);
+        // Determinamos se é legado para usar como fallback primário se o banco falhar ou estiver vazio
+        const isLegacy = !currentOmId || LEGACY_OM_IDS.includes(currentOmId);
         
-
-        if (currentOmId && legacyIds.includes(currentOmId)) {
-            query = query.in('om_id', legacyIds);
-        } else if (currentOmId) {
-            query = query.eq('om_id', currentOmId);
-        }
-        
-        const { data } = await query.order('name');
-        
-        if (data && data.length > 0) {
-            setDestinations(data.map(d => d.name));
-        } else {
-            // Fallback for legacy units OR generic if new unit is empty
-            const isLegacy = currentOmId === 'e5418770-62bd-49d7-9229-a608e3a2895b' || 
-                             currentOmId === 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c' ||
-                             !currentOmId; // Fallback to legacy if no ID (prevent blank UI)
-            
-            if (isLegacy) {
+        try {
+            if (!currentOmId) {
                 setDestinations(LEGACY_DESTINATIONS);
-            } else {
-                // For new OMs like GSD-CT, provide generic options instead of empty list
-                setDestinations(['COMANDO', 'SOP', 'SAP', 'RANCHO', 'ALOJAMENTO', 'OUTROS (ESPECIFICAR)']);
+                return;
             }
+
+            let query = supabase
+                .from('om_destinations')
+                .select('name')
+                .eq('is_active', true);
+            
+            if (LEGACY_OM_IDS.includes(currentOmId)) {
+                query = query.in('om_id', LEGACY_OM_IDS);
+            } else {
+                query = query.eq('om_id', currentOmId);
+            }
+            
+            const { data, error } = await query.order('name');
+            
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                // Removemos duplicatas (comum em unidades legadas que compartilham destinos)
+                const uniqueNames = Array.from(new Set(data.map(d => d.name)));
+                setDestinations(uniqueNames);
+            } else {
+                // Fallback se não houver dados no banco para esta OM
+                setDestinations(isLegacy ? LEGACY_DESTINATIONS : GENERIC_DESTINATIONS);
+            }
+        } catch (err) {
+            console.error('Error fetching destinations:', err);
+            // Fallback em caso de erro de rede/permissão
+            setDestinations(isLegacy ? LEGACY_DESTINATIONS : GENERIC_DESTINATIONS);
         }
     };
 
     const fetchGates = async () => {
+        const isLegacy = !currentOmId || LEGACY_OM_IDS.includes(currentOmId);
+        
         try {
             let query = supabase.from('access_gates').select('*').eq('is_active', true);
     
-            if (currentOmId && legacyIds.includes(currentOmId)) {
-                query = query.in('om_id', legacyIds);
+            if (currentOmId && LEGACY_OM_IDS.includes(currentOmId)) {
+                query = query.in('om_id', LEGACY_OM_IDS);
             } else if (currentOmId) {
                 query = query.eq('om_id', currentOmId);
             }
+
             const { data, error } = await query;
+            if (error) throw error;
+
             if (data && data.length > 0) {
                 setGates(data);
                 if (!selectedGate) setSelectedGate(data[0].name);
             } else {
-                // Fallback for legacy units OR generic if new unit is empty
-                const isLegacy = currentOmId === 'e5418770-62bd-49d7-9229-a608e3a2895b' || 
-                                 currentOmId === 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c' ||
-                                 !currentOmId;
+                // Fallback para unidades legadas ou genérico
                 const fallbackGates = isLegacy ? ['PORTÃO G1', 'PORTÃO G2', 'PORTÃO G3'] : ['PORTÃO PRINCIPAL'];
                 setGates(fallbackGates.map(name => ({ id: name, name })));
                 if (!selectedGate && fallbackGates.length > 0) setSelectedGate(fallbackGates[0]);
             }
         } catch (err) {
             console.error('Error fetching gates:', err);
+            const fallbackGates = isLegacy ? ['PORTÃO G1', 'PORTÃO G2', 'PORTÃO G3'] : ['PORTÃO PRINCIPAL'];
+            setGates(fallbackGates.map(name => ({ id: name, name })));
+            if (!selectedGate && fallbackGates.length > 0) setSelectedGate(fallbackGates[0]);
         }
     };
 
@@ -235,8 +252,8 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 .order('timestamp', { ascending: false });
 
     
-            if (currentOmId && legacyIds.includes(currentOmId)) {
-                query = query.in('om_id', legacyIds);
+            if (currentOmId && LEGACY_OM_IDS.includes(currentOmId)) {
+                query = query.in('om_id', LEGACY_OM_IDS);
             } else if (currentOmId) {
                 query = query.eq('om_id', currentOmId);
             }
@@ -299,8 +316,8 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 .order('timestamp', { ascending: false });
 
     
-            if (currentOmId && legacyIds.includes(currentOmId)) {
-                query = query.in('om_id', legacyIds);
+            if (currentOmId && LEGACY_OM_IDS.includes(currentOmId)) {
+                query = query.in('om_id', LEGACY_OM_IDS);
             } else if (currentOmId) {
                 query = query.eq('om_id', currentOmId);
             }
@@ -346,8 +363,8 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 .order('timestamp', { ascending: false });
 
     
-            if (currentOmId && legacyIds.includes(currentOmId)) {
-                query = query.in('om_id', legacyIds);
+            if (currentOmId && LEGACY_OM_IDS.includes(currentOmId)) {
+                query = query.in('om_id', LEGACY_OM_IDS);
             } else if (currentOmId) {
                 query = query.eq('om_id', currentOmId);
             }
