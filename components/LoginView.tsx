@@ -7,6 +7,7 @@ import { ShieldCheck, ArrowRight, Lock, User as UserIcon, Megaphone, Fingerprint
 import { isWebAuthnSupported, registerBiometrics, authenticateBiometrics } from '../services/webauthn';
 import { supabase } from '../services/supabase';
 import { ParkingRequestModal } from './ParkingRequestModal';
+import { SearchableSelect } from './Common/SearchableSelect';
 
 interface LoginViewProps {
   onLogin: (username: string, password: string) => Promise<boolean | string> | boolean | string;
@@ -262,15 +263,15 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                 
                 <div>
                   <label className={labelBase}>1. Organização Militar (OM)</label>
-                  <select 
-                    required 
-                    className={`${inputBase} px-3 py-2.5 border-blue-500/50 bg-blue-50/10`} 
-                    value={regData.om_id} 
-                    onChange={e => {
-                      const selectedOmId = e.target.value;
+                  <SearchableSelect
+                    isDarkMode={dk}
+                    placeholder="Selecione a Unidade..."
+                    options={oms.map(o => ({ label: `${o.name} (${o.acronym})`, value: o.id }))}
+                    value={regData.om_id}
+                    onChange={(selectedOmId) => {
                       setRegData({ ...regData, om_id: selectedOmId });
                       
-                      // Lógica de redirecionamento sugerida pelo usuário
+                      // Lógica de redirecionamento
                       const selectedOm = oms.find(o => o.id === selectedOmId);
                       if (selectedOm && selectedOm.url && !window.location.href.includes(selectedOm.url)) {
                         const confirmRedirect = window.confirm(`Você selecionou ${selectedOm.name}. Deseja ser redirecionado para o link oficial desta unidade?`);
@@ -279,10 +280,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                         }
                       }
                     }}
-                  >
-                    <option value="">Selecione a Unidade...</option>
-                    {oms.map(o => <option key={o.id} value={o.id}>{o.name} ({o.acronym})</option>)}
-                  </select>
+                  />
                 </div>
 
                 <div>
