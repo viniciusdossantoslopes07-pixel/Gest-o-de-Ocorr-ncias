@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../../services/supabase';
-import { User } from '../../types';
+import { User, UserRole } from '../../types';
 import {
     DoorOpen, Car, Footprints, ArrowDownToLine, ArrowUpFromLine, Shield, UserCheck, Search, Calendar, RefreshCw, Plus, X,
     ChevronDown, Clock, Filter, Truck, Building2, BadgeCheck, Database, Info, Check,
-    History, Sparkles, ChevronUp, AlertCircle, BarChart3, List, Printer
+    History, Sparkles, ChevronUp, AlertCircle, BarChart3, List, Printer, Settings2, Trash2
 } from 'lucide-react';
 import AccessStatistics from './AccessStatistics';
 import { Combobox } from '../Combobox';
@@ -102,7 +102,10 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     const [newDestinationName, setNewDestinationName] = useState('');
     const [isAddingGate, setIsAddingGate] = useState(false);
     const [newGateName, setNewGateName] = useState('');
-    const isAdmin = user.role === 'Gestor Master / OSD';
+    const [isManagingGates, setIsManagingGates] = useState(false);
+    const [editingGateId, setEditingGateId] = useState<string | null>(null);
+    const [editingGateName, setEditingGateName] = useState('');
+    const isAdmin = user.role === UserRole.ADMIN;
 
     // Filter state (for the list)
     const [filterGate, setFilterGate] = useState('');
@@ -260,6 +263,52 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
         } catch (err) {
             console.error('Error saving gate:', err);
             alert('Erro ao salvar portão. Verifique sua conexão.');
+        }
+    };
+
+    const handleUpdateGate = async () => {
+        if (!editingGateId || !editingGateName.trim()) return;
+
+        try {
+            const { error } = await supabase
+                .from('access_gates')
+                .update({ name: editingGateName.trim().toUpperCase() })
+                .eq('id', editingGateId);
+
+            if (error) throw error;
+
+            setGates(prev => prev.map(g => g.id === editingGateId ? { ...g, name: editingGateName.trim().toUpperCase() } : g));
+            if (selectedGate === gates.find(g => g.id === editingGateId)?.name) {
+                setSelectedGate(editingGateName.trim().toUpperCase());
+            }
+            setEditingGateId(null);
+            setEditingGateName('');
+        } catch (err) {
+            console.error('Error updating gate:', err);
+            alert('Erro ao atualizar portão.');
+        }
+    };
+
+    const handleDeleteGate = async (id: string) => {
+        if (!confirm('Deseja realmente desativar este portão?')) return;
+
+        try {
+            const { error } = await supabase
+                .from('access_gates')
+                .update({ is_active: false })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            setGates(prev => prev.filter(g => g.id !== id));
+            if (gates.find(g => g.id === id)?.name === selectedGate) {
+                const remaining = gates.filter(g => g.id !== id);
+                if (remaining.length > 0) setSelectedGate(remaining[0].name);
+                else setSelectedGate('');
+            }
+        } catch (err) {
+            console.error('Error deleting gate:', err);
+            alert('Erro ao excluir portão.');
         }
     };
 
@@ -797,6 +846,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                             <div className={`flex flex-wrap p-1 rounded-xl w-full gap-1 ${dk ? 'bg-slate-600/50' : 'bg-slate-200/50'}`}>
                                 {gates.map(gate => {
                                     const isSelected = selectedGate === gate.name;
+                                    const isEditing = editingGateId === gate.id;
                                     let activeClass = '';
                                     if (isSelected) {
                                         if (gate.name === 'PORTÃO G1') activeClass = 'bg-blue-600 text-white shadow-lg ring-2 ring-blue-100 scale-[1.02]';
@@ -807,27 +857,71 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                         activeClass = dk ? 'text-slate-400 hover:text-white hover:bg-slate-500/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/80';
                                     }
 
+                                    if (isEditing) {
+                                        return (
+                                            <div key={gate.id} className="flex-1 min-w-[120px] flex items-center gap-1 p-1 bg-white rounded-lg shadow-inner animate-in fade-in zoom-in-95">
+                                                <input
+                                                    type="text"
+                                                    value={editingGateName}
+                                                    onChange={(e) => setEditingGateName(e.target.value)}
+                                                    className="w-full h-7 px-2 text-[10px] font-black uppercase outline-none text-slate-900"
+                                                    autoFocus
+                                                    onKeyDown={(e) => e.key === 'Enter' && handleUpdateGate()}
+                                                />
+                                                <button onClick={handleUpdateGate} className="p-1 bg-emerald-500 text-white rounded">
+                                                    <Check className="w-3 h-3" />
+                                                </button>
+                                                <button onClick={() => setEditingGateId(null)} className="p-1 bg-slate-400 text-white rounded">
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        );
+                                    }
+
                                     return (
-                                        <button
-                                            key={gate.id}
-                                            onClick={() => setSelectedGate(gate.name)}
-                                            className={`flex-1 min-w-[60px] px-3 py-2 rounded-lg text-xs font-black uppercase transition-all whitespace-nowrap z-10 ${activeClass}`}
-                                        >
-                                            {gate.name.replace('PORTÃO ', '')}
-                                        </button>
+                                        <div key={gate.id} className="relative group flex-1 flex min-w-[60px]">
+                                            <button
+                                                onClick={() => {
+                                                    if (isManagingGates) {
+                                                        setEditingGateId(gate.id);
+                                                        setEditingGateName(gate.name);
+                                                    } else {
+                                                        setSelectedGate(gate.name);
+                                                    }
+                                                }}
+                                                className={`w-full px-3 py-2 rounded-lg text-xs font-black uppercase transition-all whitespace-nowrap z-10 ${activeClass}`}
+                                            >
+                                                {gate.name.replace('PORTÃO ', '')}
+                                            </button>
+                                            {isManagingGates && (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleDeleteGate(gate.id); }}
+                                                    className="absolute -top-1 -right-1 z-20 p-1 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-transform hover:scale-110"
+                                                >
+                                                    <Trash2 className="w-2.5 h-2.5" />
+                                                </button>
+                                            )}
+                                        </div>
                                     );
                                 })}
 
                                 {isAdmin && (
                                     <div className="flex items-center gap-1 ml-auto">
+                                        <button 
+                                            onClick={() => { setIsManagingGates(!isManagingGates); setEditingGateId(null); setIsAddingGate(false); }}
+                                            className={`p-2 rounded-lg transition-all ${isManagingGates ? 'bg-amber-500 text-white' : (dk ? 'text-slate-400 hover:text-white hover:bg-slate-500/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-300')}`}
+                                            title="Gerenciar Portões"
+                                        >
+                                            <Settings2 className="w-4 h-4" />
+                                        </button>
                                         {isAddingGate ? (
                                             <div className="flex items-center gap-1 animate-in slide-in-from-right-2">
                                                 <input
                                                     type="text"
                                                     value={newGateName}
                                                     onChange={(e) => setNewGateName(e.target.value)}
-                                                    placeholder="NOME PORTÃO"
-                                                    className="h-8 w-24 px-2 text-[10px] font-bold rounded-lg border border-blue-400 outline-none uppercase bg-white text-slate-900"
+                                                    placeholder="NOME"
+                                                    className="h-8 w-20 px-2 text-[10px] font-bold rounded-lg border border-blue-400 outline-none uppercase bg-white text-slate-900"
                                                     onKeyDown={(e) => e.key === 'Enter' && handleSaveGate()}
                                                     autoFocus
                                                 />
@@ -840,7 +934,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                             </div>
                                         ) : (
                                             <button 
-                                                onClick={() => setIsAddingGate(true)}
+                                                onClick={() => { setIsAddingGate(true); setIsManagingGates(false); }}
                                                 className={`p-2 rounded-lg transition-all ${dk ? 'text-slate-400 hover:text-white hover:bg-slate-500/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-300'}`}
                                                 title="Adicionar Portão"
                                             >

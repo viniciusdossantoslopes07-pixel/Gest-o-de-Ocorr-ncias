@@ -28,7 +28,8 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         host_unit: '',
         url: '',
         commander_id: '',
-        founded_at: ''
+        founded_at: '',
+        category: 'NIL'
     });
     const [omUsers, setOmUsers] = useState<User[]>([]);
     const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -126,7 +127,8 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
             host_unit: selectedOm.host_unit || '',
             url: selectedOm.url || '',
             commander_id: selectedOm.commander_id || '',
-            founded_at: selectedOm.founded_at || ''
+            founded_at: selectedOm.founded_at || '',
+            category: selectedOm.category || 'NIL'
         });
         setLogoPreview(selectedOm.logo_url || null);
         setHostLogoPreview(selectedOm.host_logo_url || null);
@@ -238,7 +240,8 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                     latitude: coords?.lat || null,
                     longitude: coords?.lon || null,
                     logo_url: finalLogoUrl,
-                    host_logo_url: finalHostLogoUrl
+                    host_logo_url: finalHostLogoUrl,
+                    category: omForm.category
                 }).eq('id', selectedOm.id).select().single();
 
                 if (error) throw error;
@@ -258,6 +261,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                     url: omForm.url,
                     commander_id: omForm.commander_id || null,
                     founded_at: omForm.founded_at || null,
+                    category: omForm.category,
                     is_active: true
                 }]).select().single();
 
@@ -277,7 +281,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                 setViewMode('dashboard');
             }
 
-            setOmForm({ name: '', acronym: '', address: '', zip_code: '', host_unit: '', url: '', commander_id: '', founded_at: '' });
+            setOmForm({ name: '', acronym: '', address: '', zip_code: '', host_unit: '', url: '', commander_id: '', founded_at: '', category: 'NIL' });
             setLogoFile(null);
             setLogoPreview(null);
             setHostLogoFile(null);
@@ -728,6 +732,21 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                                 ))}
                                             </select>
                                         </div>
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Categoria da Unidade (GSD)</label>
+                                        <select 
+                                            className={`w-full p-4 rounded-2xl border text-sm ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`}
+                                            value={omForm.category}
+                                            onChange={e => setOmForm({...omForm, category: e.target.value})}
+                                        >
+                                            <option value="Tipo 1">Tipo 1</option>
+                                            <option value="Tipo 2">Tipo 2</option>
+                                            <option value="Tipo 3">Tipo 3</option>
+                                            <option value="Tipo 4">Tipo 4</option>
+                                            <option value="NIL">NIL</option>
+                                        </select>
                                     </div>
                                 </div>
 

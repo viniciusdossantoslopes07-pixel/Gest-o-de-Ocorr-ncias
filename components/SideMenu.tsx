@@ -80,7 +80,8 @@ export default function SideMenu({
     React.useEffect(() => {
         if (!showEmergencyButton) return;
 
-        const channel = supabase.channel('emergency_channel')
+        const channelName = `emergency_channel_${omId || 'global'}`;
+        const channel = supabase.channel(channelName)
             .on('broadcast', { event: 'emergency_alert' }, (payload) => {
                 const data = payload?.payload || {};
                 setEmergencyAlertModal({ 
@@ -97,7 +98,7 @@ export default function SideMenu({
             supabase.removeChannel(channel);
             channelRef.current = null;
         };
-    }, [showEmergencyButton]);
+    }, [showEmergencyButton, omId]);
 
     const stopEmergencySound = () => {
         if (soundCountdown !== null && soundCountdown > 0) return; // Block stopping during minimum 5s
@@ -224,6 +225,7 @@ export default function SideMenu({
             }
 
             try {
+                const channelName = `emergency_channel_${omId || 'global'}`;
                 if (channelRef.current) {
                     await channelRef.current.send({
                         type: 'broadcast',
@@ -244,7 +246,8 @@ export default function SideMenu({
                     user_id: currentUser.id,
                     user_name: currentUser.name,
                     action: 'ALERTA_SONORO',
-                    details: local
+                    details: local,
+                    om_id: omId
                 }]);
             } catch(e) {
                 console.error("Failed to log emergency to db:", e);

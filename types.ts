@@ -13,6 +13,7 @@ export interface MilitaryOrganization {
   url?: string;
   commander_id?: string;
   founded_at?: string;
+  category?: string;
   is_active: boolean;
   created_at: string;
 }
