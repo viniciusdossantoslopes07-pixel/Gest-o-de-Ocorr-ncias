@@ -59,11 +59,11 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
     }, [oms]);
 
     const COLORS = {
-        'Tipo 1': '#0ea5e9', // Sky 500 (Vibrant blue)
-        'Tipo 2': '#10b981', // Emerald 500
-        'Tipo 3': '#8b5cf6', // Violet 500
-        'Tipo 4': '#f43f5e', // Rose 500
-        'NIL': '#64748b'    // Slate 500
+        'Tipo 1': '#00d2ff', // Cyan Neon
+        'Tipo 2': '#00ff87', // Spring Green Neon
+        'Tipo 3': '#9d50bb', // Purple Neon
+        'Tipo 4': '#ff007a', // Pink Neon
+        'NIL': '#3a4750'    // Dark Steel
     };
 
     useEffect(() => {
@@ -649,9 +649,9 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                             <PieChart>
                                                 <defs>
                                                     {Object.entries(COLORS).map(([key, color]) => (
-                                                        <linearGradient key={`grad-${key}`} id={`grad-${key}`} x1="0" y1="0" x2="0" y2="1">
+                                                        <linearGradient key={`grad-${key.replace(/\s+/g, '-')}`} id={`grad-${key.replace(/\s+/g, '-')}`} x1="0" y1="0" x2="1" y2="1">
                                                             <stop offset="0%" stopColor={color} stopOpacity={1} />
-                                                            <stop offset="100%" stopColor={color} stopOpacity={0.6} />
+                                                            <stop offset="100%" stopColor={color} stopOpacity={0.85} />
                                                         </linearGradient>
                                                     ))}
                                                 </defs>
@@ -659,42 +659,49 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                                     data={categoryData}
                                                     innerRadius={65}
                                                     outerRadius={85}
-                                                    paddingAngle={6}
+                                                    paddingAngle={8}
                                                     dataKey="value"
                                                     stroke={isDarkMode ? '#0f172a' : '#fff'}
-                                                    strokeWidth={2}
+                                                    strokeWidth={3}
+                                                    animationBegin={0}
+                                                    animationDuration={1500}
                                                 >
                                                     {categoryData.map((entry, index) => (
                                                         <Cell 
                                                             key={`cell-${index}`} 
-                                                            fill={`url(#grad-${entry.name})`}
+                                                            fill={`url(#grad-${entry.name.replace(/\s+/g, '-')})`}
                                                             style={{ 
-                                                                filter: `drop-shadow(0 0 8px ${(COLORS as any)[entry.name]}44)` 
+                                                                filter: `drop-shadow(0 0 12px ${(COLORS as any)[entry.name]}66)` 
                                                             }}
                                                         />
                                                     ))}
                                                 </Pie>
                                                 <Tooltip 
                                                     contentStyle={{ 
-                                                        backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)', 
-                                                        backdropFilter: 'blur(12px)',
-                                                        border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)', 
-                                                        borderRadius: '1.25rem',
-                                                        boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.3)',
-                                                        padding: '12px 16px',
+                                                        backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)', 
+                                                        backdropFilter: 'blur(16px)',
+                                                        border: isDarkMode ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.1)', 
+                                                        borderRadius: '1.5rem',
+                                                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                                                        padding: '12px 20px',
                                                         fontSize: '10px',
-                                                        fontWeight: 'bold',
-                                                        textTransform: 'uppercase'
+                                                        fontWeight: '900',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.1em'
                                                     }}
-                                                    itemStyle={{ color: isDarkMode ? '#f1f5f9' : '#1e293b' }}
+                                                    itemStyle={{ color: '#fff', textShadow: '0 0 10px rgba(0,0,0,0.5)' }}
                                                     cursor={{ fill: 'transparent' }}
                                                 />
                                                 <Legend 
                                                     verticalAlign="bottom" 
-                                                    height={36} 
-                                                    formatter={(value) => <span className="text-[9px] font-black uppercase text-slate-500 tracking-widest">{value}</span>}
-                                                    iconType="circle"
-                                                    iconSize={8}
+                                                    height={40} 
+                                                    formatter={(value) => (
+                                                        <span className="text-[10px] font-black uppercase tracking-widest px-2" style={{ color: (COLORS as any)[value] }}>
+                                                            {value}
+                                                        </span>
+                                                    )}
+                                                    iconType="diamond"
+                                                    iconSize={10}
                                                 />
                                             </PieChart>
                                         </ResponsiveContainer>
