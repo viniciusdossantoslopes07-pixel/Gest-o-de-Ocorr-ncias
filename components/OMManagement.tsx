@@ -165,9 +165,10 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
             if (error) throw error;
             const { data } = supabase.storage.from('om_logos').getPublicUrl(filePath);
             return data.publicUrl;
-        } catch (err) {
+        } catch (err: any) {
             console.error(`Error uploading ${type} logo:`, err);
-            throw new Error(`Falha no upload do arquivo (${type}). Verifique o tamanho e formato.`);
+            const detail = err?.message || err?.error || String(err);
+            throw new Error(`Falha no upload do arquivo (${type}): ${detail}`);
         }
     };
 
