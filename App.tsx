@@ -1814,12 +1814,15 @@ const App: FC = () => {
 
                 try {
                   // Determine if we need to insert or update the daily_attendance record
+                  const currentOmId = a.om_id || currentUser?.om_id;
+                  
                   const { data: existingAttendance } = await withTimeout<any>(Promise.resolve(supabase
                     .from('daily_attendance')
                     .select('id')
                     .eq('date', a.date)
                     .eq('sector', a.sector)
                     .eq('call_type', a.callType)
+                    .eq('om_id', currentOmId)
                     .limit(1)
                   ));
 
@@ -1832,7 +1835,8 @@ const App: FC = () => {
                     responsible: a.responsible,
                     signed_at: a.signedAt,
                     signed_by: a.signedBy,
-                    observacao: a.observacao
+                    observacao: a.observacao,
+                    om_id: currentOmId
                   };
 
                   if (!attendanceId) {
@@ -1850,6 +1854,7 @@ const App: FC = () => {
                         .eq('date', a.date)
                         .eq('sector', a.sector)
                         .eq('call_type', a.callType)
+                        .eq('om_id', currentOmId)
                         .limit(1)
                       ));
 
