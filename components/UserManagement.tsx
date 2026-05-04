@@ -20,7 +20,7 @@ interface UserManagementProps {
 }
 
 const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdateUser, onDeleteUser, onPermanentDeleteUser, onRefreshUsers, onResetPassword, currentUser, isDarkMode }) => {
-  const { sectors } = useSectors();
+  const { sectors, oms, omId } = useSectors();
   const [activeTab, setActiveTab] = useState<'users' | 'permissions' | 'sectors'>('users');
   const initialFormState = {
     name: '',
@@ -52,7 +52,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
   const [showFunctional, setShowFunctional] = useState(false);
   const [showNewUserForm, setShowNewUserForm] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [selectedSectorUnit, setSelectedSectorUnit] = useState<'GSD-SP' | 'BASP'>('GSD-SP');
+  const [selectedSectorUnit, setSelectedSectorUnit] = useState<string>('GSD-SP');
   const [resetToast, setResetToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
 
   const showResetFeedback = (type: 'success' | 'error', msg: string) => {
@@ -161,10 +161,11 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     setEditingUserId(user.id);
     
     const userSectorObj = sectors.find(s => s.name === user.sector);
-    if (userSectorObj && userSectorObj.unit === 'BASP') {
-      setSelectedSectorUnit('BASP');
+    if (userSectorObj) {
+      setSelectedSectorUnit(userSectorObj.unit);
     } else {
-      setSelectedSectorUnit('GSD-SP');
+      const activeOm = oms.find(o => o.id === omId);
+      setSelectedSectorUnit(activeOm?.acronym || 'GSD-SP');
     }
 
     setFormData({
@@ -368,21 +369,17 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <Building2 className="w-3 h-3" /> Setor
                   </label>
-                  <div className={`flex rounded-xl p-1 mb-2 border ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
-                    <button
-                      type="button"
-                      onClick={() => { setSelectedSectorUnit('GSD-SP'); setFormData({ ...formData, sector: '' }); }}
-                      className={`flex-1 px-4 py-2 text-xs font-bold rounded-lg transition-all ${selectedSectorUnit === 'GSD-SP' ? (isDarkMode ? 'bg-blue-600 text-white shadow' : 'bg-white text-slate-900 shadow') : (isDarkMode ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
-                    >
-                      GSD-SP
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setSelectedSectorUnit('BASP'); setFormData({ ...formData, sector: '' }); }}
-                      className={`flex-1 px-4 py-2 text-xs font-bold rounded-lg transition-all ${selectedSectorUnit === 'BASP' ? (isDarkMode ? 'bg-emerald-600 text-white shadow' : 'bg-white text-slate-900 shadow') : (isDarkMode ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
-                    >
-                      BASP
-                    </button>
+                  <div className={`flex flex-wrap gap-1 p-1 mb-2 border rounded-xl ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
+                    {oms.map(om => (
+                      <button
+                        key={om.id}
+                        type="button"
+                        onClick={() => { setSelectedSectorUnit(om.acronym); setFormData({ ...formData, sector: '' }); }}
+                        className={`flex-1 px-4 py-2 text-[10px] font-black uppercase tracking-tight rounded-lg transition-all ${selectedSectorUnit === om.acronym ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-slate-900 shadow-md') : (isDarkMode ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
+                      >
+                        {om.acronym}
+                      </button>
+                    ))}
                   </div>
                   <select required className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.sector} onChange={e => setFormData({ ...formData, sector: e.target.value })}>
                     <option value="">Selecione um setor da {selectedSectorUnit}...</option>

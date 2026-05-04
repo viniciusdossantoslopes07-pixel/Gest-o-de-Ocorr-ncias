@@ -12,9 +12,9 @@ interface SectorManagementProps {
 }
 
 const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode = false, users }) => {
-    const { sectors, addSector, removeSector, reorderSectors, loading } = useSectors();
+    const { sectors, oms, addSector, removeSector, reorderSectors, loading, omId } = useSectors();
     const [newSectorName, setNewSectorName] = useState('');
-    const [newSectorUnit, setNewSectorUnit] = useState<'GSD-SP' | 'BASP'>('GSD-SP');
+    const [newSectorUnit, setNewSectorUnit] = useState<string>('');
     const [isAdding, setIsAdding] = useState(false);
     const [addError, setAddError] = useState('');
     const [addSuccess, setAddSuccess] = useState('');
@@ -45,8 +45,11 @@ const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode =
             setAddError('Informe um nome para o setor.');
             return;
         }
+        
+        const unitToUse = newSectorUnit || (oms.find(o => o.id === omId)?.acronym) || 'GSD-SP';
+
         setIsAdding(true);
-        const { error } = await addSector(newSectorName, newSectorUnit);
+        const { error } = await addSector(newSectorName, unitToUse);
         setIsAdding(false);
         if (error) {
             setAddError(error);
@@ -222,19 +225,20 @@ const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode =
                             maxLength={30}
                             className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-bold border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${dk ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-white border-slate-200 text-slate-900'}`}
                         />
-                        <div className={`flex rounded-xl p-1 border ${dk ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
-                            <button
-                                onClick={() => setNewSectorUnit('GSD-SP')}
-                                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${newSectorUnit === 'GSD-SP' ? (dk ? 'bg-slate-600 text-white shadow' : 'bg-white text-slate-900 shadow') : (dk ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
-                            >
-                                GSD-SP
-                            </button>
-                            <button
-                                onClick={() => setNewSectorUnit('BASP')}
-                                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${newSectorUnit === 'BASP' ? (dk ? 'bg-slate-600 text-white shadow' : 'bg-white text-slate-900 shadow') : (dk ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
-                            >
-                                BASP
-                            </button>
+                        <div className={`flex flex-wrap gap-1 p-1 rounded-xl border ${dk ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
+                            {oms.map(om => (
+                                <button
+                                    key={om.id}
+                                    onClick={() => setNewSectorUnit(om.acronym)}
+                                    className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-tight rounded-lg transition-all ${
+                                        (newSectorUnit === om.acronym || (!newSectorUnit && om.id === omId))
+                                            ? (dk ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-slate-900 shadow-md')
+                                            : (dk ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')
+                                    }`}
+                                >
+                                    {om.acronym}
+                                </button>
+                            ))}
                         </div>
                         <button
                             onClick={handleAdd}
@@ -274,28 +278,28 @@ const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode =
                         <Loader2 className={`w-6 h-6 animate-spin ${dk ? 'text-slate-500' : 'text-slate-300'}`} />
                     </div>
                 ) : (
-                    <div className={`divide-y divide-y-4 ${dk ? 'divide-slate-800/50' : 'divide-slate-200/50'}`}>
-                        {/* GSD-SP Group */}
-                        <div className={`divide-y ${dk ? 'divide-slate-700/50' : 'divide-slate-100'} pb-4`}>
-                            <div className="px-6 py-2 bg-slate-900/10 dark:bg-slate-900/40">
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${dk ? 'text-blue-400' : 'text-blue-600'}`}>GSD-SP</span>
-                            </div>
-                            {sectors.filter(s => s.unit !== 'BASP').length === 0 && (
-                                <p className={`px-6 py-4 text-xs font-medium ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Nenhum setor GSD-SP.</p>
-                            )}
-                            {sectors.filter(s => s.unit !== 'BASP').map(sector => renderSectorItem(sector))}
-                        </div>
-                        
-                        {/* BASP Group */}
-                        <div className={`divide-y ${dk ? 'divide-slate-700/50' : 'divide-slate-100'} pb-4`}>
-                            <div className="px-6 py-2 bg-slate-900/10 dark:bg-slate-900/40">
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${dk ? 'text-emerald-400' : 'text-emerald-600'}`}>BASP</span>
-                            </div>
-                            {sectors.filter(s => s.unit === 'BASP').length === 0 && (
-                                <p className={`px-6 py-4 text-xs font-medium ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Nenhum setor BASP.</p>
-                            )}
-                            {sectors.filter(s => s.unit === 'BASP').map(sector => renderSectorItem(sector))}
-                        </div>
+                    <div className={`divide-y divide-y-8 ${dk ? 'divide-slate-900/50' : 'divide-slate-200/50'}`}>
+                        {oms.map(om => {
+                            const omSectors = sectors.filter(s => s.unit === om.acronym);
+                            if (omSectors.length === 0 && om.id !== omId) return null; // Hide empty OMs unless it's the active one
+
+                            return (
+                                <div key={om.id} className={`divide-y ${dk ? 'divide-slate-700/50' : 'divide-slate-100'} pb-4`}>
+                                    <div className="px-6 py-2 bg-slate-900/10 dark:bg-slate-900/40 flex items-center justify-between">
+                                        <span className={`text-[10px] font-black uppercase tracking-widest ${dk ? 'text-blue-400' : 'text-blue-600'}`}>
+                                            {om.name} ({om.acronym})
+                                        </span>
+                                        <span className={`text-[9px] font-bold ${dk ? 'text-slate-500' : 'text-slate-400'}`}>
+                                            {omSectors.length} setores
+                                        </span>
+                                    </div>
+                                    {omSectors.length === 0 && (
+                                        <p className={`px-6 py-4 text-xs font-medium ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Nenhum setor cadastrado para esta unidade.</p>
+                                    )}
+                                    {omSectors.map(sector => renderSectorItem(sector))}
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
 
