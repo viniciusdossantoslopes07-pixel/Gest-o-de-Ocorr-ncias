@@ -266,7 +266,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                   <SearchableSelect
                     isDarkMode={dk}
                     placeholder="Selecione a Unidade..."
-                    options={oms.map(o => ({ label: `${o.name} (${o.acronym})`, value: o.id }))}
+                    options={oms.map(o => ({ label: `(${o.acronym}) ${o.name}`, value: o.id }))}
                     value={regData.om_id}
                     onChange={(selectedOmId) => {
                       setRegData({ ...regData, om_id: selectedOmId });
