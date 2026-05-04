@@ -71,6 +71,7 @@ export const TIPOS_MISSAO = [
   "FORMATURA",
   "SOBREAVISO",
   "APOIO",
+  "HONRAS FÚNEBRES",
   "OUTRO"
 ];
 

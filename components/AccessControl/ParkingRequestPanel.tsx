@@ -63,9 +63,9 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
     const textPrimary = dk ? 'text-white' : 'text-slate-800';
     const textSecondary = dk ? 'text-slate-300' : 'text-slate-600';
     const textMuted = dk ? 'text-slate-400' : 'text-slate-500';
-    const { omId: activeOmId, sectors } = useSectors();
+    const { omId: activeOmId, sectors, oms } = useSectors();
     const currentOmId = activeOmId || user.om_id;
-    const currentOmAcronym = sectors.find(s => s.id === currentOmId)?.acronym || 'OM';
+    const currentOmAcronym = oms.find(o => o.id === currentOmId)?.acronym || 'OM';
 
     const [activeTab, setActiveTab] = useState<'gerenciar' | 'estatisticas'>('gerenciar');
 

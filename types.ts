@@ -242,6 +242,7 @@ export interface Mission {
   status: 'RASCUNHO' | 'PENDENTE' | 'APROVADA' | 'REJEITADA' | 'ESCALONADA' | 'AGUARDANDO_ORDEM' | 'ATRIBUIDA' | 'FINALIZADA';
   parecer_sop?: string;
   data_criacao: string;
+  om_id?: string;
   historico?: HistoricoItem[];
 }
 

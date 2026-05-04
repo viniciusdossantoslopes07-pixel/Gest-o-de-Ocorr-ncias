@@ -1196,12 +1196,14 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                 setEditingDraft(null);
                             }}
                             onSubmit={async (data, isDraft) => {
+                                const actualOmId = omId || user?.om_id;
+                                
                                 if (editingDraft) {
                                     // Remove id from update payload to avoid PK errors
                                     const { id, ...updateData } = data;
                                     const { error } = await supabase
                                         .from('missoes_gsd')
-                                        .update(updateData)
+                                        .update({ ...updateData, om_id: actualOmId })
                                         .eq('id', editingDraft.id);
 
                                     if (!error) {
@@ -1217,7 +1219,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                     // Create new
                                     const { error } = await supabase
                                         .from('missoes_gsd')
-                                        .insert([data]);
+                                        .insert([{ ...data, om_id: actualOmId }]);
 
                                     if (!error) {
                                         await fetchMissions();
