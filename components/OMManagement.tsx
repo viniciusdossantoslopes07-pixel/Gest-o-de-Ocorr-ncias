@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '../services/supabase';
 import { MilitaryOrganization, AccessGate, User } from '../types';
 import { Building2, Map, ShieldAlert, Users, DoorOpen, Plus, Save, ImagePlus, Loader2, Trash2, ShieldCheck, MapPin, TrendingUp, BarChart2, PieChart as PieIcon, Activity, Pencil, ChevronLeft, X } from 'lucide-react';
@@ -44,6 +44,26 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         [omId: string]: { personnelCount: number, occurrencesCount: number }
     }>({});
     const [globalPersonnel, setGlobalPersonnel] = useState(0);
+
+    const categoryData = useMemo(() => {
+        const counts: any = { 'Tipo 1': 0, 'Tipo 2': 0, 'Tipo 3': 0, 'Tipo 4': 0, 'NIL': 0 };
+        oms.forEach(om => {
+            const cat = om.category || 'NIL';
+            if (counts[cat] !== undefined) counts[cat]++;
+            else counts['NIL']++;
+        });
+        return Object.entries(counts)
+            .map(([name, value]) => ({ name, value: value as number }))
+            .filter(item => item.value > 0);
+    }, [oms]);
+
+    const COLORS = {
+        'Tipo 1': '#3b82f6', // blue
+        'Tipo 2': '#10b981', // emerald
+        'Tipo 3': '#f59e0b', // amber
+        'Tipo 4': '#ef4444', // red
+        'NIL': '#64748b'    // slate
+    };
 
     useEffect(() => {
         fetchOms();
@@ -604,26 +624,34 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                 </div>
 
                                 <div className={`p-8 rounded-[3rem] border ${isDarkMode ? 'bg-slate-900/60 border-slate-700/50' : 'bg-white border-slate-200'} backdrop-blur-xl shadow-xl`}>
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-6">Saúde Operacional (Global)</h3>
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-6">Distribuição por Categoria (GSD)</h3>
                                     <div className="h-64">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
                                                 <Pie
-                                                    data={[
-                                                        { name: 'Estável', value: 75 },
-                                                        { name: 'Alerta', value: 20 },
-                                                        { name: 'Crítico', value: 5 }
-                                                    ]}
+                                                    data={categoryData}
                                                     innerRadius={60}
                                                     outerRadius={80}
-                                                    paddingAngle={10}
+                                                    paddingAngle={5}
                                                     dataKey="value"
                                                 >
-                                                    <Cell fill="#10b981" />
-                                                    <Cell fill="#f59e0b" />
-                                                    <Cell fill="#ef4444" />
+                                                    {categoryData.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={(COLORS as any)[entry.name] || '#3b82f6'} />
+                                                    ))}
                                                 </Pie>
-                                                <Tooltip />
+                                                <Tooltip 
+                                                    contentStyle={{ 
+                                                        backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', 
+                                                        border: 'none', 
+                                                        borderRadius: '1rem',
+                                                        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
+                                                    }} 
+                                                />
+                                                <Legend 
+                                                    verticalAlign="bottom" 
+                                                    height={36} 
+                                                    formatter={(value) => <span className="text-[10px] font-black uppercase text-slate-500">{value}</span>}
+                                                />
                                             </PieChart>
                                         </ResponsiveContainer>
                                     </div>
