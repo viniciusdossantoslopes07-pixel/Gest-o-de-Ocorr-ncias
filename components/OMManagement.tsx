@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '../services/supabase';
 import { MilitaryOrganization, AccessGate, User } from '../types';
-import { Building2, Map, ShieldAlert, Users, DoorOpen, Plus, Save, ImagePlus, Loader2, Trash2, ShieldCheck, MapPin, TrendingUp, BarChart2, PieChart as PieIcon, Activity, Pencil, ChevronLeft, X } from 'lucide-react';
+import { Building2, Map, ShieldAlert, Users, DoorOpen, Plus, Save, ImagePlus, Loader2, Trash2, ShieldCheck, MapPin, TrendingUp, BarChart2, PieChart as PieIcon, Activity, Pencil, ChevronLeft, X, Search } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 interface OMManagementProps {
@@ -44,6 +44,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         [omId: string]: { personnelCount: number, occurrencesCount: number }
     }>({});
     const [globalPersonnel, setGlobalPersonnel] = useState(0);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const categoryData = useMemo(() => {
         const counts: any = { 'Tipo 1': 0, 'Tipo 2': 0, 'Tipo 3': 0, 'Tipo 4': 0, 'NIL': 0 };
@@ -58,11 +59,11 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
     }, [oms]);
 
     const COLORS = {
-        'Tipo 1': '#3b82f6', // blue
-        'Tipo 2': '#10b981', // emerald
-        'Tipo 3': '#f59e0b', // amber
-        'Tipo 4': '#ef4444', // red
-        'NIL': '#64748b'    // slate
+        'Tipo 1': '#0ea5e9', // Sky 500 (Vibrant blue)
+        'Tipo 2': '#10b981', // Emerald 500
+        'Tipo 3': '#8b5cf6', // Violet 500
+        'Tipo 4': '#f43f5e', // Rose 500
+        'NIL': '#64748b'    // Slate 500
     };
 
     useEffect(() => {
@@ -481,13 +482,31 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                         {/* LEFT SIDEBAR: OM LIST (Collapsible on Desktop, Bottom Sheet on Mobile) */}
                         <div className={`col-span-12 lg:col-span-3 space-y-6 transition-all duration-500 ${!isSidebarOpen ? 'lg:opacity-0 lg:pointer-events-none lg:w-0' : ''}`}>
                             <div className={`p-6 rounded-[2.5rem] border ${isDarkMode ? 'bg-slate-900/60 border-slate-700/50' : 'bg-white border-slate-200'} backdrop-blur-xl shadow-2xl h-[calc(100vh-12rem)] flex flex-col`}>
-                                <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-2"><Activity className="w-4 h-4 text-blue-500" /> Unidades Ativas</h3>
                                     <span className="px-2 py-1 bg-blue-500/10 text-blue-500 text-[9px] font-black rounded-lg">{oms.length}</span>
                                 </div>
+
+                                <div className="relative mb-6">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                                    <input 
+                                        type="text"
+                                        placeholder="BUSCAR UNIDADE..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className={`w-full pl-9 pr-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest outline-none border transition-all ${
+                                            isDarkMode 
+                                            ? 'bg-slate-800/50 border-slate-700 text-white focus:border-blue-500' 
+                                            : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-blue-500'
+                                        }`}
+                                    />
+                                </div>
                                 
                                 <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
-                                    {oms.map(om => (
+                                    {oms.filter(om => 
+                                        om.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                        om.acronym.toLowerCase().includes(searchTerm.toLowerCase())
+                                    ).map(om => (
                                         <button
                                             key={om.id}
                                             onClick={() => handleSelectOm(om)}
@@ -628,29 +647,54 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                     <div className="h-64">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
+                                                <defs>
+                                                    {Object.entries(COLORS).map(([key, color]) => (
+                                                        <linearGradient key={`grad-${key}`} id={`grad-${key}`} x1="0" y1="0" x2="0" y2="1">
+                                                            <stop offset="0%" stopColor={color} stopOpacity={1} />
+                                                            <stop offset="100%" stopColor={color} stopOpacity={0.6} />
+                                                        </linearGradient>
+                                                    ))}
+                                                </defs>
                                                 <Pie
                                                     data={categoryData}
-                                                    innerRadius={60}
-                                                    outerRadius={80}
-                                                    paddingAngle={5}
+                                                    innerRadius={65}
+                                                    outerRadius={85}
+                                                    paddingAngle={6}
                                                     dataKey="value"
+                                                    stroke={isDarkMode ? '#0f172a' : '#fff'}
+                                                    strokeWidth={2}
                                                 >
                                                     {categoryData.map((entry, index) => (
-                                                        <Cell key={`cell-${index}`} fill={(COLORS as any)[entry.name] || '#3b82f6'} />
+                                                        <Cell 
+                                                            key={`cell-${index}`} 
+                                                            fill={`url(#grad-${entry.name})`}
+                                                            style={{ 
+                                                                filter: `drop-shadow(0 0 8px ${(COLORS as any)[entry.name]}44)` 
+                                                            }}
+                                                        />
                                                     ))}
                                                 </Pie>
                                                 <Tooltip 
                                                     contentStyle={{ 
-                                                        backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', 
-                                                        border: 'none', 
-                                                        borderRadius: '1rem',
-                                                        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
-                                                    }} 
+                                                        backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)', 
+                                                        backdropFilter: 'blur(12px)',
+                                                        border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)', 
+                                                        borderRadius: '1.25rem',
+                                                        boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.3)',
+                                                        padding: '12px 16px',
+                                                        fontSize: '10px',
+                                                        fontWeight: 'bold',
+                                                        textTransform: 'uppercase'
+                                                    }}
+                                                    itemStyle={{ color: isDarkMode ? '#f1f5f9' : '#1e293b' }}
+                                                    cursor={{ fill: 'transparent' }}
                                                 />
                                                 <Legend 
                                                     verticalAlign="bottom" 
                                                     height={36} 
-                                                    formatter={(value) => <span className="text-[10px] font-black uppercase text-slate-500">{value}</span>}
+                                                    formatter={(value) => <span className="text-[9px] font-black uppercase text-slate-500 tracking-widest">{value}</span>}
+                                                    iconType="circle"
+                                                    iconSize={8}
                                                 />
                                             </PieChart>
                                         </ResponsiveContainer>
