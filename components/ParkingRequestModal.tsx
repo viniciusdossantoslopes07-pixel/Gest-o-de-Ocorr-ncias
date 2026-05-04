@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../services/supabase';
 import { Car, X, CheckCircle, Send, Upload, AlertCircle, Loader2, Building2 } from 'lucide-react';
-import { useSectors } from './contexts/SectorsContext';
+import { useSectors } from '../contexts/SectorsContext';
 
 interface ParkingRequestModalProps {
     isOpen: boolean;
@@ -50,7 +50,7 @@ const STEP_LABELS: Record<UploadStep, string> = {
     salvando: 'Salvando solicitação...',
 };
 
-export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen, onClose, isDarkMode = false }) => {
+export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen, onClose, isDarkMode = false, initialOmId }) => {
     const dk = isDarkMode;
     const [uploadStep, setUploadStep] = useState<UploadStep>('');
     const [error, setError] = useState('');
