@@ -221,7 +221,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                     finalLogoUrl = await uploadLogo(selectedOm.id, 'om');
                 }
 
-                const { error } = await supabase.from('military_organizations').update({
+                const { data: updatedOm, error } = await supabase.from('military_organizations').update({
                     name: omForm.name,
                     acronym: omForm.acronym,
                     address: omForm.address,
@@ -234,11 +234,13 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                     longitude: coords?.lon || null,
                     logo_url: finalLogoUrl,
                     host_logo_url: hostLogoFile ? await uploadLogo(selectedOm.id, 'host') : hostLogoPreview
-                }).eq('id', selectedOm.id);
+                }).eq('id', selectedOm.id).select().single();
 
                 if (error) throw error;
+                if (updatedOm) setSelectedOm(updatedOm);
                 alert('OM atualizada com sucesso!');
                 setIsEditing(false);
+                setViewMode('dashboard');
             } else {
                 // Create logic
                 const { data: newOm, error } = await supabase.from('military_organizations').insert([{
@@ -266,6 +268,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                 }
                 alert('OM cadastrada com sucesso!');
                 setIsCreatingOm(false);
+                setViewMode('dashboard');
             }
 
             setOmForm({ name: '', acronym: '', address: '', zip_code: '', host_unit: '', url: '', commander_id: '', founded_at: '' });
