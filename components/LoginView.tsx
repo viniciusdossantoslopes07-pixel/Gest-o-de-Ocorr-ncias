@@ -21,7 +21,7 @@ interface LoginViewProps {
 }
 
 const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, onViewEvents, onRequestPasswordReset, onForcePasswordReset, isDarkMode, urlOm }) => {
-  const { sectorNames, oms, omId } = useSectors();
+  const { sectorNames, oms, omId, loading } = useSectors();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -231,12 +231,16 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
           {/* Header compacto */}
           <div className={`px-6 pt-5 pb-4 border-b ${dk ? 'border-slate-800 bg-gradient-to-b from-blue-950/20 to-transparent' : 'border-slate-100 bg-gradient-to-b from-blue-50/50 to-transparent'} text-center`}>
             <div className="flex justify-center mb-4">
-              <div className={`w-24 h-24 rounded-3xl overflow-hidden shadow-xl ring-2 ${dk ? 'ring-slate-700' : 'ring-slate-200'} bg-white transition-transform hover:scale-105 duration-300`}>
-                <img src={oms.find(o => o.id === omId)?.logo_url || "/logo_gsd.png"} alt="Logo OM" className="w-full h-full object-cover" />
+              <div className={`w-24 h-24 rounded-3xl overflow-hidden shadow-xl ring-2 ${dk ? 'ring-slate-700' : 'ring-slate-200'} bg-white transition-transform hover:scale-105 duration-300 flex items-center justify-center`}>
+                {loading ? (
+                  <div className="w-full h-full bg-slate-100 animate-pulse" />
+                ) : (
+                  <img src={oms.find(o => o.id === omId)?.logo_url || "/logo_gsd.png"} alt="Logo OM" className="w-full h-full object-cover" />
+                )}
               </div>
             </div>
             <h1 className={`text-[22px] font-black italic tracking-tighter leading-none ${dk ? 'text-white' : 'text-slate-900'}`}>
-              <span className="text-blue-400">GUARDIÃO</span> <span className="not-italic ml-1">{oms.find(o => o.id === omId)?.acronym || urlOm || 'GSD-SP'}</span>
+              <span className="text-blue-400">GUARDIÃO</span> <span className="not-italic ml-1">{loading ? '...' : (oms.find(o => o.id === omId)?.acronym || urlOm || 'GSD-SP')}</span>
             </h1>
             <p className={`${dk ? 'text-slate-500' : 'text-slate-400'} font-semibold text-[9px] uppercase tracking-[0.2em] mt-1`}>
               Sistema de Segurança e Defesa

@@ -50,7 +50,7 @@ const HomeView: React.FC<HomeViewProps> = ({
   onOpenDestinometro,
   isDarkMode
 }) => {
-  const { oms, omId } = useSectors();
+  const { oms, omId, loading } = useSectors();
   const activeOm = oms.find(o => o.id === omId);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -131,12 +131,16 @@ const HomeView: React.FC<HomeViewProps> = ({
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4 lg:gap-6">
               <div className="bg-white p-1.5 rounded-[1.2rem] lg:rounded-[2rem] w-10 h-10 lg:w-24 lg:h-24 flex items-center justify-center overflow-hidden shadow-2xl ring-2 lg:ring-8 ring-white/5 group-hover:ring-white/10 transition-all duration-700">
-                <img src={activeOm?.logo_url || "/logo_gsd.jpg"} alt={`Logo ${activeOm?.acronym || 'GSD-SP'}`} className="w-full h-full object-cover scale-110" />
+                {loading ? (
+                  <div className="w-full h-full bg-slate-100 animate-pulse" />
+                ) : (
+                  <img src={activeOm?.logo_url || "/logo_gsd.jpg"} alt={`Logo ${activeOm?.acronym || 'GSD-SP'}`} className="w-full h-full object-cover scale-110" />
+                )}
               </div>
               <div>
                 <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 mb-1">
                   <span className="bg-white/10 px-2 lg:px-3 py-0.5 lg:py-1 rounded-full border border-white/20 flex items-center w-fit">
-                    <span className="text-white font-black italic tracking-tighter text-[10px] lg:text-[14px]">GUARDIÃO <span className="not-italic ml-0.5 opacity-90 text-[8px] lg:text-[12px]">{activeOm?.acronym || 'GSD-SP'}</span></span>
+                    <span className="text-white font-black italic tracking-tighter text-[10px] lg:text-[14px]">GUARDIÃO <span className="not-italic ml-0.5 opacity-90 text-[8px] lg:text-[12px]">{loading ? '...' : (activeOm?.acronym || 'GSD-SP')}</span></span>
                   </span>
                 </div>
               </div>
@@ -174,7 +178,7 @@ const HomeView: React.FC<HomeViewProps> = ({
             </div>
           </div>
         </div>
-        <div className="absolute inset-0 overflow-hidden pointer-events-none flex items-center justify-center opacity-10 dark:opacity-15">
+        <div className={`absolute inset-0 overflow-hidden pointer-events-none flex items-center justify-center transition-opacity duration-700 ${loading ? 'opacity-0' : 'opacity-10 dark:opacity-15'}`}>
           <img src={activeOm?.host_logo_url || "/logo_basp_optimized.png"} alt="Logo Sediadora" className="w-48 h-48 lg:w-72 lg:h-72 grayscale -rotate-12" />
           <img src={activeOm?.logo_url || "/logo_gsd.png"} alt="Logo Unidade" className="w-64 h-64 lg:w-96 lg:h-96 grayscale rotate-12" />
         </div>

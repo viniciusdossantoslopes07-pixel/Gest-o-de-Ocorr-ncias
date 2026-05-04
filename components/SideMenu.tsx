@@ -30,7 +30,7 @@ export default function SideMenu({
     isOpen, onClose, activeTab, setActiveTab, currentUser, onLogout,
     onToggleTheme, isDarkMode, onOpenFAQ, onOpenDestinometro, urlOm
 }: SideMenuProps) {
-    const { oms, omId } = useSectors();
+    const { oms, omId, loading } = useSectors();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMaterialMenuOpen, setIsMaterialMenuOpen] = useState(false);
     const [isOccurrencesOpen, setIsOccurrencesOpen] = useState(false);
@@ -338,6 +338,7 @@ export default function SideMenu({
                     >
                         <div className="shrink-0 relative w-10 h-10 rounded-full overflow-hidden shadow-md ring-2 ring-white/10 group-hover:ring-blue-500/50 transition-all">
                             {(() => {
+                                if (loading) return <div className="w-full h-full bg-slate-800 animate-pulse flex items-center justify-center"><div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /></div>;
                                 const activeOm = oms.find(o => o.id === omId);
                                 const logoSrc = activeOm?.logo_url || '/logo_gsd.png';
                                 return <img src={logoSrc} alt="Logo" className="w-full h-full object-cover scale-125" />;
