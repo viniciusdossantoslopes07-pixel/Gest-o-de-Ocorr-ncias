@@ -167,7 +167,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
             return data.publicUrl;
         } catch (err) {
             console.error(`Error uploading ${type} logo:`, err);
-            return null;
+            throw new Error(`Falha no upload do arquivo (${type}). Verifique o tamanho e formato.`);
         }
     };
 
@@ -211,14 +211,18 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         e.preventDefault();
         setLoading(true);
         try {
-            let finalLogoUrl = logoPreview;
+            let finalLogoUrl = selectedOm?.logo_url || null;
+            let finalHostLogoUrl = selectedOm?.host_logo_url || null;
             
             // Auto-Geocode before saving
             const coords = await geocodeAddress(omForm.address, omForm.zip_code);
 
             if (isEditing && selectedOm) {
                 if (logoFile) {
-                    finalLogoUrl = await uploadLogo(selectedOm.id, 'om');
+                    finalLogoUrl = await uploadLogo(selectedOm.id, 'om') || finalLogoUrl;
+                }
+                if (hostLogoFile) {
+                    finalHostLogoUrl = await uploadLogo(selectedOm.id, 'host') || finalHostLogoUrl;
                 }
 
                 const { data: updatedOm, error } = await supabase.from('military_organizations').update({
@@ -233,7 +237,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                     latitude: coords?.lat || null,
                     longitude: coords?.lon || null,
                     logo_url: finalLogoUrl,
-                    host_logo_url: hostLogoFile ? await uploadLogo(selectedOm.id, 'host') : hostLogoPreview
+                    host_logo_url: finalHostLogoUrl
                 }).eq('id', selectedOm.id).select().single();
 
                 if (error) throw error;
