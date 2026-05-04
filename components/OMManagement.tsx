@@ -218,7 +218,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
 
             if (isEditing && selectedOm) {
                 if (logoFile) {
-                    finalLogoUrl = await uploadLogo(selectedOm.id);
+                    finalLogoUrl = await uploadLogo(selectedOm.id, 'om');
                 }
 
                 const { error } = await supabase.from('military_organizations').update({
