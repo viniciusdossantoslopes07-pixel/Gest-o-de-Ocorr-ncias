@@ -59,11 +59,11 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
     }, [oms]);
 
     const COLORS = {
-        'Tipo 1': '#00d2ff', // Cyan Neon
-        'Tipo 2': '#00ff87', // Spring Green Neon
-        'Tipo 3': '#9d50bb', // Purple Neon
-        'Tipo 4': '#ff007a', // Pink Neon
-        'NIL': '#3a4750'    // Dark Steel
+        'Tipo 1': '#3b82f6', // Blue 500
+        'Tipo 2': '#10b981', // Emerald 500
+        'Tipo 3': '#f59e0b', // Amber 500
+        'Tipo 4': '#ef4444', // Red 500
+        'NIL': '#64748b'    // Slate 500
     };
 
     useEffect(() => {
@@ -643,68 +643,53 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                 </div>
 
                                 <div className={`p-8 rounded-[3rem] border ${isDarkMode ? 'bg-slate-900/60 border-slate-700/50' : 'bg-white border-slate-200'} backdrop-blur-xl shadow-xl`}>
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-6">Distribuição por Categoria (GSD)</h3>
-                                    <div className="h-64">
+                                    <h3 className={`text-sm font-black uppercase tracking-tighter mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Por Tipo</h3>
+                                    <div className="h-[200px] mb-6">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
-                                                <defs>
-                                                    {Object.entries(COLORS).map(([key, color]) => (
-                                                        <linearGradient key={`grad-${key.replace(/\s+/g, '-')}`} id={`grad-${key.replace(/\s+/g, '-')}`} x1="0" y1="0" x2="1" y2="1">
-                                                            <stop offset="0%" stopColor={color} stopOpacity={1} />
-                                                            <stop offset="100%" stopColor={color} stopOpacity={0.85} />
-                                                        </linearGradient>
-                                                    ))}
-                                                </defs>
                                                 <Pie
                                                     data={categoryData}
-                                                    innerRadius={65}
+                                                    innerRadius={50}
                                                     outerRadius={85}
-                                                    paddingAngle={8}
+                                                    paddingAngle={4}
                                                     dataKey="value"
-                                                    stroke={isDarkMode ? '#0f172a' : '#fff'}
-                                                    strokeWidth={3}
+                                                    stroke="none"
+                                                    label={{ position: 'inside', fill: '#fff', fontSize: 12, fontWeight: 'bold' }}
+                                                    labelLine={false}
                                                     animationBegin={0}
-                                                    animationDuration={1500}
+                                                    animationDuration={1000}
                                                 >
                                                     {categoryData.map((entry, index) => (
                                                         <Cell 
                                                             key={`cell-${index}`} 
-                                                            fill={`url(#grad-${entry.name.replace(/\s+/g, '-')})`}
-                                                            style={{ 
-                                                                filter: `drop-shadow(0 0 12px ${(COLORS as any)[entry.name]}66)` 
-                                                            }}
+                                                            fill={(COLORS as any)[entry.name] || '#3b82f6'}
                                                         />
                                                     ))}
                                                 </Pie>
                                                 <Tooltip 
                                                     contentStyle={{ 
-                                                        backgroundColor: isDarkMode ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)', 
-                                                        backdropFilter: 'blur(16px)',
-                                                        border: isDarkMode ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.1)', 
-                                                        borderRadius: '1.5rem',
-                                                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-                                                        padding: '12px 20px',
+                                                        backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', 
+                                                        border: 'none', 
+                                                        borderRadius: '1rem',
+                                                        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
                                                         fontSize: '10px',
-                                                        fontWeight: '900',
-                                                        textTransform: 'uppercase',
-                                                        letterSpacing: '0.1em'
+                                                        fontWeight: 'bold',
+                                                        textTransform: 'uppercase'
                                                     }}
-                                                    itemStyle={{ color: '#fff', textShadow: '0 0 10px rgba(0,0,0,0.5)' }}
-                                                    cursor={{ fill: 'transparent' }}
-                                                />
-                                                <Legend 
-                                                    verticalAlign="bottom" 
-                                                    height={40} 
-                                                    formatter={(value) => (
-                                                        <span className="text-[10px] font-black uppercase tracking-widest px-2" style={{ color: (COLORS as any)[value] }}>
-                                                            {value}
-                                                        </span>
-                                                    )}
-                                                    iconType="diamond"
-                                                    iconSize={10}
                                                 />
                                             </PieChart>
                                         </ResponsiveContainer>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {categoryData.map((t) => (
+                                            <div key={t.name} className="flex items-center justify-between gap-2">
+                                                <div className="flex items-center gap-2 min-w-0">
+                                                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: (COLORS as any)[t.name] }} />
+                                                    <span className={`text-[10px] font-bold uppercase truncate ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{t.name}</span>
+                                                </div>
+                                                <span className={`text-[11px] font-black flex-shrink-0 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{t.value}</span>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
