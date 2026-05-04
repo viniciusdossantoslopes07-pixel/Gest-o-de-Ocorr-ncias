@@ -343,7 +343,8 @@ const App: FC = () => {
             status: r.status,
             timestamp: r.timestamp
           })),
-          observacao: a.observacao
+          observacao: a.observacao,
+          om_id: a.om_id
         })));
       }
 
@@ -1814,7 +1815,7 @@ const App: FC = () => {
 
                 try {
                   // Determine if we need to insert or update the daily_attendance record
-                  const currentOmId = a.om_id || currentUser?.om_id;
+                  const currentOmId = a.om_id || currentUser?.om_id || omId;
                   
                   const { data: existingAttendance } = await withTimeout<any>(Promise.resolve(supabase
                     .from('daily_attendance')

@@ -843,7 +843,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     }),
                     signedBy: signatureInfo.signedBy,
                     signedAt: signatureInfo.signedAt,
-                    responsible: signatureInfo.signedBy
+                    responsible: signatureInfo.signedBy,
+                    om_id: currentUser.om_id
                 };
             } else {
                 // Registro não existe ainda: cria um novo com base na grade visual
@@ -864,7 +865,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     signedBy: signatureInfo.signedBy,
                     signedAt: signatureInfo.signedAt,
                     responsible: signatureInfo.signedBy,
-                    createdAt: new Date().toISOString()
+                    createdAt: new Date().toISOString(),
+                    om_id: currentUser.om_id
                 };
             }
             onSaveAttendance(attendanceToSave);
