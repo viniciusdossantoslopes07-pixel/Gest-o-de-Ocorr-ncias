@@ -3,6 +3,8 @@ import { type FC, useEffect, useRef } from 'react';
 import { Printer, X, FileText } from 'lucide-react';
 import { MissionOrder, User } from '../types';
 import { formatDisplayDate } from '../utils/formatters';
+import { OmPrintHeader } from './Common/OmPrintHeader';
+import { MilitaryOrganization } from '../types';
 
 interface MissionSummaryPrintViewProps {
     orders: MissionOrder[];
@@ -10,6 +12,7 @@ interface MissionSummaryPrintViewProps {
     dateStart: string;
     dateEnd: string;
     onClose: () => void;
+    activeOm?: MilitaryOrganization;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -31,7 +34,7 @@ const STATUS_COLOR: Record<string, string> = {
     CONCLUIDA: 'text-slate-500',
 };
 
-const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, users, dateStart, dateEnd, onClose }) => {
+const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, users, dateStart, dateEnd, onClose, activeOm }) => {
 
     const docRef = useRef<HTMLDivElement>(null);
 
@@ -236,21 +239,7 @@ ${docHtml}
                     <div ref={docRef} className="bg-white shadow-sm mx-auto p-6 max-w-[297mm]">
 
                         {/* Military Header */}
-                        <div className="flex flex-row items-center justify-between mb-4 border-b-2 border-slate-900 pb-3 print-section gap-2">
-                            <img src="/logo_basp_optimized.png" alt="BASP" className="w-8 h-8 sm:w-14 sm:h-14 object-contain shrink-0" />
-                            <div className="flex-1 text-center px-1 sm:px-2">
-                                <p className="text-[6px] sm:text-[9px] font-bold uppercase tracking-widest text-slate-500">Ministério da Defesa</p>
-                                <p className="text-[10px] sm:text-sm font-black uppercase tracking-tight text-slate-900 leading-tight">Comando da Aeronáutica</p>
-                                <p className="text-[8px] sm:text-xs font-bold uppercase text-slate-800">Base Aérea de São Paulo</p>
-                                <p className="text-[7px] sm:text-[10px] font-bold uppercase text-slate-700">GSD-SP</p>
-                                <div className="mt-1 flex flex-col items-center">
-                                    <div className="px-2 py-0.5 bg-slate-900 text-white text-[6px] sm:text-[8px] font-black uppercase tracking-widest rounded">
-                                        Resumo de Missões Previstas
-                                    </div>
-                                </div>
-                            </div>
-                            <img src="/logo_gsd.png" alt="GSD-SP" className="w-8 h-8 sm:w-14 sm:h-14 object-contain shrink-0" />
-                        </div>
+                        <OmPrintHeader om={activeOm} />
 
                         {/* Meta row */}
                         <div className="flex flex-col sm:flex-row justify-between gap-1 mb-3 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-slate-600 border-l-4 border-slate-900 pl-2 print-section">

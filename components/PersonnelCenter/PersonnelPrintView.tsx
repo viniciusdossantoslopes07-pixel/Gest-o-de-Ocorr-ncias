@@ -1,7 +1,8 @@
 import React, { type FC, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Printer, X } from 'lucide-react';
-import { User } from '../../types';
+import { User, MilitaryOrganization } from '../../types';
+import { OmPrintHeader } from '../Common/OmPrintHeader';
 
 interface PersonnelPrintViewProps {
     users: User[];
@@ -9,6 +10,7 @@ interface PersonnelPrintViewProps {
     filterSector: string;
     activeUnitFilter: string;
     onClose: () => void;
+    om?: MilitaryOrganization;
 }
 
 const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
@@ -16,7 +18,8 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
     filterCategory,
     filterSector,
     activeUnitFilter,
-    onClose
+    onClose,
+    om
 }) => {
     const [mounted, setMounted] = useState(false);
 
@@ -158,19 +161,7 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
                     <div className="bg-white shadow-xl print:shadow-none mx-auto p-8 sm:p-12 print:p-0 min-h-full max-w-[210mm] print:max-w-none mb-8 print:mb-0 personnel-printable">
 
                         {/* Standard Military Header */}
-                        <div className="flex items-start justify-between mb-5 border-b-2 border-slate-900 pb-3 print-section">
-                            <img src="/logo_basp_optimized.png" alt="Logo BASP" className="w-14 h-14 object-contain" />
-                            <div className="flex-1 text-center">
-                                <h1 className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">Ministério da Defesa</h1>
-                                <h1 className="text-sm font-black uppercase tracking-tight">Comando da Aeronáutica</h1>
-                                <h2 className="text-xs font-bold uppercase tracking-wide">Base Aérea de São Paulo</h2>
-                                <h3 className="text-[10px] font-bold uppercase text-slate-700">Grupo de Segurança e Defesa de São Paulo</h3>
-                                <div className="mt-1.5 inline-block px-3 py-0.5 bg-slate-900 text-white text-[8px] font-black uppercase tracking-[0.2em] rounded">
-                                    Relação Nominal de Efetivo
-                                </div>
-                            </div>
-                            <img src="/logo_gsd.png" alt="Logo GSD-SP" className="w-14 h-14 object-contain" />
-                        </div>
+                        <OmPrintHeader om={om} />
 
                         {/* Document Info */}
                         <div className="flex justify-between items-end mb-6 text-[9px] font-bold uppercase tracking-wider text-slate-600 border-l-4 border-slate-900 pl-3 print-section">

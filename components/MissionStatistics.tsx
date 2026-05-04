@@ -1,5 +1,5 @@
 import React, { useState, useMemo, Fragment } from 'react';
-import { MissionOrder, User } from '../types';
+import { MissionOrder, User, MilitaryOrganization } from '../types';
 import {
     AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
     XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList
@@ -17,6 +17,7 @@ interface MissionStatisticsProps {
     missions?: any[];
     users?: User[];
     isDarkMode?: boolean;
+    activeOm?: MilitaryOrganization;
 }
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
@@ -33,7 +34,7 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
     REJEITADA:           { label: 'Rejeitada',           color: '#dc2626' },
 };
 
-export default function MissionStatistics({ orders, missions = [], users = [], isDarkMode }: MissionStatisticsProps) {
+export default function MissionStatistics({ orders, missions = [], users = [], isDarkMode, activeOm }: MissionStatisticsProps) {
     const [period, setPeriod] = useState<'all' | 'today' | 'week' | 'month' | 'year'>('year');
     const [expandFuture, setExpandFuture] = useState(true);
 
@@ -694,6 +695,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                     dateStart={printDateStart}
                     dateEnd={printDateEnd || printDateStart}
                     onClose={() => setShowPrintSummary(false)}
+                    activeOm={activeOm}
                 />
             )}
 

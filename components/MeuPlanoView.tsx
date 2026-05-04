@@ -717,7 +717,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                                 missions={requests}
                                 currentUser={user}
                                 onMissionUpdated={fetchMyRequests}
-                                onMissionDeleted={fetchMyRequests}
+                                onDelete={fetchMyRequests}
                                 isDarkMode={isDarkMode}
                             />
                         </div>
@@ -732,6 +732,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                     filteredStats={filteredStats}
                     hasActiveFilters={!!hasActiveFilters}
                     onClose={() => setShowPrintView(false)}
+                    om={user.om}
                 />
             )}
         </div>

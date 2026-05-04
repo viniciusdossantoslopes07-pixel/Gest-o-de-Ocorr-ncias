@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback, FC } from 'react';
-import { User, UserRole } from '../../types';
+import { User, UserRole, MilitaryOrganization } from '../../types';
 import { RANKS, getRankPriority } from '../../constants';
 import { useSectors } from '../../contexts/SectorsContext';
 import { supabase } from '../../services/supabase';
@@ -16,9 +16,19 @@ interface PersonnelManagementProps {
     onPermanentDeletePersonnel?: (id: string) => void;
     isDarkMode?: boolean;
     currentUserRole?: string;
+    activeOm?: MilitaryOrganization;
 }
 
-const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPersonnel, onUpdatePersonnel, onDeletePersonnel, onPermanentDeletePersonnel, isDarkMode = false, currentUserRole }) => {
+const PersonnelManagementView: FC<PersonnelManagementProps> = ({ 
+    users, 
+    onAddPersonnel, 
+    onUpdatePersonnel, 
+    onDeletePersonnel, 
+    onPermanentDeletePersonnel, 
+    isDarkMode = false, 
+    currentUserRole,
+    activeOm
+}) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -624,6 +634,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({ users, onAddPer
                     filterSector={filterSector}
                     activeUnitFilter={activeUnitFilter}
                     onClose={() => setShowPrintView(false)}
+                    om={activeOm}
                 />
             )}
 

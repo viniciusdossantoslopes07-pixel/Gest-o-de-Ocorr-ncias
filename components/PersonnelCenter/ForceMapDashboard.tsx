@@ -1,6 +1,6 @@
 
 import { useState, useMemo, FC } from 'react';
-import { DailyAttendance, User } from '../../types';
+import { DailyAttendance, User, MilitaryOrganization } from '../../types';
 import { PRESENCE_STATUS, RANKS } from '../../constants';
 import { useSectors } from '../../contexts/SectorsContext';
 import {
@@ -15,6 +15,7 @@ interface ForceMapProps {
     users: User[];
     attendanceHistory: DailyAttendance[];
     isDarkMode?: boolean;
+    activeOm?: MilitaryOrganization;
 }
 
 const OFICIAIS = ['ASP', '2T', '1T', 'CAP', 'MAJ', 'TEN CEL', 'CEL', 'BR', 'MB', 'TB'];
@@ -36,7 +37,7 @@ const STATUS_GROUPS = {
     NAO_INFO: { codes: ['N'], label: 'Não Informado', color: 'gray', icon: Eye },
 } as const;
 
-const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDarkMode = false }) => {
+const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDarkMode = false, activeOm }) => {
     // Filters
     const [selectedDate, setSelectedDate] = useState(() => {
         const d = new Date();
@@ -1051,6 +1052,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     statusBreakdown={statusBreakdown}
                     sectorBreakdown={sectorBreakdown}
                     onClose={() => setIsPrinting(false)}
+                    om={activeOm}
                 />
             )}
 

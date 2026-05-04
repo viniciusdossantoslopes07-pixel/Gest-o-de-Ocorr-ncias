@@ -33,7 +33,10 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
     const [omUsers, setOmUsers] = useState<User[]>([]);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
+    const [hostLogoFile, setHostLogoFile] = useState<File | null>(null);
+    const [hostLogoPreview, setHostLogoPreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const hostFileInputRef = useRef<HTMLInputElement>(null);
 
     // Stats
     const [stats, setStats] = useState<{
@@ -126,33 +129,44 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
             founded_at: selectedOm.founded_at || ''
         });
         setLogoPreview(selectedOm.logo_url || null);
+        setHostLogoPreview(selectedOm.host_logo_url || null);
         setIsEditing(true);
     };
 
-    const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>, type: 'om' | 'host') => {
         const file = e.target.files?.[0];
         if (!file) return;
         if (!file.type.startsWith('image/')) {
             alert('Por favor, selecione apenas imagens.');
             return;
         }
-        setLogoFile(file);
-        const reader = new FileReader();
-        reader.onload = (ev) => setLogoPreview(ev.target?.result as string);
-        reader.readAsDataURL(file);
+        
+        if (type === 'om') {
+            setLogoFile(file);
+            const reader = new FileReader();
+            reader.onload = (ev) => setLogoPreview(ev.target?.result as string);
+            reader.readAsDataURL(file);
+        } else {
+            setHostLogoFile(file);
+            const reader = new FileReader();
+            reader.onload = (ev) => setHostLogoPreview(ev.target?.result as string);
+            reader.readAsDataURL(file);
+        }
     };
 
-    const uploadLogo = async (omId: string): Promise<string | null> => {
-        if (!logoFile) return null;
+    const uploadLogo = async (omId: string, type: 'om' | 'host'): Promise<string | null> => {
+        const file = type === 'om' ? logoFile : hostLogoFile;
+        if (!file) return null;
         try {
-            const ext = logoFile.name.split('.').pop();
-            const filePath = `${omId}/logo_${Date.now()}.${ext}`;
-            const { error } = await supabase.storage.from('om_logos').upload(filePath, logoFile, { upsert: true });
+            const ext = file.name.split('.').pop();
+            const prefix = type === 'om' ? 'logo' : 'host_logo';
+            const filePath = `${omId}/${prefix}_${Date.now()}.${ext}`;
+            const { error } = await supabase.storage.from('om_logos').upload(filePath, file, { upsert: true });
             if (error) throw error;
             const { data } = supabase.storage.from('om_logos').getPublicUrl(filePath);
             return data.publicUrl;
         } catch (err) {
-            console.error('Error uploading logo:', err);
+            console.error(`Error uploading ${type} logo:`, err);
             return null;
         }
     };
@@ -218,7 +232,8 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                     founded_at: omForm.founded_at || null,
                     latitude: coords?.lat || null,
                     longitude: coords?.lon || null,
-                    logo_url: finalLogoUrl
+                    logo_url: finalLogoUrl,
+                    host_logo_url: hostLogoFile ? await uploadLogo(selectedOm.id, 'host') : hostLogoPreview
                 }).eq('id', selectedOm.id);
 
                 if (error) throw error;
@@ -240,10 +255,13 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
 
                 if (error) throw error;
 
-                if (logoFile && newOm) {
-                    const url = await uploadLogo(newOm.id);
-                    if (url) {
-                        await supabase.from('military_organizations').update({ logo_url: url }).eq('id', newOm.id);
+                if ((logoFile || hostLogoFile) && newOm) {
+                    const updates: any = {};
+                    if (logoFile) updates.logo_url = await uploadLogo(newOm.id, 'om');
+                    if (hostLogoFile) updates.host_logo_url = await uploadLogo(newOm.id, 'host');
+                    
+                    if (Object.keys(updates).length > 0) {
+                        await supabase.from('military_organizations').update(updates).eq('id', newOm.id);
                     }
                 }
                 alert('OM cadastrada com sucesso!');
@@ -253,6 +271,8 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
             setOmForm({ name: '', acronym: '', address: '', zip_code: '', host_unit: '', url: '', commander_id: '', founded_at: '' });
             setLogoFile(null);
             setLogoPreview(null);
+            setHostLogoFile(null);
+            setHostLogoPreview(null);
             fetchOms();
         } catch (err: any) {
             console.error('Error saving OM:', err);
@@ -488,7 +508,10 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                     <div className="absolute top-6 left-6 right-6 md:left-auto md:w-80 p-6 bg-slate-900/90 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] z-10 shadow-2xl animate-in zoom-in-95">
                                         <div className="flex items-center justify-between mb-4">
                                             <div className="flex items-center gap-3">
-                                                {selectedOm.logo_url && <img src={selectedOm.logo_url} className="w-10 h-10 object-contain bg-white rounded-lg p-1" />}
+                                                <div className="flex -space-x-2">
+                                                    {selectedOm.logo_url && <img src={selectedOm.logo_url} className="w-10 h-10 object-contain bg-white rounded-lg p-1 border border-white/20 relative z-10" />}
+                                                    {selectedOm.host_logo_url && <img src={selectedOm.host_logo_url} className="w-10 h-10 object-contain bg-white rounded-lg p-1 border border-white/20" />}
+                                                </div>
                                                 <div>
                                                     <div className="flex items-center gap-2">
                                                         <h4 className="text-lg font-black text-white uppercase tracking-tighter">{selectedOm.acronym}</h4>
@@ -614,22 +637,44 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                 </button>
                             </div>
                             <form onSubmit={handleSaveOm} className="space-y-6">
-                                <div className="flex flex-col items-center justify-center mb-6">
-                                    <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleLogoSelect} />
-                                    <button
-                                        type="button"
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className="relative w-32 h-32 rounded-[2rem] border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center overflow-hidden hover:border-blue-500 transition-all group"
-                                    >
-                                        {logoPreview ? (
-                                            <img src={logoPreview} alt="Preview" className="w-full h-full object-contain bg-white" />
-                                        ) : (
-                                            <div className="flex flex-col items-center text-slate-400 group-hover:text-blue-500">
-                                                <ImagePlus className="w-8 h-8 mb-1" />
-                                                <span className="text-[9px] font-black uppercase tracking-widest">Logo OM</span>
-                                            </div>
-                                        )}
-                                    </button>
+                                <div className="grid grid-cols-2 gap-8 mb-6">
+                                    <div className="flex flex-col items-center">
+                                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => handleLogoSelect(e, 'om')} />
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="relative w-28 h-28 rounded-[2rem] border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center overflow-hidden hover:border-blue-500 transition-all group"
+                                        >
+                                            {logoPreview ? (
+                                                <img src={logoPreview} alt="Preview" className="w-full h-full object-contain bg-white" />
+                                            ) : (
+                                                <div className="flex flex-col items-center text-slate-400 group-hover:text-blue-500">
+                                                    <ImagePlus className="w-6 h-6 mb-1" />
+                                                    <span className="text-[8px] font-black uppercase tracking-widest">Logo OM</span>
+                                                </div>
+                                            )}
+                                        </button>
+                                        <p className="text-[8px] font-black uppercase tracking-widest text-slate-500 mt-2">Símbolo da Unidade</p>
+                                    </div>
+
+                                    <div className="flex flex-col items-center">
+                                        <input type="file" ref={hostFileInputRef} className="hidden" accept="image/*" onChange={(e) => handleLogoSelect(e, 'host')} />
+                                        <button
+                                            type="button"
+                                            onClick={() => hostFileInputRef.current?.click()}
+                                            className="relative w-28 h-28 rounded-[2rem] border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center overflow-hidden hover:border-blue-500 transition-all group"
+                                        >
+                                            {hostLogoPreview ? (
+                                                <img src={hostLogoPreview} alt="Preview" className="w-full h-full object-contain bg-white" />
+                                            ) : (
+                                                <div className="flex flex-col items-center text-slate-400 group-hover:text-blue-500">
+                                                    <ImagePlus className="w-6 h-6 mb-1" />
+                                                    <span className="text-[8px] font-black uppercase tracking-widest">Logo Sede</span>
+                                                </div>
+                                            )}
+                                        </button>
+                                        <p className="text-[8px] font-black uppercase tracking-widest text-slate-500 mt-2">Símbolo Sediadora</p>
+                                    </div>
                                 </div>
                                 
                                 <div className="space-y-4">

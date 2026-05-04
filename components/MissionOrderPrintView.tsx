@@ -3,6 +3,7 @@ import { type FC, useEffect } from 'react';
 import { MissionOrder, User } from '../types';
 import { X, Printer, FileDown, FileSignature, Zap, Mail, Eye } from 'lucide-react';
 import { formatDisplayDate } from '../utils/formatters';
+import { OmPrintHeader } from './Common/OmPrintHeader';
 
 interface MissionOrderPrintViewProps {
     order: MissionOrder;
@@ -140,16 +141,7 @@ ${content.outerHTML}
                 <div className="flex-1 overflow-auto p-4 sm:p-12 bg-slate-50/30 print:p-0 print:bg-white print:overflow-visible">
                     <div id="omis-print-content" className="bg-white shadow-sm print:shadow-none mx-auto max-w-[21cm] p-6 sm:p-12 border border-slate-100 print:border-none print:p-0 min-h-full">
                         {/* Header with Logos */}
-                        <div className="flex items-start justify-between mb-4 border-b-2 border-slate-900 pb-3">
-                            <img src={currentUser?.om?.logo_url || "/logo_basp_optimized.png"} alt="Logo OM" className="w-14 h-14 sm:w-16 sm:h-16 object-contain" />
-                            <div className="flex-1 text-center px-2">
-                                <h1 className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">Ministério da Defesa</h1>
-                                <h1 className="text-sm sm:text-lg font-black uppercase text-slate-900 leading-tight">Comando da Aeronáutica</h1>
-                                <h2 className="text-[11px] sm:text-sm font-black uppercase text-slate-800 tracking-wide mt-1">{currentUser?.om?.name || "BASE AÉREA DE SÃO PAULO"}</h2>
-                                <h3 className="text-[9px] sm:text-xs font-bold uppercase text-slate-700 leading-tight">{currentUser?.om?.acronym || "GSD-SP"}</h3>
-                            </div>
-                            <img src="/logo_gsd.png" alt="Logo Secundário" className="w-14 h-14 sm:w-16 sm:h-16 object-contain" />
-                        </div>
+                        <OmPrintHeader om={currentUser?.om} />
 
                         {/* Basic Info Table */}
                         {order.mission === 'SOBREAVISO' && (

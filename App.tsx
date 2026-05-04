@@ -1725,6 +1725,7 @@ const App: FC = () => {
             <PersonnelManagementView 
               users={users} 
               isDarkMode={isDarkMode} 
+              activeOm={currentUser?.om}
               onAddPersonnel={(u) => {
                 handleCreateUser({
                   ...u,

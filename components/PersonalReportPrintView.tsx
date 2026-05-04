@@ -1,6 +1,7 @@
 
 import { type FC } from 'react';
-import { User } from '../types';
+import { User, MilitaryOrganization } from '../types';
+import { OmPrintHeader } from './Common/OmPrintHeader';
 import { X, Printer, Shield, CheckCircle2, Package, Calendar, MapPin } from 'lucide-react';
 
 interface PersonalReportPrintViewProps {
@@ -9,6 +10,7 @@ interface PersonalReportPrintViewProps {
     filteredStats: any;
     hasActiveFilters: boolean;
     onClose: () => void;
+    om?: MilitaryOrganization;
 }
 
 const PersonalReportPrintView: FC<PersonalReportPrintViewProps> = ({
@@ -16,7 +18,8 @@ const PersonalReportPrintView: FC<PersonalReportPrintViewProps> = ({
     stats,
     filteredStats,
     hasActiveFilters,
-    onClose
+    onClose,
+    om
 }) => {
     const handlePrint = () => {
         window.print();
@@ -54,19 +57,7 @@ const PersonalReportPrintView: FC<PersonalReportPrintViewProps> = ({
                     <div className="bg-white shadow-xl print:shadow-none mx-auto p-8 print:p-8 min-h-full max-w-[210mm] print:max-w-none mb-8 print:mb-0">
 
                         {/* Standard Military Header */}
-                        <div className="flex items-start justify-between mb-4 border-b-2 border-slate-900 pb-4">
-                            <img src="/logo_basp_optimized.png" alt="Logo BASP" className="w-16 h-16 object-contain" />
-                            <div className="flex-1 text-center">
-                                <h1 className="text-[10px] font-bold uppercase tracking-widest text-slate-600 mb-0.5">Ministério da Defesa</h1>
-                                <h1 className="text-base font-black uppercase tracking-tight">Comando da Aeronáutica</h1>
-                                <h2 className="text-sm font-bold uppercase tracking-wide">BASP — Base Aérea de São Paulo</h2>
-                                <h3 className="text-xs font-bold uppercase text-slate-700">Grupo de Segurança e Defesa de São Paulo</h3>
-                                <div className="mt-2 inline-block px-3 py-0.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded">
-                                    Relatório Operacional Individual
-                                </div>
-                            </div>
-                            <img src="/logo_gsd.png" alt="Logo GSD-SP" className="w-16 h-16 object-contain" />
-                        </div>
+                        <OmPrintHeader om={om} />
 
                         {/* Personal Info Grid */}
                         <div className="grid grid-cols-3 gap-6 mb-6">

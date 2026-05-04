@@ -1180,7 +1180,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
 
                 {/* 4. Estatísticas */}
                 {activeTab === 'estatisticas' && (
-                    <MissionStatistics orders={orders} missions={missions} users={users} isDarkMode={isDarkMode} />
+                    <MissionStatistics orders={orders} missions={missions} users={users} isDarkMode={isDarkMode} activeOm={user.om} />
                 )}
 
                 {/* 5. Solicitar Missão */}
