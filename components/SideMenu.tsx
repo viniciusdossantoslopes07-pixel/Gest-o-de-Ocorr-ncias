@@ -345,7 +345,7 @@ export default function SideMenu({
                         </div>
                         {!isCollapsed && (
                             <h1 className="text-lg font-black italic tracking-tighter whitespace-nowrap text-white group-hover:text-blue-400 transition-colors">
-                                GUARDIÃO <span className="not-italic ml-1">{urlOm || currentUser?.workplace || 'GSD-SP'}</span>
+                                GUARDIÃO <span className="not-italic ml-1">{oms.find(o => o.id === omId)?.acronym || urlOm || currentUser?.workplace || 'GSD-SP'}</span>
                             </h1>
                         )}
                     </div>

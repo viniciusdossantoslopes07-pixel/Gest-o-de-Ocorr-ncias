@@ -243,6 +243,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
 
                 if (error) throw error;
                 if (updatedOm) setSelectedOm(updatedOm);
+                await fetchOms(); // Refresh the list
                 alert('OM atualizada com sucesso!');
                 setIsEditing(false);
                 setViewMode('dashboard');

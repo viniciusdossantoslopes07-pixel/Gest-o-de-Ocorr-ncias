@@ -2,6 +2,7 @@ import { type FC } from 'react';
 import { Printer, X, Users, MapPin, Calendar, CheckCircle, AlertCircle } from 'lucide-react';
 import { AccessEvent } from '../../../types';
 import { formatDisplayDate } from '../../../utils/formatters';
+import { useSectors } from '../../../contexts/SectorsContext';
 
 interface EventPrintViewProps {
     event: AccessEvent;
@@ -9,6 +10,8 @@ interface EventPrintViewProps {
 }
 
 const EventPrintView: FC<EventPrintViewProps> = ({ event, onClose }) => {
+    const { oms, omId } = useSectors();
+    const activeOm = oms.find(o => o.id === omId);
     const handlePrint = () => {
         const originalTitle = document.title;
         try {
@@ -106,17 +109,17 @@ const EventPrintView: FC<EventPrintViewProps> = ({ event, onClose }) => {
 
                         {/* Standard Military Header */}
                         <div className="flex items-start justify-between mb-5 border-b-2 border-slate-900 pb-3 print-section">
-                            <img src="/logo_basp_optimized.png" alt="Logo BASP" className="w-14 h-14 object-contain" />
+                            <img src={activeOm?.host_logo_url || "/logo_basp_optimized.png"} alt="Logo Sediadora" className="w-14 h-14 object-contain" />
                             <div className="flex-1 text-center">
                                 <h1 className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">Ministério da Defesa</h1>
                                 <h1 className="text-sm font-black uppercase tracking-tight">Comando da Aeronáutica</h1>
-                                <h2 className="text-xs font-bold uppercase tracking-wide">Base Aérea de São Paulo</h2>
-                                <h3 className="text-[10px] font-bold uppercase text-slate-700">Grupo de Segurança e Defesa de São Paulo</h3>
+                                <h2 className="text-xs font-bold uppercase tracking-wide">{activeOm?.host_unit || "Base Aérea de São Paulo"}</h2>
+                                <h3 className="text-[10px] font-bold uppercase text-slate-700">{activeOm?.name || "Grupo de Segurança e Defesa de São Paulo"}</h3>
                                 <div className="mt-1.5 inline-block px-3 py-0.5 bg-slate-900 text-white text-[8px] font-black uppercase tracking-[0.2em] rounded">
                                     Controle de Acesso - Relação de Evento
                                 </div>
                             </div>
-                            <img src="/logo_gsd.png" alt="Logo GSD-SP" className="w-14 h-14 object-contain" />
+                            <img src={activeOm?.logo_url || "/logo_gsd.png"} alt="Logo OM" className="w-14 h-14 object-contain" />
                         </div>
 
                         {/* Document Info */}
@@ -205,7 +208,7 @@ const EventPrintView: FC<EventPrintViewProps> = ({ event, onClose }) => {
                         </div>
 
                         <div className="mt-10 pt-4 border-t border-dashed border-slate-300 text-center text-[6px] text-slate-400 uppercase tracking-widest font-bold">
-                            Documento gerado eletronicamente pelo Sistema Guardião GSD-SP em {new Date().toLocaleString('pt-BR')} — Válido apenas para o dia programado do evento.
+                            Documento gerado eletronicamente pelo Sistema Guardião ${activeOm?.acronym || 'GSD-SP'} em {new Date().toLocaleString('pt-BR')} — Válido apenas para o dia programado do evento.
                         </div>
                     </div>
                 </div>

@@ -1,5 +1,6 @@
 import { type FC } from 'react';
 import { X, Printer, List } from 'lucide-react';
+import { useSectors } from '../../contexts/SectorsContext';
 
 interface AccessRecord {
     id: string;
@@ -31,6 +32,8 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
     searchQuery,
     onClose
 }) => {
+    const { oms, omId } = useSectors();
+    const activeOm = oms.find(o => o.id === omId);
 
     const buildTableRows = () => records.map((r, idx) => {
         const date = new Date(r.timestamp).toLocaleDateString('pt-BR');
@@ -89,7 +92,7 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Relatório de Controle de Acesso — GSD-SP</title>
+    <title>Relatório de Controle de Acesso — ${activeOm?.acronym || 'GSD-SP'}</title>
     <style>
         @page { size: A4; margin: 10mm 12mm; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -229,15 +232,15 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
 
         <!-- CABEÇALHO -->
         <div class="header">
-            <img src="${origin}/logo_basp_optimized.png" alt="BASP" />
+            <img src="${activeOm?.host_logo_url || '/logo_basp_optimized.png'}" alt="Logo Unidade Sediadora" />
             <div class="header-center">
                 <div class="ministry">Ministério da Defesa</div>
                 <div class="cmd">Comando da Aeronáutica</div>
-                <div class="base">BASP — Base Aérea de São Paulo</div>
-                <div class="gsd">Grupo de Segurança e Defesa de São Paulo</div>
+                <div class="base">${activeOm?.host_unit || 'Base Aérea de São Paulo'}</div>
+                <div class="gsd">${activeOm?.name || 'Grupo de Segurança e Defesa de São Paulo'}</div>
                 <span class="badge">Relatório de Controle de Acesso</span>
             </div>
-            <img src="${origin}/logo_gsd.png" alt="GSD-SP" />
+            <img src="${activeOm?.logo_url || '/logo_gsd.png'}" alt="Logo OM" />
         </div>
 
         <!-- FILTROS -->
@@ -310,7 +313,7 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
         </div>
 
         <div class="doc-footer">
-            Documento gerado eletronicamente pelo Sistema Guardião GSD-SP em ${new Date().toLocaleString('pt-BR')}
+            Documento gerado eletronicamente pelo Sistema Guardião ${activeOm?.acronym || 'GSD-SP'} em ${new Date().toLocaleString('pt-BR')}
         </div>
 
     </div>
@@ -365,17 +368,17 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
 
                         {/* Cabeçalho */}
                         <div className="flex items-start justify-between mb-5 border-b-2 border-slate-900 pb-5">
-                            <img src="/logo_basp_optimized.png" alt="Logo BASP" className="w-16 h-16 object-contain" />
+                            <img src={activeOm?.host_logo_url || "/logo_basp_optimized.png"} alt="Logo BASP" className="w-16 h-16 object-contain" />
                             <div className="flex-1 text-center">
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">Ministério da Defesa</p>
                                 <h1 className="text-base font-black uppercase tracking-tight">Comando da Aeronáutica</h1>
-                                <h2 className="text-sm font-bold uppercase tracking-wide">BASP — Base Aérea de São Paulo</h2>
-                                <h3 className="text-xs font-bold uppercase text-slate-700">Grupo de Segurança e Defesa de São Paulo</h3>
+                                <h2 className="text-sm font-bold uppercase tracking-wide">{activeOm?.host_unit || "BASP — Base Aérea de São Paulo"}</h2>
+                                <h3 className="text-xs font-bold uppercase text-slate-700">{activeOm?.name || "Grupo de Segurança e Defesa de São Paulo"}</h3>
                                 <div className="mt-2 inline-block px-3 py-0.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded">
                                     Relatório de Controle de Acesso
                                 </div>
                             </div>
-                            <img src="/logo_gsd.png" alt="Logo GSD-SP" className="w-16 h-16 object-contain" />
+                            <img src={activeOm?.logo_url || "/logo_gsd.png"} alt="Logo OM" className="w-16 h-16 object-contain" />
                         </div>
 
                         {/* Filtros */}
@@ -480,7 +483,7 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
                         </div>
 
                         <div className="mt-10 text-center text-[7px] text-slate-400 uppercase tracking-widest font-bold">
-                            Documento gerado eletronicamente pelo Sistema Guardião GSD-SP em {new Date().toLocaleString('pt-BR')}
+                            Documento gerado eletronicamente pelo Sistema Guardião ${activeOm?.acronym || 'GSD-SP'} em {new Date().toLocaleString('pt-BR')}
                         </div>
                     </div>
                 </div>

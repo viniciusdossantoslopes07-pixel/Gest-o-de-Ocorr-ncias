@@ -10,6 +10,7 @@ import {
 import { analyzeOccurrenceWithAI } from '../services/geminiService';
 import { Combobox } from './Combobox';
 import { PERMISSIONS, hasPermission } from '../constants/permissions';
+import { useSectors } from '../contexts/SectorsContext';
 
 interface OccurrenceDetailProps {
   occurrence: Occurrence;
@@ -23,6 +24,8 @@ interface OccurrenceDetailProps {
 const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
   occurrence, user, onClose, onUpdateStatus, onUpdateOccurrence, users = []
 }) => {
+  const { oms, omId } = useSectors();
+  const activeOm = oms.find(o => o.id === omId);
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [comment, setComment] = useState('');
@@ -105,8 +108,8 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
         </head>
         <body>
           <div class="header">
-            <img src="/logo_gsd.png" alt="Logo GSD-SP" style="width: 80px; height: auto; margin-bottom: 10px;" />
-            <h1>GUARDIÃO GSD-SP - SISTEMA DE DEFESA</h1>
+            <img src="${activeOm?.logo_url || '/logo_gsd.png'}" alt="Logo OM" style="width: 80px; height: auto; margin-bottom: 10px;" />
+            <h1>GUARDIÃO ${activeOm?.acronym || 'GSD-SP'} - SISTEMA DE DEFESA</h1>
             <p>RELATÓRIO TÉCNICO DE OCORRÊNCIA PARA O COMANDO DA UNIDADE</p>
             <p style="font-size: 12px; margin-top: 10px;">ID: ${occurrence.id}</p>
           </div>
