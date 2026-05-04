@@ -130,14 +130,9 @@ const HomeView: React.FC<HomeViewProps> = ({
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4 lg:gap-6">
-              <div className="bg-white p-1.5 rounded-[1.2rem] lg:rounded-[2rem] w-12 h-12 lg:w-28 lg:h-28 flex items-center justify-center overflow-hidden shadow-2xl ring-2 lg:ring-8 ring-white/5 group-hover:ring-white/10 transition-all duration-700">
+              <div className="bg-white p-1.5 rounded-[1.2rem] lg:rounded-[2rem] w-10 h-10 lg:w-24 lg:h-24 flex items-center justify-center overflow-hidden shadow-2xl ring-2 lg:ring-8 ring-white/5 group-hover:ring-white/10 transition-all duration-700">
                 <img src={activeOm?.logo_url || "/logo_gsd.jpg"} alt={`Logo ${activeOm?.acronym || 'GSD-SP'}`} className="w-full h-full object-cover scale-110" />
               </div>
-              {activeOm?.host_logo_url && (
-                <div className="bg-white/10 p-1.5 rounded-[1.2rem] lg:rounded-[2rem] w-10 h-10 lg:w-20 lg:h-20 flex items-center justify-center overflow-hidden shadow-xl ring-2 ring-white/5 group-hover:ring-white/10 transition-all duration-700 backdrop-blur-md">
-                  <img src={activeOm.host_logo_url} alt="Logo Sediadora" className="w-full h-full object-contain" />
-                </div>
-              )}
               <div>
                 <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 mb-1">
                   <span className="bg-white/10 px-2 lg:px-3 py-0.5 lg:py-1 rounded-full border border-white/20 flex items-center w-fit">

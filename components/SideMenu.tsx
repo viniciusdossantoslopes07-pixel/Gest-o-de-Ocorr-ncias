@@ -336,7 +336,7 @@ export default function SideMenu({
                         onClick={() => { setActiveTab('home'); if (window.innerWidth < 1024) onClose(); }}
                         className={`flex items-center gap-3 mb-8 overflow-hidden cursor-pointer hover:opacity-80 transition-all active:scale-95 group ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                        <div className="shrink-0 relative w-12 h-12 rounded-full overflow-hidden shadow-md ring-2 ring-white/10 group-hover:ring-blue-500/50 transition-all">
+                        <div className="shrink-0 relative w-10 h-10 rounded-full overflow-hidden shadow-md ring-2 ring-white/10 group-hover:ring-blue-500/50 transition-all">
                             {(() => {
                                 const activeOm = oms.find(o => o.id === omId);
                                 const logoSrc = activeOm?.logo_url || '/logo_gsd.png';
