@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { supabase } from '../services/supabase';
-import { Car, X, CheckCircle, Send, Upload, AlertCircle, Loader2 } from 'lucide-react';
+import { Car, X, CheckCircle, Send, Upload, AlertCircle, Loader2, Building2 } from 'lucide-react';
+import { useSectors } from './contexts/SectorsContext';
 
 interface ParkingRequestModalProps {
     isOpen: boolean;
     onClose: () => void;
     isDarkMode?: boolean;
+    initialOmId?: string | null;
 }
 
 // 10 MB em bytes
@@ -55,12 +57,14 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
     const [parkSuccess, setParkSuccess] = useState(false);
     const [parkProto, setParkProto] = useState('');
 
+    const { oms } = useSectors();
     const [parkData, setParkData] = useState({
         nome: '',
         posto: '',
         forca: 'FAB',
         tipo: 'Militar',
         om: '',
+        om_id: initialOmId || '',
         telefone: '',
         email: '',
         identidade: '',
@@ -110,7 +114,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
         setError('');
 
         // 1. Campos obrigatórios
-        if (!parkData.nome.trim() || !parkData.marcaModelo.trim() || !parkData.placa.trim() || !parkData.inicio || !parkData.termino || !parkData.email.trim()) {
+        if (!parkData.nome.trim() || !parkData.marcaModelo.trim() || !parkData.placa.trim() || !parkData.inicio || !parkData.termino || !parkData.email.trim() || !parkData.om_id) {
             setError('Preencha todos os campos obrigatórios (marcados com *).');
             return;
         }
@@ -191,6 +195,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                 telefone: parkData.telefone,
                 email: parkData.email.trim().toLowerCase(),
                 identidade: parkData.identidade.trim().toUpperCase() || null,
+                om_id: parkData.om_id || null,
                 ext_marca_modelo: parkData.marcaModelo.trim().toUpperCase(),
                 ext_placa: parkData.placa.trim().toUpperCase(),
                 ext_cor: parkData.cor.trim().toUpperCase(),
@@ -220,7 +225,11 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
     const handleClose = () => {
         if (isLoading) return; // bloqueia fechar enquanto envia
         setParkSuccess(false);
-        setParkData({ nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', telefone: '', email: '', identidade: '', marcaModelo: '', placa: '', cor: '', inicio: '', termino: '', obs: '', isThirdParty: false, thirdPartyName: '', thirdPartyContact: '' });
+        setParkData({ 
+            nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', om_id: initialOmId || '',
+            telefone: '', email: '', identidade: '', marcaModelo: '', placa: '', cor: '', 
+            inicio: '', termino: '', obs: '', isThirdParty: false, thirdPartyName: '', thirdPartyContact: '' 
+        });
         setIdentityFile(null);
         setCnhFile(null);
         setCrlvFile(null);
@@ -358,8 +367,26 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                                             </select>
                                         </div>
                                         <div className="space-y-1">
-                                            <label className={label}>OM / Órgão</label>
-                                            <input placeholder="BASP..." value={parkData.om} onChange={e => setParkData({ ...parkData, om: e.target.value })} style={{ textTransform: 'uppercase' }} className={input} disabled={isLoading} />
+                                            <label className={label}>Destino / Unidade Requisitada *</label>
+                                            <select 
+                                                value={parkData.om_id} 
+                                                onChange={e => {
+                                                    const selected = oms.find(o => o.id === e.target.value);
+                                                    setParkData({ ...parkData, om_id: e.target.value, om: selected?.acronym || '' });
+                                                }} 
+                                                className={`${input} appearance-none`}
+                                                disabled={isLoading}
+                                            >
+                                                <option value="">Selecione a Unidade...</option>
+                                                {oms.map(o => (
+                                                    <option key={o.id} value={o.id}>{o.acronym} - {o.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <label className={label}>Sua OM / Órgão</label>
+                                            <input placeholder="Ex: BASP, PMSP, Civil..." value={parkData.om} onChange={e => setParkData({ ...parkData, om: e.target.value })} style={{ textTransform: 'uppercase' }} className={input} disabled={isLoading} />
                                         </div>
                                     </div>
 

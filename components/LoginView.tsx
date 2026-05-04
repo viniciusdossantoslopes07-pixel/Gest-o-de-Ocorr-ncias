@@ -21,7 +21,7 @@ interface LoginViewProps {
 }
 
 const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, onViewEvents, onRequestPasswordReset, onForcePasswordReset, isDarkMode, urlOm }) => {
-  const { sectorNames, oms } = useSectors();
+  const { sectorNames, oms, omId } = useSectors();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -537,7 +537,12 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
       )}
 
       {/* Parking Request Modal */}
-      <ParkingRequestModal isOpen={showParkingModal} onClose={() => setShowParkingModal(false)} isDarkMode={isDarkMode} />
+      <ParkingRequestModal 
+        isOpen={showParkingModal} 
+        onClose={() => setShowParkingModal(false)} 
+        isDarkMode={isDarkMode} 
+        initialOmId={omId}
+      />
     </div>
   );
 };
