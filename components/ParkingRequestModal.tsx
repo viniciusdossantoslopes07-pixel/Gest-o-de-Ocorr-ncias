@@ -79,6 +79,28 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
         thirdPartyContact: ''
     });
 
+    // Efeito para definir a OM automaticamente com base no link ou fallback para GSD-SP
+    React.useEffect(() => {
+        if (oms.length > 0) {
+            let targetOm;
+            if (initialOmId) {
+                targetOm = oms.find(o => o.id === initialOmId);
+            } else {
+                // Fallback para GSD-SP se estiver no domínio raiz sem parâmetro ?om=
+                targetOm = oms.find(o => o.acronym === 'GSD-SP');
+            }
+
+            if (targetOm) {
+                setParkData(prev => ({
+                    ...prev,
+                    om_id: targetOm!.id,
+                    // Note: 'om' aqui no estado original parece ser usado para a OM de ORIGEM do militar (Sua OM / Órgão)
+                    // mas para garantir que o om_id seja o da OM de DESTINO (alocação), mantemos o om_id sincronizado.
+                }));
+            }
+        }
+    }, [initialOmId, oms]);
+
     const [identityFile, setIdentityFile] = useState<File | null>(null);
     const [cnhFile, setCnhFile] = useState<File | null>(null);
     const [crlvFile, setCrlvFile] = useState<File | null>(null);
@@ -366,24 +388,6 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                                                 <option>Civil</option><option>Outro</option>
                                             </select>
                                         </div>
-                                        <div className="space-y-1">
-                                            <label className={label}>Destino / Unidade Requisitada *</label>
-                                            <select 
-                                                value={parkData.om_id} 
-                                                onChange={e => {
-                                                    const selected = oms.find(o => o.id === e.target.value);
-                                                    setParkData({ ...parkData, om_id: e.target.value, om: selected?.acronym || '' });
-                                                }} 
-                                                className={`${input} appearance-none`}
-                                                disabled={isLoading}
-                                            >
-                                                <option value="">Selecione a Unidade...</option>
-                                                {oms.map(o => (
-                                                    <option key={o.id} value={o.id}>{o.acronym} - {o.name}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-
                                         <div className="space-y-1">
                                             <label className={label}>Sua OM / Órgão</label>
                                             <input placeholder="Ex: BASP, PMSP, Civil..." value={parkData.om} onChange={e => setParkData({ ...parkData, om: e.target.value })} style={{ textTransform: 'uppercase' }} className={input} disabled={isLoading} />
