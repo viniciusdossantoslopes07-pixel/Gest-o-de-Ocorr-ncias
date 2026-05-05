@@ -114,6 +114,7 @@ const App: FC = () => {
     return null;
   });
   const { omId, setOmId } = useSectors();
+  const [activeOm, setActiveOm] = useState<MilitaryOrganization | null>(null);
 
   const [urlOm, setUrlOm] = useState<string | null>(() => {
     const params = new URLSearchParams(window.location.search);
@@ -299,6 +300,72 @@ const App: FC = () => {
       localStorage.setItem('theme', 'light');
     }
   }, [isDarkMode]);
+
+  // Dynamic Metadata (Favicon, Title, OG Tags)
+  useEffect(() => {
+    const fetchActiveOm = async () => {
+      const actualOmId = getActualOmId();
+      if (!actualOmId || actualOmId === 'WAITING_CONTEXT') {
+        setActiveOm(null);
+        return;
+      }
+      
+      // Only fetch if omId actually changed to avoid redundant network calls
+      if (activeOm?.id === actualOmId) return;
+
+      const { data } = await supabase
+        .from('military_organizations')
+        .select('*')
+        .eq('id', actualOmId)
+        .single();
+        
+      if (data) {
+        setActiveOm(data as MilitaryOrganization);
+      }
+    };
+    
+    fetchActiveOm();
+  }, [omId, currentUser, urlOm, getActualOmId, activeOm]);
+
+  useEffect(() => {
+    if (activeOm) {
+      const acronym = activeOm.acronym || 'GSD-SP';
+      const name = activeOm.name || 'Grupo de Segurança e Defesa';
+      const logo = activeOm.logo_url || '/logo_gsd.png';
+      
+      const title = `Guardião ${acronym} - Sistema de Gestão`;
+      document.title = title;
+      
+      // Update Favicon
+      const favicon = document.querySelector('link[rel="icon"]');
+      const appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+      
+      if (favicon) favicon.setAttribute('href', logo);
+      if (appleIcon) appleIcon.setAttribute('href', logo);
+      
+      // Update Meta Tags (for sharing)
+      const updateMeta = (property: string, content: string, isProperty = true) => {
+        const attr = isProperty ? 'property' : 'name';
+        let element = document.querySelector(`meta[${attr}="${property}"]`);
+        if (!element) {
+          element = document.createElement('meta');
+          element.setAttribute(attr, property);
+          document.head.appendChild(element);
+        }
+        element.setAttribute('content', content);
+      };
+
+      updateMeta('og:title', `Guardião ${acronym}`);
+      updateMeta('og:description', `Sistema integrado de gestão militar: ${name}`);
+      updateMeta('og:image', logo);
+      updateMeta('description', `Sistema integrado de gestão militar: ${name}`, false);
+    } else {
+      // Default Fallback
+      document.title = 'Guardião GSD-SP - Sistema de Gestão';
+      const favicon = document.querySelector('link[rel="icon"]');
+      if (favicon) favicon.setAttribute('href', '/logo_gsd.png');
+    }
+  }, [activeOm]);
 
 
 
