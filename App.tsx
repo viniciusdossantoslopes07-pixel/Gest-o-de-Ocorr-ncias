@@ -115,15 +115,12 @@ const App: FC = () => {
   });
   const { omId, setOmId } = useSectors();
 
-  const [urlOm, setUrlOm] = useState<string | null>(null);
-
-  useEffect(() => {
+  const [urlOm, setUrlOm] = useState<string | null>(() => {
     const params = new URLSearchParams(window.location.search);
-    const om = params.get('om');
-    if (om) {
-      setUrlOm(om.toUpperCase());
-    }
-  }, []);
+    return params.get('om')?.toUpperCase() || null;
+  });
+
+  // urlOm is now initialized in state to avoid race conditions on first mount
 
   useEffect(() => {
     const applyOmContext = async () => {
@@ -137,7 +134,7 @@ const App: FC = () => {
           .single();
 
         if (omData) {
-          setOmId(omData.id);
+          if (omId !== omData.id) setOmId(omData.id);
           return;
         }
         
@@ -151,9 +148,9 @@ const App: FC = () => {
 
       // 2. Fallback to current user's OM if no URL OM or not found
       if (currentUser?.om_id) {
-        setOmId(currentUser.om_id);
+        if (omId !== currentUser.om_id) setOmId(currentUser.om_id);
       } else {
-        setOmId(null);
+        if (omId !== null) setOmId(null);
       }
     };
 
@@ -229,7 +226,14 @@ const App: FC = () => {
   }, [currentUser]);
 
   const { canRequestMission, canManageMissions, canManageUsers, canManageMaterial, canViewMaterialPanel, canManagePersonnel, canViewAttendance, canViewPersonnel, canViewAccessControl, canManageOccurrences, canViewServiceQueue, canViewDashboard } = permissions;
-
+  
+  // Helper centralizado para obter a OM correta considerando URL override
+  const getActualOmId = useCallback(() => {
+    // Se temos OM na URL mas ainda não carregamos o ID correspondente, 
+    // retornamos uma string nula para evitar o fallback precoce para a OM do usuário logado
+    if (urlOm && !omId) return 'WAITING_CONTEXT'; 
+    return omId || currentUser?.om_id;
+  }, [omId, urlOm, currentUser]);
 
   useEffect(() => {
     // Supabase connection health check removed to avoid 404 console errors with 'test' table
@@ -244,6 +248,11 @@ const App: FC = () => {
   // Fetch users when session is restored from localStorage (page refresh)
   useEffect(() => {
     if (currentUser && currentUser.role !== UserRole.PUBLIC) {
+      // Se existe OM na URL e o omId ainda está nulo ou é o padrão do usuário, aguardamos o applyOmContext
+      if (urlOm && (!omId || (omId === currentUser.om_id && urlOm !== currentUser.om?.acronym))) {
+          return;
+      }
+
       if (hasPermission(currentUser, PERMISSIONS.MANAGE_USERS) ||
         hasPermission(currentUser, PERMISSIONS.MANAGE_PERSONNEL) ||
         hasPermission(currentUser, PERMISSIONS.VIEW_PERSONNEL) ||
@@ -252,20 +261,23 @@ const App: FC = () => {
         fetchVacations();
       }
     }
-  }, [currentUser, omId]);
+  }, [currentUser, omId, urlOm]);
 
   const fetchVacations = async () => {
     let query = supabase
       .from('vacations')
       .select('*, periods:vacation_periods(*)');
     
-    const actualOmId = omId || currentUser?.om_id;
+    const actualOmId = getActualOmId();
+    if (actualOmId === 'WAITING_CONTEXT') return;
 
-    
     if (actualOmId && legacyIds.includes(actualOmId)) {
       query = query.in('om_id', legacyIds);
     } else if (actualOmId) {
       query = query.eq('om_id', actualOmId);
+    } else {
+      // Se não há OM nenhuma (nem usuário nem URL), não filtramos ou filtramos por vazio
+      query = query.eq('om_id', '00000000-0000-0000-0000-000000000000');
     }
     
 
@@ -409,13 +421,15 @@ const App: FC = () => {
       .select('id, title, type, category, status, urgency, date, location, description, creator, sector, assigned_to, attachments, timeline, sla_deadline, geolocation, om_id')
       .order('date', { ascending: false });
 
-    const actualOmId = omId || currentUser?.om_id;
-
+    const actualOmId = getActualOmId();
+    if (actualOmId === 'WAITING_CONTEXT') return;
 
     if (actualOmId && legacyIds.includes(actualOmId)) {
       query = query.in('om_id', legacyIds);
     } else if (actualOmId) {
       query = query.eq('om_id', actualOmId);
+    } else {
+      query = query.eq('om_id', '00000000-0000-0000-0000-000000000000');
     }
 
 
@@ -442,13 +456,15 @@ const App: FC = () => {
       .select('id, solicitante_id, status, dados_missao, data_criacao, parecer_sop, om_id')
       .order('data_criacao', { ascending: false });
 
-    const actualOmId = omId || currentUser?.om_id;
-
+    const actualOmId = getActualOmId();
+    if (actualOmId === 'WAITING_CONTEXT') return;
 
     if (actualOmId && legacyIds.includes(actualOmId)) {
       query = query.in('om_id', legacyIds);
     } else if (actualOmId) {
       query = query.eq('om_id', actualOmId);
+    } else {
+      query = query.eq('om_id', '00000000-0000-0000-0000-000000000000');
     }
 
 
@@ -761,13 +777,15 @@ const App: FC = () => {
   const fetchUsers = async () => {
     let query = supabase.from('users').select('*').order('display_order', { ascending: true });
     
-    const actualOmId = omId || currentUser?.om_id;
-
+    const actualOmId = getActualOmId();
+    if (actualOmId === 'WAITING_CONTEXT') return;
 
     if (actualOmId && legacyIds.includes(actualOmId)) {
       query = query.in('om_id', legacyIds);
     } else if (actualOmId) {
       query = query.eq('om_id', actualOmId);
+    } else {
+      query = query.eq('om_id', '00000000-0000-0000-0000-000000000000');
     }
 
 
@@ -825,7 +843,8 @@ const App: FC = () => {
 
   const fetchHistoricalAttendance = async (startDate: string, endDate: string) => {
     try {
-      const actualOmId = omId || currentUser?.om_id;
+      const actualOmId = getActualOmId();
+      if (actualOmId === 'WAITING_CONTEXT') return;
   
       
       let attendanceQuery = supabase
@@ -846,6 +865,9 @@ const App: FC = () => {
       } else if (actualOmId) {
         attendanceQuery = attendanceQuery.eq('om_id', actualOmId);
         justificationsQuery = justificationsQuery.eq('om_id', actualOmId);
+      } else {
+        attendanceQuery = attendanceQuery.eq('om_id', '00000000-0000-0000-0000-000000000000');
+        justificationsQuery = justificationsQuery.eq('om_id', '00000000-0000-0000-0000-000000000000');
       }
 
       const [attendanceRes, justificationsRes] = await Promise.all([
@@ -1301,13 +1323,15 @@ const App: FC = () => {
       .select('*')
       .order('created_at', { ascending: false });
 
-    const actualOmId = omId || currentUser?.om_id;
-
+    const actualOmId = getActualOmId();
+    if (actualOmId === 'WAITING_CONTEXT') return;
 
     if (actualOmId && legacyIds.includes(actualOmId)) {
       query = query.in('om_id', legacyIds);
     } else if (actualOmId) {
       query = query.eq('om_id', actualOmId);
+    } else {
+      query = query.eq('om_id', '00000000-0000-0000-0000-000000000000');
     }
 
     const { data, error } = await query;
