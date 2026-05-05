@@ -47,9 +47,11 @@ const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode =
         }
         
         const unitToUse = newSectorUnit || (oms.find(o => o.id === omId)?.acronym) || 'GSD-SP';
+        const selectedOm = oms.find(o => o.acronym === unitToUse);
+        const targetOmId = selectedOm?.id || omId;
 
         setIsAdding(true);
-        const { error } = await addSector(newSectorName, unitToUse);
+        const { error } = await addSector(newSectorName, unitToUse, targetOmId || undefined);
         setIsAdding(false);
         if (error) {
             setAddError(error);

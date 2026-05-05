@@ -26,7 +26,7 @@ interface SectorsContextValue {
     sectorNames: string[];
     loading: boolean;
     /** Cria um novo setor com o nome fornecido e a unidade (GSD-SP ou BASP) */
-    addSector: (name: string, unit: string) => Promise<{ error?: string }>;
+    addSector: (name: string, unit: string, targetOmId?: string) => Promise<{ error?: string }>;
     /** Desativa um setor. Usuários nele são movidos para sem-setor antes. */
     removeSector: (id: string) => Promise<{ error?: string }>;
     /** Recarrega setores do banco */
@@ -103,23 +103,33 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
     }, [fetchData, fetchSectors, fetchOms]);
 
 
-    const addSector = useCallback(async (name: string, unit: string): Promise<{ error?: string }> => {
+    const addSector = useCallback(async (name: string, unit: string, targetOmId?: string): Promise<{ error?: string }> => {
         const trimmed = name.trim().toUpperCase();
         if (!trimmed) return { error: 'Nome inválido.' };
 
-        // Verificar se já existe (mesmo inativo)
-        const { data: existing } = await supabase
-            .from('sectors')
-            .select('id, is_active')
-            .eq('name', trimmed)
-            .limit(1);
+        const effectiveOmId = targetOmId || omId;
+        if (!effectiveOmId) return { error: 'OM não identificada.' };
+
+        // Lógica de legado para GSD-SP e BASP (compartilham setores)
+        const legacyIds = ['e5418770-62bd-49d7-9229-a608e3a2895b', 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c'];
+        
+        // Verificar se já existe (mesmo inativo) nesta OM ou grupo de legado
+        let query = supabase.from('sectors').select('id, is_active').eq('name', trimmed);
+        
+        if (legacyIds.includes(effectiveOmId)) {
+            query = query.in('om_id', legacyIds);
+        } else {
+            query = query.eq('om_id', effectiveOmId);
+        }
+
+        const { data: existing } = await query.limit(1);
 
         if (existing && existing.length > 0) {
-            if (existing[0].is_active) return { error: 'Setor já existe.' };
+            if (existing[0].is_active) return { error: 'Setor já existe nesta unidade.' };
             // Reativar setor inativo
             const { error } = await supabase
                 .from('sectors')
-                .update({ is_active: true })
+                .update({ is_active: true, om_id: effectiveOmId, unit }) // Atualiza para a OM/Unidade atual ao reativar
                 .eq('id', existing[0].id);
             if (error) return { error: error.message };
             await fetchSectors();
@@ -129,12 +139,18 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
         const maxOrder = sectors.length > 0 ? Math.max(...sectors.map(s => s.display_order)) : 0;
         const { error } = await supabase
             .from('sectors')
-            .insert([{ name: trimmed, unit, display_order: maxOrder + 1, is_active: true, om_id: omId }]);
+            .insert([{ 
+                name: trimmed, 
+                unit, 
+                display_order: maxOrder + 1, 
+                is_active: true, 
+                om_id: effectiveOmId 
+            }]);
 
         if (error) return { error: error.message };
         await fetchSectors();
         return {};
-    }, [sectors, fetchSectors]);
+    }, [sectors, fetchSectors, omId]);
 
     const removeSector = useCallback(async (id: string): Promise<{ error?: string }> => {
         const sector = sectors.find(s => s.id === id);
