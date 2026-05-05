@@ -49,21 +49,21 @@ function getDynamicHtml(om) {
   <meta property="og:image:height" content="300">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
-  <script>
-    // Redireciona para o app com flag realApp=true para evitar loop no vercel.json
-    window.location.replace("/?om=${acronym}&realApp=true");
-  </script>
 </head>
 <body style="background:#0f172a; color:white; font-family:sans-serif; display:flex; align-items:center; justify-content:center; height:100vh;">
   <div style="text-align:center">
     <img src="${imageUrl}" width="150" height="150" />
     <h1>Guardião ${acronym}</h1>
     <p>Carregando...</p>
+    <script>
+      // Fallback redirect just in case a human lands here
+      window.location.replace("/?om=${acronym}");
+    </script>
   </div>
 </body>
 </html>`;
 }
 
 function getDefaultHtml() {
-  return `<html><head><script>window.location.replace("/?realApp=true");</script></head><body>Redirecionando...</body></html>`;
+  return `<html><head><script>window.location.replace("/");</script></head><body>Redirecionando...</body></html>`;
 }

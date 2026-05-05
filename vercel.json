@@ -1,18 +1,13 @@
 {
-    "redirects": [
+    "rewrites": [
         {
             "source": "/",
             "has": [
-                { "type": "query", "key": "om", "value": "(?<om>[^&]+)" }
+                { "type": "query", "key": "om" },
+                { "type": "header", "key": "user-agent", "value": ".*(WhatsApp|facebookexternalhit|Twitterbot|LinkedInBot|Discordbot|TelegramBot|Slackbot).*" }
             ],
-            "missing": [
-                { "type": "query", "key": "realApp" }
-            ],
-            "destination": "/api/metadata?om=:om",
-            "permanent": false
-        }
-    ],
-    "rewrites": [
+            "destination": "/api/metadata"
+        },
         {
             "source": "/api/(.*)",
             "destination": "/api/$1"
