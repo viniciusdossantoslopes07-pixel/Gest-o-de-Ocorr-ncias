@@ -3,8 +3,7 @@
         {
             "source": "/",
             "has": [
-                { "type": "query", "key": "om" },
-                { "type": "header", "key": "user-agent", "value": ".*(WhatsApp|facebookexternalhit|Twitterbot|LinkedInBot|Discordbot|TelegramBot|Slackbot).*" }
+                { "type": "query", "key": "om" }
             ],
             "destination": "/api/metadata"
         },

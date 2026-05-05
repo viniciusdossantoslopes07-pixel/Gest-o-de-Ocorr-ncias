@@ -1,9 +1,36 @@
 
 import { createClient } from '@supabase/supabase-js';
+import fs from 'fs';
+import path from 'path';
 
 export default async function handler(req, res) {
-  const omAcronym = req.query?.om || new URL(req.url, `http://${req.headers.host}`).searchParams.get('om');
+  const omAcronym = req.query?.om;
+  const userAgent = req.headers['user-agent'] || '';
 
+  // Lista de bots
+  const isBot = /WhatsApp|facebookexternalhit|Twitterbot|LinkedInBot|Discordbot|TelegramBot|Slackbot/i.test(userAgent);
+
+  // Se não for um bot, vamos servir o index.html original para o usuário carregar o React
+  if (!isBot) {
+    try {
+      const indexPath = path.join(process.cwd(), 'index.html');
+      let html = fs.readFileSync(indexPath, 'utf8');
+      
+      // Opcional: injetar o título da OM mesmo para humanos antes do React carregar para evitar flicker no título da aba
+      if (omAcronym) {
+         html = html.replace('<title>Guardião - Sistema de Gestão</title>', `<title>Guardião ${omAcronym.toUpperCase()}</title>`);
+      }
+
+      res.setHeader('Content-Type', 'text/html');
+      return res.status(200).send(html);
+    } catch (e) {
+      console.error('Error reading index.html:', e);
+      // Fallback para o redirecionamento se falhar a leitura do arquivo
+      return res.status(200).send(`<html><head><script>window.location.replace("/?om=${omAcronym}&realApp=true");</script></head><body>Redirecionando...</body></html>`);
+    }
+  }
+
+  // Se CHEGOU AQUI, É UM BOT (ou falhou a detecção e caiu no bot-view, o que é seguro)
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
   const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
@@ -55,15 +82,11 @@ function getDynamicHtml(om) {
     <img src="${imageUrl}" width="150" height="150" />
     <h1>Guardião ${acronym}</h1>
     <p>Carregando...</p>
-    <script>
-      // Fallback redirect just in case a human lands here
-      window.location.replace("/?om=${acronym}");
-    </script>
   </div>
 </body>
 </html>`;
 }
 
 function getDefaultHtml() {
-  return `<html><head><script>window.location.replace("/");</script></head><body>Redirecionando...</body></html>`;
+  return `<html><head><title>Guardião</title></head><body>Carregando...</body></html>`;
 }
