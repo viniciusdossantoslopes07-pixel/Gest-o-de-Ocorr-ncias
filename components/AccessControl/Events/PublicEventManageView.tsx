@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../services/supabase';
 import { AccessEvent, EventGuest } from '../../../types';
-import { ArrowLeft, UserPlus, X, Car, Calendar, MapPin, Users, Printer, Share2, CheckCircle, AlertCircle, Lock, Camera } from 'lucide-react';
+import { ArrowLeft, UserPlus, X, Car, Calendar, MapPin, Users, Printer, Share2, CheckCircle, AlertCircle, Lock, Camera, Info } from 'lucide-react';
 import { formatDisplayDate } from '../../../utils/formatters';
 import { eventService } from '../../../services/eventService';
 import EventPrintView from './EventPrintView';
