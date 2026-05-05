@@ -61,7 +61,10 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     const textMuted = dk ? 'text-slate-400' : 'text-slate-500';
     const hoverRow = dk ? 'hover:bg-slate-700/40' : 'hover:bg-slate-50';
     const { omId: activeOmId } = useSectors();
-    const currentOmId = activeOmId || user.om_id;
+    const urlOm = new URLSearchParams(window.location.search).get('om');
+    
+    // WAITING_CONTEXT logic
+    const currentOmId = (urlOm && !activeOmId) ? 'WAITING_CONTEXT' : (activeOmId || user.om_id);
 
     // Tab State
     const [activeTab, setActiveTab] = useState<'registrar' | 'estatisticas' | 'busca'>('registrar');
@@ -145,7 +148,8 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
         const isLegacy = !currentOmId || LEGACY_OM_IDS.includes(currentOmId);
         
         try {
-            if (!currentOmId) {
+            if (!currentOmId || currentOmId === 'WAITING_CONTEXT') {
+                // Se não temos ID de OM ou estamos aguardando contexto, não buscamos nada do banco para evitar vazamento
                 setDestinations(LEGACY_DESTINATIONS);
                 return;
             }
@@ -181,15 +185,26 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     };
 
     const fetchGates = async () => {
-        const isLegacy = !currentOmId || LEGACY_OM_IDS.includes(currentOmId);
+        const isLegacy = !currentOmId || currentOmId === 'WAITING_CONTEXT' || (currentOmId !== 'WAITING_CONTEXT' && LEGACY_OM_IDS.includes(currentOmId));
         
         try {
+            if (!currentOmId || currentOmId === 'WAITING_CONTEXT') {
+                // Fallback para unidades legadas ou genérico enquanto aguarda
+                const fallbackGates = isLegacy ? ['PORTÃO G1', 'PORTÃO G2', 'PORTÃO G3'] : ['PORTÃO PRINCIPAL'];
+                setGates(fallbackGates.map(name => ({ id: name, name })));
+                if (!selectedGate && fallbackGates.length > 0) setSelectedGate(fallbackGates[0]);
+                return;
+            }
+            
             let query = supabase.from('access_gates').select('*').eq('is_active', true);
     
             if (currentOmId && LEGACY_OM_IDS.includes(currentOmId)) {
                 query = query.in('om_id', LEGACY_OM_IDS);
             } else if (currentOmId) {
                 query = query.eq('om_id', currentOmId);
+            } else {
+                // Se não tem omId, aplicamos um filtro impossível para retornar vazio e evitar leak
+                query = query.eq('om_id', '00000000-0000-0000-0000-000000000000');
             }
 
             const { data, error } = await query;
@@ -213,7 +228,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     };
 
     const handleSaveDestination = async () => {
-        if (!newDestinationName.trim() || !currentOmId) return;
+        if (!newDestinationName.trim() || !currentOmId || currentOmId === 'WAITING_CONTEXT') return;
         
         try {
             const { data, error } = await supabase
@@ -239,7 +254,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     };
 
     const handleSaveGate = async () => {
-        if (!newGateName.trim() || !currentOmId) return;
+        if (!newGateName.trim() || !currentOmId || currentOmId === 'WAITING_CONTEXT') return;
         
         try {
             const { data, error } = await supabase

@@ -1384,7 +1384,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 <div className="space-y-1.5">
                                     <h1 className={`text-xs font-black uppercase tracking-[0.25em] ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>Ministério da Defesa</h1>
                                     <h2 className={`text-[10px] font-bold uppercase tracking-[0.2em] ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Comando da Aeronáutica</h2>
-                                    <h3 className={`text-[10px] font-bold uppercase tracking-[0.2em] ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Base Aérea de São Paulo</h3>
+                                    <h3 className={`text-[10px] font-bold uppercase tracking-[0.2em] ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>{currentUser.om?.name || 'Base Aérea de São Paulo'}</h3>
                                     <div className="w-16 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 mx-auto my-4 rounded-full" />
                                     <h4 className={`text-base font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{selectedSector}</h4>
                                 </div>
@@ -1708,7 +1708,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 />
                                 <h1 className="text-xs font-bold uppercase tracking-[0.1em]">Ministério da Defesa</h1>
                                 <h2 className="text-xs font-bold uppercase tracking-[0.1em]">Comando da Aeronáutica</h2>
-                                <h3 className="text-xs font-bold uppercase tracking-[0.1em]">Base Aérea de São Paulo</h3>
+                                <h3 className="text-xs font-bold uppercase tracking-[0.1em]">{currentUser.om?.name || 'Base Aérea de São Paulo'}</h3>
                                 <div className="w-16 h-px bg-black my-2" />
                                 <h4 className="text-sm font-black uppercase underline decoration-2 underline-offset-4">{selectedSector}</h4>
                             </div>

@@ -311,8 +311,8 @@ const App: FC = () => {
       pastDaysForCache.setDate(pastDaysForCache.getDate() - 15);
       const dateFilter = pastDaysForCache.toISOString().split('T')[0];
 
-      const actualOmId = omId || currentUser?.om_id;
-  
+      const actualOmId = getActualOmId();
+      if (actualOmId === 'WAITING_CONTEXT') return;
 
       let attendanceQuery = supabase
         .from('daily_attendance')
@@ -330,6 +330,10 @@ const App: FC = () => {
       } else if (actualOmId) {
         attendanceQuery = attendanceQuery.eq('om_id', actualOmId);
         justificationsQuery = justificationsQuery.eq('om_id', actualOmId);
+      } else {
+        // Fallback para evitar fetch sem filtro
+        attendanceQuery = attendanceQuery.eq('om_id', '00000000-0000-0000-0000-000000000000');
+        justificationsQuery = justificationsQuery.eq('om_id', '00000000-0000-0000-0000-000000000000');
       }
 
       const [attendanceRes, justificationsRes] = await Promise.all([

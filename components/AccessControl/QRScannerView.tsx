@@ -1,11 +1,11 @@
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '../../services/supabase';
 import { User as UserIcon, QrCode, ArrowDownToLine, ArrowUpFromLine, X, Loader2, CheckCircle, AlertCircle, Camera, Shield, DoorOpen, UserCheck } from 'lucide-react';
 import { User } from '../../types';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { format, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useSectors } from '../../contexts/SectorsContext';
 
 interface TemporaryAccessRequest {
     id: string;
@@ -30,19 +30,53 @@ interface QRScannerViewProps {
     isDarkMode: boolean;
 }
 
-const GATES = ['PORTÃO G1', 'PORTÃO G2', 'PORTÃO G3'];
+const GSD_SP_ID = 'e5418770-62bd-49d7-9229-a608e3a2895b';
+const BASP_ID = 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c';
+const LEGACY_OM_IDS = [GSD_SP_ID, BASP_ID];
 
 export default function QRScannerView({ currentUser, isDarkMode }: QRScannerViewProps) {
+    const { omId: activeOmId } = useSectors();
+    const currentOmId = activeOmId || currentUser.om_id;
+    const [gates, setGates] = useState<{ id: string; name: string }[]>([]);
+    
     const [scanResult, setScanResult] = useState<any | null>(null);
     const [accessData, setAccessData] = useState<TemporaryAccessRequest | null>(null);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
-    const [selectedGate, setSelectedGate] = useState(GATES[0]);
+    const [selectedGate, setSelectedGate] = useState('');
     const [scannerActive, setScannerActive] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+
+    useEffect(() => {
+        const fetchGates = async () => {
+            if (!currentOmId) return;
+            try {
+                let query = supabase.from('access_gates').select('id, name').eq('is_active', true);
+                if (LEGACY_OM_IDS.includes(currentOmId)) {
+                    query = query.in('om_id', LEGACY_OM_IDS);
+                } else {
+                    query = query.eq('om_id', currentOmId);
+                }
+                const { data } = await query;
+                if (data && data.length > 0) {
+                    setGates(data);
+                    setSelectedGate(data[0].name);
+                } else {
+                    const fallback = LEGACY_OM_IDS.includes(currentOmId) 
+                        ? ['PORTÃO G1', 'PORTÃO G2', 'PORTÃO G3'] 
+                        : ['PORTÃO PRINCIPAL'];
+                    setGates(fallback.map(g => ({ id: g, name: g })));
+                    setSelectedGate(fallback[0]);
+                }
+            } catch (e) {
+                console.error("Error fetching gates for scanner", e);
+            }
+        };
+        fetchGates();
+    }, [currentOmId]);
 
     useEffect(() => {
         if (scannerActive && !accessData) {
@@ -123,7 +157,7 @@ export default function QRScannerView({ currentUser, isDarkMode }: QRScannerView
     };
 
     const handleRegisterAccess = async (category: 'Entrada' | 'Saída') => {
-        if (!accessData) return;
+        if (!accessData || !currentOmId || currentOmId === 'WAITING_CONTEXT') return;
         setSubmitting(true);
         try {
             // 1. Insert into original access_control table
@@ -138,7 +172,8 @@ export default function QRScannerView({ currentUser, isDarkMode }: QRScannerView
                 authorizer_id: accessData.requester.id,
                 destination: accessData.destination || 'NÃO INFORMADO',
                 registered_by: currentUser.id,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                om_id: currentOmId // Added om_id for isolation
             }]);
 
             if (insError) throw insError;
@@ -165,6 +200,8 @@ export default function QRScannerView({ currentUser, isDarkMode }: QRScannerView
         }
     };
 
+    const omAcronym = currentUser.om?.acronym || 'GSD-SP';
+
     return (
         <div className="max-w-md mx-auto p-4 space-y-6 animate-fade-in">
             {/* Header */}
@@ -173,7 +210,7 @@ export default function QRScannerView({ currentUser, isDarkMode }: QRScannerView
                     <Shield className="w-8 h-8" />
                 </div>
                 <h2 className={`text-2xl font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Leitor de Acesso</h2>
-                <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>GSD-SP Secure Gateway</p>
+                <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{omAcronym} Secure Gateway</p>
             </div>
 
             {!accessData ? (
@@ -268,16 +305,16 @@ export default function QRScannerView({ currentUser, isDarkMode }: QRScannerView
                                     <DoorOpen className="w-3 h-3" /> Selecione o Portão
                                 </label>
                                 <div className="flex gap-2">
-                                    {GATES.map(gate => (
+                                    {gates.map(gate => (
                                         <button
-                                            key={gate}
-                                            onClick={() => setSelectedGate(gate)}
-                                            className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all border-2 ${selectedGate === gate
+                                            key={gate.id}
+                                            onClick={() => setSelectedGate(gate.name)}
+                                            className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all border-2 ${selectedGate === gate.name
                                                 ? 'bg-blue-600 border-blue-600 text-white shadow-lg'
                                                 : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-600')
                                                 }`}
                                         >
-                                            {gate.replace('PORTÃO ', '')}
+                                            {gate.name.replace('PORTÃO ', '')}
                                         </button>
                                     ))}
                                 </div>

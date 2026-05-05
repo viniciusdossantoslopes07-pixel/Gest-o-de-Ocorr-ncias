@@ -111,6 +111,8 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                 query = query.in('om_id', legacyIds);
             } else if (actualOmId) {
                 query = query.eq('om_id', actualOmId);
+            } else {
+                query = query.eq('om_id', '00000000-0000-0000-0000-000000000000');
             }
             const { data, error } = await query;
             if (error) {
@@ -145,6 +147,8 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                 query = query.in('om_id', legacyIds);
             } else if (actualOmId) {
                 query = query.eq('om_id', actualOmId);
+            } else {
+                query = query.eq('om_id', '00000000-0000-0000-0000-000000000000');
             }
 
             const { data, error } = await query.order('data_criacao', { ascending: false });
@@ -166,6 +170,8 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                 query = query.in('om_id', legacyIds);
             } else if (actualOmId) {
                 query = query.eq('om_id', actualOmId);
+            } else {
+                query = query.eq('om_id', '00000000-0000-0000-0000-000000000000');
             }
 
             const { data, error } = await query.order('created_at', { ascending: false });
@@ -312,6 +318,8 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
             query = query.in('om_id', legacyIds);
         } else if (actualOmId) {
             query = query.eq('om_id', actualOmId);
+        } else {
+            query = query.eq('om_id', '00000000-0000-0000-0000-000000000000');
         }
 
         const { count } = await query;
