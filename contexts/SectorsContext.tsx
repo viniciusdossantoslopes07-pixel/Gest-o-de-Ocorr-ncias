@@ -6,6 +6,7 @@ export interface Sector {
     id: string;
     name: string;
     unit: string;
+    om_id: string;
     display_order: number;
     is_active: boolean;
     hidden_from_attendance: boolean;
@@ -57,6 +58,10 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
             query = query.in('om_id', legacyIds);
         } else if (omId) {
             query = query.eq('om_id', omId);
+        } else {
+            // Se omId for nulo, não buscamos nada (ou usamos um dummy ID) 
+            // para evitar vazar setores de todas as OMs
+            query = query.eq('om_id', '00000000-0000-0000-0000-000000000000');
         }
 
         const { data, error } = await query.order('display_order', { ascending: true });
@@ -87,8 +92,9 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
 
     useEffect(() => {
         fetchData();
+    }, [fetchData]);
 
-        // Realtime: sincroniza quando outro usuário cria/remove setor
+    useEffect(() => {
         const channel = supabase
             .channel('sectors_changes')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'sectors' }, () => {
@@ -99,8 +105,10 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
             })
             .subscribe();
 
-        return () => { supabase.removeChannel(channel); };
-    }, [fetchData, fetchSectors, fetchOms]);
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [fetchSectors, fetchOms]);
 
 
     const addSector = useCallback(async (name: string, unit: string, targetOmId?: string): Promise<{ error?: string }> => {

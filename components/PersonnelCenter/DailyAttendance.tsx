@@ -304,7 +304,12 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     }, [contextOmId, oms, currentUser.om]);
 
     const [selectedUnit, setSelectedUnit] = useState<string>(currentViewOmAcronym);
-    const GSD_SP_SECTORS_LIST = useMemo(() => ['SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'], []);
+    
+    // Identifica o ID da OM selecionada no seletor lateral (legacy)
+    const selectedOmId = useMemo(() => {
+        const om = oms.find(o => o.acronym === selectedUnit);
+        return om?.id;
+    }, [oms, selectedUnit]);
     
     // Sync selectedUnit when currentViewOmAcronym changes (e.g. navigation)
     useEffect(() => {
@@ -315,15 +320,14 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const unitSectors = useMemo(() => 
         sectors.filter(s => {
             if (s.hidden_from_attendance) return false;
-            // Se for GSD-SP ou BASP (legacy cluster), mantém a lógica legada de separação por lista
+            // Se for GSD-SP ou BASP (legacy cluster), filtra pelo om_id da unidade selecionada no switch
             if (legacyIds.includes(contextOmId || '')) {
-                const isGsd = GSD_SP_SECTORS_LIST.includes(s.name.trim().toUpperCase());
-                return selectedUnit === 'BASP' ? !isGsd : isGsd;
+                return s.om_id === selectedOmId;
             }
             // Para outras OMs, mostra todos os setores daquela OM (já filtrados pelo context)
             return true;
         }).map(s => s.name),
-    [sectors, selectedUnit, GSD_SP_SECTORS_LIST, contextOmId, legacyIds]);
+    [sectors, selectedOmId, contextOmId, legacyIds]);
 
     const [selectedSector, setSelectedSector] = useState('');
     const [callType, setCallType] = useState<CallTypeCode>('INICIO');
@@ -1195,7 +1199,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                         </tr>
                                     </thead>
                                     <tbody className={`divide-y ${isDarkMode ? 'divide-slate-800' : 'divide-indigo-100/30'}`}>
-                                        {filteredUsers.map((user, index) => (
+                                         {filteredUsers.map((user, index) => (
                                             <tr
                                                 key={user.id}
                                                 className={`transition-colors ${isDarkMode ? 'hover:bg-slate-800/30' : 'hover:bg-slate-50/30'} ${draggedItem === index ? 'opacity-40 bg-blue-500/10' : ''}`}
@@ -1265,6 +1269,26 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                 ))}
                                             </tr>
                                         ))}
+
+                                        {filteredUsers.length === 0 && (
+                                            <tr>
+                                                <td colSpan={1 + currentWeek.length * 2} className="py-20 text-center">
+                                                    <div className="flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-500">
+                                                        <div className={`p-4 rounded-full ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                                                            <Users className={`w-8 h-8 ${isDarkMode ? 'text-slate-600' : 'text-slate-300'}`} />
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <p className={`text-xs font-black uppercase tracking-[0.2em] ${isDarkMode ? 'text-slate-400' : 'text-slate-900'}`}>
+                                                                Nenhum militar encontrado
+                                                            </p>
+                                                            <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                                                                {searchTerm ? `Nenhum resultado para "${searchTerm}"` : 'Este setor está vazio ou ainda não foi carregado'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>

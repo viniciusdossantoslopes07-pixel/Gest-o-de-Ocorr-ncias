@@ -59,8 +59,6 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
     // Verificação robusta se é uma unidade legada
     const currentActiveOmId = omId || (users.length > 0 ? users[0].om_id : null);
     const isLegacyUnit = currentActiveOmId === GSD_SP_ID || currentActiveOmId === BASP_ID || !omId;
-    
-    const GSD_SP_SECTORS_LIST = useMemo(() => ['SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA'], []);
 
     const [organizations, setOrganizations] = useState<any[]>([]);
 
@@ -111,14 +109,10 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
         } else if (filterSector === 'SEM SETOR') {
             sectorMatch = !u.sector || u.sector === 'SEM SETOR';
         } else if (filterSector === 'TODOS GSD-SP') {
-            const gsdSectors = sectors.filter(s => 
-                GSD_SP_SECTORS_LIST.includes(s.name.trim().toUpperCase())
-            ).map(s => s.name);
+            const gsdSectors = sectors.filter(s => s.om_id === GSD_SP_ID).map(s => s.name);
             sectorMatch = gsdSectors.includes(u.sector || '');
         } else if (filterSector === 'TODOS BASP') {
-            const baspSectors = sectors.filter(s => 
-                !GSD_SP_SECTORS_LIST.includes(s.name.trim().toUpperCase())
-            ).map(s => s.name);
+            const baspSectors = sectors.filter(s => s.om_id === BASP_ID).map(s => s.name);
             sectorMatch = baspSectors.includes(u.sector || '');
         } else {
             sectorMatch = u.sector === filterSector;
