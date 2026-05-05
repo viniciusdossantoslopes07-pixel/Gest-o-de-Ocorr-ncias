@@ -739,7 +739,8 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                     authorizer: idxAuth >= 0 ? cols[idxAuth] : '',
                     timestamp: timestamp,
                     created_at: new Date().toISOString(),
-                    registered_by: user.id
+                    registered_by: user.id,
+                    om_id: currentOmId
                 });
             }
 
