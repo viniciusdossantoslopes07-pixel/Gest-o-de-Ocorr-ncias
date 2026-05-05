@@ -40,8 +40,14 @@ const HIERARQUIA_GRUPOS = [
 ];
 
 const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistory = [], isDarkMode, activeUnitFilter }) => {
-    const { sectors } = useSectors();
+    const { sectors, omId } = useSectors();
     const [statsFilter, setStatsFilter] = React.useState<'TOTAL' | 'PRESENTE'>('TOTAL');
+
+    // IDs das unidades legadas
+    const GSD_SP_ID = 'e5418770-62bd-49d7-9229-a608e3a2895b';
+    const BASP_ID = 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c';
+    const LEGACY_OM_IDS = [GSD_SP_ID, BASP_ID];
+    const isLegacy = omId && LEGACY_OM_IDS.includes(omId);
 
     // Mapeamento de quem está presente HOJE (último registro disponível)
     const presenceMap = useMemo(() => {
@@ -348,7 +354,7 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
             </div>
 
             {/* Comparativo TLP (Exclusivo GSD-SP) */}
-            {activeUnitFilter === 'GSD-SP' && (
+            {isLegacy && activeUnitFilter === 'GSD-SP' && (
                 <div className={card}>
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
@@ -531,9 +537,8 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
                 )}
             </div>
 
-            {/* Composição por Unidade (apenas visão global) */}
-            {/* Composição por Unidade (apenas visão global) */}
-            {activeUnitFilter === 'TODAS' && (
+            {/* Composição por Unidade (apenas visão global e apenas unidades legadas) */}
+            {isLegacy && activeUnitFilter === 'TODAS' && (
                 <div className={card}>
                     <div className="flex items-center gap-3 mb-5">
                         <div className={`p-2 rounded-xl ${isDarkMode ? 'bg-slate-500/20 text-slate-400' : 'bg-slate-50 text-slate-600'}`}>

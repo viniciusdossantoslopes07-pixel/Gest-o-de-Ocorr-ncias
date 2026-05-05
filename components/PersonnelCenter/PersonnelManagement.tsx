@@ -57,8 +57,9 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
     const BASP_ID = 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c';
     
     // Verificação robusta se é uma unidade legada
+    const LEGACY_OM_IDS = [GSD_SP_ID, BASP_ID];
     const currentActiveOmId = omId || (users.length > 0 ? users[0].om_id : null);
-    const isLegacyUnit = currentActiveOmId === GSD_SP_ID || currentActiveOmId === BASP_ID || !omId;
+    const isLegacyUnit = !!(currentActiveOmId && LEGACY_OM_IDS.includes(currentActiveOmId));
 
     const [organizations, setOrganizations] = useState<any[]>([]);
 

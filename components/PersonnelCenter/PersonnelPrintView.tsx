@@ -167,7 +167,9 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
                         <div className="flex justify-between items-end mb-6 text-[9px] font-bold uppercase tracking-wider text-slate-600 border-l-4 border-slate-900 pl-3 print-section">
                             <div>
                                 <p>Filtro de Categoria: <span className="text-slate-900">{filterCategory}</span></p>
-                                <p>Unidade: <span className="text-slate-900">{activeUnitFilter}</span></p>
+                                {['GSD-SP', 'BASP'].includes(activeUnitFilter) && (
+                                    <p>Unidade: <span className="text-slate-900">{activeUnitFilter}</span></p>
+                                )}
                                 <p>Setor: <span className="text-slate-900">{filterSector}</span></p>
                                 <p className="mt-1">Total Listado: <span className="text-slate-900 font-black text-xs">{users.length} militares</span></p>
                             </div>
@@ -209,7 +211,7 @@ const PersonnelPrintView: FC<PersonnelPrintViewProps> = ({
                         )}
 
                         <div className="mt-12 text-center text-[6px] text-slate-400 uppercase tracking-widest font-bold print-section">
-                            Documento gerado eletronicamente pelo Sistema Guardião GSD-SP em {new Date().toLocaleString('pt-BR')}
+                            Documento gerado eletronicamente pelo Sistema Guardião {om?.acronym || 'GSD-SP'} em {new Date().toLocaleString('pt-BR')}
                         </div>
                     </div>
                 </div>
