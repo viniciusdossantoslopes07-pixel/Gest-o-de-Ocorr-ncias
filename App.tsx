@@ -113,6 +113,38 @@ const App: FC = () => {
     }
     return null;
   });
+
+  // Fast Metadata Setup - Immediately apply cached branding to avoid flicker
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlOmAcronym = params.get('om')?.toUpperCase();
+    
+    const applyBranding = (acronym: string, logo: string) => {
+      document.title = `Guardião ${acronym} - Sistema de Gestão`;
+      const favicon = document.querySelector('link[rel="icon"]');
+      const appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+      if (favicon) favicon.setAttribute('href', logo);
+      if (appleIcon) appleIcon.setAttribute('href', logo);
+    };
+
+    if (urlOmAcronym) {
+      const cachedLogo = localStorage.getItem(`logo_${urlOmAcronym}`);
+      if (cachedLogo) {
+        applyBranding(urlOmAcronym, cachedLogo);
+      }
+    } else {
+      const saved = localStorage.getItem('gsdsp_user_session');
+      if (saved) {
+        try {
+          const user = JSON.parse(saved);
+          if (user.om?.logo_url && user.om?.acronym) {
+            applyBranding(user.om.acronym, user.om.logo_url);
+          }
+        } catch (e) {}
+      }
+    }
+  }, []);
+
   const { omId, setOmId } = useSectors();
   const [activeOm, setActiveOm] = useState<MilitaryOrganization | null>(null);
 
@@ -321,6 +353,10 @@ const App: FC = () => {
         
       if (data) {
         setActiveOm(data as MilitaryOrganization);
+        // Persist branding for fast-load on refresh
+        if (data.acronym && data.logo_url) {
+          localStorage.setItem(`logo_${data.acronym}`, data.logo_url);
+        }
       }
     };
     
