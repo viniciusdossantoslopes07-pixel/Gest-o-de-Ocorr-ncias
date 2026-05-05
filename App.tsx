@@ -100,7 +100,33 @@ const PUBLIC_USER: User = {
   sector: 'ACESSO PÚBLICO'
 };
 
+const APP_VERSION = '2.0.1'; // Incrementar esta versão para forçar refresh em todos os usuários
+
 const App: FC = () => {
+  // --- Version Check & Cache Management ---
+  useEffect(() => {
+    const lastVersion = localStorage.getItem('app_version');
+    
+    // Se a versão mudou ou não existe, limpamos o cache e recarregamos
+    if (lastVersion && lastVersion !== APP_VERSION) {
+      console.log(`[Guardião] Nova versão detectada (${APP_VERSION}). Atualizando sistema...`);
+      
+      // Preservamos apenas o tema para não incomodar o usuário
+      const theme = localStorage.getItem('theme');
+      
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      if (theme) localStorage.setItem('theme', theme);
+      localStorage.setItem('app_version', APP_VERSION);
+      
+      // Forçar recarregamento ignorando cache
+      window.location.reload();
+    } else {
+      localStorage.setItem('app_version', APP_VERSION);
+    }
+  }, []);
+
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('gsdsp_user_session');
     if (saved) {

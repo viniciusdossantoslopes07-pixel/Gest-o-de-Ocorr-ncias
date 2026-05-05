@@ -11,7 +11,8 @@ import {
     LogOut,
     ChevronDown,
     Lightbulb,
-    Building2
+    Building2,
+    RefreshCw
 } from 'lucide-react';
 
 interface UserMenuProps {
@@ -156,6 +157,32 @@ export default function UserMenu({
                         >
                             <Lightbulb className="w-4 h-4" />
                             Sugestões
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                if (confirm("Isso irá limpar o cache do seu navegador para este sistema e recarregar a página. Você precisará fazer login novamente. Deseja continuar?")) {
+                                    // Clear everything
+                                    localStorage.clear();
+                                    sessionStorage.clear();
+                                    
+                                    // Unregister service workers if any
+                                    if ('serviceWorker' in navigator) {
+                                        navigator.serviceWorker.getRegistrations().then(registrations => {
+                                            for (let registration of registrations) {
+                                                registration.unregister();
+                                            }
+                                        });
+                                    }
+
+                                    // Hard reload
+                                    window.location.reload();
+                                }
+                            }}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${isDarkMode ? 'text-indigo-300 hover:bg-indigo-900/20' : 'text-indigo-700 hover:bg-indigo-50'}`}
+                        >
+                            <RefreshCw className="w-4 h-4" />
+                            Forçar Atualização / Limpar Cache
                         </button>
 
                         <div className={`my-2 border-t ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`} />
