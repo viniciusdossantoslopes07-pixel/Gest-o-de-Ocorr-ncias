@@ -224,6 +224,21 @@ export default function PublicEventManageView({ eventId, isDarkMode = false, onB
             </div>
 
             <div className="overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar">
+                <div className={`p-4 rounded-2xl border ${dk ? 'bg-indigo-500/10 border-indigo-500/30' : 'bg-indigo-50 border-indigo-200'} animate-in slide-in-from-top-4`}>
+                    <div className="flex items-start gap-3">
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${dk ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-100 text-indigo-600'}`}>
+                            <Info className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h4 className={`text-[10px] font-black uppercase mb-1 ${dk ? 'text-indigo-300' : 'text-indigo-700'}`}>Prazo para Alterações na Lista</h4>
+                            <p className={`text-[11px] font-bold leading-relaxed ${dk ? 'text-slate-300' : 'text-slate-600'}`}>
+                                A inclusão de convidados é permitida até <span className="text-blue-500">1 dia útil antes</span> do evento. 
+                                Após a aprovação pela SOP-03, novos convidados deverão ser informados diretamente na guarda pelo morador.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 {event.guests && event.guests.length > 20 && (
                     <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-start gap-4 animate-in slide-in-from-top-4">
                         <div className="w-10 h-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center shrink-0">

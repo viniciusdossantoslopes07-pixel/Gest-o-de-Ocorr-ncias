@@ -167,6 +167,16 @@ export default function PublicEventForm({ isDarkMode = false, onSubmit, onCancel
                     </p>
                 </div>
 
+                <div className={`mb-8 p-5 rounded-2xl border ${dk ? 'bg-indigo-500/10 border-indigo-500/30' : 'bg-indigo-50 border-indigo-200'} max-w-md animate-in slide-in-from-bottom-2 duration-500`}>
+                    <p className={`text-[10px] font-black uppercase tracking-tight ${dk ? 'text-indigo-400' : 'text-indigo-600'} mb-1`}>
+                        ℹ️ Prazo para Lista de Convidados
+                    </p>
+                    <p className={`text-[11px] font-bold ${dk ? 'text-slate-300' : 'text-slate-600'} leading-relaxed`}>
+                        A inclusão de convidados via link é permitida até <span className="text-blue-500">1 dia útil antes</span> do evento. 
+                        Após a aprovação pela SOP-03, novos convidados deverão ser informados diretamente na guarda pelo morador.
+                    </p>
+                </div>
+
                 <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
                     {/* Share Link Tile */}
                     <button 
