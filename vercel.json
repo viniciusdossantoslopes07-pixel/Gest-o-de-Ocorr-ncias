@@ -1,6 +1,16 @@
 {
     "rewrites": [
         {
+            "source": "/",
+            "has": [
+                { "type": "query", "key": "om" }
+            ],
+            "missing": [
+                { "type": "query", "key": "realApp" }
+            ],
+            "destination": "/api/metadata"
+        },
+        {
             "source": "/api/(.*)",
             "destination": "/api/$1"
         },

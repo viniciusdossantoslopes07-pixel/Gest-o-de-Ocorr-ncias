@@ -2,7 +2,6 @@
 import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
-  // Pega o parâmetro 'om' (Vercel Node.js injects query)
   const omAcronym = req.query?.om || new URL(req.url, `http://${req.headers.host}`).searchParams.get('om');
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -22,7 +21,6 @@ export default async function handler(req, res) {
       .single();
 
     if (om) {
-      // Set headers to prevent caching while testing
       res.setHeader('Cache-Control', 'no-store, max-age=0');
       return res.status(200).send(getDynamicHtml(om));
     }
@@ -37,8 +35,6 @@ function getDynamicHtml(om) {
   const acronym = om.acronym || 'GSD';
   const name = om.name || 'Sistema de Gestão';
   const logo = om.logo_url || 'https://app-gsdsp.com/logo_gsd.png';
-  
-  // URL absoluta para a imagem (obrigatório para crawlers)
   const imageUrl = logo.startsWith('http') ? logo : `https://app-gsdsp.com${logo}`;
 
   return `<!DOCTYPE html>
@@ -54,8 +50,8 @@ function getDynamicHtml(om) {
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <script>
-    // Se um humano abrir este link, redireciona para o app real
-    window.location.replace("/?om=${acronym}");
+    // Redireciona para o app com flag realApp=true para evitar loop no vercel.json
+    window.location.replace("/?om=${acronym}&realApp=true");
   </script>
 </head>
 <body style="background:#0f172a; color:white; font-family:sans-serif; display:flex; align-items:center; justify-content:center; height:100vh;">
@@ -69,5 +65,5 @@ function getDynamicHtml(om) {
 }
 
 function getDefaultHtml() {
-  return `<html><head><script>window.location.replace("/");</script></head><body>Redirecionando...</body></html>`;
+  return `<html><head><script>window.location.replace("/?realApp=true");</script></head><body>Redirecionando...</body></html>`;
 }
