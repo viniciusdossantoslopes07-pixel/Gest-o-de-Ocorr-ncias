@@ -3,7 +3,7 @@ import { User, UserRole, MilitaryOrganization } from '../../types';
 import { RANKS, getRankPriority } from '../../constants';
 import { useSectors } from '../../contexts/SectorsContext';
 import { supabase } from '../../services/supabase';
-import { UserPlus, Search, Pencil, Trash2, Shield, User as UserIcon, Hash, Building2, Users, TriangleAlert, CircleX, Briefcase, ChartNoAxesColumn, ChevronDown, ChevronUp, Printer, PlaneTakeoff, ArrowLeft, Crown } from 'lucide-react';
+import { UserPlus, Search, Pencil, Trash2, Shield, User as UserIcon, Hash, Building2, Users, TriangleAlert, CircleX, Briefcase, ChartNoAxesColumn, ChevronDown, ChevronUp, Printer, PlaneTakeoff, ArrowLeft, Crown, Shuffle, ChevronRight, Plus } from 'lucide-react';
 import UserStatistics from './UserStatistics';
 import PersonnelPrintView from './PersonnelPrintView';
 import MeuPlanoView from '../MeuPlanoView';
@@ -43,6 +43,11 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
     const [externalOm, setExternalOm] = useState('');
     const [externalSector, setExternalSector] = useState('');
     const [selectedUserForPanel, setSelectedUserForPanel] = useState<User | null>(null);
+    const [showTransferModal, setShowTransferModal] = useState(false);
+    const [transferUser, setTransferUser] = useState<User | null>(null);
+    const [transferSearch, setTransferSearch] = useState('');
+    const [transferOther, setTransferOther] = useState(false);
+    const [otherOmName, setOtherOmName] = useState('');
 
     const [activeUnitFilter, setActiveUnitFilter] = useState<'TODAS' | 'GSD-SP' | 'BASP'>('TODAS');
     const { sectors, sectorNames, omId } = useSectors();
@@ -574,9 +579,10 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                                             </td>
                                             <td className="px-6 py-4 text-right" onClick={e => e.stopPropagation()}>
                                                 <div className="flex justify-end gap-1">
-                                                    <button onClick={() => handleEdit(user)} className="p-2 hover:text-indigo-500 transition-colors"><Pencil className="w-4 h-4" /></button>
-                                                    <button onClick={() => { setExternalServiceUser(user); setShowExternalServiceModal(true); }} className="p-2 hover:text-emerald-500 transition-colors"><PlaneTakeoff className="w-4 h-4" /></button>
-                                                    <button onClick={() => onDeletePersonnel(user.id)} className="p-2 hover:text-red-500 transition-colors"><CircleX className="w-4 h-4" /></button>
+                                                    <button onClick={() => handleEdit(user)} className="p-2 hover:text-indigo-500 transition-colors" title="Editar"><Pencil className="w-4 h-4" /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); setTransferUser(user); setShowTransferModal(true); setTransferOther(false); setOtherOmName(''); setTransferSearch(''); }} className="p-2 hover:text-blue-500 transition-colors" title="Transferir OM"><Shuffle className="w-4 h-4" /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); setExternalServiceUser(user); setShowExternalServiceModal(true); }} className="p-2 hover:text-emerald-500 transition-colors" title="Serviço Externo"><PlaneTakeoff className="w-4 h-4" /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); onDeletePersonnel(user.id); }} className="p-2 hover:text-red-500 transition-colors" title="Desativar"><CircleX className="w-4 h-4" /></button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -612,8 +618,9 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                                     <div className="flex items-center justify-between mt-4">
                                         <div className="text-xs font-bold dark:text-slate-400">SARAM: {user.saram}</div>
                                         <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                                            <button onClick={() => handleEdit(user)} className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800"><Pencil className="w-4 h-4" /></button>
-                                            <button onClick={() => onDeletePersonnel(user.id)} className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800"><CircleX className="w-4 h-4" /></button>
+                                            <button onClick={() => handleEdit(user)} className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800" title="Editar"><Pencil className="w-4 h-4" /></button>
+                                            <button onClick={() => { setTransferUser(user); setShowTransferModal(true); setTransferOther(false); setOtherOmName(''); setTransferSearch(''); }} className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800" title="Transferir OM"><Shuffle className="w-4 h-4" /></button>
+                                            <button onClick={() => onDeletePersonnel(user.id)} className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800" title="Desativar"><CircleX className="w-4 h-4" /></button>
                                         </div>
                                     </div>
                                 </div>
@@ -671,6 +678,114 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                             >
                                 Confirmar Alteração
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showTransferModal && transferUser && (
+                <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div className={`rounded-3xl max-w-lg w-full shadow-2xl p-6 lg:p-8 animate-in zoom-in-95 duration-200 ${isDarkMode ? 'bg-slate-900 border border-slate-800 text-white' : 'bg-white'}`}>
+                        <div className="flex justify-between items-start mb-8">
+                            <div className="flex items-center gap-4">
+                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-600 text-white'}`}>
+                                    <Shuffle className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-black tracking-tight">Transferir Militar</h3>
+                                    <p className="text-xs font-bold uppercase tracking-widest opacity-50 mt-1">{transferUser.rank} {transferUser.warName}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowTransferModal(false)} className={`p-2 rounded-xl transition-all ${isDarkMode ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-slate-100 text-slate-400'}`}>
+                                <CircleX className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-6">
+                            {!transferOther ? (
+                                <div className="space-y-4">
+                                    <div className="relative">
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                        <input
+                                            type="text"
+                                            placeholder="Buscar OM cadastrada..."
+                                            value={transferSearch}
+                                            onChange={(e) => setTransferSearch(e.target.value)}
+                                            className={`w-full pl-11 pr-4 py-3.5 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+                                        />
+                                    </div>
+                                    <div className={`max-h-[280px] overflow-y-auto rounded-2xl border p-2 space-y-1 custom-scrollbar ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50/50 border-slate-200'}`}>
+                                        {organizations
+                                            .filter(org => org.id !== transferUser.om_id && (org.name.toLowerCase().includes(transferSearch.toLowerCase()) || org.acronym.toLowerCase().includes(transferSearch.toLowerCase())))
+                                            .map(org => (
+                                                <button
+                                                    key={org.id}
+                                                    onClick={() => {
+                                                        if (window.confirm(`Deseja transferir o militar para a OM: ${org.acronym} - ${org.name}? Ele ficará sem setor alocado na nova unidade.`)) {
+                                                            onUpdatePersonnel({ ...transferUser, om_id: org.id, sector: 'SEM SETOR' });
+                                                            setShowTransferModal(false);
+                                                        }
+                                                    }}
+                                                    className={`w-full text-left p-3.5 rounded-xl flex items-center justify-between transition-all group ${isDarkMode ? 'hover:bg-slate-700 text-slate-300 hover:text-white' : 'hover:bg-white hover:shadow-sm text-slate-600 hover:text-slate-900'}`}
+                                                >
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-black tracking-tight">{org.acronym}</span>
+                                                        <span className="text-[10px] font-bold opacity-60 uppercase">{org.name}</span>
+                                                    </div>
+                                                    <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0" />
+                                                </button>
+                                            ))}
+                                        
+                                        <button
+                                            onClick={() => setTransferOther(true)}
+                                            className={`w-full p-4 rounded-xl flex items-center gap-3 transition-all border-2 border-dashed ${isDarkMode ? 'border-slate-700 text-slate-500 hover:border-blue-500 hover:text-blue-400' : 'border-slate-200 text-slate-400 hover:border-blue-400 hover:text-blue-600'}`}
+                                        >
+                                            <Plus className="w-5 h-5" />
+                                            <span className="text-sm font-black uppercase tracking-widest">Outra OM (Não cadastrada)</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="space-y-4 animate-in slide-in-from-right-4">
+                                    <div className="space-y-2">
+                                        <label className={`text-[10px] font-black uppercase tracking-widest px-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Nome da OM de Destino</label>
+                                        <input
+                                            autoFocus
+                                            type="text"
+                                            value={otherOmName}
+                                            onChange={(e) => setOtherOmName(e.target.value.toUpperCase())}
+                                            placeholder="EX: ALA 1, COMGEP, ETC..."
+                                            className={`w-full px-4 py-4 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}
+                                        />
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={() => setTransferOther(false)}
+                                            className={`flex-1 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                                        >
+                                            Voltar
+                                        </button>
+                                        <button
+                                            disabled={!otherOmName.trim()}
+                                            onClick={() => {
+                                                if (window.confirm(`Deseja transferir o militar para a OM externa: ${otherOmName}? Ele será desativado desta OM.`)) {
+                                                    onUpdatePersonnel({ 
+                                                        ...transferUser, 
+                                                        active: false, 
+                                                        external_service: true, 
+                                                        external_om: otherOmName,
+                                                        sector: 'TRANSFERIDO' 
+                                                    });
+                                                    setShowTransferModal(false);
+                                                }
+                                            }}
+                                            className={`flex-[2] py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-900/20' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'}`}
+                                        >
+                                            Confirmar Transferência
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
