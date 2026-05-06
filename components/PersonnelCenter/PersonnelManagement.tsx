@@ -416,22 +416,32 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
             ) : (
                 <>
                     <div className={`rounded-[1.5rem] lg:rounded-[2rem] p-5 lg:p-8 border shadow-sm ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 mb-8">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                             <div className="flex items-center gap-4">
-                                <div className={`p-3 rounded-2xl shadow-lg ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-600 text-white'}`}>
-                                    <Users className="w-6 h-6" />
+                                <div className={`p-2.5 lg:p-3 rounded-2xl shadow-lg ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-600 text-white'}`}>
+                                    <Users className="w-5 h-5 lg:w-6 lg:h-6" />
                                 </div>
                                 <div>
-                                    <h2 className={`text-xl lg:text-2xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Gestão de Efetivo</h2>
-                                    <p className={`text-xs lg:text-sm font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>Gerenciamento centralizado de pessoal</p>
+                                    <h2 className={`text-lg lg:text-2xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Gestão de Efetivo</h2>
+                                    <p className={`text-[10px] lg:text-sm font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>Gerenciamento centralizado de pessoal</p>
                                 </div>
                             </div>
+                            
+                            {/* Desktop Button */}
                             <button
                                 onClick={() => { setIsAdding(true); setEditingId(null); }}
-                                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-xl text-sm ${isDarkMode ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
+                                className={`hidden sm:flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-xl text-sm ${isDarkMode ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
                             >
                                 <UserPlus className="w-5 h-5" />
                                 Cadastrar Militar
+                            </button>
+
+                            {/* Mobile Floating Action Button */}
+                            <button
+                                onClick={() => { setIsAdding(true); setEditingId(null); }}
+                                className={`sm:hidden fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all active:scale-95 ${isDarkMode ? 'bg-indigo-600 text-white shadow-indigo-500/20' : 'bg-slate-900 text-white shadow-slate-900/20'}`}
+                            >
+                                <Plus className="w-6 h-6" />
                             </button>
                         </div>
 
@@ -453,14 +463,14 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                             ))}
                         </div>
 
-                        <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 mb-8">
+                        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-8">
                             {isLegacyUnit && (
-                                <div className="flex p-1 gap-1 rounded-2xl bg-slate-800/50 border border-slate-700">
+                                <div className={`flex p-1 gap-1 rounded-2xl ${isDarkMode ? 'bg-slate-800/50 border border-slate-700' : 'bg-slate-100 border border-slate-200'}`}>
                                     {(['TODAS', 'GSD-SP', 'BASP'] as const).map((unit) => (
                                         <button
                                             key={unit}
                                             onClick={() => setActiveUnitFilter(unit)}
-                                            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeUnitFilter === unit ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                                            className={`flex-1 sm:flex-none px-4 sm:px-6 py-2.5 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all ${activeUnitFilter === unit ? 'bg-blue-600 text-white shadow-lg' : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600')}`}
                                         >
                                             {unit === 'TODAS' ? 'VISÃO GLOBAL' : unit}
                                         </button>
@@ -469,7 +479,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                             )}
                             <button
                                 onClick={() => setShowStatistics(!showStatistics)}
-                                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                             >
                                 <ChartNoAxesColumn className="w-4 h-4" />
                                 {showStatistics ? 'Ocultar Painel Analítico' : 'Ver Painel Analítico'}
@@ -482,22 +492,22 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                             </div>
                         )}
 
-                        <div className="flex flex-col md:flex-row gap-4">
+                        <div className="flex flex-col sm:flex-row gap-4">
                             <div className="relative flex-1">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                 <input
                                     type="text"
                                     placeholder="Buscar militar..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className={`w-full border rounded-2xl py-4 pl-12 pr-4 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`}
+                                    className={`w-full border rounded-2xl py-3.5 pl-11 pr-4 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200'}`}
                                 />
                             </div>
                             <div className="flex gap-2">
                                 <select
                                     value={filterSector}
                                     onChange={(e) => setFilterSector(e.target.value)}
-                                    className={`w-full md:w-64 border rounded-2xl px-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200'}`}
+                                    className={`flex-1 sm:w-64 border rounded-2xl px-4 py-3.5 sm:py-0 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-50 border-slate-200'}`}
                                 >
                                     <option value="TODOS">Todos os Setores</option>
                                     {isLegacyUnit && (
@@ -588,34 +598,59 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
 
                         <div className="lg:hidden divide-y dark:divide-slate-800">
                             {filteredUsers.map(user => (
-                                <div key={user.id} onClick={() => setSelectedUserForPanel(user)} className="p-4 active:bg-slate-500/5">
-                                    <div className="flex justify-between items-start mb-3">
-                                        <div>
-                                            <div className="font-bold text-base flex flex-wrap items-center gap-2 leading-tight">
-                                                <span className={`dark:text-white ${user.administrativeRole ? 'text-amber-600 dark:text-amber-400' : ''}`}>
-                                                    {user.name}
-                                                </span>
-                                                {user.administrativeRole && (
-                                                    <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50" title="Função Especial">
-                                                        <Crown className="w-2.5 h-2.5" />
-                                                        {user.administrativeRole.replace(/_/g, ' ')}
-                                                    </span>
-                                                )}
+                                <div key={user.id} onClick={() => setSelectedUserForPanel(user)} className={`p-5 transition-all active:scale-[0.98] ${isDarkMode ? 'active:bg-slate-800/50' : 'active:bg-slate-50'}`}>
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black shadow-inner ${user.administrativeRole ? 'bg-amber-500/20 text-amber-500' : (isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-50 text-blue-600')}`}>
+                                                {user.rank.substring(0, 2)}
                                             </div>
-                                            <div className={`text-[10px] font-black uppercase mt-1 ${user.administrativeRole ? 'text-amber-500' : 'text-blue-500'}`}>
-                                                {user.rank} {user.warName}
+                                            <div>
+                                                <div className="flex flex-wrap items-center gap-1.5">
+                                                    <span className={`text-sm font-black leading-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                                        {user.name}
+                                                    </span>
+                                                    {user.administrativeRole && (
+                                                        <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50">
+                                                            <Crown className="w-2 h-2" />
+                                                            {user.administrativeRole.replace(/_/g, ' ')}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className={`text-[9px] font-black uppercase tracking-wider mt-0.5 ${user.administrativeRole ? 'text-amber-500' : 'text-blue-500'}`}>
+                                                    {user.rank} {user.warName}
+                                                </div>
                                             </div>
                                         </div>
-                                        <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase border ${user.external_service ? 'bg-emerald-500 text-white' : 'bg-slate-100 dark:bg-slate-800'}`}>
-                                            {user.external_service ? `EXT` : user.sector}
+                                        <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${user.external_service ? 'bg-emerald-500 text-white border-emerald-600 shadow-sm shadow-emerald-500/20' : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-600')}`}>
+                                            {user.external_service ? `EXTERNO` : user.sector}
                                         </span>
                                     </div>
-                                    <div className="flex items-center justify-between mt-4">
-                                        <div className="text-xs font-bold dark:text-slate-400">SARAM: {user.saram}</div>
+                                    
+                                    <div className="flex items-center justify-between mt-4 pl-1">
+                                        <div>
+                                            <div className={`text-[10px] font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>SARAM</div>
+                                            <div className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{user.saram}</div>
+                                        </div>
+                                        
                                         <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                                            <button onClick={() => handleEdit(user)} className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800" title="Editar"><Pencil className="w-4 h-4" /></button>
-                                            <button onClick={() => { setTransferUser(user); setShowTransferModal(true); setTransferOther(false); setOtherOmName(''); setTransferSearch(''); }} className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800" title="Transferir OM"><Shuffle className="w-4 h-4" /></button>
-                                            <button onClick={() => onDeletePersonnel(user.id)} className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800" title="Desativar"><CircleX className="w-4 h-4" /></button>
+                                            <button 
+                                                onClick={() => handleEdit(user)} 
+                                                className={`p-2.5 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:text-indigo-400' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}
+                                            >
+                                                <Pencil className="w-3.5 h-3.5" />
+                                            </button>
+                                            <button 
+                                                onClick={() => { setTransferUser(user); setShowTransferModal(true); setTransferOther(false); setOtherOmName(''); setTransferSearch(''); }} 
+                                                className={`p-2.5 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:text-blue-400' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}
+                                            >
+                                                <Shuffle className="w-3.5 h-3.5" />
+                                            </button>
+                                            <button 
+                                                onClick={() => onDeletePersonnel(user.id)} 
+                                                className={`p-2.5 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:text-red-400' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}
+                                            >
+                                                <CircleX className="w-3.5 h-3.5" />
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
