@@ -47,6 +47,8 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
     // End Mission Modal State
     const [showEndMissionModal, setShowEndMissionModal] = useState(false);
     const [missionEnding, setMissionEnding] = useState<MissionOrder | null>(null);
+    const [actualStartTime, setActualStartTime] = useState('');
+    const [actualEndTime, setActualEndTime] = useState('');
     const [endReport, setEndReport] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     
@@ -568,6 +570,18 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
     const handleMissionEnd = (order: MissionOrder) => {
         setMissionEnding(order);
         setEndReport('');
+        
+        // Helper to format date for datetime-local input
+        const formatDateForInput = (dateStr?: string) => {
+            if (!dateStr) return new Date().toISOString().slice(0, 16);
+            const d = new Date(dateStr);
+            // Adjust to local time for the input
+            const tzOffset = d.getTimezoneOffset() * 60000;
+            return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
+        };
+
+        setActualStartTime(formatDateForInput(order.startTime));
+        setActualEndTime(new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16));
         setShowEndMissionModal(true);
     };
 
@@ -583,7 +597,8 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                 .from('mission_orders')
                 .update({
                     status: 'CONCLUIDA',
-                    end_time: new Date().toISOString(),
+                    start_time: new Date(actualStartTime).toISOString(),
+                    end_time: new Date(actualEndTime).toISOString(),
                     mission_report: endReport,
                     updated_at: new Date().toISOString()
                 })
@@ -1626,16 +1641,42 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                     <p className={`text-sm font-mono ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>OM #{missionEnding.omisNumber}</p>
                                 </div>
 
-                                <div className={`border-y-2 border-dashed ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} py-6 space-y-4`}>
+                                <div className={`border-y-2 border-dashed ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} py-6 space-y-6`}>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-500'} uppercase tracking-widest`}>Início Real</label>
+                                            <div className="relative">
+                                                <Calendar className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`} />
+                                                <input
+                                                    type="datetime-local"
+                                                    value={actualStartTime}
+                                                    onChange={e => setActualStartTime(e.target.value)}
+                                                    className={`w-full pl-11 pr-4 py-3 ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-900'} rounded-xl text-xs font-mono focus:ring-2 focus:ring-red-500/20 outline-none transition-all`}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-500'} uppercase tracking-widest`}>Término Real</label>
+                                            <div className="relative">
+                                                <Clock className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`} />
+                                                <input
+                                                    type="datetime-local"
+                                                    value={actualEndTime}
+                                                    onChange={e => setActualEndTime(e.target.value)}
+                                                    className={`w-full pl-11 pr-4 py-3 ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-900'} rounded-xl text-xs font-mono focus:ring-2 focus:ring-red-500/20 outline-none transition-all`}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div>
-                                        <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-500'} uppercase tracking-wide mb-2`}>Relato Operacional</label>
+                                        <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-500'} uppercase tracking-widest mb-2`}>Relato Operacional</label>
                                         <textarea
                                             value={endReport}
                                             onChange={e => setEndReport(e.target.value)}
                                             className={`w-full px-5 py-4 ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 text-slate-200 focus:bg-slate-800' : 'bg-slate-50 border-slate-200 text-slate-900'} rounded-2xl text-sm font-mono focus:ring-4 focus:ring-red-500/20 focus:border-red-500 outline-none resize-none transition-all placeholder:text-slate-600`}
-                                            rows={6}
+                                            rows={4}
                                             placeholder="Descreva as ocorrências e resultados da missão..."
-                                            autoFocus
                                         />
                                         <div className="flex justify-between items-center mt-2">
                                             <p className={`text-[10px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>* Campo Obrigatório</p>

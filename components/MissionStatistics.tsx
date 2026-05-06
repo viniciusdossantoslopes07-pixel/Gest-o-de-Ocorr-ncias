@@ -36,6 +36,7 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
 
 export default function MissionStatistics({ orders, missions = [], users = [], isDarkMode, activeOm }: MissionStatisticsProps) {
     const [period, setPeriod] = useState<'all' | 'today' | 'week' | 'month' | 'year'>('year');
+    const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [expandFuture, setExpandFuture] = useState(true);
 
     // --- Print Summary State ---
@@ -66,6 +67,9 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             // Excluir Sobreaviso da contagem de missões convencionais
             if (order.mission === 'SOBREAVISO') return false;
 
+            // Filtro de Categoria
+            if (selectedCategory !== 'all' && order.missionCategory !== selectedCategory) return false;
+
             if (period === 'all') return true;
             const orderDay = new Date(order.date.split('T')[0]);
             if (period === 'today') return orderDay.getTime() === today.getTime();
@@ -82,7 +86,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             }
             return true;
         });
-    }, [orders, period, today]);
+    }, [orders, period, today, selectedCategory]);
 
     const sobreavisoOrders = useMemo(() => {
         return orders.filter(order => {
@@ -129,6 +133,55 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     const totalPersonnel = filteredOrders.reduce((s, o) => s + (o.personnel?.length || 0), 0);
     const sobreavisoCount = sobreavisoOrders.length;
     const sobreavisoPersonnel = sobreavisoOrders.reduce((s, o) => s + (o.personnel?.length || 0), 0);
+
+    // Time Stats
+    const timeStats = useMemo(() => {
+        const completedWithTime = filteredOrders.filter(o => o.status === 'CONCLUIDA' && o.startTime && o.endTime);
+        
+        let totalMinutes = 0;
+        completedWithTime.forEach(o => {
+            const start = new Date(o.startTime!);
+            const end = new Date(o.endTime!);
+            const diff = Math.max(0, (end.getTime() - start.getTime()) / 60000);
+            totalMinutes += diff;
+        });
+
+        const avgMinutes = completedWithTime.length > 0 ? totalMinutes / completedWithTime.length : 0;
+        
+        const formatHours = (mins: number) => {
+            const h = Math.floor(mins / 60);
+            const m = Math.round(mins % 60);
+            return `${h}h ${m}m`;
+        };
+
+        return {
+            totalHours: Math.round(totalMinutes / 60),
+            avgTimeStr: formatHours(avgMinutes),
+            avgMinutes,
+            count: completedWithTime.length
+        };
+    }, [filteredOrders]);
+
+    // Duration by category
+    const durationByCategoryData = useMemo(() => {
+        const stats: Record<string, { total: number; count: number }> = {};
+        filteredOrders.filter(o => o.status === 'CONCLUIDA' && o.startTime && o.endTime).forEach(o => {
+            const cat = o.missionCategory || (o.isInternal ? 'INTERNA' : 'EXTERNA');
+            const start = new Date(o.startTime!);
+            const end = new Date(o.endTime!);
+            const diff = Math.max(0, (end.getTime() - start.getTime()) / 3600000); // in hours
+            
+            if (!stats[cat]) stats[cat] = { total: 0, count: 0 };
+            stats[cat].total += diff;
+            stats[cat].count += 1;
+        });
+
+        return Object.entries(stats).map(([name, s]) => ({
+            name,
+            avg: Number((s.total / s.count).toFixed(1)),
+            total: Math.round(s.total)
+        })).sort((a, b) => b.avg - a.avg);
+    }, [filteredOrders]);
 
     // Trend: last 14 days
     const trendData = useMemo(() => {
@@ -312,6 +365,18 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 </div>
 
                 <div className={`flex items-center gap-1 p-1.5 rounded-2xl ${isDarkMode ? 'bg-slate-800/60' : 'bg-slate-100'}`}>
+                    <select 
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        className={`bg-transparent text-[10px] font-black outline-none border-none focus:ring-0 uppercase cursor-pointer px-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}
+                    >
+                        <option value="all">Todas Categorias</option>
+                        <option value="INTERNA">Internas</option>
+                        <option value="EXTERNA">Externas</option>
+                    </select>
+                </div>
+
+                <div className={`flex items-center gap-1 p-1.5 rounded-2xl ${isDarkMode ? 'bg-slate-800/60' : 'bg-slate-100'}`}>
                     {(['today','week','month','year','all'] as const).map(p => (
                         <button
                             key={p}
@@ -412,7 +477,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                     </button>
                 ))}
                 
-                {/* KPI Sobreaviso - Novo Card */}
+                {/* KPI Sobreaviso */}
                 <button 
                     onClick={() => setSelectedKpi({ title: 'Sobreaviso', color: 'indigo', list: sobreavisoOrders })}
                     className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-500/10 text-left border-transparent hover:border-indigo-500/20`}
@@ -429,10 +494,24 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                     </div>
                 </button>
 
+                {/* KPI Tempo Médio */}
+                <div className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-orange-500/10 text-left border-transparent hover:border-orange-500/20`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-all duration-300 group-hover:scale-110 ${isDarkMode ? 'text-orange-400 bg-orange-500/10' : 'text-orange-600 bg-orange-50'}`}>
+                        <Clock className="w-5 h-5" />
+                    </div>
+                    <p className={label}>Tempo Médio</p>
+                    <h3 className={`text-3xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{timeStats.avgTimeStr}</h3>
+                    <div className="mt-2">
+                        <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`}>
+                            {timeStats.totalHours}h operacionais totais
+                        </p>
+                    </div>
+                </div>
+
 
             </div>
 
-            {/* Charts: Fluxo Histórico + Previsão */}
+            {/* Charts: Fluxo Histórico + Tempo Médio Categoria */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 <div className={`${card}`}>
                     <h3 className={`text-sm font-black uppercase tracking-tighter mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Histórico — Últimos 14 dias</h3>
@@ -466,21 +545,21 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 </div>
 
                 <div className={`${card}`}>
-                    <h3 className={`text-sm font-black uppercase tracking-tighter mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Previsão — Próximos 14 dias</h3>
-                    <p className={`text-[10px] font-bold uppercase mb-6 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Missões programadas por dia</p>
+                    <h3 className={`text-sm font-black uppercase tracking-tighter mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Tempo Médio por Categoria</h3>
+                    <p className={`text-[10px] font-bold uppercase mb-6 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Duração média das missões em horas</p>
                     <div className="h-[220px]">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={futureTrend}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#1e293b' : '#f1f5f9'} />
-                                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} dy={8} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} allowDecimals={false} />
+                            <BarChart data={durationByCategoryData} layout="vertical">
+                                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={isDarkMode ? '#1e293b' : '#f1f5f9'} />
+                                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} />
+                                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} width={80} />
                                 <Tooltip 
                                     contentStyle={tooltipContentStyle}
                                     itemStyle={tooltipTextStyle}
-                                    cursor={{ fill: 'transparent' }}
+                                    cursor={{ fill: isDarkMode ? '#334155' : '#f1f5f9', opacity: 0.4 }}
                                 />
-                                <Bar dataKey="previstas" name="Previstas" fill="#8b5cf6" radius={[8, 8, 0, 0]}>
-                                    <LabelList dataKey="previstas" position="center" fill="#fff" fontSize={10} fontWeight={900} />
+                                <Bar dataKey="avg" name="Média (h)" fill="#f59e0b" radius={[0, 8, 8, 0]}>
+                                    <LabelList dataKey="avg" position="right" fill={isDarkMode ? '#fff' : '#000'} fontSize={10} fontWeight={900} />
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>
