@@ -7,7 +7,7 @@ import {
 import {
     Target, Users, CheckCircle, Clock, Calendar,
     MapPin, Zap, Activity, XCircle, ChevronDown, ChevronUp,
-    ShieldCheck, ArrowRight, Printer, Search, List, Medal
+    ShieldCheck, ArrowRight, Printer, Search, List, Medal, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { formatDisplayDate } from '../utils/formatters';
 import MissionSummaryPrintView from './MissionSummaryPrintView';
@@ -48,14 +48,26 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     // --- Detail Modal State ---
     const [selectedKpi, setSelectedKpi] = useState<{ title: string; color: string; list: MissionOrder[] } | null>(null);
 
-    const printOrders = useMemo(() => {
-        if (!printDateStart) return [];
-        const end = printDateEnd || printDateStart;
-        return orders.filter(o => {
-            const d = o.date.split('T')[0];
-            return d >= printDateStart && d <= end && o.status !== 'REJEITADA' && o.status !== 'CANCELADA';
-        }).sort((a, b) => a.date.localeCompare(b.date));
     }, [orders, printDateStart, printDateEnd]);
+
+    const handleAdjustDay = (days: number) => {
+        const adjust = (dateStr: string) => {
+            const date = new Date(dateStr + 'T12:00:00'); // Use mid-day to avoid TZ issues
+            date.setDate(date.getDate() + days);
+            return date.toISOString().split('T')[0];
+        };
+        
+        const newStart = adjust(printDateStart);
+        // If range was just one day, move both to the same new day
+        if (printDateStart === printDateEnd) {
+            setPrintDateStart(newStart);
+            setPrintDateEnd(newStart);
+        } else {
+            // Otherwise move both boundaries
+            setPrintDateStart(newStart);
+            setPrintDateEnd(adjust(printDateEnd));
+        }
+    };
 
     const today = useMemo(() => {
         const d = new Date();
@@ -339,21 +351,37 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
 
                 {/* Controles de Impressão Integrados */}
                 <div className={`flex items-center gap-2 p-1.5 rounded-2xl ${isDarkMode ? 'bg-slate-800/40' : 'bg-slate-50 border border-slate-200'}`}>
-                    <div className="flex items-center gap-2 px-2 border-r border-dashed border-slate-700/50">
-                        <input
-                            type="date"
-                            value={printDateStart}
-                            onChange={e => setPrintDateStart(e.target.value)}
-                            className={`bg-transparent text-[10px] font-black outline-none focus:text-blue-400 transition-colors uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}
-                        />
-                        <span className="opacity-30">/</span>
-                        <input
-                            type="date"
-                            value={printDateEnd}
-                            min={printDateStart}
-                            onChange={e => setPrintDateEnd(e.target.value)}
-                            className={`bg-transparent text-[10px] font-black outline-none focus:text-blue-400 transition-colors uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}
-                        />
+                    <div className="flex items-center gap-2 px-1">
+                        <button 
+                            onClick={() => handleAdjustDay(-1)}
+                            className={`p-1 rounded-lg transition-colors ${isDarkMode ? 'hover:bg-slate-700 text-slate-500' : 'hover:bg-white text-slate-400'}`}
+                        >
+                            <ChevronLeft className="w-3.5 h-3.5" />
+                        </button>
+                        
+                        <div className="flex items-center gap-2 px-2 border-x border-dashed border-slate-700/50">
+                            <input
+                                type="date"
+                                value={printDateStart}
+                                onChange={e => setPrintDateStart(e.target.value)}
+                                className={`bg-transparent text-[10px] font-black outline-none focus:text-blue-400 transition-colors uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}
+                            />
+                            <span className="opacity-30">/</span>
+                            <input
+                                type="date"
+                                value={printDateEnd}
+                                min={printDateStart}
+                                onChange={e => setPrintDateEnd(e.target.value)}
+                                className={`bg-transparent text-[10px] font-black outline-none focus:text-blue-400 transition-colors uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}
+                            />
+                        </div>
+
+                        <button 
+                            onClick={() => handleAdjustDay(1)}
+                            className={`p-1 rounded-lg transition-colors ${isDarkMode ? 'hover:bg-slate-700 text-slate-500' : 'hover:bg-white text-slate-400'}`}
+                        >
+                            <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
                     </div>
                     <button
                         onClick={() => setShowPrintSummary(true)}
