@@ -304,9 +304,9 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             .slice(0, 5);
     }, [filteredOrders]);
 
-    const card = `p-5 rounded-[2rem] border transition-all hover:scale-[1.02] ${isDarkMode ? 'bg-slate-900/50 border-slate-800 shadow-2xl' : 'bg-white border-slate-200 shadow-xl shadow-slate-100/80'}`;
-    const label = `text-[9px] font-black uppercase tracking-[0.2em] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`;
-    const value = `text-4xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`;
+    const card = `p-4 rounded-[1.5rem] border transition-all hover:scale-[1.02] ${isDarkMode ? 'bg-slate-900/50 border-slate-800 shadow-2xl' : 'bg-white border-slate-200 shadow-xl shadow-slate-100/80'}`;
+    const label = `text-[8px] font-black uppercase tracking-[0.15em] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`;
+    const value = `text-2xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`;
     const chartBg = isDarkMode ? '#1e293b' : '#fff';
     const tooltipContentStyle = {
         backgroundColor: chartBg,
@@ -395,7 +395,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
 
             {/* KPI Row */}
             {/* KPI Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-3">
                 {/* 1. Total OMIS */}
                 <button 
                     onClick={() => setSelectedKpi({ title: 'Total OMIS', color: 'blue', list: filteredOrders })}
@@ -405,7 +405,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                         <Target className="w-5 h-5" />
                     </div>
                     <p className={label}>Total OMIS</p>
-                    <h3 className={`text-3xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{total}</h3>
+                    <h3 className={`text-2xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{total}</h3>
                 </button>
 
                 {/* 2. KPI Ativas */}
@@ -422,7 +422,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                         <Zap className="w-5 h-5" />
                     </div>
                     <p className={label}>Ativas</p>
-                    <h3 className={`text-3xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{active}</h3>
+                    <h3 className={`text-2xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{active}</h3>
                     <div className="mt-2 space-y-0.5">
                         <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
                             {inMission} em campo
@@ -473,7 +473,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                             {kpi.icon}
                         </div>
                         <p className={label}>{kpi.lbl}</p>
-                        <h3 className={`text-3xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{kpi.val}</h3>
+                        <h3 className={`text-2xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{kpi.val}</h3>
                     </button>
                 ))}
                 
@@ -486,7 +486,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                         <Clock className="w-5 h-5" />
                     </div>
                     <p className={label}>Sobreaviso</p>
-                    <h3 className={`text-3xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{sobreavisoCount}</h3>
+                    <h3 className={`text-2xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{sobreavisoCount}</h3>
                     <div className="mt-2">
                         <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
                             {sobreavisoPersonnel} militares escalados
@@ -500,7 +500,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                         <Clock className="w-5 h-5" />
                     </div>
                     <p className={label}>Tempo Médio</p>
-                    <h3 className={`text-3xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{timeStats.avgTimeStr}</h3>
+                    <h3 className={`text-2xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{timeStats.avgTimeStr}</h3>
                     <div className="mt-2">
                         <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`}>
                             {timeStats.totalHours}h operacionais totais
