@@ -178,7 +178,8 @@ export const MISSION_FUNCTIONS = [
   'Aux Comandante',
   'Efetivo S.I',
   'Efetivo PA',
-  'Efetivo REC'
+  'Efetivo REC',
+  'Efetivo Seção'
 ];
 
 export const MATERIAL_TYPES = [

@@ -186,7 +186,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
 
     // Specialized Personnel Employment comparison
     const specializedPersonnelData = useMemo(() => {
-        const counts = { SI: 0, PA: 0, REC: 0 };
+        const counts = { SI: 0, PA: 0, REC: 0, SEC: 0 };
         // Filtrar apenas ordens aprovadas e iniciadas (excluir canceladas, rascunhos, etc.)
         const activeOrders = filteredOrders.filter(o => 
             ['PRONTA_PARA_EXECUCAO', 'EM_MISSAO', 'CONCLUIDA'].includes(o.status || '')
@@ -197,15 +197,17 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 if (p.function === 'Efetivo S.I') counts.SI++;
                 else if (p.function === 'Efetivo PA') counts.PA++;
                 else if (p.function === 'Efetivo REC') counts.REC++;
+                else if (p.function === 'Efetivo Seção') counts.SEC++;
             });
         });
         
-        const totalActiveSpecialized = counts.SI + counts.PA + counts.REC;
+        const totalActiveSpecialized = counts.SI + counts.PA + counts.REC + counts.SEC;
 
         return [
             { name: 'SI',  value: counts.SI,  color: '#3b82f6', total: totalActiveSpecialized },
             { name: 'PA',  value: counts.PA,  color: '#f59e0b', total: totalActiveSpecialized },
-            { name: 'REC', value: counts.REC, color: '#10b981', total: totalActiveSpecialized }
+            { name: 'REC', value: counts.REC, color: '#10b981', total: totalActiveSpecialized },
+            { name: 'Seção', value: counts.SEC, color: '#8b5cf6', total: totalActiveSpecialized }
         ];
     }, [filteredOrders]);
 
