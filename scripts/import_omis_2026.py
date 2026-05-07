@@ -204,6 +204,9 @@ def parse_pessoal(texto: str) -> list:
         elif 'REC' in funcao_norm or 'ALUNO' in funcao_norm or 'CADETE' in funcao_norm: funcao_val = 'Efetivo REC'
         elif 'SEÇÃO' in funcao_norm or 'SECAO' in funcao_norm: funcao_val = 'Efetivo Seção'
 
+        # Normalização de SARAM (remover hifens/pontos para bater com o cadastro)
+        saram_val = re.sub(r'[^0-9]', '', saram_val)
+
         pessoal.append({
             'id': str(uuid.uuid4()),
             'function': funcao_val,
