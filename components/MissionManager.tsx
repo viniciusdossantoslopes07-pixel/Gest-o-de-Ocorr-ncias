@@ -1454,7 +1454,17 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
 
                                 return (
                                     <Fragment>
-                                        {filtered.map(order => (
+                                        {filtered
+                                            .sort((a, b) => {
+                                                // Prioridade 1: Data (Decrescente)
+                                                if (b.date !== a.date) return b.date.localeCompare(a.date);
+                                                
+                                                // Prioridade 2: Número da OMIS (Decrescente)
+                                                const numA = parseInt(a.omisNumber?.split('/')[0] || '0');
+                                                const numB = parseInt(b.omisNumber?.split('/')[0] || '0');
+                                                return numB - numA;
+                                            })
+                                            .map(order => (
                                             <div 
                                                 key={order.id} 
                                                 onClick={() => handlePrintOrder(order)}
