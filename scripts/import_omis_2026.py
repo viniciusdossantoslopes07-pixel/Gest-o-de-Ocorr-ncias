@@ -199,26 +199,29 @@ def parse_pessoal(texto: str) -> list:
                 break
         
         if idx_posto != -1:
+            # Se achou um posto, valida se ele está na posição certa ou se houve inversão
             posto_val = partes[idx_posto]
-            # O nome é o que está entre o posto e o saram (ex: 2T JOANA -> posto 2T, nome JOANA)
-            # Ou o que está antes se for inversão (ex: JOANA 2T -> posto 2T, nome JOANA)
             nome_partes = partes[idx_posto + 1 : saram_idx]
+            
             if not nome_partes and idx_posto > 0:
+                # Inversão: JOANA 2T -> posto 2T, nome JOANA
                 nome_val = partes[idx_posto - 1]
                 funcao_val = ' '.join(partes[:idx_posto - 1])
             else:
+                # Normal: 2T JOANA -> posto 2T, nome JOANA
                 nome_val = ' '.join(nome_partes)
                 funcao_val = ' '.join(partes[:idx_posto])
         else:
-            # Se não achou posto, assume que as 2 partes antes do SARAM são o nome (ex: G. COSTA)
-            # O posto fica vazio ou pode ser inferido pela função se necessário
+            # Se não achou posto conhecido, assume que tudo antes do SARAM é nome
+            # e tenta inferir o posto (S2/S1 para efetivo)
             nome_val = ' '.join(partes[max(0, saram_idx - 2) : saram_idx])
             funcao_val = ' '.join(partes[:max(0, saram_idx - 2)])
-            posto_val = '' # Posto não identificado nesta linha
+            posto_val = 'S2' if 'EFETIVO' in funcao_val.upper() else ''
 
-        # Se o posto sumiu mas a função é "Efetivo", tenta inferir S1/S2 se o nome for curto
-        if not posto_val and 'EFETIVO' in funcao_val.upper():
-            posto_val = 'S2'
+        # Limpeza: se o posto_val por algum motivo recebeu um nome (longo), limpa
+        if len(posto_val) > 10 and posto_val.upper() not in RANKS:
+            nome_val = f"{posto_val} {nome_val}"
+            posto_val = 'S2' if 'EFETIVO' in funcao_val.upper() else ''
 
         # Tudo após SARAM: uniforme, armamento, munição
         resto = partes[saram_idx + 1:]
