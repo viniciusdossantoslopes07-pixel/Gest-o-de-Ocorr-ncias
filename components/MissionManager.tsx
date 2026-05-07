@@ -60,6 +60,8 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
     // History Filters & Search
     const [historySearch, setHistorySearch] = useState('');
     const [historyFilter, setHistoryFilter] = useState<'ALL' | 'CONCLUIDA' | 'CANCELADA'>('ALL');
+    const [historyMonth, setHistoryMonth] = useState<string>('all');
+    const [historyYear, setHistoryYear] = useState<string>(new Date().getFullYear().toString());
 
     // Permission checks
     // Refactored to use granular permissions instead of AccessLevel
@@ -1340,16 +1342,48 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                         })()}
 
                         {/* Search and Filters Bar */}
-                        <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between mb-8">
-                            <div className="relative w-full lg:max-w-md">
-                                <Filter className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`} />
-                                <input 
-                                    type="text"
-                                    placeholder="Tipo ou OMIS..."
-                                    value={historySearch}
-                                    onChange={(e) => setHistorySearch(e.target.value)}
-                                    className={`w-full pl-11 pr-4 py-3.5 sm:py-4 rounded-2xl border transition-all text-sm sm:text-base ${isDarkMode ? 'bg-slate-950/50 border-slate-800 text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500' : 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:shadow-lg'}`}
-                                />
+                        <div className="flex flex-col xl:flex-row gap-4 items-stretch xl:items-center justify-between mb-8">
+                            <div className="flex flex-col md:flex-row gap-3 flex-1 lg:max-w-3xl">
+                                <div className="relative flex-1">
+                                    <Filter className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`} />
+                                    <input 
+                                        type="text"
+                                        placeholder="Tipo ou OMIS..."
+                                        value={historySearch}
+                                        onChange={(e) => setHistorySearch(e.target.value)}
+                                        className={`w-full pl-11 pr-4 py-3.5 sm:py-4 rounded-2xl border transition-all text-sm sm:text-base ${isDarkMode ? 'bg-slate-950/50 border-slate-800 text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500' : 'bg-slate-50 border-slate-200 text-slate-900 focus:bg-white focus:shadow-lg'}`}
+                                    />
+                                </div>
+
+                                <div className="flex gap-2">
+                                    <div className={`relative flex-1 md:flex-none md:w-32 rounded-2xl border ${isDarkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+                                        <select
+                                            value={historyMonth}
+                                            onChange={(e) => setHistoryMonth(e.target.value)}
+                                            className={`w-full bg-transparent pl-4 pr-10 py-3.5 sm:py-4 rounded-2xl appearance-none text-xs sm:text-sm font-black uppercase tracking-widest outline-none ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}
+                                        >
+                                            <option value="all">Mês</option>
+                                            {['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'].map((m, i) => (
+                                                <option key={m} value={(i + 1).toString()}>{m}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className={`absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`} />
+                                    </div>
+
+                                    <div className={`relative flex-1 md:flex-none md:w-28 rounded-2xl border ${isDarkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+                                        <select
+                                            value={historyYear}
+                                            onChange={(e) => setHistoryYear(e.target.value)}
+                                            className={`w-full bg-transparent pl-4 pr-10 py-3.5 sm:py-4 rounded-2xl appearance-none text-xs sm:text-sm font-black uppercase tracking-widest outline-none ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}
+                                        >
+                                            <option value="all">Ano</option>
+                                            {[2024, 2025, 2026, 2027].map(y => (
+                                                <option key={y} value={y.toString()}>{y}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className={`absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`} />
+                                    </div>
+                                </div>
                             </div>
 
                             <div className={`flex p-1 rounded-2xl overflow-x-auto scrollbar-hide ${isDarkMode ? 'bg-slate-950/80 border border-slate-800' : 'bg-slate-100 border border-slate-200'}`}>
@@ -1391,7 +1425,14 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                         const omisMatch = o.omisNumber?.toLowerCase().includes(search);
                                         const descMatch = o.description?.toLowerCase().includes(search);
                                         
-                                        return typeMatch || omisMatch || descMatch;
+                                        if (!(typeMatch || omisMatch || descMatch)) return false;
+                                    }
+
+                                    // Month and Year Filter
+                                    if (o.date) {
+                                        const d = new Date(o.date.split('T')[0] + 'T12:00:00');
+                                        if (historyYear !== 'all' && d.getFullYear().toString() !== historyYear) return false;
+                                        if (historyMonth !== 'all' && (d.getMonth() + 1).toString() !== historyMonth) return false;
                                     }
 
                                     return true;
