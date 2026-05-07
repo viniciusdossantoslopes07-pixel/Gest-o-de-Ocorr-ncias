@@ -187,23 +187,39 @@ def parse_pessoal(texto: str) -> list:
                 break
         if saram_idx is None:
             continue
-        # Heurística para Posto e Nome (correção de inversão em layouts antigos)
-        RANKS = ['CEL', 'TEN CEL', 'TEN-CEL', 'MAJ', 'CAP', '1T', '2T', 'ASP', 'SO', '1S', '2S', '3S', 'CB', 'S1', 'S2', 'REC', 'ALUNO', 'CADETE', '3º SGT', '2º SGT', '1º SGT', 'SUB', 'TEN', 'MAJ', 'CEL']
+        # Heurística robusta para Posto e Nome
+        RANKS = ['CEL', 'TEN CEL', 'TEN-CEL', 'MAJ', 'CAP', '1T', '2T', 'ASP', 'SO', '1S', '2S', '3S', 'CB', 'S1', 'S2', 'REC', 'ALUNO', 'CADETE', '3º SGT', '2º SGT', '1º SGT', 'SUB', 'TEN', 'MAJ', 'CEL', 'CEL.', 'MAJ.', 'CAP.', 'TEN.', 'SGT.', 'SGT', 'CB.', 'S1.', 'S2.', 'SD', '2ºSGT', '3ºSGT', '1ºSGT']
         
-        v1 = partes[saram_idx - 1] if saram_idx > 0 else ''
-        v2 = partes[saram_idx - 2] if saram_idx > 1 else ''
+        # Tenta achar o posto na linha (da direita para a esquerda antes do SARAM)
+        idx_posto = -1
+        for i in range(saram_idx - 1, -1, -1):
+            p_norm = partes[i].upper().replace('º','').replace('°','').replace('.','')
+            if p_norm in RANKS:
+                idx_posto = i
+                break
         
-        v1_norm = v1.upper().replace('º','').replace('°','')
-        v2_norm = v2.upper().replace('º','').replace('°','')
-
-        if v2_norm in RANKS and v1_norm not in RANKS:
-            posto_val = v2
-            nome_val = v1
+        if idx_posto != -1:
+            posto_val = partes[idx_posto]
+            # O nome é o que está entre o posto e o saram (ex: 2T JOANA -> posto 2T, nome JOANA)
+            # Ou o que está antes se for inversão (ex: JOANA 2T -> posto 2T, nome JOANA)
+            nome_partes = partes[idx_posto + 1 : saram_idx]
+            if not nome_partes and idx_posto > 0:
+                nome_val = partes[idx_posto - 1]
+                funcao_val = ' '.join(partes[:idx_posto - 1])
+            else:
+                nome_val = ' '.join(nome_partes)
+                funcao_val = ' '.join(partes[:idx_posto])
         else:
-            posto_val = v1
-            nome_val = v2
+            # Se não achou posto, assume que as 2 partes antes do SARAM são o nome (ex: G. COSTA)
+            # O posto fica vazio ou pode ser inferido pela função se necessário
+            nome_val = ' '.join(partes[max(0, saram_idx - 2) : saram_idx])
+            funcao_val = ' '.join(partes[:max(0, saram_idx - 2)])
+            posto_val = '' # Posto não identificado nesta linha
 
-        funcao_val = ' '.join(partes[:max(0, saram_idx - 2)])
+        # Se o posto sumiu mas a função é "Efetivo", tenta inferir S1/S2 se o nome for curto
+        if not posto_val and 'EFETIVO' in funcao_val.upper():
+            posto_val = 'S2'
+
         # Tudo após SARAM: uniforme, armamento, munição
         resto = partes[saram_idx + 1:]
         uniforme  = resto[0] if len(resto) > 0 else ''
