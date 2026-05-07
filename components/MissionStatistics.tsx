@@ -323,6 +323,27 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             .slice(0, 5);
     }, [filteredOrders]);
 
+    // Volume Mensal
+    const monthlyData = useMemo(() => {
+        const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        const counts: Record<number, number> = {};
+        for (let i = 0; i < 12; i++) counts[i] = 0;
+
+        filteredOrders.forEach(o => {
+            const d = new Date(o.date.split('T')[0] + 'T12:00:00');
+            const month = d.getMonth();
+            counts[month] = (counts[month] || 0) + 1;
+        });
+
+        return monthNames.map((name, index) => ({
+            name,
+            value: counts[index]
+        })).filter((item, index) => {
+            const currentMonth = new Date().getMonth();
+            return index <= currentMonth || item.value > 0;
+        });
+    }, [filteredOrders]);
+
     const card = `p-4 rounded-[1.5rem] border transition-all hover:scale-[1.02] ${isDarkMode ? 'bg-slate-900/50 border-slate-800 shadow-2xl' : 'bg-white border-slate-200 shadow-xl shadow-slate-100/80'}`;
     const label = `text-[8px] font-black uppercase tracking-[0.15em] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`;
     const value = `text-2xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`;
@@ -546,8 +567,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
 
             </div>
 
-            {/* Charts: Fluxo Histórico + Tempo Médio Categoria */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            {/* Charts: Fluxo Histórico + Volume Mensal + Tempo Médio */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 <div className={`${card}`}>
                     <h3 className={`text-sm font-black uppercase tracking-tighter mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Histórico — Últimos 14 dias</h3>
                     <p className={`text-[10px] font-bold uppercase mb-6 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Total vs. concluídas por dia</p>
@@ -575,6 +596,28 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                 <Area type="monotone" dataKey="total" name="Total" stroke="#3b82f6" strokeWidth={3} fill="url(#gTotal)" />
                                 <Area type="monotone" dataKey="concluded" name="Concluídas" stroke="#10b981" strokeWidth={3} fill="url(#gConcluded)" />
                             </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                <div className={`${card}`}>
+                    <h3 className={`text-sm font-black uppercase tracking-tighter mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Volume Mensal de Missões</h3>
+                    <p className={`text-[10px] font-bold uppercase mb-6 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Quantidade total por mês em 2026</p>
+                    <div className="h-[220px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={monthlyData}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#1e293b' : '#f1f5f9'} />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} dy={8} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 900 }} />
+                                <Tooltip 
+                                    contentStyle={tooltipContentStyle}
+                                    itemStyle={tooltipTextStyle}
+                                    cursor={{ fill: isDarkMode ? '#334155' : '#f1f5f9', opacity: 0.4 }}
+                                />
+                                <Bar dataKey="value" name="Missões" fill="#6366f1" radius={[8, 8, 0, 0]}>
+                                    <LabelList dataKey="value" position="top" fill={isDarkMode ? '#94a3b8' : '#64748b'} fontSize={10} fontWeight={900} />
+                                </Bar>
+                            </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
