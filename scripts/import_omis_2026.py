@@ -197,6 +197,13 @@ def parse_pessoal(texto: str) -> list:
         uniforme  = resto[0] if len(resto) > 0 else ''
         armamento = resto[1] if len(resto) > 1 else ''
         municao   = ' '.join(resto[2:]) if len(resto) > 2 else ''
+        # Normalização de Função para Estatísticas
+        funcao_norm = funcao_val.upper()
+        if 'P.A' in funcao_norm or 'PA' in funcao_norm: funcao_val = 'Efetivo PA'
+        elif 'S.I' in funcao_norm or 'SI' in funcao_norm: funcao_val = 'Efetivo S.I'
+        elif 'REC' in funcao_norm or 'ALUNO' in funcao_norm or 'CADETE' in funcao_norm: funcao_val = 'Efetivo REC'
+        elif 'SEÇÃO' in funcao_norm or 'SECAO' in funcao_norm: funcao_val = 'Efetivo Seção'
+
         pessoal.append({
             'id': str(uuid.uuid4()),
             'function': funcao_val,

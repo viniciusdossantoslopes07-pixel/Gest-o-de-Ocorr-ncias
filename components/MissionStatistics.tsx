@@ -266,10 +266,12 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
 
         activeOrders.forEach(o => {
             o.personnel?.forEach(p => {
-                if (p.function === 'Efetivo S.I') counts.SI++;
-                else if (p.function === 'Efetivo PA') counts.PA++;
-                else if (p.function === 'Efetivo REC') counts.REC++;
-                else if (p.function === 'Efetivo Seção') counts.SEC++;
+                const func = (p.function || '').toUpperCase();
+                // Normalização para capturar variações (P.A, S.I, Rec, etc)
+                if (func.includes('S.I') || func.includes('SI')) counts.SI++;
+                else if (func.includes('P.A') || func.includes('PA')) counts.PA++;
+                else if (func.includes('REC') || func.includes('ALUNO') || func.includes('CADETE')) counts.REC++;
+                else if (func.includes('SEÇÃO') || func.includes('SECAO')) counts.SEC++;
             });
         });
         
