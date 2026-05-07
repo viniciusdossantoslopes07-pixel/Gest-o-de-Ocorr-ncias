@@ -29,8 +29,14 @@ const PersonalReportPrintView: FC<PersonalReportPrintViewProps> = ({
     const missionsToRender = hasActiveFilters ? filteredStats.allFiltered : stats.recentMissions;
 
     return (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 print:p-0 print:bg-white force-light backdrop-blur-sm">
-            <div className="bg-white rounded-2xl max-w-5xl w-full h-[90vh] print:h-auto overflow-hidden flex flex-col print:rounded-none print:max-w-none shadow-2xl">
+        <div 
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 print:p-0 print:bg-white force-light backdrop-blur-sm cursor-pointer"
+            onClick={onClose}
+        >
+            <div 
+                className="bg-white rounded-2xl max-w-5xl w-full h-[90vh] print:h-auto overflow-hidden flex flex-col print:rounded-none print:max-w-none shadow-2xl cursor-default"
+                onClick={(e) => e.stopPropagation()}
+            >
 
                 {/* Control Header - Hidden on print */}
                 <div className="bg-white border-b border-slate-200 p-4 flex items-center justify-between print:hidden z-20 shrink-0">
