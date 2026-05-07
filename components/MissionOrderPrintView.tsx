@@ -376,16 +376,26 @@ ${content.outerHTML}
                             <div className="flex flex-col items-center w-1/2 px-2">
                                 <div className="w-48 h-px bg-slate-400 mb-2"></div>
                                 <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">
-                                    {order.chSopName || (new Date(order.createdAt) < new Date('2026-05-01') ? 'JOÃO GABRIEL PICCOLI E SOUZA Maj Inf' : '________________________________________')}
+                                    {(() => {
+                                        const name = order.chSopName || (new Date(order.createdAt) < new Date('2026-05-01') ? 'JOÃO GABRIEL PICCOLI E SOUZA Maj Inf' : '________________________________________');
+                                        // Limpeza de cargos capturados como nomes
+                                        if (name.toLowerCase().includes('chefe') || name.toLowerCase().includes('cmt do')) return '________________________________________';
+                                        return name;
+                                    })()}
                                 </p>
-                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">CHEFE DA SEÇÃO DE OPERAÇÕES</p>
+                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase">CHEFE DA SEÇÃO DE OPERAÇÕES</p>
                             </div>
                             <div className="flex flex-col items-center w-1/2 px-2">
                                 <div className="w-48 h-px bg-slate-400 mb-2"></div>
                                 <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">
-                                    {order.cmtName || (new Date(order.createdAt) < new Date('2026-05-01') ? 'FELIPE BARBOSA ALVARENGA Ten Cel Inf' : '________________________________________')}
+                                    {(() => {
+                                        const name = order.cmtName || (new Date(order.createdAt) < new Date('2026-05-01') ? 'FELIPE BARBOSA ALVARENGA Ten Cel Inf' : '________________________________________');
+                                        // Limpeza de cargos capturados como nomes
+                                        if (name.toLowerCase().includes('chefe') || name.toLowerCase().includes('cmt do')) return '________________________________________';
+                                        return name;
+                                    })()}
                                 </p>
-                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">CMT DO GSD-SP</p>
+                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase">CMT DO GSD-SP</p>
                             </div>
                         </div>
 

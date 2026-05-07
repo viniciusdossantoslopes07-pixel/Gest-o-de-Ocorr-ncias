@@ -268,20 +268,43 @@ def parse_assinaturas(texto: str) -> tuple:
     """Retorna (ch_sop_name, cmt_name)."""
     ch_sop = ''
     cmt = ''
-    # Procura padrão: Nome completo em maiúsculas + posto + "Chefe da SOP" ou "Cmt do GSD-SP"
+    
+    # Lista de cargos para limpeza
+    cargos = ['Chefe da Seção de Operações', 'Chefe interino da Seção de Operações', 'Chefe da SOP', 'Cmt do GSD-SP']
+
+    def clean_name(name_str: str) -> str:
+        res = name_str.strip()
+        for c in cargos:
+            res = re.sub(re.escape(c), '', res, flags=re.IGNORECASE).strip()
+        # Se houver dois nomes grandes na mesma linha (ex: side-by-side no PDF), tenta pegar o primeiro ou segundo
+        return res
+
     m_cmt = re.search(r'Cmt do GSD-SP', texto, re.IGNORECASE)
     if m_cmt:
-        # Pega o nome que aparece antes de "Cmt do GSD-SP"
         trecho = texto[:m_cmt.start()]
         linhas_rev = [l.strip() for l in trecho.splitlines() if l.strip()]
         if linhas_rev:
-            cmt = linhas_rev[-1]
+            full_line = clean_name(linhas_rev[-1])
+            # Se a linha for muito longa, provavelmente tem dois nomes. O do CMT geralmente é o segundo (direita)
+            if len(full_line) > 35 and 'Inf' in full_line:
+                partes = re.split(r'(?<=[a-z])\s+(?=[A-Z])', full_line)
+                cmt = partes[-1] if partes else full_line
+            else:
+                cmt = full_line
+                
     m_sop = re.search(r'Chefe\s+(interino\s+da\s+Se[çc][ãa]o|da\s+SOP|da\s+Se[çc][ãa]o\s+de\s+Opera)', texto, re.IGNORECASE)
     if m_sop:
         trecho = texto[:m_sop.start()]
         linhas_rev = [l.strip() for l in trecho.splitlines() if l.strip()]
         if linhas_rev:
-            ch_sop = linhas_rev[-1]
+            full_line = clean_name(linhas_rev[-1])
+            # O do SOP geralmente é o primeiro (esquerda)
+            if len(full_line) > 35 and 'Inf' in full_line:
+                partes = re.split(r'(?<=[a-z])\s+(?=[A-Z])', full_line)
+                ch_sop = partes[0] if partes else full_line
+            else:
+                ch_sop = full_line
+                
     return ch_sop, cmt
 
 def horario_medio(missao: str, data_iso: str) -> tuple:
