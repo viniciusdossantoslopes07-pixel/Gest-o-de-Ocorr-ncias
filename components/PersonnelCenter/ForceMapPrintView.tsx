@@ -1,5 +1,6 @@
 
 import { type FC } from 'react';
+import { Printer, X, BarChart3, Building2 } from 'lucide-react';
 import { MilitaryOrganization } from '../../types';
 import { OmPrintHeader } from '../Common/OmPrintHeader';
 
