@@ -187,10 +187,22 @@ def parse_pessoal(texto: str) -> list:
                 break
         if saram_idx is None:
             continue
-        # Posto é a parte antes do SARAM que corresponde a posto militar
-        # Função é tudo antes do posto
-        posto_val = partes[saram_idx - 1] if saram_idx > 0 else ''
-        nome_val  = ' '.join(partes[saram_idx - 2:saram_idx - 1]) if saram_idx > 1 else ''
+        # Heurística para Posto e Nome (correção de inversão em layouts antigos)
+        RANKS = ['CEL', 'TEN CEL', 'TEN-CEL', 'MAJ', 'CAP', '1T', '2T', 'ASP', 'SO', '1S', '2S', '3S', 'CB', 'S1', 'S2', 'REC', 'ALUNO', 'CADETE', '3º SGT', '2º SGT', '1º SGT', 'SUB', 'TEN', 'MAJ', 'CEL']
+        
+        v1 = partes[saram_idx - 1] if saram_idx > 0 else ''
+        v2 = partes[saram_idx - 2] if saram_idx > 1 else ''
+        
+        v1_norm = v1.upper().replace('º','').replace('°','')
+        v2_norm = v2.upper().replace('º','').replace('°','')
+
+        if v2_norm in RANKS and v1_norm not in RANKS:
+            posto_val = v2
+            nome_val = v1
+        else:
+            posto_val = v1
+            nome_val = v2
+
         funcao_val = ' '.join(partes[:max(0, saram_idx - 2)])
         # Tudo após SARAM: uniforme, armamento, munição
         resto = partes[saram_idx + 1:]
