@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, AccessEvent } from '../../../types';
 import { eventService } from '../../../services/eventService';
 import { supabase } from '../../../services/supabase';
-import { Calendar, MapPin, Users, ChevronRight, RefreshCw, Info, CalendarDays, Printer, Camera } from 'lucide-react';
+import { Calendar, MapPin, Users, ChevronRight, RefreshCw, Info, CalendarDays, Printer, Camera, Car } from 'lucide-react';
 import { formatDisplayDate } from '../../../utils/formatters';
 import EventPrintView from './EventPrintView';
 
@@ -319,11 +319,18 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
                             </div>
 
                             <div className={`pt-3 border-t flex items-center justify-between ${dk ? 'border-slate-600' : 'border-slate-200'}`}>
-                                <div className={`flex items-center gap-1.5 text-xs font-bold ${dk ? 'text-blue-400' : 'text-blue-600'}`}>
-                                    <Users className="w-4 h-4" />
-                                    {(event.guests || []).length} Convidados
+                                <div className="flex items-center gap-3">
+                                    <div className={`flex items-center gap-1.5 text-xs font-bold ${dk ? 'text-blue-400' : 'text-blue-600'}`}>
+                                        <Users className="w-4 h-4" />
+                                        {(event.guests || []).length} Convidados
+                                    </div>
+                                    {(event.guests || []).filter(g => g.has_vehicle).length > 0 && (
+                                        <div className={`flex items-center gap-1.5 text-xs font-bold ${dk ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                                            <Car className="w-4 h-4" />
+                                            {(event.guests || []).filter(g => g.has_vehicle).length} Veículos
+                                        </div>
+                                    )}
                                 </div>
-
                                 <ChevronRight className={`w-4 h-4 ${textMuted}`} />
                             </div>
                         </div>

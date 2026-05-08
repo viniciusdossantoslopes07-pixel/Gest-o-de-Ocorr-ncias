@@ -315,6 +315,12 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                              <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${dk ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-white text-slate-600 border-slate-200'}`}>
                                 {(selectedEvent.guests || []).length} Convidados
                              </div>
+                             {(selectedEvent.guests || []).filter(g => g.has_vehicle).length > 0 && (
+                                <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border flex items-center gap-1.5 ${dk ? 'bg-emerald-900/40 text-emerald-400 border-emerald-500/30' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                                    <Car className="w-3 h-3" />
+                                    {(selectedEvent.guests || []).filter(g => g.has_vehicle).length} Veículos
+                                </div>
+                             )}
                         </div>
                         <h2 className={`text-2xl font-black uppercase tracking-tight leading-tight ${tp}`}>
                             {selectedEvent.name || 'Evento Sem Nome'}
@@ -552,10 +558,18 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                                 <span className={`text-[11px] font-bold uppercase line-clamp-1 ${ts}`}>{ev.location}</span>
                             </div>
 
-                            <div className={`pt-3 border-t flex items-center justify-between ${dk ? 'border-slate-600' : 'border-slate-200'}`}>
-                                <div className={`flex items-center gap-1.5 text-xs font-bold ${dk ? 'text-blue-400' : 'text-blue-600'}`}>
-                                    <Users className="w-4 h-4" />
-                                    {(ev.guests || []).length} Convidado{(ev.guests || []).length !== 1 ? 's' : ''}
+                             <div className={`pt-3 border-t flex items-center justify-between ${dk ? 'border-slate-600' : 'border-slate-200'}`}>
+                                <div className="flex items-center gap-3">
+                                    <div className={`flex items-center gap-1.5 text-xs font-bold ${dk ? 'text-blue-400' : 'text-blue-600'}`}>
+                                        <Users className="w-4 h-4" />
+                                        {(ev.guests || []).length}
+                                    </div>
+                                    {(ev.guests || []).filter(g => g.has_vehicle).length > 0 && (
+                                        <div className={`flex items-center gap-1.5 text-xs font-bold ${dk ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                                            <Car className="w-4 h-4" />
+                                            {(ev.guests || []).filter(g => g.has_vehicle).length}
+                                        </div>
+                                    )}
                                 </div>
                                 <ChevronRight className={`w-4 h-4 ${tm}`} />
                             </div>
