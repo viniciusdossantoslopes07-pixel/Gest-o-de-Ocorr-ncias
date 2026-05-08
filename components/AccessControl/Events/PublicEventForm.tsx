@@ -11,6 +11,7 @@ interface PublicEventFormProps {
 }
 
 const LOCATIONS = [
+    'VL. OFICIAIS',
     'SALÃO DE FESTAS OF',
     'CHURRASQUEIRA EST OF',
     'CHURRASQUEIRA PISC OF',
