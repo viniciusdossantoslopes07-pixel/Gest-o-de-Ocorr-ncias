@@ -143,6 +143,8 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
     const fetchMissions = async () => {
         try {
             const actualOmId = omId || user?.om_id;
+            console.log('[MissionManager] Fetching missions for omId:', actualOmId, 'Legacy:', legacyIds.includes(actualOmId || ''));
+            
             let query = supabase
                 .from('missoes_gsd')
                 .select('*');
@@ -152,6 +154,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
             } else if (actualOmId) {
                 query = query.eq('om_id', actualOmId);
             } else {
+                console.warn('[MissionManager] No actualOmId found, defaulting to empty search');
                 query = query.eq('om_id', '00000000-0000-0000-0000-000000000000');
             }
 
@@ -1223,6 +1226,11 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                             onSubmit={async (data, isDraft) => {
                                 const actualOmId = omId || user?.om_id;
                                 
+                                if (!actualOmId) {
+                                    alert('Erro: OM não identificada. Por favor, tente novamente.');
+                                    return;
+                                }
+
                                 if (editingDraft) {
                                     // Remove id from update payload to avoid PK errors
                                     const { id, ...updateData } = data;
