@@ -270,8 +270,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 // Normalização para capturar variações (P.A, S.I, Rec, etc)
                 if (func.includes('S.I') || func.includes('SI')) counts.SI++;
                 else if (func.includes('P.A') || func.includes('PA')) counts.PA++;
-                else if (func.includes('REC') || func.includes('ALUNO') || func.includes('CADETE')) counts.REC++;
-                else if (func.includes('SEÇÃO') || func.includes('SECAO')) counts.SEC++;
+                else if (func.includes('REC') || func.includes('ALUNO') || func.includes('CADETE') || func.includes('EACG')) counts.REC++;
+                else if (func.includes('SEÇÃO') || func.includes('SECAO') || func.includes('SAP') || func.includes('SOP')) counts.SEC++;
             });
         });
         

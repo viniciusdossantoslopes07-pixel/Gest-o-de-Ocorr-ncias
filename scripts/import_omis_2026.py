@@ -232,8 +232,8 @@ def parse_pessoal(texto: str) -> list:
         funcao_norm = funcao_val.upper()
         if 'P.A' in funcao_norm or 'PA' in funcao_norm: funcao_val = 'Efetivo PA'
         elif 'S.I' in funcao_norm or 'SI' in funcao_norm: funcao_val = 'Efetivo S.I'
-        elif 'REC' in funcao_norm or 'ALUNO' in funcao_norm or 'CADETE' in funcao_norm: funcao_val = 'Efetivo REC'
-        elif 'SEÇÃO' in funcao_norm or 'SECAO' in funcao_norm: funcao_val = 'Efetivo Seção'
+        elif any(kw in funcao_norm for kw in ['REC', 'ALUNO', 'CADETE', 'EACG']): funcao_val = 'Efetivo REC'
+        elif any(kw in funcao_norm for kw in ['SEÇÃO', 'SECAO', 'SAP', 'SOP']): funcao_val = 'Efetivo Seção'
 
         # Normalização de SARAM (remover hifens/pontos para bater com o cadastro)
         saram_val = re.sub(r'[^0-9]', '', saram_val)
