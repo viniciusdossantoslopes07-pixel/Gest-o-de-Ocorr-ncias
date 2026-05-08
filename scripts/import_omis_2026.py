@@ -120,7 +120,7 @@ def parse_missao(texto: str) -> str:
         missao = m.group(1).replace('\n', ' ').strip().upper()
         if missao:
             return missao
-    return 'MISSÃO NÃO IDENTIFICADA'
+    return 'SEGURANÇA DE ANV PRESIDENCIAL'
 
 def parse_local(texto: str) -> str:
     m = re.search(r'Local:\s*(.*?)(?=Descri[çc][ãa]o|Solicitante|PESSOAL|\n)', texto, re.DOTALL | re.IGNORECASE)
