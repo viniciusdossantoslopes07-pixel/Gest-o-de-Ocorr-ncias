@@ -11,7 +11,11 @@ interface EventFormProps {
 }
 
 const LOCATIONS = [
-    'VL. OFICIAIS',
+    'SALÃO DE FESTAS OF',
+    'CHURRASQUEIRA EST OF',
+    'CHURRASQUEIRA PISC OF',
+    'PERGOLADO OF',
+    'QUADRA ESP OF',
     'VL. GRADUADOS',
     'CLUBE OFICIAIS',
     'CLUBE GRADUADOS',
