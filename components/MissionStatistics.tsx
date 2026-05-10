@@ -346,9 +346,9 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
         });
     }, [filteredOrders]);
 
-    const card = `p-4 rounded-[1.5rem] border transition-all hover:scale-[1.02] ${isDarkMode ? 'bg-slate-900/50 border-slate-800 shadow-2xl' : 'bg-white border-slate-200 shadow-xl shadow-slate-100/80'}`;
-    const label = `text-[8px] font-black uppercase tracking-[0.15em] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`;
-    const value = `text-2xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`;
+    const card = `p-3 sm:p-4 rounded-[1.2rem] sm:rounded-[1.5rem] border transition-all hover:scale-[1.02] ${isDarkMode ? 'bg-slate-900/50 border-slate-800 shadow-2xl' : 'bg-white border-slate-200 shadow-xl shadow-slate-100/80'}`;
+    const label = `text-[7px] sm:text-[8px] font-black uppercase tracking-[0.15em] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`;
+    const value = `text-xl sm:text-2xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`;
     const chartBg = isDarkMode ? '#1e293b' : '#fff';
     const tooltipContentStyle = {
         backgroundColor: chartBg,
@@ -368,20 +368,20 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
         <Fragment>
             <div className="space-y-6 pb-16 animate-in fade-in duration-500">
 
-            <div className={`p-5 rounded-[2.5rem] border flex flex-col xl:flex-row items-center justify-between gap-4 ${isDarkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-                <div className="flex items-center gap-4 flex-shrink-0">
-                    <div className={`w-12 h-12 rounded-[1.2rem] flex items-center justify-center ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-600 text-white'}`}>
-                        <Activity className="w-6 h-6" />
+            <div className={`p-4 sm:p-5 rounded-[1.5rem] sm:rounded-[2.5rem] border flex flex-col xl:flex-row items-center justify-between gap-4 ${isDarkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <div className="flex items-center gap-4 w-full sm:w-auto">
+                        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-[1rem] sm:rounded-[1.2rem] flex items-center justify-center flex-shrink-0 ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-600 text-white'}`}>
+                            <Activity className="w-5 h-5 sm:w-6 sm:h-6" />
+                        </div>
+                        <div className="min-w-0">
+                            <h2 className={`text-lg sm:text-xl font-black tracking-tight truncate ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Painel Estratégico BI</h2>
+                            <p className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-widest truncate ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Central de Inteligência Operacional</p>
+                        </div>
                     </div>
-                    <div>
-                        <h2 className={`text-xl font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Painel Estratégico BI</h2>
-                        <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Central de Inteligência Operacional</p>
-                    </div>
-                </div>
 
                 {/* Controles de Impressão Integrados */}
-                <div className={`flex items-center gap-2 p-1.5 rounded-2xl ${isDarkMode ? 'bg-slate-800/40' : 'bg-slate-50 border border-slate-200'}`}>
-                    <div className="flex items-center gap-2 px-1">
+                <div className={`flex items-center justify-between sm:justify-start gap-2 p-1.5 rounded-2xl w-full sm:w-auto ${isDarkMode ? 'bg-slate-800/40' : 'bg-slate-50 border border-slate-200'}`}>
+                    <div className="flex items-center gap-1 sm:gap-2 px-1">
                         <button 
                             onClick={() => handleAdjustDay(-1)}
                             className={`p-1 rounded-lg transition-colors ${isDarkMode ? 'hover:bg-slate-700 text-slate-500' : 'hover:bg-white text-slate-400'}`}
@@ -389,12 +389,12 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                             <ChevronLeft className="w-3.5 h-3.5" />
                         </button>
                         
-                        <div className="flex items-center gap-2 px-2 border-x border-dashed border-slate-700/50">
+                        <div className="flex items-center gap-1 sm:gap-2 px-1 sm:px-2 border-x border-dashed border-slate-700/50">
                             <input
                                 type="date"
                                 value={printDateStart}
                                 onChange={e => setPrintDateStart(e.target.value)}
-                                className={`bg-transparent text-[10px] font-black outline-none focus:text-blue-400 transition-colors uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}
+                                className={`bg-transparent text-[9px] sm:text-[10px] font-black outline-none focus:text-blue-400 transition-colors uppercase w-[75px] sm:w-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}
                             />
                             <span className="opacity-30">/</span>
                             <input
@@ -402,7 +402,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                 value={printDateEnd}
                                 min={printDateStart}
                                 onChange={e => setPrintDateEnd(e.target.value)}
-                                className={`bg-transparent text-[10px] font-black outline-none focus:text-blue-400 transition-colors uppercase ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}
+                                className={`bg-transparent text-[9px] sm:text-[10px] font-black outline-none focus:text-blue-400 transition-colors uppercase w-[75px] sm:w-auto ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}
                             />
                         </div>
 
@@ -416,17 +416,17 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                     <button
                         onClick={() => setShowPrintSummary(true)}
                         disabled={!printDateStart}
-                        className={`p-2.5 rounded-xl transition-all active:scale-95 disabled:opacity-30 ${isDarkMode ? 'bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/40' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-600/20'}`}
+                        className={`p-2 sm:p-2.5 rounded-xl transition-all active:scale-95 disabled:opacity-30 ${isDarkMode ? 'bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/40' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-600/20'}`}
                     >
-                        <Printer className="w-4 h-4" />
+                        <Printer className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
                 </div>
 
-                <div className={`flex items-center gap-1 p-1.5 rounded-2xl ${isDarkMode ? 'bg-slate-800/60' : 'bg-slate-100'}`}>
+                <div className={`flex items-center gap-1 p-1.5 rounded-2xl w-full sm:w-auto ${isDarkMode ? 'bg-slate-800/60' : 'bg-slate-100'}`}>
                     <select 
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        className={`bg-transparent text-[10px] font-black outline-none border-none focus:ring-0 uppercase cursor-pointer px-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}
+                        className={`bg-transparent text-[9px] sm:text-[10px] font-black outline-none border-none focus:ring-0 uppercase cursor-pointer px-2 w-full ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}
                     >
                         <option value="all">Todas Categorias</option>
                         <option value="INTERNA">Internas</option>
@@ -434,12 +434,12 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                     </select>
                 </div>
 
-                <div className={`flex items-center gap-1 p-1.5 rounded-2xl ${isDarkMode ? 'bg-slate-800/60' : 'bg-slate-100'}`}>
+                <div className={`flex items-center gap-1 p-1.5 rounded-2xl w-full sm:w-auto overflow-x-auto scrollbar-hide scroll-smooth ${isDarkMode ? 'bg-slate-800/60' : 'bg-slate-100'}`}>
                     {(['today','week','month','year','all'] as const).map(p => (
                         <button
                             key={p}
                             onClick={() => setPeriod(p)}
-                            className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all uppercase tracking-widest ${
+                            className={`px-3 sm:px-4 py-2 rounded-xl text-[9px] sm:text-[10px] font-black transition-all uppercase tracking-widest whitespace-nowrap flex-1 sm:flex-none ${
                                 period === p 
                                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 scale-105' 
                                     : `${isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'}`
@@ -453,7 +453,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
 
             {/* KPI Row */}
             {/* KPI Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-2 sm:gap-3">
                 {/* 1. Total OMIS */}
                 <button 
                     onClick={() => setSelectedKpi({ title: 'Total OMIS', color: 'blue', list: filteredOrders })}
@@ -480,13 +480,13 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                         <Zap className="w-5 h-5" />
                     </div>
                     <p className={label}>Ativas</p>
-                    <h3 className={`text-2xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{active}</h3>
-                    <div className="mt-2 space-y-0.5">
-                        <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
-                            {inMission} em campo
+                    <h3 className={value + " mt-0.5 transition-all group-hover:scale-105 origin-left"}>{active}</h3>
+                    <div className="mt-1 sm:mt-2 space-y-0.5">
+                        <p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                            {inMission} campo
                         </p>
-                        <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                            {readyToStart} prontas
+                        <p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                            {readyToStart} pronto
                         </p>
                     </div>
                 </button>
@@ -531,7 +531,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                             {kpi.icon}
                         </div>
                         <p className={label}>{kpi.lbl}</p>
-                        <h3 className={`text-2xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{kpi.val}</h3>
+                        <h3 className={value + " mt-0.5 transition-all group-hover:scale-105 origin-left"}>{kpi.val}</h3>
                     </button>
                 ))}
                 
@@ -544,10 +544,10 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                         <Clock className="w-5 h-5" />
                     </div>
                     <p className={label}>Sobreaviso</p>
-                    <h3 className={`text-2xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{sobreavisoCount}</h3>
-                    <div className="mt-2">
-                        <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
-                            {sobreavisoPersonnel} militares escalados
+                    <h3 className={value + " mt-0.5 transition-all group-hover:scale-105 origin-left"}>{sobreavisoCount}</h3>
+                    <div className="mt-1 sm:mt-2">
+                        <p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
+                            {sobreavisoPersonnel} militares
                         </p>
                     </div>
                 </button>
@@ -558,10 +558,10 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                         <Clock className="w-5 h-5" />
                     </div>
                     <p className={label}>Tempo Médio</p>
-                    <h3 className={`text-2xl font-black tracking-tighter mt-0.5 transition-all group-hover:scale-105 origin-left ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{timeStats.avgTimeStr}</h3>
-                    <div className="mt-2">
-                        <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`}>
-                            {timeStats.totalHours}h operacionais totais
+                    <h3 className={value + " mt-0.5 transition-all group-hover:scale-105 origin-left"}>{timeStats.avgTimeStr}</h3>
+                    <div className="mt-1 sm:mt-2">
+                        <p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-orange-400' : 'text-orange-600'}`}>
+                            {timeStats.totalHours}h operacionais
                         </p>
                     </div>
                 </div>
@@ -570,7 +570,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             </div>
 
             {/* Charts: Fluxo Histórico + Volume Mensal + Tempo Médio */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                 <div className={`${card}`}>
                     <h3 className={`text-sm font-black uppercase tracking-tighter mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Histórico — Últimos 14 dias</h3>
                     <p className={`text-[10px] font-bold uppercase mb-6 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Total vs. concluídas por dia</p>
@@ -648,7 +648,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             </div>
 
             {/* Emprego de Efetivo + Missões Futuras destaque */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className={`${card} flex flex-col`}>
                     <div className="flex items-center gap-3 mb-4">
                         <Users className={`w-5 h-5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
@@ -713,7 +713,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             </div>
 
             {/* Type + Internal/External + Locations + Top Personnel */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {/* Tipo de Missão */}
                 <div className={`${card}`}>
                     <h3 className={`text-sm font-black uppercase tracking-tighter mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Por Tipo</h3>
@@ -868,10 +868,10 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                     onClick={() => setSelectedKpi(null)}
                 >
                     <div 
-                        className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} w-full max-w-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-[2.5rem] border overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-300`}
+                        className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} w-full max-w-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-[1.5rem] sm:rounded-[2.5rem] border overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300`}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className={`p-6 border-b border-dashed ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} flex items-center justify-between bg-gradient-to-r ${
+                        <div className={`p-4 sm:p-6 border-b border-dashed ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} flex items-center justify-between bg-gradient-to-r ${
                             selectedKpi.color === 'emerald' ? 'from-emerald-500/10' : 
                             selectedKpi.color === 'amber'   ? 'from-amber-500/10' : 
                             selectedKpi.color === 'red'     ? 'from-red-500/10' : 
@@ -897,7 +897,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                         </div>
 
                         {/* Corpo do Cupom (Lista) */}
-                        <div className="p-6 overflow-y-auto flex-1 scrollbar-hide space-y-3">
+                        <div className="p-4 sm:p-6 overflow-y-auto flex-1 scrollbar-hide space-y-3">
                             {selectedKpi.list.length === 0 ? (
                                 <div className="py-12 text-center space-y-3">
                                     <Search className="w-12 h-12 mx-auto opacity-10" />
@@ -933,10 +933,10 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                         </div>
 
                         {/* Footer do Cupom */}
-                        <div className={`p-6 border-t border-dashed ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} bg-slate-950/20`}>
+                        <div className={`p-4 sm:p-6 border-t border-dashed ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} bg-slate-950/20`}>
                             <button 
                                 onClick={() => setSelectedKpi(null)}
-                                className={`w-full py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all ${isDarkMode ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-xl'}`}
+                                className={`w-full py-3 sm:py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] sm:text-xs transition-all ${isDarkMode ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-xl'}`}
                             >
                                 Fechar Detalhes
                             </button>
