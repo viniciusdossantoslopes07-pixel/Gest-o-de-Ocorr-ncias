@@ -325,6 +325,23 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             .slice(0, 5);
     }, [filteredOrders]);
 
+    // Rank distribution for 'Efetivo' KPI
+    const rankDistributionData = useMemo(() => {
+        if (!selectedKpi || selectedKpi.title !== 'Efetivo') return [];
+        
+        const counts: Record<string, number> = {};
+        selectedKpi.list.forEach(order => {
+            order.personnel?.forEach(p => {
+                const rank = p.rank || 'OUTROS';
+                counts[rank] = (counts[rank] || 0) + 1;
+            });
+        });
+
+        return Object.entries(counts)
+            .map(([name, value]) => ({ name, value }))
+            .sort((a, b) => b.value - a.value);
+    }, [selectedKpi]);
+
     // Volume Mensal
     const monthlyData = useMemo(() => {
         const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
@@ -885,7 +902,9 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                 </div>
                                 <div>
                                     <h3 className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{selectedKpi.title}</h3>
-                                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Listagem de Missões Vinculadas</p>
+                                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                        {selectedKpi.title === 'Efetivo' ? 'Distribuição por Posto/Graduação' : 'Listagem de Missões Vinculadas'}
+                                    </p>
                                 </div>
                             </div>
                             <button 
@@ -896,39 +915,81 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                             </button>
                         </div>
 
-                        {/* Corpo do Cupom (Lista) */}
+                        {/* Corpo do Cupom (Lista ou Gráfico) */}
                         <div className="p-4 sm:p-6 overflow-y-auto flex-1 scrollbar-hide space-y-3">
-                            {selectedKpi.list.length === 0 ? (
-                                <div className="py-12 text-center space-y-3">
-                                    <Search className="w-12 h-12 mx-auto opacity-10" />
-                                    <p className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-600' : 'text-slate-300'}`}>Nenhuma missão encontrada</p>
+                            {selectedKpi.title === 'Efetivo' ? (
+                                <div className="space-y-6">
+                                    <div className="h-[250px] w-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={rankDistributionData}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={60}
+                                                    outerRadius={100}
+                                                    paddingAngle={5}
+                                                    dataKey="value"
+                                                    stroke="none"
+                                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                                >
+                                                    {rankDistributionData.map((_, i) => (
+                                                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip 
+                                                    contentStyle={tooltipContentStyle}
+                                                    itemStyle={tooltipTextStyle}
+                                                />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {rankDistributionData.map((item, i) => (
+                                            <div key={item.name} className={`p-3 rounded-2xl flex items-center justify-between gap-3 ${isDarkMode ? 'bg-slate-950/40 border border-slate-800' : 'bg-slate-50 border border-slate-100'}`}>
+                                                <div className="flex items-center gap-2 min-w-0">
+                                                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                                                    <span className={`text-[11px] font-black uppercase truncate ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{item.name}</span>
+                                                </div>
+                                                <span className={`text-xs font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.value}</span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             ) : (
-                                selectedKpi.list.map((order, i) => (
-                                    <div 
-                                        key={order.id}
-                                        className={`p-4 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-950/40 border-slate-800 hover:border-slate-700' : 'bg-slate-50/50 border-slate-100 hover:bg-white hover:shadow-lg'}`}
-                                    >
-                                        <div className="flex items-center justify-between gap-3 mb-2">
-                                            <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${isDarkMode ? 'bg-slate-900 border-slate-800 text-blue-400' : 'bg-white border-slate-200 text-blue-700'}`}>
-                                                OM #{order.omisNumber || 'S/N'}
-                                            </span>
-                                            <span className={`text-[10px] font-black uppercase tracking-tighter ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                                                {formatDisplayDate(order.date)}
-                                            </span>
-                                        </div>
-                                        <h4 className={`text-sm font-black uppercase tracking-tight mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{order.mission}</h4>
-                                        <div className="flex items-center justify-between gap-3">
-                                            <div className="flex items-center gap-2">
-                                                <MapPin className="w-3 h-3 text-slate-500" />
-                                                <span className={`text-[10px] font-bold uppercase truncate max-w-[150px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{order.location}</span>
-                                            </div>
-                                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full`} style={{ backgroundColor: (STATUS_META[order.status||'']?.color || '#64748b') + '22', color: STATUS_META[order.status||'']?.color || '#64748b' }}>
-                                                {STATUS_META[order.status||'']?.label || order.status}
-                                            </span>
-                                        </div>
+                                selectedKpi.list.length === 0 ? (
+                                    <div className="py-12 text-center space-y-3">
+                                        <Search className="w-12 h-12 mx-auto opacity-10" />
+                                        <p className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-600' : 'text-slate-300'}`}>Nenhuma missão encontrada</p>
                                     </div>
-                                ))
+                                ) : (
+                                    selectedKpi.list.map((order, i) => (
+                                        <div 
+                                            key={order.id}
+                                            className={`p-4 rounded-2xl border transition-all ${isDarkMode ? 'bg-slate-950/40 border-slate-800 hover:border-slate-700' : 'bg-slate-50/50 border-slate-100 hover:bg-white hover:shadow-lg'}`}
+                                        >
+                                            <div className="flex items-center justify-between gap-3 mb-2">
+                                                <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${isDarkMode ? 'bg-slate-900 border-slate-800 text-blue-400' : 'bg-white border-slate-200 text-blue-700'}`}>
+                                                    OM #{order.omisNumber || 'S/N'}
+                                                </span>
+                                                <span className={`text-[10px] font-black uppercase tracking-tighter ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                                    {formatDisplayDate(order.date)}
+                                                </span>
+                                            </div>
+                                            <h4 className={`text-sm font-black uppercase tracking-tight mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{order.mission}</h4>
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div className="flex items-center gap-2">
+                                                    <MapPin className="w-3 h-3 text-slate-500" />
+                                                    <span className={`text-[10px] font-bold uppercase truncate max-w-[150px] ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{order.location}</span>
+                                                </div>
+                                                <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full`} style={{ backgroundColor: (STATUS_META[order.status||'']?.color || '#64748b') + '22', color: STATUS_META[order.status||'']?.color || '#64748b' }}>
+                                                    {STATUS_META[order.status||'']?.label || order.status}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))
+                                )
                             )}
                         </div>
 
