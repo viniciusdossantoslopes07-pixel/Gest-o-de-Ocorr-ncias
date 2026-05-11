@@ -1152,37 +1152,31 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                 {/* 2. Painel de Gestão (SOP/CH-SOP) */}
                 {activeTab === 'painel_gestao' && (
                     <div className="space-y-8 animate-fade-in">
-                        {/* Ações Globais de Gestão */}
-                        <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl border ${isDarkMode ? 'bg-blue-500/5 border-blue-500/20 shadow-[inset_0_0_20px_rgba(59,130,246,0.05)]' : 'bg-blue-50 border-blue-100 shadow-sm'}`}>
-                            <div className="flex-1 min-w-0">
-                                <h4 className={`text-[10px] sm:text-xs font-black uppercase tracking-widest mb-1 ${isDarkMode ? 'text-blue-400' : 'text-blue-700'}`}>Ações Administrativas</h4>
-                                <p className={`text-[10px] font-medium leading-tight ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>Importe ordens de missão via PDF ou gerencie as demandas pendentes de sua seção.</p>
-                            </div>
-                            <div className="w-full sm:w-auto">
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    onChange={handleImportPdf}
-                                    accept="application/pdf"
-                                    className="hidden"
-                                />
-                                <button
-                                    onClick={() => fileInputRef.current?.click()}
-                                    disabled={isParsing}
-                                    className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 ${
-                                        isDarkMode 
-                                        ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-500/20' 
-                                        : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/20'
-                                    } ${isParsing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                >
-                                    {isParsing ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                        <Database className="w-4 h-4" />
-                                    )}
-                                    {isParsing ? 'Processando PDF...' : 'Importar OMIS'}
-                                </button>
-                            </div>
+                        {/* Ação de Importação Discreta */}
+                        <div className="flex justify-end mb-2">
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleImportPdf}
+                                accept="application/pdf"
+                                className="hidden"
+                            />
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isParsing}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
+                                    isDarkMode 
+                                    ? 'text-slate-500 hover:text-blue-400 hover:bg-blue-500/10' 
+                                    : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'
+                                } ${isParsing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                                {isParsing ? (
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                    <Database className="w-3 h-3" />
+                                )}
+                                {isParsing ? 'Processando...' : 'Importar OMIS (PDF)'}
+                            </button>
                         </div>
 
                         {renderPendingRequests()}
