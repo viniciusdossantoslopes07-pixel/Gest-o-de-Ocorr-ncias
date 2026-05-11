@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { supabase } from '../services/supabase';
 import { Mission, User, MissionOrder, UserRole } from '../types';
-import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint, Filter, MapPin, User as UserIcon, PlayCircle, History, Zap, Edit2, Mail, Copy, Trash2 } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint, Filter, MapPin, User as UserIcon, PlayCircle, History, Zap, Edit2, Mail, Copy, Trash2, Database, Loader2 } from 'lucide-react';
 import { authenticateBiometrics } from '../services/webauthn';
 import MissionStatistics from './MissionStatistics';
 import MissionOrderForm from './MissionOrderForm';
@@ -15,6 +15,7 @@ import MissionRequestList from './MissionRequestList';
 import { notificationService } from '../services/notificationService';
 import { formatDisplayDate } from '../utils/formatters';
 import { useSectors } from '../contexts/SectorsContext';
+import { parseOmisPdf } from '../utils/omisParser';
 
 const legacyIds = ['e5418770-62bd-49d7-9229-a608e3a2895b', 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c'];
 
@@ -62,6 +63,8 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
     const [historyFilter, setHistoryFilter] = useState<'ALL' | 'CONCLUIDA' | 'CANCELADA'>('ALL');
     const [historyMonth, setHistoryMonth] = useState<string>('all');
     const [historyYear, setHistoryYear] = useState<string>(new Date().getFullYear().toString());
+    const [isParsing, setIsParsing] = useState(false);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     // Permission checks
     // Refactored to use granular permissions instead of AccessLevel
@@ -208,6 +211,40 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
             setOrders(mappedOrders as MissionOrder[]);
         } catch (error) {
             console.error('Erro ao buscar ordens:', error);
+        }
+    };
+
+    const handleImportPdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsParsing(true);
+        try {
+            const parsedData = await parseOmisPdf(file);
+            if (parsedData) {
+                // Mapear para o formato esperado pela MissionOrder
+                const omisData: Partial<MissionOrder> = {
+                    ...parsedData,
+                    missionCategory: parsedData.missionCategory as "EXTERNA" | "INTERNA" | "FORA_DE_SEDE",
+                    id: Math.random().toString(36).substring(2, 15) + Date.now().toString(36),
+                    status: 'GERADA',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    createdBy: user.name,
+                };
+                
+                setSelectedOrder(omisData as MissionOrder);
+                setSelectedMission(null);
+                setShowOrderForm(true);
+            } else {
+                alert('Não foi possível identificar os dados no PDF. Verifique se o arquivo segue o padrão de OMIS do GSD-SP.');
+            }
+        } catch (error) {
+            console.error('Erro ao importar PDF:', error);
+            alert('Erro ao processar o arquivo PDF.');
+        } finally {
+            setIsParsing(false);
+            if (e.target) e.target.value = '';
         }
     };
 
@@ -1115,6 +1152,33 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                 {/* 2. Painel de Gestão (SOP/CH-SOP) */}
                 {activeTab === 'painel_gestao' && (
                     <div className="space-y-8 animate-fade-in">
+                        {/* Ações Globais de Gestão */}
+                        <div className="flex flex-wrap gap-3">
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleImportPdf}
+                                accept="application/pdf"
+                                className="hidden"
+                            />
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isParsing}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 ${
+                                    isDarkMode 
+                                    ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600/30' 
+                                    : 'bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100'
+                                } ${isParsing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                                {isParsing ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <Database className="w-4 h-4" />
+                                )}
+                                {isParsing ? 'Processando PDF...' : 'Importar OMIS (PDF)'}
+                            </button>
+                        </div>
+
                         {renderPendingRequests()}
                         {renderOrdersWaitingSignature()}
 
