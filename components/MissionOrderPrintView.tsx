@@ -99,6 +99,24 @@ ${content.outerHTML}
         }
     };
 
+    const [scale, setScale] = useState(1);
+
+    useEffect(() => {
+        const updateScale = () => {
+            if (window.innerWidth < 640) {
+                // Largura do A4 em pixels (aprox 21cm = 794px)
+                // Subtraímos 48px para margens laterais generosas como na imagem
+                const s = (window.innerWidth - 48) / 794;
+                setScale(s);
+            } else {
+                setScale(1);
+            }
+        };
+        updateScale();
+        window.addEventListener('resize', updateScale);
+        return () => window.removeEventListener('resize', updateScale);
+    }, []);
+
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') onClose();
@@ -113,7 +131,7 @@ ${content.outerHTML}
             onClick={onClose}
         >
             <div
-                className="bg-slate-100/50 rounded-none sm:rounded-2xl max-w-5xl w-full my-0 sm:my-auto min-h-screen sm:min-h-0 h-fit sm:h-[95vh] flex flex-col overflow-hidden print:h-auto print:rounded-none print:max-w-none shadow-2xl border border-white/10"
+                className="bg-slate-900 rounded-none sm:rounded-2xl max-w-5xl w-full my-0 sm:my-auto min-h-screen sm:min-h-0 h-fit sm:h-[95vh] flex flex-col overflow-hidden print:h-auto print:rounded-none print:max-w-none shadow-2xl border border-white/10"
                 onClick={(e) => e.stopPropagation()}
             >
 
@@ -138,12 +156,14 @@ ${content.outerHTML}
                 </div>
 
                 {/* Scrollable Document Body */}
-                <div className="flex-1 overflow-auto p-2 sm:p-12 bg-slate-200/40 print:p-0 print:bg-white print:overflow-visible custom-scrollbar">
+                <div className="flex-1 overflow-auto p-2 sm:p-12 bg-slate-900/40 print:p-0 print:bg-white print:overflow-visible custom-scrollbar flex flex-col items-center">
                     <div 
                         id="omis-print-content" 
-                        className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.2)] print:shadow-none mx-auto w-full max-w-[21cm] p-5 sm:p-12 border border-slate-200 print:border-none print:p-0 min-h-full transition-all duration-500"
+                        className="bg-white shadow-[0_20px_60px_rgba(0,0,0,0.5)] print:shadow-none w-[794px] max-w-[21cm] p-5 sm:p-12 border border-slate-200 print:border-none print:p-0 min-h-full transition-all duration-300 origin-top mb-8 mt-6 sm:mt-0"
                         style={{
-                            minHeight: '29.7cm' // Proporção A4
+                            minHeight: '29.7cm',
+                            transform: scale < 1 ? `scale(${scale})` : undefined,
+                            marginBottom: scale < 1 ? `calc(-29.7cm * (1 - ${scale}) + 40px)` : '32px'
                         }}
                     >
                         {/* Header with Logos */}
