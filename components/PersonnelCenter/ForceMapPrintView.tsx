@@ -1,5 +1,5 @@
 
-import { type FC } from 'react';
+import { type FC, useEffect } from 'react';
 import { Printer, X, BarChart3, Building2 } from 'lucide-react';
 import { MilitaryOrganization } from '../../types';
 import { OmPrintHeader } from '../Common/OmPrintHeader';
@@ -31,6 +31,14 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
     onClose,
     om
 }) => {
+    useEffect(() => {
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, [onClose]);
+
     const handlePrint = () => {
         const originalTitle = document.title;
         try {
@@ -50,8 +58,14 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light backdrop-blur-sm">
-            <div className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full h-[100vh] sm:h-[90vh] print:h-auto overflow-hidden flex flex-col print:rounded-none print:max-w-none shadow-2xl">
+        <div 
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light backdrop-blur-sm cursor-pointer"
+            onClick={onClose}
+        >
+            <div 
+                className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full h-[100vh] sm:h-[90vh] print:h-auto overflow-hidden flex flex-col print:rounded-none print:max-w-none shadow-2xl cursor-default"
+                onClick={e => e.stopPropagation()}
+            >
 
                 {/* Control Header - Hidden on print */}
                 <div className="bg-white border-b border-slate-200 p-4 flex items-center justify-between print:hidden z-20 shrink-0">
