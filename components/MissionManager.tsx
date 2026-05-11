@@ -1077,46 +1077,46 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
             </div>
 
             {/* Unified Tabs - Responsive with horizontal scroll */}
-            <div className="overflow-x-auto pb-4 -mx-1 sm:mx-0 scrollbar-hide pt-2">
-                <div className={`flex p-1.5 ${isDarkMode ? 'bg-slate-900/60 border border-slate-700/50 backdrop-blur-xl shadow-inner' : 'bg-slate-200/50 border border-slate-200'} rounded-2xl w-max sm:w-fit min-w-full sm:min-w-0 gap-1`}>
+            <div className="overflow-x-auto pb-4 -mx-4 sm:mx-0 px-4 sm:px-0 scrollbar-hide pt-2 sticky top-0 z-[60] sm:relative">
+                <div className={`flex p-1 ${isDarkMode ? 'bg-slate-900/80 border border-slate-700/50 backdrop-blur-2xl shadow-xl' : 'bg-slate-100 border border-slate-200'} rounded-2xl w-max sm:w-fit min-w-full sm:min-w-0 gap-0.5`}>
                     <button
                         onClick={() => setActiveTab('solicitar_missao')}
-                        className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'solicitar_missao' ? (isDarkMode ? 'bg-blue-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white text-blue-700 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
+                        className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-[12px] sm:rounded-[14px] text-[10px] sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap ${activeTab === 'solicitar_missao' ? (isDarkMode ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white text-blue-700 shadow-sm border border-slate-100') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-800')}`}
                     >
-                        <PlusCircle className={`w-4 h-4 ${activeTab === 'solicitar_missao' ? '' : 'opacity-70'}`} /> Solicitar
+                        <PlusCircle className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeTab === 'solicitar_missao' ? '' : 'opacity-70'}`} /> Solicitar
                     </button>
                     <button
                         onClick={() => setActiveTab('minhas_solicitacoes')}
-                        className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'minhas_solicitacoes' ? (isDarkMode ? 'bg-blue-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white text-blue-700 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
+                        className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-[12px] sm:rounded-[14px] text-[10px] sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap ${activeTab === 'minhas_solicitacoes' ? (isDarkMode ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white text-blue-700 shadow-sm border border-slate-100') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-800')}`}
                     >
-                        <List className={`w-4 h-4 ${activeTab === 'minhas_solicitacoes' ? '' : 'opacity-70'}`} /> Minhas
+                        <List className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeTab === 'minhas_solicitacoes' ? '' : 'opacity-70'}`} /> Minhas
                     </button>
                     {(isSop || isChSop) && (
                         <button
                             onClick={() => setActiveTab('painel_gestao')}
-                            className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 whitespace-nowrap ${activeTab === 'painel_gestao' ? (isDarkMode ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-[0_0_25px_rgba(249,115,22,0.3)]' : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
+                            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-[12px] sm:rounded-[14px] text-[10px] sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap ${activeTab === 'painel_gestao' ? (isDarkMode ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/20' : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-800')}`}
                         >
-                            <Shield className={`w-4 h-4 ${activeTab === 'painel_gestao' ? '' : 'opacity-70'}`} /> Gerenciar
+                            <Shield className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeTab === 'painel_gestao' ? '' : 'opacity-70'}`} /> Gerenciar
                         </button>
                     )}
                     <button
                         onClick={() => setActiveTab('missoes_ativas')}
-                        className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'missoes_ativas' ? (isDarkMode ? 'bg-blue-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white text-blue-700 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
+                        className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-[12px] sm:rounded-[14px] text-[10px] sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap ${activeTab === 'missoes_ativas' ? (isDarkMode ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-white text-emerald-700 shadow-sm border border-slate-100') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-800')}`}
                     >
-                        <PlayCircle className={`w-4 h-4 ${activeTab === 'missoes_ativas' ? '' : 'opacity-70'}`} /> Ativas
+                        <PlayCircle className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeTab === 'missoes_ativas' ? '' : 'opacity-70'}`} /> Ativas
                     </button>
                     <button
                         onClick={() => setActiveTab('missoes_finalizadas')}
-                        className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap ${activeTab === 'missoes_finalizadas' ? (isDarkMode ? 'bg-blue-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)]' : 'bg-white text-blue-700 shadow-sm') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
+                        className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-[12px] sm:rounded-[14px] text-[10px] sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap ${activeTab === 'missoes_finalizadas' ? (isDarkMode ? 'bg-slate-700 text-white shadow-lg' : 'bg-white text-slate-700 shadow-sm border border-slate-100') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-800')}`}
                     >
-                        <History className={`w-4 h-4 ${activeTab === 'missoes_finalizadas' ? '' : 'opacity-70'}`} /> Histórico
+                        <History className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeTab === 'missoes_finalizadas' ? '' : 'opacity-70'}`} /> Histórico
                     </button>
                     {(isSop || isChSop) && (
                         <button
                             onClick={() => setActiveTab('estatisticas')}
-                            className={`px-4 sm:px-5 py-2.5 rounded-[14px] text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-2 whitespace-nowrap ${activeTab === 'estatisticas' ? (isDarkMode ? 'bg-purple-600 text-white shadow-[0_0_20px_rgba(147,51,234,0.3)]' : 'bg-purple-600 text-white shadow-md') : (isDarkMode ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-white/50')}`}
+                            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-[12px] sm:rounded-[14px] text-[10px] sm:text-sm font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap ${activeTab === 'estatisticas' ? (isDarkMode ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'bg-white text-indigo-700 shadow-sm border border-slate-100') : (isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-800')}`}
                         >
-                            <LayoutDashboard className={`w-4 h-4 ${activeTab === 'estatisticas' ? '' : 'opacity-70'}`} /> BI
+                            <LayoutDashboard className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeTab === 'estatisticas' ? '' : 'opacity-70'}`} /> BI
                         </button>
                     )}
                 </div>
@@ -1153,30 +1153,36 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                 {activeTab === 'painel_gestao' && (
                     <div className="space-y-8 animate-fade-in">
                         {/* Ações Globais de Gestão */}
-                        <div className="flex flex-wrap gap-3">
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                onChange={handleImportPdf}
-                                accept="application/pdf"
-                                className="hidden"
-                            />
-                            <button
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={isParsing}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 ${
-                                    isDarkMode 
-                                    ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600/30' 
-                                    : 'bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100'
-                                } ${isParsing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            >
-                                {isParsing ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                    <Database className="w-4 h-4" />
-                                )}
-                                {isParsing ? 'Processando PDF...' : 'Importar OMIS (PDF)'}
-                            </button>
+                        <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl border ${isDarkMode ? 'bg-blue-500/5 border-blue-500/20 shadow-[inset_0_0_20px_rgba(59,130,246,0.05)]' : 'bg-blue-50 border-blue-100 shadow-sm'}`}>
+                            <div className="flex-1 min-w-0">
+                                <h4 className={`text-[10px] sm:text-xs font-black uppercase tracking-widest mb-1 ${isDarkMode ? 'text-blue-400' : 'text-blue-700'}`}>Ações Administrativas</h4>
+                                <p className={`text-[10px] font-medium leading-tight ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>Importe ordens de missão via PDF ou gerencie as demandas pendentes de sua seção.</p>
+                            </div>
+                            <div className="w-full sm:w-auto">
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleImportPdf}
+                                    accept="application/pdf"
+                                    className="hidden"
+                                />
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isParsing}
+                                    className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 ${
+                                        isDarkMode 
+                                        ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-500/20' 
+                                        : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/20'
+                                    } ${isParsing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    {isParsing ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <Database className="w-4 h-4" />
+                                    )}
+                                    {isParsing ? 'Processando PDF...' : 'Importar OMIS'}
+                                </button>
+                            </div>
                         </div>
 
                         {renderPendingRequests()}

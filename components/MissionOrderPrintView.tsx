@@ -109,11 +109,11 @@ ${content.outerHTML}
 
     return (
         <div
-            className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-start sm:items-center justify-center p-0 sm:p-4 overflow-y-auto print:p-0 print:bg-white force-light animate-fade-in"
+            className="fixed inset-0 bg-slate-900/95 backdrop-blur-xl z-[100] flex items-start sm:items-center justify-center p-0 sm:p-4 overflow-y-auto print:p-0 print:bg-white force-light animate-fade-in"
             onClick={onClose}
         >
             <div
-                className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full my-0 sm:my-auto min-h-screen sm:min-h-0 h-fit sm:h-[95vh] flex flex-col overflow-hidden print:h-auto print:rounded-none print:max-w-none shadow-2xl"
+                className="bg-slate-100/50 rounded-none sm:rounded-2xl max-w-5xl w-full my-0 sm:my-auto min-h-screen sm:min-h-0 h-fit sm:h-[95vh] flex flex-col overflow-hidden print:h-auto print:rounded-none print:max-w-none shadow-2xl border border-white/10"
                 onClick={(e) => e.stopPropagation()}
             >
 
@@ -138,8 +138,14 @@ ${content.outerHTML}
                 </div>
 
                 {/* Scrollable Document Body */}
-                <div className="flex-1 overflow-auto p-4 sm:p-12 bg-slate-50/30 print:p-0 print:bg-white print:overflow-visible">
-                    <div id="omis-print-content" className="bg-white shadow-sm print:shadow-none mx-auto max-w-[21cm] p-6 sm:p-12 border border-slate-100 print:border-none print:p-0 min-h-full">
+                <div className="flex-1 overflow-auto p-2 sm:p-12 bg-slate-200/40 print:p-0 print:bg-white print:overflow-visible custom-scrollbar">
+                    <div 
+                        id="omis-print-content" 
+                        className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.2)] print:shadow-none mx-auto w-full max-w-[21cm] p-5 sm:p-12 border border-slate-200 print:border-none print:p-0 min-h-full transition-all duration-500"
+                        style={{
+                            minHeight: '29.7cm' // Proporção A4
+                        }}
+                    >
                         {/* Header with Logos */}
                         <OmPrintHeader om={currentUser?.om} />
 
@@ -418,26 +424,26 @@ ${content.outerHTML}
             </div>
 
                 {/* Rodapé fixo com botão de impressão e assinatura */}
-                <div className="bg-white border-t border-slate-200 p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 print:hidden flex-shrink-0 relative overflow-hidden">
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="bg-white border-t border-slate-200 p-3 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3 print:hidden flex-shrink-0 relative z-10">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
                         <button
                             onClick={onClose}
-                            className="flex items-center gap-2 px-4 py-3 border border-slate-200 text-slate-600 rounded-xl font-black text-sm hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all active:scale-95 flex-1 sm:flex-none justify-center"
+                            className="flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 border border-slate-200 text-slate-600 rounded-xl font-black text-xs sm:text-sm hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all active:scale-95 flex-1 sm:flex-none justify-center"
                             title="Fechar (Esc)"
                         >
                             <X className="w-4 h-4" />
-                            <span className="hidden sm:inline">Fechar</span>
+                            <span>Fechar</span>
                         </button>
-                        <p className="text-xs text-slate-400 font-medium hidden md:block leading-tight">
+                        <p className="text-[10px] text-slate-400 font-medium hidden md:block leading-tight">
                             Pressione <kbd className="px-1 py-0.5 bg-slate-100 rounded text-[10px] font-mono">Esc</kbd> para fechar
                         </p>
                     </div>
                     
-                    <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                    <div className="flex flex-row items-center gap-2 w-full sm:w-auto">
                         {order.status === 'AGUARDANDO_ASSINATURA' && canSign && onForceActivate && (
                             <button
                                 onClick={onForceActivate}
-                                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl font-black text-sm hover:bg-emerald-700 shadow-lg shadow-emerald-500/30 transition-all active:scale-95"
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-emerald-600 text-white rounded-xl font-black text-[10px] sm:text-sm hover:bg-emerald-700 shadow-lg shadow-emerald-500/30 transition-all active:scale-95"
                             >
                                 <Zap className="w-4 h-4" />
                                 <span>Iniciar</span>
@@ -446,29 +452,27 @@ ${content.outerHTML}
                         {(order.status === 'EM_MISSAO' || order.status === 'PRONTA_PARA_EXECUCAO') && onSendNotifications && (
                             <button
                                 onClick={() => onSendNotifications(order)}
-                                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-black text-sm hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all active:scale-95"
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-indigo-600 text-white rounded-xl font-black text-[10px] sm:text-sm hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all active:scale-95"
                             >
-                                <Mail className="w-4 h-4" />
-                                <span>Enviar Comunicação</span>
+                                <Mail className="w-3.5 h-3.5" />
+                                <span className="whitespace-nowrap">Comunicação</span>
                             </button>
                         )}
                         {order.status === 'AGUARDANDO_ASSINATURA' && canSign && onSign && (
                             <button
                                 onClick={onSign}
-                                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-black text-sm hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30 transition-all active:scale-95 ring-2 ring-transparent hover:ring-orange-200 relative group overflow-hidden"
+                                className="flex-2 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-black text-[10px] sm:text-sm hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30 transition-all active:scale-95 relative group overflow-hidden"
                             >
-                                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-out"></div>
-                                <FileSignature className="w-4 h-4 sm:w-5 sm:h-5 relative z-10" />
-                                <span className="relative z-10">Assinar Digitalmente</span>
+                                <FileSignature className="w-4 h-4 relative z-10" />
+                                <span className="relative z-10">Assinar</span>
                             </button>
                         )}
                         <button
                             onClick={handlePrint}
-                            className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 ${order.status === 'AGUARDANDO_ASSINATURA' && canSign ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/30'} rounded-xl font-black text-sm transition-all active:scale-95`}
+                            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 ${order.status === 'AGUARDANDO_ASSINATURA' && canSign ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/30'} rounded-xl font-black text-[10px] sm:text-sm transition-all active:scale-95`}
                         >
                             <Printer className="w-4 h-4" />
-                            <span className="hidden sm:inline">{order.status === 'AGUARDANDO_ASSINATURA' && canSign ? 'Apenas Imprimir' : 'Imprimir Oficial'}</span>
-                            <span className="inline sm:hidden">Imprimir</span>
+                            <span className="whitespace-nowrap">Imprimir</span>
                         </button>
                     </div>
                 </div>
