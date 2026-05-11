@@ -60,7 +60,17 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose,
   ${appCss}
   [class*="print:hidden"] { display: none !important; }
   .animate-fade-in { animation: none !important; }
-  #omis-print-content { min-height: 0 !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; box-shadow: none !important; }
+  #omis-print-content { 
+    min-height: 0 !important; 
+    max-width: 100% !important; 
+    width: 210mm !important;
+    padding: 0 !important; 
+    margin: 0 !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    transform: none !important;
+    margin-bottom: 0 !important;
+  }
 </style>
 </head>
 <body>
