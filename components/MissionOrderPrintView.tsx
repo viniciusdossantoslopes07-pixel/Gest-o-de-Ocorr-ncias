@@ -1,9 +1,11 @@
 
 import { type FC, useEffect, useState } from 'react';
 import { MissionOrder, User } from '../types';
-import { X, Printer, FileDown, FileSignature, Zap, Mail, Eye } from 'lucide-react';
+import { X, Printer, FileDown, FileSignature, Zap, Mail, Eye, Download, Loader2 } from 'lucide-react';
 import { formatDisplayDate } from '../utils/formatters';
 import { OmPrintHeader } from './Common/OmPrintHeader';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas-pro';
 
 interface MissionOrderPrintViewProps {
     order: MissionOrder;
@@ -17,6 +19,58 @@ interface MissionOrderPrintViewProps {
 }
 
 const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose, onSign, onForceActivate, canSign, users = [], onSendNotifications, currentUser }) => {
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+    const handleDownloadPdf = async () => {
+        const content = document.getElementById('omis-print-content');
+        if (!content) return;
+
+        setIsGeneratingPdf(true);
+        try {
+            // Ajustes temporários para captura perfeita
+            const originalTransform = content.style.transform;
+            const originalMarginBottom = content.style.marginBottom;
+            const originalShadow = content.style.boxShadow;
+            
+            content.style.transform = 'none';
+            content.style.marginBottom = '0';
+            content.style.boxShadow = 'none';
+            content.style.width = '794px'; // 21cm exatos para o canvas
+            
+            const canvas = await html2canvas(content, {
+                scale: 2, // Alta qualidade
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff',
+                windowWidth: 794
+            });
+
+            // Restaura o estado da UI
+            content.style.transform = originalTransform;
+            content.style.marginBottom = originalMarginBottom;
+            content.style.boxShadow = originalShadow;
+            content.style.width = '794px'; // Mantém fixo como definido antes
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            
+            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+            pdf.save(`OMIS_${order.omisNumber.replace(/[\/\\]/g, '-')}.pdf`);
+        } catch (error) {
+            console.error('Erro ao gerar PDF:', error);
+            alert('Não foi possível gerar o PDF. Use a função de Impressão.');
+        } finally {
+            setIsGeneratingPdf(false);
+        }
+    };
+
     const handlePrint = () => {
         const content = document.getElementById('omis-print-content');
         if (!content) return;
@@ -52,8 +106,10 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose,
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    padding: 1.5cm 1.5cm;
+    padding: 1.2cm;
     background: #fff;
+    width: 210mm;
+    min-height: 297mm;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -62,14 +118,13 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose,
   .animate-fade-in { animation: none !important; }
   #omis-print-content { 
     min-height: 0 !important; 
+    width: 100% !important;
     max-width: 100% !important; 
-    width: 210mm !important;
     padding: 0 !important; 
     margin: 0 !important; 
     border: none !important; 
     box-shadow: none !important; 
     transform: none !important;
-    margin-bottom: 0 !important;
   }
 </style>
 </head>
@@ -497,6 +552,18 @@ ${content.outerHTML}
                                 <span className="relative z-10">Assinar</span>
                             </button>
                         )}
+                        <button
+                            onClick={handleDownloadPdf}
+                            disabled={isGeneratingPdf}
+                            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl font-black text-[10px] sm:text-sm transition-all active:scale-95 ${isGeneratingPdf ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            {isGeneratingPdf ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Download className="w-4 h-4" />
+                            )}
+                            <span className="whitespace-nowrap">{isGeneratingPdf ? 'Gerando...' : 'Baixar PDF'}</span>
+                        </button>
                         <button
                             onClick={handlePrint}
                             className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 ${order.status === 'AGUARDANDO_ASSINATURA' && canSign ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/30'} rounded-xl font-black text-[10px] sm:text-sm transition-all active:scale-95`}
