@@ -248,24 +248,11 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         const latestMap = new Map<string, any>();
 
         if (callTypeFilter === 'LATEST') {
-            // Para o modo LATEST: queremos o registro mais recente de cada militar.
-            // Priorizamos chamadas assinadas sobre não assinadas, e mais recentes sobre mais antigas.
-            // Isso garante que o Mapa de Força reflita o mesmo que a Chamada Diária.
-            const filtered = dayHistory.filter(a => matchSector(a) && matchCall(a));
+            // Para o modo LATEST: pegar o registro mais recente de cada militar
+            // dentre as chamadas ASSINADAS (1ª ou 2ª chamada), priorizando a 2ª se assinada.
+            const signed = dayHistory.filter(a => matchSector(a) && !!a.signedBy);
             
-            // Primeiro passamos pelos NÃO assinados (menor prioridade, serão sobrescritos)
-            filtered
-                .filter(a => !a.signedBy)
-                .sort((a, b) => new Date(a.createdAt || a.date).getTime() - new Date(b.createdAt || b.date).getTime())
-                .forEach(a => {
-                    a.records.forEach((r: any) => {
-                        latestMap.set(r.militarId, { ...r, sector: a.sector, callType: a.callType, _signed: false });
-                    });
-                });
-
-            // Depois passamos pelos ASSINADOS (maior prioridade, sobrescrevem os não assinados)
-            filtered
-                .filter(a => !!a.signedBy)
+            signed
                 .sort((a, b) => new Date(a.signedAt || a.createdAt || a.date).getTime() - new Date(b.signedAt || b.createdAt || b.date).getTime())
                 .forEach(a => {
                     a.records.forEach((r: any) => {
@@ -350,18 +337,15 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const presentCount = getCount(allRecords, ['P']);
     const prevPresentCount = getCount(prevRecords, ['P']);
 
-    // Signed/Active sectors — inclui setores com qualquer registro salvo (assinado ou não)
-    // para garantir coerência com a Chamada Diária
+    // Signed sectors — APENAS setores com chamada assinada.
+    // Setores sem assinatura não contribuem para contagem de ausências.
     const signedSectors = useMemo(() => {
         const set = new Set<string>();
         const datesToCheck = viewMode === 'WEEKLY' ? currentWeekRange : [selectedDate];
         
         attendanceHistory.forEach(a => {
-            if (datesToCheck.includes(a.date)) {
-                // Inclui o setor se tiver chamada assinada OU se tiver registros salvos
-                if (!!a.signedBy || a.records.length > 0) {
-                    set.add(a.sector);
-                }
+            if (datesToCheck.includes(a.date) && !!a.signedBy) {
+                set.add(a.sector);
             }
         });
         return set;
