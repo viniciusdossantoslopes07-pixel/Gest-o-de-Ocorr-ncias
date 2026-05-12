@@ -230,40 +230,54 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     // Get records for a specific date
     const getRecordsForDate = (date: string) => {
         const dayHistory = historyByDate.get(date) || [];
-        const filtered = dayHistory.filter(a => {
-            let matchesSector = true;
+        
+        const matchSector = (a: any) => {
             const sectorName = normalize(a.sector);
-            if (selectedSector === 'GSD-SP') matchesSector = GSD_SP_SECTORS.some(gsd => normalize(gsd) === sectorName);
-            else if (selectedSector === 'BASP') matchesSector = BASP_SECTORS.some(basp => normalize(basp) === sectorName);
-            else if (selectedSector !== 'TODOS') matchesSector = sectorName === normalize(selectedSector);
-            
-            const isSigned = !!a.signedBy;
+            if (selectedSector === 'GSD-SP') return GSD_SP_SECTORS.some(gsd => normalize(gsd) === sectorName);
+            if (selectedSector === 'BASP') return BASP_SECTORS.some(basp => normalize(basp) === sectorName);
+            if (selectedSector !== 'TODOS') return sectorName === normalize(selectedSector);
+            return true;
+        };
 
-            let matchesCall = true;
-            if (callTypeFilter === 'INICIO') matchesCall = a.callType === 'INICIO';
-            else if (callTypeFilter === 'TERMINO') matchesCall = a.callType === 'TERMINO';
-
-            return matchesSector && isSigned && matchesCall;
-        });
+        const matchCall = (a: any) => {
+            if (callTypeFilter === 'INICIO') return a.callType === 'INICIO';
+            if (callTypeFilter === 'TERMINO') return a.callType === 'TERMINO';
+            return true; // LATEST = aceita ambos
+        };
 
         const latestMap = new Map<string, any>();
 
         if (callTypeFilter === 'LATEST') {
+            // Para o modo LATEST: queremos o registro mais recente de cada militar.
+            // Priorizamos chamadas assinadas sobre não assinadas, e mais recentes sobre mais antigas.
+            // Isso garante que o Mapa de Força reflita o mesmo que a Chamada Diária.
+            const filtered = dayHistory.filter(a => matchSector(a) && matchCall(a));
+            
+            // Primeiro passamos pelos NÃO assinados (menor prioridade, serão sobrescritos)
             filtered
-                .sort((a, b) => {
-                    const timeA = new Date(a.createdAt || a.signedAt || a.date).getTime();
-                    const timeB = new Date(b.createdAt || b.signedAt || b.date).getTime();
-                    return timeA - timeB;
-                })
+                .filter(a => !a.signedBy)
+                .sort((a, b) => new Date(a.createdAt || a.date).getTime() - new Date(b.createdAt || b.date).getTime())
                 .forEach(a => {
-                    a.records.forEach(r => {
-                        latestMap.set(r.militarId, { ...r, sector: a.sector, callType: a.callType });
+                    a.records.forEach((r: any) => {
+                        latestMap.set(r.militarId, { ...r, sector: a.sector, callType: a.callType, _signed: false });
+                    });
+                });
+
+            // Depois passamos pelos ASSINADOS (maior prioridade, sobrescrevem os não assinados)
+            filtered
+                .filter(a => !!a.signedBy)
+                .sort((a, b) => new Date(a.signedAt || a.createdAt || a.date).getTime() - new Date(b.signedAt || b.createdAt || b.date).getTime())
+                .forEach(a => {
+                    a.records.forEach((r: any) => {
+                        latestMap.set(r.militarId, { ...r, sector: a.sector, callType: a.callType, _signed: true });
                     });
                 });
         } else {
+            // Para INICIO ou TERMINO: apenas chamadas assinadas
+            const filtered = dayHistory.filter(a => matchSector(a) && matchCall(a) && !!a.signedBy);
             filtered.forEach(a => {
-                a.records.forEach(r => {
-                    latestMap.set(r.militarId, { ...r, sector: a.sector, callType: a.callType });
+                a.records.forEach((r: any) => {
+                    latestMap.set(r.militarId, { ...r, sector: a.sector, callType: a.callType, _signed: true });
                 });
             });
         }
@@ -336,14 +350,18 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const presentCount = getCount(allRecords, ['P']);
     const prevPresentCount = getCount(prevRecords, ['P']);
 
-    // Signed sectors
+    // Signed/Active sectors — inclui setores com qualquer registro salvo (assinado ou não)
+    // para garantir coerência com a Chamada Diária
     const signedSectors = useMemo(() => {
         const set = new Set<string>();
         const datesToCheck = viewMode === 'WEEKLY' ? currentWeekRange : [selectedDate];
         
         attendanceHistory.forEach(a => {
-            if (datesToCheck.includes(a.date) && !!a.signedBy) {
-                set.add(a.sector);
+            if (datesToCheck.includes(a.date)) {
+                // Inclui o setor se tiver chamada assinada OU se tiver registros salvos
+                if (!!a.signedBy || a.records.length > 0) {
+                    set.add(a.sector);
+                }
             }
         });
         return set;
