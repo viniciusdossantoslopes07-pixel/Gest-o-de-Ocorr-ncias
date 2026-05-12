@@ -1063,36 +1063,59 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     </div>
                 </div>
 
-                <div className="overflow-x-auto custom-scrollbar pb-10">
-                    <div className="flex items-end gap-6 min-w-[800px] h-80 pt-10 border-b border-dashed border-slate-500/20 relative">
-                        {rankBreakdown.map((r) => {
-                            const maxCount = Math.max(...rankBreakdown.map(x => x.total));
-                            const hTotal = Math.max((r.total / maxCount) * 100, 10);
-                            const pctOk = r.total > 0 ? (r.present / r.total) * 100 : 0;
-                            
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 pb-4">
+                    {(() => {
+                        // Filtrar e organizar por círculo hierárquico, removendo ranks vazios
+                        const ranksOff = rankBreakdown.filter(r => OFICIAIS.includes(r.rank) && r.total > 0);
+                        const ranksGrad = rankBreakdown.filter(r => GRADUADOS.includes(r.rank) && r.total > 0);
+                        const ranksPraca = rankBreakdown.filter(r => PRACAS.includes(r.rank) && r.total > 0);
+
+                        const renderRankGroup = (title: string, items: typeof rankBreakdown, colorTheme: { text: string, bg: string, shadow: string }) => {
+                            if (items.length === 0) return null;
                             return (
-                                <div key={r.rank} className="flex-1 flex flex-col items-center justify-end h-full group relative pt-12">
-                                    <div className="absolute top-0 z-20 flex flex-col items-center">
-                                        <div className={`px-2 py-1.5 rounded-xl border flex flex-col items-center transition-all ${dk ? 'bg-slate-900/50 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
-                                            <span className={`text-[8px] font-black uppercase ${dk ? 'text-blue-400' : 'text-blue-600'}`}>{r.rank}</span>
-                                            <div className="flex items-baseline gap-0.5">
-                                                <span className={`text-sm font-black ${textPrimary}`}>{r.present}</span>
-                                                <span className={`text-[9px] font-bold ${textMuted}`}>/</span>
-                                                <span className={`text-[9px] font-bold ${textMuted}`}>{r.total}</span>
-                                            </div>
-                                        </div>
+                                <div className={`flex flex-col gap-6 p-6 md:p-8 rounded-[2rem] border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${dk ? 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50 hover:border-slate-600/50' : 'bg-slate-50/50 border-slate-100 hover:bg-white'}`}>
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-2 h-2 rounded-full ${colorTheme.bg} ${colorTheme.shadow} animate-pulse`} />
+                                        <h4 className={`text-xs font-black uppercase tracking-widest ${colorTheme.text}`}>{title}</h4>
                                     </div>
-                                    <div 
-                                        className={`w-full max-w-[40px] rounded-full border border-white/10 overflow-hidden flex flex-col justify-end shadow-2xl ${dk ? 'bg-slate-900/50' : 'bg-slate-100'}`} 
-                                        style={{ height: `${hTotal}%` }}
-                                    >
-                                        <div className="w-full bg-emerald-500 transition-all duration-1000" style={{ height: `${pctOk}%` }} />
+                                    <div className="space-y-5">
+                                        {items.map(r => {
+                                            const pct = r.total > 0 ? (r.present / r.total) * 100 : 0;
+                                            return (
+                                                <div key={r.rank} className="group flex items-center gap-4">
+                                                    <div className="w-12 text-right shrink-0">
+                                                        <span className={`text-[11px] font-black uppercase tracking-tighter ${textPrimary}`}>{r.rank}</span>
+                                                    </div>
+                                                    <div className="flex-1 relative">
+                                                        <div className={`h-5 w-full rounded-full overflow-hidden ${dk ? 'bg-slate-900/50' : 'bg-slate-200/50'}`}>
+                                                            <div 
+                                                                className={`h-full rounded-full transition-all duration-1000 ease-out flex items-center justify-end px-2 ${colorTheme.bg} ${colorTheme.shadow}`}
+                                                                style={{ width: `${Math.max(pct, 5)}%` }} // Minimum 5% to show the colored pill
+                                                            >
+                                                                {pct >= 20 && <span className="text-[9px] font-black text-white/90">{Math.round(pct)}%</span>}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="w-12 shrink-0 flex items-baseline justify-end gap-1">
+                                                        <span className={`text-sm font-black ${textPrimary}`}>{r.present}</span>
+                                                        <span className={`text-[9px] font-bold ${textMuted}`}>/{r.total}</span>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
                                     </div>
-                                    <span className={`mt-4 text-[10px] font-black uppercase ${textMuted}`}>{r.rank.substring(0, 3)}</span>
                                 </div>
                             );
-                        })}
-                    </div>
+                        };
+
+                        return (
+                            <>
+                                {renderRankGroup('Oficiais', ranksOff, { text: 'text-blue-500', bg: 'bg-blue-500', shadow: 'shadow-[0_0_12px_rgba(59,130,246,0.4)]' })}
+                                {renderRankGroup('Graduados', ranksGrad, { text: 'text-indigo-500', bg: 'bg-indigo-500', shadow: 'shadow-[0_0_12px_rgba(99,102,241,0.4)]' })}
+                                {renderRankGroup('Praças', ranksPraca, { text: 'text-emerald-500', bg: 'bg-emerald-500', shadow: 'shadow-[0_0_12px_rgba(16,185,129,0.4)]' })}
+                            </>
+                        );
+                    })()}
                 </div>
             </div>
 
