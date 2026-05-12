@@ -354,10 +354,11 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return relevantUsers.filter(u => {
             if (!signedSectors.has(u.sector)) return false;
             const record = currentRecordsMap.get(u.id);
-            // Militares em serviço externo (outras OMs) não contam como ausentes pois estão fora do mapa.
-            // Militares alocados na BASP devem ter sua presença conferida no setor alocado.
             const isExternalOtherOM = u.external_service && u.external_om !== 'BASP';
-            return (!record || record.status !== 'P') && !isExternalOtherOM;
+            
+            // Apenas conta como Ausente se for Falta real (F/A) ou se não houver registro em setor assinado
+            const isFalta = !record || ['F', 'A'].includes(record.status);
+            return isFalta && !isExternalOtherOM;
         }).length;
     }, [relevantUsers, signedSectors, currentRecordsMap]);
 
@@ -405,7 +406,10 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 const record = currentRecordsMap.get(u.id);
                 // Militares BASP devem aparecer se estiverem ausentes no setor alocado
                 const isExternalOtherOM = u.external_service && u.external_om !== 'BASP';
-                return (!record || record.status !== 'P') && !isExternalOtherOM;
+                
+                // Mostrar apenas faltas reais na lista de registros de ausência
+                const isFalta = !record || ['F', 'A'].includes(record.status);
+                return isFalta && !isExternalOtherOM;
             })
             .map(u => {
                 const record = currentRecordsMap.get(u.id);
@@ -475,7 +479,8 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 .filter(u => {
                     const r = currentRecordsMap.get(u.id);
                     const isExternalOtherOM = u.external_service && u.external_om !== 'BASP';
-                    return (r && r.status !== 'P') && !isExternalOtherOM;
+                    const isFalta = !r || ['F', 'A'].includes(r.status);
+                    return isFalta && !isExternalOtherOM;
                 })
                 .map(u => ({
                     user: u,
@@ -485,9 +490,13 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 
             // Militares BASP não abatem do contador de ausentes, pois eles contam no setor
             const isExternalOtherOMCount = sectorUsers.filter(u => u.external_service && u.external_om !== 'BASP').length;
-            const finalAbsentCount = total - ready - isExternalOtherOMCount;
+            const readyCount = ready;
+            const faltasCount = sectorUsers.filter(u => {
+                const r = currentRecordsMap.get(u.id);
+                return !r || ['F', 'A'].includes(r.status);
+            }).length;
 
-            return { sector, total, ready, absent: Math.max(0, finalAbsentCount), pct, prevPct, delta: Math.round(pct - prevPct), absentDetails };
+            return { sector, total, ready, absent: faltasCount, pct, prevPct, delta: Math.round(pct - prevPct), absentDetails };
         });
     }, [users, currentRecordsMap, previousRecordsMap, selectedSector, rankFilter, displaySectors, GSD_SP_SECTORS, BASP_SECTORS, relevantUserIds]);
 
