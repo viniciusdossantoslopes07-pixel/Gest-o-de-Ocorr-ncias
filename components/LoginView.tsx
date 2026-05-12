@@ -1,5 +1,5 @@
 
-import { useState, type FC, type FormEvent } from 'react';
+import { useState, useEffect, type FC, type FormEvent } from 'react';
 import { User } from '../types';
 import { RANKS } from '../constants';
 import { useSectors } from '../contexts/SectorsContext';
@@ -45,6 +45,22 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
   });
 
   const [forgotSaram, setForgotSaram] = useState('');
+
+  const [availableSectors, setAvailableSectors] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (regData.om_id) {
+      supabase.from('sectors').select('name').eq('om_id', regData.om_id).eq('is_active', true)
+        .then(({ data }) => {
+          if (data) {
+            const uniqueNames = [...new Set(data.map(s => s.name))].sort();
+            setAvailableSectors(uniqueNames);
+          }
+        });
+    } else {
+      setAvailableSectors([]);
+    }
+  }, [regData.om_id]);
 
   // Biometric States
   const [showBiometricPrompt, setShowBiometricPrompt] = useState(false);
@@ -321,7 +337,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                   <label className={labelBase}>6. Setor</label>
                   <select required className={`${inputBase} px-3 py-2.5`} value={regData.sector} onChange={e => setRegData({ ...regData, sector: e.target.value })}>
                     <option value="">Selecione...</option>
-                    {sectorNames.map(s => <option key={s} value={s}>{s}</option>)}
+                    {availableSectors.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
 
