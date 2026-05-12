@@ -520,9 +520,9 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 .filter(u => {
                     const r = currentRecordsMap.get(u.id);
                     const isExternalOtherOM = u.external_service && u.external_om !== 'BASP';
-                    // Sem registro explícito = PRESENTE, não aparece nos detalhes de ausência
-                    const isFalta = r && ['F', 'A'].includes(r.status);
-                    return isFalta && !isExternalOtherOM;
+                    // Mostrar qualquer pessoa que tenha registro explícito E que o status NÃO seja 'P'
+                    const isNotPresent = r && r.status !== 'P';
+                    return isNotPresent && !isExternalOtherOM;
                 })
                 .map(u => ({
                     user: u,
@@ -892,7 +892,11 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                                         <p className={`text-[10px] font-black uppercase ${textPrimary}`}>{a.user.rank} {a.user.warName || a.user.name}</p>
                                                         {(() => {
                                                             const group = Object.values(STATUS_GROUPS).find(g => (g.codes as readonly string[]).includes(a.status as string));
-                                                            const colorClass = group?.color || 'slate';
+                                                            let colorClass = group?.color || 'slate';
+                                                            
+                                                            if (a.status === 'ESV') colorClass = 'emerald';
+                                                            if (a.status === 'SSV') colorClass = 'amber';
+
                                                             const colorMap: Record<string, string> = {
                                                                 emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
                                                                 red: 'bg-red-500/10 text-red-500 border-red-500/20',
@@ -1008,7 +1012,11 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                 ) : (
                                     globalAbsentList.map(a => {
                                         const group = Object.values(STATUS_GROUPS).find(g => (g.codes as readonly string[]).includes(a.status as string));
-                                        const clrClass = group?.color || 'slate';
+                                        let clrClass = group?.color || 'slate';
+                                        
+                                        if (a.status === 'ESV') clrClass = 'emerald';
+                                        if (a.status === 'SSV') clrClass = 'amber';
+
                                         const colors: Record<string, string> = {
                                             emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
                                             red: 'bg-red-500/10 text-red-500 border-red-500/20',
