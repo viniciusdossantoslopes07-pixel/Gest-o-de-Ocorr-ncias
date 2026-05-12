@@ -588,9 +588,6 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                                                     <button onClick={(e) => { e.stopPropagation(); setTransferUser(user); setShowTransferModal(true); setTransferOther(false); setOtherOmName(''); setTransferSearch(''); }} className="p-2 hover:text-blue-500 transition-colors" title="Transferir OM"><Shuffle className="w-4 h-4" /></button>
                                                     <button onClick={(e) => { e.stopPropagation(); setExternalServiceUser(user); setShowExternalServiceModal(true); }} className="p-2 hover:text-emerald-500 transition-colors" title="Serviço Externo"><PlaneTakeoff className="w-4 h-4" /></button>
                                                     <button onClick={(e) => { e.stopPropagation(); onDeletePersonnel(user.id); }} className="p-2 hover:text-red-500 transition-colors" title="Desativar"><CircleX className="w-4 h-4" /></button>
-                                                    {onPermanentDeletePersonnel && (currentUserRole === UserRole.ADMIN || currentUserRole === 'ADMIN') && (
-                                                        <button onClick={(e) => { e.stopPropagation(); if(window.confirm('Deseja excluir permanentemente este militar?')) onPermanentDeletePersonnel(user.id); }} className="p-2 hover:text-red-700 transition-colors" title="Excluir Permanentemente"><Trash2 className="w-4 h-4" /></button>
-                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -651,19 +648,9 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                                             <button 
                                                 onClick={() => onDeletePersonnel(user.id)} 
                                                 className={`p-2.5 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:text-red-400' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}
-                                                title="Desativar"
                                             >
                                                 <CircleX className="w-3.5 h-3.5" />
                                             </button>
-                                            {onPermanentDeletePersonnel && (currentUserRole === UserRole.ADMIN || currentUserRole === 'ADMIN') && (
-                                                <button 
-                                                    onClick={(e) => { e.stopPropagation(); if(window.confirm('Deseja excluir permanentemente este militar?')) onPermanentDeletePersonnel(user.id); }} 
-                                                    className={`p-2.5 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:text-red-600' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}
-                                                    title="Excluir Permanentemente"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
-                                            )}
                                         </div>
                                     </div>
                                 </div>

@@ -151,7 +151,7 @@ export const hasPermission = (user: User | null | undefined, permission: string)
     // If user is ADMIN role or has OM (Command) access level, they have full permissions
     if (user.role === UserRole.ADMIN || user.accessLevel === 'OM') return true;
 
-    // 0.1 High-Level Administrative Roles (Bypass for Command)
+    // Bypass para cargos de Comando/Chefia
     const HIGH_LEVEL_ADMIN_ROLES = ['CMT_GSD_SP', 'CH_OP_GSD_SP', 'CMT_BASP', 'CH_SAP'];
     if (user.administrativeRole && HIGH_LEVEL_ADMIN_ROLES.includes(user.administrativeRole)) return true;
 

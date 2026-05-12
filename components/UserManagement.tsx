@@ -171,12 +171,27 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     }
 
     setFormData({
-      ...initialFormState,
-      ...user,
+      name: user.name,
+      username: user.username,
       password: '', // Always start empty on edit to avoid sending current (hidden) password
+      rank: user.rank,
+      saram: user.saram,
+      cpf: user.cpf || '',
+      warName: user.warName || '',
+      sector: user.sector,
+      email: user.email,
+      role: user.role,
       accessLevel: user.accessLevel || 'N1',
+      phoneNumber: user.phoneNumber || '',
+      pending_password_reset: user.pending_password_reset || false,
+      reset_password_at_login: user.reset_password_at_login || false,
+      password_status: user.password_status || 'ACTIVE',
+      is_functional: user.is_functional || false,
+      workplace: user.workplace || '',
+      administrativeRole: user.administrativeRole || null,
+      functionId: user.functionId || '',
       customPermissions: user.customPermissions || []
-    } as any);
+    });
     setShowForm(true); // Abre o formulário ao editar
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
