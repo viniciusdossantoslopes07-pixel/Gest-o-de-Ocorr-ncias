@@ -3,7 +3,7 @@ import { User, UserRole, MilitaryOrganization } from '../../types';
 import { RANKS, getRankPriority } from '../../constants';
 import { useSectors } from '../../contexts/SectorsContext';
 import { supabase } from '../../services/supabase';
-import { UserPlus, Search, Pencil, Trash2, Shield, User as UserIcon, Hash, Building2, Users, TriangleAlert, CircleX, Briefcase, ChartNoAxesColumn, ChevronDown, ChevronUp, Printer, PlaneTakeoff, ArrowLeft, Crown, Shuffle, ChevronRight, Plus } from 'lucide-react';
+import { UserPlus, Search, Pencil, Trash2, Shield, ShieldCheck, User as UserIcon, Hash, Building2, Users, TriangleAlert, CircleX, Briefcase, ChartNoAxesColumn, ChevronDown, ChevronUp, Printer, PlaneTakeoff, ArrowLeft, Crown, Shuffle, ChevronRight, Plus } from 'lucide-react';
 import UserStatistics from './UserStatistics';
 import PersonnelPrintView from './PersonnelPrintView';
 import MeuPlanoView from '../MeuPlanoView';
@@ -587,7 +587,11 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                                                     <button onClick={() => handleEdit(user)} className="p-2 hover:text-indigo-500 transition-colors" title="Editar"><Pencil className="w-4 h-4" /></button>
                                                     <button onClick={(e) => { e.stopPropagation(); setTransferUser(user); setShowTransferModal(true); setTransferOther(false); setOtherOmName(''); setTransferSearch(''); }} className="p-2 hover:text-blue-500 transition-colors" title="Transferir OM"><Shuffle className="w-4 h-4" /></button>
                                                     <button onClick={(e) => { e.stopPropagation(); setExternalServiceUser(user); setShowExternalServiceModal(true); }} className="p-2 hover:text-emerald-500 transition-colors" title="Serviço Externo"><PlaneTakeoff className="w-4 h-4" /></button>
-                                                    <button onClick={(e) => { e.stopPropagation(); onDeletePersonnel(user.id); }} className="p-2 hover:text-red-500 transition-colors" title="Desativar"><CircleX className="w-4 h-4" /></button>
+                                                    {user.active === false ? (
+                                                        <button onClick={(e) => { e.stopPropagation(); onUpdatePersonnel({ ...user, active: true }); }} className="p-2 hover:text-green-500 transition-colors" title="Reativar"><ShieldCheck className="w-4 h-4" /></button>
+                                                    ) : (
+                                                        <button onClick={(e) => { e.stopPropagation(); onDeletePersonnel(user.id); }} className="p-2 hover:text-red-500 transition-colors" title="Desativar"><CircleX className="w-4 h-4" /></button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -640,17 +644,28 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                                                 <Pencil className="w-3.5 h-3.5" />
                                             </button>
                                             <button 
-                                                onClick={() => { setTransferUser(user); setShowTransferModal(true); setTransferOther(false); setOtherOmName(''); setTransferSearch(''); }} 
+                                                onClick={(e) => { e.stopPropagation(); setTransferUser(user); setShowTransferModal(true); setTransferOther(false); setOtherOmName(''); setTransferSearch(''); }} 
                                                 className={`p-2.5 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:text-blue-400' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}
                                             >
                                                 <Shuffle className="w-3.5 h-3.5" />
                                             </button>
-                                            <button 
-                                                onClick={() => onDeletePersonnel(user.id)} 
-                                                className={`p-2.5 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:text-red-400' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}
-                                            >
-                                                <CircleX className="w-3.5 h-3.5" />
-                                            </button>
+                                            {user.active === false ? (
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); onUpdatePersonnel({ ...user, active: true }); }} 
+                                                    className={`p-2.5 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:text-green-400' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}
+                                                    title="Reativar"
+                                                >
+                                                    <ShieldCheck className="w-3.5 h-3.5" />
+                                                </button>
+                                            ) : (
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); onDeletePersonnel(user.id); }} 
+                                                    className={`p-2.5 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:text-red-400' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}
+                                                    title="Desativar"
+                                                >
+                                                    <CircleX className="w-3.5 h-3.5" />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
