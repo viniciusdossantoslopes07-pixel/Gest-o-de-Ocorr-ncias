@@ -228,7 +228,7 @@ const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode =
                             className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-bold border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${dk ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-white border-slate-200 text-slate-900'}`}
                         />
                         <div className={`flex flex-wrap gap-1 p-1 rounded-xl border ${dk ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
-                            {oms.map(om => (
+                            {oms.filter(om => ['GSD-SP', 'BASP'].includes(om.acronym) || om.id === omId).map(om => (
                                 <button
                                     key={om.id}
                                     onClick={() => setNewSectorUnit(om.acronym)}

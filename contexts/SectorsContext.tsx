@@ -118,17 +118,8 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
         const effectiveOmId = targetOmId || omId;
         if (!effectiveOmId) return { error: 'OM não identificada.' };
 
-        // Lógica de legado para GSD-SP e BASP (compartilham setores)
-        const legacyIds = ['e5418770-62bd-49d7-9229-a608e3a2895b', 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c'];
-        
-        // Verificar se já existe (mesmo inativo) nesta OM ou grupo de legado
-        let query = supabase.from('sectors').select('id, is_active').eq('name', trimmed);
-        
-        if (legacyIds.includes(effectiveOmId)) {
-            query = query.in('om_id', legacyIds);
-        } else {
-            query = query.eq('om_id', effectiveOmId);
-        }
+        // Verificar se já existe (mesmo inativo) estritamente nesta OM
+        let query = supabase.from('sectors').select('id, is_active').eq('name', trimmed).eq('om_id', effectiveOmId);
 
         const { data: existing } = await query.limit(1);
 
