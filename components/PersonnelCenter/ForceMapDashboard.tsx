@@ -484,18 +484,37 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     // Sector breakdown
     const sectorBreakdown = useMemo(() => {
         return activeSectorsToShow.map(sector => {
+            const hasSigned = signedSectors.has(sector);
+
             const sectorUsers = users.filter(u => {
                 const isExternalOtherOM = u.external_service && u.external_om !== 'BASP';
                 return u.sector === sector && u.active !== false && u.is_functional !== true && !isExternalOtherOM;
             });
             const total = sectorUsers.length;
-            const sectorRecords = Array.from(currentRecordsMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
-            const ready = sectorRecords.filter(r => r.status === 'P').length;
-            const pct = total > 0 ? (ready / total) * 100 : 0;
-            
-            const prevSectorRecords = Array.from(previousRecordsMap.values()).filter(r => r.sector === sector && relevantUserIds.has(r.militarId));
-            const prevReadyCount = prevSectorRecords.filter(r => r.status === 'P').length;
-            const prevPct = total > 0 ? (prevReadyCount / total) * 100 : 0;
+
+            // Presente = quem tem P explícito OU quem não tem registro (padrão = presente).
+            // Só calcula se o setor tiver chamada assinada; caso contrário pct = 0.
+            const ready = hasSigned
+                ? sectorUsers.filter(u => {
+                    const r = currentRecordsMap.get(u.id);
+                    return !r || r.status === 'P';
+                }).length
+                : 0;
+            const pct = hasSigned && total > 0 ? (ready / total) * 100 : 0;
+
+            // Para o dia anterior, mantemos o mesmo princípio
+            const prevHasSigned = (() => {
+                const prevDate = previousDate;
+                return attendanceHistory.some(a => a.date === prevDate && a.sector === sector && !!a.signedBy);
+            })();
+            const prevSectorUsers = sectorUsers; // mesmo grupo
+            const prevReady = prevHasSigned
+                ? prevSectorUsers.filter(u => {
+                    const r = previousRecordsMap.get(u.id);
+                    return !r || r.status === 'P';
+                }).length
+                : 0;
+            const prevPct = prevHasSigned && total > 0 ? (prevReady / total) * 100 : 0;
 
             const absentDetails = sectorUsers
                 .filter(u => {
@@ -511,18 +530,14 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                     label: (PRESENCE_STATUS as any)[currentRecordsMap.get(u.id)?.status] || 'N/A'
                 }));
 
-            // Militares BASP não abatem do contador de ausentes, pois eles contam no setor
-            const isExternalOtherOMCount = sectorUsers.filter(u => u.external_service && u.external_om !== 'BASP').length;
-            const readyCount = ready;
             const faltasCount = sectorUsers.filter(u => {
                 const r = currentRecordsMap.get(u.id);
-                // Apenas faltas explícitas (F/A) contam como ausência
                 return r && ['F', 'A'].includes(r.status);
             }).length;
 
             return { sector, total, ready, absent: faltasCount, pct, prevPct, delta: Math.round(pct - prevPct), absentDetails };
         });
-    }, [users, currentRecordsMap, previousRecordsMap, selectedSector, rankFilter, displaySectors, GSD_SP_SECTORS, BASP_SECTORS, relevantUserIds]);
+    }, [users, currentRecordsMap, previousRecordsMap, signedSectors, attendanceHistory, previousDate, selectedSector, rankFilter, displaySectors, GSD_SP_SECTORS, BASP_SECTORS, relevantUserIds]);
 
     // Rank breakdown
     const rankBreakdown = useMemo(() => {
