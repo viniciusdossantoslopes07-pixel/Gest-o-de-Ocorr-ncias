@@ -1171,7 +1171,11 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                                             slate: 'bg-slate-500/10 text-slate-400 border-slate-400/20',
                                             gray: 'bg-gray-500/10 text-gray-400 border-gray-400/20'
                                         };
-                                        const clr = group?.color || 'slate';
+                                        let clr = group?.color || 'slate';
+                                        
+                                        // Diferenciar cores específicas de serviço
+                                        if (a.status === 'ESV') clr = 'emerald';
+                                        if (a.status === 'SSV') clr = 'amber';
 
                                         return (
                                             <div key={a.user.id} className={`p-4 rounded-3xl border flex flex-col gap-3 transition-all ${dk ? 'bg-slate-800/20 border-slate-700/30' : 'bg-slate-50 border-slate-100'}`}>
