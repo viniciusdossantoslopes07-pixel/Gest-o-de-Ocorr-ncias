@@ -248,11 +248,29 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         const latestMap = new Map<string, any>();
 
         if (callTypeFilter === 'LATEST') {
-            // Para o modo LATEST: pegar o registro mais recente de cada militar
-            // dentre as chamadas ASSINADAS (1ª ou 2ª chamada), priorizando a 2ª se assinada.
-            const signed = dayHistory.filter(a => matchSector(a) && !!a.signedBy);
+            // LATEST: combina 1ª e 2ª chamadas para ter a visão mais completa do dia.
+            // Estratégia de prioridade (da menor para maior — cada nível sobrescreve o anterior):
+            //   1. Registros da chamada NÃO assinada mais antiga (base de referência)
+            //   2. Registros da chamada NÃO assinada mais recente
+            //   3. Registros da chamada ASSINADA mais antiga (1ª chamada assinada)
+            //   4. Registros da chamada ASSINADA mais recente (2ª chamada assinada — maior prioridade)
+            // Isso garante que quem foi marcado na 1ª chamada assinada seja sempre mostrado,
+            // mas quem só aparece na 2ª chamada (não assinada ainda) também seja capturado.
+            const allCalls = dayHistory.filter(a => matchSector(a));
             
-            signed
+            // Nível 1 e 2: não assinadas (menor prioridade)
+            allCalls
+                .filter(a => !a.signedBy)
+                .sort((a, b) => new Date(a.createdAt || a.date).getTime() - new Date(b.createdAt || b.date).getTime())
+                .forEach(a => {
+                    a.records.forEach((r: any) => {
+                        latestMap.set(r.militarId, { ...r, sector: a.sector, callType: a.callType, _signed: false });
+                    });
+                });
+
+            // Nível 3 e 4: assinadas (maior prioridade, sobrescrevem tudo)
+            allCalls
+                .filter(a => !!a.signedBy)
                 .sort((a, b) => new Date(a.signedAt || a.createdAt || a.date).getTime() - new Date(b.signedAt || b.createdAt || b.date).getTime())
                 .forEach(a => {
                     a.records.forEach((r: any) => {
