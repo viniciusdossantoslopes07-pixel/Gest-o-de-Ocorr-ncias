@@ -369,15 +369,15 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         return set;
     }, [attendanceHistory, selectedDate, viewMode, currentWeekRange]);
 
-    // Accounted absences (only from signed sectors)
+    // Ausências: apenas quem tem registro explícito de falta (F/A).
+    // Militares sem registro = presentes por padrão (padrão militar).
     const absenceCount = useMemo(() => {
         return relevantUsers.filter(u => {
             if (!signedSectors.has(u.sector)) return false;
             const record = currentRecordsMap.get(u.id);
             const isExternalOtherOM = u.external_service && u.external_om !== 'BASP';
-            
-            // Apenas conta como Ausente se for Falta real (F/A) ou se não houver registro em setor assinado
-            const isFalta = !record || ['F', 'A'].includes(record.status);
+            // Só conta como falta se houver registro explícito de F ou A
+            const isFalta = record && ['F', 'A'].includes(record.status);
             return isFalta && !isExternalOtherOM;
         }).length;
     }, [relevantUsers, signedSectors, currentRecordsMap]);
@@ -428,7 +428,8 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 const isExternalOtherOM = u.external_service && u.external_om !== 'BASP';
                 
                 // Mostrar apenas faltas reais na lista de registros de ausência
-                const isFalta = !record || ['F', 'A'].includes(record.status);
+                // Sem registro explícito = presente por padrão (não aparece como ausência)
+                const isFalta = record && ['F', 'A'].includes(record.status);
                 return isFalta && !isExternalOtherOM;
             })
             .map(u => {
@@ -460,12 +461,13 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 
                 if (!signedSectors.has(u.sector)) return false;
                 const record = currentRecordsMap.get(u.id);
-                const status = record?.status || 'A';
+                // Sem registro explícito = PRESENTE por padrão (não conta como falta)
+                const status = record?.status || 'P';
                 return (group.codes as readonly string[]).includes(status);
             })
             .map(u => {
                 const record = currentRecordsMap.get(u.id);
-                const status = record?.status || 'A';
+                const status = record?.status || 'P';
                 return {
                     user: u,
                     status,
@@ -499,7 +501,8 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                 .filter(u => {
                     const r = currentRecordsMap.get(u.id);
                     const isExternalOtherOM = u.external_service && u.external_om !== 'BASP';
-                    const isFalta = !r || ['F', 'A'].includes(r.status);
+                    // Sem registro explícito = PRESENTE, não aparece nos detalhes de ausência
+                    const isFalta = r && ['F', 'A'].includes(r.status);
                     return isFalta && !isExternalOtherOM;
                 })
                 .map(u => ({
@@ -513,7 +516,8 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
             const readyCount = ready;
             const faltasCount = sectorUsers.filter(u => {
                 const r = currentRecordsMap.get(u.id);
-                return !r || ['F', 'A'].includes(r.status);
+                // Apenas faltas explícitas (F/A) contam como ausência
+                return r && ['F', 'A'].includes(r.status);
             }).length;
 
             return { sector, total, ready, absent: faltasCount, pct, prevPct, delta: Math.round(pct - prevPct), absentDetails };
