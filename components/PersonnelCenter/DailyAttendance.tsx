@@ -446,18 +446,19 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const [isInitialLoading, setIsInitialLoading] = useState(true);
+    const [isDestinationsLoaded, setIsDestinationsLoaded] = useState(false);
 
     // Monitora o carregamento inicial de dados críticos
     useEffect(() => {
-        // Se já temos usuários e os setores já foram carregados pelo contexto
-        if (users.length > 0 && sectors.length > 0) {
+        // Se já temos usuários, setores e destinos carregados
+        if (users.length > 0 && sectors.length > 0 && isDestinationsLoaded) {
             // Pequeno delay para garantir que os efeitos colaterais de inicialização (como selectedSector) ocorram
             const timer = setTimeout(() => {
                 setIsInitialLoading(false);
             }, 800);
             return () => clearTimeout(timer);
         }
-    }, [users.length, sectors.length]);
+    }, [users.length, sectors.length, isDestinationsLoaded]);
     
     const isOldWeek = useMemo(() => {
         if (!currentWeek || currentWeek.length === 0) return false;
@@ -526,7 +527,10 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 .from('user_destinations')
                 .select('*')
                 .or(`start_date.in.(${currentWeek.join(',')}),and(start_date.lte.${currentWeek[4]},end_date.gte.${currentWeek[0]})`);
-            if (data) setUserDestinations(data);
+            if (data) {
+                setUserDestinations(data);
+                setIsDestinationsLoaded(true);
+            }
         };
         fetchDestinations();
 
