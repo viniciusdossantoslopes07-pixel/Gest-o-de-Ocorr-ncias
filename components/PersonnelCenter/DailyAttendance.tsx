@@ -441,12 +441,23 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [passwordInput, setPasswordInput] = useState('');
     const [passwordError, setPasswordError] = useState(false);
 
-    // Move states
-    const [showMoveModal, setShowMoveModal] = useState(false);
     const [soldierToMove, setSoldierToMove] = useState<User | null>(null);
     const [targetSector, setTargetSector] = useState('');
 
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+    // Monitora o carregamento inicial de dados críticos
+    useEffect(() => {
+        // Se já temos usuários e os setores já foram carregados pelo contexto
+        if (users.length > 0 && sectors.length > 0) {
+            // Pequeno delay para garantir que os efeitos colaterais de inicialização (como selectedSector) ocorram
+            const timer = setTimeout(() => {
+                setIsInitialLoading(false);
+            }, 800);
+            return () => clearTimeout(timer);
+        }
+    }, [users.length, sectors.length]);
     
     const isOldWeek = useMemo(() => {
         if (!currentWeek || currentWeek.length === 0) return false;
@@ -943,6 +954,25 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         onReorderUsers(updatedUsers);
         alert('Setor organizado por antiguidade com sucesso!');
     };
+
+    if (isInitialLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4 animate-in fade-in duration-500">
+                <div className="relative">
+                    <div className="w-16 h-16 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
+                    <Users className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 text-indigo-500 animate-pulse" />
+                </div>
+                <div className="text-center">
+                    <h3 className={`text-lg font-black tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                        Carregando Efetivo...
+                    </h3>
+                    <p className={`text-xs font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        Sincronizando dados com o banco de dados
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 pb-20" >
