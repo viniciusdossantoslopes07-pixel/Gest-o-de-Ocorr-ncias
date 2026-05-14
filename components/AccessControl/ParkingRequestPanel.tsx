@@ -709,6 +709,28 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                 </div>
                             </div>
 
+                            {(() => {
+                                const obsStr = analysingRequest.observacao || '';
+                                const is3rd = /SOLICITA[ÇC][ÃA]O\s*3/i.test(obsStr) || /Condutor:/i.test(obsStr);
+                                if (!is3rd) return null;
+                                const match = obsStr.match(/Condutor:\s*(.*?)\s*(?:\||-)\s*Contato:\s*(.*?)(?:\]|$)/i);
+                                if (match) {
+                                    return (
+                                        <div className={`p-4 rounded-xl border flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center ${dk ? 'bg-blue-900/20 border-blue-800/50' : 'bg-blue-50/50 border-blue-100'}`}>
+                                            <div>
+                                                <p className={`text-[9px] font-black uppercase mb-1 ${dk ? 'text-blue-400' : 'text-blue-600'}`}>Condutor (3º)</p>
+                                                <p className={`font-black text-base uppercase ${dk ? 'text-white' : 'text-slate-900'}`}>{match[1].trim()}</p>
+                                            </div>
+                                            <div className="sm:text-right">
+                                                <p className={`text-[9px] font-black uppercase mb-1 ${dk ? 'text-blue-400' : 'text-blue-600'}`}>Contato do Condutor</p>
+                                                <p className={`font-black text-base ${dk ? 'text-white' : 'text-slate-900'}`}>{match[2].trim()}</p>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            })()}
+
                             {/* Detalhes do Veículo e Período */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <div className={`md:col-span-2 p-4 rounded-xl border ${dk ? 'bg-slate-800/50 border-slate-700/50' : 'bg-slate-50 border-slate-200'}`}>
@@ -798,15 +820,16 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                 const veiculo = printRequest.vehicle || { marca_modelo: printRequest.ext_marca_modelo || '—', placa: printRequest.ext_placa || '—', cor: printRequest.ext_cor || '' };
                 const aprovadoEm = printRequest.aprovado_em ? new Date(printRequest.aprovado_em) : null;
 
-                const isThirdParty = printRequest.observacao?.includes('[SOLICITAÇÃO 3º');
+                const isThirdParty = /SOLICITA[ÇC][ÃA]O\s*3/i.test(printRequest.observacao || '') || /Condutor:/i.test(printRequest.observacao || '');
                 let thirdPartyCondutor = '';
                 let thirdPartyContato = '';
 
                 if (isThirdParty) {
-                    const match = printRequest.observacao.match(/\[SOLICITAÇÃO 3º - Condutor: (.*?) \| Contato: (.*?)\]/);
+                    const observacaoStr = printRequest.observacao || '';
+                    const match = observacaoStr.match(/Condutor:\s*(.*?)\s*(?:\||-)\s*Contato:\s*(.*?)(?:\]|$)/i);
                     if (match) {
-                        thirdPartyCondutor = match[1];
-                        thirdPartyContato = match[2];
+                        thirdPartyCondutor = match[1].trim();
+                        thirdPartyContato = match[2].trim();
                     }
                 }
 
@@ -957,6 +980,23 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                     <p className="text-[8px] sm:text-[9px] font-bold text-slate-400 mt-1 uppercase">Validado</p>
                                 </div>
                             </div>
+
+                            {(() => {
+                                const obsStr = showingCoupon.observacao || '';
+                                const is3rd = /SOLICITA[ÇC][ÃA]O\s*3/i.test(obsStr) || /Condutor:/i.test(obsStr);
+                                if (!is3rd) return null;
+                                const match = obsStr.match(/Condutor:\s*(.*?)\s*(?:\||-)\s*Contato:\s*(.*?)(?:\]|$)/i);
+                                if (match) {
+                                    return (
+                                        <div className="text-center space-y-0.5 mt-2 p-2 bg-blue-50/50 rounded-xl border border-blue-100 border-dashed">
+                                            <p className="text-[9px] font-bold text-blue-500 uppercase tracking-widest">Condutor (3º)</p>
+                                            <p className="text-xs font-black text-blue-700 uppercase">{match[1].trim()}</p>
+                                            <p className="text-[10px] font-bold text-blue-600">{match[2].trim()}</p>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            })()}
 
                             <div className="text-center space-y-3">
                                 <div className="flex flex-col items-center gap-1.5">
