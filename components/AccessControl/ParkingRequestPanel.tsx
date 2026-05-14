@@ -798,6 +798,18 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                 const veiculo = printRequest.vehicle || { marca_modelo: printRequest.ext_marca_modelo || '—', placa: printRequest.ext_placa || '—', cor: printRequest.ext_cor || '' };
                 const aprovadoEm = printRequest.aprovado_em ? new Date(printRequest.aprovado_em) : null;
 
+                const isThirdParty = printRequest.observacao?.includes('[SOLICITAÇÃO 3º');
+                let thirdPartyCondutor = '';
+                let thirdPartyContato = '';
+
+                if (isThirdParty) {
+                    const match = printRequest.observacao.match(/\[SOLICITAÇÃO 3º - Condutor: (.*?) \| Contato: (.*?)\]/);
+                    if (match) {
+                        thirdPartyCondutor = match[1];
+                        thirdPartyContato = match[2];
+                    }
+                }
+
                 return (
                     <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] flex flex-col items-center justify-start overflow-y-auto overflow-x-hidden print:p-0 print:bg-white print:block p-2 sm:p-8 pt-16 sm:pt-8 custom-scrollbar">
                         <style>{`
@@ -852,6 +864,12 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                         <div className="space-y-1.5 text-base">
                                             <p>Nome Completo: <strong>{printRequest.nome_completo}</strong></p>
                                             <p>Posto/Grad: <strong>{printRequest.posto_graduacao}</strong> ({printRequest.tipo_pessoa} — {printRequest.forca})</p>
+                                            {isThirdParty && thirdPartyCondutor && (
+                                                <>
+                                                    <p>Condutor (3º): <strong>{thirdPartyCondutor}</strong></p>
+                                                    <p>Contato (3º): <strong>{thirdPartyContato}</strong></p>
+                                                </>
+                                            )}
                                             <p>Veículo: <strong>{(veiculo as any).marca_modelo}</strong></p>
                                             <p>Placa: <strong>{(veiculo as any).placa}</strong></p>
                                             {(veiculo as any).cor && <p>Cor: <strong>{(veiculo as any).cor}</strong></p>}
