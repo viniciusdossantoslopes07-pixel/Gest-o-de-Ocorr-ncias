@@ -1222,7 +1222,8 @@ const App: FC = () => {
       access_level: 'N1',
       approved: false,
       phone_number: newUser.phoneNumber,
-      active: true
+      active: true,
+      om_id: newUser.om_id
     };
 
     const { error } = await supabase

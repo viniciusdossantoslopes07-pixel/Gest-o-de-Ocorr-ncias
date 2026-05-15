@@ -505,9 +505,13 @@ export default function SideMenu({
                                             {canManageUsers && <MenuItem id="users" label="Gerir Usuários" icon={ShieldCheck} />}
                                             {canViewAccessControl && <MenuItem id="access-scanner" label="Leitor de QR" icon={Smartphone} />}
                                             {hasPermission(currentUser, PERMISSIONS.VIEW_SERVICE_QUEUE) && <MenuItem id="kanban" label="Fila de Serviço" icon={LayoutDashboard} />}
-                                            <MenuItem id="dashboard" label="Estatísticas BI" icon={BarChart3} />
-                                            <MenuItem id="list" label="Arquivo Geral" icon={FileText} />
-                                            <MenuItem id="emergency-logs" label="Logs de Emergência" icon={Siren} />
+                                            {canManageOccurrences && (
+                                                <>
+                                                    <MenuItem id="dashboard" label="Estatísticas BI" icon={BarChart3} />
+                                                    <MenuItem id="list" label="Arquivo Geral" icon={FileText} />
+                                                    <MenuItem id="emergency-logs" label="Logs de Emergência" icon={Siren} />
+                                                </>
+                                            )}
                                         </div>
                                     )}
                                 </div>

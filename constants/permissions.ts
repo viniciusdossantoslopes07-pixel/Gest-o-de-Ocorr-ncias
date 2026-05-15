@@ -125,6 +125,19 @@ export const USER_FUNCTIONS = {
             PERMISSIONS.REQUEST_MATERIAL
         ]
     },
+    EP: {
+        id: 'EP',
+        name: 'EP',
+        description: 'Central de Pessoal, Aprovar usuário no sistema',
+        permissions: [
+            PERMISSIONS.VIEW_DASHBOARD,
+            PERMISSIONS.VIEW_PERSONNEL,
+            PERMISSIONS.MANAGE_PERSONNEL,
+            PERMISSIONS.VIEW_DAILY_ATTENDANCE,
+            PERMISSIONS.SIGN_DAILY_ATTENDANCE,
+            PERMISSIONS.MANAGE_USERS
+        ]
+    },
     PADRAO: {
         id: 'PADRAO',
         name: 'PADRÃO',

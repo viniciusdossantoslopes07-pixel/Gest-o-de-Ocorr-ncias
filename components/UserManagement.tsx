@@ -6,6 +6,7 @@ import { useSectors } from '../contexts/SectorsContext';
 import { UserPlus, Shield, User as UserIcon, Hash, BadgeCheck, Building2, Trash2, Key, Edit2, XCircle, Save, ChevronRight, Crown, ShieldCheck, Settings, Search, X, Users, Briefcase, Download } from 'lucide-react';
 import PermissionManagement from './PermissionManagement';
 import SectorManagement from './SectorManagement';
+import { PERMISSIONS, hasPermission } from '../constants/permissions';
 
 interface UserManagementProps {
   users: User[];
@@ -61,6 +62,9 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     setResetToast({ type, msg });
     setTimeout(() => setResetToast(null), 4000);
   };
+
+  const canManagePermissions = currentUser ? (hasPermission(currentUser, PERMISSIONS.MANAGE_PERMISSIONS) || currentUser.role === UserRole.ADMIN) : false;
+  const canManageSectors = currentUser?.role === UserRole.ADMIN;
 
   // Rank Categories for Filtering (Consistent with PermissionManagement)
   const RANK_CATEGORIES = {
@@ -243,18 +247,22 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
           >
             Usuários
           </button>
-          <button
-            onClick={() => setActiveTab('permissions')}
-            className={`flex-1 md:flex-none px-4 md:px-8 py-2 md:py-3 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'permissions' ? (isDarkMode ? 'bg-slate-700 text-blue-400 shadow-lg' : 'bg-white text-blue-600 shadow-md') : 'text-slate-500 hover:text-slate-800'}`}
-          >
-            Permissões
-          </button>
-          <button
-            onClick={() => setActiveTab('sectors')}
-            className={`flex-1 md:flex-none px-4 md:px-8 py-2 md:py-3 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'sectors' ? (isDarkMode ? 'bg-slate-700 text-blue-400 shadow-lg' : 'bg-white text-blue-600 shadow-md') : 'text-slate-500 hover:text-slate-800'}`}
-          >
-            Setores
-          </button>
+          {canManagePermissions && (
+            <button
+              onClick={() => setActiveTab('permissions')}
+              className={`flex-1 md:flex-none px-4 md:px-8 py-2 md:py-3 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'permissions' ? (isDarkMode ? 'bg-slate-700 text-blue-400 shadow-lg' : 'bg-white text-blue-600 shadow-md') : 'text-slate-500 hover:text-slate-800'}`}
+            >
+              Permissões
+            </button>
+          )}
+          {canManageSectors && (
+            <button
+              onClick={() => setActiveTab('sectors')}
+              className={`flex-1 md:flex-none px-4 md:px-8 py-2 md:py-3 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'sectors' ? (isDarkMode ? 'bg-slate-700 text-blue-400 shadow-lg' : 'bg-white text-blue-600 shadow-md') : 'text-slate-500 hover:text-slate-800'}`}
+            >
+              Setores
+            </button>
+          )}
         </div>
 
         {currentUser?.role === UserRole.ADMIN && (
