@@ -1212,6 +1212,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                                 <div className="flex items-center gap-3">
                                                     <Users className="w-4 h-4 opacity-50" />
                                                     <span>Efetivo Militar</span>
+                                                    <span className="text-emerald-500 font-black text-base lg:text-lg ml-1">{filteredUsers.length}</span>
                                                 </div>
                                             </th>
                                             {currentWeek.map(date => (
