@@ -252,16 +252,15 @@ const ForceMapPrintView: FC<ForceMapPrintViewProps> = ({
                             </table>
                         </div>
 
-                        {/* Footer Signature Area */}
                         <div className="mt-8 pt-6 border-t border-slate-200 grid grid-cols-2 gap-16 print-section">
                             <div className="text-center">
                                 <div className="w-40 h-px bg-slate-400 mx-auto mb-2" />
-                                <p className="text-[8px] font-black uppercase text-slate-700">SECRETARIA DE COMANDO GSD-SP</p>
+                                <p className="text-[8px] font-black uppercase text-slate-700">ESQUADRÃO DE PESSOAL</p>
                                 <p className="text-[6px] uppercase text-slate-400">Responsável pela Verificação</p>
                             </div>
                             <div className="text-center">
                                 <div className="w-40 h-px bg-slate-400 mx-auto mb-2" />
-                                <p className="text-[8px] font-black uppercase text-slate-700">Comandante do GSD-SP</p>
+                                <p className="text-[8px] font-black uppercase text-slate-700">Comandante BASP</p>
                                 <p className="text-[6px] uppercase text-slate-400">Homologação</p>
                             </div>
                         </div>
