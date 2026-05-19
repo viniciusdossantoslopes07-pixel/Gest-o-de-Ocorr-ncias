@@ -486,7 +486,7 @@ ${content.outerHTML}
                                         return name;
                                     })()}
                                 </p>
-                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase">CMT DO GSD-SP</p>
+                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase">CMT DO {currentUser?.om?.acronym || 'GSD-SP'}</p>
                             </div>
                         </div>
 

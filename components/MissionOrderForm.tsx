@@ -13,9 +13,10 @@ interface MissionOrderFormProps {
     isDarkMode?: boolean;
     isSubmitting?: boolean;
     requestContext?: string;
+    activeOm?: any;
 }
 
-const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel, currentUser, users, isDarkMode, isSubmitting, requestContext }) => {
+const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel, currentUser, users, isDarkMode, isSubmitting, requestContext, activeOm }) => {
     const [formData, setFormData] = useState({
         date: order?.date || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
         isInternal: order?.isInternal ?? true,
@@ -998,9 +999,9 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                     <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'} text-center`}>
                         <div className="w-full h-px bg-slate-300 dark:bg-slate-600 mb-3 mx-auto w-3/4"></div>
                         <p className={`text-[10px] sm:text-xs font-black uppercase ${cmtNameStr ? (isDarkMode ? 'text-slate-200' : 'text-slate-800') : 'text-red-500'}`}>
-                            {cmtNameStr || 'ATENÇÃO: NENHUM CMT GSD-SP ATRIBUÍDO'}
+                            {cmtNameStr || `ATENÇÃO: NENHUM CMT ${activeOm?.acronym || 'GSD-SP'} ATRIBUÍDO`}
                         </p>
-                        <p className={`text-[9px] sm:text-[10px] font-bold mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>CMT DO GSD-SP</p>
+                        <p className={`text-[9px] sm:text-[10px] font-bold mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>CMT DO {activeOm?.acronym || 'GSD-SP'}</p>
                     </div>
                 </div>
             </div>
