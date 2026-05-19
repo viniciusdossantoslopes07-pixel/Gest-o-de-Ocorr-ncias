@@ -59,9 +59,21 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose,
             });
 
             const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const imgHeight = (canvas.height * pdfWidth) / canvas.width;
             
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
+            heightLeft -= pageHeight;
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight; // Posição negativa para subir a imagem
+                pdf.addPage();
+                pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
+                heightLeft -= pageHeight;
+            }
             pdf.save(`OMIS_${order.omisNumber.replace(/[\/\\]/g, '-')}.pdf`);
         } catch (error) {
             console.error('Erro ao gerar PDF:', error);
@@ -112,6 +124,16 @@ const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose,
     min-height: 297mm;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+  tr, .signature-block, .avoid-break {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  thead {
+    display: table-header-group;
+  }
+  tfoot {
+    display: table-footer-group;
   }
   ${appCss}
   [class*="print:hidden"] { display: none !important; }
@@ -463,7 +485,7 @@ ${content.outerHTML}
                         )}
 
                         {/* Static Signatures */}
-                        <div className="mt-16 sm:mt-24 mb-4 flex justify-between px-2 sm:px-8 text-center print:mt-20">
+                        <div className="mt-16 sm:mt-24 mb-4 flex justify-between px-2 sm:px-8 text-center print:mt-20 signature-block avoid-break">
                             <div className="flex flex-col items-center w-1/2 px-2">
                                 <div className="w-48 h-px bg-slate-400 mb-2"></div>
                                 <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">
