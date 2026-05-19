@@ -491,7 +491,15 @@ ${content.outerHTML}
                                 <div className="w-48 h-px bg-slate-400 mb-2"></div>
                                 <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">
                                     {(() => {
-                                        const name = order.chSopName || (new Date(order.createdAt) < new Date('2026-05-01') ? 'JOÃO GABRIEL PICCOLI E SOUZA Maj Inf' : '________________________________________');
+                                        let name = order.chSopName;
+                                        if (!name || name.trim() === '' || name.includes('_____')) {
+                                            const chSop = users.find(u => u.administrativeRole === 'CH_OP_GSD_SP');
+                                            if (chSop) {
+                                                name = `${chSop.name} ${chSop.rank}`;
+                                            }
+                                        }
+                                        if (!name) name = new Date(order.createdAt) < new Date('2026-05-01') ? 'JOÃO GABRIEL PICCOLI E SOUZA Maj Inf' : '________________________________________';
+                                        
                                         // Limpeza de cargos capturados como nomes
                                         if (name.toLowerCase().includes('chefe') || name.toLowerCase().includes('cmt do')) return '________________________________________';
                                         return name;
@@ -503,7 +511,15 @@ ${content.outerHTML}
                                 <div className="w-48 h-px bg-slate-400 mb-2"></div>
                                 <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">
                                     {(() => {
-                                        const name = order.cmtName || (new Date(order.createdAt) < new Date('2026-05-01') ? 'FELIPE BARBOSA ALVARENGA Ten Cel Inf' : '________________________________________');
+                                        let name = order.cmtName;
+                                        if (!name || name.trim() === '' || name.includes('_____')) {
+                                            const cmt = users.find(u => u.administrativeRole === 'CMT_GSD_SP');
+                                            if (cmt) {
+                                                name = `${cmt.name} ${cmt.rank}`;
+                                            }
+                                        }
+                                        if (!name) name = new Date(order.createdAt) < new Date('2026-05-01') ? 'FELIPE BARBOSA ALVARENGA Ten Cel Inf' : '________________________________________';
+
                                         // Limpeza de cargos capturados como nomes
                                         if (name.toLowerCase().includes('chefe') || name.toLowerCase().includes('cmt do')) return '________________________________________';
                                         return name;
