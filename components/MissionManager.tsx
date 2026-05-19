@@ -65,6 +65,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
     const [historyYear, setHistoryYear] = useState<string>(new Date().getFullYear().toString());
     const [isParsing, setIsParsing] = useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [activeOmData, setActiveOmData] = useState<any>(null);
 
     // Permission checks
     // Refactored to use granular permissions instead of AccessLevel
@@ -103,9 +104,16 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
         setShowPrintView(true);
     };
 
+    const fetchActiveOmData = async () => {
+        const actualOmId = omId || user?.om_id;
+        if (!actualOmId) return;
+        const { data, error } = await supabase.from('military_organizations').select('*').eq('id', actualOmId).single();
+        if (data && !error) setActiveOmData(data);
+    };
+
     const fetchData = async () => {
         setLoading(true);
-        await Promise.all([fetchMissions(), fetchOrders(), fetchUsers()]);
+        await Promise.all([fetchMissions(), fetchOrders(), fetchUsers(), fetchActiveOmData()]);
         setLoading(false);
     };
 
@@ -1053,7 +1061,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                     requestContext={selectedMission?.dados_missao.informacoes_complementares}
                     users={users}
                     isSubmitting={isSaving}
-                    activeOm={user.om}
+                    activeOm={activeOmData || user.om}
                 />
             </div>
         );
@@ -1615,6 +1623,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                     }}
                     onSendNotifications={handleSendNotifications}
                     currentUser={user}
+                    activeOm={activeOmData || user.om}
                 />
             )}
 

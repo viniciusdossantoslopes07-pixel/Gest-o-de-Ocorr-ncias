@@ -16,9 +16,10 @@ interface MissionOrderPrintViewProps {
     users?: any[];
     onSendNotifications?: (order: MissionOrder) => void;
     currentUser?: User;
+    activeOm?: any;
 }
 
-const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose, onSign, onForceActivate, canSign, users = [], onSendNotifications, currentUser }) => {
+const MissionOrderPrintView: FC<MissionOrderPrintViewProps> = ({ order, onClose, onSign, onForceActivate, canSign, users = [], onSendNotifications, currentUser, activeOm }) => {
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
     const handleDownloadPdf = async () => {
@@ -254,7 +255,7 @@ ${content.outerHTML}
                         }}
                     >
                         {/* Header with Logos */}
-                        <OmPrintHeader om={currentUser?.om} />
+                        <OmPrintHeader om={activeOm || currentUser?.om} />
 
                         {/* Basic Info Table */}
                         {order.mission === 'SOBREAVISO' && (
@@ -508,7 +509,7 @@ ${content.outerHTML}
                                         return name;
                                     })()}
                                 </p>
-                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase">CMT DO {currentUser?.om?.acronym || 'GSD-SP'}</p>
+                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase">CMT DO {activeOm?.acronym || currentUser?.om?.acronym || 'GSD-SP'}</p>
                             </div>
                         </div>
 
