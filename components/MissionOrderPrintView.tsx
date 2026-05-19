@@ -492,13 +492,18 @@ ${content.outerHTML}
                                 <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">
                                     {(() => {
                                         let name = order.chSopName;
-                                        if (!name || name.trim() === '' || name.includes('_____')) {
+                                        const isUnidentified = !name || name.trim() === '' || name.includes('_____') || name.toUpperCase() === 'NÃO IDENTIFICADO' || name.toUpperCase() === 'NAO IDENTIFICADO';
+                                        if (isUnidentified) {
                                             const chSop = users.find(u => u.administrativeRole === 'CH_OP_GSD_SP');
                                             if (chSop) {
                                                 name = `${chSop.name} ${chSop.rank}`;
+                                            } else {
+                                                name = '';
                                             }
                                         }
-                                        if (!name) name = new Date(order.createdAt) < new Date('2026-05-01') ? 'JOÃO GABRIEL PICCOLI E SOUZA Maj Inf' : '________________________________________';
+                                        if (!name || name.toUpperCase() === 'NÃO IDENTIFICADO' || name.toUpperCase() === 'NAO IDENTIFICADO') {
+                                            name = order.date < '2026-05-01' ? 'JOÃO GABRIEL PICCOLI E SOUZA Maj Inf' : '________________________________________';
+                                        }
                                         
                                         // Limpeza de cargos capturados como nomes
                                         if (name.toLowerCase().includes('chefe') || name.toLowerCase().includes('cmt do')) return '________________________________________';
@@ -512,13 +517,18 @@ ${content.outerHTML}
                                 <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">
                                     {(() => {
                                         let name = order.cmtName;
-                                        if (!name || name.trim() === '' || name.includes('_____')) {
+                                        const isUnidentified = !name || name.trim() === '' || name.includes('_____') || name.toUpperCase() === 'NÃO IDENTIFICADO' || name.toUpperCase() === 'NAO IDENTIFICADO';
+                                        if (isUnidentified) {
                                             const cmt = users.find(u => u.administrativeRole === 'CMT_GSD_SP');
                                             if (cmt) {
                                                 name = `${cmt.name} ${cmt.rank}`;
+                                            } else {
+                                                name = '';
                                             }
                                         }
-                                        if (!name) name = new Date(order.createdAt) < new Date('2026-05-01') ? 'FELIPE BARBOSA ALVARENGA Ten Cel Inf' : '________________________________________';
+                                        if (!name || name.toUpperCase() === 'NÃO IDENTIFICADO' || name.toUpperCase() === 'NAO IDENTIFICADO') {
+                                            name = order.date < '2026-05-01' ? 'FELIPE BARBOSA ALVARENGA Ten Cel Inf' : '________________________________________';
+                                        }
 
                                         // Limpeza de cargos capturados como nomes
                                         if (name.toLowerCase().includes('chefe') || name.toLowerCase().includes('cmt do')) return '________________________________________';
