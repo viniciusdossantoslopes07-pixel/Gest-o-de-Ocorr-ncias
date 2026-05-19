@@ -90,6 +90,12 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
 
     try {
       if (view === 'register') {
+        if (!regData.om_id) {
+          setError('Selecione a Organização Militar (OM).');
+          setIsLoading(false);
+          return;
+        }
+
         if (password.length < 8) {
           setError('A senha deve ter no mínimo 8 caracteres.');
           setIsLoading(false);
