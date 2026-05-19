@@ -30,6 +30,7 @@ export const PERMISSIONS = {
     // Admin
     MANAGE_USERS: 'manage_users', // Criar usuários, atribuir funções
     MANAGE_PERMISSIONS: 'manage_permissions', // Tela de permissões
+    NAVIGATE_OMS: 'navigate_oms', // Navegar livremente entre diferentes OM's
 
     // Ocorrências (Workflow Granular)
     MANAGE_OCCURRENCES: 'manage_occurrences', // Permissão Geral (Master)
@@ -160,14 +161,6 @@ export const USER_FUNCTIONS = {
 export const hasPermission = (user: User | null | undefined, permission: string): boolean => {
     if (!user) return false;
 
-    // 0. Super Admin / Command Logic
-    // If user is ADMIN role or has OM (Command) access level, they have full permissions
-    if (user.role === UserRole.ADMIN || user.accessLevel === 'OM') return true;
-
-    // Bypass para cargos de Comando/Chefia
-    const HIGH_LEVEL_ADMIN_ROLES = ['CMT_GSD_SP', 'CH_OP_GSD_SP', 'CMT_BASP', 'CH_SAP'];
-    if (user.administrativeRole && HIGH_LEVEL_ADMIN_ROLES.includes(user.administrativeRole)) return true;
-
     // 1. Check Custom Permissions
     if (user.customPermissions?.includes(permission)) return true;
 
@@ -176,6 +169,20 @@ export const hasPermission = (user: User | null | undefined, permission: string)
         const func = USER_FUNCTIONS[user.functionId as keyof typeof USER_FUNCTIONS];
         if (func.permissions.includes(permission)) return true;
     }
+
+    // 3. Exceção Restrita
+    // A permissão de navegar entre OMs não é concedida automaticamente a administradores
+    if (permission === PERMISSIONS.NAVIGATE_OMS) {
+        return false;
+    }
+
+    // 4. Super Admin / Command Logic
+    // If user is ADMIN role or has OM (Command) access level, they have full permissions
+    if (user.role === UserRole.ADMIN || user.accessLevel === 'OM') return true;
+
+    // Bypass para cargos de Comando/Chefia
+    const HIGH_LEVEL_ADMIN_ROLES = ['CMT_GSD_SP', 'CH_OP_GSD_SP', 'CMT_BASP', 'CH_SAP'];
+    if (user.administrativeRole && HIGH_LEVEL_ADMIN_ROLES.includes(user.administrativeRole)) return true;
 
     return false;
 };

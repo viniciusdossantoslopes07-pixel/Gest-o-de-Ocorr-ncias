@@ -3,6 +3,7 @@ import { supabase } from '../services/supabase';
 import { MilitaryOrganization, AccessGate, User } from '../types';
 import { Building2, Map, ShieldAlert, Users, DoorOpen, Plus, Save, ImagePlus, Loader2, Trash2, ShieldCheck, MapPin, TrendingUp, BarChart2, PieChart as PieIcon, Activity, Pencil, ChevronLeft, X, Search } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { hasPermission, PERMISSIONS } from '../constants/permissions';
 
 interface OMManagementProps {
     currentUser: User | null;
@@ -599,27 +600,35 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                             </div>
                                         </div>
                                         <div className="flex flex-col gap-2">
-                                            <button 
-                                                onClick={() => {
-                                                    window.location.search = `?om=${selectedOm.acronym}`;
-                                                }}
-                                                className="w-full py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-                                            >
-                                                <Activity className="w-3.5 h-3.5" /> Visualização Tática
-                                            </button>
-                                            
-                                            {selectedOm.url ? (
-                                                <a 
-                                                    href={`https://${selectedOm.url.replace(/^https?:\/\//, '')}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="w-full py-3 bg-slate-800 text-emerald-400 border border-emerald-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 no-underline"
-                                                >
-                                                    <DoorOpen className="w-3.5 h-3.5" /> Acessar Link de Produção
-                                                </a>
+                                            {hasPermission(currentUser, PERMISSIONS.NAVIGATE_OMS) ? (
+                                                <>
+                                                    <button 
+                                                        onClick={() => {
+                                                            window.location.search = `?om=${selectedOm.acronym}`;
+                                                        }}
+                                                        className="w-full py-3 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                                                    >
+                                                        <Activity className="w-3.5 h-3.5" /> Visualização Tática
+                                                    </button>
+                                                    
+                                                    {selectedOm.url ? (
+                                                        <a 
+                                                            href={`https://${selectedOm.url.replace(/^https?:\/\//, '')}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="w-full py-3 bg-slate-800 text-emerald-400 border border-emerald-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 no-underline"
+                                                        >
+                                                            <DoorOpen className="w-3.5 h-3.5" /> Acessar Link de Produção
+                                                        </a>
+                                                    ) : (
+                                                        <div className="w-full py-3 bg-white/5 border border-white/5 rounded-xl text-[9px] font-bold text-slate-500 text-center uppercase tracking-widest italic">
+                                                            URL de Produção não configurada
+                                                        </div>
+                                                    )}
+                                                </>
                                             ) : (
-                                                <div className="w-full py-3 bg-white/5 border border-white/5 rounded-xl text-[9px] font-bold text-slate-500 text-center uppercase tracking-widest italic">
-                                                    URL de Produção não configurada
+                                                <div className="w-full py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-[9px] font-bold text-red-400 text-center uppercase tracking-widest italic flex items-center justify-center gap-2">
+                                                    <ShieldAlert className="w-3.5 h-3.5" /> Acesso Tático Restrito
                                                 </div>
                                             )}
                                         </div>
