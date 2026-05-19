@@ -657,7 +657,7 @@ def processar_lote(pasta: Path, dry_run: bool = False):
                     'end_time': end_time,
                     'mission_report': 'Missão executada conforme planejado. (Importado de arquivo PDF escaneado via Fallback inteligente 2026)',
                     'cmt_name': 'TEN CEL FELIPE BARBOSA ALVARENGA',
-                    'ch_sop_name': 'NÃO IDENTIFICADO',
+                    'ch_sop_name': 'JOÃO GABRIEL PICCOLI E SOUZA Maj Inf',
                     'om_id': OM_ID_GSD_SP,
                     'created_at': now_iso,
                     'updated_at': now_iso,
