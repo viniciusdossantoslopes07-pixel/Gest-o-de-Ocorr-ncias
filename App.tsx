@@ -434,10 +434,14 @@ const App: FC = () => {
   useEffect(() => {
     if (!currentUser || currentUser.role === UserRole.PUBLIC) return;
 
-    // Fetch inicial de presenças (últimos 15 dias) para não onerar bateria/RAM e limites da Cloud Database
+    // OTIMIZAÇÃO: Só carregar e escutar real-time se a aba ativa precisar de dados de presença
+    const needsAttendance = activeTab === 'daily-attendance' || activeTab === 'dashboard';
+    if (!needsAttendance) return;
+
+    // Fetch inicial de presenças (últimos 7 dias em vez de 15) para não onerar bateria/RAM e limites da Cloud Database
     const fetchAttendanceData = async () => {
       const pastDaysForCache = new Date();
-      pastDaysForCache.setDate(pastDaysForCache.getDate() - 15);
+      pastDaysForCache.setDate(pastDaysForCache.getDate() - 7);
       const dateFilter = pastDaysForCache.toISOString().split('T')[0];
 
       const actualOmId = getActualOmId();
@@ -544,7 +548,7 @@ const App: FC = () => {
       supabase.removeChannel(attendanceChannel);
       supabase.removeChannel(justificationsChannel);
     };
-  }, [currentUser, omId]);
+  }, [currentUser, omId, activeTab]);
 
   const toggleTheme = () => setIsDarkMode(prev => !prev);
 
@@ -1973,21 +1977,8 @@ const App: FC = () => {
                 };
 
                 try {
-                  // Determine if we need to insert or update the daily_attendance record
                   const currentOmId = a.om_id || currentUser?.om_id || omId;
                   
-                  const { data: existingAttendance } = await withTimeout<any>(Promise.resolve(supabase
-                    .from('daily_attendance')
-                    .select('id')
-                    .eq('date', a.date)
-                    .eq('sector', a.sector)
-                    .eq('call_type', a.callType)
-                    .eq('om_id', currentOmId)
-                    .limit(1)
-                  ));
-
-                  let attendanceId = existingAttendance?.[0]?.id;
-
                   const headerData = {
                     date: a.date,
                     sector: a.sector,
@@ -1999,44 +1990,21 @@ const App: FC = () => {
                     om_id: currentOmId
                   };
 
-                  if (!attendanceId) {
-                    const { data: newAtt, error: attErr } = await withTimeout<any>(Promise.resolve(supabase
-                      .from('daily_attendance')
-                      .insert([headerData])
-                      .select()
-                      .single()
-                    ));
+                  // OTIMIZAÇÃO CRÍTICA: Single upsert request reduz de 2 requisições sequenciais para apenas 1.
+                  // Usa a chave única composta (date, sector, call_type) para fazer o upsert atômico.
+                  const { data: upsertedAttendance, error: attErr } = await withTimeout<any>(Promise.resolve(supabase
+                    .from('daily_attendance')
+                    .upsert(headerData, { onConflict: 'date,sector,call_type' })
+                    .select('id')
+                    .single()
+                  ));
 
-                    if (attErr) {
-                      const { data: retryAtt } = await withTimeout<any>(Promise.resolve(supabase
-                        .from('daily_attendance')
-                        .select('id')
-                        .eq('date', a.date)
-                        .eq('sector', a.sector)
-                        .eq('call_type', a.callType)
-                        .eq('om_id', currentOmId)
-                        .limit(1)
-                      ));
-
-                      if (retryAtt && retryAtt.length > 0) {
-                        attendanceId = retryAtt[0].id;
-                      } else {
-                        console.error('Error saving attendance header:', attErr);
-                        return;
-                      }
-                    } else {
-                      attendanceId = newAtt.id;
-                    }
-                  } else {
-                    const { error: updateError } = await withTimeout<any>(Promise.resolve(supabase
-                      .from('daily_attendance')
-                      .update(headerData)
-                      .eq('id', attendanceId)
-                    ));
-
-                    if (updateError) console.error('Error updating attendance header:', updateError);
+                  if (attErr) {
+                    console.error('Error saving attendance header via upsert:', attErr);
+                    return;
                   }
 
+                  const attendanceId = upsertedAttendance?.id;
                   if (!attendanceId) return;
 
                   // BATCH UPSERT for records
@@ -2052,25 +2020,25 @@ const App: FC = () => {
 
                   const { error: batchErr } = await withTimeout<any>(Promise.resolve(supabase
                     .from('attendance_records')
-                    .upsert(recordsToUpsert, { onConflict: 'attendance_id, militar_id' })
+                    .upsert(recordsToUpsert, { onConflict: 'attendance_id,militar_id' })
                   ));
 
-                  if (batchErr) console.error('Error batch saving attendance records:', batchErr);
-
-                  // Se o ID foi recém-criado, patch no local state
-                  if (!existingAttendance?.[0]?.id) {
-                    setAttendanceHistory(prev => {
-                      const idx = prev.findIndex(
-                        x => x.date === a.date && x.sector === a.sector && x.callType === a.callType
-                      );
-                      if (idx >= 0 && prev[idx].id !== attendanceId) {
-                        const next = [...prev];
-                        next[idx] = { ...next[idx], id: attendanceId };
-                        return next;
-                      }
-                      return prev;
-                    });
+                  if (batchErr) {
+                    console.error('Error batch saving attendance records:', batchErr);
                   }
+
+                  // Patch no local state se o ID mudou ou foi criado
+                  setAttendanceHistory(prev => {
+                    const idx = prev.findIndex(
+                      x => x.date === a.date && x.sector === a.sector && x.callType === a.callType
+                    );
+                    if (idx >= 0 && prev[idx].id !== attendanceId) {
+                      const next = [...prev];
+                      next[idx] = { ...next[idx], id: attendanceId };
+                      return next;
+                    }
+                    return prev;
+                  });
 
                 } catch (e) {
                   console.error('Timeout or fail on SaveAttendance:', e);
