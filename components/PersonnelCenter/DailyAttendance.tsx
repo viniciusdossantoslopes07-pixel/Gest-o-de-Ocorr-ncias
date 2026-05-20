@@ -562,15 +562,27 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     // Monitora o carregamento inicial de dados críticos
     useEffect(() => {
-        // Se já temos usuários, setores e destinos carregados
-        if (users.length > 0 && sectors.length > 0 && isDestinationsLoaded) {
-            // Pequeno delay para garantir que os efeitos colaterais de inicialização (como selectedSector) ocorram
+        // Se os destinos já foram carregados, liberamos a tela após pequeno delay para efeitos de inicialização
+        if (isDestinationsLoaded) {
             const timer = setTimeout(() => {
                 setIsInitialLoading(false);
-            }, 800);
+            }, 500);
             return () => clearTimeout(timer);
         }
-    }, [users.length, sectors.length, isDestinationsLoaded]);
+    }, [isDestinationsLoaded]);
+
+    // Safety Timeout: Desbloqueio de salvaguarda após 3.5 segundos em caso de lentidão extrema ou falhas
+    useEffect(() => {
+        const safetyTimer = setTimeout(() => {
+            setIsInitialLoading(currentLoading => {
+                if (currentLoading) {
+                    console.warn("Safety Timeout ativado: Forçando liberação da tela da Chamada Diária.");
+                }
+                return false;
+            });
+        }, 3500);
+        return () => clearTimeout(safetyTimer);
+    }, []);
     
     const isOldWeek = useMemo(() => {
         if (!currentWeek || currentWeek.length === 0) return false;
@@ -627,14 +639,26 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     // Função isFutureDate movida para o início do componente
 
     useEffect(() => {
+        let isMounted = true;
         const fetchDestinations = async () => {
-            const { data } = await supabase
-                .from('user_destinations')
-                .select('*')
-                .or(`start_date.in.(${currentWeek.join(',')}),and(start_date.lte.${currentWeek[4]},end_date.gte.${currentWeek[0]})`);
-            if (data) {
-                setUserDestinations(data);
-                setIsDestinationsLoaded(true);
+            try {
+                const { data, error } = await supabase
+                    .from('user_destinations')
+                    .select('*')
+                    .or(`start_date.in.(${currentWeek.join(',')}),and(start_date.lte.${currentWeek[4]},end_date.gte.${currentWeek[0]})`);
+                
+                if (error) {
+                    console.error("Erro ao buscar destinos planejados:", error);
+                }
+                if (data && isMounted) {
+                    setUserDestinations(data);
+                }
+            } catch (err) {
+                console.error("Erro inesperado no fetch de destinos:", err);
+            } finally {
+                if (isMounted) {
+                    setIsDestinationsLoaded(true);
+                }
             }
         };
         fetchDestinations();
@@ -649,6 +673,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             })
             .subscribe();
         return () => {
+            isMounted = false;
             clearTimeout(destFetchTimeout);
             supabase.removeChannel(channel);
         };
