@@ -293,6 +293,17 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 }) => {
     const { sectors, displaySectors, omId: contextOmId, oms } = useSectors();
     const legacyIds = useMemo(() => ['e5418770-62bd-49d7-9229-a608e3a2895b', 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c'], []);
+
+    // Filtragem de contas funcionais
+    const realPersonnel = useMemo(() =>
+        users.filter(u => u.active !== false && !u.is_functional),
+        [users]
+    );
+
+    const isFutureDate = (date: string) => {
+        const todayStr = formatDateToISO(new Date());
+        return date > todayStr;
+    };
     
     // Determine the active OM acronym for the view
     const currentViewOmAcronym = useMemo(() => {
@@ -385,7 +396,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         }
     }, [unitSectors, selectedSector]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [signedDates, setSignedDates] = useState<Record<string, { signedBy: string, signedAt: string }>>({});
+    const [localOverrides, setLocalOverrides] = useState<Record<string, string>>({});
     const [userDestinations, setUserDestinations] = useState<any[]>([]);
 
     // Permission Flags
@@ -408,11 +419,112 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         return days;
     });
 
-    const [weeklyGrid, setWeeklyGrid] = useState<Record<string, Record<string, Record<string, string>>>>({});
+    // Mapeamento otimizado de Assinaturas usando useMemo
+    const signedDates = useMemo(() => {
+        const sigs: Record<string, { signedBy: string, signedAt: string }> = {};
+        attendanceHistory.forEach(a => {
+            if (a.signedBy && a.signedAt) {
+                const key = `${a.date}-${a.callType}-${a.sector}`;
+                sigs[key] = { signedBy: a.signedBy, signedAt: a.signedAt };
+            }
+        });
+        return sigs;
+    }, [attendanceHistory]);
+
+    // Computação síncrona e ultrarrápida da Grade Semanal usando useMemo
+    const weeklyGrid = useMemo(() => {
+        const grid: Record<string, Record<string, Record<string, string>>> = {};
+
+        // 1. Pré-indexar destinos por militar para busca O(1)
+        const destinationsByUser: Record<string, typeof userDestinations> = {};
+        userDestinations.forEach(dest => {
+            if (!dest.user_id) return;
+            if (!destinationsByUser[dest.user_id]) {
+                destinationsByUser[dest.user_id] = [];
+            }
+            destinationsByUser[dest.user_id].push(dest);
+        });
+
+        // 2. Inicializar a grade para todos os militares e dias da semana com destinos (planejado)
+        realPersonnel.forEach(u => {
+            grid[u.id] = {};
+            currentWeek.forEach(date => {
+                grid[u.id][date] = {};
+                const userDests = destinationsByUser[u.id] || [];
+                const dest = userDests.find(d => date >= d.start_date && date <= (d.end_date || d.start_date));
+                if (dest) {
+                    grid[u.id][date]['INICIO'] = dest.status;
+                    grid[u.id][date]['TERMINO'] = dest.status;
+                    grid[u.id][date]['IS_PLANNED'] = 'true';
+                }
+            });
+        });
+
+        // 3. Mesclar dados históricos e assinaturas do banco
+        attendanceHistory.forEach(a => {
+            if (currentWeek.includes(a.date) && a.sector === selectedSector) {
+                const key = `${a.date}-${a.callType}-${a.sector}`;
+                const isSigned = !!signedDates[key];
+                const isFuture = isFutureDate(a.date);
+                const isNoWorkDay = a.observacao === 'Feriado' || a.observacao === 'Expediente Cancelado' || a.records.every(r => r.status === 'NIL');
+
+                if (isNoWorkDay) {
+                    realPersonnel.forEach(u => {
+                        grid[u.id] = grid[u.id] || {};
+                        grid[u.id][a.date] = grid[u.id][a.date] || {};
+                        grid[u.id][a.date][a.callType] = 'NIL';
+                    });
+                } else {
+                    a.records.forEach(r => {
+                        if (!grid[r.militarId]) {
+                            grid[r.militarId] = {};
+                        }
+                        if (!grid[r.militarId][a.date]) {
+                            grid[r.militarId][a.date] = {};
+                        }
+
+                        const userDests = destinationsByUser[r.militarId] || [];
+                        const dest = userDests.find(d => a.date >= d.start_date && a.date <= (d.end_date || d.start_date));
+
+                        if (isSigned) {
+                            grid[r.militarId][a.date][a.callType] = r.status;
+                            delete grid[r.militarId][a.date]['IS_PLANNED'];
+                        } else if (isFuture && dest) {
+                            const destTime = new Date(dest.updated_at || dest.created_at).getTime();
+                            const manualTime = new Date(r.timestamp).getTime();
+                            if (destTime > manualTime) {
+                                grid[r.militarId][a.date][a.callType] = dest.status;
+                                grid[r.militarId][a.date]['IS_PLANNED'] = 'true';
+                            } else {
+                                grid[r.militarId][a.date][a.callType] = r.status;
+                                delete grid[r.militarId][a.date]['IS_PLANNED'];
+                            }
+                        } else {
+                            grid[r.militarId][a.date][a.callType] = r.status;
+                            if (grid[r.militarId][a.date]['IS_PLANNED']) {
+                                delete grid[r.militarId][a.date]['IS_PLANNED'];
+                            }
+                        }
+                    });
+                }
+            }
+        });
+
+        // 4. Aplicar overrides locais do estado do componente
+        Object.entries(localOverrides).forEach(([key, status]) => {
+            const parts = key.split('|');
+            if (parts.length < 3) return;
+            const [uid, dateKey, ctKey] = parts;
+            if (grid[uid] && grid[uid][dateKey]) {
+                grid[uid][dateKey][ctKey] = status;
+                delete grid[uid][dateKey]['IS_PLANNED'];
+            }
+        });
+
+        return grid;
+    }, [currentWeek, attendanceHistory, selectedSector, userDestinations, signedDates, realPersonnel, localOverrides]);
+
     const [attendanceRecords, setAttendanceRecords] = useState<Record<string, string>>({});
-    // Ref para guardar alterações locais pendentes (não confirmadas pelo banco ainda)
-    // Chave: `${userId}|${date}|${callType}`, Valor: status escolhido
-    const localOverridesRef = useRef<Map<string, string>>(new Map());
     const [openNoWorkMenu, setOpenNoWorkMenu] = useState<string | null>(null);
     const [showManageWeekModal, setShowManageWeekModal] = useState(false);
     const [selectedDaysForNoWork, setSelectedDaysForNoWork] = useState<string[]>([]);
@@ -478,11 +590,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         setIsLoadingHistory(false);
     };
 
-    // Filtragem de contas funcionais
-    const realPersonnel = useMemo(() =>
-        users.filter(u => u.active !== false && !u.is_functional),
-        [users]
-    );
+    // Filtragem de contas funcionais movida para o início do componente
 
     const getSectorUsers = (sector: string) => {
         return realPersonnel.filter(user => {
@@ -516,10 +624,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         });
     }, [realPersonnel, searchTerm, selectedSector]);
 
-    const isFutureDate = (date: string) => {
-        const todayStr = formatDateToISO(new Date());
-        return date > todayStr;
-    };
+    // Função isFutureDate movida para o início do componente
 
     useEffect(() => {
         const fetchDestinations = async () => {
@@ -549,101 +654,11 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         };
     }, [currentWeek]);
 
-    useEffect(() => {
-        const grid: Record<string, Record<string, Record<string, string>>> = {};
-        userDestinations.forEach(dest => {
-            const start = dest.start_date;
-            const end = dest.end_date || dest.start_date;
-            currentWeek.forEach(date => {
-                if (date >= start && date <= end) {
-                    if (!grid[dest.user_id]) grid[dest.user_id] = {};
-                    if (!grid[dest.user_id][date]) grid[dest.user_id][date] = {};
-                    grid[dest.user_id][date]['INICIO'] = dest.status;
-                    grid[dest.user_id][date]['TERMINO'] = dest.status;
-                    grid[dest.user_id][date]['IS_PLANNED'] = 'true';
-                }
-            });
-        });
-
-        attendanceHistory.forEach(a => {
-            if (currentWeek.includes(a.date) && a.sector === selectedSector) {
-                const key = `${a.date}-${a.callType}-${a.sector}`;
-                const isSigned = !!signedDates[key];
-                const isFuture = isFutureDate(a.date);
-                const isNoWorkDay = a.observacao === 'Feriado' || a.observacao === 'Expediente Cancelado' || a.records.every(r => r.status === 'NIL');
-
-                if (isNoWorkDay) {
-                    realPersonnel.forEach(u => {
-                        if (!grid[u.id]) grid[u.id] = {};
-                        if (!grid[u.id][a.date]) grid[u.id][a.date] = {};
-                        grid[u.id][a.date][a.callType] = 'NIL';
-                    });
-                }
-
-                a.records.forEach(r => {
-                    const dest = userDestinations.find(d => d.user_id === r.militarId && a.date >= d.start_date && a.date <= (d.end_date || d.start_date));
-                    if (isSigned) {
-                        if (!grid[r.militarId]) grid[r.militarId] = {};
-                        if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
-                        grid[r.militarId][a.date][a.callType] = r.status;
-                        delete grid[r.militarId][a.date]['IS_PLANNED'];
-                    } else if (isFuture && dest) {
-                        const manualRecord = a.records.find(re => re.militarId === r.militarId);
-                        if (manualRecord) {
-                            const destTime = new Date(dest.updated_at || dest.created_at).getTime();
-                            const manualTime = new Date(manualRecord.timestamp).getTime();
-                            if (destTime > manualTime) {
-                                if (!grid[r.militarId]) grid[r.militarId] = {};
-                                if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
-                                grid[r.militarId][a.date][a.callType] = dest.status;
-                                grid[r.militarId][a.date]['IS_PLANNED'] = 'true';
-                            } else {
-                                grid[r.militarId][a.date][a.callType] = manualRecord.status;
-                                delete grid[r.militarId][a.date]['IS_PLANNED'];
-                            }
-                        } else {
-                            if (!grid[r.militarId]) grid[r.militarId] = {};
-                            if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
-                            grid[r.militarId][a.date][a.callType] = dest.status;
-                            grid[r.militarId][a.date]['IS_PLANNED'] = 'true';
-                        }
-                    } else {
-                        if (!grid[r.militarId]) grid[r.militarId] = {};
-                        if (!grid[r.militarId][a.date]) grid[r.militarId][a.date] = {};
-                        grid[r.militarId][a.date][a.callType] = r.status;
-                        if (grid[r.militarId][a.date]['IS_PLANNED']) delete grid[r.militarId][a.date]['IS_PLANNED'];
-                    }
-                });
-            }
-        });
-
-        // Aplicar overrides locais pendentes para evitar que alterações não confirmadas sejam sobrescritas
-        localOverridesRef.current.forEach((status, key) => {
-            const parts = key.split('|');
-            if (parts.length < 3) return;
-            const [uid, dateKey, ctKey] = parts;
-            if (!grid[uid]) grid[uid] = {};
-            if (!grid[uid][dateKey]) grid[uid][dateKey] = {};
-            grid[uid][dateKey][ctKey] = status;
-            // Remove flag de planejado se foi alterado manualmente
-            delete grid[uid][dateKey]['IS_PLANNED'];
-        });
-
-        setWeeklyGrid(grid);
-    }, [currentWeek, attendanceHistory, selectedSector, userDestinations, signedDates, realPersonnel]);
-
     const handleWeeklyChange = (userId: string, date: string, callType: string, status: string) => {
-        // Registrar override local ANTES de qualquer outro update para evitar race condition
+        // Registrar override local de forma síncrona reativa
         const overrideKey = `${userId}|${date}|${callType}`;
-        localOverridesRef.current.set(overrideKey, status);
+        setLocalOverrides(prev => ({ ...prev, [overrideKey]: status }));
 
-        setWeeklyGrid(prev => {
-            const userDays = prev[userId] || {};
-            const dayCalls = userDays[date] || {};
-            const newDayCalls = { ...dayCalls, [callType]: status };
-            if (newDayCalls['IS_PLANNED']) delete newDayCalls['IS_PLANNED'];
-            return { ...prev, [userId]: { ...userDays, [date]: newDayCalls } };
-        });
         const existing = attendanceHistory.find(a => a.date === date && a.callType === callType && a.sector === selectedSector);
         let newAttendance: DailyAttendance;
         if (existing) {
@@ -766,16 +781,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         }, 500);
     };
 
-    useEffect(() => {
-        const sigs: Record<string, { signedBy: string, signedAt: string }> = {};
-        attendanceHistory.forEach(a => {
-            if (a.signedBy && a.signedAt) {
-                const key = `${a.date}-${a.callType}-${a.sector}`;
-                sigs[key] = { signedBy: a.signedBy, signedAt: a.signedAt };
-            }
-        });
-        setSignedDates(sigs);
-    }, [attendanceHistory]);
+    // Mapeamento de assinaturas antigo removido (migrado para useMemo síncrono no topo)
 
     const changeWeek = (offset: number) => {
         setCurrentWeek(prev => {
@@ -835,9 +841,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const confirmSignature = () => {
         if (!dateToSign || !callToSign) return;
         if (passwordInput === currentUser.password) {
-            const key = `${dateToSign}-${callToSign}-${selectedSector}`;
             const signatureInfo = { signedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`, signedAt: new Date().toISOString() };
-            setSignedDates(prev => ({ ...prev, [key]: signatureInfo }));
             const sectorUsers = getSectorUsers(selectedSector);
             const existing = attendanceHistory.find(a => a.date === dateToSign && a.callType === callToSign && a.sector === selectedSector);
             let attendanceToSave: DailyAttendance;
@@ -889,13 +893,19 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 };
             }
             onSaveAttendance(attendanceToSave);
+            
             // Limpar overrides do dia assinado (banco agora é a fonte de verdade)
-            localOverridesRef.current.forEach((_status, key) => {
-                const parts = key.split('|');
-                if (parts.length >= 3 && parts[1] === dateToSign && parts[2] === callToSign) {
-                    localOverridesRef.current.delete(key);
-                }
+            setLocalOverrides(prev => {
+                const nextOverrides = { ...prev };
+                Object.keys(nextOverrides).forEach(key => {
+                    const parts = key.split('|');
+                    if (parts.length >= 3 && parts[1] === dateToSign && parts[2] === callToSign) {
+                        delete nextOverrides[key];
+                    }
+                });
+                return nextOverrides;
             });
+
             setShowPasswordModal(false);
             setDateToSign(null); setCallToSign(null); setPasswordInput('');
             alert(`${CALL_TYPES[callToSign]} assinada com sucesso!`);
