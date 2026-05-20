@@ -318,6 +318,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     
     // Identifica o ID da OM selecionada no seletor lateral (legacy)
     const selectedOmId = useMemo(() => {
+        if (selectedUnit === 'GSD-SP') return 'e5418770-62bd-49d7-9229-a608e3a2895b';
+        if (selectedUnit === 'BASP') return 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c';
         const om = oms.find(o => o.acronym === selectedUnit);
         return om?.id;
     }, [oms, selectedUnit]);

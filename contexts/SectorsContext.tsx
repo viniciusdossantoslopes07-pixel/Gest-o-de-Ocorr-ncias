@@ -95,6 +95,18 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
     }, [fetchData]);
 
     useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                fetchData();
+            }
+        });
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [fetchData]);
+
+    useEffect(() => {
         const channel = supabase
             .channel('sectors_changes')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'sectors' }, () => {
