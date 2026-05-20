@@ -50,7 +50,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
     const [otherOmName, setOtherOmName] = useState('');
 
     const [activeUnitFilter, setActiveUnitFilter] = useState<'TODAS' | 'GSD-SP' | 'BASP'>('TODAS');
-    const { sectors, sectorNames, omId } = useSectors();
+    const { sectors, sectorNames, omId, oms } = useSectors();
     
     // IDs das unidades legadas
     const GSD_SP_ID = 'e5418770-62bd-49d7-9229-a608e3a2895b';
@@ -60,16 +60,6 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
     const LEGACY_OM_IDS = [GSD_SP_ID, BASP_ID];
     const currentActiveOmId = omId || (users.length > 0 ? users[0].om_id : null);
     const isLegacyUnit = !!(currentActiveOmId && LEGACY_OM_IDS.includes(currentActiveOmId));
-
-    const [organizations, setOrganizations] = useState<any[]>([]);
-
-    useEffect(() => {
-        const fetchOrgs = async () => {
-            const { data } = await supabase.from('military_organizations').select('*').order('acronym');
-            if (data) setOrganizations(data);
-        };
-        fetchOrgs();
-    }, []);
     const [formData, setFormData] = useState({
         name: '',
         warName: '',
@@ -166,7 +156,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
             
             // Redirect if the selected OM is different from current URL OM
             if (finalOmId) {
-                const selectedOrg = organizations.find(o => o.id === finalOmId);
+                const selectedOrg = oms.find(o => o.id === finalOmId);
                 if (selectedOrg && selectedOrg.acronym !== new URLSearchParams(window.location.search).get('om')?.toUpperCase()) {
                     alert(`Militar cadastrado com sucesso! Redirecionando para o painel de ${selectedOrg.acronym}...`);
                     window.location.href = `${window.location.origin}${window.location.pathname}?om=${selectedOrg.acronym}`;
@@ -311,11 +301,14 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                             <select
                                 required
                                 value={formData.om_id || omId || ''}
-                                onChange={e => setFormData({ ...formData, om_id: e.target.value })}
+                                onChange={e => {
+                                    // Ao trocar a OM, limpa o setor para evitar setor de outra OM
+                                    setFormData({ ...formData, om_id: e.target.value, sector: '' });
+                                }}
                                 className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
                             >
                                 <option value="">Selecione a OM...</option>
-                                {organizations.map(org => (
+                                {oms.map(org => (
                                     <option key={org.id} value={org.id}>{org.acronym} - {org.name}</option>
                                 ))}
                             </select>
@@ -332,7 +325,10 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                                 className={`w-full rounded-xl p-2.5 lg:p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
                             >
                                 <option value="">Selecione o Setor...</option>
-                                {sectorNames.map(s => <option key={s} value={s}>{s}</option>)}
+                                {sectors
+                                    .filter(s => s.is_active && s.om_id === (formData.om_id || omId || ''))
+                                    .map(s => <option key={s.id} value={s.name}>{s.name}</option>)
+                                }
                             </select>
                         </div>
 
