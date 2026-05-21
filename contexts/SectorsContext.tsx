@@ -52,17 +52,10 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
             .from('sectors')
             .select('*')
             .eq('is_active', true);
-        
-        const legacyIds = ['e5418770-62bd-49d7-9229-a608e3a2895b', 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c'];
-        if (omId && legacyIds.includes(omId)) {
-            query = query.in('om_id', legacyIds);
-        } else if (omId) {
-            query = query.eq('om_id', omId);
-        } else {
-            // Se omId for nulo, não buscamos nada (ou usamos um dummy ID) 
-            // para evitar vazar setores de todas as OMs
-            query = query.eq('om_id', '00000000-0000-0000-0000-000000000000');
-        }
+
+        // Removemos o filtro de omId aqui para que o contexto tenha todos os setores
+        // Isso resolve o problema de edição no PersonnelManagement (dropdown vazio)
+        // Os componentes (como PersonnelManagement e DailyAttendance) já filtram por om_id localmente.
 
         const { data, error } = await query.order('display_order', { ascending: true });
 
