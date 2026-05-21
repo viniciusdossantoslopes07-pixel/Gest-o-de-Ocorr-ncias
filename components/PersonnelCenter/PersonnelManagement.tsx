@@ -756,7 +756,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                                         />
                                     </div>
                                     <div className={`max-h-[280px] overflow-y-auto rounded-2xl border p-2 space-y-1 custom-scrollbar ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50/50 border-slate-200'}`}>
-                                        {organizations
+                                        {oms
                                             .filter(org => org.id !== transferUser.om_id && (org.name.toLowerCase().includes(transferSearch.toLowerCase()) || org.acronym.toLowerCase().includes(transferSearch.toLowerCase())))
                                             .map(org => (
                                                 <button
