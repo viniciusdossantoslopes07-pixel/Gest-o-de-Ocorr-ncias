@@ -489,25 +489,26 @@ ${content.outerHTML}
                         <div className="mt-16 sm:mt-24 mb-4 flex justify-between px-2 sm:px-8 text-center print:mt-20 signature-block avoid-break">
                             <div className="flex flex-col items-center w-1/2 px-2">
                                 <div className="w-48 h-px bg-slate-400 mb-2"></div>
-                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">
                                     {(() => {
-                                        let name = order.chSopName;
-                                        const isUnidentified = !name || name.trim() === '' || name.includes('_____') || name.toUpperCase() === 'NÃO IDENTIFICADO' || name.toUpperCase() === 'NAO IDENTIFICADO';
+                                        let nameToDisplay = order.chSopName;
+                                        
+                                        // Busca o titular atual da função
+                                        const chSopUser = users?.find(u => u.administrativeRole === 'CH_OP_GSD_SP');
+                                        const currentChSopName = chSopUser ? `${chSopUser.name || chSopUser.warName || ''} ${chSopUser.rank || ''}`.trim() : '';
+
+                                        // Verifica se o nome atual no documento é considerado "não identificado" ou vazio
+                                        const isUnidentified = !nameToDisplay || nameToDisplay.trim() === '' || nameToDisplay.includes('_____') || nameToDisplay.toUpperCase().includes('IDENTIFICADO') || nameToDisplay.toLowerCase().includes('chefe') || nameToDisplay.toLowerCase().includes('cmt do');
+                                        
                                         if (isUnidentified) {
-                                            const chSop = users.find(u => u.administrativeRole === 'CH_OP_GSD_SP');
-                                            if (chSop) {
-                                                name = `${chSop.name} ${chSop.rank}`;
+                                            if (currentChSopName) {
+                                                nameToDisplay = currentChSopName;
                                             } else {
-                                                name = '';
+                                                // Fallback para datas antigas
+                                                nameToDisplay = order.date < '2026-05-01' ? 'JOÃO GABRIEL PICCOLI E SOUZA Maj Inf' : '________________________________________';
                                             }
                                         }
-                                        if (!name || name.toUpperCase() === 'NÃO IDENTIFICADO' || name.toUpperCase() === 'NAO IDENTIFICADO') {
-                                            name = order.date < '2026-05-01' ? 'JOÃO GABRIEL PICCOLI E SOUZA Maj Inf' : '________________________________________';
-                                        }
                                         
-                                        // Limpeza de cargos capturados como nomes
-                                        if (name.toLowerCase().includes('chefe') || name.toLowerCase().includes('cmt do')) return '________________________________________';
-                                        return name;
+                                        return nameToDisplay || '________________________________________';
                                     })()}
                                 </p>
                                 <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase">CHEFE DA SEÇÃO DE OPERAÇÕES</p>
@@ -516,23 +517,25 @@ ${content.outerHTML}
                                 <div className="w-48 h-px bg-slate-400 mb-2"></div>
                                 <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">
                                     {(() => {
-                                        let name = order.cmtName;
-                                        const isUnidentified = !name || name.trim() === '' || name.includes('_____') || name.toUpperCase() === 'NÃO IDENTIFICADO' || name.toUpperCase() === 'NAO IDENTIFICADO';
+                                        let nameToDisplay = order.cmtName;
+                                        
+                                        // Busca o titular atual da função
+                                        const cmtUser = users?.find(u => u.administrativeRole === 'CMT_GSD_SP');
+                                        const currentCmtName = cmtUser ? `${cmtUser.name || cmtUser.warName || ''} ${cmtUser.rank || ''}`.trim() : '';
+
+                                        // Verifica se o nome atual no documento é considerado "não identificado" ou vazio
+                                        const isUnidentified = !nameToDisplay || nameToDisplay.trim() === '' || nameToDisplay.includes('_____') || nameToDisplay.toUpperCase().includes('IDENTIFICADO') || nameToDisplay.toLowerCase().includes('chefe') || nameToDisplay.toLowerCase().includes('cmt do');
+                                        
                                         if (isUnidentified) {
-                                            const cmt = users.find(u => u.administrativeRole === 'CMT_GSD_SP');
-                                            if (cmt) {
-                                                name = `${cmt.name} ${cmt.rank}`;
+                                            if (currentCmtName) {
+                                                nameToDisplay = currentCmtName;
                                             } else {
-                                                name = '';
+                                                // Fallback para datas antigas
+                                                nameToDisplay = order.date < '2026-05-01' ? 'FELIPE BARBOSA ALVARENGA Ten Cel Inf' : '________________________________________';
                                             }
                                         }
-                                        if (!name || name.toUpperCase() === 'NÃO IDENTIFICADO' || name.toUpperCase() === 'NAO IDENTIFICADO') {
-                                            name = order.date < '2026-05-01' ? 'FELIPE BARBOSA ALVARENGA Ten Cel Inf' : '________________________________________';
-                                        }
 
-                                        // Limpeza de cargos capturados como nomes
-                                        if (name.toLowerCase().includes('chefe') || name.toLowerCase().includes('cmt do')) return '________________________________________';
-                                        return name;
+                                        return nameToDisplay || '________________________________________';
                                     })()}
                                 </p>
                                 <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase">CMT DO {activeOm?.acronym || currentUser?.om?.acronym || 'GSD-SP'}</p>
