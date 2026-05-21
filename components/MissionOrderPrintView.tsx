@@ -489,6 +489,7 @@ ${content.outerHTML}
                         <div className="mt-16 sm:mt-24 mb-4 flex justify-between px-2 sm:px-8 text-center print:mt-20 signature-block avoid-break">
                             <div className="flex flex-col items-center w-1/2 px-2">
                                 <div className="w-48 h-px bg-slate-400 mb-2"></div>
+                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">
                                     {(() => {
                                         let nameToDisplay = order.chSopName;
                                         
