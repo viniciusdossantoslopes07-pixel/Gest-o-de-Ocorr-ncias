@@ -48,7 +48,7 @@ OMIS_BASE     = Path(r'C:\Users\Vinicius\Downloads\omiss 2026\OMISS 2026')
 LOTES = {
     1: [OMIS_BASE / '1 - JAN'],
     2: [OMIS_BASE / '2 - FEV'],
-    3: [OMIS_BASE / '3 - MAR', OMIS_BASE / '3 Março'],
+    # 3: [OMIS_BASE / '3 - MAR', OMIS_BASE / '3 Março'], # Ignorado conforme solicitação
     4: [OMIS_BASE / '4 - ABRIL'],
     5: [OMIS_BASE / '5 - MAI'],
 }
@@ -472,25 +472,25 @@ def inserir_supabase(registros: list, dry_run: bool = False, gerar_sql_file: boo
     }
     sucessos = 0
     erros = 0
-    for i in range(0, len(registros), 10):
-        sublote = registros[i:i+10]
+    for i in range(0, len(registros), 1):
+        sublote = registros[i:i+1]
         body = json.dumps(sublote, ensure_ascii=False).encode('utf-8')
         req = urllib.request.Request(url, data=body, headers=headers, method='POST')
         try:
             with urllib.request.urlopen(req, timeout=30) as resp:
                 resp.read()
                 sucessos += len(sublote)
-                print(f"  [OK] Sublote {i//10+1}: {len(sublote)} OMIS inseridas")
+                print(f"  [OK] Sublote {i+1}: {len(sublote)} OMIS inseridas")
         except urllib.error.HTTPError as e:
             msg = e.read().decode('utf-8', errors='ignore')
             if e.code == 409:
-                print(f"  - Sublote {i//10+1}: Registros já existentes (ignorado)")
+                print(f"  - Sublote {i+1}: Registros já existentes (ignorado)")
                 sucessos += len(sublote)
             else:
-                print(f"  [ERR] ERRO sublote {i//10+1}: {e.code} — {msg[:200]}")
+                print(f"  [ERR] ERRO sublote {i+1}: {e.code} — {msg[:200]}")
                 erros += len(sublote)
         except Exception as e:
-            print(f"  [ERR] ERRO sublote {i//10+1}: {e}")
+            print(f"  [ERR] ERRO sublote {i+1}: {e}")
             erros += len(sublote)
     return sucessos, erros
 
