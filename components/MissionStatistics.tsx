@@ -1159,13 +1159,13 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                     let badgeStyle = isDarkMode ? 'bg-slate-700 text-slate-400' : 'bg-white text-slate-400 border border-slate-200';
                                     let icon = <span className="text-[11px] font-black">{realIndex + 1}</span>;
                                     
-                                    if (realIndex === 0) {
+                                    if (i === 0) {
                                         badgeStyle = 'bg-amber-400 text-amber-900 shadow-lg shadow-amber-500/30';
                                         icon = <Medal className="w-4 h-4" />;
-                                    } else if (realIndex === 1) {
+                                    } else if (i === 1) {
                                         badgeStyle = 'bg-slate-300 text-slate-800 shadow-lg shadow-slate-400/30';
                                         icon = <Medal className="w-4 h-4" />;
-                                    } else if (realIndex === 2) {
+                                    } else if (i === 2) {
                                         badgeStyle = 'bg-orange-600 text-white shadow-lg shadow-orange-600/30';
                                         icon = <Medal className="w-4 h-4" />;
                                     }
