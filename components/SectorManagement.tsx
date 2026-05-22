@@ -228,7 +228,15 @@ const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode =
                             className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-bold border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${dk ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-600' : 'bg-white border-slate-200 text-slate-900'}`}
                         />
                         <div className={`flex flex-wrap gap-1 p-1 rounded-xl border ${dk ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
-                            {oms.filter(om => om.id === omId).map(om => (
+                            {oms.filter(om => {
+                                // Se a OM ativa for GSD-SP, mostra GSD-SP e BASP
+                                const activeOm = oms.find(o => o.id === omId);
+                                if (activeOm?.acronym === 'GSD-SP') {
+                                    return ['GSD-SP', 'BASP'].includes(om.acronym);
+                                }
+                                // Caso contrário, mostra apenas a OM ativa
+                                return om.id === omId;
+                            }).map(om => (
                                 <button
                                     key={om.id}
                                     onClick={() => setNewSectorUnit(om.acronym)}
@@ -268,7 +276,13 @@ const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode =
             <div className={`rounded-[2rem] border overflow-hidden shadow-sm ${card}`}>
                 <div className={`p-5 border-b flex items-center justify-between ${dk ? 'border-slate-700 bg-slate-800/50' : 'border-slate-100 bg-slate-50/50'}`}>
                     <h3 className={`text-sm font-black uppercase tracking-widest ${dk ? 'text-white' : 'text-slate-900'}`}>
-                        Setores Ativos ({sectors.filter(s => s.om_id === omId || (omId && oms.find(o => o.id === omId)?.acronym === s.unit)).length})
+                        Setores Ativos ({sectors.filter(s => {
+                            const activeOm = oms.find(o => o.id === omId);
+                            if (activeOm?.acronym === 'GSD-SP') {
+                                return ['GSD-SP', 'BASP'].includes(s.unit) || s.om_id === omId || s.om_id === oms.find(o => o.acronym === 'BASP')?.id;
+                            }
+                            return s.om_id === omId || s.unit === activeOm?.acronym;
+                        }).length})
                     </h3>
                     <span className={`text-[10px] font-bold ${dk ? 'text-slate-500' : 'text-slate-400'}`}>
                         Usuários ao remover serão movidos para "Sem Setor"
@@ -281,7 +295,13 @@ const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode =
                     </div>
                 ) : (
                     <div className={`divide-y divide-y-8 ${dk ? 'divide-slate-900/50' : 'divide-slate-200/50'}`}>
-                        {oms.filter(om => om.id === omId).map(om => {
+                        {oms.filter(om => {
+                            const activeOm = oms.find(o => o.id === omId);
+                            if (activeOm?.acronym === 'GSD-SP') {
+                                return ['GSD-SP', 'BASP'].includes(om.acronym);
+                            }
+                            return om.id === omId;
+                        }).map(om => {
                             const omSectors = sectors.filter(s => s.unit === om.acronym || s.om_id === om.id);
                             
                             return (
@@ -304,7 +324,13 @@ const SectorManagement: FC<SectorManagementProps> = ({ currentUser, isDarkMode =
                     </div>
                 )}
 
-                {!loading && sectors.filter(s => s.om_id === omId || (omId && oms.find(o => o.id === omId)?.acronym === s.unit)).length === 0 && (
+                {!loading && sectors.filter(s => {
+                    const activeOm = oms.find(o => o.id === omId);
+                    if (activeOm?.acronym === 'GSD-SP') {
+                        return ['GSD-SP', 'BASP'].includes(s.unit) || s.om_id === omId || s.om_id === oms.find(o => o.acronym === 'BASP')?.id;
+                    }
+                    return s.om_id === omId || s.unit === activeOm?.acronym;
+                }).length === 0 && (
                     <div className="py-12 text-center">
                         <p className={`text-sm font-bold ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Nenhum setor cadastrado para sua OM.</p>
                     </div>
