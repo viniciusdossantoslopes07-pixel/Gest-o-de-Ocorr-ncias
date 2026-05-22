@@ -7,7 +7,7 @@ import {
 import {
     Target, Users, CheckCircle, Clock, Calendar,
     MapPin, Zap, Activity, XCircle, ChevronDown, ChevronUp,
-    ShieldCheck, ArrowRight, Printer, Search, List, Medal, ChevronLeft, ChevronRight
+    ShieldCheck, ArrowRight, Printer, Search, List, Medal, ChevronLeft, ChevronRight, X
 } from 'lucide-react';
 import { formatDisplayDate } from '../utils/formatters';
 import MissionSummaryPrintView from './MissionSummaryPrintView';
@@ -47,6 +47,12 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     
     // --- Detail Modal State ---
     const [selectedKpi, setSelectedKpi] = useState<{ title: string; color: string; list: MissionOrder[] } | null>(null);
+
+    // --- Personnel Ranking State ---
+    const [showPersonnelRanking, setShowPersonnelRanking] = useState(false);
+    const [rankingCategory, setRankingCategory] = useState<'ALL' | 'OFICIAIS' | 'GRADUADOS' | 'PRACAS'>('ALL');
+    const [rankingRank, setRankingRank] = useState<string>('');
+    const [rankingSearch, setRankingSearch] = useState('');
 
     const printOrders = useMemo(() => {
         if (!printDateStart) return [];
@@ -303,8 +309,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
         return Object.entries(locs).sort(([,a],[,b]) => b - a).slice(0, 5);
     }, [filteredOrders]);
 
-    // Top 5 Militares
-    const topPersonnelData = useMemo(() => {
+    // Ranking de Militares
+    const allPersonnelData = useMemo(() => {
         const counts: Record<string, { count: number; name: string; rank: string }> = {};
         const validOrders = filteredOrders.filter(o => !['CANCELADA', 'REJEITADA'].includes(o.status || ''));
         
@@ -321,9 +327,39 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
         });
 
         return Object.values(counts)
-            .sort((a, b) => b.count - a.count)
-            .slice(0, 5);
+            .sort((a, b) => b.count - a.count);
     }, [filteredOrders]);
+
+    const filteredPersonnelRanking = useMemo(() => {
+        const RANK_CATEGORIES = {
+            OFICIAIS: ['TB', 'MB', 'BR', 'CEL', 'TEN CEL', 'MAJ', 'CAP', '1T', '2T', 'ASP', 'Coronel', 'CL', 'TC', 'MJ', 'CP', 'AP'],
+            GRADUADOS: ['SO', '1S', '2S', '3S'],
+            PRACAS: ['CB', 'S1', 'S2']
+        };
+
+        return allPersonnelData.filter(p => {
+            const isOfficial = RANK_CATEGORIES.OFICIAIS.includes(p.rank || '');
+            const isGraduated = RANK_CATEGORIES.GRADUADOS.includes(p.rank || '');
+            const isSoldier = RANK_CATEGORIES.PRACAS.includes(p.rank || '');
+            
+            let matchesCategory = true;
+            if (rankingCategory === 'OFICIAIS') matchesCategory = isOfficial;
+            if (rankingCategory === 'GRADUADOS') matchesCategory = isGraduated;
+            if (rankingCategory === 'PRACAS') matchesCategory = isSoldier;
+
+            const matchesRank = rankingRank ? p.rank === rankingRank : true;
+            const matchesSearch = !rankingSearch || 
+                                  (p.name && p.name.toLowerCase().includes(rankingSearch.toLowerCase())) || 
+                                  (p.rank && p.rank.toLowerCase().includes(rankingSearch.toLowerCase()));
+
+            return matchesCategory && matchesRank && matchesSearch;
+        });
+    }, [allPersonnelData, rankingCategory, rankingRank, rankingSearch]);
+
+    const distinctRanksInRanking = useMemo(() => {
+        const ranks = new Set(allPersonnelData.map(p => p.rank).filter(Boolean));
+        return Array.from(ranks).sort();
+    }, [allPersonnelData]);
 
     // Rank distribution for 'Efetivo' KPI
     const rankDistributionData = useMemo(() => {
@@ -836,11 +872,19 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 </div>
 
                 {/* Top 5 Militares */}
-                <div className={`${card}`}>
-                    <h3 className={`text-sm font-black uppercase tracking-tighter mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Top Militares</h3>
-                    <div className="space-y-3">
-                        {topPersonnelData.length === 0 && <p className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-slate-600' : 'text-slate-400'} text-center pt-4`}>Sem dados</p>}
-                        {topPersonnelData.map((p, i) => {
+                <button 
+                    onClick={() => setShowPersonnelRanking(true)}
+                    className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/10 text-left border-transparent hover:border-blue-500/20 flex flex-col justify-start`}
+                >
+                    <div className="flex items-center justify-between mb-6 w-full">
+                        <h3 className={`text-sm font-black uppercase tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Top Militares</h3>
+                        <div className={`p-1.5 rounded-lg transition-colors group-hover:bg-blue-600 group-hover:text-white ${isDarkMode ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+                            <Users className="w-4 h-4" />
+                        </div>
+                    </div>
+                    <div className="space-y-3 w-full">
+                        {allPersonnelData.length === 0 && <p className={`text-[10px] font-bold uppercase ${isDarkMode ? 'text-slate-600' : 'text-slate-400'} text-center pt-4`}>Sem dados</p>}
+                        {allPersonnelData.slice(0, 5).map((p, i) => {
                             let badgeStyle = isDarkMode ? 'bg-slate-700 text-slate-400' : 'bg-white text-slate-400 border border-slate-200';
                             let icon = <span className="text-[11px] font-black">{i + 1}</span>;
                             
@@ -871,7 +915,14 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                             );
                         })}
                     </div>
-                </div>
+                    {allPersonnelData.length > 5 && (
+                        <div className="mt-4 text-center w-full">
+                            <span className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                                Ver todos ({allPersonnelData.length}) <ArrowRight className="inline w-3 h-3 ml-1" />
+                            </span>
+                        </div>
+                    )}
+                </button>
             </div>
         </div>
 
@@ -1010,6 +1061,143 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                 className={`w-full py-3 sm:py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] sm:text-xs transition-all ${isDarkMode ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-xl'}`}
                             >
                                 Fechar Detalhes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Personnel Ranking Modal */}
+            {showPersonnelRanking && (
+                <div 
+                    className="fixed top-0 left-0 w-full h-full z-[9999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300"
+                    style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 9999 }}
+                    onClick={() => setShowPersonnelRanking(false)}
+                >
+                    <div 
+                        className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} w-full max-w-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-[1.5rem] sm:rounded-[2.5rem] border overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className={`p-4 sm:p-6 border-b border-dashed ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} flex items-center justify-between bg-gradient-to-r from-blue-500/10 to-transparent`}>
+                            <div className="flex items-center gap-4">
+                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-600 text-white'}`}>
+                                    <Users className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Ranking de Militares</h3>
+                                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                        Top escalados em missões
+                                    </p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setShowPersonnelRanking(false)}
+                                className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-slate-800 text-slate-500' : 'hover:bg-slate-100 text-slate-400'}`}
+                            >
+                                <XCircle className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        {/* Filtros */}
+                        <div className={`p-4 sm:p-6 border-b ${isDarkMode ? 'bg-slate-950/30 border-slate-800' : 'bg-slate-50 border-slate-100'} space-y-4`}>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                    <input 
+                                        type="text"
+                                        placeholder="Buscar militar..."
+                                        value={rankingSearch}
+                                        onChange={(e) => setRankingSearch(e.target.value)}
+                                        className={`w-full pl-10 pr-4 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
+                                    />
+                                    {rankingSearch && (
+                                        <button onClick={() => setRankingSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    )}
+                                </div>
+                                <select 
+                                    value={rankingRank}
+                                    onChange={(e) => setRankingRank(e.target.value)}
+                                    className={`py-2 px-3 border rounded-xl text-xs font-bold uppercase outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-slate-200 text-slate-700'}`}
+                                >
+                                    <option value="">Qualquer Posto</option>
+                                    {distinctRanksInRanking.map(r => (
+                                        <option key={r} value={r}>{r}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {['ALL', 'OFICIAIS', 'GRADUADOS', 'PRACAS'].map(cat => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setRankingCategory(cat as any)}
+                                        className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border-2 ${
+                                            rankingCategory === cat 
+                                                ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/30' 
+                                                : isDarkMode 
+                                                    ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-300' 
+                                                    : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
+                                        }`}
+                                    >
+                                        {cat === 'ALL' ? 'Todos' : cat}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Corpo do Cupom (Lista) */}
+                        <div className="p-4 sm:p-6 overflow-y-auto flex-1 scrollbar-hide space-y-3">
+                            {filteredPersonnelRanking.length === 0 ? (
+                                <div className="py-12 text-center space-y-3">
+                                    <Search className="w-12 h-12 mx-auto opacity-10" />
+                                    <p className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-600' : 'text-slate-300'}`}>Nenhum militar encontrado</p>
+                                </div>
+                            ) : (
+                                filteredPersonnelRanking.map((p, i) => {
+                                    // Determinar o ranking real no array allPersonnelData para exibir a posição correta
+                                    const realIndex = allPersonnelData.findIndex(ap => ap.name === p.name && ap.rank === p.rank);
+                                    let badgeStyle = isDarkMode ? 'bg-slate-700 text-slate-400' : 'bg-white text-slate-400 border border-slate-200';
+                                    let icon = <span className="text-[11px] font-black">{realIndex + 1}</span>;
+                                    
+                                    if (realIndex === 0) {
+                                        badgeStyle = 'bg-amber-400 text-amber-900 shadow-lg shadow-amber-500/30';
+                                        icon = <Medal className="w-4 h-4" />;
+                                    } else if (realIndex === 1) {
+                                        badgeStyle = 'bg-slate-300 text-slate-800 shadow-lg shadow-slate-400/30';
+                                        icon = <Medal className="w-4 h-4" />;
+                                    } else if (realIndex === 2) {
+                                        badgeStyle = 'bg-orange-600 text-white shadow-lg shadow-orange-600/30';
+                                        icon = <Medal className="w-4 h-4" />;
+                                    }
+
+                                    return (
+                                        <div key={p.name + i} className={`flex items-center gap-3 p-3 rounded-2xl transition-all border ${isDarkMode ? 'bg-slate-800/50 border-slate-800 hover:bg-slate-800' : 'bg-slate-50 border-slate-100 hover:bg-white hover:shadow-md'}`}>
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${badgeStyle}`}>
+                                                {icon}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className={`text-sm font-black uppercase truncate ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
+                                                    <span className={`text-[10px] opacity-70 mr-1.5 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{p.rank}</span>
+                                                    {p.name}
+                                                </p>
+                                            </div>
+                                            <div className="flex flex-col items-end flex-shrink-0">
+                                                <span className={`text-base font-black ${isDarkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>{p.count}</span>
+                                                <span className={`text-[8px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Missões</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+
+                        {/* Footer do Cupom */}
+                        <div className={`p-4 sm:p-6 border-t border-dashed ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} bg-slate-950/20`}>
+                            <button 
+                                onClick={() => setShowPersonnelRanking(false)}
+                                className={`w-full py-3 sm:py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] sm:text-xs transition-all ${isDarkMode ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-xl'}`}
+                            >
+                                Fechar Ranking
                             </button>
                         </div>
                     </div>
