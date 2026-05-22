@@ -536,19 +536,29 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                         lbl: 'Efetivo', 
                         val: totalPersonnel, 
                         color: 'purple',
-                        list: filteredOrders
+                        list: filteredOrders,
+                        subText: `${total > 0 ? (totalPersonnel / total).toFixed(1) : 0} média/missão`
                     },
                 ].map(kpi => (
                     <button 
                         key={kpi.lbl} 
                         onClick={() => setSelectedKpi({ title: kpi.lbl, color: kpi.color, list: kpi.list })}
-                        className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-${kpi.color}-500/10 text-left border-transparent hover:border-${kpi.color}-500/20`}
+                        className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-${kpi.color}-500/10 text-left border-transparent hover:border-${kpi.color}-500/20 flex flex-col justify-between`}
                     >
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-all duration-300 group-hover:scale-110 text-${kpi.color}-${isDarkMode ? '400' : '600'} bg-${kpi.color}-${isDarkMode ? '500/10' : '50'}`}>
-                            {kpi.icon}
+                        <div>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-all duration-300 group-hover:scale-110 text-${kpi.color}-${isDarkMode ? '400' : '600'} bg-${kpi.color}-${isDarkMode ? '500/10' : '50'}`}>
+                                {kpi.icon}
+                            </div>
+                            <p className={label}>{kpi.lbl}</p>
+                            <h3 className={value + " mt-0.5 transition-all group-hover:scale-105 origin-left"}>{kpi.val}</h3>
                         </div>
-                        <p className={label}>{kpi.lbl}</p>
-                        <h3 className={value + " mt-0.5 transition-all group-hover:scale-105 origin-left"}>{kpi.val}</h3>
+                        {(kpi as any).subText && (
+                            <div className="mt-1 sm:mt-2">
+                                <p className={`text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-${kpi.color}-${isDarkMode ? '400' : '600'}`}>
+                                    {(kpi as any).subText}
+                                </p>
+                            </div>
+                        )}
                     </button>
                 ))}
                 
