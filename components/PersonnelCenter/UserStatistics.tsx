@@ -68,9 +68,8 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
         
         if (activeUnitFilter !== 'TODAS') {
             filtered = filtered.filter(u => {
-                const sectorObj = sectors.find(s => s.name === u.sector);
-                if (activeUnitFilter === 'BASP') return sectorObj?.unit === 'BASP';
-                return !sectorObj || sectorObj.unit === 'GSD-SP' || !sectorObj.unit;
+                if (activeUnitFilter === 'BASP') return u.om_id === BASP_ID;
+                return u.om_id === GSD_SP_ID;
             });
         }
 
@@ -138,8 +137,7 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
     const unitStats = useMemo(() => {
         let gsd = 0; let basp = 0;
         statsUsers.forEach(u => {
-            const sectorObj = sectors.find(s => s.name === u.sector);
-            if (sectorObj?.unit === 'BASP') basp++;
+            if (u.om_id === BASP_ID) basp++;
             else gsd++;
         });
         return { gsd, basp, total: gsd + basp };
@@ -161,10 +159,7 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
         ];
 
         // Garantir que estamos contando apenas pessoal do GSD-SP para a TLP
-        const gsdUsers = statsUsers.filter(u => {
-            const sectorObj = sectors.find(s => s.name === u.sector);
-            return !sectorObj || sectorObj.unit === 'GSD-SP' || !sectorObj.unit;
-        });
+        const gsdUsers = statsUsers.filter(u => u.om_id === GSD_SP_ID);
 
         return categories.map(cat => {
             const actual = gsdUsers.filter(u => u.rank && cat.ranks.includes(u.rank)).length;
@@ -181,10 +176,7 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
     const tlpTotal = useMemo(() => {
         const totalPrevisto = tlpStats.reduce((acc, cat) => acc + cat.previsto, 0);
         // Usar o total de militares do GSD-SP para evitar discrepância com outros contadores
-        const gsdUsers = statsUsers.filter(u => {
-            const sectorObj = sectors.find(s => s.name === u.sector);
-            return !sectorObj || sectorObj.unit === 'GSD-SP' || !sectorObj.unit;
-        });
+        const gsdUsers = statsUsers.filter(u => u.om_id === GSD_SP_ID);
         const totalActual = gsdUsers.length;
         const diff = totalActual - totalPrevisto;
         const pct = totalPrevisto > 0 ? Math.round((totalActual / totalPrevisto) * 100) : 0;
