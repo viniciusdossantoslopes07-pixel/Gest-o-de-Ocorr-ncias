@@ -332,15 +332,17 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
 
     const filteredPersonnelRanking = useMemo(() => {
         const RANK_CATEGORIES = {
-            OFICIAIS: ['TB', 'MB', 'BR', 'CEL', 'TEN CEL', 'MAJ', 'CAP', '1T', '2T', 'ASP', 'Coronel', 'CL', 'TC', 'MJ', 'CP', 'AP'],
-            GRADUADOS: ['SO', '1S', '2S', '3S'],
-            PRACAS: ['CB', 'S1', 'S2']
+            OFICIAIS: ['TB', 'MB', 'BR', 'CEL', 'TEN CEL', 'TEN-CEL', 'MAJ', 'CAP', '1T', '2T', 'ASP', 'CORONEL', 'CL', 'TC', 'MJ', 'CP', 'AP', 'TEN'],
+            GRADUADOS: ['SO', 'SUB', '1S', '2S', '3S', '1º SGT', '2º SGT', '3º SGT', 'SGT'],
+            PRACAS: ['CB', 'S1', 'S2', 'SD', 'REC', 'ALUNO', 'CADETE']
         };
 
         return allPersonnelData.filter(p => {
-            const isOfficial = RANK_CATEGORIES.OFICIAIS.includes(p.rank || '');
-            const isGraduated = RANK_CATEGORIES.GRADUADOS.includes(p.rank || '');
-            const isSoldier = RANK_CATEGORIES.PRACAS.includes(p.rank || '');
+            const rankStr = (p.rank || '').trim().toUpperCase().replace(/\.$/, ''); // Remove trailing dot if exists
+            
+            const isOfficial = RANK_CATEGORIES.OFICIAIS.includes(rankStr);
+            const isGraduated = RANK_CATEGORIES.GRADUADOS.includes(rankStr);
+            const isSoldier = RANK_CATEGORIES.PRACAS.includes(rankStr);
             
             let matchesCategory = true;
             if (rankingCategory === 'OFICIAIS') matchesCategory = isOfficial;
