@@ -117,9 +117,15 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
 
 
 
-        const searchMatch = (u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            u.warName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            u.saram.includes(searchTerm));
+        const searchLower = searchTerm.toLowerCase().trim();
+        const searchMatch = !searchLower || (
+            (u.name && u.name.toLowerCase().includes(searchLower)) ||
+            (u.warName && u.warName.toLowerCase().includes(searchLower)) ||
+            (u.rank && u.rank.toLowerCase().includes(searchLower)) ||
+            (u.saram && u.saram.toLowerCase().includes(searchLower)) ||
+            (u.cpf && u.cpf.toLowerCase().includes(searchLower)) ||
+            (u.cpf && u.cpf.replace(/\D/g, '').includes(searchLower.replace(/\D/g, '')))
+        );
 
         return statusMatch && functionalMatch && externalMatch && sectorMatch && unitMatch && searchMatch;
     });
