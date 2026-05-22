@@ -415,6 +415,11 @@ ${content.outerHTML}
                                     })()}
                                 </tbody>
                             </table>
+                            {(order.personnel?.length || 0) > 0 && (
+                                <div className="mt-0.5 text-right text-[8px] text-slate-600 font-medium italic">
+                                    * Efetivo total escalado: {order.personnel?.length} militar(es)
+                                </div>
+                            )}
                         </div>
 
                         {/* Schedule Table */}
