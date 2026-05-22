@@ -336,7 +336,14 @@ ${content.outerHTML}
 
                         {/* Personnel Table */}
                         <div className="mb-4">
-                            <h3 className={`text-center font-black text-[10px] sm:text-[11px] mb-1.5 uppercase tracking-wider ${order.mission === 'SOBREAVISO' ? 'hidden' : ''}`}>Pessoal e Material</h3>
+                            <div className={`relative mb-1.5 ${order.mission === 'SOBREAVISO' ? 'hidden' : ''}`}>
+                                <h3 className="text-center font-black text-[10px] sm:text-[11px] uppercase tracking-wider">Pessoal e Material</h3>
+                                {(order.personnel?.length || 0) > 0 && (
+                                    <div className="absolute right-1 bottom-0 text-[8px] text-slate-600 font-bold italic">
+                                        Total: {order.personnel?.length} militar(es)
+                                    </div>
+                                )}
+                            </div>
                             <table className="w-full border-[1.5px] border-slate-950 text-[8px] sm:text-[9px]">
                                 <thead>
                                     <tr className="bg-slate-50">
@@ -415,11 +422,6 @@ ${content.outerHTML}
                                     })()}
                                 </tbody>
                             </table>
-                            {(order.personnel?.length || 0) > 0 && (
-                                <div className="mt-0.5 text-right text-[8px] text-slate-600 font-medium italic">
-                                    * Efetivo total escalado: {order.personnel?.length} militar(es)
-                                </div>
-                            )}
                         </div>
 
                         {/* Schedule Table */}
