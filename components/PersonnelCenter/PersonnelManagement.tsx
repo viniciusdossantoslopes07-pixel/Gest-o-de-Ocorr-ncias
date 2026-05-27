@@ -492,7 +492,12 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
 
                         {showStatistics && (
                             <div className="mb-10 animate-in fade-in slide-in-from-top-4">
-                                <UserStatistics users={baseFilteredList} activeUnitFilter={activeUnitFilter} isDarkMode={isDarkMode} />
+                                <UserStatistics 
+                                    users={baseFilteredList} 
+                                    activeUnitFilter={activeUnitFilter} 
+                                    isDarkMode={isDarkMode} 
+                                    onSelectSectorFilter={setFilterSector}
+                                />
                             </div>
                         )}
 

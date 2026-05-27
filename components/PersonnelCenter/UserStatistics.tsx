@@ -9,6 +9,7 @@ interface UserStatisticsProps {
     attendanceHistory?: DailyAttendance[];
     isDarkMode: boolean;
     activeUnitFilter: 'TODAS' | 'GSD-SP' | 'BASP';
+    onSelectSectorFilter?: (sector: string) => void;
 }
 
 // Mapeamento visual de categorias hierárquicas para a pirâmide
@@ -39,7 +40,7 @@ const HIERARQUIA_GRUPOS = [
     }
 ];
 
-const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistory = [], isDarkMode, activeUnitFilter }) => {
+const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistory = [], isDarkMode, activeUnitFilter, onSelectSectorFilter }) => {
     const { sectors, omId } = useSectors();
     const [statsFilter, setStatsFilter] = React.useState<'TOTAL' | 'PRESENTE'>('TOTAL');
 
@@ -225,9 +226,14 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
                     { label: 'Efetivo Analisado', value: total, color: 'text-blue-400', icon: Users },
                     { label: 'Oficiais', value: grupoStats[0].count + grupoStats[1].count, color: 'text-indigo-400', icon: Shield },
                     { label: 'Subof. / Sargentos', value: grupoStats[2].count, color: 'text-emerald-400', icon: Award },
-                    { label: 'Sem Setor Alocado', value: semSetor, color: semSetor > 0 ? 'text-red-400' : 'text-slate-400', icon: Building2 }
-                ].map(({ label, value, color, icon: Icon }) => (
-                    <div key={label} className={card}>
+                    { label: 'Sem Setor Alocado', value: semSetor, color: semSetor > 0 ? 'text-red-400' : 'text-slate-400', icon: Building2, action: () => onSelectSectorFilter?.('SEM SETOR') }
+                ].map(({ label, value, color, icon: Icon, action }) => (
+                    <div 
+                        key={label} 
+                        className={`${card} ${action ? 'cursor-pointer hover:border-red-400/50 hover:shadow-lg transition-all active:scale-[0.98]' : ''}`}
+                        onClick={action}
+                        title={action ? 'Clique para filtrar a lista de militares' : undefined}
+                    >
                         <div className={`flex items-center gap-2 mb-3`}>
                             <Icon className={`w-4 h-4 ${color}`} />
                             <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{label}</p>
