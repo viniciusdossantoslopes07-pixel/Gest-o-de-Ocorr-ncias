@@ -497,6 +497,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                                     activeUnitFilter={activeUnitFilter} 
                                     isDarkMode={isDarkMode} 
                                     onSelectSectorFilter={setFilterSector}
+                                    activeSectorFilter={filterSector}
                                 />
                             </div>
                         )}

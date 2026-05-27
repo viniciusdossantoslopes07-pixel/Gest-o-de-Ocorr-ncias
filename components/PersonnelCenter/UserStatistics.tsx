@@ -10,6 +10,7 @@ interface UserStatisticsProps {
     isDarkMode: boolean;
     activeUnitFilter: 'TODAS' | 'GSD-SP' | 'BASP';
     onSelectSectorFilter?: (sector: string) => void;
+    activeSectorFilter?: string;
 }
 
 // Mapeamento visual de categorias hierárquicas para a pirâmide
@@ -40,7 +41,7 @@ const HIERARQUIA_GRUPOS = [
     }
 ];
 
-const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistory = [], isDarkMode, activeUnitFilter, onSelectSectorFilter }) => {
+const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistory = [], isDarkMode, activeUnitFilter, onSelectSectorFilter, activeSectorFilter }) => {
     const { sectors, omId } = useSectors();
     const [statsFilter, setStatsFilter] = React.useState<'TOTAL' | 'PRESENTE'>('TOTAL');
 
@@ -226,19 +227,26 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
                     { label: 'Efetivo Analisado', value: total, color: 'text-blue-400', icon: Users },
                     { label: 'Oficiais', value: grupoStats[0].count + grupoStats[1].count, color: 'text-indigo-400', icon: Shield },
                     { label: 'Subof. / Sargentos', value: grupoStats[2].count, color: 'text-emerald-400', icon: Award },
-                    { label: 'Sem Setor Alocado', value: semSetor, color: semSetor > 0 ? 'text-red-400' : 'text-slate-400', icon: Building2, action: () => onSelectSectorFilter?.('SEM SETOR') }
-                ].map(({ label, value, color, icon: Icon, action }) => (
+                    { 
+                        label: 'Sem Setor Alocado', 
+                        value: semSetor, 
+                        color: semSetor > 0 ? 'text-red-400' : 'text-slate-400', 
+                        icon: Building2, 
+                        action: () => onSelectSectorFilter?.(activeSectorFilter === 'SEM SETOR' ? 'TODOS' : 'SEM SETOR'),
+                        isActive: activeSectorFilter === 'SEM SETOR'
+                    }
+                ].map(({ label, value, color, icon: Icon, action, isActive }) => (
                     <div 
                         key={label} 
-                        className={`${card} ${action ? 'cursor-pointer hover:border-red-400/50 hover:shadow-lg transition-all active:scale-[0.98]' : ''}`}
+                        className={`${card} ${action ? 'cursor-pointer transition-all active:scale-[0.98]' : ''} ${isActive ? (isDarkMode ? 'ring-2 ring-red-500/50 border-red-500/50 bg-red-500/10' : 'ring-2 ring-red-400 border-red-400 bg-red-50') : (action ? 'hover:border-red-400/50 hover:shadow-lg' : '')}`}
                         onClick={action}
                         title={action ? 'Clique para filtrar a lista de militares' : undefined}
                     >
                         <div className={`flex items-center gap-2 mb-3`}>
                             <Icon className={`w-4 h-4 ${color}`} />
-                            <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{label}</p>
+                            <p className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : (isActive ? 'text-red-600' : 'text-slate-400')}`}>{label}</p>
                         </div>
-                        <p className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{value}</p>
+                        <p className={`text-3xl font-black ${isDarkMode ? 'text-white' : (isActive ? 'text-red-700' : 'text-slate-900')}`}>{value}</p>
                     </div>
                 ))}
             </div>
