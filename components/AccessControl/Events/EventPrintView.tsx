@@ -13,20 +13,88 @@ const EventPrintView: FC<EventPrintViewProps> = ({ event, onClose }) => {
     const { oms, omId } = useSectors();
     const activeOm = oms.find(o => o.id === omId);
     const handlePrint = () => {
-        const originalTitle = document.title;
+        const content = document.getElementById('event-print-content');
+        if (!content) return;
+
+        const appCss = Array.from(document.styleSheets)
+            .map(sheet => {
+                try {
+                    return Array.from(sheet.cssRules).map(r => r.cssText).join('\n');
+                } catch {
+                    return '';
+                }
+            })
+            .join('\n');
+
+        const iframe = document.createElement('iframe');
+        iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:210mm;height:297mm;border:none;visibility:hidden;';
+        document.body.appendChild(iframe);
+
+        const doc = iframe.contentDocument || (iframe.contentWindow as any)?.document;
+        if (!doc) { document.body.removeChild(iframe); return; }
+
+        let originalTitle = document.title;
         try {
             const [year, month, day] = event.date.split('-');
             const shortYear = year.slice(-2);
-            document.title = `evento_${event.responsible_name.replace(/\s+/g, '_')}_${day}-${month}-${shortYear}`;
+            originalTitle = `evento_${event.responsible_name.replace(/\s+/g, '_')}_${day}-${month}-${shortYear}`;
         } catch (e) {
-            document.title = `evento_${event.date}`;
+            originalTitle = `evento_${event.date}`;
         }
 
-        window.print();
+        doc.open();
+        doc.write(`<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<title>${originalTitle}</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 1.2cm;
+    background: #fff;
+    width: 210mm;
+    min-height: 297mm;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  tr, .print-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  thead {
+    display: table-header-group;
+  }
+  tfoot {
+    display: table-footer-group;
+  }
+  ${appCss}
+  [class*="print:hidden"] { display: none !important; }
+  #event-print-content { 
+    min-height: 0 !important; 
+    width: 100% !important;
+    max-width: 100% !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    transform: none !important;
+  }
+</style>
+</head>
+<body>
+${content.outerHTML}
+</body>
+</html>`);
+        doc.close();
 
+        iframe.contentWindow?.focus();
         setTimeout(() => {
-            document.title = originalTitle;
-        }, 1000);
+            iframe.contentWindow?.print();
+            setTimeout(() => document.body.removeChild(iframe), 2000);
+        }, 500);
     };
 
     const guests = event.guests || [];
@@ -34,10 +102,10 @@ const EventPrintView: FC<EventPrintViewProps> = ({ event, onClose }) => {
 
     return (
         <div
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-0 sm:p-4 print:p-0 print:bg-white force-light backdrop-blur-sm"
+            className="fixed inset-0 bg-black/60 z-50 flex items-start sm:items-center justify-center p-0 sm:p-4 overflow-y-auto print:p-0 print:bg-white force-light backdrop-blur-sm"
             onClick={e => { if (e.target === e.currentTarget) onClose(); }}
         >
-            <div className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full h-[100vh] sm:h-[90vh] print:h-auto overflow-hidden flex flex-col print:rounded-none print:max-w-none shadow-2xl">
+            <div className="bg-white rounded-none sm:rounded-2xl max-w-5xl w-full my-0 sm:my-auto min-h-screen sm:min-h-0 h-fit sm:max-h-[95vh] print:h-auto overflow-hidden flex flex-col print:rounded-none print:max-w-none shadow-2xl">
 
                 {/* Control Header - Hidden on print */}
                 <div className="bg-white border-b border-slate-200 p-4 flex items-center justify-between print:hidden z-20 shrink-0">
@@ -61,51 +129,7 @@ const EventPrintView: FC<EventPrintViewProps> = ({ event, onClose }) => {
 
                 {/* Content Area */}
                 <div className="flex-1 overflow-auto print:overflow-visible bg-slate-100 print:bg-white p-4 print:p-0">
-                    <style>{`
-                        @media print {
-                            * {
-                                -webkit-print-color-adjust: exact !important;
-                                print-color-adjust: exact !important;
-                                color-adjust: exact !important;
-                            }
-                            body {
-                                visibility: hidden !important;
-                                background: white !important;
-                                margin: 0 !important;
-                                padding: 0 !important;
-                            }
-                            .event-printable {
-                                visibility: visible !important;
-                                position: absolute !important;
-                                left: 10mm !important;
-                                top: 8mm !important;
-                                width: calc(100% - 20mm) !important;
-                                margin: 0 !important;
-                                padding: 0 !important;
-                                height: auto !important;
-                                font-size: 9pt !important;
-                            }
-                            .event-printable table {
-                                font-size: 8pt !important;
-                                border-collapse: collapse !important;
-                                width: 100% !important;
-                            }
-                            .event-printable th, .event-printable td {
-                                padding: 4px 6px !important;
-                                border: 1px solid #cbd5e1 !important;
-                            }
-                            .event-printable .print-section {
-                                page-break-inside: avoid !important;
-                                break-inside: avoid !important;
-                            }
-                            @page {
-                                size: A4 portrait;
-                                margin: 8mm 10mm;
-                            }
-                        }
-                    `}</style>
-
-                    <div className="bg-white shadow-xl print:shadow-none mx-auto p-8 sm:p-12 print:p-0 min-h-full max-w-[210mm] print:max-w-none mb-8 print:mb-0 event-printable">
+                    <div id="event-print-content" className="bg-white shadow-xl print:shadow-none mx-auto p-8 sm:p-12 print:p-0 min-h-full max-w-[210mm] print:max-w-none mb-8 print:mb-0 event-printable">
 
                         {/* Standard Military Header */}
                         <div className="flex items-start justify-between mb-5 border-b-2 border-slate-900 pb-3 print-section">
