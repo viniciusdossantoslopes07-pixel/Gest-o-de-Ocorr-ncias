@@ -109,22 +109,13 @@ ${content.outerHTML}
 
                 {/* Control Header - Hidden on print */}
                 <div className="bg-white border-b border-slate-200 p-4 flex items-center justify-between print:hidden z-20 shrink-0">
-                    <h2 className="text-lg font-bold text-slate-900 font-mono tracking-tight">Imprimir Relação do Evento</h2>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={handlePrint}
-                            className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg font-bold text-sm hover:bg-slate-800 transition-all shadow-lg active:scale-95"
-                        >
-                            <Printer className="w-4 h-4" />
-                            Imprimir Documento
-                        </button>
-                        <button
-                            onClick={onClose}
-                            className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-all"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
+                    <h2 className="text-lg font-bold text-slate-900 font-mono tracking-tight">Relação do Evento</h2>
+                    <button
+                        onClick={onClose}
+                        className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-all"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
                 </div>
 
                 {/* Content Area */}
@@ -235,6 +226,17 @@ ${content.outerHTML}
                             Documento gerado eletronicamente pelo Sistema Guardião ${activeOm?.acronym || 'GSD-SP'} em {new Date().toLocaleString('pt-BR')} — Válido apenas para o dia programado do evento.
                         </div>
                     </div>
+                </div>
+
+                {/* Control Footer - Hidden on print */}
+                <div className="bg-white border-t border-slate-200 p-4 flex items-center justify-end print:hidden z-20 shrink-0">
+                    <button
+                        onClick={handlePrint}
+                        className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+                    >
+                        <Printer className="w-5 h-5" />
+                        Imprimir
+                    </button>
                 </div>
             </div>
         </div>
