@@ -253,6 +253,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 t = 'TRANSPORTE DE VIATURAS';
             } else if (upperT.includes('TRANSPORTE DE MAT') || upperT.includes('TRANSOPORTE DE MAT') || upperT.includes('TRANSOPRTE DE MAT')) {
                 t = 'TRANSPORTE DE MATERIAL';
+            } else if (upperT.includes('ALA DE PA') || upperT.includes('ALA DE AUTORIDADE')) {
+                t = 'ALA DE AUTORIDADE';
             }
             counts[t] = (counts[t] || 0) + 1; 
         });
@@ -1052,6 +1054,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                                     t = 'TRANSPORTE DE VIATURAS';
                                                 } else if (upperT.includes('TRANSPORTE DE MAT') || upperT.includes('TRANSOPORTE DE MAT') || upperT.includes('TRANSOPRTE DE MAT')) {
                                                     t = 'TRANSPORTE DE MATERIAL';
+                                                } else if (upperT.includes('ALA DE PA') || upperT.includes('ALA DE AUTORIDADE')) {
+                                                    t = 'ALA DE AUTORIDADE';
                                                 }
                                                 counts[t] = (counts[t] || 0) + 1; 
                                             });
