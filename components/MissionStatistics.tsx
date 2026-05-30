@@ -244,8 +244,11 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
         const counts: Record<string, number> = {};
         filteredOrders.forEach(o => { 
             let t = (o.mission || 'Outros').split(' (')[0].trim();
-            if (t.toUpperCase().startsWith('APOIO')) {
+            const upperT = t.toUpperCase();
+            if (upperT.startsWith('APOIO')) {
                 t = 'APOIO';
+            } else if (upperT === 'PBCV' || upperT === 'POSTO DE BLOQUEIO E CONTROLE DE VIAS') {
+                t = 'BLOQUEIO E CONTROLE DE VIAS';
             }
             counts[t] = (counts[t] || 0) + 1; 
         });
@@ -1036,8 +1039,11 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                             const counts: Record<string, number> = {};
                                             selectedKpi.list.forEach(o => { 
                                                 let t = (o.mission || 'Outros').split(' (')[0].trim();
-                                                if (t.toUpperCase().startsWith('APOIO')) {
+                                                const upperT = t.toUpperCase();
+                                                if (upperT.startsWith('APOIO')) {
                                                     t = 'APOIO';
+                                                } else if (upperT === 'PBCV' || upperT === 'POSTO DE BLOQUEIO E CONTROLE DE VIAS') {
+                                                    t = 'BLOQUEIO E CONTROLE DE VIAS';
                                                 }
                                                 counts[t] = (counts[t] || 0) + 1; 
                                             });
