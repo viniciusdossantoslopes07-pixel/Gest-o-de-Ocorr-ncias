@@ -257,6 +257,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 t = 'ALA DE AUTORIDADE';
             } else if (upperT.includes('POLICIAMENTO OSTENSIVO') || upperT.includes('POLICIAMENTO CRCEA')) {
                 t = 'POLICIAMENTO OSTENSIVO';
+            } else if (upperT.includes('FORMATURA') || upperT.includes('ACÓLITOS') || upperT.includes('GUARDA BANDEIRA') || upperT.includes('JARRÃO') || upperT.includes('TROPA ARMADA') || upperT.includes('ACOLITOS') || upperT.includes('JARRAO')) {
+                t = 'FORMATURA';
             }
             counts[t] = (counts[t] || 0) + 1; 
         });
@@ -1060,6 +1062,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                                     t = 'ALA DE AUTORIDADE';
                                                 } else if (upperT.includes('POLICIAMENTO OSTENSIVO') || upperT.includes('POLICIAMENTO CRCEA')) {
                                                     t = 'POLICIAMENTO OSTENSIVO';
+                                                } else if (upperT.includes('FORMATURA') || upperT.includes('ACÓLITOS') || upperT.includes('GUARDA BANDEIRA') || upperT.includes('JARRÃO') || upperT.includes('TROPA ARMADA') || upperT.includes('ACOLITOS') || upperT.includes('JARRAO')) {
+                                                    t = 'FORMATURA';
                                                 }
                                                 counts[t] = (counts[t] || 0) + 1; 
                                             });
