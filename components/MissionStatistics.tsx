@@ -1047,9 +1047,9 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                                 <div key={item.name} className={`p-4 rounded-2xl flex items-center justify-between gap-3 ${isDarkMode ? 'bg-slate-950/40 border border-slate-800' : 'bg-slate-50 border border-slate-100'}`}>
                                                     <div className="flex items-center gap-3 min-w-0">
                                                         <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                                                        <span className={`text-xs font-black uppercase truncate ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{item.name}</span>
+                                                        <span title={item.name} className={`text-[10px] sm:text-xs font-black uppercase truncate ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{item.name}</span>
                                                     </div>
-                                                    <span className={`text-sm font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.value}</span>
+                                                    <span className={`text-sm font-black flex-shrink-0 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.value}</span>
                                                 </div>
                                             ));
                                         })()}
