@@ -780,8 +780,14 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
             {/* Type + Internal/External + Locations + Top Personnel */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {/* Tipo de Missão */}
-                <div className={`${card}`}>
-                    <h3 className={`text-sm font-black uppercase tracking-tighter mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Por Tipo</h3>
+                <div 
+                    onClick={() => setSelectedKpi({ title: 'Missões por Tipo', color: 'blue', list: filteredOrders })}
+                    className={`${card} cursor-pointer group hover:border-blue-500/30 transition-all`}
+                >
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className={`text-sm font-black uppercase tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'} group-hover:text-blue-500 transition-colors`}>Por Tipo</h3>
+                        <List className={`w-4 h-4 opacity-0 group-hover:opacity-50 transition-opacity ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                    </div>
                     <div className="h-[180px] mb-4">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
