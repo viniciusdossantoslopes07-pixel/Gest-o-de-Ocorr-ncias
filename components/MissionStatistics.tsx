@@ -251,6 +251,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 t = 'BLOQUEIO E CONTROLE DE VIAS';
             } else if (upperT.startsWith('TRANSPORTE DE VIATURA')) {
                 t = 'TRANSPORTE DE VIATURAS';
+            } else if (upperT.startsWith('TRANSPORTE DE MATERIAL') || upperT.startsWith('TRANSOPORTE DE MATERIAL')) {
+                t = 'TRANSPORTE DE MATERIAL';
             }
             counts[t] = (counts[t] || 0) + 1; 
         });
@@ -1048,6 +1050,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                                     t = 'BLOQUEIO E CONTROLE DE VIAS';
                                                 } else if (upperT.startsWith('TRANSPORTE DE VIATURA')) {
                                                     t = 'TRANSPORTE DE VIATURAS';
+                                                } else if (upperT.startsWith('TRANSPORTE DE MATERIAL') || upperT.startsWith('TRANSOPORTE DE MATERIAL')) {
+                                                    t = 'TRANSPORTE DE MATERIAL';
                                                 }
                                                 counts[t] = (counts[t] || 0) + 1; 
                                             });
