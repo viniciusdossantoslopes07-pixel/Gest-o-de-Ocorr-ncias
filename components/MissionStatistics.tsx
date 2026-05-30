@@ -245,7 +245,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
         filteredOrders.forEach(o => { 
             let t = (o.mission || 'Outros').split(' (')[0].trim();
             const upperT = t.toUpperCase();
-            if (upperT.includes('APOIO')) {
+            if (upperT.includes('APOIO') || upperT.includes('LOCAL:') || upperT.includes('DESMONTAGEM DE TENDAS') || upperT.includes('CLEAN DAY')) {
                 t = 'APOIO';
             } else if (upperT.includes('PBCV') || upperT.includes('POSTO DE BLOQUEIO')) {
                 t = 'BLOQUEIO E CONTROLE DE VIAS';
@@ -1044,7 +1044,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                             selectedKpi.list.forEach(o => { 
                                                 let t = (o.mission || 'Outros').split(' (')[0].trim();
                                                 const upperT = t.toUpperCase();
-                                                if (upperT.includes('APOIO')) {
+                                                if (upperT.includes('APOIO') || upperT.includes('LOCAL:') || upperT.includes('DESMONTAGEM DE TENDAS') || upperT.includes('CLEAN DAY')) {
                                                     t = 'APOIO';
                                                 } else if (upperT.includes('PBCV') || upperT.includes('POSTO DE BLOQUEIO')) {
                                                     t = 'BLOQUEIO E CONTROLE DE VIAS';
