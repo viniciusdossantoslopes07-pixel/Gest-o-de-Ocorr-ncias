@@ -259,6 +259,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 t = 'POLICIAMENTO OSTENSIVO';
             } else if (upperT.includes('FORMATURA') || upperT.includes('ACÓLITOS') || upperT.includes('GUARDA BANDEIRA') || upperT.includes('JARRÃO') || upperT.includes('TROPA ARMADA') || upperT.includes('ACOLITOS') || upperT.includes('JARRAO')) {
                 t = 'FORMATURA';
+            } else if (upperT.includes('FARO') || upperT.includes('EMPREGO DE CÃES') || upperT.includes('EMPREGO DE CAES')) {
+                t = 'EMPREGO DE CÃES DE GUERRA';
             }
             counts[t] = (counts[t] || 0) + 1; 
         });
@@ -1064,6 +1066,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                                     t = 'POLICIAMENTO OSTENSIVO';
                                                 } else if (upperT.includes('FORMATURA') || upperT.includes('ACÓLITOS') || upperT.includes('GUARDA BANDEIRA') || upperT.includes('JARRÃO') || upperT.includes('TROPA ARMADA') || upperT.includes('ACOLITOS') || upperT.includes('JARRAO')) {
                                                     t = 'FORMATURA';
+                                                } else if (upperT.includes('FARO') || upperT.includes('EMPREGO DE CÃES') || upperT.includes('EMPREGO DE CAES')) {
+                                                    t = 'EMPREGO DE CÃES DE GUERRA';
                                                 }
                                                 counts[t] = (counts[t] || 0) + 1; 
                                             });
