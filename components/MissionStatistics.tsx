@@ -1026,6 +1026,29 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                         ))}
                                     </div>
                                 </div>
+                            ) : selectedKpi.title === 'Missões por Tipo' ? (
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {(() => {
+                                            const counts: Record<string, number> = {};
+                                            selectedKpi.list.forEach(o => { 
+                                                const t = (o.mission || 'Outros').split(' (')[0]; 
+                                                counts[t] = (counts[t] || 0) + 1; 
+                                            });
+                                            const fullTypeData = Object.entries(counts).sort(([,a],[,b]) => b - a).map(([name, value]) => ({ name, value }));
+                                            
+                                            return fullTypeData.map((item, i) => (
+                                                <div key={item.name} className={`p-4 rounded-2xl flex items-center justify-between gap-3 ${isDarkMode ? 'bg-slate-950/40 border border-slate-800' : 'bg-slate-50 border border-slate-100'}`}>
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                                                        <span className={`text-xs font-black uppercase truncate ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{item.name}</span>
+                                                    </div>
+                                                    <span className={`text-sm font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.value}</span>
+                                                </div>
+                                            ));
+                                        })()}
+                                    </div>
+                                </div>
                             ) : (
                                 selectedKpi.list.length === 0 ? (
                                     <div className="py-12 text-center space-y-3">
