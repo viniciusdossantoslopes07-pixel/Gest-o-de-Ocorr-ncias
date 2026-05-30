@@ -118,16 +118,11 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
 
 
         const searchLower = searchTerm.toLowerCase().trim();
-        const searchDigits = searchLower.replace(/\D/g, '');
+        const searchTerms = searchLower.split(/\s+/).filter(Boolean);
         
-        const searchMatch = !searchLower || (
-            (u.name && u.name.toLowerCase().includes(searchLower)) ||
-            (u.warName && u.warName.toLowerCase().includes(searchLower)) ||
-            (u.rank && u.rank.toLowerCase().includes(searchLower)) ||
-            (u.saram && String(u.saram).toLowerCase().includes(searchLower)) ||
-            (u.cpf && String(u.cpf).toLowerCase().includes(searchLower)) ||
-            (u.cpf && searchDigits.length > 0 && String(u.cpf).replace(/\D/g, '').includes(searchDigits))
-        );
+        const searchableText = `${u.rank || ''} ${u.warName || ''} ${u.name || ''} ${u.saram || ''} ${u.cpf || ''} ${u.cpf ? String(u.cpf).replace(/\D/g, '') : ''}`.toLowerCase();
+        
+        const searchMatch = searchTerms.length === 0 || searchTerms.every(term => searchableText.includes(term));
 
         return statusMatch && functionalMatch && externalMatch && sectorMatch && unitMatch && searchMatch;
     });
