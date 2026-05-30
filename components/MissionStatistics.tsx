@@ -255,6 +255,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 t = 'TRANSPORTE DE MATERIAL';
             } else if (upperT.includes('ALA DE PA') || upperT.includes('ALA DE AUTORIDADE')) {
                 t = 'ALA DE AUTORIDADE';
+            } else if (upperT.includes('POLICIAMENTO OSTENSIVO') || upperT.includes('POLICIAMENTO CRCEA')) {
+                t = 'POLICIAMENTO OSTENSIVO';
             }
             counts[t] = (counts[t] || 0) + 1; 
         });
@@ -1056,6 +1058,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                                     t = 'TRANSPORTE DE MATERIAL';
                                                 } else if (upperT.includes('ALA DE PA') || upperT.includes('ALA DE AUTORIDADE')) {
                                                     t = 'ALA DE AUTORIDADE';
+                                                } else if (upperT.includes('POLICIAMENTO OSTENSIVO') || upperT.includes('POLICIAMENTO CRCEA')) {
+                                                    t = 'POLICIAMENTO OSTENSIVO';
                                                 }
                                                 counts[t] = (counts[t] || 0) + 1; 
                                             });
