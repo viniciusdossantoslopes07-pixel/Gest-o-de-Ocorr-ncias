@@ -249,6 +249,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 t = 'APOIO';
             } else if (upperT === 'PBCV' || upperT === 'POSTO DE BLOQUEIO E CONTROLE DE VIAS') {
                 t = 'BLOQUEIO E CONTROLE DE VIAS';
+            } else if (upperT.startsWith('TRANSPORTE DE VIATURA')) {
+                t = 'TRANSPORTE DE VIATURAS';
             }
             counts[t] = (counts[t] || 0) + 1; 
         });
@@ -1044,6 +1046,8 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                                     t = 'APOIO';
                                                 } else if (upperT === 'PBCV' || upperT === 'POSTO DE BLOQUEIO E CONTROLE DE VIAS') {
                                                     t = 'BLOQUEIO E CONTROLE DE VIAS';
+                                                } else if (upperT.startsWith('TRANSPORTE DE VIATURA')) {
+                                                    t = 'TRANSPORTE DE VIATURAS';
                                                 }
                                                 counts[t] = (counts[t] || 0) + 1; 
                                             });
