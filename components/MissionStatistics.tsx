@@ -243,7 +243,10 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
     const typeData = useMemo(() => {
         const counts: Record<string, number> = {};
         filteredOrders.forEach(o => { 
-            const t = (o.mission || 'Outros').split(' (')[0]; 
+            let t = (o.mission || 'Outros').split(' (')[0].trim();
+            if (t.toUpperCase().startsWith('APOIO')) {
+                t = 'APOIO';
+            }
             counts[t] = (counts[t] || 0) + 1; 
         });
         return Object.entries(counts).sort(([,a],[,b]) => b - a).slice(0, 6).map(([name, value]) => ({ name, value }));
@@ -1032,7 +1035,10 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                         {(() => {
                                             const counts: Record<string, number> = {};
                                             selectedKpi.list.forEach(o => { 
-                                                const t = (o.mission || 'Outros').split(' (')[0]; 
+                                                let t = (o.mission || 'Outros').split(' (')[0].trim();
+                                                if (t.toUpperCase().startsWith('APOIO')) {
+                                                    t = 'APOIO';
+                                                }
                                                 counts[t] = (counts[t] || 0) + 1; 
                                             });
                                             const fullTypeData = Object.entries(counts).sort(([,a],[,b]) => b - a).map(([name, value]) => ({ name, value }));
