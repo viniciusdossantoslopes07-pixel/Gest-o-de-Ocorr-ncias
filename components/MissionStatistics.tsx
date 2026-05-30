@@ -245,13 +245,13 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
         filteredOrders.forEach(o => { 
             let t = (o.mission || 'Outros').split(' (')[0].trim();
             const upperT = t.toUpperCase();
-            if (upperT.startsWith('APOIO')) {
+            if (upperT.includes('APOIO')) {
                 t = 'APOIO';
-            } else if (upperT === 'PBCV' || upperT === 'POSTO DE BLOQUEIO E CONTROLE DE VIAS') {
+            } else if (upperT.includes('PBCV') || upperT.includes('POSTO DE BLOQUEIO')) {
                 t = 'BLOQUEIO E CONTROLE DE VIAS';
-            } else if (upperT.startsWith('TRANSPORTE DE VIATURA')) {
+            } else if (upperT.includes('TRANSPORTE DE VIATURA') || upperT.includes('TRANSOPRTE DE VIAT') || upperT.includes('TRANSOPORTE DE VIAT')) {
                 t = 'TRANSPORTE DE VIATURAS';
-            } else if (upperT.startsWith('TRANSPORTE DE MATERIAL') || upperT.startsWith('TRANSOPORTE DE MATERIAL')) {
+            } else if (upperT.includes('TRANSPORTE DE MAT') || upperT.includes('TRANSOPORTE DE MAT') || upperT.includes('TRANSOPRTE DE MAT')) {
                 t = 'TRANSPORTE DE MATERIAL';
             }
             counts[t] = (counts[t] || 0) + 1; 
@@ -1044,13 +1044,13 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                             selectedKpi.list.forEach(o => { 
                                                 let t = (o.mission || 'Outros').split(' (')[0].trim();
                                                 const upperT = t.toUpperCase();
-                                                if (upperT.startsWith('APOIO')) {
+                                                if (upperT.includes('APOIO')) {
                                                     t = 'APOIO';
-                                                } else if (upperT === 'PBCV' || upperT === 'POSTO DE BLOQUEIO E CONTROLE DE VIAS') {
+                                                } else if (upperT.includes('PBCV') || upperT.includes('POSTO DE BLOQUEIO')) {
                                                     t = 'BLOQUEIO E CONTROLE DE VIAS';
-                                                } else if (upperT.startsWith('TRANSPORTE DE VIATURA')) {
+                                                } else if (upperT.includes('TRANSPORTE DE VIATURA') || upperT.includes('TRANSOPRTE DE VIAT') || upperT.includes('TRANSOPORTE DE VIAT')) {
                                                     t = 'TRANSPORTE DE VIATURAS';
-                                                } else if (upperT.startsWith('TRANSPORTE DE MATERIAL') || upperT.startsWith('TRANSOPORTE DE MATERIAL')) {
+                                                } else if (upperT.includes('TRANSPORTE DE MAT') || upperT.includes('TRANSOPORTE DE MAT') || upperT.includes('TRANSOPRTE DE MAT')) {
                                                     t = 'TRANSPORTE DE MATERIAL';
                                                 }
                                                 counts[t] = (counts[t] || 0) + 1; 
