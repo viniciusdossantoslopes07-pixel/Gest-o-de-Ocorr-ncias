@@ -63,6 +63,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
     const [historyFilter, setHistoryFilter] = useState<'ALL' | 'CONCLUIDA' | 'CANCELADA'>('ALL');
     const [historyMonth, setHistoryMonth] = useState<string>('all');
     const [historyYear, setHistoryYear] = useState<string>(new Date().getFullYear().toString());
+    const [historyType, setHistoryType] = useState<string>('all');
     const [isParsing, setIsParsing] = useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [activeOmData, setActiveOmData] = useState<any>(null);
@@ -1075,6 +1076,35 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
         (m.dados_missao.responsavel?.nome && m.dados_missao.responsavel.nome.toLowerCase().includes(user.name.toLowerCase()))
     );
 
+    const availableHistoryTypes = React.useMemo(() => {
+        const types = new Set<string>();
+        orders.filter(o => o.status === 'CONCLUIDA' || o.status === 'CANCELADA').forEach(o => {
+            let t = (o.mission || 'Outros').split(' (')[0].trim();
+            const upperT = t.toUpperCase();
+            if (upperT.includes('APOIO') || upperT.includes('LOCAL:') || upperT.includes('DESMONTAGEM DE TENDAS') || upperT.includes('CLEAN DAY')) {
+                t = 'APOIO';
+            } else if (upperT.includes('PBCV') || upperT.includes('POSTO DE BLOQUEIO')) {
+                t = 'BLOQUEIO E CONTROLE DE VIAS';
+            } else if (upperT.includes('TRANSPORTE DE VIATURA') || upperT.includes('TRANSOPRTE DE VIAT') || upperT.includes('TRANSOPORTE DE VIAT')) {
+                t = 'TRANSPORTE DE VIATURAS';
+            } else if (upperT.includes('TRANSPORTE DE MAT') || upperT.includes('TRANSOPORTE DE MAT') || upperT.includes('TRANSOPRTE DE MAT')) {
+                t = 'TRANSPORTE DE MATERIAL';
+            } else if (upperT.includes('ALA DE PA') || upperT.includes('ALA DE AUTORIDADE')) {
+                t = 'ALA DE AUTORIDADE';
+            } else if (upperT.includes('POLICIAMENTO OSTENSIVO') || upperT.includes('POLICIAMENTO CRCEA')) {
+                t = 'POLICIAMENTO OSTENSIVO';
+            } else if (upperT.includes('FORMATURA') || upperT.includes('ACÓLITOS') || upperT.includes('GUARDA BANDEIRA') || upperT.includes('JARRÃO') || upperT.includes('TROPA ARMADA') || upperT.includes('ACOLITOS') || upperT.includes('JARRAO')) {
+                t = 'FORMATURA';
+            } else if (upperT.includes('FARO') || upperT.includes('EMPREGO DE CÃES') || upperT.includes('EMPREGO DE CAES')) {
+                t = 'EMPREGO DE CÃES DE GUERRA';
+            } else if (upperT === 'OUTRO' || upperT === 'OUTROS' || upperT.includes('COOPERACION') || upperT.includes('FISCAL DE OBRAS') || upperT.includes('PLANO DE ESTACIONAMENTO') || upperT.includes('VIGILÂNCIA ELETRÔNICA') || upperT.includes('VIGILANCIA ELETRONICA')) {
+                t = 'OUTROS';
+            }
+            types.add(t);
+        });
+        return Array.from(types).sort();
+    }, [orders]);
+
     return (
         <Fragment>
             <div className="max-w-7xl mx-auto space-y-6">
@@ -1437,6 +1467,20 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                 </div>
 
                                 <div className="flex gap-2">
+                                    <div className={`relative flex-1 md:flex-none md:w-48 rounded-2xl border ${isDarkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+                                        <select
+                                            value={historyType}
+                                            onChange={(e) => setHistoryType(e.target.value)}
+                                            className={`w-full bg-transparent pl-4 pr-10 py-3.5 sm:py-4 rounded-2xl appearance-none text-xs sm:text-sm font-black uppercase tracking-widest outline-none truncate ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}
+                                        >
+                                            <option value="all">POR TIPO</option>
+                                            {availableHistoryTypes.map(t => (
+                                                <option key={t} value={t}>{t}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className={`absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`} />
+                                    </div>
+
                                     <div className={`relative flex-1 md:flex-none md:w-32 rounded-2xl border ${isDarkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
                                         <select
                                             value={historyMonth}
@@ -1507,6 +1551,33 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                         const descMatch = o.description?.toLowerCase().includes(search);
                                         
                                         if (!(typeMatch || omisMatch || descMatch)) return false;
+                                    }
+
+                                    // Type Filter
+                                    if (historyType !== 'all') {
+                                        let t = (o.mission || 'Outros').split(' (')[0].trim();
+                                        const upperT = t.toUpperCase();
+                                        let category = t;
+                                        if (upperT.includes('APOIO') || upperT.includes('LOCAL:') || upperT.includes('DESMONTAGEM DE TENDAS') || upperT.includes('CLEAN DAY')) {
+                                            category = 'APOIO';
+                                        } else if (upperT.includes('PBCV') || upperT.includes('POSTO DE BLOQUEIO')) {
+                                            category = 'BLOQUEIO E CONTROLE DE VIAS';
+                                        } else if (upperT.includes('TRANSPORTE DE VIATURA') || upperT.includes('TRANSOPRTE DE VIAT') || upperT.includes('TRANSOPORTE DE VIAT')) {
+                                            category = 'TRANSPORTE DE VIATURAS';
+                                        } else if (upperT.includes('TRANSPORTE DE MAT') || upperT.includes('TRANSOPORTE DE MAT') || upperT.includes('TRANSOPRTE DE MAT')) {
+                                            category = 'TRANSPORTE DE MATERIAL';
+                                        } else if (upperT.includes('ALA DE PA') || upperT.includes('ALA DE AUTORIDADE')) {
+                                            category = 'ALA DE AUTORIDADE';
+                                        } else if (upperT.includes('POLICIAMENTO OSTENSIVO') || upperT.includes('POLICIAMENTO CRCEA')) {
+                                            category = 'POLICIAMENTO OSTENSIVO';
+                                        } else if (upperT.includes('FORMATURA') || upperT.includes('ACÓLITOS') || upperT.includes('GUARDA BANDEIRA') || upperT.includes('JARRÃO') || upperT.includes('TROPA ARMADA') || upperT.includes('ACOLITOS') || upperT.includes('JARRAO')) {
+                                            category = 'FORMATURA';
+                                        } else if (upperT.includes('FARO') || upperT.includes('EMPREGO DE CÃES') || upperT.includes('EMPREGO DE CAES')) {
+                                            category = 'EMPREGO DE CÃES DE GUERRA';
+                                        } else if (upperT === 'OUTRO' || upperT === 'OUTROS' || upperT.includes('COOPERACION') || upperT.includes('FISCAL DE OBRAS') || upperT.includes('PLANO DE ESTACIONAMENTO') || upperT.includes('VIGILÂNCIA ELETRÔNICA') || upperT.includes('VIGILANCIA ELETRONICA')) {
+                                            category = 'OUTROS';
+                                        }
+                                        if (category !== historyType) return false;
                                     }
 
                                     // Month and Year Filter
