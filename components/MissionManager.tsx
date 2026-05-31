@@ -1473,9 +1473,9 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                             onChange={(e) => setHistoryType(e.target.value)}
                                             className={`w-full bg-transparent pl-4 pr-10 py-3.5 sm:py-4 rounded-2xl appearance-none text-xs sm:text-sm font-black uppercase tracking-widest outline-none truncate ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}
                                         >
-                                            <option value="all">POR TIPO</option>
+                                            <option value="all" className={isDarkMode ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'}>POR TIPO</option>
                                             {availableHistoryTypes.map(t => (
-                                                <option key={t} value={t}>{t}</option>
+                                                <option key={t} value={t} className={isDarkMode ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'}>{t}</option>
                                             ))}
                                         </select>
                                         <ChevronDown className={`absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`} />
@@ -1487,9 +1487,9 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                             onChange={(e) => setHistoryMonth(e.target.value)}
                                             className={`w-full bg-transparent pl-4 pr-10 py-3.5 sm:py-4 rounded-2xl appearance-none text-xs sm:text-sm font-black uppercase tracking-widest outline-none ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}
                                         >
-                                            <option value="all">Mês</option>
+                                            <option value="all" className={isDarkMode ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'}>Mês</option>
                                             {['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'].map((m, i) => (
-                                                <option key={m} value={(i + 1).toString()}>{m}</option>
+                                                <option key={m} value={(i + 1).toString()} className={isDarkMode ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'}>{m}</option>
                                             ))}
                                         </select>
                                         <ChevronDown className={`absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`} />
@@ -1501,9 +1501,9 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                             onChange={(e) => setHistoryYear(e.target.value)}
                                             className={`w-full bg-transparent pl-4 pr-10 py-3.5 sm:py-4 rounded-2xl appearance-none text-xs sm:text-sm font-black uppercase tracking-widest outline-none ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}
                                         >
-                                            <option value="all">Ano</option>
+                                            <option value="all" className={isDarkMode ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'}>Ano</option>
                                             {[2024, 2025, 2026, 2027].map(y => (
-                                                <option key={y} value={y.toString()}>{y}</option>
+                                                <option key={y} value={y.toString()} className={isDarkMode ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'}>{y}</option>
                                             ))}
                                         </select>
                                         <ChevronDown className={`absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`} />
