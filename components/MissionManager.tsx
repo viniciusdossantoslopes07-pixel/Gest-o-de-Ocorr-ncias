@@ -267,6 +267,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
 
     // Starts generating the OMIS from a mission request
     const handleStartOrder = async (mission: Mission) => {
+        setSelectedOrder(null); // Garantir que não usa dados de uma OM anterior
         setSelectedMission(mission);
         const omisNumber = await generateOMISNumber();
         setDraftOmisNumber(omisNumber);
@@ -1059,7 +1060,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                     }}
                     onSubmit={handleOrderSubmit}
                     order={selectedOrder || (initialOrderData as any)}
-                    requestContext={selectedMission?.dados_missao.informacoes_complementares}
+                    requestContext={selectedMission?.dados_missao?.informacoes_complementares}
                     users={users}
                     isSubmitting={isSaving}
                     activeOm={activeOmData || user.om}
