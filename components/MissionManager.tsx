@@ -1036,12 +1036,12 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
         
         if (selectedMission) {
             initialOrderData = {
-                mission: selectedMission.dados_missao.tipo_missao,
-                location: selectedMission.dados_missao.local,
+                mission: selectedMission.dados_missao?.tipo_missao || '',
+                location: selectedMission.dados_missao?.local || '',
                 description: '',
-                requester: `${selectedMission.dados_missao.posto} ${selectedMission.dados_missao.nome_guerra}`,
-                date: selectedMission.dados_missao.data,
-                food: Object.values(selectedMission.dados_missao.alimentacao).some(v => v === true),
+                requester: `${selectedMission.dados_missao?.posto || ''} ${selectedMission.dados_missao?.nome_guerra || ''}`.trim(),
+                date: selectedMission.dados_missao?.data || '',
+                food: selectedMission.dados_missao?.alimentacao ? Object.values(selectedMission.dados_missao.alimentacao).some(v => v === true) : false,
                 transport: false,
                 omisNumber: draftOmisNumber
             };
