@@ -57,18 +57,14 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
 
     const normalize = (val: string | null | undefined) => (val || '').trim().toUpperCase();
 
-    const GSD_SP_SECTORS_LIST = useMemo(() => [
-        'SOP', 'SAP', 'EPA-TROPA', 'CANIL', 'EFSD', 'ESI-SEÇÃO', 'ESI-TROPA',
-        'ESI-SECAO', 'ESI SEÇÃO', 'ESI SECAO' 
-    ], []);
+    // Separação por 'unit' para evitar duplicação de setores com mesmo nome em OMs diferentes
+    const GSD_SP_SECTORS = useMemo(() => sectors
+        .filter(s => normalize(s.unit) === 'GSD-SP')
+        .map(s => s.name), [sectors]);
 
-    const GSD_SP_SECTORS = useMemo(() => sectors.filter(s => 
-        GSD_SP_SECTORS_LIST.some(gsd => normalize(s.name) === gsd)
-    ).map(s => s.name), [sectors, GSD_SP_SECTORS_LIST]);
-
-    const BASP_SECTORS = useMemo(() => sectors.filter(s => 
-        !GSD_SP_SECTORS_LIST.some(gsd => normalize(s.name) === gsd)
-    ).map(s => s.name), [sectors, GSD_SP_SECTORS_LIST]);
+    const BASP_SECTORS = useMemo(() => sectors
+        .filter(s => normalize(s.unit) === 'BASP')
+        .map(s => s.name), [sectors]);
 
     // Previous day for delta comparison
     const previousDate = useMemo(() => {
@@ -167,7 +163,12 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
     const relevantSectors = useMemo(() => {
         if (!sectors) return [];
         let base: string[] = [];
-        if (selectedUnit === 'VISÃO GLOBAL') base = sectors.map(s => s.name);
+        if (selectedUnit === 'VISÃO GLOBAL') {
+            // Apenas GSD-SP e BASP — exclui outras OMs para evitar duplicatas de nomes
+            base = sectors
+                .filter(s => normalize(s.unit) === 'GSD-SP' || normalize(s.unit) === 'BASP')
+                .map(s => s.name);
+        }
         else if (selectedUnit === 'BASP') base = BASP_SECTORS || [];
         else if (selectedUnit === 'GSD-SP') base = GSD_SP_SECTORS || [];
         else base = GSD_SP_SECTORS || [];
