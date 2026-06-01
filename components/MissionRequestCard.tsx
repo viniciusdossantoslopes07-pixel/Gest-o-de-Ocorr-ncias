@@ -678,7 +678,7 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                 {isSaving ? 'Salvando...' : 'Salvar Alterações'}
                             </button>
                         )}
-                        {onApprove && (mission.status === 'PENDENTE' || mission.status === 'ESCALONADA') && (
+                        {onApprove && (mission.status === 'PENDENTE' || mission.status === 'ESCALONADA' || mission.status === 'APROVADA') && (
                             <button
                                 onClick={() => onApprove(mission)}
                                 className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 px-8 py-3 rounded-xl font-black text-white shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all active:scale-95 text-sm uppercase tracking-widest"

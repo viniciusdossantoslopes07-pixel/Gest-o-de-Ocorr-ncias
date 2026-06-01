@@ -1172,17 +1172,11 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                             currentUser={user}
                             onMissionUpdated={fetchMissions}
                             onDelete={handleDeleteRequest}
-                            onProcess={async (id, decision) => {
+                            onProcess={(id, decision) => {
                                 const m = missions.find(mission => mission.id === id);
                                 if (!m) return;
                                 if (decision === 'REJEITADA') {
                                     handleRejectRequest(m);
-                                } else if (decision === 'APROVADA' || decision === 'ESCALONADA') {
-                                    const { error } = await supabase
-                                        .from('missoes_gsd')
-                                        .update({ status: decision })
-                                        .eq('id', m.id);
-                                    if (!error) fetchMissions();
                                 }
                             }}
                             onEditDraft={(mission) => {
