@@ -519,7 +519,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
             if (selectedMission) {
                 const { error: updateError } = await supabase
                     .from('missoes_gsd')
-                    .update({ status: 'APROVADA' }) // Changed from ATRIBUIDA to APROVADA to match DB constraint
+                    .update({ status: 'ATRIBUIDA' }) // Changed from APROVADA to ATRIBUIDA since OMIS is created
                     .eq('id', selectedMission.id);
 
                 if (updateError) {
@@ -869,7 +869,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
     };
 
     const renderPendingRequests = () => {
-        const pending = missions.filter(m => m.status === 'PENDENTE' || m.status === 'ESCALONADA');
+        const pending = missions.filter(m => m.status === 'PENDENTE' || m.status === 'ESCALONADA' || m.status === 'APROVADA');
         if (pending.length === 0) return <div className={`text-center py-12 rounded-2xl border border-dashed ${isDarkMode ? 'text-slate-500 bg-slate-900/20 border-slate-800/50' : 'text-slate-400 bg-slate-50 border-slate-200'} text-[10px] font-black uppercase tracking-[0.2em]`}>Nenhuma solicitação pendente de análise.</div>;
 
         return (
@@ -1172,9 +1172,18 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                             currentUser={user}
                             onMissionUpdated={fetchMissions}
                             onDelete={handleDeleteRequest}
-                            onProcess={(id, decision) => {
+                            onProcess={async (id, decision) => {
                                 const m = missions.find(mission => mission.id === id);
-                                if (m && decision === 'REJEITADA') handleRejectRequest(m);
+                                if (!m) return;
+                                if (decision === 'REJEITADA') {
+                                    handleRejectRequest(m);
+                                } else if (decision === 'APROVADA' || decision === 'ESCALONADA') {
+                                    const { error } = await supabase
+                                        .from('missoes_gsd')
+                                        .update({ status: decision })
+                                        .eq('id', m.id);
+                                    if (!error) fetchMissions();
+                                }
                             }}
                             onEditDraft={(mission) => {
                                 setEditingDraft(mission);
