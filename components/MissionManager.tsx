@@ -849,7 +849,45 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
     };
 
 
+
     // --- Filtering Logic ---
+    // Data filtered for current user (case insensitive to prevent mismatches)
+    // Also include missions where the user is the 'responsavel' in data
+    const myMissions = missions.filter(m =>
+        m.solicitante_id === user.id ||
+        m.solicitante_id?.toLowerCase() === user.id?.toLowerCase() ||
+        (m.dados_missao?.responsavel?.nome && m.dados_missao.responsavel.nome.toLowerCase().includes(user.name.toLowerCase()))
+    );
+
+    const availableHistoryTypes = React.useMemo(() => {
+        const types = new Set<string>();
+        orders.filter(o => o.status === 'CONCLUIDA' || o.status === 'CANCELADA').forEach(o => {
+            let t = (o.mission || 'Outros').split(' (')[0].trim();
+            const upperT = t.toUpperCase();
+            if (upperT.includes('APOIO') || upperT.includes('LOCAL:') || upperT.includes('DESMONTAGEM DE TENDAS') || upperT.includes('CLEAN DAY')) {
+                t = 'APOIO';
+            } else if (upperT.includes('PBCV') || upperT.includes('POSTO DE BLOQUEIO')) {
+                t = 'BLOQUEIO E CONTROLE DE VIAS';
+            } else if (upperT.includes('TRANSPORTE DE VIATURA') || upperT.includes('TRANSOPRTE DE VIAT') || upperT.includes('TRANSOPORTE DE VIAT')) {
+                t = 'TRANSPORTE DE VIATURAS';
+            } else if (upperT.includes('TRANSPORTE DE MAT') || upperT.includes('TRANSOPORTE DE MAT') || upperT.includes('TRANSOPRTE DE MAT')) {
+                t = 'TRANSPORTE DE MATERIAL';
+            } else if (upperT.includes('ALA DE PA') || upperT.includes('ALA DE AUTORIDADE')) {
+                t = 'ALA DE AUTORIDADE';
+            } else if (upperT.includes('POLICIAMENTO OSTENSIVO') || upperT.includes('POLICIAMENTO CRCEA')) {
+                t = 'POLICIAMENTO OSTENSIVO';
+            } else if (upperT.includes('FORMATURA') || upperT.includes('ACÓLITOS') || upperT.includes('GUARDA BANDEIRA') || upperT.includes('JARRÃO') || upperT.includes('TROPA ARMADA') || upperT.includes('ACOLITOS') || upperT.includes('JARRAO')) {
+                t = 'FORMATURA';
+            } else if (upperT.includes('FARO') || upperT.includes('EMPREGO DE CÃES') || upperT.includes('EMPREGO DE CAES')) {
+                t = 'EMPREGO DE CÃES DE GUERRA';
+            } else if (upperT === 'OUTRO' || upperT === 'OUTROS' || upperT.includes('COOPERACION') || upperT.includes('FISCAL DE OBRAS') || upperT.includes('PLANO DE ESTACIONAMENTO') || upperT.includes('VIGILÂNCIA ELETRÔNICA') || upperT.includes('VIGILANCIA ELETRONICA')) {
+                t = 'OUTROS';
+            }
+            types.add(t);
+        });
+        return Array.from(types).sort();
+    }, [orders]);
+
     const getFilteredItems = () => {
         switch (activeTab) {
             case 'minhas_solicitacoes':
@@ -1069,42 +1107,6 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
         );
     }
 
-    // Data filtered for current user (case insensitive to prevent mismatches)
-    // Also include missions where the user is the 'responsavel' in data
-    const myMissions = missions.filter(m =>
-        m.solicitante_id === user.id ||
-        m.solicitante_id?.toLowerCase() === user.id?.toLowerCase() ||
-        (m.dados_missao.responsavel?.nome && m.dados_missao.responsavel.nome.toLowerCase().includes(user.name.toLowerCase()))
-    );
-
-    const availableHistoryTypes = React.useMemo(() => {
-        const types = new Set<string>();
-        orders.filter(o => o.status === 'CONCLUIDA' || o.status === 'CANCELADA').forEach(o => {
-            let t = (o.mission || 'Outros').split(' (')[0].trim();
-            const upperT = t.toUpperCase();
-            if (upperT.includes('APOIO') || upperT.includes('LOCAL:') || upperT.includes('DESMONTAGEM DE TENDAS') || upperT.includes('CLEAN DAY')) {
-                t = 'APOIO';
-            } else if (upperT.includes('PBCV') || upperT.includes('POSTO DE BLOQUEIO')) {
-                t = 'BLOQUEIO E CONTROLE DE VIAS';
-            } else if (upperT.includes('TRANSPORTE DE VIATURA') || upperT.includes('TRANSOPRTE DE VIAT') || upperT.includes('TRANSOPORTE DE VIAT')) {
-                t = 'TRANSPORTE DE VIATURAS';
-            } else if (upperT.includes('TRANSPORTE DE MAT') || upperT.includes('TRANSOPORTE DE MAT') || upperT.includes('TRANSOPRTE DE MAT')) {
-                t = 'TRANSPORTE DE MATERIAL';
-            } else if (upperT.includes('ALA DE PA') || upperT.includes('ALA DE AUTORIDADE')) {
-                t = 'ALA DE AUTORIDADE';
-            } else if (upperT.includes('POLICIAMENTO OSTENSIVO') || upperT.includes('POLICIAMENTO CRCEA')) {
-                t = 'POLICIAMENTO OSTENSIVO';
-            } else if (upperT.includes('FORMATURA') || upperT.includes('ACÓLITOS') || upperT.includes('GUARDA BANDEIRA') || upperT.includes('JARRÃO') || upperT.includes('TROPA ARMADA') || upperT.includes('ACOLITOS') || upperT.includes('JARRAO')) {
-                t = 'FORMATURA';
-            } else if (upperT.includes('FARO') || upperT.includes('EMPREGO DE CÃES') || upperT.includes('EMPREGO DE CAES')) {
-                t = 'EMPREGO DE CÃES DE GUERRA';
-            } else if (upperT === 'OUTRO' || upperT === 'OUTROS' || upperT.includes('COOPERACION') || upperT.includes('FISCAL DE OBRAS') || upperT.includes('PLANO DE ESTACIONAMENTO') || upperT.includes('VIGILÂNCIA ELETRÔNICA') || upperT.includes('VIGILANCIA ELETRONICA')) {
-                t = 'OUTROS';
-            }
-            types.add(t);
-        });
-        return Array.from(types).sort();
-    }, [orders]);
 
     return (
         <Fragment>
