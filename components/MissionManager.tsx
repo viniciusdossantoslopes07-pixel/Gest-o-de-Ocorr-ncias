@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { supabase } from '../services/supabase';
 import { Mission, User, MissionOrder, UserRole } from '../types';
-import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint, Filter, MapPin, User as UserIcon, PlayCircle, History, Zap, Edit2, Mail, Copy, Trash2, Database, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, AlertTriangle, FileText, Play, Square, FileSignature, Shield, List, Eye, LayoutDashboard, PlusCircle, Calendar, ChevronDown, Fingerprint, Filter, MapPin, User as UserIcon, PlayCircle, History, Zap, Edit2, Mail, Copy, Trash2, Database, Loader2, Activity } from 'lucide-react';
 import { authenticateBiometrics } from '../services/webauthn';
 import MissionStatistics from './MissionStatistics';
 import MissionOrderForm from './MissionOrderForm';
@@ -1234,6 +1234,52 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                 {/* 3. Missões Ativas (Commanders) */}
                 {activeTab === 'missoes_ativas' && (
                     <div className="space-y-4">
+                        {/* Resumo de Missões Ativas */}
+                        {(() => {
+                            const ativas = getFilteredItems();
+                            const totalAtivas = ativas.length;
+                            const iniciadas = ativas.filter(o => o.status === 'EM_MISSAO').length;
+                            const aguardandoIniciar = ativas.filter(o => o.status === 'PRONTA_PARA_EXECUCAO').length;
+
+                            return (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                    <div className={`p-4 sm:p-6 rounded-[1.5rem] border flex items-center justify-between ${isDarkMode ? 'bg-slate-900/60 border-slate-800 shadow-sm' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
+                                                    <Activity className="w-4 h-4" />
+                                                </div>
+                                                <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>TOTAL ATIVAS</p>
+                                            </div>
+                                            <h3 className={`text-2xl sm:text-3xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{totalAtivas}</h3>
+                                        </div>
+                                    </div>
+                                    <div className={`p-4 sm:p-6 rounded-[1.5rem] border flex items-center justify-between ${isDarkMode ? 'bg-slate-900/60 border-slate-800 shadow-sm' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                                                    <Play className="w-4 h-4" />
+                                                </div>
+                                                <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>INICIADAS</p>
+                                            </div>
+                                            <h3 className={`text-2xl sm:text-3xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{iniciadas}</h3>
+                                        </div>
+                                    </div>
+                                    <div className={`p-4 sm:p-6 rounded-[1.5rem] border flex items-center justify-between ${isDarkMode ? 'bg-slate-900/60 border-slate-800 shadow-sm' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-orange-500/10 text-orange-400' : 'bg-orange-50 text-orange-600'}`}>
+                                                    <Clock className="w-4 h-4" />
+                                                </div>
+                                                <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>AGUARDANDO INICIAR</p>
+                                            </div>
+                                            <h3 className={`text-2xl sm:text-3xl font-black tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{aguardandoIniciar}</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+
                         {getFilteredItems().length === 0 ? (
                             <div className={`text-center py-12 rounded-2xl border ${isDarkMode ? 'text-slate-500 bg-slate-900/40 border-slate-800/50 backdrop-blur-md' : 'text-slate-400 bg-slate-50 border-slate-200'} text-xs font-bold uppercase tracking-widest`}>Nenhuma missão ativa ou pronta para execução no momento.</div>
                         ) : (
