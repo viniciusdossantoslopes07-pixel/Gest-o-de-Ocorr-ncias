@@ -658,7 +658,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
                         <div className="flex items-center gap-2">
                             <h2 className={`text-lg font-black tracking-tight ${textPrimary}`}>MAPA DE DISPONIBILIDADE</h2>
                             <div className={`px-2 py-0.5 rounded-full text-[8px] font-black border ${dk ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' : 'bg-slate-100 border-slate-200 text-slate-600'}`}>
-                                V2.0 AO VIVO
+                                V3.0 AO VIVO
                             </div>
                         </div>
                         <div className="flex items-center gap-2">

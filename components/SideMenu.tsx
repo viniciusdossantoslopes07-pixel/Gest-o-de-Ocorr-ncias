@@ -572,7 +572,7 @@ export default function SideMenu({
 
                         {!isCollapsed && (
                             <div className="mt-4 px-2 text-[10px] text-slate-500 font-medium text-center">
-                                v2.0.0 © 2026 Guardião
+                                v3.0.0 © 2026 Guardião
                             </div>
                         )}
                     </div>

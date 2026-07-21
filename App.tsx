@@ -1,4 +1,4 @@
-// Guardião GSD-SP v2.0.0 - Versão 2.0: Estabilidade e BI Avançado
+// Guardião GSD-SP v3.0.0 - Versão 3.0: Operacionalidade e BI Avançado
 import { useState, useEffect, useCallback, useMemo, lazy, Suspense, FC } from 'react';
 import { supabase } from './services/supabase';
 import {
@@ -100,7 +100,7 @@ const PUBLIC_USER: User = {
   sector: 'ACESSO PÚBLICO'
 };
 
-const APP_VERSION = '2.0.1'; // Incrementar esta versão para forçar refresh em todos os usuários
+const APP_VERSION = '3.0.0'; // Incrementar esta versão para forçar refresh em todos os usuários
 
 const App: FC = () => {
   // --- Version Check & Cache Management ---
@@ -111,13 +111,15 @@ const App: FC = () => {
     if (lastVersion && lastVersion !== APP_VERSION) {
       console.log(`[Guardião] Nova versão detectada (${APP_VERSION}). Atualizando sistema...`);
       
-      // Preservamos apenas o tema para não incomodar o usuário
+      // Preservamos o tema e a sessão do usuário para manter a experiência contínua
       const theme = localStorage.getItem('theme');
+      const userSession = localStorage.getItem('gsdsp_user_session');
       
       localStorage.clear();
       sessionStorage.clear();
       
       if (theme) localStorage.setItem('theme', theme);
+      if (userSession) localStorage.setItem('gsdsp_user_session', userSession);
       localStorage.setItem('app_version', APP_VERSION);
       
       // Forçar recarregamento ignorando cache
