@@ -82,12 +82,18 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
         is_functional: false
     } as Partial<User>);
 
-    const [filterCategory, setFilterCategory] = useState<'TODOS' | 'OFICIAIS' | 'GRADUADOS' | 'PRAÇAS'>('TODOS');
+    const [filterCategory, setFilterCategory] = useState<'TODOS' | 'OFICIAIS' | 'GRADUADOS' | 'PRAÇAS' | 'OF_SUP' | 'OF_INT' | 'OF_SUB' | 'GRAD' | 'CB' | 'S1' | 'S2'>('TODOS');
     const [filterSector, setFilterSector] = useState('TODOS');
 
-    const isOficial = (rank: string) => ['TB', 'MB', 'BR', 'CL', 'TC', 'MJ', 'CP', '1T', '2T', 'AP', 'Coronel', 'TEN CEL', 'MAJ', 'CAP', 'ASP', 'CEL'].includes(rank);
+    const isOfSup = (rank: string) => ['TB', 'MB', 'BR', 'CEL', 'Coronel', 'CL', 'TEN CEL', 'TC', 'MAJ', 'MJ'].includes(rank);
+    const isOfInt = (rank: string) => ['CAP', 'CP'].includes(rank);
+    const isOfSub = (rank: string) => ['1T', '2T', 'ASP', 'AP'].includes(rank);
     const isGraduado = (rank: string) => ['SO', '1S', '2S', '3S'].includes(rank);
-    const isPraca = (rank: string) => ['CB', 'S1', 'S2'].includes(rank);
+    const isCb = (rank: string) => rank === 'CB';
+    const isS1 = (rank: string) => rank === 'S1';
+    const isS2 = (rank: string) => rank === 'S2';
+    const isOficial = (rank: string) => isOfSup(rank) || isOfInt(rank) || isOfSub(rank);
+    const isPraca = (rank: string) => isCb(rank) || isS1(rank) || isS2(rank);
 
     const baseFilteredList = users.filter(u => {
         const statusMatch = showInactive ? (u.active === false) : (u.active !== false);
@@ -134,9 +140,17 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
 
     const filteredUsers = baseFilteredList.filter(u => {
         let categoryMatch = true;
-        if (filterCategory === 'OFICIAIS') categoryMatch = u.rank ? isOficial(u.rank) : false;
-        if (filterCategory === 'GRADUADOS') categoryMatch = u.rank ? isGraduado(u.rank) : false;
-        if (filterCategory === 'PRAÇAS') categoryMatch = u.rank ? isPraca(u.rank) : false;
+        const r = u.rank || '';
+        if (filterCategory === 'OFICIAIS') categoryMatch = isOficial(r);
+        else if (filterCategory === 'GRADUADOS') categoryMatch = isGraduado(r);
+        else if (filterCategory === 'PRAÇAS') categoryMatch = isPraca(r);
+        else if (filterCategory === 'OF_SUP') categoryMatch = isOfSup(r);
+        else if (filterCategory === 'OF_INT') categoryMatch = isOfInt(r);
+        else if (filterCategory === 'OF_SUB') categoryMatch = isOfSub(r);
+        else if (filterCategory === 'GRAD') categoryMatch = isGraduado(r);
+        else if (filterCategory === 'CB') categoryMatch = isCb(r);
+        else if (filterCategory === 'S1') categoryMatch = isS1(r);
+        else if (filterCategory === 'S2') categoryMatch = isS2(r);
         return categoryMatch;
     }).sort((a, b) => {
         const priorityA = getRankPriority(a.rank || '');
@@ -531,21 +545,73 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                         </div>
                     </div>
 
-                    <div className="flex flex-wrap justify-end gap-3 px-4">
-                        {[
-                            { state: showExternal, setter: setShowExternal, label: 'Serviço Externo', icon: PlaneTakeoff, color: 'emerald' },
-                            { state: showFunctional, setter: setShowFunctional, label: 'Contas Funcionais', icon: Briefcase, color: 'indigo' },
-                            { state: showInactive, setter: setShowInactive, label: 'Desativados', icon: CircleX, color: 'amber' }
-                        ].map(toggle => (
-                            <button
-                                key={toggle.label}
-                                onClick={() => toggle.setter(!toggle.state)}
-                                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${toggle.state ? `bg-${toggle.color}-600 border-${toggle.color}-600 text-white shadow-lg` : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50')}`}
-                            >
-                                <toggle.icon className="w-3.5 h-3.5" />
-                                {toggle.label}
-                            </button>
-                        ))}
+                    <div className="flex flex-wrap items-center justify-between gap-3 px-4 my-4">
+                        {/* Filtros Rápidos por Posto/Graduação */}
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                            {[
+                                { id: 'OF_SUP', label: 'OF. SUP.', count: baseFilteredList.filter(u => u.rank && isOfSup(u.rank)).length },
+                                { id: 'OF_INT', label: 'OF. INT.', count: baseFilteredList.filter(u => u.rank && isOfInt(u.rank)).length },
+                                { id: 'OF_SUB', label: 'OF. SUB.', count: baseFilteredList.filter(u => u.rank && isOfSub(u.rank)).length },
+                                { id: 'GRAD', label: 'GRAD.', count: baseFilteredList.filter(u => u.rank && isGraduado(u.rank)).length },
+                                { id: 'CB', label: 'CB', count: baseFilteredList.filter(u => u.rank && isCb(u.rank)).length },
+                                { id: 'S1', label: 'S1', count: baseFilteredList.filter(u => u.rank && isS1(u.rank)).length },
+                                { id: 'S2', label: 'S2', count: baseFilteredList.filter(u => u.rank && isS2(u.rank)).length },
+                            ].map(filter => {
+                                const isActive = filterCategory === filter.id;
+                                return (
+                                    <button
+                                        key={filter.id}
+                                        onClick={() => setFilterCategory(isActive ? 'TODOS' : filter.id as any)}
+                                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${
+                                            isActive
+                                                ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/20 scale-[1.02]'
+                                                : isDarkMode
+                                                ? 'bg-slate-800/80 border-slate-700/80 text-slate-300 hover:bg-slate-700 hover:text-white'
+                                                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-sm'
+                                        }`}
+                                    >
+                                        <span>{filter.label}</span>
+                                        <span className={`px-1.5 py-0.2 rounded-md text-[9px] font-extrabold ${
+                                            isActive 
+                                                ? 'bg-white/20 text-white' 
+                                                : isDarkMode 
+                                                ? 'bg-slate-900/60 text-slate-400' 
+                                                : 'bg-slate-100 text-slate-500'
+                                        }`}>
+                                            {filter.count}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                            {filterCategory !== 'TODOS' && (
+                                <button
+                                    onClick={() => setFilterCategory('TODOS')}
+                                    className={`px-2.5 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all ${
+                                        isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
+                                    }`}
+                                >
+                                    Limpar
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Toggles de Status */}
+                        <div className="flex flex-wrap items-center gap-2">
+                            {[
+                                { state: showExternal, setter: setShowExternal, label: 'Serviço Externo', icon: PlaneTakeoff, color: 'emerald' },
+                                { state: showFunctional, setter: setShowFunctional, label: 'Contas Funcionais', icon: Briefcase, color: 'indigo' },
+                                { state: showInactive, setter: setShowInactive, label: 'Desativados', icon: CircleX, color: 'amber' }
+                            ].map(toggle => (
+                                <button
+                                    key={toggle.label}
+                                    onClick={() => toggle.setter(!toggle.state)}
+                                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${toggle.state ? `bg-${toggle.color}-600 border-${toggle.color}-600 text-white shadow-lg` : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50')}`}
+                                >
+                                    <toggle.icon className="w-3.5 h-3.5" />
+                                    {toggle.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     <div className={`rounded-[2rem] border overflow-hidden shadow-sm ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
