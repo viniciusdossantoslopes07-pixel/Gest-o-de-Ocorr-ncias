@@ -749,6 +749,18 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
         );
     };
 
+    const getDisplayMissionTitle = (order: { mission?: string; description?: string; location?: string }) => {
+        if (!order || !order.mission) return 'Outros';
+        const upperM = order.mission.toUpperCase();
+        const fullText = ((order.mission || '') + ' ' + (order.description || '') + ' ' + (order.location || '')).toUpperCase();
+        if (upperM === 'OUTRO' || upperM === 'OUTROS' || upperM.includes('AUTORIDADE')) {
+            if (fullText.includes('SEGURANÇA DE AUTORIDADE') || fullText.includes('SEGURANCA DE AUTORIDADE') || fullText.includes('SEGURANÇA DE AUTORIDADES') || fullText.includes('SEGURANCA DE AUTORIDADES') || fullText.includes('SEG AUTORIDADE') || fullText.includes('SEGURANÇA AUTORIDADE') || fullText.includes('SEGURANCA AUTORIDADE') || fullText.includes('SEG DE AUTORIDADE')) {
+                return 'SEGURANÇA DE AUTORIDADE';
+            }
+        }
+        return order.mission;
+    };
+
     const renderMyOrders = () => {
         // Filter orders where user is requester OR mission commander OR in personnel
         const myOrders = orders.filter(o =>
@@ -771,7 +783,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                             <div className="flex-1 min-w-0">
                                 <div className="flex flex-wrap items-center gap-2 mb-2.5">
-                                    <h3 className={`text-base sm:text-lg font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} truncate`}>{order.mission}</h3>
+                                    <h3 className={`text-base sm:text-lg font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} truncate`}>{getDisplayMissionTitle(order)}</h3>
                                     <span className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest ${MISSION_STATUS_COLORS[order.status || ''] || 'bg-slate-100'}`}>
                                         {MISSION_STATUS_LABELS[order.status || ''] || order.status}
                                     </span>
@@ -1006,7 +1018,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                     <span className={`px-2 py-0.5 text-[8px] rounded-full uppercase tracking-widest font-black ${isDarkMode ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-orange-50 text-orange-600 border border-orange-100'}`}>Pendente</span>
                                     <span className={`flex items-center gap-1.5 rounded-lg px-2 py-0.5 text-[9px] font-mono tracking-widest ${isDarkMode ? 'bg-slate-950 text-blue-400 border border-slate-800/50' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}>OM #{o.omisNumber}</span>
                                 </div>
-                                <div className={`text-sm font-black shadow-sm uppercase mt-1 mb-3 line-clamp-2 leading-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{o.mission}</div>
+                                <div className={`text-sm font-black shadow-sm uppercase mt-1 mb-3 line-clamp-2 leading-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-800'}`}>{getDisplayMissionTitle(o)}</div>
                                 <div className={`text-[9px] font-bold uppercase tracking-wider flex flex-col gap-2 ${isDarkMode ? 'text-slate-500' : 'text-slate-500'}`}>
                                     <span className="flex items-center gap-2"><Calendar className="w-3 h-3 text-blue-500" /> {formatDisplayDate(o.date)}</span>
                                     <span className="flex items-center gap-2"><UserIcon className="w-3 h-3 text-blue-500" /> {o.createdBy}</span>
@@ -1295,7 +1307,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                     <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex flex-wrap items-center gap-3 mb-4">
-                                                <h3 className={`text-base sm:text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-900'} truncate`}>{order.mission}</h3>
+                                                <h3 className={`text-base sm:text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-900'} truncate`}>{getDisplayMissionTitle(order)}</h3>
                                                 <span className={`px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${MISSION_STATUS_COLORS[order.status || ''] || 'bg-slate-100'}`}>
                                                     {MISSION_STATUS_LABELS[order.status || ''] || order.status}
                                                 </span>
@@ -1682,7 +1694,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                                                     <div className="flex-1 min-w-0 w-full">
                                                         <div className="flex flex-wrap items-center justify-between sm:justify-start gap-3 mb-3 sm:mb-4">
-                                                            <h3 className={`text-sm sm:text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-900'} truncate group-hover:text-blue-500 transition-colors max-w-[70%] sm:max-w-none`}>{order.mission}</h3>
+                                                            <h3 className={`text-sm sm:text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-900'} truncate group-hover:text-blue-500 transition-colors max-w-[70%] sm:max-w-none`}>{getDisplayMissionTitle(order)}</h3>
                                                             <span className={`px-2 sm:px-3 py-1 rounded-full text-[8px] sm:text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-sm ${order.status === 'CONCLUIDA' ? (isDarkMode ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border border-emerald-100') : (isDarkMode ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-700 border border-red-100')}`}>
                                                                 {order.status === 'CONCLUIDA' ? 'Concluída' : 'Cancelada'}
                                                             </span>
