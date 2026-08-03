@@ -977,7 +977,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                     onClick={() => setSelectedKpi(null)}
                 >
                     <div 
-                        className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} w-full max-w-lg shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-[1.5rem] sm:rounded-[2.5rem] border overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300`}
+                        className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} w-full max-w-2xl sm:max-w-4xl shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-[1.5rem] sm:rounded-[2.5rem] border overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300`}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className={`p-4 sm:p-6 border-b border-dashed ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} flex items-center justify-between bg-gradient-to-r ${
@@ -1084,12 +1084,12 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                             const fullTypeData = Object.entries(counts).sort(([,a],[,b]) => b - a).map(([name, value]) => ({ name, value }));
                                             
                                             return fullTypeData.map((item, i) => (
-                                                <div key={item.name} className={`p-4 rounded-2xl flex items-center justify-between gap-3 ${isDarkMode ? 'bg-slate-950/40 border border-slate-800' : 'bg-slate-50 border border-slate-100'}`}>
-                                                    <div className="flex items-center gap-3 min-w-0">
-                                                        <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                                                        <span title={item.name} className={`text-[10px] sm:text-xs font-black uppercase truncate ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{item.name}</span>
+                                                <div key={item.name} className={`p-3.5 sm:p-4 rounded-2xl flex items-center justify-between gap-3 transition-all hover:scale-[1.01] ${isDarkMode ? 'bg-slate-950/40 border border-slate-800/80 hover:border-slate-700' : 'bg-slate-50/80 border border-slate-200/60 hover:border-slate-300'}`}>
+                                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                        <div className="w-3 h-3 rounded-full flex-shrink-0 shadow-sm" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                                                        <span title={item.name} className={`text-xs sm:text-sm font-extrabold uppercase tracking-tight leading-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{item.name}</span>
                                                     </div>
-                                                    <span className={`text-sm font-black flex-shrink-0 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{item.value}</span>
+                                                    <span className={`text-xs sm:text-sm font-black flex-shrink-0 px-3 py-1 rounded-xl ${isDarkMode ? 'bg-slate-900 text-white border border-slate-800' : 'bg-white text-slate-900 shadow-sm border border-slate-200'}`}>{item.value}</span>
                                                 </div>
                                             ));
                                         })()}
