@@ -864,7 +864,10 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
         orders.filter(o => o.status === 'CONCLUIDA' || o.status === 'CANCELADA').forEach(o => {
             let t = (o.mission || 'Outros').split(' (')[0].trim();
             const upperT = t.toUpperCase();
-            if (upperT.includes('APOIO') || upperT.includes('LOCAL:') || upperT.includes('DESMONTAGEM DE TENDAS') || upperT.includes('CLEAN DAY')) {
+            const fullText = ((o.mission || '') + ' ' + (o.description || '') + ' ' + (o.location || '')).toUpperCase();
+            if (upperT.includes('SEGURANÇA DE AUTORIDADE') || upperT.includes('SEGURANCA DE AUTORIDADE') || fullText.includes('SEGURANÇA DE AUTORIDADE') || fullText.includes('SEGURANCA DE AUTORIDADE') || fullText.includes('SEGURANÇA DE AUTORIDADES') || fullText.includes('SEGURANCA DE AUTORIDADES') || fullText.includes('SEG AUTORIDADE') || fullText.includes('SEGURANÇA AUTORIDADE') || fullText.includes('SEGURANCA AUTORIDADE') || fullText.includes('SEG DE AUTORIDADE')) {
+                t = 'SEGURANÇA DE AUTORIDADE';
+            } else if (upperT.includes('APOIO') || upperT.includes('LOCAL:') || upperT.includes('DESMONTAGEM DE TENDAS') || upperT.includes('CLEAN DAY')) {
                 t = 'APOIO';
             } else if (upperT.includes('PBCV') || upperT.includes('POSTO DE BLOQUEIO')) {
                 t = 'BLOQUEIO E CONTROLE DE VIAS';
@@ -1609,8 +1612,11 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                     if (historyType !== 'all') {
                                         let t = (o.mission || 'Outros').split(' (')[0].trim();
                                         const upperT = t.toUpperCase();
+                                        const fullText = ((o.mission || '') + ' ' + (o.description || '') + ' ' + (o.location || '')).toUpperCase();
                                         let category = t;
-                                        if (upperT.includes('APOIO') || upperT.includes('LOCAL:') || upperT.includes('DESMONTAGEM DE TENDAS') || upperT.includes('CLEAN DAY')) {
+                                        if (upperT.includes('SEGURANÇA DE AUTORIDADE') || upperT.includes('SEGURANCA DE AUTORIDADE') || fullText.includes('SEGURANÇA DE AUTORIDADE') || fullText.includes('SEGURANCA DE AUTORIDADE') || fullText.includes('SEGURANÇA DE AUTORIDADES') || fullText.includes('SEGURANCA DE AUTORIDADES') || fullText.includes('SEG AUTORIDADE') || fullText.includes('SEGURANÇA AUTORIDADE') || fullText.includes('SEGURANCA AUTORIDADE') || fullText.includes('SEG DE AUTORIDADE')) {
+                                            category = 'SEGURANÇA DE AUTORIDADE';
+                                        } else if (upperT.includes('APOIO') || upperT.includes('LOCAL:') || upperT.includes('DESMONTAGEM DE TENDAS') || upperT.includes('CLEAN DAY')) {
                                             category = 'APOIO';
                                         } else if (upperT.includes('PBCV') || upperT.includes('POSTO DE BLOQUEIO')) {
                                             category = 'BLOQUEIO E CONTROLE DE VIAS';
