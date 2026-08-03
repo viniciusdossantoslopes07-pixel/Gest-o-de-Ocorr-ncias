@@ -187,6 +187,68 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
         };
     }, [filteredOrders]);
 
+    // Average Duration by Mission Type
+    const avgDurationByType = useMemo(() => {
+        const stats: Record<string, { totalMinutes: number; count: number }> = {};
+
+        filteredOrders.forEach(o => {
+            if (!o.startTime || !o.endTime) return;
+            const start = new Date(o.startTime);
+            const end = new Date(o.endTime);
+            const diff = (end.getTime() - start.getTime()) / 60000;
+            if (isNaN(diff) || diff <= 0) return;
+
+            let t = (o.mission || 'Outros').split(' (')[0].trim();
+            const upperT = t.toUpperCase();
+            const fullText = ((o.mission || '') + ' ' + (o.description || '') + ' ' + (o.location || '')).toUpperCase();
+
+            if (upperT.includes('SEGURANÇA DE AUTORIDADE') || upperT.includes('SEGURANCA DE AUTORIDADE') || fullText.includes('SEGURANÇA DE AUTORIDADE') || fullText.includes('SEGURANCA DE AUTORIDADE') || fullText.includes('SEGURANÇA DE AUTORIDADES') || fullText.includes('SEGURANCA DE AUTORIDADES') || fullText.includes('SEG AUTORIDADE') || fullText.includes('SEGURANÇA AUTORIDADE') || fullText.includes('SEGURANCA AUTORIDADE') || fullText.includes('SEG DE AUTORIDADE')) {
+                t = 'SEGURANÇA DE AUTORIDADE';
+            } else if (upperT.includes('APOIO') || upperT.includes('LOCAL:') || upperT.includes('DESMONTAGEM DE TENDAS') || upperT.includes('CLEAN DAY')) {
+                t = 'APOIO';
+            } else if (upperT.includes('PBCV') || upperT.includes('POSTO DE BLOQUEIO')) {
+                t = 'BLOQUEIO E CONTROLE DE VIAS';
+            } else if (upperT.includes('TRANSPORTE DE VIATURA') || upperT.includes('TRANSOPRTE DE VIAT') || upperT.includes('TRANSOPORTE DE VIAT')) {
+                t = 'TRANSPORTE DE VIATURAS';
+            } else if (upperT.includes('TRANSPORTE DE MAT') || upperT.includes('TRANSOPORTE DE MAT') || upperT.includes('TRANSOPRTE DE MAT')) {
+                t = 'TRANSPORTE DE MATERIAL';
+            } else if (upperT.includes('ALA DE PA') || upperT.includes('ALA DE AUTORIDADE')) {
+                t = 'ALA DE AUTORIDADE';
+            } else if (upperT.includes('POLICIAMENTO OSTENSIVO') || upperT.includes('POLICIAMENTO CRCEA')) {
+                t = 'POLICIAMENTO OSTENSIVO';
+            } else if (upperT.includes('FORMATURA') || upperT.includes('ACÓLITOS') || upperT.includes('GUARDA BANDEIRA') || upperT.includes('JARRÃO') || upperT.includes('TROPA ARMADA') || upperT.includes('ACOLITOS') || upperT.includes('JARRAO')) {
+                t = 'FORMATURA';
+            } else if (upperT.includes('FARO') || upperT.includes('EMPREGO DE CÃES') || upperT.includes('EMPREGO DE CAES')) {
+                t = 'EMPREGO DE CÃES DE GUERRA';
+            } else if (upperT === 'OUTRO' || upperT === 'OUTROS' || upperT.includes('COOPERACION') || upperT.includes('FISCAL DE OBRAS') || upperT.includes('PLANO DE ESTACIONAMENTO') || upperT.includes('VIGILÂNCIA ELETRÔNICA') || upperT.includes('VIGILANCIA ELETRONICA')) {
+                t = 'OUTROS';
+            }
+
+            if (!stats[t]) stats[t] = { totalMinutes: 0, count: 0 };
+            stats[t].totalMinutes += diff;
+            stats[t].count += 1;
+        });
+
+        const formatHours = (mins: number) => {
+            const h = Math.floor(mins / 60);
+            const m = Math.round(mins % 60);
+            if (h === 0) return `${m}m`;
+            if (m === 0) return `${h}h`;
+            return `${h}h ${m}m`;
+        };
+
+        return Object.entries(stats).map(([name, s]) => {
+            const avgMins = s.totalMinutes / s.count;
+            return {
+                name,
+                avgMins,
+                avgTimeStr: formatHours(avgMins),
+                totalHours: Math.round(s.totalMinutes / 60),
+                count: s.count
+            };
+        }).sort((a, b) => b.avgMins - a.avgMins);
+    }, [filteredOrders]);
+
     // Duration by category
     const durationByCategoryData = useMemo(() => {
         const stats: Record<string, { total: number; count: number }> = {};
@@ -641,7 +703,10 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                 </button>
 
                 {/* KPI Tempo Médio */}
-                <div className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-orange-500/10 text-left border-transparent hover:border-orange-500/20`}>
+                <button 
+                    onClick={() => setSelectedKpi({ title: 'Tempo Médio', color: 'orange', list: filteredOrders })}
+                    className={`${card} relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-orange-500/10 text-left border-transparent hover:border-orange-500/20 cursor-pointer`}
+                >
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-all duration-300 group-hover:scale-110 ${isDarkMode ? 'text-orange-400 bg-orange-500/10' : 'text-orange-600 bg-orange-50'}`}>
                         <Clock className="w-5 h-5" />
                     </div>
@@ -652,7 +717,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                             {timeStats.totalHours}h operacionais
                         </p>
                     </div>
-                </div>
+                </button>
 
 
             </div>
@@ -995,7 +1060,7 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                 <div>
                                     <h3 className={`text-xl font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{selectedKpi.title}</h3>
                                     <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                                        {selectedKpi.title === 'Efetivo' ? 'Distribuição por Posto/Graduação' : 'Listagem de Missões Vinculadas'}
+                                        {selectedKpi.title === 'Efetivo' ? 'Distribuição por Posto/Graduação' : selectedKpi.title === 'Missões por Tipo' ? 'Listagem por Tipo de Missão' : selectedKpi.title === 'Tempo Médio' ? 'Tempo Médio por Tipo de Missão' : 'Listagem de Missões Vinculadas'}
                                     </p>
                                 </div>
                             </div>
@@ -1094,6 +1159,36 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
                                             ));
                                         })()}
                                     </div>
+                                </div>
+                            ) : selectedKpi.title === 'Tempo Médio' ? (
+                                <div className="space-y-4">
+                                    {avgDurationByType.length === 0 ? (
+                                        <div className="py-12 text-center space-y-3">
+                                            <Clock className="w-12 h-12 mx-auto opacity-10" />
+                                            <p className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-600' : 'text-slate-300'}`}>Nenhuma informação de tempo médio encontrada</p>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            {avgDurationByType.map((item, i) => (
+                                                <div 
+                                                    key={item.name} 
+                                                    className={`p-3.5 sm:p-4 rounded-2xl flex items-center justify-between gap-3 transition-all hover:scale-[1.01] ${isDarkMode ? 'bg-slate-950/40 border border-slate-800/80 hover:border-slate-700' : 'bg-slate-50/80 border border-slate-200/60 hover:border-slate-300'}`}
+                                                >
+                                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                        <div className="w-3 h-3 rounded-full flex-shrink-0 shadow-sm" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                                                        <div className="min-w-0 flex-1">
+                                                            <span title={item.name} className={`block text-xs sm:text-sm font-extrabold uppercase tracking-tight leading-tight ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{item.name}</span>
+                                                            <span className={`text-[9px] font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{item.count} {item.count === 1 ? 'missão' : 'missões'}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex flex-col items-end flex-shrink-0">
+                                                        <span className={`text-xs sm:text-sm font-black px-3 py-1 rounded-xl ${isDarkMode ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' : 'bg-orange-50 text-orange-700 border border-orange-200'}`}>{item.avgTimeStr}</span>
+                                                        <span className={`text-[9px] font-mono mt-0.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>{item.totalHours}h totais</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 selectedKpi.list.length === 0 ? (
