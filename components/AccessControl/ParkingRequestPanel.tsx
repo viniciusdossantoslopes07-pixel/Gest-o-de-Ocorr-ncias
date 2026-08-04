@@ -726,27 +726,6 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                         {/* Corpo da Análise */}
                         <div className="p-4 sm:p-5 overflow-y-auto custom-scrollbar space-y-4 sm:space-y-5">
                             
-                            {/* Banner Data e Hora da Solicitação */}
-                            <div className={`p-3.5 sm:p-4 rounded-xl border flex items-center justify-between gap-3 ${dk ? 'bg-blue-950/30 border-blue-800/40' : 'bg-blue-50/60 border-blue-100'}`}>
-                                <div className="flex items-center gap-3">
-                                    <div className={`p-2.5 rounded-xl shrink-0 ${dk ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
-                                        <Clock className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                        <p className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${dk ? 'text-blue-400' : 'text-blue-600'}`}>Data e Hora da Solicitação</p>
-                                        <p className={`text-xs sm:text-sm font-black tracking-tight ${dk ? 'text-white' : 'text-slate-900'}`}>
-                                            {formatDateTime(analysingRequest.created_at)}
-                                        </p>
-                                    </div>
-                                </div>
-                                {analysingRequest.created_at && (
-                                    <div className={`hidden sm:flex px-3 py-1.5 rounded-lg text-[10px] font-black uppercase items-center gap-1.5 shrink-0 ${dk ? 'bg-slate-800 text-slate-300 border border-slate-700' : 'bg-white text-slate-700 border border-blue-100 shadow-sm'}`}>
-                                        <Calendar className="w-3.5 h-3.5 text-blue-500" />
-                                        {new Date(analysingRequest.created_at).toLocaleDateString('pt-BR')}
-                                    </div>
-                                )}
-                            </div>
-                            
                             {/* Grid Superior: Militar e Contato */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                                 <div className={`p-4 rounded-xl border ${dk ? 'bg-slate-800/50 border-slate-700/50' : 'bg-white border-slate-200'}`}>
