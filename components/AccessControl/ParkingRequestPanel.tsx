@@ -56,6 +56,26 @@ interface ParkingRequest {
 
 const TOTAL_VAGAS = 32;
 
+const formatDateTime = (dateStr?: string) => {
+    if (!dateStr) return '—';
+    try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        const dateFormatted = d.toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+        const timeFormatted = d.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        return `${dateFormatted} às ${timeFormatted}`;
+    } catch {
+        return dateStr;
+    }
+};
+
 export default function ParkingRequestPanel({ user, isDarkMode = false }: { user: any; isDarkMode?: boolean }) {
     const dk = isDarkMode;
     const card = dk ? 'bg-slate-800/80 border-slate-700' : 'bg-white border-slate-200';
@@ -433,7 +453,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                                     </span>
                                                 </div>
 
-                                                <div className="grid grid-cols-2 gap-4 mt-3">
+                                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-3">
                                                     <div>
                                                         <p className={`text-[9px] font-bold uppercase ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Veículo</p>
                                                         <p className={`text-[10px] sm:text-xs font-bold truncate ${dk ? 'text-slate-300' : 'text-slate-700'}`}>{vName} — {vPlate}</p>
@@ -441,6 +461,10 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                                     <div>
                                                         <p className={`text-[9px] font-bold uppercase ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Período</p>
                                                         <p className={`text-[10px] sm:text-xs font-bold ${dk ? 'text-slate-300' : 'text-slate-700'}`}>{new Date(req.inicio + 'T00:00:00').toLocaleDateString('pt-BR')} → {new Date(req.termino + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+                                                    </div>
+                                                    <div className="col-span-2 sm:col-span-1">
+                                                        <p className={`text-[9px] font-bold uppercase ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Solicitado em</p>
+                                                        <p className={`text-[10px] sm:text-xs font-bold ${dk ? 'text-slate-300' : 'text-slate-700'}`}>{formatDateTime(req.created_at)}</p>
                                                     </div>
                                                 </div>
 
@@ -680,7 +704,18 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                             #{analysingRequest.numero_autorizacao?.toString().padStart(6, '0') || analysingRequest.id.substring(0, 8)}
                                         </span>
                                     </h2>
-                                    <p className={`text-[10px] font-bold uppercase mt-0.5 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Estacionamento BASP</p>
+                                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                        <p className={`text-[10px] font-bold uppercase ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Estacionamento BASP</p>
+                                        {analysingRequest.created_at && (
+                                            <>
+                                                <span className={`text-[10px] ${dk ? 'text-slate-600' : 'text-slate-300'}`}>•</span>
+                                                <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${dk ? 'text-blue-400' : 'text-blue-600'}`}>
+                                                    <Clock className="w-3 h-3" />
+                                                    Solicitado em {formatDateTime(analysingRequest.created_at)}
+                                                </span>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             <button onClick={() => setAnalysingRequest(null)} className={`p-2 rounded-full transition-colors ${dk ? 'text-slate-500 hover:text-white hover:bg-slate-800' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'}`}>
@@ -690,6 +725,27 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
                         {/* Corpo da Análise */}
                         <div className="p-4 sm:p-5 overflow-y-auto custom-scrollbar space-y-4 sm:space-y-5">
+                            
+                            {/* Banner Data e Hora da Solicitação */}
+                            <div className={`p-3.5 sm:p-4 rounded-xl border flex items-center justify-between gap-3 ${dk ? 'bg-blue-950/30 border-blue-800/40' : 'bg-blue-50/60 border-blue-100'}`}>
+                                <div className="flex items-center gap-3">
+                                    <div className={`p-2.5 rounded-xl shrink-0 ${dk ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
+                                        <Clock className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider ${dk ? 'text-blue-400' : 'text-blue-600'}`}>Data e Hora da Solicitação</p>
+                                        <p className={`text-xs sm:text-sm font-black tracking-tight ${dk ? 'text-white' : 'text-slate-900'}`}>
+                                            {formatDateTime(analysingRequest.created_at)}
+                                        </p>
+                                    </div>
+                                </div>
+                                {analysingRequest.created_at && (
+                                    <div className={`hidden sm:flex px-3 py-1.5 rounded-lg text-[10px] font-black uppercase items-center gap-1.5 shrink-0 ${dk ? 'bg-slate-800 text-slate-300 border border-slate-700' : 'bg-white text-slate-700 border border-blue-100 shadow-sm'}`}>
+                                        <Calendar className="w-3.5 h-3.5 text-blue-500" />
+                                        {new Date(analysingRequest.created_at).toLocaleDateString('pt-BR')}
+                                    </div>
+                                )}
+                            </div>
                             
                             {/* Grid Superior: Militar e Contato */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
