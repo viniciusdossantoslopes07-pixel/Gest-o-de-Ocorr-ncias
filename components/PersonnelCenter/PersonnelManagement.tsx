@@ -163,7 +163,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
         e.preventDefault();
         
         // Ensure om_id is set
-        const finalOmId = formData.om_id || omId || (users[0]?.om_id);
+        const finalOmId = formData.om_id || omId || users.find(u => u.om_id)?.om_id || 'e5418770-62bd-49d7-9229-a608e3a2895b';
 
         if (editingId) {
             onUpdatePersonnel({ ...users.find(u => u.id === editingId)!, ...formData, om_id: finalOmId } as User);

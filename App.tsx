@@ -920,7 +920,7 @@ const App: FC = () => {
     if (actualOmId === 'WAITING_CONTEXT') return;
 
     if (actualOmId && legacyIds.includes(actualOmId)) {
-      query = query.in('om_id', legacyIds);
+      query = query.or(`om_id.in.(${legacyIds.join(',')}),om_id.is.null`);
     } else if (actualOmId) {
       query = query.eq('om_id', actualOmId);
     } else {
@@ -1123,7 +1123,7 @@ const App: FC = () => {
       pending_password_reset: newUser.pending_password_reset || false,
       reset_password_at_login: newUser.reset_password_at_login || false,
       password_status: newUser.password_status || 'ACTIVE',
-      om_id: newUser.om_id || currentUser?.om_id
+      om_id: newUser.om_id || currentUser?.om_id || getActualOmId() || 'e5418770-62bd-49d7-9229-a608e3a2895b'
     };
 
     // Exclusividade de Função Administrativa: remover de outros usuários se estiver sendo atribuída
@@ -1229,7 +1229,7 @@ const App: FC = () => {
       approved: false,
       phone_number: newUser.phoneNumber,
       active: true,
-      om_id: newUser.om_id
+      om_id: newUser.om_id || getActualOmId() || 'e5418770-62bd-49d7-9229-a608e3a2895b'
     };
 
     const { error } = await supabase
