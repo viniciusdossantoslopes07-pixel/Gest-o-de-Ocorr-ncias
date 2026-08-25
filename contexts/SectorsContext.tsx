@@ -30,6 +30,8 @@ interface SectorsContextValue {
     addSector: (name: string, unit: string, targetOmId?: string) => Promise<{ error?: string }>;
     /** Desativa um setor. Usuários nele são movidos para sem-setor antes. */
     removeSector: (id: string) => Promise<{ error?: string }>;
+    /** Renomeia um setor e atualiza os usuários e histórico vinculados. */
+    renameSector: (id: string, newName: string) => Promise<{ error?: string }>;
     /** Recarrega setores do banco */
     refetch: () => Promise<void>;
     /** Atualiza a ordem de exibição dos setores */
@@ -194,6 +196,54 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
         return {};
     }, [fetchSectors]);
 
+    const renameSector = useCallback(async (id: string, newName: string): Promise<{ error?: string }> => {
+        const sector = sectors.find(s => s.id === id);
+        if (!sector) return { error: 'Setor não encontrado.' };
+
+        const trimmed = newName.trim().toUpperCase();
+        if (!trimmed) return { error: 'Nome inválido.' };
+        if (trimmed === sector.name) return {};
+
+        // Verificar se já existe outro setor ativo com o mesmo nome na mesma OM
+        const { data: existing } = await supabase
+            .from('sectors')
+            .select('id')
+            .eq('name', trimmed)
+            .eq('om_id', sector.om_id)
+            .eq('is_active', true)
+            .neq('id', id)
+            .limit(1);
+
+        if (existing && existing.length > 0) {
+            return { error: 'Já existe outro setor com este nome nesta unidade.' };
+        }
+
+        const oldName = sector.name;
+
+        // 1. Atualizar nome do setor
+        const { error: sectorError } = await supabase
+            .from('sectors')
+            .update({ name: trimmed })
+            .eq('id', id);
+
+        if (sectorError) return { error: sectorError.message };
+
+        // 2. Atualizar usuários vinculados ao setor antigo
+        await supabase
+            .from('users')
+            .update({ sector: trimmed })
+            .eq('sector', oldName);
+
+        // 3. Atualizar histórico de chamadas vinculado ao setor antigo
+        await supabase
+            .from('daily_attendance')
+            .update({ sector: trimmed })
+            .eq('sector', oldName);
+
+        await fetchSectors();
+        return {};
+    }, [sectors, fetchSectors]);
+
     const displaySectors = sectors
         .filter(s => !s.hidden_from_attendance)
         .map(s => s.name);
@@ -209,6 +259,7 @@ export const SectorsProvider = ({ children }: { children: ReactNode }) => {
             loading,
             addSector,
             removeSector,
+            renameSector,
             reorderSectors,
             setOmId,
             omId,
