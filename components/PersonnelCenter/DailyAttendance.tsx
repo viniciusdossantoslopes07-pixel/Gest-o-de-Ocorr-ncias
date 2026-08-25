@@ -609,8 +609,11 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const getSectorUsers = (sector: string) => {
         return realPersonnel.filter(user => {
             if (user.external_service) {
-                if (user.external_om === 'BASP') {
-                    return user.external_sector === sector;
+                const extOm = (user.external_om || '').toUpperCase();
+                const isLocalOm = !extOm || extOm.includes('BASP') || extOm.includes(currentViewOmAcronym.toUpperCase());
+                if (isLocalOm) {
+                    const userSector = user.external_sector || user.sector;
+                    return userSector === sector;
                 }
                 return false;
             }
@@ -625,8 +628,11 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             
             let matchesSector = false;
             if (user.external_service) {
-                if (user.external_om === 'BASP') {
-                    matchesSector = (selectedSector === user.external_sector);
+                const extOm = (user.external_om || '').toUpperCase();
+                const isLocalOm = !extOm || extOm.includes('BASP') || extOm.includes(currentViewOmAcronym.toUpperCase());
+                if (isLocalOm) {
+                    const userSector = user.external_sector || user.sector;
+                    matchesSector = !selectedSector || userSector === selectedSector;
                 } else {
                     matchesSector = false;
                 }
@@ -636,7 +642,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
             return matchesSearch && matchesSector;
         });
-    }, [realPersonnel, searchTerm, selectedSector]);
+    }, [realPersonnel, searchTerm, selectedSector, currentViewOmAcronym]);
 
     // Função isFutureDate movida para o início do componente
 
