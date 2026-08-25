@@ -162,9 +162,9 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
             let newRole = UserRole.OPERATIONAL;
             let newAccessLevel: string = selectedUser.accessLevel || 'N1';
 
-            if (selectedFunction === 'ADMIN_TOTAL') {
+            if (selectedFunction === 'ADMIN_TOTAL' || selectedFunction === 'ADMIN_OM') {
                 newRole = UserRole.ADMIN;
-                newAccessLevel = 'OM'; // Force OM for Admin Total
+                newAccessLevel = 'OM'; // Force OM for Admin Total & Admin OM
             } else {
                 // Ensure we don't accidentally keep Admin/OM if demoting
                 if (selectedUser.role === UserRole.ADMIN) {
@@ -486,12 +486,18 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
                                         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                                             <BadgeCheck className="w-3 h-3" /> Nível de Acesso (Escopo)
                                         </h4>
-                                        {selectedFunction === 'ADMIN_TOTAL' ? (
+                                        {selectedFunction === 'ADMIN_TOTAL' || selectedFunction === 'ADMIN_OM' ? (
                                             <div className="flex items-center gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
                                                 <Crown className="w-5 h-5 text-amber-500" />
                                                 <div>
-                                                    <p className="text-xs font-black text-amber-500 uppercase">Acesso Total (OM)</p>
-                                                    <p className="text-[10px] font-bold text-amber-500/70">Permissões de Comandante aplicadas automaticamente.</p>
+                                                    <p className="text-xs font-black text-amber-500 uppercase">
+                                                        {selectedFunction === 'ADMIN_TOTAL' ? 'Acesso Total (Global)' : 'Acesso Total (Sua OM)'}
+                                                    </p>
+                                                    <p className="text-[10px] font-bold text-amber-500/70">
+                                                        {selectedFunction === 'ADMIN_TOTAL'
+                                                            ? 'Permissões de Administrador com livre navegação entre OMs.'
+                                                            : 'Permissões de Administrador restrito apenas à sua própria OM.'}
+                                                    </p>
                                                 </div>
                                             </div>
                                         ) : (

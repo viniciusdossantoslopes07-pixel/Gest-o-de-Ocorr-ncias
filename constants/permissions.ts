@@ -54,8 +54,14 @@ export const USER_FUNCTIONS = {
     ADMIN_TOTAL: {
         id: 'ADMIN_TOTAL',
         name: 'ADMIN TOTAL',
-        description: 'Acesso total ao sistema (CMDO-GSD-SP, CH-SOP, CH-SAP)',
+        description: 'Acesso total ao sistema com livre navegação entre OMs',
         permissions: Object.values(PERMISSIONS)
+    },
+    ADMIN_OM: {
+        id: 'ADMIN_OM',
+        name: 'ADMIN OM',
+        description: 'Acesso total ao sistema restrito à sua própria OM',
+        permissions: Object.values(PERMISSIONS).filter(p => p !== PERMISSIONS.NAVIGATE_OMS)
     },
     SOP_01: {
         id: 'SOP_01',

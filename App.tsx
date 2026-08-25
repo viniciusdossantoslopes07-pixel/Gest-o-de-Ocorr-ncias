@@ -185,7 +185,15 @@ const App: FC = () => {
 
   useEffect(() => {
     const applyOmContext = async () => {
-      // 1. Check if there's an OM in the URL
+      // 1. If user does NOT have permission to navigate between OMs, lock them strictly to their own OM
+      if (currentUser && !hasPermission(currentUser, PERMISSIONS.NAVIGATE_OMS)) {
+        if (currentUser.om_id && omId !== currentUser.om_id) {
+          setOmId(currentUser.om_id);
+        }
+        return;
+      }
+
+      // 2. Check if there's an OM in the URL
       if (urlOm) {
         // Try to find this OM in the database by Acronym
         const { data: omData } = await supabase
@@ -207,7 +215,7 @@ const App: FC = () => {
         }
       }
 
-      // 2. Fallback to current user's OM if no URL OM or not found
+      // 3. Fallback to current user's OM if no URL OM or not found
       if (currentUser?.om_id) {
         if (omId !== currentUser.om_id) setOmId(currentUser.om_id);
       } else {
