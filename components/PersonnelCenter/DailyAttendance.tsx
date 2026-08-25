@@ -1721,33 +1721,67 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         }
 
                         @media print {
-                            @page { margin: 8mm; }
-
-                            /* Esconde toda a UI — só ativo quando modo estiver definido */
-                            body.print-weekly-mode,
-                            body.print-coupon-mode {
-                                visibility: hidden !important;
-                                background: white !important;
+                            @page {
+                                size: A4 portrait;
+                                margin: 15mm 12mm 15mm 12mm;
                             }
 
-                            /* MODO GRADE SEMANAL */
-                            body.print-weekly-mode .print-weekly {
-                                visibility: visible !important;
+                            body {
+                                background: white !important;
+                                color: black !important;
+                                margin: 0 !important;
+                                padding: 0 !important;
+                                font-family: Arial, sans-serif !important;
+                                -webkit-print-color-adjust: exact !important;
+                                print-color-adjust: exact !important;
+                            }
+
+                            /* Modo Grade Semanal: desativa restrições dos containers pai para permitir fluxo natural de páginas */
+                            body.print-weekly-mode #root,
+                            body.print-weekly-mode #root > div,
+                            body.print-weekly-mode main,
+                            body.print-weekly-mode .min-h-screen {
+                                margin: 0 !important;
+                                padding: 0 !important;
+                                height: auto !important;
+                                min-height: 0 !important;
+                                max-height: none !important;
+                                overflow: visible !important;
+                                position: static !important;
                                 display: block !important;
-                                position: absolute !important;
+                            }
+
+                            /* Oculta todos os elementos visuais da UI durante a impressão */
+                            body.print-weekly-mode * {
+                                visibility: hidden !important;
+                            }
+
+                            body.print-weekly-mode .print-weekly,
+                            body.print-weekly-mode .print-weekly * {
+                                visibility: visible !important;
+                            }
+
+                            /* Garante que componentes de tela não ocupem espaço no documento impresso */
+                            body.print-weekly-mode header,
+                            body.print-weekly-mode nav,
+                            body.print-weekly-mode aside,
+                            body.print-weekly-mode .no-print,
+                            body.print-weekly-mode button {
+                                display: none !important;
+                            }
+
+                            /* MODO GRADE SEMANAL - Fluxo relativo para permiti quebra em 2ª folha */
+                            body.print-weekly-mode .print-weekly {
+                                display: block !important;
+                                position: relative !important;
                                 top: 0 !important;
                                 left: 0 !important;
-                                right: 0 !important;
                                 width: 100% !important;
-                                background: white !important;
-                                padding: 10mm !important;
+                                margin: 0 auto !important;
+                                padding: 0 !important;
                                 box-sizing: border-box !important;
                                 color: black !important;
                                 font-family: Arial, sans-serif !important;
-                                z-index: 99999 !important;
-                            }
-                            body.print-weekly-mode .print-weekly * {
-                                visibility: visible !important;
                             }
 
                             /* MODO CUPOM TÉRMICO */
@@ -1769,20 +1803,41 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 visibility: visible !important;
                             }
 
-                            /* Correções de tabela */
-                            .print-weekly table { border-collapse: collapse !important; width: 100% !important; }
-                            .print-weekly thead { display: table-header-group; }
-                            .print-weekly tr { page-break-inside: avoid; }
+                            /* Correções de tabela e quebras fluídas entre folhas */
+                            .print-weekly table {
+                                border-collapse: collapse !important;
+                                width: 100% !important;
+                                margin-top: 8px !important;
+                                margin-bottom: 12px !important;
+                            }
+                            .print-weekly thead {
+                                display: table-header-group !important;
+                            }
+                            .print-weekly tbody {
+                                display: table-row-group !important;
+                            }
+                            .print-weekly tr {
+                                page-break-inside: avoid !important;
+                                break-inside: avoid !important;
+                            }
+                            .print-weekly .print-header {
+                                page-break-after: avoid !important;
+                                break-after: avoid !important;
+                            }
+                            .print-weekly .print-footer {
+                                page-break-inside: avoid !important;
+                                break-inside: avoid !important;
+                            }
                         }
                     `}</style>
                     <div className="print-weekly w-full mx-auto">
                         {/* Institutional Header */}
-                        <div className="text-center mb-10 space-y-0.5 print-header">
+                        <div className="text-center mb-6 space-y-0.5 print-header">
                             <div className="flex flex-col items-center">
                                 <img
                                     src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Coat_of_arms_of_Brazil.svg"
                                     alt="Brasão da República"
-                                    className="w-[60px] h-[60px] mb-4 object-contain"
+                                    className="w-[60px] h-[60px] mb-3 object-contain"
                                 />
                                 <h1 className="text-xs font-bold uppercase tracking-[0.1em]">Ministério da Defesa</h1>
                                 <h2 className="text-xs font-bold uppercase tracking-[0.1em]">Comando da Aeronáutica</h2>
