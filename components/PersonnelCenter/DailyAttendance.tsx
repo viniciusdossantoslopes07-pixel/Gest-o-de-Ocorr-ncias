@@ -1722,7 +1722,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         @media print {
                             @page {
                                 size: A4 portrait;
-                                margin: 15mm 12mm 15mm 12mm;
+                                margin: 12mm 15mm 12mm 15mm;
                             }
 
                             body {
@@ -1730,7 +1730,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 color: black !important;
                                 margin: 0 !important;
                                 padding: 0 !important;
-                                font-family: Arial, sans-serif !important;
+                                font-family: Arial, Helvetica, sans-serif !important;
                                 -webkit-print-color-adjust: exact !important;
                                 print-color-adjust: exact !important;
                             }
@@ -1749,11 +1749,12 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 top: 0 !important;
                                 left: 0 !important;
                                 width: 100% !important;
-                                margin: 0 !important;
-                                padding: 0 !important;
+                                max-width: 100% !important;
+                                margin: 0 auto !important;
+                                padding: 8mm 12mm 12mm 12mm !important; /* Margem invisível interna garantida em todas as folhas */
                                 box-sizing: border-box !important;
                                 color: black !important;
-                                font-family: Arial, sans-serif !important;
+                                font-family: Arial, Helvetica, sans-serif !important;
                             }
 
                             body.print-weekly-mode .print-weekly * {
@@ -1769,7 +1770,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 left: 0 !important;
                                 width: 72mm !important;
                                 background: white !important;
-                                padding: 2mm !important;
+                                padding: 4mm !important;
                                 box-sizing: border-box !important;
                                 color: black !important;
                                 font-family: 'Courier New', Courier, monospace !important;
@@ -1778,30 +1779,52 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 visibility: visible !important;
                             }
 
-                            /* Correções de tabela e quebras fluídas entre folhas */
+                            /* Correções de tabela, cabeçalhos repetidos e quebras fluídas entre folhas */
                             .print-weekly table {
                                 border-collapse: collapse !important;
                                 width: 100% !important;
-                                margin-top: 8px !important;
-                                margin-bottom: 12px !important;
+                                margin-top: 10px !important;
+                                margin-bottom: 14px !important;
+                                page-break-inside: auto !important;
                             }
+
                             .print-weekly thead {
                                 display: table-header-group !important;
                             }
+
+                            .print-weekly thead th {
+                                padding-top: 6px !important;
+                                padding-bottom: 6px !important;
+                                background-color: #f1f5f9 !important;
+                                -webkit-print-color-adjust: exact !important;
+                                print-color-adjust: exact !important;
+                            }
+
                             .print-weekly tbody {
                                 display: table-row-group !important;
                             }
-                            .print-weekly tr {
+
+                            .print-weekly tbody tr {
                                 page-break-inside: avoid !important;
                                 break-inside: avoid !important;
+                                height: 24px !important;
                             }
+
+                            .print-weekly tbody td {
+                                padding-top: 4px !important;
+                                padding-bottom: 4px !important;
+                            }
+
                             .print-weekly .print-header {
                                 page-break-after: avoid !important;
                                 break-after: avoid !important;
+                                margin-bottom: 12px !important;
                             }
+
                             .print-weekly .print-footer {
                                 page-break-inside: avoid !important;
                                 break-inside: avoid !important;
+                                margin-top: 16px !important;
                             }
                         }
                     `}</style>
