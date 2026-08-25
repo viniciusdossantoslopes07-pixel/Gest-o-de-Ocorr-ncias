@@ -1711,7 +1711,6 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
                 )}
 
-                {/* Áreas de Impressão — ocultas na tela via CSS, visíveis ao imprimir */}
                 <div>
                     <style>{`
                         /* Oculta na tela sem depender do Tailwind print:block */
@@ -1736,59 +1735,36 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 print-color-adjust: exact !important;
                             }
 
-                            /* Modo Grade Semanal: desativa restrições dos containers pai para permitir fluxo natural de páginas */
+                            /* Oculta toda a aplicação #root durante a impressão para evitar páginas em branco antes da impressão */
                             body.print-weekly-mode #root,
-                            body.print-weekly-mode #root > div,
-                            body.print-weekly-mode main,
-                            body.print-weekly-mode .min-h-screen {
-                                margin: 0 !important;
-                                padding: 0 !important;
-                                height: auto !important;
-                                min-height: 0 !important;
-                                max-height: none !important;
-                                overflow: visible !important;
-                                position: static !important;
-                                display: block !important;
-                            }
-
-                            /* Oculta todos os elementos visuais da UI durante a impressão */
-                            body.print-weekly-mode * {
-                                visibility: hidden !important;
-                            }
-
-                            body.print-weekly-mode .print-weekly,
-                            body.print-weekly-mode .print-weekly * {
-                                visibility: visible !important;
-                            }
-
-                            /* Garante que componentes de tela não ocupem espaço no documento impresso */
-                            body.print-weekly-mode header,
-                            body.print-weekly-mode nav,
-                            body.print-weekly-mode aside,
-                            body.print-weekly-mode .no-print,
-                            body.print-weekly-mode button {
+                            body.print-coupon-mode #root {
                                 display: none !important;
                             }
 
-                            /* MODO GRADE SEMANAL - Fluxo relativo para permiti quebra em 2ª folha */
+                            /* MODO GRADE SEMANAL - Portal no Body */
                             body.print-weekly-mode .print-weekly {
                                 display: block !important;
+                                visibility: visible !important;
                                 position: relative !important;
                                 top: 0 !important;
                                 left: 0 !important;
                                 width: 100% !important;
-                                margin: 0 auto !important;
+                                margin: 0 !important;
                                 padding: 0 !important;
                                 box-sizing: border-box !important;
                                 color: black !important;
                                 font-family: Arial, sans-serif !important;
                             }
 
-                            /* MODO CUPOM TÉRMICO */
-                            body.print-coupon-mode .print-coupon-thermal {
+                            body.print-weekly-mode .print-weekly * {
                                 visibility: visible !important;
+                            }
+
+                            /* MODO CUPOM TÉRMICO - Portal no Body */
+                            body.print-coupon-mode .print-coupon-thermal {
                                 display: block !important;
-                                position: absolute !important;
+                                visibility: visible !important;
+                                position: relative !important;
                                 top: 0 !important;
                                 left: 0 !important;
                                 width: 72mm !important;
@@ -1797,7 +1773,6 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 box-sizing: border-box !important;
                                 color: black !important;
                                 font-family: 'Courier New', Courier, monospace !important;
-                                z-index: 99999 !important;
                             }
                             body.print-coupon-mode .print-coupon-thermal * {
                                 visibility: visible !important;
@@ -1830,126 +1805,130 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             }
                         }
                     `}</style>
-                    <div className="print-weekly w-full mx-auto">
-                        {/* Institutional Header */}
-                        <div className="text-center mb-6 space-y-0.5 print-header">
-                            <div className="flex flex-col items-center">
-                                <img
-                                    src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Coat_of_arms_of_Brazil.svg"
-                                    alt="Brasão da República"
-                                    className="w-[60px] h-[60px] mb-3 object-contain"
-                                />
-                                <h1 className="text-xs font-bold uppercase tracking-[0.1em]">Ministério da Defesa</h1>
-                                <h2 className="text-xs font-bold uppercase tracking-[0.1em]">Comando da Aeronáutica</h2>
-                                <h3 className="text-xs font-bold uppercase tracking-[0.1em]">{currentUser.om?.name || 'Base Aérea de São Paulo'}</h3>
-                                <div className="w-16 h-px bg-black my-2" />
-                                <h4 className="text-sm font-black uppercase underline decoration-2 underline-offset-4">{selectedSector}</h4>
-                            </div>
-                        </div>
 
-                        <div className="flex justify-between items-end mb-2 font-bold uppercase text-[9px] border-b border-black pb-1 print-header">
-                            <div className="flex flex-col">
-                                <span>SEMANA: {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR')} A {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR')}</span>
-                            </div>
-                            <span className="text-xs font-black">RETIRADA DE FALTAS DIÁRIA</span>
-                        </div>
-
-                        {/* Weekly Table */}
-                        <table className="w-full border-collapse border border-black text-[8px]">
-                            <thead>
-                                <tr className="bg-slate-100">
-                                    <th rowSpan={2} className="border border-black px-2 py-2 text-left uppercase w-[110px]">MILITAR (POSTO/GRAD - NOME)</th>
-                                    {currentWeek.map(date => (
-                                        <th key={date} colSpan={2} className="border border-black p-1 text-center uppercase text-[9px]">
-                                            {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long' })}
-                                            <div className="text-[7px] font-normal">{parseISOToDate(date).toLocaleDateString('pt-BR')}</div>
-                                        </th>
-                                    ))}
-                                </tr>
-                                <tr className="bg-slate-100/50">
-                                    {currentWeek.map(date => (
-                                        <Fragment key={date}>
-                                            <th className="border border-black p-0.5 text-center w-6">1ª</th>
-                                            <th className="border border-black p-0.5 text-center w-6">2ª</th>
-                                        </Fragment>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredUsers.map(user => (
-                                    <tr key={user.id} className="h-6">
-                                        <td className="border border-black px-2 py-0.5 font-bold uppercase truncate">{user.rank} {user.warName}</td>
-                                        {currentWeek.map(date => {
-                                            const sigInicio = !!signedDates[`${date}-INICIO-${selectedSector}`];
-                                            const sigTermino = !!signedDates[`${date}-TERMINO-${selectedSector}`];
-                                            return (
-                                                <Fragment key={date}>
-                                                    <td className="border border-black text-center font-black">
-                                                        {sigInicio ? (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') : (isFutureDate(date) ? '' : '---')}
-                                                    </td>
-                                                    <td className="border border-black text-center font-black">
-                                                        {sigTermino ? (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') : (isFutureDate(date) ? '' : '---')}
-                                                    </td>
-                                                </Fragment>
-                                            );
-                                        })}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-
-                        {/* Official Legend Footer */}
-                        <div className="mt-4 grid grid-cols-6 gap-x-2 gap-y-1 text-[6px] font-bold border border-black p-2 uppercase bg-slate-50/50 print-footer">
-                            {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
-                                <div key={code} className="flex gap-1 items-baseline">
-                                    <span className="text-black">{code}</span>
-                                    <span className="text-slate-600 font-normal truncate">{label}</span>
+                    {createPortal(
+                        <div className="print-weekly w-full mx-auto">
+                            {/* Institutional Header */}
+                            <div className="text-center mb-6 space-y-0.5 print-header">
+                                <div className="flex flex-col items-center">
+                                    <img
+                                        src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Coat_of_arms_of_Brazil.svg"
+                                        alt="Brasão da República"
+                                        className="w-[60px] h-[60px] mb-3 object-contain"
+                                    />
+                                    <h1 className="text-xs font-bold uppercase tracking-[0.1em]">Ministério da Defesa</h1>
+                                    <h2 className="text-xs font-bold uppercase tracking-[0.1em]">Comando da Aeronáutica</h2>
+                                    <h3 className="text-xs font-bold uppercase tracking-[0.1em]">{currentUser.om?.name || 'Base Aérea de São Paulo'}</h3>
+                                    <div className="w-16 h-px bg-black my-2" />
+                                    <h4 className="text-sm font-black uppercase underline decoration-2 underline-offset-4">{selectedSector}</h4>
                                 </div>
-                            ))}
-                        </div>
+                            </div>
 
-                        {/* Weekly Digital Signatures Footer (Style OMISS) */}
-                        <div className="mt-10 border-t-2 border-black pt-6 print-footer">
-                            <h5 className="text-[12px] font-black uppercase tracking-widest mb-6 text-center">Registro de Assinaturas Digitais da Semana</h5>
-                            <div className="grid grid-cols-2 gap-x-10 gap-y-6">
-                                {currentWeek.flatMap(date => {
-                                    const calls: CallTypeCode[] = ['INICIO', 'TERMINO'];
-                                    return calls.map(type => {
-                                        const sigKey = `${date}-${type}-${selectedSector}`;
-                                        const sig = signedDates[sigKey];
+                            <div className="flex justify-between items-end mb-2 font-bold uppercase text-[9px] border-b border-black pb-1 print-header">
+                                <div className="flex flex-col">
+                                    <span>SEMANA: {parseISOToDate(currentWeek[0]).toLocaleDateString('pt-BR')} A {parseISOToDate(currentWeek[4]).toLocaleDateString('pt-BR')}</span>
+                                </div>
+                                <span className="text-xs font-black">RETIRADA DE FALTAS DIÁRIA</span>
+                            </div>
 
-                                        if (!sig) return null;
+                            {/* Weekly Table */}
+                            <table className="w-full border-collapse border border-black text-[8px]">
+                                <thead>
+                                    <tr className="bg-slate-100">
+                                        <th rowSpan={2} className="border border-black px-2 py-2 text-left uppercase w-[110px]">MILITAR (POSTO/GRAD - NOME)</th>
+                                        {currentWeek.map(date => (
+                                            <th key={date} colSpan={2} className="border border-black p-1 text-center uppercase text-[9px]">
+                                                {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long' })}
+                                                <div className="text-[7px] font-normal">{parseISOToDate(date).toLocaleDateString('pt-BR')}</div>
+                                            </th>
+                                        ))}
+                                    </tr>
+                                    <tr className="bg-slate-100/50">
+                                        {currentWeek.map(date => (
+                                            <Fragment key={date}>
+                                                <th className="border border-black p-0.5 text-center w-6">1ª</th>
+                                                <th className="border border-black p-0.5 text-center w-6">2ª</th>
+                                            </Fragment>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredUsers.map(user => (
+                                        <tr key={user.id} className="h-6">
+                                            <td className="border border-black px-2 py-0.5 font-bold uppercase truncate">{user.rank} {user.warName}</td>
+                                            {currentWeek.map(date => {
+                                                const sigInicio = !!signedDates[`${date}-INICIO-${selectedSector}`];
+                                                const sigTermino = !!signedDates[`${date}-TERMINO-${selectedSector}`];
+                                                return (
+                                                    <Fragment key={date}>
+                                                        <td className="border border-black text-center font-black">
+                                                            {sigInicio ? (weeklyGrid[user.id]?.[date]?.['INICIO'] || 'P') : (isFutureDate(date) ? '' : '---')}
+                                                        </td>
+                                                        <td className="border border-black text-center font-black">
+                                                            {sigTermino ? (weeklyGrid[user.id]?.[date]?.['TERMINO'] || 'P') : (isFutureDate(date) ? '' : '---')}
+                                                        </td>
+                                                    </Fragment>
+                                                );
+                                            })}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
 
-                                        return (
-                                            <div key={sigKey} className="border border-black p-3 bg-white flex flex-col justify-center min-h-[50px]">
-                                                <div className="flex flex-col text-[8px] uppercase leading-tight">
-                                                    <div className="flex justify-between items-center mb-1 border-b border-black/10 pb-1">
-                                                        <span className="font-black text-black">
-                                                            {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })}
+                            {/* Official Legend Footer */}
+                            <div className="mt-4 grid grid-cols-6 gap-x-2 gap-y-1 text-[6px] font-bold border border-black p-2 uppercase bg-slate-50/50 print-footer">
+                                {Object.entries(PRESENCE_STATUS).map(([code, label]) => (
+                                    <div key={code} className="flex gap-1 items-baseline">
+                                        <span className="text-black">{code}</span>
+                                        <span className="text-slate-600 font-normal truncate">{label}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Weekly Digital Signatures Footer (Style OMISS) */}
+                            <div className="mt-10 border-t-2 border-black pt-6 print-footer">
+                                <h5 className="text-[12px] font-black uppercase tracking-widest mb-6 text-center">Registro de Assinaturas Digitais da Semana</h5>
+                                <div className="grid grid-cols-2 gap-x-10 gap-y-6">
+                                    {currentWeek.flatMap(date => {
+                                        const calls: CallTypeCode[] = ['INICIO', 'TERMINO'];
+                                        return calls.map(type => {
+                                            const sigKey = `${date}-${type}-${selectedSector}`;
+                                            const sig = signedDates[sigKey];
+
+                                            if (!sig) return null;
+
+                                            return (
+                                                <div key={sigKey} className="border border-black p-3 bg-white flex flex-col justify-center min-h-[50px]">
+                                                    <div className="flex flex-col text-[8px] uppercase leading-tight">
+                                                        <div className="flex justify-between items-center mb-1 border-b border-black/10 pb-1">
+                                                            <span className="font-black text-black">
+                                                                {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })}
+                                                            </span>
+                                                            <span className="font-black text-indigo-600">
+                                                                {type === 'INICIO' ? '1ª CHAMADA' : '2ª CHAMADA'}
+                                                            </span>
+                                                        </div>
+                                                        <span className="font-bold text-black mt-1">
+                                                            ASSINADO DIGITALMENTE POR: {sig.signedBy}
                                                         </span>
-                                                        <span className="font-black text-indigo-600">
-                                                            {type === 'INICIO' ? '1ª CHAMADA' : '2ª CHAMADA'}
+                                                        <span className="text-black/60 font-mono mt-0.5">
+                                                            AUTENTICAÇÃO: {new Date(sig.signedAt).toLocaleString('pt-BR')}
                                                         </span>
                                                     </div>
-                                                    <span className="font-bold text-black mt-1">
-                                                        ASSINADO DIGITALMENTE POR: {sig.signedBy}
-                                                    </span>
-                                                    <span className="text-black/60 font-mono mt-0.5">
-                                                        AUTENTICAÇÃO: {new Date(sig.signedAt).toLocaleString('pt-BR')}
-                                                    </span>
                                                 </div>
-                                            </div>
-                                        );
-                                    });
-                                }).filter(Boolean)}
+                                            );
+                                        });
+                                    }).filter(Boolean)}
+                                </div>
+                                <div className="mt-8 text-center border-t border-black/5 pt-4">
+                                    <p className="text-[8px] italic text-slate-400 uppercase tracking-tighter">
+                                        Documento assinado digitalmente nos termos da MP 2.200-2/2001. A autenticidade pode ser confirmada via GSD-SP.
+                                    </p>
+                                </div>
                             </div>
-                            <div className="mt-8 text-center border-t border-black/5 pt-4">
-                                <p className="text-[8px] italic text-slate-400 uppercase tracking-tighter">
-                                    Documento assinado digitalmente nos termos da MP 2.200-2/2001. A autenticidade pode ser confirmada via GSD-SP.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                        </div>,
+                        document.body
+                    )}
                 </div>
                 {/* Signature Password Modal */}
                 {showPasswordModal && (
