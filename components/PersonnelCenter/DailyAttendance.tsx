@@ -284,7 +284,6 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     attendanceHistory,
     onSaveAttendance,
     onSaveJustification,
-    onAddAdHoc,
     onMoveUser,
     onExcludeUser,
     onReorderUsers,
