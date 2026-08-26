@@ -59,6 +59,7 @@ export default function TemporaryAccessManager({ currentUser, isDarkMode }: Temp
     const [loading, setLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
     const [showQR, setShowQR] = useState<AccessRequest | null>(null);
+    const [editingVisitor, setEditingVisitor] = useState<Visitor | null>(null);
 
     // Form State
     const [visitorName, setVisitorName] = useState('');
@@ -127,6 +128,48 @@ export default function TemporaryAccessManager({ currentUser, isDarkMode }: Temp
         setHasVehicle(false);
         setVehicleModel('');
         setVehiclePlate('');
+    };
+
+    const handleDeleteVisitor = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        if (!confirm('Tem certeza que deseja remover este visitante dos seus favoritos?')) return;
+        
+        try {
+            const { error } = await supabase
+                .from('visitor_catalog')
+                .delete()
+                .eq('id', id);
+            
+            if (error) throw error;
+            setSavedVisitors(savedVisitors.filter(v => v.id !== id));
+        } catch (error) {
+            console.error('Error deleting visitor:', error);
+            alert('Erro ao excluir visitante.');
+        }
+    };
+
+    const handleUpdateVisitor = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingVisitor) return;
+
+        try {
+            const { error } = await supabase
+                .from('visitor_catalog')
+                .update({
+                    name: editingVisitor.name.toUpperCase(),
+                    identification: editingVisitor.identification,
+                    characteristic: editingVisitor.characteristic
+                })
+                .eq('id', editingVisitor.id);
+
+            if (error) throw error;
+
+            setSavedVisitors(savedVisitors.map(v => v.id === editingVisitor.id ? editingVisitor : v));
+            setEditingVisitor(null);
+        } catch (error) {
+            console.error('Error updating visitor:', error);
+            alert('Erro ao atualizar visitante.');
+        }
     };
 
     const handleCreateAccess = async (e: React.FormEvent) => {
@@ -330,11 +373,24 @@ export default function TemporaryAccessManager({ currentUser, isDarkMode }: Temp
                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black ${isDarkMode ? 'bg-slate-900 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
                                             {vis.name.charAt(0)}
                                         </div>
-                                        <div>
-                                            <div className={`text-xs font-black uppercase truncate max-w-[150px] ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{vis.name}</div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className={`text-xs font-black uppercase truncate ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{vis.name}</div>
                                             <div className="text-[9px] font-bold text-slate-500 uppercase">{vis.characteristic} • {vis.identification}</div>
                                         </div>
-                                        <ArrowRight className="w-3 h-3 ml-auto opacity-0 group-hover:opacity-100 text-blue-500 transition-all" />
+                                        <div className="flex items-center gap-1 ml-auto opacity-0 group-hover:opacity-100 transition-all">
+                                            <div 
+                                                onClick={(e) => { e.stopPropagation(); setEditingVisitor(vis); }} 
+                                                className={`p-1.5 rounded-lg hover:bg-blue-500/10 text-blue-500 transition-colors cursor-pointer`}
+                                            >
+                                                <UserIcon className="w-3.5 h-3.5" />
+                                            </div>
+                                            <div 
+                                                onClick={(e) => handleDeleteVisitor(e, vis.id)} 
+                                                className={`p-1.5 rounded-lg hover:bg-red-500/10 text-red-500 transition-colors cursor-pointer`}
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </div>
+                                        </div>
                                     </button>
                                 ))
                             )}
@@ -497,6 +553,70 @@ export default function TemporaryAccessManager({ currentUser, isDarkMode }: Temp
                                 className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-blue-600/20 flex items-center justify-center gap-3"
                             >
                                 {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><CheckCircle className="w-5 h-5" /> Gerar Acesso Temporário</>}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal: Edit Visitor */}
+            {editingVisitor && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-fade-in">
+                    <div className={`w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl ${isDarkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white'}`}>
+                        <div className={`p-6 border-b flex items-center justify-between ${isDarkMode ? 'border-slate-800 bg-slate-800/50' : 'bg-slate-50 border-slate-100'}`}>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-blue-600 rounded-xl text-white">
+                                    <UserIcon className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className={`font-black uppercase tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Editar Visitante</h3>
+                                </div>
+                            </div>
+                            <button onClick={() => setEditingVisitor(null)} className="p-2 hover:bg-slate-200 rounded-xl transition-all">
+                                <X className="w-5 h-5 text-slate-400" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleUpdateVisitor} className="p-6 space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome do Visitante</label>
+                                <input 
+                                    type="text"
+                                    required
+                                    className={`w-full p-3.5 border-2 rounded-xl text-xs font-black uppercase outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white focus:border-blue-500' : 'bg-slate-50 border-slate-100 focus:border-blue-600'}`}
+                                    value={editingVisitor.name}
+                                    onChange={e => setEditingVisitor({...editingVisitor, name: e.target.value})}
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Identificação (CPF/RG)</label>
+                                <input 
+                                    type="text"
+                                    required
+                                    className={`w-full p-3.5 border-2 rounded-xl text-xs font-black uppercase outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white focus:border-blue-500' : 'bg-slate-50 border-slate-100 focus:border-blue-600'}`}
+                                    value={editingVisitor.identification}
+                                    onChange={e => setEditingVisitor({...editingVisitor, identification: e.target.value})}
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo de Visitante</label>
+                                <select
+                                    className={`w-full p-3.5 border-2 rounded-xl text-xs font-black uppercase outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white focus:border-blue-500' : 'bg-slate-50 border-slate-100 focus:border-blue-600'}`}
+                                    value={editingVisitor.characteristic}
+                                    onChange={e => setEditingVisitor({...editingVisitor, characteristic: e.target.value})}
+                                >
+                                    <option value="CIVIL">CIVIL</option>
+                                    <option value="MILITAR">MILITAR</option>
+                                    <option value="PRESTADOR">PRESTADOR</option>
+                                    <option value="DEPENDENTE">DEPENDENTE</option>
+                                    <option value="ENTREGADOR">ENTREGADOR</option>
+                                </select>
+                            </div>
+                            <button 
+                                type="submit" 
+                                className="w-full mt-4 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95"
+                            >
+                                <Save className="w-4 h-4" /> Salvar Alterações
                             </button>
                         </form>
                     </div>
