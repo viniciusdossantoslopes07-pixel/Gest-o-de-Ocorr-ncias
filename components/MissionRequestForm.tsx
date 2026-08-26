@@ -235,7 +235,7 @@ const MissionRequestForm: FC<MissionRequestFormProps> = ({ user, users, onSubmit
                         <div className="col-span-1 md:col-span-2">
                             <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2`}>Tipo de Missão</label>
                             <select
-                                value={formData.tipo_missao.split(' (')[0]}
+                                value={formData.tipo_missao.startsWith('FORMATURA (') ? 'FORMATURA' : formData.tipo_missao}
                                 onChange={e => {
                                     const val = e.target.value;
                                     setFormData({ ...formData, tipo_missao: val });

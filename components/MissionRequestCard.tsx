@@ -306,7 +306,7 @@ const MissionRequestCard: FC<MissionRequestCardProps> = ({ mission, onClose, onU
                                         {isEditing ? (
                                             <>
                                                 <select
-                                                    value={formData.tipo_missao.split(' (')[0]}
+                                                    value={formData.tipo_missao.startsWith('FORMATURA (') ? 'FORMATURA' : formData.tipo_missao}
                                                     onChange={e => {
                                                         const val = e.target.value;
                                                         setFormData({ ...formData, tipo_missao: val });

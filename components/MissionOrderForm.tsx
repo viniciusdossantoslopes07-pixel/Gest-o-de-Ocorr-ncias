@@ -392,7 +392,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                         <div>
                             <label className={`block text-[10px] font-black ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} uppercase tracking-wider mb-2`}>Missão *</label>
                             <select
-                                value={formData.mission.split(' (')[0]}
+                                value={formData.mission.startsWith('FORMATURA (') ? 'FORMATURA' : formData.mission}
                                 onChange={e => {
                                     const val = e.target.value;
                                     setFormData({ ...formData, mission: val });
