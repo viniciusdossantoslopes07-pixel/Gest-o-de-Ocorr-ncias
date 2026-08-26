@@ -1,4 +1,4 @@
-import { User, UserRole } from '../types';
+import { User } from '../types';
 
 export const PERMISSIONS = {
     // Visualização
@@ -157,36 +157,139 @@ export const USER_FUNCTIONS = {
     }
 };
 
+// ============================================================
+// HIERARQUIA E HELPERS DE SEGURANÇA
+// ============================================================
+
+/**
+ * Hierarquia de funções para controle de acesso.
+ * Quanto maior o número, maior o nível de autoridade.
+ */
+export const FUNCTION_HIERARCHY: Record<string, number> = {
+    'PADRAO': 0,
+    'SOP_01': 1,
+    'SOP_03': 1,
+    'SAP_01': 1,
+    'SAP_03': 1,
+    'SEC_CMDO': 1,
+    'EP': 2,
+    'ADMIN_OM': 9,
+    'ADMIN_TOTAL': 10,
+};
+
+/**
+ * Retorna o nível numérico de autoridade de uma função.
+ */
+export const getFunctionLevel = (functionId: string | undefined): number => {
+    if (!functionId) return 0;
+    return FUNCTION_HIERARCHY[functionId] ?? 0;
+};
+
+/**
+ * Verifica se o admin pode gerenciar (visualizar/editar) um usuário alvo.
+ * Regras:
+ * - ADMIN_TOTAL pode gerenciar qualquer usuário (exceto a si mesmo nesta tela).
+ * - ADMIN_OM pode gerenciar usuários da MESMA OM, desde que o alvo não seja ADMIN_TOTAL ou ADMIN_OM.
+ * - Outros perfis não podem gerenciar usuários (sem acesso à tela).
+ * - Ninguém pode editar a si mesmo via tela de permissões (evitar auto-escalada no frontend).
+ */
+export const canManageUser = (admin: User | null, targetUser: User): boolean => {
+    if (!admin) return false;
+    if (admin.id === targetUser.id) return false; // Não pode editar a si mesmo
+
+    const adminFunction = admin.functionId || '';
+
+    if (adminFunction === 'ADMIN_TOTAL') return true;
+
+    if (adminFunction === 'ADMIN_OM') {
+        // ADMIN_OM só gerencia usuários da mesma OM
+        if (admin.om_id && admin.om_id !== targetUser.om_id) return false;
+        // ADMIN_OM não pode gerenciar outro ADMIN_TOTAL ou ADMIN_OM
+        if (targetUser.functionId === 'ADMIN_TOTAL' || targetUser.functionId === 'ADMIN_OM') return false;
+        return true;
+    }
+
+    return false;
+};
+
+/**
+ * Verifica se o admin pode atribuir uma determinada função a um usuário.
+ * Regras:
+ * - ADMIN_TOTAL pode atribuir qualquer função.
+ * - ADMIN_OM pode atribuir qualquer função EXCETO ADMIN_TOTAL.
+ * - Outros não podem atribuir funções.
+ */
+export const canAssignFunction = (admin: User | null, targetFunctionId: string): boolean => {
+    if (!admin) return false;
+
+    const adminFunction = admin.functionId || '';
+
+    if (adminFunction === 'ADMIN_TOTAL') return true;
+
+    if (adminFunction === 'ADMIN_OM') {
+        // ADMIN_OM não pode atribuir ADMIN_TOTAL
+        return targetFunctionId !== 'ADMIN_TOTAL';
+    }
+
+    return false;
+};
+
+/**
+ * Retorna a lista de IDs de funções que um admin pode atribuir.
+ */
+export const getAssignableFunctionIds = (admin: User | null): string[] => {
+    if (!admin) return [];
+    const adminFunction = admin.functionId || '';
+
+    const allFunctionIds = Object.keys(USER_FUNCTIONS);
+
+    if (adminFunction === 'ADMIN_TOTAL') return allFunctionIds;
+    if (adminFunction === 'ADMIN_OM') return allFunctionIds.filter(id => id !== 'ADMIN_TOTAL');
+
+    return [];
+};
+
+// ============================================================
+// PERMISSION HELPER
+// ============================================================
+
 /**
  * Centralized Permission Helper
- * Checks if a user has a specific permission via:
- * 1. Role-based Level (ADMIN or OM access level gets everything)
- * 2. Explicit Custom Permissions (custom_permissions col in DB)
- * 3. Function-based Permissions (function_id col mapping to USER_FUNCTIONS)
+ * Verifica se um usuário tem uma permissão específica via:
+ * 1. Permissões da Função atribuída (function_id → USER_FUNCTIONS)
+ * 2. Permissões Customizadas explícitas (custom_permissions no DB)
+ * 3. Bypass para cargos administrativos militares (não concede admin de sistema)
+ *
+ * NOTA DE SEGURANÇA: O controle de acesso é baseado primariamente no functionId.
+ * O bypass por role/accessLevel foi removido para evitar escaladas de privilégio.
  */
 export const hasPermission = (user: User | null | undefined, permission: string): boolean => {
     if (!user) return false;
 
-    // 1. Check Custom Permissions
-    if (user.customPermissions?.includes(permission)) return true;
-
-    // 2. Check Function Permissions
+    // 1. Verificar permissões da Função atribuída
     if (user.functionId && USER_FUNCTIONS[user.functionId as keyof typeof USER_FUNCTIONS]) {
         const func = USER_FUNCTIONS[user.functionId as keyof typeof USER_FUNCTIONS];
         if (func.permissions.includes(permission)) return true;
     }
 
-    // 3. Exceção Restrita
-    // A permissão de navegar entre OMs não é concedida automaticamente a administradores
+    // 2. Verificar Permissões Customizadas explícitas
+    if (user.customPermissions?.includes(permission)) return true;
+
+    // 3. NAVIGATE_OMS é exclusivo do ADMIN_TOTAL — nunca concedido por fallback
     if (permission === PERMISSIONS.NAVIGATE_OMS) {
-        return false;
+        return user.functionId === 'ADMIN_TOTAL';
     }
 
-    // 4. Super Admin / Command Logic
-    // If user is ADMIN role or has OM (Command) access level, they have full permissions
-    if (user.role === UserRole.ADMIN || user.accessLevel === 'OM') return true;
+    // 4. Permissões de administração do sistema nunca são concedidas por fallback
+    const SYSTEM_ADMIN_PERMISSIONS = [
+        PERMISSIONS.MANAGE_USERS,
+        PERMISSIONS.MANAGE_PERMISSIONS,
+        PERMISSIONS.NAVIGATE_OMS,
+    ];
+    if (SYSTEM_ADMIN_PERMISSIONS.includes(permission)) return false;
 
-    // Bypass para cargos de Comando/Chefia
+    // 5. Bypass para cargos de Comando/Chefia militares (apenas para funções operacionais)
+    // Mantido apenas para compatibilidade com dados existentes.
     const HIGH_LEVEL_ADMIN_ROLES = ['CMT_GSD_SP', 'CH_OP_GSD_SP', 'CMT_BASP', 'CH_SAP'];
     if (user.administrativeRole && HIGH_LEVEL_ADMIN_ROLES.includes(user.administrativeRole)) return true;
 

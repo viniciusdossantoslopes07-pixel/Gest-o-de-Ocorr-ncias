@@ -948,6 +948,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
           <PermissionManagement
             users={users}
             onUpdateUser={async (u) => { await onUpdateUser(u); }}
+            onRefreshUsers={onRefreshUsers}
             currentAdmin={currentUser}
             isDarkMode={isDarkMode}
           />

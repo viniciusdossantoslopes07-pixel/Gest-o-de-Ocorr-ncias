@@ -1,20 +1,21 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { User, UserRole } from '../types';
 import { supabase } from '../services/supabase';
-import { USER_FUNCTIONS, PERMISSIONS } from '../constants/permissions';
+import { USER_FUNCTIONS, PERMISSIONS, canManageUser, canAssignFunction, getAssignableFunctionIds } from '../constants/permissions';
 import {
     Users,
     Shield,
     Check,
     Search,
-    Filter,
     Save,
     AlertCircle,
     Briefcase,
     Crown,
     BadgeCheck,
-    X
+    X,
+    Lock,
+    ShieldAlert
 } from 'lucide-react';
 import { SETORES } from '../constants';
 
@@ -75,7 +76,7 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
     };
 
     // Combine standard functions with custom groups
-    const availableFunctions: Record<string, { id: string; name: string; description: string; permissions: string[] }> = {
+    const allFunctions: Record<string, { id: string; name: string; description: string; permissions: string[] }> = {
         ...USER_FUNCTIONS,
         ...customGroups.reduce((acc, group) => ({
             ...acc,
@@ -88,11 +89,18 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
         }), {} as Record<string, { id: string; name: string; description: string; permissions: string[] }>)
     };
 
-    // Filter users
-    const filteredUsers = users.filter(user => {
+    // SEGURANÇA: Filtrar funções disponíveis com base no nível do admin atual
+    const assignableFunctionIds = useMemo(() => getAssignableFunctionIds(currentAdmin), [currentAdmin]);
+    const availableFunctions = useMemo(() => {
+        return Object.fromEntries(
+            Object.entries(allFunctions).filter(([id]) => assignableFunctionIds.includes(id))
+        );
+    }, [allFunctions, assignableFunctionIds]);
+
+    // SEGURANÇA: Filtrar usuários que o admin atual pode gerenciar
+    const filteredUsers = useMemo(() => users.filter(user => {
         const searchTermLower = searchTerm.toLowerCase();
 
-        // Logical search including categories
         const isOfficial = RANK_CATEGORIES.OFICIAIS.includes(user.rank);
         const isGraduated = RANK_CATEGORIES.GRADUADOS.includes(user.rank);
         const isSoldier = RANK_CATEGORIES.PRACAS.includes(user.rank);
@@ -113,8 +121,11 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
         if (selectedCategory === 'GRADUADOS') matchesCategory = isGraduated;
         if (selectedCategory === 'PRACAS') matchesCategory = isSoldier;
 
-        return matchesSearch && matchesSector && matchesCategory;
-    });
+        // SEGURANÇA: mostrar apenas usuários que o admin pode gerenciar
+        const isManageable = canManageUser(currentAdmin, user);
+
+        return matchesSearch && matchesSector && matchesCategory && isManageable;
+    }), [users, searchTerm, filterSector, selectedCategory, currentAdmin]);
 
     useEffect(() => {
         if (selectedUser) {
@@ -154,29 +165,45 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
     };
 
     const handleSaveUser = async () => {
-        if (!selectedUser) return;
+        if (!selectedUser || !currentAdmin) return;
+
+        // SEGURANÇA: Verificar autoridade do admin antes de qualquer operação
+        if (!canManageUser(currentAdmin, selectedUser)) {
+            alert('Operação negada: você não tem autoridade para editar este usuário.');
+            return;
+        }
+
+        if (!canAssignFunction(currentAdmin, selectedFunction)) {
+            alert('Operação negada: você não tem autoridade para atribuir este perfil de acesso.');
+            return;
+        }
+
+        // SEGURANÇA: Verificar que não está tentando editar a si mesmo
+        if (currentAdmin.id === selectedUser.id) {
+            alert('Operação negada: você não pode editar suas próprias permissões.');
+            return;
+        }
+
         setIsSaving(true);
 
         try {
-            // CENTRALIZED ADMIN LOGIC
+            // Derivar role e accessLevel com base na função selecionada
             let newRole = UserRole.OPERATIONAL;
             let newAccessLevel: string = selectedUser.accessLevel || 'N1';
 
             if (selectedFunction === 'ADMIN_TOTAL' || selectedFunction === 'ADMIN_OM') {
                 newRole = UserRole.ADMIN;
-                newAccessLevel = 'OM'; // Force OM for Admin Total & Admin OM
+                newAccessLevel = 'OM';
             } else {
-                // Ensure we don't accidentally keep Admin/OM if demoting
                 if (selectedUser.role === UserRole.ADMIN) {
                     newRole = UserRole.OPERATIONAL;
                 }
                 if (selectedUser.accessLevel === 'OM') {
-                    newAccessLevel = 'N1'; // Reset to N1 if losing OM status
+                    newAccessLevel = 'N1';
                 }
             }
 
-            // CORREÇÃO: Atualizar APENAS campos de permissão no banco
-            // Isso evita sobrescrever campos de senha (password, reset_password_at_login, etc.)
+            // Atualizar APENAS campos de permissão no banco (não sobrescrever senha, etc.)
             const { error } = await supabase
                 .from('users')
                 .update({
@@ -189,10 +216,9 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
 
             if (error) throw error;
 
-            // Atualizar estado local via callback de refresh
+            // Atualizar estado local
             if (onRefreshUsers) onRefreshUsers();
 
-            // Atualizar o selectedUser local para refletir as mudanças na UI
             setSelectedUser({
                 ...selectedUser,
                 functionId: selectedFunction,
@@ -430,8 +456,24 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
 
                     {/* Permission Editor */}
                     <div className="lg:col-span-8">
-                        {selectedUser ? (
+                        {selectedUser ? (() => {
+                            const canEditUser = canManageUser(currentAdmin, selectedUser);
+                            const isOwnAccount = currentAdmin?.id === selectedUser.id;
+                            const isReadOnly = !canEditUser || isOwnAccount;
+
+                            return (
                             <div className={`rounded-3xl border overflow-hidden transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-100 shadow-sm'}`}>
+                                {/* Aviso de acesso restrito */}
+                                {isReadOnly && (
+                                    <div className="flex items-center gap-3 px-6 py-3 bg-red-500/10 border-b border-red-500/20">
+                                        <ShieldAlert className="w-4 h-4 text-red-500 flex-shrink-0" />
+                                        <p className="text-xs font-bold text-red-500">
+                                            {isOwnAccount
+                                                ? 'Você não pode editar suas próprias permissões.'
+                                                : 'Você não tem autoridade para editar as permissões deste usuário.'}
+                                        </p>
+                                    </div>
+                                )}
                                 <div className={`p-4 md:p-6 border-b transition-all ${isDarkMode ? 'bg-slate-900/60 border-slate-700' : 'bg-slate-50/50 border-slate-100'}`}>
                                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                         <div className="flex items-center gap-3 md:gap-4">
@@ -447,10 +489,14 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
                                         </div>
                                         <button
                                             onClick={handleSaveUser}
-                                            disabled={isSaving}
-                                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 disabled:opacity-50"
+                                            disabled={isSaving || isReadOnly}
+                                            className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
+                                                isReadOnly
+                                                    ? 'bg-slate-400 shadow-slate-400/20 text-white cursor-not-allowed'
+                                                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/20'
+                                            }`}
                                         >
-                                            {isSaving ? 'Salvando...' : <><Save className="w-4 h-4" /> Atualizar</>}
+                                            {isSaving ? 'Salvando...' : isReadOnly ? <><Lock className="w-4 h-4" /> Bloqueado</> : <><Save className="w-4 h-4" /> Atualizar</>}
                                         </button>
                                     </div>
                                 </div>
@@ -552,8 +598,9 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
                                         </div>
                                     </section>
                                 </div>
-                            </div>
-                        ) : (
+                                </div>
+                            );
+                        })() : (
                             <div className={`h-full flex flex-col items-center justify-center p-12 rounded-3xl border-2 border-dashed ${isDarkMode ? 'border-slate-800 bg-slate-800/20' : 'border-slate-100 bg-slate-50/50'}`}>
                                 <Users className="w-10 h-10 text-slate-300 mb-4" />
                                 <h3 className={`font-black uppercase tracking-widest text-sm ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>Aguardando Seleção</h3>
