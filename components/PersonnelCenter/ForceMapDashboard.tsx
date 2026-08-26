@@ -643,6 +643,7 @@ const ForceMapDashboard: FC<ForceMapProps> = ({ users, attendanceHistory, isDark
         </div>
     );
 
+    return (
         <div className="space-y-6 animate-in fade-in duration-700 pb-20">
             {/* Command Bar (Modern Floating Header) */}
             <div className={`sticky top-0 z-40 ${gls} border shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] px-4 sm:px-6 py-3 mt-2 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 transition-all hover:shadow-blue-500/10`}>
