@@ -1016,19 +1016,36 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 heightLeft -= pageHeight;
             }
             
+            
             const pdfBlob = pdf.output('blob');
             const file = new File([pdfBlob], `Chamada_${selectedSector}.pdf`, { type: 'application/pdf' });
             
             document.body.classList.remove('print-weekly-mode');
             
-            await navigator.share({
-                title: `Chamada Diária - ${selectedSector}`,
-                files: [file]
-            });
+            try {
+                await navigator.share({
+                    title: `Chamada Diária - ${selectedSector}`,
+                    files: [file]
+                });
+            } catch (shareErr: any) {
+                if (shareErr.name === 'NotAllowedError' || shareErr.name === 'AbortError') {
+                    // Fallback to download if sharing is blocked or aborted
+                    const url = URL.createObjectURL(pdfBlob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = file.name;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } else {
+                    throw shareErr;
+                }
+            }
             
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            alert('Erro ao gerar o PDF para compartilhamento.');
+            alert('Erro ao gerar o PDF para compartilhamento: ' + (err.message || JSON.stringify(err)));
             document.body.classList.remove('print-weekly-mode');
         } finally {
             setIsSharing(false);
@@ -1845,6 +1862,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     <img
                                         src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Coat_of_arms_of_Brazil.svg"
                                         alt="Brasão da República"
+                                        crossOrigin="anonymous"
                                         className="w-[60px] h-[60px] mb-3 object-contain"
                                     />
                                     <h1 className="text-xs font-bold uppercase tracking-[0.1em]">Ministério da Defesa</h1>
