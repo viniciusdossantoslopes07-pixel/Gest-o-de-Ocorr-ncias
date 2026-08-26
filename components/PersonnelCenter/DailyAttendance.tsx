@@ -1209,15 +1209,6 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     </button>
                                 )}
 
-                                {canManage && (
-                                    <button
-                                        onClick={handleApplyMilitarySorting}
-                                        className={`shrink-0 snap-start flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${isDarkMode ? 'bg-indigo-900/20 border-indigo-500/30 text-indigo-400 hover:bg-indigo-900/40' : 'bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100'}`}
-                                        title="Organizar por Posto e Promoção"
-                                    >
-                                        <ShieldCheck className="w-4 h-4" /> Ordenar por Posto
-                                    </button>
-                                )}
 
                             </div>
                         </div>
@@ -1341,10 +1332,21 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     <thead className="relative z-40">
                                         <tr className={`${isDarkMode ? 'bg-slate-900/80' : 'bg-indigo-50/50'} premium-table-header`}>
                                             <th rowSpan={2} className={`px-4 lg:px-7 py-5 border-b text-[10px] font-black uppercase tracking-[0.2em] text-left min-w-[200px] lg:min-w-[220px] sticky left-0 z-30 shadow-[4px_0_10px_rgba(0,0,0,0.05)] ${isDarkMode ? 'bg-slate-900 border-slate-800 text-blue-400' : 'bg-white border-indigo-100/50 text-indigo-600'}`}>
-                                                <div className="flex items-center gap-3">
-                                                    <Users className="w-4 h-4 opacity-50" />
-                                                    <span>EFETIVO</span>
-                                                    <span className="text-emerald-500 font-black text-base lg:text-lg ml-1">{filteredUsers.length}</span>
+                                                <div className="flex flex-col gap-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <Users className="w-4 h-4 opacity-50" />
+                                                        <span>EFETIVO</span>
+                                                        <span className="text-emerald-500 font-black text-base lg:text-lg ml-1">{filteredUsers.length}</span>
+                                                    </div>
+                                                    {canManage && (
+                                                        <button
+                                                            onClick={handleApplyMilitarySorting}
+                                                            className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[8px] font-bold uppercase tracking-wider transition-colors w-max opacity-70 hover:opacity-100 ${isDarkMode ? 'bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
+                                                            title="Organizar por Posto e Promoção"
+                                                        >
+                                                            <ShieldCheck className="w-3 h-3" /> Ordenar por Posto
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </th>
                                             {currentWeek.map(date => (
