@@ -16,7 +16,6 @@ interface DailyAttendanceProps {
     attendanceHistory: DailyAttendance[];
     onSaveAttendance: (attendance: DailyAttendance) => void;
     onSaveJustification: (justification: AbsenceJustification) => void;
-    onAddAdHoc: (user: User) => void;
     onMoveUser: (userId: string, newSector: string) => void;
     onExcludeUser: (userId: string) => void;
     onReorderUsers: (reorderedUsers: User[]) => void;
@@ -530,8 +529,6 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [openNoWorkMenu, setOpenNoWorkMenu] = useState<string | null>(null);
     const [showManageWeekModal, setShowManageWeekModal] = useState(false);
     const [selectedDaysForNoWork, setSelectedDaysForNoWork] = useState<string[]>([]);
-    const [showAdHocModal, setShowAdHocModal] = useState(false);
-    const [newAdHoc, setNewAdHoc] = useState({ rank: '', warName: '', saram: '' });
     const [activeSubTab, setActiveSubTab] = useState<'chamada' | 'cupons' | 'mapa_forca'>('chamada');
     const [showJustificationModal, setShowJustificationModal] = useState(false);
     const [justifyingSoldier, setJustifyingSoldier] = useState<{
@@ -949,17 +946,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
     const handleStatusChange = (userId: string, status: string) => {
         setAttendanceRecords(prev => ({ ...prev, [userId]: status }));
-    };
-
-    const handleAddAdHoc = () => {
-        if (!newAdHoc.rank || !newAdHoc.warName) return;
-        const newUser: User = { id: `adhoc-${Date.now()}`, name: newAdHoc.warName, warName: newAdHoc.warName, rank: newAdHoc.rank, sector: selectedSector, saram: newAdHoc.saram || '', role: {} as any, email: '', username: `adhoc-${Date.now()}` };
-        onAddAdHoc(newUser);
-        setNewAdHoc({ rank: '', warName: '', saram: '' });
-        setShowAdHocModal(false);
-    };
-
-    const handleSave = () => {
+    };    const handleSave = () => {
         if (!isSigned) { alert('Por favor, realize a assinatura digital antes de finalizar.'); return; }
         const records: AttendanceRecord[] = filteredUsers.map(u => ({ militarId: u.id, militarName: u.warName || u.name, militarRank: u.rank, status: attendanceRecords[u.id] || 'P', timestamp: new Date().toISOString() }));
         const daily: DailyAttendance = { id: Math.random().toString(36).substr(2, 9), date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0], sector: selectedSector, callType: callType as CallTypeCode, records, responsible, signedAt: new Date().toISOString(), signedBy: currentUser.name, createdAt: new Date().toISOString() };
@@ -1100,14 +1087,6 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     </button>
                                 )}
 
-                                {canManage && (
-                                    <button
-                                        onClick={() => setShowAdHocModal(true)}
-                                        className="shrink-0 snap-start flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20 active:scale-95"
-                                    >
-                                        <UserPlus className="w-4 h-4" /> Incluir militar
-                                    </button>
-                                )}
                                 {canManage && (
                                     <button
                                         onClick={handleApplyMilitarySorting}
@@ -1647,70 +1626,6 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     </div>
                 )}
 
-                {showAdHocModal && (
-                    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[120] flex items-center justify-center p-4">
-                        <div className={`${isDarkMode ? 'bg-slate-900/50 border-slate-800/80 backdrop-blur-xl shadow-blue-500/5' : 'bg-white border-slate-200'} rounded-[2.5rem] w-full max-w-md p-10 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] relative animate-in zoom-in-95 duration-300 border`}>
-                            <button onClick={() => setShowAdHocModal(false)} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-all text-slate-400">
-                                <X className="w-6 h-6" />
-                            </button>
-
-                            <div className="flex items-center gap-4 mb-8">
-                                <div className="bg-blue-600 p-4 rounded-3xl shadow-lg shadow-blue-200">
-                                    <UserPlus className="w-8 h-8 text-white" />
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Adicionar Militar</h3>
-                                    <p className="text-slate-500 text-sm">Inserir novo militar na grade semanal</p>
-                                </div>
-                            </div>
-
-                            <div className="space-y-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Posto/Grad</label>
-                                        <select
-                                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
-                                            value={newAdHoc.rank}
-                                            onChange={e => setNewAdHoc(prev => ({ ...prev, rank: e.target.value }))}
-                                        >
-                                            <option value="">Selecione...</option>
-                                            {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
-                                        </select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Guerra</label>
-                                        <input
-                                            type="text"
-                                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
-                                            placeholder="EX: SILVA"
-                                            value={newAdHoc.warName}
-                                            onChange={e => setNewAdHoc(prev => ({ ...prev, warName: e.target.value.toUpperCase() }))}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">SARAM (Opcional)</label>
-                                    <input
-                                        type="text"
-                                        className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-600 transition-all"
-                                        placeholder="SARAM se houver"
-                                        value={newAdHoc.saram}
-                                        onChange={e => setNewAdHoc(prev => ({ ...prev, saram: e.target.value }))}
-                                    />
-                                </div>
-
-                                <button
-                                    onClick={handleAddAdHoc}
-                                    disabled={!newAdHoc.rank || !newAdHoc.warName}
-                                    className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 uppercase text-xs tracking-widest disabled:opacity-50"
-                                >
-                                    Adicionar à Grade
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 <div>
                     <style>{`

@@ -2075,67 +2075,7 @@ const App: FC = () => {
 
                 if (error) console.error('Error saving justification:', error);
               }}
-              onAddAdHoc={async (u) => {
-                // Now persists directly to DB
-                const existingUser = users.find(
-                  existing => existing.warName.toLowerCase() === u.warName.toLowerCase() && existing.rank === u.rank
-                );
 
-                if (existingUser) {
-                  if (existingUser.sector === u.sector) {
-                    alert('Militar já consta neste setor!');
-                    return;
-                  }
-
-                  // User exists but in another sector
-                  if (confirm(`O militar ${u.rank} ${u.warName} já existe no setor "${existingUser.sector}". Deseja movê-lo para "${u.sector}"?`)) {
-                    const { error } = await supabase
-                      .from('users')
-                      .update({ sector: u.sector })
-                      .eq('id', existingUser.id);
-
-                    if (error) {
-                      alert('Erro ao mover militar: ' + error.message);
-                    } else {
-                      alert('Militar movido com sucesso!');
-                      fetchUsers();
-                    }
-                  }
-                  return;
-                }
-
-                // Create a persisted user record
-                // We need to fill in required fields. 
-                // Since this is an "Ad-Hoc" user added via roster, we generate credentials.
-                const tempUsername = `user_${Date.now()}`;
-
-                const newUserPayload = {
-                  name: u.warName, // Using warName as name for simplicity, or we could ask for full name
-                  war_name: u.warName,
-                  rank: u.rank,
-                  sector: u.sector,
-                  saram: u.saram || '',
-                  role: 'USER', // Default role
-                  username: tempUsername,
-                  password: 'password123', // Default dummy password - they can't login anyway without knowing it or we disabling login
-                  email: `${tempUsername}@system.local`, // Dummy email
-                  approved: true
-                };
-
-                const { data, error } = await supabase
-                  .from('users')
-                  .insert([newUserPayload])
-                  .select()
-                  .single();
-
-                if (error) {
-                  console.error('Error adding personnel:', error);
-                  alert('Erro ao adicionar militar: ' + error.message);
-                } else {
-                  alert('Militar adicionado ao sistema com sucesso! A lista será atualizada.');
-                  fetchUsers(); // Refresh list to show new user
-                }
-              }}
               onMoveUser={async (userId, newSector) => {
                 // Persist move directly to DB
                 const { error } = await supabase
