@@ -39,6 +39,25 @@ interface AccessRecord {
     registered_by: string;
 }
 
+interface TemporaryAccessRequest {
+    id: string;
+    code: string;
+    valid_until: string;
+    status: string;
+    destination?: string;
+    created_at: string;
+    visitor: {
+        name: string;
+        identification: string;
+        characteristic: string;
+    };
+    requester: {
+        id: string;
+        name: string;
+        rank: string;
+    };
+}
+
 const CHARACTERISTICS = ['MILITAR', 'CIVIL', 'DEPENDENTE', 'PRESTADOR', 'ENTREGADOR'];
 const GENERIC_DESTINATIONS = ['COMANDO', 'SOP', 'SAP', 'RANCHO', 'ALOJAMENTO', 'OUTROS (ESPECIFICAR)'];
 
@@ -67,7 +86,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     const currentOmId = (urlOm && !activeOmId) ? 'WAITING_CONTEXT' : (activeOmId || user.om_id);
 
     // Tab State
-    const [activeTab, setActiveTab] = useState<'registrar' | 'estatisticas' | 'busca'>('registrar');
+    const [activeTab, setActiveTab] = useState<'registrar' | 'estatisticas' | 'busca' | 'autorizacoes'>('registrar');
     const [showStats, setShowStats] = useState(true);
     const [historyGateFilter, setHistoryGateFilter] = useState('');
 
@@ -94,7 +113,11 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     const [submitting, setSubmitting] = useState(false);
     const [destinations, setDestinations] = useState<string[]>([]);
     const [gates, setGates] = useState<any[]>([]);
-
+    
+    // Temporary Access Requests State
+    const [pendingRequests, setPendingRequests] = useState<TemporaryAccessRequest[]>([]);
+    const [loadingRequests, setLoadingRequests] = useState(false);
+    
     // Import Logic
     const [showImportModal, setShowImportModal] = useState(false);
     const [importText, setImportText] = useState('');
@@ -141,7 +164,34 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     useEffect(() => {
         fetchGates();
         fetchDestinations();
+        fetchPendingRequests();
     }, [currentOmId]);
+
+    const fetchPendingRequests = async () => {
+        setLoadingRequests(true);
+        try {
+            // Get today's start and end date to only fetch relevant requests
+            const startOfDay = new Date();
+            startOfDay.setHours(0, 0, 0, 0);
+            
+            const endOfDay = new Date();
+            endOfDay.setHours(23, 59, 59, 999);
+
+            const { data, error } = await supabase
+                .from('temporary_access_requests')
+                .select('*, visitor:visitor_catalog(*), requester:users(*)')
+                // We fetch all requests that are valid until after today's start, or created today
+                .gte('valid_until', startOfDay.toISOString())
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setPendingRequests(data || []);
+        } catch (error) {
+            console.error('Error fetching temporary access requests:', error);
+        } finally {
+            setLoadingRequests(false);
+        }
+    };
 
     const fetchDestinations = async () => {
         // Determinamos se é legado para usar como fallback primário se o banco falhar ou estiver vazio
@@ -558,6 +608,50 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
         return () => clearTimeout(timer);
     }, [searchQuery, activeTab, searchStartDate, searchEndDate, searchFilterType, searchFilterCategory, searchFilterCharacteristic, searchFilterGate, searchLimit]);
 
+    const handleRegisterTempAccess = async (request: TemporaryAccessRequest, category: 'Entrada' | 'Saída', gate: string) => {
+        if (!gate) {
+            alert('Por favor, selecione o portão.');
+            return;
+        }
+
+        setSubmitting(true);
+        try {
+            // 1. Inserir no histórico de acesso
+            const { error: insError } = await supabase.from('access_control').insert([{
+                guard_gate: gate,
+                name: request.visitor.name,
+                characteristic: request.visitor.characteristic,
+                identification: request.visitor.identification,
+                access_mode: 'Pedestre',
+                access_category: category,
+                authorizer: `${request.requester.rank} ${request.requester.name}`,
+                authorizer_id: request.requester.id,
+                destination: request.destination || 'NÃO INFORMADO',
+                registered_by: user.id,
+                timestamp: new Date().toISOString(),
+                om_id: currentOmId
+            }]);
+
+            if (insError) throw insError;
+
+            // 2. Atualizar status da solicitação temporária se for Entrada
+            if (category === 'Entrada') {
+                await supabase
+                    .from('temporary_access_requests')
+                    .update({ status: 'USED' })
+                    .eq('id', request.id);
+            }
+
+            alert(`Acesso (${category}) registrado com sucesso!`);
+            fetchPendingRequests(); // Refresh the list
+            fetchAccessRecords(); // Refresh the main history
+        } catch (err: any) {
+            alert(`Erro ao registrar: ${err.message}`);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     const handleSubmit = async () => {
         if (!selectedGate) {
             alert('Por favor, selecione o portão (G1, G2 ou G3).');
@@ -814,6 +908,21 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                 >
                     <Search className="w-4 h-4" />
                     Busca
+                </button>
+                <button
+                    onClick={() => setActiveTab('autorizacoes')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-black uppercase tracking-wider rounded-lg transition-all ${activeTab === 'autorizacoes'
+                        ? (dk ? 'bg-slate-600 text-white shadow-sm' : 'bg-white text-blue-600 shadow-sm')
+                        : (dk ? 'text-slate-400 hover:text-white hover:bg-slate-600/50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200/50')
+                        }`}
+                >
+                    <BadgeCheck className="w-4 h-4" />
+                    Autorizações
+                    {pendingRequests.filter(r => r.status === 'PENDING' && new Date(r.valid_until) > new Date()).length > 0 && (
+                        <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1 animate-pulse">
+                            {pendingRequests.filter(r => r.status === 'PENDING' && new Date(r.valid_until) > new Date()).length}
+                        </span>
+                    )}
                 </button>
 
             </div>
@@ -1319,6 +1428,153 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
             {/* TAB CONTENT: ESTATÍSTICAS */}
             {activeTab === 'estatisticas' && (
                 <AccessStatistics user={user} isDarkMode={isDarkMode} />
+            )}
+
+            {/* TAB CONTENT: AUTORIZAÇÕES */}
+            {activeTab === 'autorizacoes' && (
+                <div className="space-y-6 animate-fade-in">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h2 className={`text-xl font-black uppercase tracking-tight flex items-center gap-2 ${textPrimary}`}>
+                                <BadgeCheck className="w-6 h-6 text-blue-500" />
+                                Autorizações Pendentes
+                            </h2>
+                            <p className={`text-[10px] font-bold uppercase tracking-widest ${textSecondary}`}>
+                                Acessos temporários gerados pelos usuários
+                            </p>
+                        </div>
+                        <button
+                            onClick={fetchPendingRequests}
+                            disabled={loadingRequests}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${dk ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}
+                        >
+                            <RefreshCw className={`w-3.5 h-3.5 ${loadingRequests ? 'animate-spin' : ''}`} /> Atualizar
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {loadingRequests ? (
+                            <div className="col-span-full py-12 flex flex-col items-center gap-3">
+                                <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
+                                <span className={`text-xs font-bold uppercase tracking-widest ${textMuted}`}>Buscando autorizações...</span>
+                            </div>
+                        ) : pendingRequests.length === 0 ? (
+                            <div className={`col-span-full py-16 text-center border-2 border-dashed rounded-3xl ${dk ? 'border-slate-700 bg-slate-800/50' : 'border-slate-200 bg-slate-50/50'}`}>
+                                <Check className="w-12 h-12 text-emerald-500 mx-auto mb-3 opacity-50" />
+                                <h3 className={`text-sm font-black uppercase tracking-widest ${textPrimary}`}>Nenhuma Autorização Pendente</h3>
+                                <p className={`text-xs mt-1 ${textMuted}`}>Não há acessos temporários aguardando verificação no momento.</p>
+                            </div>
+                        ) : (
+                            pendingRequests.map((req) => {
+                                const isExpired = new Date(req.valid_until) < new Date();
+                                const isUsed = req.status === 'USED';
+                                const isCanceled = req.status === 'CANCELED';
+                                const isActive = !isExpired && !isUsed && !isCanceled;
+
+                                let statusColor = dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200';
+                                let badge = null;
+
+                                if (isUsed) {
+                                    statusColor = dk ? 'bg-slate-800 border-slate-700 opacity-70' : 'bg-slate-50 border-slate-200 opacity-70';
+                                    badge = <span className="bg-blue-500/10 text-blue-500 px-2 py-1 rounded text-[9px] font-black uppercase">Usado</span>;
+                                } else if (isCanceled) {
+                                    statusColor = dk ? 'bg-slate-800 border-slate-700 opacity-50' : 'bg-slate-50 border-slate-200 opacity-50';
+                                    badge = <span className="bg-slate-500/10 text-slate-500 px-2 py-1 rounded text-[9px] font-black uppercase">Cancelado</span>;
+                                } else if (isExpired) {
+                                    statusColor = dk ? 'bg-slate-800 border-slate-700 opacity-50' : 'bg-slate-50 border-slate-200 opacity-50';
+                                    badge = <span className="bg-red-500/10 text-red-500 px-2 py-1 rounded text-[9px] font-black uppercase">Expirado</span>;
+                                } else {
+                                    statusColor = dk ? 'bg-slate-800 border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.1)]' : 'bg-white border-blue-200 shadow-lg shadow-blue-500/5';
+                                    badge = <span className="bg-emerald-500/10 text-emerald-500 px-2 py-1 rounded text-[9px] font-black uppercase flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Ativo</span>;
+                                }
+
+                                return (
+                                    <div key={req.id} className={`p-5 rounded-[1.5rem] border transition-all flex flex-col justify-between ${statusColor}`}>
+                                        <div>
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div className="flex-1">
+                                                    <h3 className={`text-sm font-black uppercase tracking-tight leading-tight mb-1 truncate ${textPrimary}`} title={req.visitor.name}>
+                                                        {req.visitor.name}
+                                                    </h3>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`text-[10px] font-bold uppercase ${textSecondary}`}>{req.visitor.characteristic}</span>
+                                                        <span className={`text-[9px] font-bold ${textMuted}`}>• {req.visitor.identification}</span>
+                                                    </div>
+                                                </div>
+                                                {badge}
+                                            </div>
+
+                                            <div className={`space-y-2 p-3 rounded-xl mb-4 ${dk ? 'bg-slate-900/50' : 'bg-slate-50'}`}>
+                                                <div className="flex justify-between items-center text-[10px]">
+                                                    <span className={`font-bold uppercase ${textMuted}`}>Autorizado por</span>
+                                                    <span className={`font-black uppercase text-right ${textPrimary}`}>{req.requester.rank} {req.requester.name}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-[10px]">
+                                                    <span className={`font-bold uppercase ${textMuted}`}>Destino</span>
+                                                    <span className={`font-black uppercase text-right ${textPrimary}`}>{req.destination || 'NÃO INFORMADO'}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-[10px]">
+                                                    <span className={`font-bold uppercase ${textMuted}`}>Válido até</span>
+                                                    <span className={`font-black uppercase text-right ${isExpired ? 'text-red-500' : textPrimary}`}>
+                                                        {new Date(req.valid_until).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {isActive && (
+                                            <div className="space-y-3 pt-2">
+                                                <select
+                                                    className={`w-full p-2.5 rounded-xl text-[10px] font-black uppercase outline-none transition-all border ${dk ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500' : 'bg-white border-slate-200 focus:border-blue-500'}`}
+                                                    onChange={(e) => {
+                                                        const gate = e.target.value;
+                                                        if (gate) {
+                                                            // We create a custom handler so the user doesn't have to use global state
+                                                            // This is handled by a local prompt or we just use the global selectedGate
+                                                            // For UX, using the select directly is cleaner.
+                                                        }
+                                                    }}
+                                                    defaultValue=""
+                                                    id={`gate-select-${req.id}`}
+                                                >
+                                                    <option value="" disabled>SELECIONE O PORTÃO...</option>
+                                                    {gates.map(g => (
+                                                        <option key={g.id} value={g.name}>{g.name.replace('PORTÃO ', '')}</option>
+                                                    ))}
+                                                </select>
+
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            const select = document.getElementById(`gate-select-${req.id}`) as HTMLSelectElement;
+                                                            if (!select.value) { alert('Selecione o portão antes de registrar.'); return; }
+                                                            handleRegisterTempAccess(req, 'Entrada', select.value);
+                                                        }}
+                                                        disabled={submitting}
+                                                        className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-emerald-600/20 active:scale-95"
+                                                    >
+                                                        <ArrowDownToLine className="w-3.5 h-3.5" /> Entrada
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            const select = document.getElementById(`gate-select-${req.id}`) as HTMLSelectElement;
+                                                            if (!select.value) { alert('Selecione o portão antes de registrar.'); return; }
+                                                            handleRegisterTempAccess(req, 'Saída', select.value);
+                                                        }}
+                                                        disabled={submitting}
+                                                        className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-red-600/20 active:scale-95"
+                                                    >
+                                                        <ArrowUpFromLine className="w-3.5 h-3.5" /> Saída
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+                </div>
             )}
 
             {/* TAB CONTENT: BUSCA */}
