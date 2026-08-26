@@ -650,7 +650,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
 
             alert(`Acesso (${category}) registrado com sucesso!`);
             fetchPendingRequests(); // Refresh the list
-            fetchAccessRecords(); // Refresh the main history
+            fetchRecords(); // Refresh the main history
         } catch (err: any) {
             alert(`Erro ao registrar: ${err.message}`);
         } finally {

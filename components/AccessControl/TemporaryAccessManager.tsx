@@ -482,7 +482,6 @@ export default function TemporaryAccessManager({ currentUser, isDarkMode }: Temp
                                     onChange={setDestination}
                                     placeholder="DESTINO (OBRIGATÓRIO)"
                                     isDarkMode={isDarkMode}
-                                    icon={<ArrowRight className="w-4 h-4" />}
                                 />
                             </div>
 
