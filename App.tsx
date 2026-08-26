@@ -448,10 +448,10 @@ const App: FC = () => {
     const needsAttendance = activeTab === 'daily-attendance' || activeTab === 'dashboard';
     if (!needsAttendance) return;
 
-    // Fetch inicial de presenças (últimos 7 dias em vez de 15) para não onerar bateria/RAM e limites da Cloud Database
+    // Fetch inicial de presenças (últimos 14 dias para abranger a semana atual e a anterior)
     const fetchAttendanceData = async () => {
       const pastDaysForCache = new Date();
-      pastDaysForCache.setDate(pastDaysForCache.getDate() - 7);
+      pastDaysForCache.setDate(pastDaysForCache.getDate() - 14);
       const dateFilter = pastDaysForCache.toISOString().split('T')[0];
 
       const actualOmId = getActualOmId();
