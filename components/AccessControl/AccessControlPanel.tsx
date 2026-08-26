@@ -923,7 +923,6 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                         }`}
                 >
                     <BadgeCheck className="w-4 h-4" />
-                    Autorizações
                     {pendingRequests.filter(r => r.status === 'PENDING' && new Date(r.valid_until) > new Date()).length > 0 && (
                         <span className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1 animate-pulse">
                             {pendingRequests.filter(r => r.status === 'PENDING' && new Date(r.valid_until) > new Date()).length}
