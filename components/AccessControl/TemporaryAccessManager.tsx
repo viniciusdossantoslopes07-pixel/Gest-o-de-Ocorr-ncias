@@ -6,6 +6,31 @@ import { User } from '../../types';
 import { QRCodeSVG } from 'qrcode.react';
 import { format, addHours, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Combobox } from '../Combobox';
+
+const DESTINATIONS = [
+    'ALOJAMENTO',
+    'BASP (COMANDO)', 
+    'BOMBEIRO', 
+    'CAPELA', 
+    'COMANDO', 
+    'GECAMP',
+    'GSAU', 
+    'GSD-SP', 
+    'HOTEL DE TRÂNSITO BASP', 
+    'HOTEL DE TRÂNSITO ILA', 
+    'HOTEL DE TRÂNSITO SEREP', 
+    'ILA', 
+    'PASP', 
+    'PCAN', 
+    'RANCHO', 
+    'SAP', 
+    'SEREP-SP', 
+    'SOP', 
+    'VILA GRAD.', 
+    'VILA OF.', 
+    'OUTROS (ESPECIFICAR)'
+];
 
 interface Visitor {
     id: string;
@@ -386,14 +411,14 @@ export default function TemporaryAccessManager({ currentUser, isDarkMode }: Temp
                                 </div>
                             </div>
 
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Destino (Residência/Setor)</label>
-                                <input 
-                                    type="text"
-                                    className={`w-full p-3.5 border-2 rounded-xl text-xs font-black uppercase outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white focus:border-blue-500' : 'bg-slate-50 border-slate-100 focus:border-blue-600'}`}
-                                    placeholder="Ex: Bloco A - Apto 102"
+                            <div className="space-y-1.5 z-50">
+                                <Combobox
+                                    options={DESTINATIONS}
                                     value={destination}
-                                    onChange={e => setDestination(e.target.value)}
+                                    onChange={setDestination}
+                                    placeholder="DESTINO (OBRIGATÓRIO)"
+                                    isDarkMode={isDarkMode}
+                                    icon={<ArrowRight className="w-4 h-4" />}
                                 />
                             </div>
 
