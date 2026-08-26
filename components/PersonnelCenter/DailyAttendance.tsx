@@ -1039,9 +1039,20 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                         {/* Top row: Title + Navigation + Actions */}
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                             <div className="flex items-center gap-4">
-                                <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-3 rounded-2xl shadow-lg shadow-blue-900/20">
-                                    <FileSignature className="w-5 h-5 text-white" />
-                                </div>
+                                <button
+                                    onClick={() => {
+                                        document.body.classList.add('print-weekly-mode');
+                                        document.body.classList.remove('print-coupon-mode');
+                                        setTimeout(() => {
+                                            window.print();
+                                            document.body.classList.remove('print-weekly-mode');
+                                        }, 150);
+                                    }}
+                                    className={`shrink-0 p-3 rounded-2xl transition-all shadow-lg active:scale-95 cursor-pointer ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/40' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/30'}`}
+                                    title="Imprimir / Gerar PDF"
+                                >
+                                    <Printer className="w-5 h-5 text-white" />
+                                </button>
                                 <div>
                                     <h2 className={`text-base lg:text-lg font-black tracking-tight leading-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Retirada de Faltas</h2>
                                     <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-blue-400/80' : 'text-blue-600'}`}>{selectedSector}</p>
@@ -1096,20 +1107,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                         <ShieldCheck className="w-4 h-4" /> Ordenar por Posto
                                     </button>
                                 )}
-                                <button
-                                    onClick={() => {
-                                        document.body.classList.add('print-weekly-mode');
-                                        document.body.classList.remove('print-coupon-mode');
-                                        setTimeout(() => {
-                                            window.print();
-                                            document.body.classList.remove('print-weekly-mode');
-                                        }, 150);
-                                    }}
-                                    className={`shrink-0 snap-start p-2.5 sm:p-3 rounded-xl sm:rounded-2xl transition-all shadow-lg active:scale-95 ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/40' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/30'}`}
-                                    title="Imprimir / Gerar PDF"
-                                >
-                                    <Printer className="w-4 h-4 sm:w-5 sm:h-5" />
-                                </button>
+
                             </div>
                         </div>
 
