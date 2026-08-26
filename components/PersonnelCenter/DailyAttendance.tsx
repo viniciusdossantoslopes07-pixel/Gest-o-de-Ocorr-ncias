@@ -1061,9 +1061,9 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 </div>
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex overflow-x-auto items-center gap-2 pb-2 -mx-2 px-2 sm:mx-0 sm:px-0 sm:pb-0 scrollbar-hide snap-x">
                                 {/* Week Nav */}
-                                <div className={`flex items-center gap-2 p-1.5 rounded-2xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-indigo-100/50'}`}>
+                                <div className={`shrink-0 flex items-center gap-2 p-1.5 rounded-2xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-indigo-100/50'}`}>
                                     <button onClick={() => changeWeek(-1)} className={`p-2 rounded-xl transition-all ${isDarkMode ? 'hover:bg-slate-700 text-slate-400 hover:text-white' : 'hover:bg-white text-slate-400 hover:text-slate-900 shadow-sm'}`}>
                                         <Filter className="w-3.5 h-3.5 rotate-180" />
                                     </button>
@@ -1078,7 +1078,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 {canManage && (
                                     <button
                                         onClick={() => setShowManageWeekModal(true)}
-                                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-indigo-100/50 text-indigo-600 hover:bg-indigo-50'}`}
+                                        className={`shrink-0 snap-start px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-indigo-100/50 text-indigo-600 hover:bg-indigo-50'}`}
                                     >
                                         Gerir Semana
                                     </button>
@@ -1088,7 +1088,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     <button
                                         onClick={handleLoadHistory}
                                         disabled={isLoadingHistory}
-                                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isDarkMode ? 'bg-amber-900/30 text-amber-400 border border-amber-800 hover:bg-amber-900/50' : 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100'}`}
+                                        className={`shrink-0 snap-start flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isDarkMode ? 'bg-amber-900/30 text-amber-400 border border-amber-800 hover:bg-amber-900/50' : 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100'}`}
                                         title="Buscar registros antigos desta semana no Banco de Dados"
                                     >
                                         {isLoadingHistory ? (
@@ -1103,7 +1103,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 {canManage && (
                                     <button
                                         onClick={() => setShowAdHocModal(true)}
-                                        className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20 active:scale-95"
+                                        className="shrink-0 snap-start flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20 active:scale-95"
                                     >
                                         <UserPlus className="w-4 h-4" /> Incluir militar
                                     </button>
@@ -1111,7 +1111,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 {canManage && (
                                     <button
                                         onClick={handleApplyMilitarySorting}
-                                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${isDarkMode ? 'bg-indigo-900/20 border-indigo-500/30 text-indigo-400 hover:bg-indigo-900/40' : 'bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100'}`}
+                                        className={`shrink-0 snap-start flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${isDarkMode ? 'bg-indigo-900/20 border-indigo-500/30 text-indigo-400 hover:bg-indigo-900/40' : 'bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100'}`}
                                         title="Organizar por Posto e Promoção"
                                     >
                                         <ShieldCheck className="w-4 h-4" /> Ordenar por Posto
@@ -1126,7 +1126,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                             document.body.classList.remove('print-weekly-mode');
                                         }, 150);
                                     }}
-                                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all shadow-lg active:scale-95 ${isDarkMode ? 'bg-slate-800 text-white hover:bg-slate-700 shadow-black/20' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
+                                    className={`shrink-0 snap-start flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all shadow-lg active:scale-95 ${isDarkMode ? 'bg-slate-800 text-white hover:bg-slate-700 shadow-black/20' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
                                 >
                                     <Plus className="w-4 h-4" /> Gerar PDF
                                 </button>
@@ -1388,9 +1388,9 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-10">
+                            <div className="flex sm:grid overflow-x-auto sm:overflow-visible pb-4 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-10 scrollbar-hide snap-x">
                                 {currentWeek.map(date => (
-                                    <div key={date} className={`flex flex-col gap-4 p-5 lg:p-6 rounded-[2rem] border-2 transition-all duration-300 group hover:scale-[1.02] ${isDarkMode ? 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50 hover:border-blue-500/30' : 'bg-slate-50 border-slate-100 hover:bg-white hover:border-blue-200 hover:shadow-xl'}`}>
+                                    <div key={date} className={`shrink-0 w-[260px] sm:w-auto snap-start flex flex-col gap-4 p-5 lg:p-6 rounded-[2rem] border-2 transition-all duration-300 group hover:scale-[1.02] ${isDarkMode ? 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50 hover:border-blue-500/30' : 'bg-slate-50 border-slate-100 hover:bg-white hover:border-blue-200 hover:shadow-xl'}`}>
                                         <div className={`text-[11px] font-black uppercase tracking-[0.1em] border-b pb-3 flex justify-between items-center ${isDarkMode ? 'text-slate-200 border-slate-700' : 'text-slate-900 border-slate-200'}`}>
                                             <span>{parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'short' }).split('.')[0]}</span>
                                             <span className="opacity-40">{parseISOToDate(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
