@@ -1757,14 +1757,14 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 padding: 0 !important;
                                 font-family: Arial, Helvetica, sans-serif !important;
                                 -webkit-print-color-adjust: exact !important;
-                                print-color-adjust: exact !important;
                             }
+                        }
 
-                            /* Oculta toda a aplicação #root durante a impressão para evitar páginas em branco antes da impressão */
-                            body.print-weekly-mode #root,
-                            body.print-coupon-mode #root {
-                                display: none !important;
-                            }
+                        /* Oculta toda a aplicação #root quando as classes de impressão estiverem ativas (na tela ou impressora) */
+                        body.print-weekly-mode #root,
+                        body.print-coupon-mode #root {
+                            display: none !important;
+                        }
 
                             /* MODO GRADE SEMANAL - Portal no Body */
                             body.print-weekly-mode .print-weekly {
@@ -1851,7 +1851,6 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                 break-inside: avoid !important;
                                 margin-top: 16px !important;
                             }
-                        }
                     `}</style>
 
                     {createPortal(
