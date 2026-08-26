@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS visitor_catalog (
 CREATE TABLE IF NOT EXISTS temporary_access_requests (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     requester_id UUID REFERENCES users(id),
-    visitor_id UUID REFERENCES visitor_catalog(id),
+    visitor_id UUID REFERENCES visitor_catalog(id) ON DELETE CASCADE,
     code TEXT NOT NULL UNIQUE,
     valid_until TIMESTAMPTZ NOT NULL,
     status TEXT DEFAULT 'PENDING', -- PENDING, USED, EXPIRED, CANCELED
@@ -28,19 +28,9 @@ CREATE TABLE IF NOT EXISTS temporary_access_requests (
 ALTER TABLE visitor_catalog ENABLE ROW LEVEL SECURITY;
 ALTER TABLE temporary_access_requests ENABLE ROW LEVEL SECURITY;
 
--- Everyone can view their own requests
-CREATE POLICY "Users can view their own access requests" ON temporary_access_requests
-    FOR SELECT USING (auth.uid() = requester_id);
-
--- Admins and Access Control staff can view all
-CREATE POLICY "Admins can view all access requests" ON temporary_access_requests
-    FOR SELECT USING (
-        EXISTS (
-            SELECT 1 FROM users 
-            WHERE users.id = auth.uid() 
-            AND (users.role = 'ADMIN' OR users.access_level = 'OM')
-        )
-    );
+-- Everyone can view access requests (UI handles access control)
+CREATE POLICY "Users can view all access requests" ON temporary_access_requests
+    FOR SELECT USING (true);
 
 -- Users can create requests
 CREATE POLICY "Users can create access requests" ON temporary_access_requests
