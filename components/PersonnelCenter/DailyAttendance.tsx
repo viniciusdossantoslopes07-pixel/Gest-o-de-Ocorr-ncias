@@ -1126,9 +1126,10 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                             document.body.classList.remove('print-weekly-mode');
                                         }, 150);
                                     }}
-                                    className={`shrink-0 snap-start flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all shadow-lg active:scale-95 ${isDarkMode ? 'bg-slate-800 text-white hover:bg-slate-700 shadow-black/20' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
+                                    className={`shrink-0 snap-start p-2.5 sm:p-3 rounded-xl sm:rounded-2xl transition-all shadow-lg active:scale-95 ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/40' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/30'}`}
+                                    title="Imprimir / Gerar PDF"
                                 >
-                                    <Plus className="w-4 h-4" /> Gerar PDF
+                                    <Printer className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </button>
                             </div>
                         </div>
