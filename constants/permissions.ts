@@ -204,8 +204,8 @@ export const canManageUser = (admin: User | null, targetUser: User): boolean => 
     if (adminFunction === 'ADMIN_OM') {
         // ADMIN_OM só gerencia usuários da mesma OM
         if (admin.om_id && admin.om_id !== targetUser.om_id) return false;
-        // ADMIN_OM não pode gerenciar outro ADMIN_TOTAL ou ADMIN_OM
-        if (targetUser.functionId === 'ADMIN_TOTAL' || targetUser.functionId === 'ADMIN_OM') return false;
+        // ADMIN_OM não pode gerenciar ADMIN_TOTAL
+        if (targetUser.functionId === 'ADMIN_TOTAL') return false;
         return true;
     }
 
