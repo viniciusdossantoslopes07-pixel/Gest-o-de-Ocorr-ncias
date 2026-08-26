@@ -24,9 +24,7 @@ const DESTINATIONS = [
     'PASP', 
     'PCAN', 
     'RANCHO', 
-    'SAP', 
     'SEREP-SP', 
-    'SOP', 
     'VILA GRAD.', 
     'VILA OF.', 
     'OUTROS (ESPECIFICAR)'
