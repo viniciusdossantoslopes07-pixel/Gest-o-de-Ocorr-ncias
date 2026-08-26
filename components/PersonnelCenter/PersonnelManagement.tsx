@@ -545,9 +545,9 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                         </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-between gap-3 px-4 my-4">
-                        {/* Filtros Rápidos por Posto/Graduação */}
-                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <div className="flex flex-col gap-4 px-2 sm:px-4 my-6">
+                        {/* Filtros Rápidos por Posto/Graduação (Rolável no Mobile) */}
+                        <div className="flex overflow-x-auto items-center gap-2 pb-2 -mx-2 px-2 sm:mx-0 sm:px-0 sm:pb-0 scrollbar-hide snap-x">
                             {[
                                 { id: 'OF_SUP', label: 'OF. SUP.', count: baseFilteredList.filter(u => u.rank && isOfSup(u.rank)).length },
                                 { id: 'OF_INT', label: 'OF. INT.', count: baseFilteredList.filter(u => u.rank && isOfInt(u.rank)).length },
@@ -562,7 +562,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                                     <button
                                         key={filter.id}
                                         onClick={() => setFilterCategory(isActive ? 'TODOS' : filter.id as any)}
-                                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${
+                                        className={`shrink-0 snap-start flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${
                                             isActive
                                                 ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/20 scale-[1.02]'
                                                 : isDarkMode
@@ -571,7 +571,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                                         }`}
                                     >
                                         <span>{filter.label}</span>
-                                        <span className={`px-1.5 py-0.2 rounded-md text-[9px] font-extrabold ${
+                                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-extrabold ${
                                             isActive 
                                                 ? 'bg-white/20 text-white' 
                                                 : isDarkMode 
@@ -586,7 +586,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                             {filterCategory !== 'TODOS' && (
                                 <button
                                     onClick={() => setFilterCategory('TODOS')}
-                                    className={`px-2.5 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all ${
+                                    className={`shrink-0 px-3 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all ${
                                         isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
                                     }`}
                                 >
@@ -595,8 +595,8 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                             )}
                         </div>
 
-                        {/* Toggles de Status */}
-                        <div className="flex flex-wrap items-center gap-2">
+                        {/* Toggles de Status (Rolável no Mobile) */}
+                        <div className="flex overflow-x-auto items-center gap-2 pb-2 -mx-2 px-2 sm:mx-0 sm:px-0 sm:pb-0 scrollbar-hide snap-x">
                             {[
                                 { state: showExternal, setter: setShowExternal, label: 'Serviço Externo', icon: PlaneTakeoff, color: 'emerald' },
                                 { state: showFunctional, setter: setShowFunctional, label: 'Contas Funcionais', icon: Briefcase, color: 'indigo' },
@@ -605,7 +605,7 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                                 <button
                                     key={toggle.label}
                                     onClick={() => toggle.setter(!toggle.state)}
-                                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${toggle.state ? `bg-${toggle.color}-600 border-${toggle.color}-600 text-white shadow-lg` : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50')}`}
+                                    className={`shrink-0 snap-start flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${toggle.state ? `bg-${toggle.color}-600 border-${toggle.color}-600 text-white shadow-lg` : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50')}`}
                                 >
                                     <toggle.icon className="w-3.5 h-3.5" />
                                     {toggle.label}
@@ -700,41 +700,57 @@ const PersonnelManagementView: FC<PersonnelManagementProps> = ({
                                             {user.external_service ? `EXTERNO` : user.sector}
                                         </span>
                                     </div>
-                                    
-                                    <div className="flex items-center justify-between mt-4 pl-1">
-                                        <div>
-                                            <div className={`text-[10px] font-bold ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>SARAM</div>
-                                            <div className={`text-xs font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{user.saram}</div>
+                                    <div className="flex flex-col gap-4 mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/50">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex flex-col">
+                                                <span className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>SARAM</span>
+                                                <span className={`text-sm font-black ${isDarkMode ? 'text-white' : 'text-slate-700'}`}>{user.saram}</span>
+                                            </div>
+                                            {user.cpf && (
+                                                <div className="flex flex-col text-right">
+                                                    <span className={`text-[9px] font-black uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>CPF</span>
+                                                    <span className={`text-sm font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>{user.cpf}</span>
+                                                </div>
+                                            )}
                                         </div>
                                         
-                                        <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                                        <div className="grid grid-cols-4 gap-2" onClick={e => e.stopPropagation()}>
                                             <button 
                                                 onClick={() => handleEdit(user)} 
-                                                className={`p-2.5 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:text-indigo-400' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}
+                                                className={`flex items-center justify-center p-3 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800/80 text-slate-400 hover:text-indigo-400' : 'bg-slate-50 text-slate-500 border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200'}`}
+                                                title="Editar"
                                             >
-                                                <Pencil className="w-3.5 h-3.5" />
+                                                <Pencil className="w-4 h-4" />
                                             </button>
                                             <button 
                                                 onClick={(e) => { e.stopPropagation(); setTransferUser(user); setShowTransferModal(true); setTransferOther(false); setOtherOmName(''); setTransferSearch(''); }} 
-                                                className={`p-2.5 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:text-blue-400' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}
+                                                className={`flex items-center justify-center p-3 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800/80 text-slate-400 hover:text-blue-400' : 'bg-slate-50 text-slate-500 border border-slate-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200'}`}
+                                                title="Transferir"
                                             >
-                                                <Shuffle className="w-3.5 h-3.5" />
+                                                <Shuffle className="w-4 h-4" />
+                                            </button>
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); setExternalServiceUser(user); setShowExternalServiceModal(true); }} 
+                                                className={`flex items-center justify-center p-3 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800/80 text-slate-400 hover:text-emerald-400' : 'bg-slate-50 text-slate-500 border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200'}`}
+                                                title="Serviço Externo"
+                                            >
+                                                <PlaneTakeoff className="w-4 h-4" />
                                             </button>
                                             {user.active === false ? (
                                                 <button 
                                                     onClick={(e) => { e.stopPropagation(); onUpdatePersonnel({ ...user, active: true }); }} 
-                                                    className={`p-2.5 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:text-green-400' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}
+                                                    className={`flex items-center justify-center p-3 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800/80 text-slate-400 hover:text-green-400' : 'bg-slate-50 text-slate-500 border border-slate-200 hover:bg-green-50 hover:text-green-600 hover:border-green-200'}`}
                                                     title="Reativar"
                                                 >
-                                                    <ShieldCheck className="w-3.5 h-3.5" />
+                                                    <ShieldCheck className="w-4 h-4" />
                                                 </button>
                                             ) : (
                                                 <button 
                                                     onClick={(e) => { e.stopPropagation(); onDeletePersonnel(user.id); }} 
-                                                    className={`p-2.5 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:text-red-400' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}
+                                                    className={`flex items-center justify-center p-3 rounded-xl transition-all shadow-sm ${isDarkMode ? 'bg-slate-800/80 text-slate-400 hover:text-red-400' : 'bg-slate-50 text-slate-500 border border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200'}`}
                                                     title="Desativar"
                                                 >
-                                                    <CircleX className="w-3.5 h-3.5" />
+                                                    <CircleX className="w-4 h-4" />
                                                 </button>
                                             )}
                                         </div>
