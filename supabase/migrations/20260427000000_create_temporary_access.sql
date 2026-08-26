@@ -54,5 +54,14 @@ CREATE POLICY "Enable update for all users" ON temporary_access_requests
 CREATE POLICY "Users can view visitor catalog" ON visitor_catalog
     FOR SELECT USING (true);
 
+-- Users can insert into visitor catalog
 CREATE POLICY "Users can insert into visitor catalog" ON visitor_catalog
     FOR INSERT WITH CHECK (true);
+
+-- Users can update visitor catalog
+CREATE POLICY "Users can update visitor catalog" ON visitor_catalog
+    FOR UPDATE USING (true) WITH CHECK (true);
+
+-- Users can delete visitor catalog
+CREATE POLICY "Users can delete visitor catalog" ON visitor_catalog
+    FOR DELETE USING (true);
