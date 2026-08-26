@@ -114,6 +114,11 @@ export default function AccessStatistics({ user, isDarkMode = false }: { user: U
     const [dateEnd, setDateEnd] = useState(() => formatDate(new Date()));
 
     // Filters
+    const [activeTab, setActiveTab] = useState<'geral' | 'tabela'>('geral');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showExportModal, setShowExportModal] = useState(false);
+    const [visibleDestinations, setVisibleDestinations] = useState(7);
+    const [visibleVisitors, setVisibleVisitors] = useState(5);
     const [filterGate, setFilterGate] = useState('');
     const [filterCharacteristic, setFilterCharacteristic] = useState('');
     const [filterAccessMode, setFilterAccessMode] = useState('');
@@ -311,13 +316,6 @@ export default function AccessStatistics({ user, isDarkMode = false }: { user: U
     const totalExits = filteredRecords.filter(r => r.access_category === 'Saída').length;
     const totalVehicles = filteredRecords.filter(r => r.access_mode === 'Veículo').length;
 
-    // NOTE: Comparison is accurate only if no local filters are active, or if we apply same filters to prev data.
-    // For simplicity, comparison applies to *raw* matches of date range. If user filters by "Gate 1", comparison might be skewed if we don't filter prev data by Gate 1.
-    // To fix this accurately, we would need to fetch prevData with all columns and apply filters. 
-    // Given the constraints, we will show comparison globaly or hide if filters active? 
-    // Let's hide comparison % if filters are active to avoid confusion, or show global comparison.
-    // Better: Show "vs período anterior (global)" label if filter active.
-
     // Dynamic Trend Aggregation
     const trendData = useMemo(() => {
         const diffTime = Math.abs(new Date(dateEnd).getTime() - new Date(dateStart).getTime());
@@ -390,8 +388,7 @@ export default function AccessStatistics({ user, isDarkMode = false }: { user: U
         });
         return Object.entries(map)
             .map(([name, count]) => ({ name, count }))
-            .sort((a, b) => b.count - a.count)
-            .slice(0, 10);
+            .sort((a, b) => b.count - a.count);
     }, [filteredRecords]);
 
     const topDestinations = useMemo(() => {
@@ -403,8 +400,7 @@ export default function AccessStatistics({ user, isDarkMode = false }: { user: U
         });
         return Object.entries(map)
             .map(([name, total]) => ({ name, total }))
-            .sort((a, b) => a.total > b.total ? -1 : 1)
-            .slice(0, 7);
+            .sort((a, b) => b.total - a.total);
     }, [filteredRecords]);
 
     const byCharacteristic = useMemo(() => {
@@ -786,7 +782,7 @@ export default function AccessStatistics({ user, isDarkMode = false }: { user: U
                             ) : (
                                 <div className="h-64 w-full">
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={topDestinations} margin={{ top: 20, right: 10, left: -20, bottom: 40 }}>
+                                        <BarChart data={topDestinations.slice(0, visibleDestinations)} margin={{ top: 20, right: 10, left: -20, bottom: 40 }}>
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
                                             <XAxis
                                                 dataKey="name"
@@ -809,6 +805,14 @@ export default function AccessStatistics({ user, isDarkMode = false }: { user: U
                                     </ResponsiveContainer>
                                 </div>
                             )}
+                                {topDestinations.length > visibleDestinations && (
+                                    <button 
+                                        onClick={() => setVisibleDestinations(prev => prev + 10)}
+                                        className={`w-full py-2 mt-4 text-xs font-bold rounded-lg transition-colors ${dk ? 'bg-slate-800 text-blue-400 hover:bg-slate-700' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}
+                                    >
+                                        Carregar Mais Destinos
+                                    </button>
+                                )}
                         </div>
 
                         {/* Top Visitors List */}
@@ -818,7 +822,7 @@ export default function AccessStatistics({ user, isDarkMode = false }: { user: U
                                 <h3 className={`font-bold text-sm sm:text-base ${textPrimary}`}>Visitantes/Militares Recorrentes</h3>
                             </div>
                             <div className="space-y-3">
-                                {topVisitors.slice(0, 5).map((v, i) => {
+                                {topVisitors.slice(0, visibleVisitors).map((v, i) => {
                                     const maxVal = topVisitors[0].count;
                                     return (
                                         <div key={v.name} className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${dk ? 'hover:bg-slate-700/50' : 'hover:bg-slate-50'}`}>
@@ -840,6 +844,14 @@ export default function AccessStatistics({ user, isDarkMode = false }: { user: U
                                     );
                                 })}
                             </div>
+                            {topVisitors.length > visibleVisitors && (
+                                <button 
+                                    onClick={() => setVisibleVisitors(prev => prev + 15)}
+                                    className={`w-full py-2 mt-4 text-xs font-bold rounded-lg transition-colors ${dk ? 'bg-slate-800 text-blue-400 hover:bg-slate-700' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}
+                                >
+                                    Carregar Mais Visitantes
+                                </button>
+                            )}
                         </div>
                     </div>
                 </>
