@@ -45,6 +45,8 @@ interface TemporaryAccessRequest {
     valid_until: string;
     status: string;
     destination?: string;
+    vehicle_model?: string;
+    vehicle_plate?: string;
     created_at: string;
     visitor: {
         name: string;
@@ -617,12 +619,16 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
         setSubmitting(true);
         try {
             // 1. Inserir no histórico de acesso
+            const hasVehicle = !!(request.vehicle_model || request.vehicle_plate);
+
             const { error: insError } = await supabase.from('access_control').insert([{
                 guard_gate: gate,
                 name: request.visitor.name,
                 characteristic: request.visitor.characteristic,
                 identification: request.visitor.identification,
-                access_mode: 'Pedestre',
+                access_mode: hasVehicle ? 'Veículo' : 'Pedestre',
+                vehicle_model: request.vehicle_model || '',
+                vehicle_plate: request.vehicle_plate || '',
                 access_category: category,
                 authorizer: `${request.requester.rank} ${request.requester.name}`,
                 authorizer_id: request.requester.id,
@@ -1513,6 +1519,12 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                                     <span className={`font-bold uppercase ${textMuted}`}>Destino</span>
                                                     <span className={`font-black uppercase text-right ${textPrimary}`}>{req.destination || 'NÃO INFORMADO'}</span>
                                                 </div>
+                                                {(req.vehicle_model || req.vehicle_plate) && (
+                                                    <div className="flex justify-between items-center text-[10px]">
+                                                        <span className={`font-bold uppercase ${textMuted} flex items-center gap-1`}><Car className="w-3 h-3" /> Veículo</span>
+                                                        <span className={`font-black uppercase text-right ${textPrimary}`}>{req.vehicle_model} {req.vehicle_plate ? `- ${req.vehicle_plate}` : ''}</span>
+                                                    </div>
+                                                )}
                                                 <div className="flex justify-between items-center text-[10px]">
                                                     <span className={`font-bold uppercase ${textMuted}`}>Válido até</span>
                                                     <span className={`font-black uppercase text-right ${isExpired ? 'text-red-500' : textPrimary}`}>

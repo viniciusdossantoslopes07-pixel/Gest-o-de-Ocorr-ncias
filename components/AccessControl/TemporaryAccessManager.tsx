@@ -69,6 +69,11 @@ export default function TemporaryAccessManager({ currentUser, isDarkMode }: Temp
     const [saveVisitor, setSaveVisitor] = useState(true);
     const [selectedVisitorId, setSelectedVisitorId] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // Vehicle State
+    const [hasVehicle, setHasVehicle] = useState(false);
+    const [vehicleModel, setVehicleModel] = useState('');
+    const [vehiclePlate, setVehiclePlate] = useState('');
 
     useEffect(() => {
         fetchData();
@@ -119,6 +124,9 @@ export default function TemporaryAccessManager({ currentUser, isDarkMode }: Temp
         setSaveVisitor(true);
         setSelectedVisitorId(null);
         setIsCreating(false);
+        setHasVehicle(false);
+        setVehicleModel('');
+        setVehiclePlate('');
     };
 
     const handleCreateAccess = async (e: React.FormEvent) => {
@@ -186,7 +194,9 @@ export default function TemporaryAccessManager({ currentUser, isDarkMode }: Temp
                     code,
                     valid_until: validUntil,
                     destination: destination.toUpperCase(),
-                    status: 'PENDING'
+                    status: 'PENDING',
+                    vehicle_model: hasVehicle ? vehicleModel.toUpperCase() : null,
+                    vehicle_plate: hasVehicle ? vehiclePlate.toUpperCase() : null
                 }]);
 
             if (reqError) throw reqError;
@@ -419,6 +429,50 @@ export default function TemporaryAccessManager({ currentUser, isDarkMode }: Temp
                                     icon={<ArrowRight className="w-4 h-4" />}
                                 />
                             </div>
+
+                            {/* Veículo Checkbox e Campos */}
+                            <div className="pt-2">
+                                <label className={`flex items-center gap-3 p-4 border rounded-2xl cursor-pointer transition-all ${hasVehicle ? (isDarkMode ? 'bg-blue-900/20 border-blue-500/30' : 'bg-blue-50 border-blue-200') : (isDarkMode ? 'border-slate-700 hover:bg-slate-800' : 'border-slate-200 hover:bg-slate-50')}`}>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={hasVehicle} 
+                                        onChange={e => setHasVehicle(e.target.checked)}
+                                        className="w-5 h-5 rounded-md text-blue-600"
+                                    />
+                                    <div>
+                                        <h4 className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                            Veículo
+                                        </h4>
+                                    </div>
+                                </label>
+                            </div>
+
+                            {hasVehicle && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in pt-1">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Modelo do Veículo</label>
+                                        <input 
+                                            type="text"
+                                            required={hasVehicle}
+                                            className={`w-full p-3.5 border-2 rounded-xl text-xs font-black uppercase outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white focus:border-blue-500' : 'bg-slate-50 border-slate-100 focus:border-blue-600'}`}
+                                            placeholder="Ex: ONIX PRATA"
+                                            value={vehicleModel}
+                                            onChange={e => setVehicleModel(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Placa</label>
+                                        <input 
+                                            type="text"
+                                            required={hasVehicle}
+                                            className={`w-full p-3.5 border-2 rounded-xl text-xs font-black uppercase outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white focus:border-blue-500' : 'bg-slate-50 border-slate-100 focus:border-blue-600'}`}
+                                            placeholder="ABC-1234"
+                                            value={vehiclePlate}
+                                            onChange={e => setVehiclePlate(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                            )}
 
                             {!selectedVisitorId && (
                                 <div className="pt-2">

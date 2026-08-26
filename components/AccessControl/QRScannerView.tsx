@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '../../services/supabase';
-import { User as UserIcon, QrCode, ArrowDownToLine, ArrowUpFromLine, X, Loader2, CheckCircle, AlertCircle, Camera, Shield, DoorOpen, UserCheck } from 'lucide-react';
+import { User as UserIcon, QrCode, ArrowDownToLine, ArrowUpFromLine, X, Loader2, CheckCircle, AlertCircle, Camera, Shield, DoorOpen, UserCheck, Car } from 'lucide-react';
 import { User } from '../../types';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { format, isAfter } from 'date-fns';
@@ -13,6 +13,8 @@ interface TemporaryAccessRequest {
     valid_until: string;
     status: string;
     destination?: string;
+    vehicle_model?: string;
+    vehicle_plate?: string;
     visitor: {
         name: string;
         identification: string;
@@ -161,12 +163,16 @@ export default function QRScannerView({ currentUser, isDarkMode }: QRScannerView
         setSubmitting(true);
         try {
             // 1. Insert into original access_control table
+            const hasVehicle = !!(accessData.vehicle_model || accessData.vehicle_plate);
+            
             const { error: insError } = await supabase.from('access_control').insert([{
                 guard_gate: selectedGate,
                 name: accessData.visitor.name,
                 characteristic: accessData.visitor.characteristic,
                 identification: accessData.visitor.identification,
-                access_mode: 'Pedestre', // Could be vehicle if QR contains info, defaulting to Pedestre for temp
+                access_mode: hasVehicle ? 'Veículo' : 'Pedestre',
+                vehicle_model: accessData.vehicle_model || '',
+                vehicle_plate: accessData.vehicle_plate || '',
                 access_category: category,
                 authorizer: `${accessData.requester.rank} ${accessData.requester.name}`,
                 authorizer_id: accessData.requester.id,
@@ -291,6 +297,14 @@ export default function QRScannerView({ currentUser, isDarkMode }: QRScannerView
                                         {accessData.destination || 'NÃO INFORMADO'}
                                     </p>
                                 </div>
+                                {(accessData.vehicle_model || accessData.vehicle_plate) && (
+                                    <div className={`p-4 rounded-2xl ${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1 flex items-center gap-1"><Car className="w-3 h-3" /> Veículo</span>
+                                        <p className={`text-xs font-black uppercase ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                                            {accessData.vehicle_model} {accessData.vehicle_plate ? `- ${accessData.vehicle_plate}` : ''}
+                                        </p>
+                                    </div>
+                                )}
                                 <div className={`p-4 rounded-2xl ${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
                                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Autorizado por</span>
                                     <p className={`text-xs font-black uppercase ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
