@@ -5,10 +5,12 @@ import { User, DailyAttendance, AttendanceRecord, AbsenceJustification } from '.
 import { PRESENCE_STATUS, CALL_TYPES, CallTypeCode, RANKS, getRankPriority } from '../../constants';
 import { useSectors } from '../../contexts/SectorsContext';
 import { hasPermission, PERMISSIONS } from '../../constants/permissions';
-import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint, Map as MapIcon, MoveHorizontal, ShieldCheck, ChevronDown } from 'lucide-react';
+import { CheckCircle, Users, Calendar, Search, UserPlus, Filter, Save, FileSignature, X, Plus, Trash2, AlertTriangle, GripVertical, FileText, Printer, FileCheck, Fingerprint, Map as MapIcon, MoveHorizontal, ShieldCheck, ChevronDown, Share2 } from 'lucide-react';
 import ForceMapDashboard from './ForceMapDashboard';
 import { authenticateBiometrics } from '../../services/webauthn';
 import { supabase } from '../../services/supabase';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas-pro';
 
 interface DailyAttendanceProps {
     users: User[];
@@ -545,6 +547,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [responsible, setResponsible] = useState(`${currentUser.rank} ${currentUser.warName || currentUser.name}`);
     const [isSigned, setIsSigned] = useState(false);
     const [recordToPrint, setRecordToPrint] = useState<DailyAttendance | null>(null);
+    const [isSharing, setIsSharing] = useState(false);
 
     // Security states
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -954,6 +957,84 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         alert('Chamada salva e assinada com sucesso!');
     };
 
+    const handlePrintHistorical = (record: DailyAttendance) => {
+        setRecordToPrint(record);
+        setTimeout(() => {
+            document.body.classList.add('print-weekly-mode');
+            document.body.classList.remove('print-coupon-mode');
+            setTimeout(() => {
+                window.print();
+                document.body.classList.remove('print-weekly-mode');
+                setRecordToPrint(null);
+            }, 300);
+        }, 100);
+    };
+
+    const handleSharePDF = async () => {
+        if (!navigator.share) {
+            alert('Compartilhamento nativo não suportado neste dispositivo. Use a opção normal de impressão.');
+            return;
+        }
+
+        setIsSharing(true);
+        
+        document.body.classList.add('print-weekly-mode');
+        document.body.classList.remove('print-coupon-mode');
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        try {
+            const printElement = document.querySelector('.print-weekly') as HTMLElement;
+            if (!printElement) throw new Error("Elemento de impressão não encontrado");
+            
+            const canvas = await html2canvas(printElement, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                windowWidth: 1200 
+            });
+            
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+            
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 0;
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            
+            pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
+            heightLeft -= pageHeight;
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
+                heightLeft -= pageHeight;
+            }
+            
+            const pdfBlob = pdf.output('blob');
+            const file = new File([pdfBlob], `Chamada_${selectedSector}.pdf`, { type: 'application/pdf' });
+            
+            document.body.classList.remove('print-weekly-mode');
+            
+            await navigator.share({
+                title: `Chamada Diária - ${selectedSector}`,
+                files: [file]
+            });
+            
+        } catch (err) {
+            console.error(err);
+            alert('Erro ao gerar o PDF para compartilhamento.');
+            document.body.classList.remove('print-weekly-mode');
+        } finally {
+            setIsSharing(false);
+        }
+    };
+
     const handlePrint = (attendance: DailyAttendance) => {
         setRecordToPrint(attendance);
         setTimeout(() => window.print(), 300);
@@ -1052,6 +1133,19 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                     title="Imprimir / Gerar PDF"
                                 >
                                     <Printer className="w-5 h-5 text-white" />
+                                </button>
+                                {/* Botão de Compartilhar Nativo - Apenas visível em telas menores ou dispositivos móveis */}
+                                <button
+                                    onClick={handleSharePDF}
+                                    disabled={isSharing}
+                                    className={`md:hidden shrink-0 p-3 rounded-2xl transition-all shadow-lg active:scale-95 cursor-pointer disabled:opacity-50 ${isDarkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/40' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/30'}`}
+                                    title="Compartilhar PDF"
+                                >
+                                    {isSharing ? (
+                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    ) : (
+                                        <Share2 className="w-5 h-5 text-white" />
+                                    )}
                                 </button>
                                 <div>
                                     <h2 className={`text-base lg:text-lg font-black tracking-tight leading-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Retirada de Faltas</h2>
