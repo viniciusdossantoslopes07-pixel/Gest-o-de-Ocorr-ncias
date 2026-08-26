@@ -1343,7 +1343,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                                             <th rowSpan={2} className={`px-4 lg:px-7 py-5 border-b text-[10px] font-black uppercase tracking-[0.2em] text-left min-w-[200px] lg:min-w-[220px] sticky left-0 z-30 shadow-[4px_0_10px_rgba(0,0,0,0.05)] ${isDarkMode ? 'bg-slate-900 border-slate-800 text-blue-400' : 'bg-white border-indigo-100/50 text-indigo-600'}`}>
                                                 <div className="flex items-center gap-3">
                                                     <Users className="w-4 h-4 opacity-50" />
-                                                    <span>Efetivo Militar</span>
+                                                    <span>EFETIVO</span>
                                                     <span className="text-emerald-500 font-black text-base lg:text-lg ml-1">{filteredUsers.length}</span>
                                                 </div>
                                             </th>
@@ -1883,7 +1883,12 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                             <table className="w-full border-collapse border border-black text-[8px]">
                                 <thead>
                                     <tr className="bg-slate-100">
-                                        <th rowSpan={2} className="border border-black px-2 py-2 text-left uppercase w-[110px]">MILITAR (POSTO/GRAD - NOME)</th>
+                                        <th rowSpan={2} className="border border-black px-2 py-2 text-left uppercase w-[110px]">
+                                            MILITAR (POSTO/GRAD - NOME)
+                                            <div className="mt-1 text-[7px] font-black tracking-widest">
+                                                EFETIVO: {filteredUsers.length}
+                                            </div>
+                                        </th>
                                         {currentWeek.map(date => (
                                             <th key={date} colSpan={2} className="border border-black p-1 text-center uppercase text-[9px]">
                                                 {parseISOToDate(date).toLocaleDateString('pt-BR', { weekday: 'long' })}
