@@ -44,7 +44,11 @@ CREATE POLICY "Admins can view all access requests" ON temporary_access_requests
 
 -- Users can create requests
 CREATE POLICY "Users can create access requests" ON temporary_access_requests
-    FOR INSERT WITH CHECK (auth.uid() = requester_id);
+    FOR INSERT WITH CHECK (true);
+
+-- Users can update requests (e.g. mark as USED)
+CREATE POLICY "Enable update for all users" ON temporary_access_requests 
+    FOR UPDATE USING (true) WITH CHECK (true);
 
 -- Visitor Catalog Policies
 CREATE POLICY "Users can view visitor catalog" ON visitor_catalog
