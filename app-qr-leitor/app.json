@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "GSD-SP Leitor",
+    "slug": "gsdsp-leitor",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.gsdsp.qrleitor",
+      "adaptiveIcon": {
+        "backgroundColor": "#1e293b",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "O aplicativo precisa da câmera para ler os QR Codes de acesso."
+        }
+      ]
+    ]
+  }
+}
