@@ -10,8 +10,8 @@ interface ParkingRequestModalProps {
     initialOmId?: string | null;
 }
 
-// 10 MB em bytes
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+// 5 MB em bytes
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 const ACCEPTED_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
 
@@ -29,8 +29,8 @@ function formatPhone(value: string): string {
 
 function friendlyStorageError(err: any): string {
     const msg: string = err?.message || err?.error || String(err);
-    if (msg.toLowerCase().includes('payload too large') || msg.toLowerCase().includes('413'))
-        return 'Um dos arquivos é muito grande. O limite é 10 MB por documento.';
+    if (msg.toLowerCase().includes('payload too large') || msg.toLowerCase().includes('413') || msg.toLowerCase().includes('exceeded the max'))
+        return 'Um dos arquivos é muito grande. O limite é 5 MB por documento.';
     if (msg.toLowerCase().includes('duplicate') || msg.toLowerCase().includes('already exists'))
         return 'Erro de duplicidade ao enviar o arquivo. Tente novamente.';
     if (msg.toLowerCase().includes('storage') || msg.toLowerCase().includes('bucket'))
@@ -123,7 +123,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
             return;
         }
         if (file.size > MAX_FILE_SIZE) {
-            setError(`${label}: arquivo muito grande (${(file.size / 1024 / 1024).toFixed(1)} MB). O limite é 10 MB.`);
+            setError(`${label}: arquivo muito grande (${(file.size / 1024 / 1024).toFixed(1)} MB). O limite é 5 MB.`);
             e.target.value = '';
             return;
         }
@@ -539,7 +539,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
 
                                 {/* Documentos */}
                                 <div className={section}>
-                                    <h3 className={sectionTitle}>Documentação (PDF/Foto) — máx. 10 MB cada</h3>
+                                    <h3 className={sectionTitle}>Documentação (PDF/Foto) — máx. 5 MB cada</h3>
 
                                     <div className={`p-3 ${dk ? 'bg-blue-900/20 border-blue-800/30' : 'bg-blue-50 border-blue-100'} rounded-xl border space-y-1`}>
                                         <p className={`text-[10px] ${dk ? 'text-blue-400' : 'text-blue-800'} font-bold uppercase text-center flex items-center justify-center gap-2`}>
