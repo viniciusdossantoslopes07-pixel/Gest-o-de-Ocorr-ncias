@@ -72,7 +72,7 @@ export default function SideMenu({
     // Admin / Occurrences
     const canManageUsers = hasPermission(currentUser, PERMISSIONS.MANAGE_USERS);
     const canManageOccurrences = hasPermission(currentUser, PERMISSIONS.MANAGE_OCCURRENCES);
-    const isAdmin = currentUser.role === UserRole.ADMIN;
+    const isAdmin = currentUser.role === UserRole.ADMIN || currentUser.role === 'admin' || currentUser.role === 'ADMIN';
     
     // Vehicles
     const canViewVehicles = hasPermission(currentUser, PERMISSIONS.VIEW_VEHICLES) || isAdmin;
