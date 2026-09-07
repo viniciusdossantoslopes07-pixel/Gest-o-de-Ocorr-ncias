@@ -226,99 +226,196 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
         </div>
       )}
 
-      {/* Header Premium Redesign */}
-      <div className={`relative overflow-hidden rounded-[2rem] border shadow-xl flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 p-6 md:p-8 transition-all duration-500 ${isDarkMode ? 'bg-slate-900/80 border-slate-700/50 shadow-black/40 backdrop-blur-xl' : 'bg-white/80 border-slate-200/60 shadow-slate-200/50 backdrop-blur-xl'}`}>
-        {/* Glow Effects */}
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl opacity-50 pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl opacity-50 pointer-events-none" />
-        
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6 w-full xl:w-auto">
-          <div className="relative p-4 md:p-5 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-[1.5rem] shadow-lg shadow-blue-900/30 text-white transform hover:scale-105 transition-all duration-300">
-            <ShieldCheck className="w-8 h-8 md:w-10 md:h-10" />
-            <div className="absolute inset-0 bg-white/20 rounded-[1.5rem] opacity-0 hover:opacity-100 transition-opacity duration-300" />
-          </div>
-          <div>
-            <h2 className={`text-2xl md:text-4xl font-black tracking-tight uppercase bg-clip-text text-transparent ${isDarkMode ? 'bg-gradient-to-r from-white to-slate-400' : 'bg-gradient-to-r from-slate-900 to-slate-600'}`}>
+      {/* Top Banner / Cabeçalho (Padrão Central de Viaturas) */}
+      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 relative overflow-hidden">
+        <div className="absolute right-0 top-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-bold uppercase tracking-wider">
+              <ShieldCheck className="w-3.5 h-3.5" /> Gestão & Acessos
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
               Gerir Acessos
-            </h2>
-            <p className="text-blue-500 dark:text-blue-400 font-bold uppercase tracking-[0.2em] text-[10px] md:text-xs mt-1.5 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-              Gestão de Identidades e Permissões
+            </h1>
+            <p className="text-sm text-slate-300 max-w-xl">
+              Gestão completa de identidades, controle de permissões por nível, administração de setores e perfis de acesso da Organização.
             </p>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0">
+            {currentUser?.role === UserRole.ADMIN && (
+              <button
+                onClick={() => {
+                  alert("💡 INSTALAÇÃO DO LEITOR (PWA)\n\nComo o sistema é uma aplicação web moderna, você pode instalá-lo como um App nativo:\n\n1. Abra o Guardião no Chrome (Android) ou Safari (iOS).\n2. Clique nos 3 pontos ou no ícone de Compartilhar.\n3. Selecione 'Instalar Aplicativo' ou 'Adicionar à Tela de Início'.");
+                }}
+                className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-black text-sm flex items-center gap-2.5 transition-all"
+              >
+                <Download className="w-4 h-4" /> App Leitor
+              </button>
+            )}
+            {activeTab === 'users' && (
+              <button
+                onClick={() => {
+                  if (showForm) {
+                    handleCancelEdit();
+                  } else {
+                    setShowForm(true);
+                    setShowNewUserForm(true);
+                  }
+                }}
+                className={`px-6 py-3.5 rounded-2xl font-black text-sm flex items-center gap-2.5 shadow-lg active:scale-95 transition-all ${
+                  showForm
+                    ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/25'
+                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-blue-500/25'
+                }`}
+              >
+                {showForm ? <XCircle className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                {showForm ? 'Cancelar' : 'Adicionar Usuário'}
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="relative z-10 flex flex-col md:flex-row items-center gap-4 w-full xl:w-auto">
-          {/* Segmented Controls for Tabs */}
-          <div className={`flex p-1.5 rounded-2xl shadow-inner w-full md:w-auto ${isDarkMode ? 'bg-slate-800/80' : 'bg-slate-100/80'}`}>
-            <button
-              onClick={() => setActiveTab('users')}
-              className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'users' ? 'bg-blue-500 text-white shadow-md transform scale-[1.02]' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
-            >
-              Usuários
-            </button>
-            {canManagePermissions && (
-              <button
-                onClick={() => setActiveTab('permissions')}
-                className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'permissions' ? 'bg-indigo-500 text-white shadow-md transform scale-[1.02]' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
-              >
-                Permissões
-              </button>
-            )}
-            {canManageSectors && (
-              <button
-                onClick={() => setActiveTab('sectors')}
-                className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'sectors' ? 'bg-amber-500 text-white shadow-md transform scale-[1.02]' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
-              >
-                Setores
-              </button>
-            )}
+        {/* Resumo Rápido no Topo */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6 pt-6 border-t border-slate-800/80">
+          <div className="bg-slate-800/40 rounded-2xl p-3 sm:p-4 border border-slate-700/40">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              Usuários Totais
+            </span>
+            <span className="text-xl sm:text-2xl font-black text-white">{approvedUsers.length + pendingUsers.length}</span>
           </div>
 
-          {currentUser?.role === UserRole.ADMIN && (
-            <button
-              onClick={() => {
-                alert("💡 INSTALAÇÃO DO LEITOR (PWA)\n\nComo o sistema é uma aplicação web moderna, você pode instalá-lo como um App nativo:\n\n1. Abra o Guardião no Chrome (Android) ou Safari (iOS).\n2. Clique nos 3 pontos ou no ícone de Compartilhar.\n3. Selecione 'Instalar Aplicativo' ou 'Adicionar à Tela de Início'.\n\nIsso garantirá que o leitor de QR Code funcione em tela cheia e com máxima performance.");
-              }}
-              className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 shadow-xl w-full md:w-auto"
-            >
-              <Download className="w-4 h-4" /> App Leitor
-            </button>
-          )}
+          <div className="bg-slate-800/40 rounded-2xl p-3 sm:p-4 border border-slate-700/40">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 block">
+              Ativos / Aprovados
+            </span>
+            <span className="text-xl sm:text-2xl font-black text-emerald-400">
+              {approvedUsers.length}
+            </span>
+          </div>
+
+          <div className="bg-slate-800/40 rounded-2xl p-3 sm:p-4 border border-slate-700/40">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400 block">
+              Pendentes
+            </span>
+            <span className="text-xl sm:text-2xl font-black text-amber-400">
+              {pendingUsers.length}
+            </span>
+          </div>
+
+          <div className="bg-slate-800/40 rounded-2xl p-3 sm:p-4 border border-slate-700/40">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-purple-400 block">
+              Administradores
+            </span>
+            <span className="text-xl sm:text-2xl font-black text-purple-400">
+              {approvedUsers.filter(u => u.role === UserRole.ADMIN).length}
+            </span>
+          </div>
         </div>
       </div>
 
-      {activeTab === 'users' && (
-        <div className="flex flex-col sm:flex-row justify-end gap-4 mt-2">
+      {/* Navegação entre Módulos: Usuários | Permissões | Setores */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-2">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 custom-scrollbar w-full sm:w-auto flex-nowrap">
           <button
-            onClick={() => setShowInactive(!showInactive)}
-            className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-6 py-3 rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300 border-2 ${showInactive
-              ? 'bg-rose-500 border-rose-500 text-white shadow-lg shadow-rose-500/30'
-              : (isDarkMode ? 'bg-slate-800/50 border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-800 hover:border-slate-300 shadow-sm')
+            onClick={() => setActiveTab('users')}
+            className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shrink-0 ${
+              activeTab === 'users'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            Usuários
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-black ${
+                activeTab === 'users'
+                  ? 'bg-blue-700 text-white'
+                  : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
               }`}
-          >
-            {showInactive ? <Shield className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-            {showInactive ? 'Ocultar Desativados' : 'Exibir Desativados'}
+            >
+              {approvedUsers.length}
+            </span>
           </button>
-          
-          <button
-            onClick={() => {
-              if (showForm) {
-                handleCancelEdit();
-              } else {
-                setShowForm(true);
-                setShowNewUserForm(true);
-              }
-            }}
-            className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-8 py-3 rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-xl border-2 ${showForm
-              ? (isDarkMode ? 'bg-slate-700 border-slate-600 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-600')
-              : 'bg-gradient-to-r from-blue-600 to-indigo-600 border-transparent text-white hover:opacity-90 shadow-blue-600/30 hover:shadow-blue-600/50 transform hover:-translate-y-0.5'}`}
-          >
-            {showForm ? <XCircle className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
-            {showForm ? 'Cancelar' : 'Adicionar Usuário'}
-          </button>
+
+          {canManagePermissions && (
+            <button
+              onClick={() => setActiveTab('permissions')}
+              className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shrink-0 ${
+                activeTab === 'permissions'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4" />
+              Permissões
+            </button>
+          )}
+
+          {canManageSectors && (
+            <button
+              onClick={() => setActiveTab('sectors')}
+              className={`px-4 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shrink-0 ${
+                activeTab === 'sectors'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              <Briefcase className="w-4 h-4" />
+              Setores
+              <span
+                className={`px-2 py-0.5 rounded-full text-xs font-black ${
+                  activeTab === 'sectors'
+                    ? 'bg-blue-700 text-white'
+                    : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                }`}
+              >
+                {sectors.length}
+              </span>
+            </button>
+          )}
         </div>
-      )}
+
+        <div className="flex items-center justify-end w-full sm:w-auto gap-3">
+          {activeTab === 'users' && (
+            <>
+              {/* Toggle de Inativos */}
+              <button
+                onClick={() => setShowInactive(!showInactive)}
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  showInactive
+                    ? 'bg-rose-100 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                }`}
+                title="Exibir Desativados"
+              >
+                {showInactive ? <Shield className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                <span className="hidden lg:inline">{showInactive ? 'Ocultar Desativados' : 'Desativados'}</span>
+              </button>
+
+              {/* Barra de Busca Compacta */}
+              <div className="relative w-full sm:w-72">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Buscar usuário, SARAM, nome..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
 
       {activeTab === 'users' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -590,34 +687,11 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
             </div>
           )}
 
-          <div className={`lg:col-span-3 rounded-[2rem] border overflow-hidden shadow-2xl shadow-blue-900/5 transition-all ${isDarkMode ? 'bg-slate-800/90 border-slate-700 backdrop-blur-xl' : 'bg-white border-slate-200/80 backdrop-blur-xl'}`}>
-            {/* Search and Filters Bar */}
-            <div className={`p-5 md:p-8 border-b flex flex-col xl:flex-row items-center justify-between gap-6 transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-700/50' : 'bg-slate-50/50 border-slate-100'}`}>
-              <div className="relative w-full xl:max-w-lg group">
-                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                  <Search className="w-5 h-5 text-blue-500 transition-colors group-focus-within:text-blue-600" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Buscar por nome, saram, guerra..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`w-full pl-12 pr-12 py-3.5 md:py-4 border-2 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none ${isDarkMode ? 'bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 shadow-sm'}`}
-                />
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm('')}
-                    className="absolute inset-y-0 right-4 flex items-center"
-                  >
-                    <div className={`p-1.5 rounded-full transition-colors ${isDarkMode ? 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'}`}>
-                      <X className="w-3.5 h-3.5" />
-                    </div>
-                  </button>
-                )}
-              </div>
-
-              {/* Category Filter Chips */}
-              <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+          <div className="space-y-4">
+            {/* Filter Bar */}
+            <div className={`p-4 rounded-[1.5rem] border overflow-hidden shadow-sm transition-all flex flex-col xl:flex-row items-center justify-between gap-4 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
+              <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto">
+                <span className="text-xs font-bold text-slate-400 mr-2">FILTROS:</span>
                 {[
                   { id: 'OFICIAIS', label: 'Oficiais', icon: Crown },
                   { id: 'GRADUADOS', label: 'Graduados', icon: BadgeCheck },
@@ -626,56 +700,41 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest border-2 transition-all ${selectedCategory === cat.id
-                      ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/30 transform scale-105'
-                      : isDarkMode
-                        ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200'
-                        : 'bg-white border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600 shadow-sm'
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${selectedCategory === cat.id
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
                       }`}
                   >
-                    <cat.icon className="w-4 h-4" />
+                    <cat.icon className="w-3.5 h-3.5" />
                     {cat.label}
                   </button>
                 ))}
 
-                <div className={`w-px h-8 mx-1 hidden md:block ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                <div className={`w-px h-6 mx-1 hidden md:block ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
 
                 <select
                   value={selectedRank}
                   onChange={(e) => setSelectedRank(e.target.value)}
-                  className={`px-4 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest border-2 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300 focus:border-blue-500' : 'bg-white border-slate-200 text-slate-600 focus:border-blue-500'}`}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold outline-none transition-all ${isDarkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}
                 >
                   <option value="">Postos (Todos)</option>
                   {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
 
-                <div className={`w-px h-8 mx-1 hidden md:block ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                <div className={`w-px h-6 mx-1 hidden md:block ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
 
                 <button
                   onClick={() => setShowFunctional(!showFunctional)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest border-2 transition-all ${showFunctional
-                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/30 transform scale-105'
-                    : isDarkMode
-                      ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-indigo-500/50 hover:text-indigo-400'
-                      : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-200 hover:text-indigo-600 shadow-sm'
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${showFunctional
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
                     }`}
                 >
-                  <Briefcase className="w-4 h-4" />
+                  <Briefcase className="w-3.5 h-3.5" />
                   Funcionais
                 </button>
               </div>
-            </div>
-
-            <div className={`px-6 py-4 border-b flex justify-between items-center bg-gradient-to-r ${isDarkMode ? 'from-slate-900 to-slate-800/50 border-slate-700' : 'from-slate-50 to-white border-slate-100'}`}>
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
-                  <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                </div>
-                <h3 className={`text-xs md:text-sm font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-                  Usuários Encontrados
-                </h3>
-              </div>
-              <div className={`px-3 py-1 rounded-full text-xs font-black ${isDarkMode ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-100 text-blue-700'}`}>
+              <div className="text-xs font-bold text-slate-400">
                 {filteredUsers.length} resultados
               </div>
             </div>
