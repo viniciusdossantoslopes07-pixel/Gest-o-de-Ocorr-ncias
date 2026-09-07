@@ -193,7 +193,7 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
       {/* BARRA DE CONTROLE SUPERIOR (oculta pelo CSS de impressão via #vtr-print-controls-bar) */}
       <div
         id="vtr-print-controls-bar"
-        className="w-full max-w-4xl bg-slate-900 text-white rounded-2xl sm:rounded-2xl p-4 mb-4 flex items-center justify-between shadow-2xl border border-slate-800 shrink-0 sticky top-2 z-50"
+        className="w-full max-w-4xl bg-slate-900 text-white rounded-2xl sm:rounded-2xl p-4 mb-2 flex items-center justify-between shadow-2xl border border-slate-800 shrink-0 sticky top-2 z-50"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3">
@@ -251,7 +251,7 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
         <OmPrintHeader om={om} />
 
         {/* FAIXA DE TÍTULO INSTITUCIONAL COM PLACA MERCOSUL */}
-        <div className="flex items-center justify-between gap-3 mb-4 bg-slate-900 text-white p-3.5 rounded-xl border border-slate-950">
+        <div className="flex items-center justify-between gap-3 mb-2 bg-slate-900 text-white p-3.5 rounded-xl border border-slate-950">
           <div>
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 block">
               CENTRAL DE VIATURAS • TERMO DE CAUTELA
@@ -273,51 +273,51 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
         </div>
 
         {/* TABELA DE IDENTIFICAÇÃO PRINCIPAL */}
-        <div className="border border-slate-300 rounded-xl overflow-hidden mb-4 text-xs">
+        <div className="border border-slate-300 rounded-xl overflow-hidden mb-2 text-xs">
           <div className="bg-slate-100 font-bold px-3 py-1.5 border-b border-slate-300 text-slate-700 uppercase tracking-wider text-[10px] flex items-center justify-between">
             <span>1. DADOS DA CAUTELA E VIATURA</span>
             <span>Nº {loan.loan_number}</span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 divide-x divide-y divide-slate-200 text-[11px]">
-            <div className="p-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 divide-x divide-y divide-slate-200 text-[9px]">
+            <div className="p-1.5">
               <span className="text-[9px] font-bold text-slate-500 uppercase block">RegFab</span>
               <strong className="font-black text-slate-900 text-xs text-blue-700">{vtr?.reg_fab || 'N/I'}</strong>
             </div>
 
-            <div className="p-2.5">
+            <div className="p-1.5">
               <span className="text-[9px] font-bold text-slate-500 uppercase block">Marca / Modelo</span>
               <strong className="font-bold text-slate-900">{vtr?.brand} {vtr?.model}</strong>
             </div>
 
-            <div className="p-2.5">
+            <div className="p-1.5">
               <span className="text-[9px] font-bold text-slate-500 uppercase block">Categoria FAB</span>
               <strong className="font-bold text-slate-900">{vtr?.category || 'P-1'} {vtr?.description ? `(${vtr.description})` : ''}</strong>
             </div>
 
-            <div className="p-2.5">
+            <div className="p-1.5">
               <span className="text-[9px] font-bold text-slate-500 uppercase block">Tipo de Combustível</span>
               <strong className="font-bold text-slate-900">{vtr?.fuel_type || 'Diesel'}</strong>
             </div>
 
-            <div className="p-2.5">
+            <div className="p-1.5">
               <span className="text-[9px] font-bold text-slate-500 uppercase block">Militar Condutor</span>
               <strong className="font-bold text-slate-900">{loan.driver_rank} {loan.driver_name}</strong>
               <span className="text-[10px] text-slate-500 block">SARAM: {loan.driver_saram}</span>
             </div>
 
-            <div className="p-2.5">
+            <div className="p-1.5">
               <span className="text-[9px] font-bold text-slate-500 uppercase block">Despachante da Saída</span>
               <strong className="font-bold text-slate-900">{loan.dispatcher_name}</strong>
               <span className="text-[10px] text-slate-500 block">SARAM: {loan.dispatcher_saram}</span>
             </div>
 
-            <div className="p-2.5">
+            <div className="p-1.5">
               <span className="text-[9px] font-bold text-slate-500 uppercase block">Data e Hora de Saída</span>
               <strong className="font-bold text-slate-900">{formatDate(loan.departure_date)}</strong>
             </div>
 
-            <div className="p-2.5">
+            <div className="p-1.5">
               <span className="text-[9px] font-bold text-slate-500 uppercase block">Destino da Missão</span>
               <strong className="font-bold text-blue-800">{loan.destination || 'BASP'}</strong>
               {loan.mission_reason && (
@@ -325,19 +325,19 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
               )}
             </div>
 
-            <div className="p-2.5 bg-slate-50">
+            <div className="p-1.5 bg-slate-50">
               <span className="text-[9px] font-bold text-slate-500 uppercase block">Odômetro de Saída</span>
               <strong className="font-black text-slate-900 text-xs">{loan.departure_odometer} km</strong>
             </div>
 
-            <div className="p-2.5 bg-slate-50">
+            <div className="p-1.5 bg-slate-50">
               <span className="text-[9px] font-bold text-slate-500 uppercase block">Combustível de Saída</span>
               <strong className="font-black text-blue-700 text-xs">{loan.departure_fuel_level || '8/8'}</strong>
             </div>
 
             {isReturn && (
               <>
-                <div className="p-2.5 bg-emerald-50/60">
+                <div className="p-1.5 bg-emerald-50/60">
                   <span className="text-[9px] font-bold text-slate-500 uppercase block">Odômetro de Retorno</span>
                   <strong className="font-black text-emerald-800 text-xs">{loan.return_odometer || '—'} km</strong>
                   {loan.distance_traveled !== undefined && (
@@ -345,7 +345,7 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
                   )}
                 </div>
 
-                <div className="p-2.5 bg-emerald-50/60">
+                <div className="p-1.5 bg-emerald-50/60">
                   <span className="text-[9px] font-bold text-slate-500 uppercase block">Combustível Retorno</span>
                   <strong className="font-black text-emerald-800 text-xs">{loan.return_fuel_level || '—'}</strong>
                 </div>
@@ -354,50 +354,21 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
           </div>
         </div>
 
-        {/* NÍVEL VISUAL DO TANQUE DE COMBUSTÍVEL */}
-        <div className="border border-slate-300 rounded-xl p-3 mb-4 bg-slate-50 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2">
-            <Fuel className="w-4 h-4 text-blue-600" />
-            <span className="font-bold uppercase text-[10px] text-slate-600">
-              Nível do Tanque no Ato da {isReturn ? 'Devolução' : 'Saída'}:
-            </span>
-            <span className="font-black text-blue-800">{currentFuel || '8/8'}</span>
-          </div>
 
-          <div className="flex items-center gap-1">
-            {FUEL_FRACTIONS.map((f) => {
-              const activeIndex = FUEL_FRACTIONS.indexOf(currentFuel || '8/8');
-              const thisIndex = FUEL_FRACTIONS.indexOf(f);
-              const isFilled = thisIndex <= activeIndex;
-              return (
-                <div
-                  key={f}
-                  className={`w-6 h-4 rounded text-[9px] font-black flex items-center justify-center border ${
-                    isFilled
-                      ? 'bg-blue-600 text-white border-blue-700'
-                      : 'bg-white text-slate-400 border-slate-300'
-                  }`}
-                >
-                  {f}
-                </div>
-              );
-            })}
-          </div>
-        </div>
 
         {/* ITENS CONFERIDOS DO CHECKLIST (TABELA ESTILO MOVIDA) */}
-        <div className="vtr-checklist-items-table border border-slate-300 rounded-xl overflow-hidden mb-4 text-xs">
+        <div className="vtr-checklist-items-table border border-slate-300 rounded-xl overflow-hidden mb-2 text-xs">
           <div className="bg-slate-100 font-bold px-3 py-1.5 border-b border-slate-300 text-slate-700 uppercase tracking-wider text-[10px] flex items-center justify-between">
             <span>2. CONFERÊNCIA DE ITENS DO VEÍCULO ({Object.keys(CHECKLIST_LABELS).length} ITENS)</span>
             <span className="text-emerald-700 font-black">PADRÃO GSD-SP</span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-0 divide-x divide-y divide-slate-200 text-[11px]">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-0 divide-x divide-y divide-slate-200 text-[9px]">
             {Object.entries(CHECKLIST_LABELS).map(([key, label]) => {
               const status = (checklistItems as Record<string, string>)[key] || 'OK';
               const isOk = status === 'OK';
               return (
-                <div key={key} className="p-2 flex items-center justify-between gap-2">
+                <div key={key} className="p-1 flex items-center justify-between gap-2">
                   <span className="text-slate-800 font-medium truncate">{label}</span>
                   <span
                     className={`text-[9px] font-black px-1.5 py-0.5 rounded shrink-0 ${
