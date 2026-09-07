@@ -14,13 +14,14 @@ interface UserManagementProps {
   onUpdateUser: (user: User) => void;
   onDeleteUser: (id: string) => void;
   onPermanentDeleteUser?: (id: string) => void;
+  onRejectUserRegistration?: (id: string) => Promise<void> | void;
   onRefreshUsers?: () => void;
   onResetPassword?: (userId: string) => Promise<boolean>;
   currentUser: User | null;
   isDarkMode: boolean;
 }
 
-const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdateUser, onDeleteUser, onPermanentDeleteUser, onRefreshUsers, onResetPassword, currentUser, isDarkMode }) => {
+const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdateUser, onDeleteUser, onPermanentDeleteUser, onRejectUserRegistration, onRefreshUsers, onResetPassword, currentUser, isDarkMode }) => {
   const { sectors, oms, omId } = useSectors();
   const [activeTab, setActiveTab] = useState<'users' | 'permissions' | 'sectors'>('users');
   const initialFormState = {
@@ -117,7 +118,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     });
   }, [users, searchTerm, selectedCategory, selectedRank, showFunctional]);
 
-  const pendingUsers = useMemo(() => filteredUsers.filter(u => u.approved === false), [filteredUsers]);
+  const pendingUsers = useMemo(() => filteredUsers.filter(u => u.approved === false && u.active !== false), [filteredUsers]);
   const approvedUsers = useMemo(() => {
     return filteredUsers.filter(u => {
       // Garantir retrocompatibilidade: se approved for null/undefined, considerar aprovado.
@@ -668,7 +669,15 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                                     <ShieldCheck className="w-3 h-3" /> Aprovar
                                   </button>
                                   <button
-                                    onClick={() => onDeleteUser(u.id)}
+                                    onClick={() => {
+                                      if (onRejectUserRegistration) {
+                                        onRejectUserRegistration(u.id);
+                                      } else if (onPermanentDeleteUser) {
+                                        onPermanentDeleteUser(u.id);
+                                      } else {
+                                        onDeleteUser(u.id);
+                                      }
+                                    }}
                                     className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
                                   >
                                     <Trash2 className="w-3 h-3" /> Recusar

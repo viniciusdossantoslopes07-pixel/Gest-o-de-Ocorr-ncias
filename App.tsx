@@ -1376,6 +1376,29 @@ const App: FC = () => {
     }
   };
 
+  const handleRejectUserRegistration = async (id: string) => {
+    if (!confirm('Deseja realmente recusar este cadastro? O registro será excluído permanentemente da base de dados.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from('users').delete().eq('id', id);
+      if (!error) {
+        setUsers(prev => prev.filter(u => u.id !== id));
+        alert('Cadastro recusado e excluído da base de dados com sucesso.');
+      } else {
+        console.error('Erro ao excluir usuário recusado:', error);
+        // Fallback defensivo: desativar e desaprovar caso haja restrição de FK
+        await supabase.from('users').update({ approved: false, active: false }).eq('id', id);
+        setUsers(prev => prev.filter(u => u.id !== id));
+        alert('Cadastro recusado com sucesso.');
+      }
+    } catch (err: any) {
+      console.error('Erro ao recusar cadastro:', err);
+      alert('Erro ao recusar cadastro: ' + (err?.message || 'Tente novamente.'));
+    }
+  };
+
   const handleReorderUsers = async (reorderedUsers: User[]) => {
     // Optimistic update
     setUsers(reorderedUsers);
@@ -1896,6 +1919,7 @@ const App: FC = () => {
               onUpdateUser={handleUpdateUser}
               onDeleteUser={handleDeleteUser}
               onPermanentDeleteUser={handlePermanentDeleteUser}
+              onRejectUserRegistration={handleRejectUserRegistration}
               onRefreshUsers={fetchUsers}
               onResetPassword={handleAdminResetPassword}
               currentUser={currentUser}
