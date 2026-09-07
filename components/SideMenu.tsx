@@ -43,7 +43,7 @@ export default function SideMenu({
     const [emergencyAlertModal, setEmergencyAlertModal] = useState<{ sender: string, local: string } | null>(null);
     const audioRef = React.useRef<HTMLAudioElement | null>(null);
     const sirenRef = React.useRef<{ osc: OscillatorNode, ctx: AudioContext } | null>(null);
-    const countdownTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+    const countdownTimerRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
     const channelRef = React.useRef<any>(null);
 
     // Permission-based Logic
