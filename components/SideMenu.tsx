@@ -75,7 +75,7 @@ export default function SideMenu({
     const isAdmin = currentUser.role === UserRole.ADMIN;
     
     // Vehicles
-    const canViewVehicles = hasPermission(currentUser, PERMISSIONS.VIEW_VEHICLES);
+    const canViewVehicles = hasPermission(currentUser, PERMISSIONS.VIEW_VEHICLES) || isAdmin;
 
     const showEmergencyButton = currentUser.is_functional || isAdmin;
 
