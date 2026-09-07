@@ -135,9 +135,9 @@ export const Combobox: React.FC<ComboboxProps> = ({
                     onKeyDown={handleKeyDown}
                     disabled={disabled}
                     placeholder={placeholder}
-                    className={`w-full border rounded-xl p-3 pr-10 font-bold text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 outline-none uppercase transition-all ${dk
+                    className={`w-full border rounded-xl p-3 pr-10 font-bold text-sm placeholder:text-slate-400 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none uppercase transition-all ${dk
                         ? `bg-slate-700/60 border-slate-600 text-white placeholder:text-slate-500 ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-800' : ''}`
-                        : `bg-slate-50 border-slate-200 text-slate-900 ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-100' : ''}`
+                        : `bg-white border-slate-300 text-slate-900 shadow-xs focus:bg-white ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-100' : ''}`
                         }`}
                     autoComplete="off"
                 />
