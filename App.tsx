@@ -690,35 +690,46 @@ const App: FC = () => {
     ]);
   };
 
-  const handleLogin = async (username: string, password: string): Promise<boolean> => {
+  const handleLogin = async (username: string, password: string): Promise<boolean | string> => {
     try {
       const cleanUsername = (username === 'admin' || username.startsWith('sop.'))
         ? username
         : username.replace(/\D/g, '');
 
-      const { data: rawData, error } = await withTimeout<any>(
+      // Autenticação Segura via RPC (Prevenção Pentest / Rate Limit / Hash Bcrypt)
+      const { data: rpcResult, error: rpcError } = await withTimeout<any>(
         Promise.resolve(
-          supabase
-            .from('users')
-            .select('*')
-            .eq('username', cleanUsername)
-            .eq('password', password)
-            .limit(1)
+          supabase.rpc('secure_login', {
+            p_username: cleanUsername,
+            p_password: password
+          })
         ),
         8000,
         'O servidor não respondeu a tempo. Tente novamente.'
       );
 
-      if (error) {
-        console.error('Database login error:', error);
+      if (rpcError) {
+        console.error('Database login error:', rpcError);
         return false;
       }
 
-      if (!rawData || rawData.length === 0) {
+      if (!rpcResult) {
         return false;
       }
 
-      const data = rawData[0];
+      if (rpcResult.status === 'LOCKED') {
+        alert(rpcResult.message || 'Conta bloqueada temporariamente por excesso de tentativas. Aguarde 15 minutos.');
+        return false;
+      }
+
+      if (rpcResult.status !== 'SUCCESS' || !rpcResult.user) {
+        if (rpcResult.remaining_attempts !== undefined && rpcResult.remaining_attempts <= 2) {
+          alert(`Credenciais incorretas. Restam ${rpcResult.remaining_attempts} tentativa(s) antes do bloqueio.`);
+        }
+        return false;
+      }
+
+      const data = rpcResult.user;
 
       const user: User = {
         id: data.id,
@@ -731,7 +742,7 @@ const App: FC = () => {
         sector: data.sector,
         accessLevel: data.access_level,
         approved: data.approved,
-        password: data.password,
+        password: '', // Não armazenar senha nem hash no cliente
         warName: data.war_name,
         militarId: data.militar_id,
         phoneNumber: data.phone_number,
@@ -762,7 +773,8 @@ const App: FC = () => {
         external_service: !!data.external_service,
         external_om: data.external_om,
         external_sector: data.external_sector,
-        om_id: data.om_id
+        om_id: data.om_id,
+        administrativeRole: data.administrative_role
       };
 
       if (user.om_id) {
@@ -773,7 +785,6 @@ const App: FC = () => {
       }
 
       if (user.approved === false) {
-        // App.tsx handleLogin doesn't return string, but we can alert here
         alert('Seu cadastro está pendente de aprovação pelo Comandante.');
         return false;
       }
@@ -786,6 +797,8 @@ const App: FC = () => {
       localStorage.setItem('gsdsp_user_session', JSON.stringify(user));
       localStorage.setItem('gsdsp_last_saram', username);
       setActiveTab('home');
+
+      return true;
 
       // OTIMIZAÇÃO: fetchUsers não é chamado aqui mais, o useEffect nos
       // componentes que dependem de `currentUser` cuidará do fetch de forma
@@ -835,7 +848,7 @@ const App: FC = () => {
         sector: user.sector,
         accessLevel: user.access_level,
         approved: user.approved,
-        password: newPassword,
+        password: '',
         warName: user.war_name,
         militarId: user.militar_id,
         phoneNumber: user.phone_number,
@@ -1677,27 +1690,22 @@ const App: FC = () => {
   const handlePasswordChange = async (current: string, newPass: string): Promise<boolean> => {
     if (!currentUser) return false;
 
-    // Verify current (simple check against local state first, but ideally verify against DB again)
-    if (currentUser.password !== current) {
-      alert('Senha atual incorreta.');
-      return false;
-    }
+    const { data: res, error } = await supabase.rpc('change_user_password', {
+      p_user_id: currentUser.id,
+      p_current_password: current,
+      p_new_password: newPass
+    });
 
-    // Update in DB
-    const { error } = await supabase
-      .from('users')
-      .update({ password: newPass })
-      .eq('id', currentUser.id);
-
-    if (error) {
-      alert('Erro ao alterar senha: ' + error.message);
+    if (error || !res || !res.success) {
+      alert((res && res.message) || 'Erro ao alterar senha.');
       return false;
     }
 
     // Update local state
-    const updatedUser = { ...currentUser, password: newPass };
+    const updatedUser = { ...currentUser, password: '' };
     setCurrentUser(updatedUser);
     localStorage.setItem('gsdsp_user_session', JSON.stringify(updatedUser));
+    alert('Senha alterada com sucesso!');
     return true;
   }
 
