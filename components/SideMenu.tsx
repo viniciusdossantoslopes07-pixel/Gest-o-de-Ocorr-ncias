@@ -16,7 +16,7 @@ interface SideMenuProps {
     isOpen: boolean;
     onClose: () => void;
     activeTab: string;
-    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'vacation-management' | 'vacation-stats' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs' | 'access-temp' | 'access-scanner'>>;
+    setActiveTab: React.Dispatch<React.SetStateAction<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'vacation-management' | 'vacation-stats' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs' | 'access-temp' | 'access-scanner' | 'om-management' | 'vehicles'>>;
     currentUser: User;
     onLogout: () => void;
     onToggleTheme: () => void;
@@ -557,6 +557,14 @@ export default function SideMenu({
                                             )}
                                         </div>
                                     )}
+                                </div>
+                            )}
+
+                            {/* Central de Viaturas */}
+                            {!isPublic && (
+                                <div className="space-y-1">
+                                    {!isCollapsed && <h3 className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase mb-2 px-3 mt-4">Central de Viaturas</h3>}
+                                    <MenuItem id="vehicles" label="Central de Viaturas" icon={Car} />
                                 </div>
                             )}
                         </>

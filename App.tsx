@@ -45,6 +45,7 @@ const MissionOrderForm = lazy(() => import('./components/MissionOrderForm'));
 const InventoryManager = lazy(() => import('./components/InventoryManager').then(m => ({ default: m.InventoryManager })));
 const SAP03Panel = lazy(() => import('./components/SAP03Panel').then(m => ({ default: m.SAP03Panel })));
 const MyMaterialLoans = lazy(() => import('./components/MyMaterialLoans').then(m => ({ default: m.MyMaterialLoans })));
+const VehicleManager = lazy(() => import('./components/VehicleManager').then(m => ({ default: m.VehicleManager })));
 const DailyAttendanceView = lazy(() => import('./components/PersonnelCenter/DailyAttendance'));
 const PersonnelManagementView = lazy(() => import('./components/PersonnelCenter/PersonnelManagement'));
 const AccessControlPanel = lazy(() => import('./components/AccessControl/AccessControlPanel'));
@@ -237,8 +238,8 @@ const App: FC = () => {
   }, [omId, currentUser]);
   const [users, setUsers] = useState<User[]>([]);
   const [vacations, setVacations] = useState<Vacation[]>([]);
-  // Added 'settings' to activeTab type
-  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'vacation-management' | 'vacation-stats' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs' | 'access-temp' | 'access-scanner' | 'om-management'>('home');
+  // Added 'settings' and 'vehicles' to activeTab type
+  const [activeTab, setActiveTab] = useState<'home' | 'dashboard' | 'list' | 'kanban' | 'new' | 'users' | 'mission-center' | 'mission-orders' | 'mission-request' | 'mission-management' | 'profile' | 'material-caution' | 'settings' | 'my-mission-requests' | 'my-material-loans' | 'meu-plano' | 'material-approvals' | 'inventory-management' | 'daily-attendance' | 'personnel-management' | 'vacation-management' | 'vacation-stats' | 'access-control' | 'access-statistics' | 'parking-request' | 'events' | 'events-user' | 'emergency-logs' | 'access-temp' | 'access-scanner' | 'om-management' | 'vehicles'>('home');
   const [showVacationPortal, setShowVacationPortal] = useState(false);
   const [occurrences, setOccurrences] = useState<Occurrence[]>([]);
   const [attendanceHistory, setAttendanceHistory] = useState<DailyAttendance[]>([]);
@@ -2263,6 +2264,10 @@ const App: FC = () => {
 
           {activeTab === 'material-approvals' && canManageMaterial && (
             <SAP03Panel user={currentUser} isDarkMode={isDarkMode} />
+          )}
+
+          {activeTab === 'vehicles' && !isPublic && (
+            <VehicleManager user={currentUser} isDarkMode={isDarkMode} />
           )}
 
 

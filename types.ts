@@ -408,3 +408,104 @@ export interface ChatMessage {
   created_at: string;
 }
 
+export interface Vehicle {
+  id: string;
+  om_id?: string;
+  reg_fab: string;
+  plate: string;
+  brand: string;
+  model: string;
+  year?: number;
+  color?: string;
+  fuel_type?: string;
+  current_odometer: number;
+  current_fuel_level: string;
+  status: 'Disponível' | 'Cautelada' | 'Em Manutenção' | 'Manutenção' | 'Alienação' | 'Baixada';
+  category?: string; // Classificação FAB: P-1 a P-20
+  description?: string; // Descrição TDV oficial FAB: ex. CARRO DE PRESOS, CARRO PATRULHA, CAMINHÃO MILITAR
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface VehicleDamagePoint {
+  id: string;
+  x: number; // percentual x (0-100) no diagrama
+  y: number; // percentual y (0-100) no diagrama
+  part: string; // Frente, Traseira, Lateral Esquerda, Lateral Direita, Teto, Vidros
+  type: 'Amassado' | 'Riscado' | 'Quebrado' | 'Trincado' | 'Furo' | 'Outros';
+  code: string; // Ex: '1A', '2R'
+  description?: string;
+  photo_url?: string;
+  created_at?: string;
+}
+
+export interface VehicleChecklistItems {
+  parabrisa: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  limpadores: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  agua_reservatorio: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  agua_radiador: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  oleo_motor: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  farol_sinalizadores: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  antena: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  documento: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  difusores_ar: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  luzes_painel: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  revisao_km: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  buzina: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  tapetes: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  sem_odores: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  multimidia: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  porta_luvas: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  pneu_diant_esq: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  pneu_diant_dir: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  pneu_tras_esq: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  pneu_tras_dir: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  estepe: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  triangulo_chave_macaco: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+  [key: string]: 'OK' | 'ACEITÁVEL' | 'RUIM' | 'OUTROS' | 'N/A';
+}
+
+export interface VehicleLoan {
+  id: string;
+  loan_number: string;
+  vehicle_id: string;
+  om_id?: string;
+  driver_id?: string;
+  driver_name: string;
+  driver_rank: string;
+  driver_saram: string;
+  driver_signature?: boolean;
+  driver_signature_data?: string;
+  dispatcher_id?: string;
+  dispatcher_name: string;
+  dispatcher_saram: string;
+  departure_date: string;
+  expected_return_date?: string;
+  destination?: string;
+  mission_reason?: string;
+  status: 'Em Uso' | 'Devolvido' | 'Cancelado';
+  departure_odometer: number;
+  departure_fuel_level: string;
+  departure_items?: VehicleChecklistItems;
+  departure_damages?: VehicleDamagePoint[];
+  departure_photos?: string[];
+  departure_notes?: string;
+  return_date?: string;
+  return_dispatcher_id?: string;
+  return_dispatcher_name?: string;
+  return_dispatcher_saram?: string;
+  return_odometer?: number;
+  distance_traveled?: number;
+  return_fuel_level?: string;
+  return_items?: VehicleChecklistItems;
+  return_damages?: VehicleDamagePoint[];
+  return_photos?: string[];
+  return_notes?: string;
+  return_signature?: boolean;
+  return_signature_data?: string;
+  created_at?: string;
+  updated_at?: string;
+  vehicle?: Vehicle;
+}
+
