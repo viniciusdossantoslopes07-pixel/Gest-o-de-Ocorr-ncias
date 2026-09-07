@@ -226,60 +226,81 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
         </div>
       )}
 
-      {/* Header Premium */}
-      <div className={`p-4 md:p-8 rounded-3xl md:rounded-[2.5rem] border shadow-sm flex flex-col md:flex-row justify-between items-center gap-6 transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black/20' : 'bg-white border-slate-100 shadow-slate-200/50'}`}>
-        <div className="flex items-center gap-4 md:gap-6">
-          <div className="p-3 md:p-5 bg-slate-900 rounded-2xl md:rounded-3xl shadow-xl shadow-slate-900/20 text-white transform -rotate-3 hover:rotate-0 transition-all duration-500">
-            <ShieldCheck className="w-6 h-6 md:w-10 md:h-10" />
+      {/* Header Premium Redesign */}
+      <div className={`relative overflow-hidden rounded-[2rem] border shadow-xl flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 p-6 md:p-8 transition-all duration-500 ${isDarkMode ? 'bg-slate-900/80 border-slate-700/50 shadow-black/40 backdrop-blur-xl' : 'bg-white/80 border-slate-200/60 shadow-slate-200/50 backdrop-blur-xl'}`}>
+        {/* Glow Effects */}
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl opacity-50 pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl opacity-50 pointer-events-none" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6 w-full xl:w-auto">
+          <div className="relative p-4 md:p-5 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-[1.5rem] shadow-lg shadow-blue-900/30 text-white transform hover:scale-105 transition-all duration-300">
+            <ShieldCheck className="w-8 h-8 md:w-10 md:h-10" />
+            <div className="absolute inset-0 bg-white/20 rounded-[1.5rem] opacity-0 hover:opacity-100 transition-opacity duration-300" />
           </div>
           <div>
-            <h2 className={`text-xl md:text-3xl font-black tracking-tighter uppercase ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Acessos</h2>
-            <p className="text-slate-500 font-bold uppercase tracking-widest text-[8px] md:text-[10px] mt-1 flex items-center gap-2">
-              <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-blue-500 animate-pulse" />
-              Gestão de Identidades
+            <h2 className={`text-2xl md:text-4xl font-black tracking-tight uppercase bg-clip-text text-transparent ${isDarkMode ? 'bg-gradient-to-r from-white to-slate-400' : 'bg-gradient-to-r from-slate-900 to-slate-600'}`}>
+              Gerir Acessos
+            </h2>
+            <p className="text-blue-500 dark:text-blue-400 font-bold uppercase tracking-[0.2em] text-[10px] md:text-xs mt-1.5 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+              Gestão de Identidades e Permissões
             </p>
           </div>
         </div>
 
-        <div className={`flex p-1 md:p-1.5 rounded-xl md:rounded-2xl shadow-inner transition-all w-full md:w-auto ${isDarkMode ? 'bg-slate-900' : 'bg-slate-100'}`}>
-          <button
-            onClick={() => setActiveTab('users')}
-            className={`flex-1 md:flex-none px-4 md:px-8 py-2 md:py-3 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'users' ? (isDarkMode ? 'bg-slate-700 text-blue-400 shadow-lg' : 'bg-white text-blue-600 shadow-md') : 'text-slate-500 hover:text-slate-800'}`}
-          >
-            Usuários
-          </button>
-          {canManagePermissions && (
+        <div className="relative z-10 flex flex-col md:flex-row items-center gap-4 w-full xl:w-auto">
+          {/* Segmented Controls for Tabs */}
+          <div className={`flex p-1.5 rounded-2xl shadow-inner w-full md:w-auto ${isDarkMode ? 'bg-slate-800/80' : 'bg-slate-100/80'}`}>
             <button
-              onClick={() => setActiveTab('permissions')}
-              className={`flex-1 md:flex-none px-4 md:px-8 py-2 md:py-3 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'permissions' ? (isDarkMode ? 'bg-slate-700 text-blue-400 shadow-lg' : 'bg-white text-blue-600 shadow-md') : 'text-slate-500 hover:text-slate-800'}`}
+              onClick={() => setActiveTab('users')}
+              className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'users' ? 'bg-blue-500 text-white shadow-md transform scale-[1.02]' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
             >
-              Permissões
+              Usuários
             </button>
-          )}
-          {canManageSectors && (
+            {canManagePermissions && (
+              <button
+                onClick={() => setActiveTab('permissions')}
+                className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'permissions' ? 'bg-indigo-500 text-white shadow-md transform scale-[1.02]' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
+              >
+                Permissões
+              </button>
+            )}
+            {canManageSectors && (
+              <button
+                onClick={() => setActiveTab('sectors')}
+                className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300 ${activeTab === 'sectors' ? 'bg-amber-500 text-white shadow-md transform scale-[1.02]' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
+              >
+                Setores
+              </button>
+            )}
+          </div>
+
+          {currentUser?.role === UserRole.ADMIN && (
             <button
-              onClick={() => setActiveTab('sectors')}
-              className={`flex-1 md:flex-none px-4 md:px-8 py-2 md:py-3 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'sectors' ? (isDarkMode ? 'bg-slate-700 text-blue-400 shadow-lg' : 'bg-white text-blue-600 shadow-md') : 'text-slate-500 hover:text-slate-800'}`}
+              onClick={() => {
+                alert("💡 INSTALAÇÃO DO LEITOR (PWA)\n\nComo o sistema é uma aplicação web moderna, você pode instalá-lo como um App nativo:\n\n1. Abra o Guardião no Chrome (Android) ou Safari (iOS).\n2. Clique nos 3 pontos ou no ícone de Compartilhar.\n3. Selecione 'Instalar Aplicativo' ou 'Adicionar à Tela de Início'.\n\nIsso garantirá que o leitor de QR Code funcione em tela cheia e com máxima performance.");
+              }}
+              className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 shadow-xl w-full md:w-auto"
             >
-              Setores
+              <Download className="w-4 h-4" /> App Leitor
             </button>
           )}
         </div>
-
-        {currentUser?.role === UserRole.ADMIN && (
-          <button
-            onClick={() => {
-              alert("💡 INSTALAÇÃO DO LEITOR (PWA)\n\nComo o sistema é uma aplicação web moderna, você pode instalá-lo como um App nativo:\n\n1. Abra o Guardião no Chrome (Android) ou Safari (iOS).\n2. Clique nos 3 pontos ou no ícone de Compartilhar.\n3. Selecione 'Instalar Aplicativo' ou 'Adicionar à Tela de Início'.\n\nIsso garantirá que o leitor de QR Code funcione em tela cheia e com máxima performance.");
-            }}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all shadow-lg ${isDarkMode ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-900/40' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200'}`}
-          >
-            <Download className="w-4 h-4 md:w-5 md:h-5" /> Instalar Leitor (App)
-          </button>
-        )}
       </div>
 
       {activeTab === 'users' && (
-        <div className="flex justify-end gap-3 px-4">
+        <div className="flex flex-col sm:flex-row justify-end gap-4 mt-2">
+          <button
+            onClick={() => setShowInactive(!showInactive)}
+            className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-6 py-3 rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300 border-2 ${showInactive
+              ? 'bg-rose-500 border-rose-500 text-white shadow-lg shadow-rose-500/30'
+              : (isDarkMode ? 'bg-slate-800/50 border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-500' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-800 hover:border-slate-300 shadow-sm')
+              }`}
+          >
+            {showInactive ? <Shield className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+            {showInactive ? 'Ocultar Desativados' : 'Exibir Desativados'}
+          </button>
+          
           <button
             onClick={() => {
               if (showForm) {
@@ -289,23 +310,12 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                 setShowNewUserForm(true);
               }
             }}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 shadow-xl active:scale-95 border-2 ${showForm
+            className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-8 py-3 rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-xl border-2 ${showForm
               ? (isDarkMode ? 'bg-slate-700 border-slate-600 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-600')
-              : 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700 shadow-blue-600/30'}`}
+              : 'bg-gradient-to-r from-blue-600 to-indigo-600 border-transparent text-white hover:opacity-90 shadow-blue-600/30 hover:shadow-blue-600/50 transform hover:-translate-y-0.5'}`}
           >
             {showForm ? <XCircle className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
-            {showForm ? 'Esconder Formulário' : 'Novo Cadastro / Editar'}
-          </button>
-
-          <button
-            onClick={() => setShowInactive(!showInactive)}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 border-2 ${showInactive
-              ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-900/40'
-              : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700 shadow-sm')
-              }`}
-          >
-            {showInactive ? <Shield className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-            {showInactive ? 'Visualizando Desativados' : 'Ver Militares Desativados'}
+            {showForm ? 'Cancelar' : 'Adicionar Usuário'}
           </button>
         </div>
       )}
@@ -580,30 +590,34 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
             </div>
           )}
 
-          <div className={`lg:col-span-3 rounded-[2rem] border overflow-hidden shadow-sm transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black/20' : 'bg-white border-slate-200'}`}>
-            {/* Search Bar */}
-            <div className={`p-6 border-b flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <div className={`lg:col-span-3 rounded-[2rem] border overflow-hidden shadow-2xl shadow-blue-900/5 transition-all ${isDarkMode ? 'bg-slate-800/90 border-slate-700 backdrop-blur-xl' : 'bg-white border-slate-200/80 backdrop-blur-xl'}`}>
+            {/* Search and Filters Bar */}
+            <div className={`p-5 md:p-8 border-b flex flex-col xl:flex-row items-center justify-between gap-6 transition-all ${isDarkMode ? 'bg-slate-900/40 border-slate-700/50' : 'bg-slate-50/50 border-slate-100'}`}>
+              <div className="relative w-full xl:max-w-lg group">
+                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                  <Search className="w-5 h-5 text-blue-500 transition-colors group-focus-within:text-blue-600" />
+                </div>
                 <input
                   type="text"
-                  placeholder="Buscar por nome, guerra, saram ou setor..."
+                  placeholder="Buscar por nome, saram, guerra..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`w-full pl-11 pr-11 py-3 border rounded-2xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900'}`}
+                  className={`w-full pl-12 pr-12 py-3.5 md:py-4 border-2 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none ${isDarkMode ? 'bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500' : 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 shadow-sm'}`}
                 />
                 {searchTerm && (
                   <button
                     onClick={() => setSearchTerm('')}
-                    className={`absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors ${isDarkMode ? 'text-slate-500 hover:bg-slate-700 hover:text-slate-300' : 'hover:bg-slate-100 text-slate-400 hover:text-slate-600'}`}
+                    className="absolute inset-y-0 right-4 flex items-center"
                   >
-                    <X className="w-3 h-3" />
+                    <div className={`p-1.5 rounded-full transition-colors ${isDarkMode ? 'bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'}`}>
+                      <X className="w-3.5 h-3.5" />
+                    </div>
                   </button>
                 )}
               </div>
 
               {/* Category Filter Chips */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
                 {[
                   { id: 'OFICIAIS', label: 'Oficiais', icon: Crown },
                   { id: 'GRADUADOS', label: 'Graduados', icon: BadgeCheck },
@@ -612,52 +626,62 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border-2 transition-all ${selectedCategory === cat.id
-                      ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20'
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest border-2 transition-all ${selectedCategory === cat.id
+                      ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/30 transform scale-105'
                       : isDarkMode
-                        ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-200'
-                        : 'bg-white border-slate-100 text-slate-500 hover:border-slate-200 shadow-sm'
+                        ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200'
+                        : 'bg-white border-slate-200 text-slate-500 hover:border-blue-200 hover:text-blue-600 shadow-sm'
                       }`}
                   >
-                    <cat.icon className="w-3 h-3" />
+                    <cat.icon className="w-4 h-4" />
                     {cat.label}
                   </button>
                 ))}
 
-                <div className={`w-px h-6 mx-2 hidden md:block ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                <div className={`w-px h-8 mx-1 hidden md:block ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
 
                 <select
                   value={selectedRank}
                   onChange={(e) => setSelectedRank(e.target.value)}
-                  className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-slate-200 text-slate-600'}`}
+                  className={`px-4 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest border-2 outline-none transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300 focus:border-blue-500' : 'bg-white border-slate-200 text-slate-600 focus:border-blue-500'}`}
                 >
-                  <option value="">Todos os Postos</option>
+                  <option value="">Postos (Todos)</option>
                   {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
 
-                <div className={`w-px h-6 mx-2 hidden md:block ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                <div className={`w-px h-8 mx-1 hidden md:block ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
 
                 <button
                   onClick={() => setShowFunctional(!showFunctional)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border-2 transition-all ${showFunctional
-                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest border-2 transition-all ${showFunctional
+                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/30 transform scale-105'
                     : isDarkMode
-                      ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-200'
-                      : 'bg-white border-slate-100 text-slate-500 hover:border-slate-200 shadow-sm'
+                      ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-indigo-500/50 hover:text-indigo-400'
+                      : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-200 hover:text-indigo-600 shadow-sm'
                     }`}
                 >
-                  <Briefcase className="w-3 h-3" />
-                  {showFunctional ? 'Visualizando Funcionais' : 'Ver Funcionais'}
+                  <Briefcase className="w-4 h-4" />
+                  Funcionais
                 </button>
               </div>
+            </div>
 
-              <div className="flex items-center gap-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                <span>Resultados: <span className="text-blue-600 font-black">{filteredUsers.length}</span></span>
+            <div className={`px-6 py-4 border-b flex justify-between items-center bg-gradient-to-r ${isDarkMode ? 'from-slate-900 to-slate-800/50 border-slate-700' : 'from-slate-50 to-white border-slate-100'}`}>
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
+                  <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <h3 className={`text-xs md:text-sm font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                  Usuários Encontrados
+                </h3>
+              </div>
+              <div className={`px-3 py-1 rounded-full text-xs font-black ${isDarkMode ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-100 text-blue-700'}`}>
+                {filteredUsers.length} resultados
               </div>
             </div>
 
             {(pendingUsers.length > 0 || resetPasswordUsers.length > 0) && (
-              <div className={`mb-0 border-b-4 pb-0 ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
+              <div className={`mb-0 pb-0 ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
                 {/* Seção de Cadastro Pendente */}
                 {pendingUsers.length > 0 && (
                   <>
@@ -782,8 +806,15 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
               </div>
             )}
 
-            <div className={`p-4 md:p-6 border-b transition-all ${isDarkMode ? 'bg-slate-900/50 border-slate-700' : 'bg-slate-50/50 border-slate-100'}`}>
-              <h3 className={`text-xs md:text-sm font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Usuários Ativos ({approvedUsers.length})</h3>
+            {/* Desktop Table Header Redesign */}
+            <div className={`px-6 py-4 border-b border-t hidden md:block transition-all ${isDarkMode ? 'bg-slate-900/80 border-slate-700' : 'bg-slate-50/80 border-slate-100 backdrop-blur-md'}`}>
+              <div className="grid grid-cols-12 gap-4 items-center">
+                <div className="col-span-3 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Posto / Nome</div>
+                <div className="col-span-2 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Login / SARAM</div>
+                <div className="col-span-2 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Setor</div>
+                <div className="col-span-3 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Perfil / Nível</div>
+                <div className="col-span-2 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest text-right">Ações</div>
+              </div>
             </div>
 
             {/* Visualização em Cards (Mobile) */}
@@ -858,120 +889,119 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
             </div>
 
             {/* Visualização em Tabela (Desktop) */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className={isDarkMode ? 'bg-slate-900/50' : 'bg-slate-50/50'}>
-                  <tr>
-                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Posto / Nome</th>
-                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Login / SARAM</th>
-                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Setor</th>
-                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Perfil / Nível</th>
-                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Ações</th>
-                  </tr>
-                </thead>
-                <tbody className={isDarkMode ? 'divide-y divide-slate-700' : 'divide-y divide-slate-100'}>
-                  {approvedUsers.map(u => (
-                    <tr key={u.id} className={`transition-colors ${isDarkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-50/50'} ${editingUserId === u.id ? (isDarkMode ? 'bg-amber-900/20' : 'bg-amber-50/50') : ''}`}>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-500'}`}>ID {u.militarId || '0'}</span>
-                          <div>
-                            <div className={`font-bold flex items-center flex-wrap gap-2 ${u.administrativeRole ? 'text-amber-600 dark:text-amber-400' : (isDarkMode ? 'text-white' : 'text-slate-900')}`}>
-                              {u.name}
-                              {u.administrativeRole && (
-                                <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50" title="Função Especial">
-                                  <Crown className="w-2.5 h-2.5" />
-                                  {u.administrativeRole.replace(/_/g, ' ')}
-                                </span>
-                              )}
-                              {u.is_functional && (
-                                <span className={`px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase tracking-widest bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400 flex items-center gap-1 border border-indigo-200 dark:border-indigo-800`}>
-                                  <Briefcase className="w-2 h-2" /> FUNCIONAL
-                                </span>
-                              )}
-                            </div>
-                            <div className={`text-[10px] font-bold uppercase ${u.administrativeRole ? 'text-amber-500' : 'text-slate-400'}`}>{u.rank}</div>
-                          </div>
+            <div className="hidden md:block">
+              <div className={`flex flex-col ${isDarkMode ? 'divide-y divide-slate-700/50' : 'divide-y divide-slate-100'}`}>
+                {approvedUsers.map(u => (
+                  <div key={u.id} className={`grid grid-cols-12 gap-4 px-6 py-4 items-center transition-all duration-200 ${isDarkMode ? 'hover:bg-slate-700/30' : 'hover:bg-slate-50'} ${editingUserId === u.id ? (isDarkMode ? 'bg-amber-900/10' : 'bg-amber-50/50') : ''}`}>
+                    
+                    {/* Posto / Nome */}
+                    <div className="col-span-3 flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shrink-0 ${isDarkMode ? 'bg-slate-700 text-blue-400' : 'bg-blue-100 text-blue-700'}`}>
+                        {u.warName?.[0] || u.name?.[0]}
+                      </div>
+                      <div className="min-w-0">
+                        <div className={`font-bold text-sm truncate ${u.administrativeRole ? 'text-amber-600 dark:text-amber-400' : (isDarkMode ? 'text-white' : 'text-slate-900')}`}>
+                          {u.name}
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className={`font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>@{u.username}</div>
-                        <div className="text-[10px] text-slate-400 font-bold uppercase">SARAM: {u.saram}</div>
-                      </td>
-                      <td className={`px-6 py-4 font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-500'}`}>{u.sector}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1">
-                          <span className={`inline-block w-fit px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest ${u.role === UserRole.ADMIN ? 'bg-blue-100 text-blue-700' : (isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600')}`}>
-                            {u.role}
-                          </span>
-                          {u.accessLevel && (
-                            <span className={`text-[9px] font-bold uppercase flex items-center gap-1 ${u.accessLevel === 'OM' ? 'text-amber-600' : 'text-slate-400'}`}>
-                              <ChevronRight className="w-2 h-2" /> Nível {u.accessLevel}
+                        <div className="flex items-center flex-wrap gap-1.5 mt-0.5">
+                          <span className={`text-[9px] font-bold uppercase tracking-widest ${u.administrativeRole ? 'text-amber-500' : 'text-slate-500'}`}>{u.rank}</span>
+                          {u.administrativeRole && (
+                            <span className="flex items-center gap-1 px-1 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50">
+                              <Crown className="w-2 h-2" /> {u.administrativeRole.replace(/_/g, ' ')}
+                            </span>
+                          )}
+                          {u.is_functional && (
+                            <span className="flex items-center gap-1 px-1 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400">
+                              <Briefcase className="w-2 h-2" /> FUNC
                             </span>
                           )}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-1">
-                          {u.active !== false ? (
+                      </div>
+                    </div>
+
+                    {/* Login / SARAM */}
+                    <div className="col-span-2">
+                      <div className={`font-medium text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>@{u.username}</div>
+                      <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">SARAM: {u.saram}</div>
+                    </div>
+
+                    {/* Setor */}
+                    <div className="col-span-2">
+                      <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-600'}`}>
+                        {u.sector}
+                      </span>
+                    </div>
+
+                    {/* Perfil / Nível */}
+                    <div className="col-span-3 flex flex-col items-start gap-1">
+                      <span className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border ${u.role === UserRole.ADMIN ? (isDarkMode ? 'bg-blue-900/40 border-blue-800 text-blue-400' : 'bg-blue-50 border-blue-200 text-blue-700') : (isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-slate-200 text-slate-600')}`}>
+                        {u.role}
+                      </span>
+                      {u.accessLevel && (
+                        <span className={`text-[9px] font-bold uppercase tracking-widest flex items-center gap-1 pl-1 ${u.accessLevel === 'OM' ? 'text-amber-600 dark:text-amber-500' : 'text-slate-400'}`}>
+                          <ChevronRight className="w-2.5 h-2.5" /> Nível {u.accessLevel}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Ações */}
+                    <div className="col-span-2 flex items-center justify-end gap-1">
+                      {u.active !== false ? (
+                        <button
+                          onClick={() => handleEditClick(u)}
+                          className={`p-2 rounded-lg transition-all ${isDarkMode ? 'text-slate-400 hover:bg-slate-700 hover:text-blue-400' : 'text-slate-400 hover:bg-slate-100 hover:text-blue-600'}`}
+                          title="Editar usuário"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => onUpdateUser({ ...u, active: true })}
+                          className={`p-2 rounded-lg transition-all ${isDarkMode ? 'text-green-500 hover:bg-green-900/30' : 'text-green-600 hover:bg-green-50'}`}
+                          title="Reativar militar"
+                        >
+                          <ShieldCheck className="w-4 h-4" />
+                        </button>
+                      )}
+
+                      {u.username !== 'admin' && (
+                        <button
+                          onClick={() => onUpdateUser({ ...u, is_functional: !u.is_functional })}
+                          className={`p-2 rounded-lg transition-all ${u.is_functional
+                            ? (isDarkMode ? 'text-indigo-400 hover:bg-indigo-900/30' : 'text-indigo-600 hover:bg-indigo-50')
+                            : (isDarkMode ? 'text-slate-500 hover:bg-slate-700 hover:text-indigo-400' : 'text-slate-400 hover:bg-slate-100 hover:text-indigo-600')}`}
+                          title={u.is_functional ? "Remover de Funcionais" : "Mover para Funcionais"}
+                        >
+                          <Briefcase className="w-4 h-4" />
+                        </button>
+                      )}
+
+                      {u.username !== 'admin' && (
+                        <>
+                          {u.active !== false && (
                             <button
-                              onClick={() => handleEditClick(u)}
-                              className={`p-2 transition-colors ${isDarkMode ? 'text-slate-400 hover:text-blue-400' : 'text-slate-300 hover:text-blue-600'}`}
-                              title="Editar usuário"
+                              onClick={() => onDeleteUser(u.id)}
+                              className={`p-2 rounded-lg transition-all ${isDarkMode ? 'text-slate-500 hover:bg-slate-700 hover:text-amber-400' : 'text-slate-400 hover:bg-slate-100 hover:text-amber-500'}`}
+                              title="Desativar militar (Soft Delete)"
                             >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => onUpdateUser({ ...u, active: true })}
-                              className={`p-2 transition-colors ${isDarkMode ? 'text-green-500 hover:text-green-400' : 'text-green-600 hover:text-green-700'}`}
-                              title="Reativar militar"
-                            >
-                              <ShieldCheck className="w-4 h-4" />
+                              <XCircle className="w-4 h-4" />
                             </button>
                           )}
-
-                          {u.username !== 'admin' && (
+                          {currentUser?.role === UserRole.ADMIN && onPermanentDeleteUser && (
                             <button
-                              onClick={() => onUpdateUser({ ...u, is_functional: !u.is_functional })}
-                              className={`p-2 transition-colors ${u.is_functional
-                                ? (isDarkMode ? 'text-indigo-400' : 'text-indigo-600')
-                                : (isDarkMode ? 'text-slate-400 hover:text-indigo-400' : 'text-slate-300 hover:text-indigo-600')}`}
-                              title={u.is_functional ? "Remover de Funcionais" : "Mover para Funcionais"}
+                              onClick={() => onPermanentDeleteUser(u.id)}
+                              className={`p-2 rounded-lg transition-all ${isDarkMode ? 'text-red-900/50 hover:bg-red-900/30 hover:text-red-400' : 'text-red-300 hover:bg-red-50 hover:text-red-600'}`}
+                              title="Excluir Definitivamente (Hard Delete)"
                             >
-                              <Briefcase className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           )}
-
-                          {u.username !== 'admin' && (
-                            <>
-                              {u.active !== false ? (
-                                <button
-                                  onClick={() => onDeleteUser(u.id)}
-                                  className={`p-2 transition-colors ${isDarkMode ? 'text-slate-400 hover:text-amber-400' : 'text-slate-300 hover:text-amber-500'}`}
-                                  title="Desativar militar (Soft Delete)"
-                                >
-                                  <XCircle className="w-4 h-4" />
-                                </button>
-                              ) : null}
-
-                              {currentUser?.role === UserRole.ADMIN && onPermanentDeleteUser && (
-                                <button
-                                  onClick={() => onPermanentDeleteUser(u.id)}
-                                  className={`p-2 transition-colors ${isDarkMode ? 'text-red-900/50 hover:text-red-400' : 'text-slate-200 hover:text-red-600'}`}
-                                  title="Excluir Definitivamente (Hard Delete)"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
