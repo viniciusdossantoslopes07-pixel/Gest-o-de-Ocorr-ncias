@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { VehicleLoan, MilitaryOrganization } from '../types';
 import { OmPrintHeader } from './Common/OmPrintHeader';
 import { generateVehicleChecklistPdf } from '../services/vehiclePdfService';
+import { VehicleDamageDiagram } from './VehicleDamageDiagram';
 import {
   Printer,
   Download,
@@ -173,6 +174,7 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
   const checklistItems = isReturn && loan.return_items ? loan.return_items : loan.departure_items || {};
   const currentFuel = isReturn ? loan.return_fuel_level || loan.departure_fuel_level : loan.departure_fuel_level;
   const damages = isReturn && loan.return_damages ? loan.return_damages : loan.departure_damages || [];
+  const photos = isReturn && loan.return_photos ? loan.return_photos : loan.departure_photos || [];
 
   const content = (
     <div
@@ -405,37 +407,33 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
 
         {/* QUEBRA DE PÁGINA: Avarias, Observações, Termo e Assinaturas vão para a 2ª folha */}
         <div className="vtr-page-break-before">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
-          <div className="border border-slate-300 rounded-xl p-3 text-xs bg-slate-50">
-            <h4 className="font-bold text-[10px] uppercase text-slate-600 mb-1 flex items-center gap-1.5">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-              3. Registro de Avarias / Danos de Lataria
-            </h4>
-            {damages.length > 0 ? (
-              <ul className="space-y-1 text-[11px] text-slate-800 mt-2">
-                {damages.map((dmg, idx) => (
-                  <li key={idx} className="flex items-center justify-between border-b border-slate-200 pb-1">
-                    <span>{dmg.part || `Ponto ${idx + 1}`} ({dmg.type})</span>
-                    <span className="text-[9px] font-bold text-red-600 uppercase">{dmg.code}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-[11px] text-slate-500 italic mt-1">
-                Nenhuma avaria de lataria ou mecânica assinalada no momento da inspeção.
-              </p>
-            )}
-          </div>
+        {/* Registro de Avarias / Danos de Lataria com Diagrama Visual */}
+        <div className="mb-5 border border-slate-300 rounded-xl overflow-hidden vtr-signatures-block">
+          <VehicleDamageDiagram damages={damages} readOnly={true} onChange={() => {}} />
+        </div>
 
-          <div className="border border-slate-300 rounded-xl p-3 text-xs bg-slate-50">
-            <h4 className="font-bold text-[10px] uppercase text-slate-600 mb-1 flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5 text-blue-600" />
-              4. Observações da Missão
-            </h4>
-            <p className="text-[11px] text-slate-700 italic mt-1">
-              {loan.departure_notes || loan.return_notes || 'Sem observações adicionais registradas.'}
-            </p>
+        {/* Fotos de Evidência */}
+        {photos && photos.length > 0 && (
+          <div className="mb-5 grid grid-cols-2 gap-4 vtr-signatures-block">
+            {photos.map((photo, i) => (
+              <div key={i} className="border border-slate-300 rounded-xl overflow-hidden shadow-sm">
+                <img src={photo} alt="Evidência" className="w-full h-auto object-cover max-h-64" />
+                <div className="bg-slate-100 p-2 text-[10px] text-slate-600 font-bold border-t border-slate-300">
+                  Evidência Fotográfica ({isReturn ? 'Retorno' : 'Saída'}) - Placa: {vtr?.plate} - {formatDate(isReturn ? loan.return_date : loan.departure_date)}
+                </div>
+              </div>
+            ))}
           </div>
+        )}
+
+        <div className="border border-slate-300 rounded-xl p-3 text-xs bg-slate-50 mb-5">
+          <h4 className="font-bold text-[10px] uppercase text-slate-600 mb-1 flex items-center gap-1.5">
+            <Shield className="w-3.5 h-3.5 text-blue-600" />
+            4. Observações da Missão
+          </h4>
+          <p className="text-[11px] text-slate-700 italic mt-1">
+            {loan.departure_notes || loan.return_notes || 'Sem observações adicionais registradas.'}
+          </p>
         </div>
 
         {/* TERMO DE RESPONSABILIDADE FORMAL */}
