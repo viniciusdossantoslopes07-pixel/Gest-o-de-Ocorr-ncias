@@ -7,6 +7,7 @@ export const PERMISSIONS = {
     VIEW_PERSONNEL: 'view_personnel',
     VIEW_MATERIAL: 'view_material',
     VIEW_ACCESS_CONTROL: 'view_access_control',
+    VIEW_VEHICLES: 'view_vehicles',
 
     // Missões
     MANAGE_MISSIONS: 'manage_missions', // Validar, Aprovar
@@ -113,6 +114,18 @@ export const USER_FUNCTIONS = {
             PERMISSIONS.VIEW_MATERIAL,
             PERMISSIONS.MANAGE_MATERIAL,
             PERMISSIONS.VIEW_MATERIAL_PANEL,
+            PERMISSIONS.REQUEST_MISSION,
+            PERMISSIONS.REQUEST_MATERIAL,
+            PERMISSIONS.VIEW_DAILY_ATTENDANCE
+        ]
+    },
+    SAP_04: {
+        id: 'SAP_04',
+        name: 'SAP-04',
+        description: 'Visualização Padrão + Central de Viaturas (Total)',
+        permissions: [
+            PERMISSIONS.VIEW_DASHBOARD,
+            PERMISSIONS.VIEW_VEHICLES,
             PERMISSIONS.REQUEST_MISSION,
             PERMISSIONS.REQUEST_MATERIAL,
             PERMISSIONS.VIEW_DAILY_ATTENDANCE

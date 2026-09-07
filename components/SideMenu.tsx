@@ -73,6 +73,9 @@ export default function SideMenu({
     const canManageUsers = hasPermission(currentUser, PERMISSIONS.MANAGE_USERS);
     const canManageOccurrences = hasPermission(currentUser, PERMISSIONS.MANAGE_OCCURRENCES);
     const isAdmin = currentUser.role === UserRole.ADMIN;
+    
+    // Vehicles
+    const canViewVehicles = hasPermission(currentUser, PERMISSIONS.VIEW_VEHICLES);
 
     const showEmergencyButton = currentUser.is_functional || isAdmin;
 
@@ -440,7 +443,9 @@ export default function SideMenu({
                                 {(canManageMissions || canRequestMission) && (
                                     <MenuItem id="mission-center" label="Central de Missões" icon={ShieldAlert} />
                                 )}
-                                <MenuItem id="vehicles" label="Central de Viaturas" icon={Car} />
+                                {canViewVehicles && (
+                                    <MenuItem id="vehicles" label="Central de Viaturas" icon={Car} />
+                                )}
                                 <MenuItem id="meu-plano" label="Meu Plano" icon={UserIcon} />
                                 <MenuItem id="destinometro" label="Destinômetro" icon={MapPin} onClick={onOpenDestinometro} />
                             </div>
