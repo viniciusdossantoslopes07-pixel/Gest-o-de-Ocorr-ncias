@@ -100,7 +100,7 @@ const PUBLIC_USER: User = {
   sector: 'ACESSO PÚBLICO'
 };
 
-const APP_VERSION = '3.0.0'; // Incrementar esta versão para forçar refresh em todos os usuários
+const APP_VERSION = '4.0.0'; // Incrementar esta versão para forçar refresh em todos os usuários
 
 const App: FC = () => {
   // --- Version Check & Cache Management ---
@@ -1772,12 +1772,13 @@ const App: FC = () => {
 
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative z-10">
         {!isPublic && (
-          <header className={`print:hidden ${isDarkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-white/70 border-white/50'} backdrop-blur-xl border-b shadow-sm px-3 lg:px-6 py-2.5 lg:py-3.5 flex items-center justify-between z-50 sticky top-0 transition-all`}>
-            <div className="flex items-center gap-4">
-              <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors"><Menu className="w-5 h-5" /></button>
-              <h2 className={`text-lg lg:text-xl font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'} truncate max-w-[200px] sm:max-w-none`}>
-                {activeTab === 'new' ? 'Novo Registro Militar' :
-                  activeTab === 'home' ? 'Central de Comando' :
+          <header className={`print:hidden ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} border-b shadow-xs px-4 lg:px-6 py-3 flex items-center justify-between z-50 sticky top-0 transition-all`}>
+            <div className="flex items-center gap-3">
+              <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"><Menu className="w-5 h-5" strokeWidth={1.8} /></button>
+              <div className="flex items-center gap-2.5">
+                <h2 className={`text-base lg:text-lg font-bold tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'} truncate max-w-[200px] sm:max-w-none`}>
+                  {activeTab === 'new' ? 'Novo Registro Militar' :
+                    activeTab === 'home' ? 'Central de Comando' :
                     activeTab === 'users' ? 'Gerir Permissões' :
                       activeTab === 'dashboard' ? 'Painel de Inteligência' :
                         activeTab === 'kanban' ? 'Fluxo de Gestão' :
@@ -1794,7 +1795,8 @@ const App: FC = () => {
                                               activeTab === 'vacation-stats' ? 'Estatísticas de Férias' :
                                                 activeTab === 'settings' ? 'Minhas Configurações' : 
                                                   activeTab === 'om-management' ? 'Gestão de OM\'s' : 'Arquivo Digital'}
-              </h2>
+                </h2>
+              </div>
             </div>
 
             {/* Top Right User Menu */}

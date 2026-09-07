@@ -265,23 +265,26 @@ export default function SideMenu({
         }
     };
 
-    const MenuItem = ({ id, label, icon: Icon, onClick }: any) => (
-        <button
-            onClick={() => {
-                if (onClick) onClick();
-                if (id) setActiveTab(id);
-                if (window.innerWidth < 1024) onClose();
-            }}
-            className={`w-full flex items-center rounded-xl transition-all duration-200 group ${activeTab === id
-                ? 'bg-blue-600 shadow-lg shadow-blue-500/20 text-white'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/80'
-                } ${isCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}
-            title={isCollapsed ? label : ''}
-        >
-            <Icon className={`w-5 h-5 shrink-0 transition-transform duration-200 ${activeTab === id ? 'scale-110' : 'group-hover:scale-110'}`} />
-            {!isCollapsed && <span className="text-sm font-bold">{label}</span>}
-        </button>
-    );
+    const MenuItem = ({ id, label, icon: Icon, onClick }: any) => {
+        const isActive = activeTab === id;
+        return (
+            <button
+                onClick={() => {
+                    if (onClick) onClick();
+                    if (id) setActiveTab(id);
+                    if (window.innerWidth < 1024) onClose();
+                }}
+                className={`w-full flex items-center rounded-xl transition-colors duration-150 relative group ${isActive
+                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold shadow-xs'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 font-medium'
+                    } ${isCollapsed ? 'justify-center p-3' : 'gap-3.5 px-3.5 py-2.5'}`}
+                title={isCollapsed ? label : ''}
+            >
+                <Icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white'}`} strokeWidth={1.8} />
+                {!isCollapsed && <span className="text-sm tracking-normal truncate">{label}</span>}
+            </button>
+        );
+    };
 
     return (
         <>
@@ -326,31 +329,41 @@ export default function SideMenu({
             {isOpen && <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[998] lg:hidden transition-opacity duration-300" onClick={onClose} />}
 
             {/* Sidebar */}
-            <aside className={`print:hidden fixed inset-y-0 left-0 z-[999] transform transition-all duration-300 ease-in-out lg:relative lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} ${isCollapsed ? 'w-20' : 'w-64 sm:w-72'} flex flex-col shadow-2xl lg:shadow-[4px_0_24px_-12px_rgba(0,0,0,0.5)] border-r bg-slate-900 border-slate-800/50 text-white`}>
+            <aside className={`print:hidden fixed inset-y-0 left-0 z-[999] transform transition-all duration-300 ease-in-out lg:relative lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} ${isCollapsed ? 'w-20' : 'w-64 sm:w-72'} flex flex-col shadow-lg border-r bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white`}>
 
                 {/* Toggle Collapse (Desktop) */}
-                <button onClick={() => setIsCollapsed(!isCollapsed)} className="hidden lg:flex absolute -right-3 top-20 bg-blue-600 w-6 h-6 rounded-full items-center justify-center border-2 border-white dark:border-slate-900 hover:bg-blue-500 z-[1000] shadow-md transition-transform hover:scale-110">
-                    {isCollapsed ? <ChevronRight className="w-4 h-4 text-white" /> : <ChevronLeft className="w-4 h-4 text-white" />}
+                <button onClick={() => setIsCollapsed(!isCollapsed)} className="hidden lg:flex absolute -right-3 top-20 bg-white dark:bg-slate-800 w-6 h-6 rounded-full items-center justify-center border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 z-[1000] shadow-sm transition-transform hover:scale-105">
+                    {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" strokeWidth={2} /> : <ChevronLeft className="w-3.5 h-3.5" strokeWidth={2} />}
                 </button>
 
                 {/* Header / Brand */}
-                <div className={`p-6 flex flex-col ${isCollapsed ? 'items-center px-4' : ''}`}>
+                <div className={`p-5 flex flex-col ${isCollapsed ? 'items-center px-4' : ''}`}>
                     <div 
                         onClick={() => { setActiveTab('home'); if (window.innerWidth < 1024) onClose(); }}
-                        className={`flex items-center gap-3 mb-8 overflow-hidden cursor-pointer hover:opacity-80 transition-all active:scale-95 group ${isCollapsed ? 'justify-center' : ''}`}
+                        className={`flex items-center gap-3 mb-6 overflow-hidden cursor-pointer hover:opacity-85 transition-all active:scale-95 group ${isCollapsed ? 'justify-center' : ''}`}
                     >
-                        <div className="shrink-0 relative w-10 h-10 rounded-full overflow-hidden shadow-md ring-2 ring-white/10 group-hover:ring-blue-500/50 transition-all">
+                        <div className="shrink-0 relative w-9 h-9 rounded-xl overflow-hidden shadow-xs border border-slate-200 dark:border-slate-700 bg-white flex items-center justify-center">
                             {(() => {
-                                if (loading) return <div className="w-full h-full bg-slate-800 animate-pulse flex items-center justify-center"><div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /></div>;
+                                if (loading) return <div className="w-full h-full bg-slate-100 dark:bg-slate-800 animate-pulse flex items-center justify-center"><div className="w-4 h-4 border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" /></div>;
                                 const activeOm = oms.find(o => o.id === omId);
                                 const logoSrc = activeOm?.logo_url || '/logo_gsd.png';
-                                return <img src={logoSrc} alt="Logo" className="w-full h-full object-cover scale-125" />;
+                                return <img src={logoSrc} alt="Logo" className="w-full h-full object-cover scale-110" />;
                             })()}
                         </div>
                         {!isCollapsed && (
-                            <h1 className="text-lg font-black italic tracking-tighter whitespace-nowrap text-white group-hover:text-blue-400 transition-colors">
-                                GUARDIÃO <span className="not-italic ml-1">{oms.find(o => o.id === omId)?.acronym || urlOm || currentUser?.workplace || 'GSD-SP'}</span>
-                            </h1>
+                            <div className="flex flex-col">
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
+                                        GUARDIÃO
+                                    </span>
+                                    <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                        v4.0
+                                    </span>
+                                </div>
+                                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">
+                                    {oms.find(o => o.id === omId)?.acronym || urlOm || currentUser?.workplace || 'GSD-SP'}
+                                </span>
+                            </div>
                         )}
                     </div>
 
@@ -422,7 +435,7 @@ export default function SideMenu({
                         <>
                             {/* Operacional Section */}
                             <div className="space-y-1">
-                                {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2">Operacional</h3>}
+                                {!isCollapsed && <h3 className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase mb-2 px-3">Operacional</h3>}
                                 {canViewDashboard && <MenuItem id="home" label="Painel Geral" icon={Home} />}
                                 {(canManageMissions || canRequestMission) && (
                                     <MenuItem id="mission-center" label="Central de Missões" icon={ShieldAlert} />
@@ -434,21 +447,21 @@ export default function SideMenu({
                             {/* Personnel Section */}
                             {canViewPersonnel && (
                                 <div className="space-y-1">
-                                    {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Gestão de Pessoal</h3>}
+                                    {!isCollapsed && <h3 className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase mb-2 px-3 mt-4">Gestão de Pessoal</h3>}
                                     <button
                                         onClick={() => !isCollapsed && setIsPersonnelOpen(!isPersonnelOpen)}
-                                        className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/80 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                        className={`w-full flex items-center justify-between rounded-xl transition-colors duration-150 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 font-medium ${isCollapsed ? 'justify-center p-3' : 'px-3.5 py-2.5'}`}
                                     >
-                                        <div className="flex items-center gap-3">
-                                            <UserIcon className="w-5 h-5 shrink-0" />
-                                            {!isCollapsed && <span className="text-sm font-bold">Central de Pessoal</span>}
+                                        <div className="flex items-center gap-3.5">
+                                            <UserIcon className="w-5 h-5 shrink-0 text-slate-600 dark:text-slate-400" strokeWidth={1.8} />
+                                            {!isCollapsed && <span className="text-sm font-medium">Central de Pessoal</span>}
                                         </div>
                                         {!isCollapsed && (
-                                            <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isPersonnelOpen ? 'rotate-90' : ''}`} />
+                                            <ChevronRight className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${isPersonnelOpen ? 'rotate-90' : ''}`} strokeWidth={2} />
                                         )}
                                     </button>
                                     {(!isCollapsed && isPersonnelOpen) && (
-                                        <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
+                                        <div className="ml-4 space-y-1 mt-1 border-l border-slate-200 dark:border-slate-800 pl-2">
                                             {canViewAttendance && <MenuItem id="daily-attendance" label="Chamada Diária" icon={ShieldCheck} />}
                                             {canManagePersonnel && <MenuItem id="personnel-management" label="Gestão de Efetivo" icon={UserIcon} />}
                                             {canManagePersonnel && <MenuItem id="vacation-management" label="Gestão de Férias" icon={Calendar} />}
@@ -460,21 +473,21 @@ export default function SideMenu({
                             {/* Access Control Section */}
                             {canViewAccessControl && (
                                 <div className="space-y-1">
-                                    {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Controle de Acesso</h3>}
+                                    {!isCollapsed && <h3 className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase mb-2 px-3 mt-4">Controle de Acesso</h3>}
                                     <button
                                         onClick={() => !isCollapsed && setIsAccessControlOpen(!isAccessControlOpen)}
-                                        className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/80 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                        className={`w-full flex items-center justify-between rounded-xl transition-colors duration-150 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 font-medium ${isCollapsed ? 'justify-center p-3' : 'px-3.5 py-2.5'}`}
                                     >
-                                        <div className="flex items-center gap-3">
-                                            <DoorOpen className="w-5 h-5 shrink-0" />
-                                            {!isCollapsed && <span className="text-sm font-bold">Controle de Acesso</span>}
+                                        <div className="flex items-center gap-3.5">
+                                            <DoorOpen className="w-5 h-5 shrink-0 text-slate-600 dark:text-slate-400" strokeWidth={1.8} />
+                                            {!isCollapsed && <span className="text-sm font-medium">Controle de Acesso</span>}
                                         </div>
                                         {!isCollapsed && (
-                                            <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isAccessControlOpen ? 'rotate-90' : ''}`} />
+                                            <ChevronRight className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${isAccessControlOpen ? 'rotate-90' : ''}`} strokeWidth={2} />
                                         )}
                                     </button>
                                     {(!isCollapsed && isAccessControlOpen) && (
-                                        <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
+                                        <div className="ml-4 space-y-1 mt-1 border-l border-slate-200 dark:border-slate-800 pl-2">
                                             <MenuItem id="access-control" label="Acesso Visitantes" icon={DoorOpen} />
                                             <MenuItem id="parking-request" label="Estacionamento" icon={Car} />
                                             <MenuItem id="events" label="Eventos" icon={CalendarDays} />
@@ -487,21 +500,21 @@ export default function SideMenu({
                             {/* Admin Section */}
                             {(canManageUsers || canManageOccurrences) && (
                                 <div className="space-y-1">
-                                    {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Administração</h3>}
+                                    {!isCollapsed && <h3 className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase mb-2 px-3 mt-4">Administração</h3>}
                                     <button
                                         onClick={() => !isCollapsed && setIsOccurrencesOpen(!isOccurrencesOpen)}
-                                        className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/80 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                        className={`w-full flex items-center justify-between rounded-xl transition-colors duration-150 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 font-medium ${isCollapsed ? 'justify-center p-3' : 'px-3.5 py-2.5'}`}
                                     >
-                                        <div className="flex items-center gap-3">
-                                            <Siren className="w-5 h-5 shrink-0" />
-                                            {!isCollapsed && <span className="text-sm font-bold">Central de Ocorrências</span>}
+                                        <div className="flex items-center gap-3.5">
+                                            <Siren className="w-5 h-5 shrink-0 text-slate-600 dark:text-slate-400" strokeWidth={1.8} />
+                                            {!isCollapsed && <span className="text-sm font-medium">Central de Ocorrências</span>}
                                         </div>
                                         {!isCollapsed && (
-                                            <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isOccurrencesOpen ? 'rotate-90' : ''}`} />
+                                            <ChevronRight className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${isOccurrencesOpen ? 'rotate-90' : ''}`} strokeWidth={2} />
                                         )}
                                     </button>
                                     {(!isCollapsed && isOccurrencesOpen) && (
-                                        <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
+                                        <div className="ml-4 space-y-1 mt-1 border-l border-slate-200 dark:border-slate-800 pl-2">
                                             {canManageUsers && <MenuItem id="users" label="Gerir Usuários" icon={ShieldCheck} />}
                                             {canViewAccessControl && <MenuItem id="access-scanner" label="Leitor de QR" icon={Smartphone} />}
                                             {hasPermission(currentUser, PERMISSIONS.VIEW_SERVICE_QUEUE) && <MenuItem id="kanban" label="Fila de Serviço" icon={LayoutDashboard} />}
@@ -519,25 +532,25 @@ export default function SideMenu({
                             {/* Material Section */}
                             {canViewMaterialPanel && (
                                 <div className="space-y-1">
-                                    {!isCollapsed && <h3 className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 px-2 mt-4">Central de Material</h3>}
+                                    {!isCollapsed && <h3 className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase mb-2 px-3 mt-4">Central de Material</h3>}
                                     <button
                                         onClick={() => !isCollapsed && setIsMaterialMenuOpen(!isMaterialMenuOpen)}
-                                        className={`w-full flex items-center justify-between rounded-xl transition-all text-slate-400 hover:text-white hover:bg-slate-800/80 ${isCollapsed ? 'justify-center p-3' : 'px-4 py-3'}`}
+                                        className={`w-full flex items-center justify-between rounded-xl transition-colors duration-150 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 font-medium ${isCollapsed ? 'justify-center p-3' : 'px-3.5 py-2.5'}`}
                                     >
-                                        <div className="flex items-center gap-3">
-                                            <Package className="w-5 h-5 shrink-0" />
-                                            {!isCollapsed && <span className="text-sm font-bold">Painel de Material</span>}
+                                        <div className="flex items-center gap-3.5">
+                                            <Package className="w-5 h-5 shrink-0 text-slate-600 dark:text-slate-400" strokeWidth={1.8} />
+                                            {!isCollapsed && <span className="text-sm font-medium">Painel de Material</span>}
                                         </div>
                                         {!isCollapsed && (
-                                            <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isMaterialMenuOpen ? 'rotate-90' : ''}`} />
+                                            <ChevronRight className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${isMaterialMenuOpen ? 'rotate-90' : ''}`} strokeWidth={2} />
                                         )}
                                     </button>
                                     {(!isCollapsed && isMaterialMenuOpen) && (
-                                        <div className="ml-4 space-y-1 mt-1 border-l-2 border-slate-700 pl-2">
+                                        <div className="ml-4 space-y-1 mt-1 border-l border-slate-200 dark:border-slate-800 pl-2">
                                             <MenuItem id="my-material-loans" label="Minhas Cautelas" icon={Package} />
                                             {canManageMaterial && (
                                                 <>
-                                                    <div className="my-2 border-t border-slate-800" />
+                                                    <div className="my-2 border-t border-slate-200 dark:border-slate-800" />
                                                     <MenuItem id="material-approvals" label="Material e Cautela" icon={ShieldCheck} />
                                                     <MenuItem id="inventory-management" label="Gestão de Estoque" icon={LayoutDashboard} />
                                                 </>
@@ -550,29 +563,29 @@ export default function SideMenu({
                     )}
 
                     {/* Footer Section */}
-                    <div className="mt-auto border-t p-4 space-y-2 border-slate-800">
+                    <div className="mt-auto border-t p-4 space-y-1.5 border-slate-200 dark:border-slate-800">
                         {/* Theme Toggle (Inline) */}
                         <button
                             onClick={onToggleTheme}
-                            className={`w-full flex items-center rounded-xl transition-all ${isDarkMode ? 'text-amber-400 hover:bg-amber-400/10' : 'text-slate-300 hover:bg-slate-800/50'} ${isCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}
+                            className={`w-full flex items-center rounded-xl transition-colors text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 font-medium ${isCollapsed ? 'justify-center p-3' : 'gap-3.5 px-3.5 py-2.5'}`}
                             title={isCollapsed ? (isDarkMode ? "Modo Claro" : "Modo Escuro") : ""}
                         >
-                            {isDarkMode ? <Sun className="w-5 h-5 shrink-0" /> : <Moon className="w-5 h-5 shrink-0" />}
-                            {!isCollapsed && <span className="text-sm font-bold">{isDarkMode ? 'Modo Claro' : 'Modo Escuro'}</span>}
+                            {isDarkMode ? <Sun className="w-5 h-5 shrink-0" strokeWidth={1.8} /> : <Moon className="w-5 h-5 shrink-0" strokeWidth={1.8} />}
+                            {!isCollapsed && <span className="text-sm font-medium">{isDarkMode ? 'Modo Claro' : 'Modo Escuro'}</span>}
                         </button>
 
                         <button
                             onClick={onLogout}
-                            className={`w-full flex items-center rounded-xl transition-all text-red-500 hover:text-white hover:bg-red-500 flex-shrink-0 ${isCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}`}
+                            className={`w-full flex items-center rounded-xl transition-colors text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 font-medium flex-shrink-0 ${isCollapsed ? 'justify-center p-3' : 'gap-3.5 px-3.5 py-2.5'}`}
                             title={isCollapsed ? "Sair" : ''}
                         >
-                            <LogOut className="w-5 h-5 shrink-0" />
-                            {!isCollapsed && <span className="text-sm font-bold">Sair</span>}
+                            <LogOut className="w-5 h-5 shrink-0" strokeWidth={1.8} />
+                            {!isCollapsed && <span className="text-sm font-medium">Sair</span>}
                         </button>
 
                         {!isCollapsed && (
-                            <div className="mt-4 px-2 text-[10px] text-slate-500 font-medium text-center">
-                                v3.0.0 © 2026 Guardião
+                            <div className="mt-3 px-2 text-[11px] text-slate-400 dark:text-slate-500 font-medium text-center">
+                                v4.0.0 © 2026 Guardião
                             </div>
                         )}
                     </div>
