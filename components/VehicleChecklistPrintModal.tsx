@@ -81,6 +81,14 @@ function injectPrintStyle() {
         padding: 0 !important;
         margin: 0 !important;
       }
+      #vtr-print-wrapper {
+        position: static !important;
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
       #vtr-print-controls-bar { display: none !important; }
       .vtr-print-sheet {
         width: 100% !important;
@@ -178,6 +186,7 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
 
   const content = (
     <div
+      id="vtr-print-wrapper"
       className="fixed inset-0 z-[99999] bg-slate-950/85 backdrop-blur-sm flex flex-col items-center p-0 sm:p-4 overflow-y-auto"
       onClick={onClose}
     >
