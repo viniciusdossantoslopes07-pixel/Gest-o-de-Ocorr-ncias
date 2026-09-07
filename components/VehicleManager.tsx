@@ -7,7 +7,7 @@ import { VehicleAdminModal, FAB_CATEGORIES } from './VehicleAdminModal';
 import { VehicleChecklistPrintModal } from './VehicleChecklistPrintModal';
 import { generateVehicleChecklistPdf } from '../services/vehiclePdfService';
 import { useSectors } from '../contexts/SectorsContext';
-import { OFFICIAL_FAB_VEHICLES } from '../data/fabVehiclesData';
+import { OFFICIAL_FAB_VEHICLES } from '../constants/fabVehiclesData';
 import {
   Car,
   Plus,
