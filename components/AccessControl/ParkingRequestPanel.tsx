@@ -114,6 +114,10 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
+            // Expurgar automaticamente documentos sensíveis analisados há mais de 5 dias
+            if (canViewAllParking) {
+                supabase.rpc('purge_expired_parking_documents').then(() => {}).catch(err => console.warn('Erro ao expurgar docs:', err));
+            }
             await fetchMyRequests();
             if (canViewAllParking) await fetchAllRequests();
             setLoading(false);
@@ -193,13 +197,19 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
     const confirmApprove = async () => {
         if (!approvingRequestId) return;
 
-        if (passwordConfirm !== user.password) {
-            alert("Senha incorreta. A aprovação não foi realizada.");
-            return;
-        }
-
         setIsProcessing(true);
         try {
+            // Validação de senha segura via RPC no banco
+            const { data: isValidPassword, error: passError } = await supabase.rpc('verify_user_password', {
+                p_user_id: user.id,
+                p_password: passwordConfirm
+            });
+
+            if (passError || !isValidPassword) {
+                alert("Senha incorreta. A aprovação não foi realizada.");
+                setIsProcessing(false);
+                return;
+            }
             const now = new Date().toISOString();
             const updatePayload = {
                 status: 'Aprovado',
@@ -793,14 +803,20 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
                             {/* Documentos */}
                             <div>
-                                <p className={`text-[9px] font-black uppercase mb-2 ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Documentos Anexos</p>
+                                <div className="flex items-center justify-between mb-2">
+                                    <p className={`text-[9px] font-black uppercase ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Documentos Anexos</p>
+                                    <span className="text-[8px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                                        Retenção máxima: 5 dias após análise
+                                    </span>
+                                </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
                                     {[
                                         { url: analysingRequest.identidade_url, label: 'Identidade Milit.', icon: FileText },
                                         { url: analysingRequest.cnh_url, label: 'CNH do Condutor', icon: FileText },
                                         { url: analysingRequest.crlv_url, label: 'CRLV do Veículo', icon: FileText }
-                                    ].map((doc, idx) => (
-                                        doc.url ? (
+                                    ].map((doc, idx) => {
+                                        const isAnalyzed = analysingRequest.status === 'Aprovado' || analysingRequest.status === 'Rejeitado';
+                                        return doc.url ? (
                                             <a key={idx} href={doc.url} target="_blank" rel="noopener noreferrer" className={`group flex flex-col items-center justify-center p-3 rounded-xl border transition-all hover:-translate-y-0.5 ${dk ? 'bg-slate-900 border-blue-900/40 hover:border-blue-700/60 hover:bg-slate-800' : 'bg-blue-50/50 border-blue-200 hover:border-blue-300 hover:shadow-sm'}`}>
                                                 <doc.icon className={`w-5 h-5 mb-1.5 ${dk ? 'text-blue-400' : 'text-blue-500'}`} />
                                                 <span className={`font-black text-[9px] sm:text-[10px] uppercase ${dk ? 'text-blue-300' : 'text-blue-700'}`}>{doc.label}</span>
@@ -808,10 +824,12 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                         ) : (
                                             <div key={idx} className={`flex flex-col items-center justify-center p-3 rounded-xl border border-dashed ${dk ? 'bg-slate-800/30 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
                                                 <XCircle className={`w-5 h-5 mb-1.5 opacity-20 ${dk ? 'text-white' : 'text-slate-500'}`} />
-                                                <span className={`font-bold text-[9px] uppercase ${dk ? 'text-slate-600' : 'text-slate-400'}`}>Sem Anexo</span>
+                                                <span className={`font-bold text-[9px] uppercase ${isAnalyzed ? 'text-amber-500' : (dk ? 'text-slate-600' : 'text-slate-400')}`}>
+                                                    {isAnalyzed ? 'Expurgado (Segurança)' : 'Sem Anexo'}
+                                                </span>
                                             </div>
-                                        )
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
 

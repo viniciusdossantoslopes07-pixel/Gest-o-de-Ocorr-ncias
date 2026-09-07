@@ -541,9 +541,12 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                                 <div className={section}>
                                     <h3 className={sectionTitle}>Documentação (PDF/Foto) — máx. 10 MB cada</h3>
 
-                                    <div className={`p-3 ${dk ? 'bg-blue-900/20 border-blue-800/30' : 'bg-blue-50 border-blue-100'} rounded-xl border`}>
+                                    <div className={`p-3 ${dk ? 'bg-blue-900/20 border-blue-800/30' : 'bg-blue-50 border-blue-100'} rounded-xl border space-y-1`}>
                                         <p className={`text-[10px] ${dk ? 'text-blue-400' : 'text-blue-800'} font-bold uppercase text-center flex items-center justify-center gap-2`}>
                                             <Upload className="w-3 h-3" /> Anexe documentos legíveis — PDF, JPG ou PNG
+                                        </p>
+                                        <p className="text-[9px] text-amber-600 dark:text-amber-400 font-semibold text-center">
+                                            🔒 Proteção de Dados: Os documentos (RG, CNH e CRLV) são tratados com sigilo e são excluídos definitivamente do servidor em até 5 dias após a análise da solicitação.
                                         </p>
                                     </div>
 
