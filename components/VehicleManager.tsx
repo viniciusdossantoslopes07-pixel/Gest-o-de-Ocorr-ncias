@@ -1208,10 +1208,6 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
                               {vtr?.brand} {vtr?.model}
                             </h3>
                             <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
-                              <span className="font-bold text-slate-700 dark:text-slate-300">
-                                Placa: {vtr?.plate}
-                              </span>
-                              <span>•</span>
                               <span>RegFab: {vtr?.reg_fab}</span>
                             </div>
                           </div>
