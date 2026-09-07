@@ -687,7 +687,7 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="lg:col-span-3 space-y-4">
             {/* Filter Bar */}
             <div className={`p-4 rounded-[1.5rem] border overflow-hidden shadow-sm transition-all flex flex-col xl:flex-row items-center justify-between gap-4 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
               <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto">
