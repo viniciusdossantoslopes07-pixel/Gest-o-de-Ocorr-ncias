@@ -56,9 +56,6 @@ function injectPrintStyle() {
   style.id = PRINT_STYLE_ID;
   style.textContent = `
     @media print {
-      @page {
-        margin: 15mm;
-      }
       * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
@@ -97,7 +94,7 @@ function injectPrintStyle() {
         width: 100% !important;
         max-width: none !important;
         margin: 0 !important;
-        padding: 0 !important;
+        padding: 12mm !important;
         box-shadow: none !important;
         border: none !important;
         border-radius: 0 !important;
@@ -111,7 +108,7 @@ function injectPrintStyle() {
       .vtr-page-break-before {
         break-before: page;
         page-break-before: always;
-        padding-top: 6mm;
+        padding-top: 15mm;
       }
       /* Impede quebra dentro do bloco de assinaturas */
       .vtr-signatures-block {
