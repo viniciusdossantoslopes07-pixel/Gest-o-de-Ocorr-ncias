@@ -72,7 +72,8 @@ export default function SideMenu({
     // Admin / Occurrences
     const canManageUsers = hasPermission(currentUser, PERMISSIONS.MANAGE_USERS);
     const canManageOccurrences = hasPermission(currentUser, PERMISSIONS.MANAGE_OCCURRENCES);
-    const isAdmin = currentUser.role === UserRole.ADMIN || currentUser.role === 'admin' || currentUser.role === 'ADMIN';
+    const userRoleUpper = currentUser.role?.toUpperCase() || '';
+    const isAdmin = userRoleUpper === 'GESTOR MASTER / OSD' || userRoleUpper === 'ADMIN' || currentUser.role === UserRole.ADMIN;
     
     // Vehicles
     const canViewVehicles = hasPermission(currentUser, PERMISSIONS.VIEW_VEHICLES) || isAdmin;
@@ -443,9 +444,6 @@ export default function SideMenu({
                                 {(canManageMissions || canRequestMission) && (
                                     <MenuItem id="mission-center" label="Central de Missões" icon={ShieldAlert} />
                                 )}
-                                {canViewVehicles && (
-                                    <MenuItem id="vehicles" label="Central de Viaturas" icon={Car} />
-                                )}
                                 <MenuItem id="meu-plano" label="Meu Plano" icon={UserIcon} />
                                 <MenuItem id="destinometro" label="Destinômetro" icon={MapPin} onClick={onOpenDestinometro} />
                             </div>
@@ -567,7 +565,7 @@ export default function SideMenu({
                             )}
 
                             {/* Central de Viaturas */}
-                            {!isPublic && (
+                            {canViewVehicles && (
                                 <div className="space-y-1">
                                     {!isCollapsed && <h3 className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase mb-2 px-3 mt-4">Central de Viaturas</h3>}
                                     <MenuItem id="vehicles" label="Central de Viaturas" icon={Car} />
