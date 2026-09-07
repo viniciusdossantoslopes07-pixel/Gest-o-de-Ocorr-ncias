@@ -440,6 +440,7 @@ export default function SideMenu({
                                 {(canManageMissions || canRequestMission) && (
                                     <MenuItem id="mission-center" label="Central de Missões" icon={ShieldAlert} />
                                 )}
+                                <MenuItem id="vehicles" label="Central de Viaturas" icon={Car} />
                                 <MenuItem id="meu-plano" label="Meu Plano" icon={UserIcon} />
                                 <MenuItem id="destinometro" label="Destinômetro" icon={MapPin} onClick={onOpenDestinometro} />
                             </div>
