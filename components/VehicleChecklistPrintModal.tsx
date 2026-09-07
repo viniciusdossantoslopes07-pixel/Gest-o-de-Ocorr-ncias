@@ -56,6 +56,9 @@ function injectPrintStyle() {
   style.id = PRINT_STYLE_ID;
   style.textContent = `
     @media print {
+      @page {
+        margin: 15mm;
+      }
       * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
@@ -94,7 +97,7 @@ function injectPrintStyle() {
         width: 100% !important;
         max-width: none !important;
         margin: 0 !important;
-        padding: 12mm !important;
+        padding: 0 !important;
         box-shadow: none !important;
         border: none !important;
         border-radius: 0 !important;
