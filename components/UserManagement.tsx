@@ -313,18 +313,19 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
       {activeTab === 'users' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {showForm && (
-            <div className={`lg:col-span-3 p-6 md:p-10 rounded-2xl md:rounded-[2.5rem] border shadow-sm transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black/20' : 'bg-white border-slate-100 shadow-slate-200/50'}`}>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+            <div className={`lg:col-span-3 p-5 sm:p-7 rounded-2xl md:rounded-3xl border shadow-sm transition-all ${isDarkMode ? 'bg-slate-800 border-slate-700 shadow-black/20' : 'bg-white border-slate-100 shadow-slate-200/50'}`}>
+              {/* Header do Formulário */}
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-700">
                 <div className="flex items-center gap-3">
-                  <div className={`${editingUserId ? 'bg-amber-500' : 'bg-blue-600'} p-2 rounded-xl transition-colors`}>
-                    {editingUserId ? <Edit2 className="w-5 h-5 md:w-6 md:h-6 text-white" /> : <UserPlus className="w-5 h-5 md:w-6 md:h-6 text-white" />}
+                  <div className={`${editingUserId ? 'bg-amber-500' : 'bg-blue-600'} p-2 rounded-xl text-white`}>
+                    {editingUserId ? <Edit2 className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
                   </div>
                   <div>
-                    <h2 className={`text-lg md:text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                    <h2 className={`text-base sm:text-lg font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                       {editingUserId ? 'Editar Usuário' : 'Novo Cadastro'}
                     </h2>
-                    <p className="text-slate-500 text-[10px] md:text-xs font-medium uppercase tracking-widest">
-                      {editingUserId ? `@${formData.username}` : 'Defina credenciais e níveis'}
+                    <p className="text-slate-500 text-xs font-medium">
+                      {editingUserId ? `@${formData.username}` : 'Defina credenciais e dados do militar'}
                     </p>
                   </div>
                 </div>
@@ -332,24 +333,33 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                   <button
                     type="button"
                     onClick={handleCancelEdit}
-                    className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-[10px] font-bold rounded-xl transition-all ${isDarkMode ? 'bg-slate-700 text-slate-300 hover:text-white hover:bg-slate-600' : 'bg-slate-100 text-slate-500 hover:text-slate-700'}`}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${isDarkMode ? 'bg-slate-700 text-slate-300 hover:text-white hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:text-slate-800'}`}
                   >
-                    <XCircle className="w-4 h-4" /> Cancelar
+                    <XCircle className="w-3.5 h-3.5" /> Cancelar
                   </button>
                 )}
               </div>
 
-              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
+              <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                {/* Linha 1: Nome Completo (2 colunas) + Nome de Guerra (1 coluna) */}
+                <div className="space-y-1.5 sm:col-span-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <UserIcon className="w-3 h-3" /> Nome Completo
+                    <UserIcon className="w-3.5 h-3.5" /> Nome Completo
                   </label>
                   <input required type="text" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5 sm:col-span-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <BadgeCheck className="w-3 h-3" /> Posto / Graduação
+                    <UserIcon className="w-3.5 h-3.5" /> Nome de Guerra
+                  </label>
+                  <input required type="text" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.warName} onChange={e => setFormData({ ...formData, warName: e.target.value })} placeholder="Ex: SGT SILVA" />
+                </div>
+
+                {/* Linha 2: Posto / Graduação + SARAM + CPF */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <BadgeCheck className="w-3.5 h-3.5" /> Posto / Graduação
                   </label>
                   <select required className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.rank} onChange={e => setFormData({ ...formData, rank: e.target.value })}>
                     <option value="">Selecione...</option>
@@ -357,66 +367,38 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                   </select>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <Hash className="w-3 h-3" /> SARAM
+                    <Hash className="w-3.5 h-3.5" /> SARAM
                   </label>
                   <input required type="text" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.saram} onChange={e => setFormData({ ...formData, saram: e.target.value })} />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <Hash className="w-3 h-3" /> CPF
+                    <Hash className="w-3.5 h-3.5" /> CPF
                   </label>
                   <input required type="text" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.cpf} onChange={e => setFormData({ ...formData, cpf: e.target.value })} placeholder="000.000.000-00" />
                 </div>
 
-                <div className="space-y-2">
+                {/* Linha 3: Email + Login (Usuário) + WhatsApp / Telefone */}
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <UserIcon className="w-3 h-3" /> Nome de Guerra
-                  </label>
-                  <input required type="text" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.warName} onChange={e => setFormData({ ...formData, warName: e.target.value })} placeholder="Ex: SGT SILVA" />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <Building2 className="w-3 h-3" /> Setor
-                  </label>
-                  <div className={`flex flex-wrap gap-1 p-1 mb-2 border rounded-xl ${isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
-                    {oms.map(om => (
-                      <button
-                        key={om.id}
-                        type="button"
-                        onClick={() => { setSelectedSectorUnit(om.acronym); setFormData({ ...formData, sector: '' }); }}
-                        className={`flex-1 px-4 py-2 text-[10px] font-black uppercase tracking-tight rounded-lg transition-all ${selectedSectorUnit === om.acronym ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-slate-900 shadow-md') : (isDarkMode ? 'text-slate-400 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
-                      >
-                        {om.acronym}
-                      </button>
-                    ))}
-                  </div>
-                  <select required className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.sector} onChange={e => setFormData({ ...formData, sector: e.target.value })}>
-                    <option value="">Selecione um setor da {selectedSectorUnit}...</option>
-                    {sectors.filter(s => s.unit === selectedSectorUnit).map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <Hash className="w-3 h-3" /> Email
+                    <Hash className="w-3.5 h-3.5" /> Email
                   </label>
                   <input required type="email" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <Key className="w-3 h-3" /> Login (Usuário)
+                    <Key className="w-3.5 h-3.5" /> Login (Usuário)
                   </label>
                   <input required type="text" className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <UserIcon className="w-3 h-3" /> WhatsApp / Telefone
+                    <UserIcon className="w-3.5 h-3.5" /> WhatsApp / Telefone
                   </label>
                   <input
                     type="tel"
@@ -426,13 +408,45 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                     value={formData.phoneNumber || ''}
                     onChange={e => setFormData({ ...formData, phoneNumber: e.target.value.replace(/\D/g, '') })}
                   />
-                  <p className="text-[9px] text-slate-400">Formato: 55 + DDD + Número (ex: 5511999998888)</p>
                 </div>
 
-                {currentUser?.role === UserRole.ADMIN && (
-                  <div className="space-y-2">
+                {/* Linha 4: Organização Militar (OM) + Setor + Função Especial (se admin) */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Building2 className="w-3.5 h-3.5" /> Organização Militar (OM)
+                  </label>
+                  <select
+                    value={selectedSectorUnit}
+                    onChange={e => { setSelectedSectorUnit(e.target.value); setFormData({ ...formData, sector: '' }); }}
+                    className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                  >
+                    {oms.map(om => (
+                      <option key={om.id} value={om.acronym}>
+                        {om.acronym} {om.name ? `- ${om.name}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Briefcase className="w-3.5 h-3.5" /> Setor da Unidade
+                  </label>
+                  <select
+                    required
+                    className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                    value={formData.sector}
+                    onChange={e => setFormData({ ...formData, sector: e.target.value })}
+                  >
+                    <option value="">Selecione um setor da {selectedSectorUnit}...</option>
+                    {sectors.filter(s => s.unit === selectedSectorUnit).map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                  </select>
+                </div>
+
+                {currentUser?.role === UserRole.ADMIN ? (
+                  <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                      <Shield className="w-3 h-3" /> Função Especial
+                      <Shield className="w-3.5 h-3.5" /> Função Especial
                     </label>
                     <select
                       value={formData.administrativeRole || ''}
@@ -446,44 +460,41 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                       <option value="CH_SAP">CHEFE DA SAP</option>
                     </select>
                   </div>
+                ) : (
+                  <div className="hidden lg:block" />
                 )}
 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                      <Key className="w-3 h-3" /> {editingUserId ? 'Segurança da Conta' : 'Senha Inicial'}
-                    </label>
-                  </div>
+                {/* Linha 5: Segurança / Senha + Tipo de Conta + Local do Alerta */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <Key className="w-3.5 h-3.5" /> {editingUserId ? 'Segurança da Conta' : 'Senha Inicial'}
+                  </label>
                   {editingUserId ? (
-                    <div className="flex flex-col gap-2">
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          if (confirm(`Deseja resetar a senha do usuário ${formData.username} para o padrão '123456'? O usuário será obrigado a trocar a senha no próximo login.`)) {
-                            if (onResetPassword && editingUserId) {
-                              const ok = await onResetPassword(editingUserId);
-                              if (ok) {
-                                showResetFeedback('success', `Senha de ${formData.username} redefinida para 123456 com sucesso!`);
-                                handleCancelEdit();
-                              } else {
-                                showResetFeedback('error', 'Falha ao redefinir senha. Verifique as permissões do banco de dados.');
-                              }
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (confirm(`Deseja resetar a senha do usuário ${formData.username} para o padrão '123456'? O usuário será obrigado a trocar a senha no próximo login.`)) {
+                          if (onResetPassword && editingUserId) {
+                            const ok = await onResetPassword(editingUserId);
+                            if (ok) {
+                              showResetFeedback('success', `Senha de ${formData.username} redefinida para 123456 com sucesso!`);
+                              handleCancelEdit();
                             } else {
-                              // Fallback se prop não disponível
-                              setFormData({ ...formData, password: '123456', password_status: 'EXPIRED', reset_password_at_login: true });
-                              alert('Senha resetada para 123456. Clique em "Salvar Alterações" para confirmar.');
+                              showResetFeedback('error', 'Falha ao redefinir senha.');
                             }
+                          } else {
+                            setFormData({ ...formData, password: '123456', password_status: 'EXPIRED', reset_password_at_login: true });
+                            alert('Senha resetada para 123456. Clique em "Salvar Alterações" para confirmar.');
                           }
-                        }}
-                        className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                          isDarkMode ? 'bg-slate-900 border border-slate-700 text-blue-400 hover:bg-slate-800' : 'bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100'
-                        }`}
-                      >
-                        <Key className="w-4 h-4" />
-                        {formData.password === '123456' ? 'Senha Resetada (Clique em Salvar)' : 'Resetar Senha para 123456'}
-                      </button>
-                      <p className="text-[9px] text-slate-500 italic">Por motivos de segurança, a senha atual não é exibida.</p>
-                    </div>
+                        }
+                      }}
+                      className={`w-full h-[46px] flex items-center justify-center gap-2 px-4 rounded-xl text-xs font-bold transition-all ${
+                        isDarkMode ? 'bg-slate-900 border border-slate-700 text-blue-400 hover:bg-slate-800' : 'bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100'
+                      }`}
+                    >
+                      <Key className="w-3.5 h-3.5" />
+                      {formData.password === '123456' ? 'Senha Redefinida (Salvar)' : 'Redefinir Senha (123456)'}
+                    </button>
                   ) : (
                     <input
                       required
@@ -496,59 +507,73 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                   )}
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <Shield className="w-3 h-3" /> Tipo de Conta
+                    <Shield className="w-3.5 h-3.5" /> Tipo de Conta
                   </label>
-                  <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${formData.is_functional ? (isDarkMode ? 'bg-blue-600/20 border-blue-500/50' : 'bg-blue-50 border-blue-200') : (isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-200')}`}>
+                  <label className={`w-full h-[46px] flex items-center gap-3 px-3.5 rounded-xl border cursor-pointer transition-all ${formData.is_functional ? (isDarkMode ? 'bg-blue-600/20 border-blue-500/50' : 'bg-blue-50 border-blue-200') : (isDarkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-200')}`}>
                     <input
                       type="checkbox"
                       className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                       checked={formData.is_functional}
                       onChange={e => setFormData({ ...formData, is_functional: e.target.checked })}
                     />
-                    <div className="flex flex-col">
-                      <span className={`text-xs font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Conta Funcional (Escritório/Coletiva)</span>
-                      <span className="text-[9px] text-slate-500 leading-tight">Será excluída da chamada e contagem de efetivo</span>
-                    </div>
+                    <span className={`text-xs font-bold truncate ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                      Conta Funcional (Coletiva)
+                    </span>
                   </label>
                 </div>
 
-                {formData.is_functional && (
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <Building2 className="w-3 h-3" /> Local do Alerta (Ex: PORTÃO G1)
-                      </label>
-                      <input 
-                        type="text" 
-                        required
-                        className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} 
-                        value={formData.workplace} 
-                        onChange={e => setFormData({ ...formData, workplace: e.target.value })} 
-                        placeholder="Ex: PORTÃO G1, G2, CENTRAL..." 
-                      />
-                    </div>
+                {formData.is_functional ? (
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <Building2 className="w-3.5 h-3.5" /> Local do Alerta
+                    </label>
+                    <input 
+                      type="text" 
+                      required
+                      className={`w-full border rounded-xl p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-600' : 'bg-slate-50 border-slate-200 text-slate-900'}`} 
+                      value={formData.workplace} 
+                      onChange={e => setFormData({ ...formData, workplace: e.target.value })} 
+                      placeholder="Ex: PORTÃO G1, CENTRAL..." 
+                    />
+                  </div>
+                ) : (
+                  <div className="hidden lg:block" />
                 )}
 
-                <div className={`md:col-span-3 p-4 rounded-xl border transition-all ${isDarkMode ? 'bg-blue-500/10 border-blue-500/30 text-blue-300' : 'bg-blue-50/50 border-blue-100 text-blue-800'}`}>
+                {/* Nota de nível */}
+                <div className={`col-span-1 sm:col-span-2 lg:col-span-3 p-3 rounded-xl border transition-all ${isDarkMode ? 'bg-blue-500/10 border-blue-500/30 text-blue-300' : 'bg-blue-50/50 border-blue-100 text-blue-800'}`}>
                   <p className={`text-xs flex items-center gap-2 font-medium ${isDarkMode ? 'text-blue-400' : 'text-blue-800'}`}>
-                    <Shield className="w-4 h-4" />
-                    O usuário será criado com perfil <strong>Operacional Padrão (N1)</strong>.
-                  </p>
-                  <p className={`text-[10px] mt-1 pl-6 ${isDarkMode ? 'text-blue-400/70' : 'text-blue-600'}`}>
-                    Para conceder permissões administrativas, níveis superiores ou funções específicas, utilize a aba <strong>"Gerir Permissões"</strong> após o cadastro.
+                    <Shield className="w-4 h-4 shrink-0" />
+                    O usuário opera com perfil <strong>Operacional Padrão (N1)</strong>. Para níveis administrativos, acesse a aba <strong>"Permissões"</strong>.
                   </p>
                 </div>
 
-                <div className="md:col-span-3">
-                  <button type="submit" className={`w-full ${editingUserId ? 'bg-amber-600 hover:bg-amber-700' : 'bg-slate-900 hover:bg-slate-800'} text-white py-4 rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center gap-2`}>
+                {/* Botões de Ação */}
+                <div className="col-span-1 sm:col-span-2 lg:col-span-3 pt-1 flex flex-col sm:flex-row gap-3">
+                  <button
+                    type="submit"
+                    className={`flex-1 ${editingUserId ? 'bg-amber-600 hover:bg-amber-700' : 'bg-blue-600 hover:bg-blue-700'} text-white py-3.5 px-6 rounded-xl font-bold transition-all shadow-md flex items-center justify-center gap-2`}
+                  >
                     {editingUserId ? (
                       <>
-                        <Save className="w-5 h-5" /> Salvar Alterações de Acesso
+                        <Save className="w-4 h-4" /> Salvar Alterações
                       </>
                     ) : (
-                      'Finalizar Cadastro de Acesso'
+                      <>
+                        <UserPlus className="w-4 h-4" /> Concluir Cadastro
+                      </>
                     )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className={`py-3.5 px-6 rounded-xl font-bold transition-all text-sm flex items-center justify-center gap-2 ${
+                      isDarkMode ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                    }`}
+                  >
+                    <XCircle className="w-4 h-4" /> Cancelar
                   </button>
                 </div>
               </form>
