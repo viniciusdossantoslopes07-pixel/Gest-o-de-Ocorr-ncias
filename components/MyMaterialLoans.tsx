@@ -112,10 +112,16 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user, isDarkMo
         }
     };
 
-    const confirmSignature = async () => {
-        if (signaturePassword !== user.password) {
-            alert('Senha incorreta!');
-            return;
+    const confirmSignature = async (isBiometricAuth: boolean = false) => {
+        if (!isBiometricAuth) {
+            const { data: isValid, error } = await supabase.rpc('verify_user_password', {
+                p_user_id: user.id,
+                p_password: signaturePassword
+            });
+            if (error || !isValid) {
+                alert('Senha incorreta!');
+                return;
+            }
         }
         if (!pendingAction) return;
 
@@ -622,7 +628,7 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user, isDarkMo
                             </div>
                             <div className="flex flex-col gap-4">
                                 <button
-                                    onClick={confirmSignature}
+                                    onClick={() => confirmSignature()}
                                     disabled={!signaturePassword || !!actionLoading}
                                     className={`w-full py-6 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.3em] transition-all shadow-2xl disabled:opacity-50 active:scale-95 ${isDarkMode ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-500/20' : 'bg-slate-900 text-white hover:bg-black shadow-slate-900/40'}`}
                                 >
@@ -638,16 +644,7 @@ export const MyMaterialLoans: React.FC<MyMaterialLoansProps> = ({ user, isDarkMo
                                             if (!credentialId) return;
                                             const success = await authenticateBiometrics(credentialId);
                                             if (success) {
-                                                const { data: userData } = await supabase
-                                                    .from('users')
-                                                    .select('password')
-                                                    .filter('webauthn_credential->>id', 'eq', credentialId)
-                                                    .single();
-
-                                                if (userData) {
-                                                    setSignaturePassword(userData.password);
-                                                    setTimeout(() => confirmSignature(), 100);
-                                                }
+                                                confirmSignature(true);
                                             }
                                         } catch (err) {
                                             console.error(err);

@@ -281,7 +281,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
         } else {
             let query = supabase
                 .from('users')
-                .select('id, name, rank, war_name, password')
+                .select('id, name, rank, war_name')
                 .eq('saram', directSaram.replace(/\D/g, ''));
             
             if (currentOmId) query = query.eq('om_id', currentOmId);
@@ -326,7 +326,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
             // Militar Interno: fluxo normal com senha
             const { data } = await supabase
                 .from('users')
-                .select('id, name, rank, war_name, password')
+                .select('id, name, rank, war_name')
                 .eq('id', userId)
                 .single();
 
@@ -493,7 +493,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
         setSelectedItems(selectedItems.filter((_, i) => i !== idx));
     };
 
-    const confirmSignature = async () => {
+    const confirmSignature = async (isBiometricAuth: boolean = false) => {
         // Validação: externa usa SARAM como senha, interna usa password
         if (isExternalSignature) {
             if (!signaturePassword || signaturePassword !== externalUserSaram) {
@@ -501,9 +501,16 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                 return;
             }
         } else {
-            if (!foundUser || signaturePassword !== foundUser.password) {
-                alert('Senha incorreta!');
-                return;
+            if (!foundUser) return;
+            if (!isBiometricAuth) {
+                const { data: isValid, error } = await supabase.rpc('verify_user_password', {
+                    p_user_id: foundUser.id,
+                    p_password: signaturePassword
+                });
+                if (error || !isValid) {
+                    alert('Senha incorreta!');
+                    return;
+                }
             }
         }
 
@@ -1903,15 +1910,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                                             if (!credentialId) return;
                                             const success = await authenticateBiometrics(credentialId);
                                             if (success) {
-                                                const { data: userData } = await supabase
-                                                    .from('users')
-                                                    .select('password')
-                                                    .filter('webauthn_credential->>id', 'eq', credentialId)
-                                                    .single();
-                                                if (userData) {
-                                                    setSignaturePassword(userData.password);
-                                                    setTimeout(() => confirmSignature(), 100);
-                                                }
+                                                confirmSignature(true);
                                             }
                                         } catch (err) {
                                             console.error(err);
@@ -1925,7 +1924,7 @@ export const SAP03Panel: React.FC<LoanApprovalsProps> = ({ user, isDarkMode }) =
                             )}
 
                             <button
-                                onClick={confirmSignature}
+                                onClick={() => confirmSignature()}
                                 disabled={!signaturePassword || actionLoading === 'signature'}
                                 className={`w-full h-[50px] text-white rounded-xl font-black transition-all shadow-lg uppercase text-xs tracking-widest disabled:opacity-50 disabled:cursor-not-allowed ${isExternalSignature ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'}`}
                             >

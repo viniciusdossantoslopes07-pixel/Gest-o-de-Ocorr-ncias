@@ -550,12 +550,18 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
         setShowSignatureModal(true);
     };
 
-    const confirmSignature = async () => {
+    const confirmSignature = async (isBiometricAuth: boolean = false) => {
         if (!orderToSign) return;
 
-        if (signaturePassword !== user.password) {
-            alert('Senha incorreta. Assinatura não realizada.');
-            return;
+        if (!isBiometricAuth) {
+            const { data: isValid, error } = await supabase.rpc('verify_user_password', {
+                p_user_id: user.id,
+                p_password: signaturePassword
+            });
+            if (error || !isValid) {
+                alert('Senha incorreta. Assinatura não realizada.');
+                return;
+            }
         }
 
         try {
@@ -1816,7 +1822,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
 
                             <div className="pt-2">
                                 <button
-                                    onClick={confirmSignature}
+                                    onClick={() => confirmSignature()}
                                     className="w-full py-4 bg-orange-600 text-white font-black uppercase tracking-[0.2em] text-xs rounded-2xl hover:bg-orange-500 shadow-xl shadow-orange-600/20 hover:shadow-orange-500/40 transition-all active:scale-[0.98]"
                                 >
                                     Confirmar Assinatura
@@ -1838,16 +1844,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                             if (!credentialId) return;
                                             const success = await authenticateBiometrics(credentialId);
                                             if (success) {
-                                                const { data: userData } = await supabase
-                                                    .from('users')
-                                                    .select('password')
-                                                    .filter('webauthn_credential->>id', 'eq', credentialId)
-                                                    .single();
-
-                                                if (userData) {
-                                                    setSignaturePassword(userData.password);
-                                                    setTimeout(() => confirmSignature(), 100);
-                                                }
+                                                confirmSignature(true);
                                             }
                                         } catch (err) {
                                             console.error(err);

@@ -795,7 +795,8 @@ const App: FC = () => {
       }
 
       setCurrentUser(user);
-      localStorage.setItem('gsdsp_user_session', JSON.stringify(user));
+      const safeUser = { ...user, password: '' };
+      localStorage.setItem('gsdsp_user_session', JSON.stringify(safeUser));
       localStorage.setItem('gsdsp_last_saram', username);
       setActiveTab('home');
 
@@ -880,7 +881,8 @@ const App: FC = () => {
       };
 
       setCurrentUser(mappedUser);
-      localStorage.setItem('gsdsp_user_session', JSON.stringify(mappedUser));
+      const safeMappedUser = { ...mappedUser, password: '' };
+      localStorage.setItem('gsdsp_user_session', JSON.stringify(safeMappedUser));
       localStorage.setItem('gsdsp_last_saram', username);
       setActiveTab('home');
 
@@ -1345,7 +1347,8 @@ const App: FC = () => {
       setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
       if (currentUser?.id === updatedUser.id) {
         setCurrentUser(updatedUser);
-        localStorage.setItem('gsdsp_user_session', JSON.stringify(updatedUser));
+        const safeUpdatedUser = { ...updatedUser, password: '' };
+        localStorage.setItem('gsdsp_user_session', JSON.stringify(safeUpdatedUser));
       }
       // If called from SettingsView (partial update), we might need to rely on currentUser update
     } else {

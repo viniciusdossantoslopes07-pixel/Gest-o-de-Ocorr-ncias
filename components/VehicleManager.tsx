@@ -393,7 +393,7 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
     try {
       const { data, error } = await supabase
         .from('users')
-        .select('id, name, rank, saram, war_name, cpf, password, om_id')
+        .select('id, name, rank, saram, war_name, cpf, om_id')
         .order('rank');
       if (error) throw error;
       setSystemUsers(data || []);
@@ -689,6 +689,16 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
     if (destinationType === 'externa' && (!destination || !destination.trim())) {
       alert('Por favor, informe o destino externo da missão.');
       return;
+    }
+    if (authMethod === 'password') {
+      const { data: isValid, error } = await supabase.rpc('verify_user_password', {
+          p_user_id: selectedDriver.id,
+          p_password: driverAuthPassword
+      });
+      if (error || !isValid) {
+          alert('Senha do condutor incorreta.');
+          return;
+      }
     }
 
     try {
