@@ -1014,10 +1014,10 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                         <div 
                             key={o.id} 
                             onClick={() => handlePrintOrder(o)}
-                            className={`p-5 rounded-[1.8rem] border transition-all duration-300 cursor-pointer ${isDarkMode ? 'bg-slate-900/40 border-slate-800/80 hover:border-orange-500/50 hover:bg-slate-900/60 shadow-[0_8px_30px_rgb(0,0,0,0.12)]' : 'bg-white border-slate-100 hover:border-orange-200 hover:shadow-xl'} flex flex-col justify-between group relative overflow-hidden`}
+                            className={`p-5 rounded-[1.8rem] border transition-all duration-300 cursor-pointer ${isDarkMode ? 'bg-gradient-to-br from-slate-900/60 to-slate-800/40 border-slate-700/50 hover:border-orange-500/50 backdrop-blur-md shadow-lg shadow-black/20' : 'bg-white border-slate-200 hover:border-orange-300 hover:shadow-xl'} flex flex-col justify-between group relative overflow-hidden`}
                         >
                             {/* Decorative background glow */}
-                            <div className={`absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 pointer-events-none transition-all duration-500 ${isDarkMode ? 'bg-orange-500 group-hover:opacity-40' : 'bg-orange-400 group-hover:opacity-30'}`}></div>
+                            <div className={`absolute -top-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-20 pointer-events-none transition-all duration-500 ${isDarkMode ? 'bg-orange-500 group-hover:opacity-30' : 'bg-orange-400 group-hover:opacity-20'}`}></div>
                             
                             <div className="flex-1 min-w-0 pr-2 relative z-10">
                                 <div className={`font-black ${isDarkMode ? 'text-slate-200' : 'text-slate-900'} flex justify-between items-start mb-3`}>
@@ -1222,7 +1222,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
             </div>
 
             {/* Content Area */}
-            <div className={`${isDarkMode ? 'bg-slate-900/80 border-slate-800/50' : 'bg-white border-slate-200'} rounded-2xl shadow-sm border p-2 sm:p-4 md:p-6 min-h-[400px]`}>
+            <div className="min-h-[400px]">
 
                 {/* 1. Minhas Solicitações Tab */}
                 {activeTab === 'minhas_solicitacoes' && (
