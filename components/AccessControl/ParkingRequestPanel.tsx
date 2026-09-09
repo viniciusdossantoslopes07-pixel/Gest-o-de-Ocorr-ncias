@@ -116,7 +116,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
             setLoading(true);
             // Expurgar automaticamente documentos sensíveis analisados há mais de 5 dias
             if (canViewAllParking) {
-                supabase.rpc('purge_expired_parking_documents').then(() => {}).catch(err => console.warn('Erro ao expurgar docs:', err));
+                supabase.rpc('purge_expired_parking_documents').then(() => {}, (err) => console.warn('Erro ao expurgar docs:', err));
             }
             await fetchMyRequests();
             if (canViewAllParking) await fetchAllRequests();

@@ -870,9 +870,20 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
         setPasswordError(false);
     };
 
-    const confirmSignature = () => {
+    const confirmSignature = async () => {
         if (!dateToSign || !callToSign) return;
-        if (passwordInput === currentUser.password) {
+
+        try {
+            const { data: isValidPassword, error: passError } = await supabase.rpc('verify_user_password', {
+                p_user_id: currentUser.id,
+                p_password: passwordInput
+            });
+
+            if (passError || !isValidPassword) {
+                setPasswordError(true);
+                return;
+            }
+
             const signatureInfo = { signedBy: `${currentUser.rank} ${currentUser.warName || currentUser.name}`, signedAt: new Date().toISOString() };
             const sectorUsers = getSectorUsers(selectedSector);
             const existing = attendanceHistory.find(a => a.date === dateToSign && a.callType === callToSign && a.sector === selectedSector);
@@ -941,7 +952,8 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
             setShowPasswordModal(false);
             setDateToSign(null); setCallToSign(null); setPasswordInput('');
             alert(`${CALL_TYPES[callToSign]} assinada com sucesso!`);
-        } else {
+        } catch (err) {
+            console.error("Erro na verificação de senha:", err);
             setPasswordError(true);
         }
     };
