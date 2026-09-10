@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { supabase } from '../services/supabase';
 import { Car, X, CheckCircle, Send, Upload, AlertCircle, Loader2, Building2 } from 'lucide-react';
 import { useSectors } from '../contexts/SectorsContext';
+import { User } from '../types';
 
 interface ParkingRequestModalProps {
     isOpen: boolean;
     onClose: () => void;
     isDarkMode?: boolean;
     initialOmId?: string | null;
+    user?: User | null;
 }
 
 // 5 MB em bytes
@@ -50,7 +52,7 @@ const STEP_LABELS: Record<UploadStep, string> = {
     salvando: 'Salvando solicitação...',
 };
 
-export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen, onClose, isDarkMode = false, initialOmId }) => {
+export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen, onClose, isDarkMode = false, initialOmId, user }) => {
     const dk = isDarkMode;
     const [uploadStep, setUploadStep] = useState<UploadStep>('');
     const [error, setError] = useState('');
@@ -94,12 +96,28 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                 setParkData(prev => ({
                     ...prev,
                     om_id: targetOm!.id,
-                    // Note: 'om' aqui no estado original parece ser usado para a OM de ORIGEM do militar (Sua OM / Órgão)
-                    // mas para garantir que o om_id seja o da OM de DESTINO (alocação), mantemos o om_id sincronizado.
                 }));
             }
         }
     }, [initialOmId, oms]);
+
+    // Pré-preenchimento automático para militar logado na plataforma
+    React.useEffect(() => {
+        if (isOpen && user) {
+            setParkData(prev => ({
+                ...prev,
+                nome: prev.nome || user.name || user.warName || '',
+                posto: prev.posto || user.rank || '',
+                forca: prev.forca || 'FAB',
+                tipo: 'Militar',
+                om: prev.om || user.om?.acronym || user.om?.name || 'GSD-SP',
+                identidade: prev.identidade || user.saram || user.cpf || '',
+                telefone: prev.telefone || (user.phoneNumber ? formatPhone(user.phoneNumber) : ''),
+                email: prev.email || user.email || '',
+                om_id: prev.om_id || user.om_id || initialOmId || ''
+            }));
+        }
+    }, [isOpen, user, initialOmId]);
 
     const [identityFile, setIdentityFile] = useState<File | null>(null);
     const [cnhFile, setCnhFile] = useState<File | null>(null);
@@ -208,7 +226,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
             // Insert
             setUploadStep('salvando');
             const { data, error: insertError } = await supabase.from('parking_requests').insert({
-                user_id: null,
+                user_id: user?.id || null,
                 nome_completo: parkData.nome.trim().toUpperCase(),
                 posto_graduacao: parkData.posto.trim().toUpperCase() || '—',
                 forca: parkData.forca,

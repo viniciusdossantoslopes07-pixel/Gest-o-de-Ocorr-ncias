@@ -12,6 +12,7 @@ import { notificationService } from '../../services/notificationService';
 import { hasPermission, PERMISSIONS } from '../../constants/permissions';
 import ParkingStatistics from './ParkingStatistics';
 import { useSectors } from '../../contexts/SectorsContext';
+import { ParkingRequestModal } from '../ParkingRequestModal';
 
 
 interface ParkingVehicle {
@@ -93,6 +94,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
     const [allRequests, setAllRequests] = useState<ParkingRequest[]>([]);
     const [printRequest, setPrintRequest] = useState<ParkingRequest | null>(null);
     const [showingCoupon, setShowingCoupon] = useState<ParkingRequest | null>(null);
+    const [showRequestModal, setShowRequestModal] = useState(false);
     const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
     const [showFilters, setShowFilters] = useState(false);
     const [analysingRequest, setAnalysingRequest] = useState<ParkingRequest | null>(null);
@@ -131,6 +133,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
             if (e.key === 'Escape') {
                 if (printRequest) setPrintRequest(null);
                 if (showingCoupon) setShowingCoupon(null);
+                if (showRequestModal) setShowRequestModal(false);
                 if (analysingRequest) setAnalysingRequest(null);
                 if (showPasswordModal) setShowPasswordModal(false);
                 if (rejectingRequestId) {
@@ -395,7 +398,17 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                    <button
+                        type="button"
+                        onClick={() => setShowRequestModal(true)}
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-lg shadow-blue-600/25 transition-all cursor-pointer"
+                        title="Realizar nova solicitação de vaga de estacionamento"
+                    >
+                        <Ticket className="w-4 h-4" />
+                        <span>Solicitar Vaga</span>
+                    </button>
+
                     <div className={`flex flex-col justify-center items-center px-6 py-2.5 rounded-xl border transition-all ${vagasDisponiveis > 5 ? (dk ? 'bg-emerald-900/20 border-emerald-800 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700') : vagasDisponiveis > 0 ? (dk ? 'bg-amber-900/20 border-amber-800 text-amber-500' : 'bg-amber-50 border-amber-200 text-amber-700') : (dk ? 'bg-red-900/20 border-red-800 text-red-500' : 'bg-red-50 border-red-200 text-red-700')}`}>
                         <span className="text-[10px] font-bold uppercase opacity-80 mb-0.5">Disponíveis</span>
                         <div className="flex items-baseline gap-1">
@@ -406,15 +419,26 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                 </div>
             </div>
 
-            {/* Tabs Segmented Control */}
-            <div className={`flex w-full md:w-fit gap-1 p-1.5 rounded-xl border mx-auto sm:mx-0 ${dk ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
-                {tabs.map(t => (
-                    <button key={t.id} onClick={() => setActiveTab(t.id)}
-                        className={`flex-1 md:flex-none py-2.5 px-4 sm:px-8 rounded-lg text-[10px] sm:text-xs font-black uppercase transition-all flex items-center justify-center gap-2 ${activeTab === t.id ? (dk ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 shadow-sm') : (dk ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-800')} `}>
-                        <t.icon className={`w-4 h-4`} /> 
-                        <span className="truncate">{t.label}</span>
-                    </button>
-                ))}
+            {/* Tabs Segmented Control + Botão Nova Solicitação */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className={`flex w-full sm:w-fit gap-1 p-1.5 rounded-xl border mx-auto sm:mx-0 ${dk ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
+                    {tabs.map(t => (
+                        <button key={t.id} onClick={() => setActiveTab(t.id)}
+                            className={`flex-1 sm:flex-none py-2.5 px-4 sm:px-8 rounded-lg text-[10px] sm:text-xs font-black uppercase transition-all flex items-center justify-center gap-2 ${activeTab === t.id ? (dk ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 shadow-sm') : (dk ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-800')} `}>
+                            <t.icon className={`w-4 h-4`} /> 
+                            <span className="truncate">{t.label}</span>
+                        </button>
+                    ))}
+                </div>
+
+                <button
+                    type="button"
+                    onClick={() => setShowRequestModal(true)}
+                    className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md shadow-blue-600/20 transition-all cursor-pointer"
+                >
+                    <Plus className="w-4 h-4" />
+                    <span>Nova Solicitação</span>
+                </button>
             </div>
 
             {/* ========== TAB: Estatísticas ========== */}
@@ -1144,6 +1168,19 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                     </div>
                 </div>
             )}
+
+            {/* Modal para Realizar Nova Solicitação de Estacionamento (Mesmo fluxo com cupom de protocolo) */}
+            <ParkingRequestModal
+                isOpen={showRequestModal}
+                onClose={() => {
+                    setShowRequestModal(false);
+                    fetchMyRequests();
+                    if (canViewAllParking) fetchAllRequests();
+                }}
+                isDarkMode={dk}
+                initialOmId={currentOmId}
+                user={user}
+            />
         </div>
     );
 }
