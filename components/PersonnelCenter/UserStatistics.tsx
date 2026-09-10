@@ -116,21 +116,28 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
 
     // Distribuição por SETOR (top 8)
     const sectorStats = useMemo(() => {
-        const counts: Record<string, number> = {};
+        const counts: Record<string, { count: number; om_id: string }> = {};
         statsUsers.forEach(u => {
             if (u.sector && u.sector !== 'SEM SETOR') {
-                counts[u.sector] = (counts[u.sector] || 0) + 1;
+                const key = `${u.sector}_${u.om_id}`;
+                if (!counts[key]) {
+                    counts[key] = { count: 0, om_id: u.om_id || '' };
+                }
+                counts[key].count++;
             }
         });
         return Object.entries(counts)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 8)
-            .map(([name, count]) => ({
-                name,
-                count,
-                pct: total > 0 ? Math.round((count / total) * 100) : 0,
-                unit: sectors.find(s => s.name === name)?.unit || 'GSD-SP'
-            }));
+            .map(([key, data]) => {
+                const name = key.split('_')[0];
+                return {
+                    name,
+                    count: data.count,
+                    pct: total > 0 ? Math.round((data.count / total) * 100) : 0,
+                    unit: sectors.find(s => s.name === name && s.om_id === data.om_id)?.unit || (data.om_id === BASP_ID ? 'BASP' : 'GSD-SP')
+                };
+            })
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 8);
     }, [statsUsers, sectors, total]);
 
     const maxSectorCount = Math.max(...sectorStats.map(s => s.count), 1);

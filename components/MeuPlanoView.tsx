@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { User, MissionOrder } from '../types';
-import { FileText, BarChart3, Download, Calendar, Shield, MapPin, Package, Filter, X, CheckCircle2 } from 'lucide-react';
+import { FileText, BarChart3, Download, Calendar, Shield, MapPin, Package, Filter, X, CheckCircle2, CarFront } from 'lucide-react';
 import MissionRequestList from './MissionRequestList';
 import { supabase } from '../services/supabase';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
@@ -24,7 +24,9 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         activeLoans: 0,
         attendanceHistory: [] as any[],
         attendanceRate: 0,
-        attendanceByStatus: [] as any[]
+        attendanceByStatus: [] as any[],
+        activeVehicleLoans: 0,
+        myVehicles: [] as any[]
     });
     const [loading, setLoading] = useState(false);
     const [allMissions, setAllMissions] = useState<any[]>([]);
@@ -112,13 +114,26 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                     `)
                     .eq('saram', userSaramStr)
                     .order('timestamp', { ascending: false })
-                    .limit(500)
+                    .limit(500),
+                    
+                // Viaturas Cauteladas
+                supabase
+                    .from('vehicle_loans')
+                    .select(`
+                        id,
+                        status,
+                        departure_date,
+                        vehicle:vehicles(reg_fab, model, plate, category, brand)
+                    `)
+                    .eq('driver_saram', userSaramStr)
+                    .order('departure_date', { ascending: false })
             ]);
 
             // Verificação de erros individuais
             if (missionsRes.error) console.error('Missions error:', missionsRes.error);
             if (loansRes.error) console.error('Loans error:', loansRes.error);
             if (attendanceRes.error) console.error('Attendance error:', attendanceRes.error);
+            if (vehiclesRes.error) console.error('Vehicles error:', vehiclesRes.error);
 
             // Filtramos as missões onde o usuário está no pessoal (via stringify para ser robusto)
             const userMissions = (missionsRes.data || []).filter(m => {
@@ -137,9 +152,10 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             const missions = userMissions;
             const loans = loansRes.data || [];
             const attendance = attendanceRes.data || [];
+            const vehicles = vehiclesRes.data || [];
 
             // 3. Process Initial Data (Full)
-            processAndSetStats(missions, loans, attendance);
+            processAndSetStats(missions, loans, attendance, vehicles);
 
         } catch (error) {
             console.error('Error fetching personal stats:', error);
@@ -148,7 +164,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         }
     };
 
-    const processAndSetStats = (missions: any[], loans: any[], attendance: any[]) => {
+    const processAndSetStats = (missions: any[], loans: any[], attendance: any[], vehicles: any[]) => {
         // Filtro de missões pendentes/concluídas (case insensitive e robusto)
         const concludedMissions = missions.filter(m => {
             const status = (m.status || '').toUpperCase().trim();
@@ -208,6 +224,10 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
         });
         const attendanceByStatus = Object.entries(statusCount).map(([name, value]) => ({ name, value }));
 
+        // Process Vehicles
+        const activeVehicles = vehicles.filter((v: any) => v.status === 'Em Uso');
+        const activeVehicleLoans = activeVehicles.length;
+
         setStats({
             totalMissions, //KPI de missões FINALIZADAS
             totalHours: 0,
@@ -218,7 +238,9 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             activeLoans,
             attendanceHistory: attendance, // Guardamos todos para filtros posteriores
             attendanceRate,
-            attendanceByStatus
+            attendanceByStatus,
+            activeVehicleLoans,
+            myVehicles: vehicles // Guardar histórico ou ativas
         });
     };
 
@@ -298,7 +320,10 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             attendanceRate: fAttendanceRate,
             attendanceByStatus: fAttendanceByStatus,
             attendanceHistory: filteredAttendance,
-            allFiltered: filtered
+            allFiltered: filtered,
+            // Viaturas geralmente não são filtradas por mês da mesma forma na visão geral rápida
+            activeVehicleLoans: stats.activeVehicleLoans,
+            myVehicles: stats.myVehicles
         };
     }, [allMissions, filterType, filterMonth, filterYear, stats.attendanceHistory]);
 
@@ -351,18 +376,23 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
 
     return (
         <div className="max-w-7xl mx-auto space-y-6">
-            <div className={`rounded-2xl border overflow-hidden shadow-sm ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+            <div className={`rounded-3xl border overflow-hidden shadow-2xl ${isDarkMode ? 'bg-slate-900/90 border-slate-700/50 backdrop-blur-xl' : 'bg-white border-slate-200'}`}>
 
-                {/* Header */}
-                <div className={`p-6 border-b flex flex-col md:flex-row justify-between items-start md:items-center gap-4 ${isDarkMode ? 'border-slate-700' : 'border-slate-200'}`}>
-                    <div>
-                        <h1 className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                {/* Header Premium com Gradiente */}
+                <div className={`relative p-8 md:p-10 border-b flex flex-col md:flex-row justify-between items-start md:items-center gap-6 ${isDarkMode ? 'border-slate-800' : 'border-slate-100'} overflow-hidden`}>
+                    {/* Efeito luminoso de fundo */}
+                    <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-blue-500/10 blur-3xl pointer-events-none"></div>
+                    <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none"></div>
+                    
+                    <div className="relative z-10">
+                        <h1 className={`text-4xl md:text-5xl font-black tracking-tight ${isDarkMode ? 'bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent' : 'bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent'}`}>
                             Painel Individual
                         </h1>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1">
-                            <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                                SARAM (Visualização Pessoal):
-                            </p>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-3">
+                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${isDarkMode ? 'bg-slate-800/80 border border-slate-700/50' : 'bg-slate-50 border border-slate-200'}`}>
+                                <p className={`text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                                    Saram:
+                                </p>
                             {isEditingPersonalSaram ? (
                                 <div className="flex items-center gap-2">
                                     <input
@@ -404,10 +434,13 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                                     </button>
                                 </div>
                             )}
-                            <span className="hidden sm:inline text-slate-300">|</span>
-                            <p className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                                Identificação: <span className={isDarkMode ? 'text-slate-300' : 'text-slate-600'}>{user.militarId || 'FNC'}</span>
-                            </p>
+                            </div>
+                            <span className="hidden sm:inline text-slate-300 dark:text-slate-600 font-light">|</span>
+                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${isDarkMode ? 'bg-slate-800/80 border border-slate-700/50' : 'bg-slate-50 border border-slate-200'}`}>
+                                <p className={`text-xs font-bold uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                                    ID: <span className={isDarkMode ? 'text-blue-300' : 'text-blue-600'}>{user.militarId || 'FNC'}</span>
+                                </p>
+                            </div>
                         </div>
                     </div>
                     {activeTab === 'estatisticas' && (
@@ -421,17 +454,17 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                     )}
                 </div>
 
-                {/* Tabs */}
-                <div className={`flex gap-2 px-6 pt-4 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+                {/* Tabs Estilo Premium Pílula */}
+                <div className={`flex items-center gap-3 px-6 md:px-10 pt-6 pb-2 border-b ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
                     <button
                         onClick={() => setActiveTab('estatisticas')}
-                        className={`flex items-center gap-2 px-4 py-3 font-bold text-sm rounded-t-xl transition-all ${activeTab === 'estatisticas'
+                        className={`flex items-center gap-2.5 px-6 py-2.5 font-bold text-sm rounded-full transition-all duration-300 ${activeTab === 'estatisticas'
                             ? isDarkMode
-                                ? 'bg-slate-700 text-white border-b-2 border-blue-500'
-                                : 'bg-slate-50 text-blue-600 border-b-2 border-blue-600'
+                                ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]'
+                                : 'bg-blue-600 text-white shadow-md'
                             : isDarkMode
-                                ? 'text-slate-400 hover:text-slate-200'
-                                : 'text-slate-500 hover:text-slate-700'
+                                ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
                             }`}
                     >
                         <BarChart3 className="w-4 h-4" />
@@ -440,13 +473,13 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
 
                     <button
                         onClick={() => setActiveTab('solicitacoes')}
-                        className={`flex items-center gap-2 px-4 py-3 font-bold text-sm rounded-t-xl transition-all ${activeTab === 'solicitacoes'
+                        className={`flex items-center gap-2.5 px-6 py-2.5 font-bold text-sm rounded-full transition-all duration-300 ${activeTab === 'solicitacoes'
                             ? isDarkMode
-                                ? 'bg-slate-700 text-white border-b-2 border-blue-500'
-                                : 'bg-slate-50 text-blue-600 border-b-2 border-blue-600'
+                                ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]'
+                                : 'bg-blue-600 text-white shadow-md'
                             : isDarkMode
-                                ? 'text-slate-400 hover:text-slate-200'
-                                : 'text-slate-500 hover:text-slate-700'
+                                ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
                             }`}
                     >
                         <FileText className="w-4 h-4" />
@@ -455,17 +488,19 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
+                <div className="p-6 md:p-10">
                     {activeTab === 'estatisticas' && (
-                        <div className="space-y-6 animate-fade-in">
-                            {/* Filter Bar */}
-                            <div className={`p-4 rounded-2xl border flex flex-wrap items-center gap-4 ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-200'}`}>
-                                <div className={`flex items-center gap-2 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                                    <Filter className="w-4 h-4 text-blue-500" />
-                                    <span className="font-bold text-xs uppercase tracking-wider">Filtrar</span>
+                        <div className="space-y-8 animate-fade-in">
+                            {/* Filter Bar Premium */}
+                            <div className={`p-4 rounded-2xl flex flex-wrap items-center gap-4 ${isDarkMode ? 'bg-slate-800/60 border border-slate-700/50 backdrop-blur-md shadow-sm' : 'bg-slate-50/80 border border-slate-200 backdrop-blur-md shadow-sm'}`}>
+                                <div className={`flex items-center gap-2 pl-2 ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                                    <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
+                                        <Filter className="w-4 h-4" />
+                                    </div>
+                                    <span className="font-bold text-xs uppercase tracking-widest">Filtros</span>
                                 </div>
 
-                                <div className={`flex flex-wrap items-center gap-3 bg-opacity-50 rounded-xl px-3 py-1.5 ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
+                                <div className={`flex flex-wrap items-center gap-3 rounded-xl px-4 py-2 ${isDarkMode ? 'bg-slate-900/50 border border-slate-700/50' : 'bg-white border border-slate-200 shadow-sm'}`}>
                                     <Calendar className="w-3.5 h-3.5 text-slate-400" />
                                     <select
                                         value={filterMonth}
@@ -501,12 +536,12 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                                     </select>
                                 </div>
 
-                                <div className={`flex items-center gap-3 bg-opacity-50 rounded-xl px-3 py-1.5 flex-1 min-w-[150px] ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-50'}`}>
-                                    <Shield className="w-3.5 h-3.5 text-slate-400" />
+                                <div className={`flex items-center gap-3 rounded-xl px-4 py-2 flex-1 min-w-[200px] ${isDarkMode ? 'bg-slate-900/50 border border-slate-700/50' : 'bg-white border border-slate-200 shadow-sm'}`}>
+                                    <Shield className="w-4 h-4 text-slate-400" />
                                     <select
                                         value={filterType}
                                         onChange={(e) => setFilterType(e.target.value)}
-                                        className="bg-transparent text-xs font-bold text-slate-500 outline-none flex-1 appearance-none cursor-pointer"
+                                        className="bg-transparent text-sm font-bold text-slate-500 outline-none flex-1 appearance-none cursor-pointer"
                                     >
                                         <option value="">Todos os Tipos de Missão</option>
                                         {missionTypes.map(type => (
@@ -526,48 +561,71 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                                 )}
                             </div>
 
-                            {/* Stats Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
-                                            <Shield className="w-5 h-5" />
+                            {/* Stats Grid Premium */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div className={`relative overflow-hidden p-6 rounded-3xl border transition-all hover:scale-[1.02] ${isDarkMode ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700/50 shadow-lg' : 'bg-gradient-to-br from-white to-slate-50 border-slate-200 shadow-md'}`}>
+                                    <div className="relative z-10">
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className="p-2.5 bg-blue-500/10 text-blue-500 rounded-xl">
+                                                <Shield className="w-5 h-5" />
+                                            </div>
+                                            <h3 className={`font-black text-sm uppercase tracking-wide ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Missões Cumpridas</h3>
                                         </div>
-                                        <h3 className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>Missões Cumpridas</h3>
+                                        <p className={`text-4xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{hasActiveFilters ? filteredStats.totalMissions : stats.totalMissions}</p>
+                                        <p className="text-[10px] uppercase font-bold text-slate-500 mt-2 tracking-wider">Participações em OMIS</p>
                                     </div>
-                                    <p className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{hasActiveFilters ? filteredStats.totalMissions : stats.totalMissions}</p>
-                                    <p className="text-xs text-slate-500 mt-1">Participações em OMIS</p>
+                                    <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl pointer-events-none"></div>
                                 </div>
 
-                                <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
-                                            <Package className="w-5 h-5" />
+                                <div className={`relative overflow-hidden p-6 rounded-3xl border transition-all hover:scale-[1.02] ${isDarkMode ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700/50 shadow-lg' : 'bg-gradient-to-br from-white to-slate-50 border-slate-200 shadow-md'}`}>
+                                    <div className="relative z-10">
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className="p-2.5 bg-emerald-500/10 text-emerald-500 rounded-xl">
+                                                <Package className="w-5 h-5" />
+                                            </div>
+                                            <h3 className={`font-black text-sm uppercase tracking-wide ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Material em Uso</h3>
                                         </div>
-                                        <h3 className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>Material em Uso</h3>
+                                        <p className={`text-4xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{stats.activeLoans}</p>
+                                        <p className="text-[10px] uppercase font-bold text-slate-500 mt-2 tracking-wider">Itens Cautelados Atualmente</p>
                                     </div>
-                                    <p className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{stats.activeLoans}</p>
-                                    <p className="text-xs text-slate-500 mt-1">Itens cautelados atualmente</p>
+                                    <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none"></div>
                                 </div>
 
-                                <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
-                                            <CheckCircle2 className="w-5 h-5" />
+                                <div className={`relative overflow-hidden p-6 rounded-3xl border transition-all hover:scale-[1.02] ${isDarkMode ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700/50 shadow-lg' : 'bg-gradient-to-br from-white to-slate-50 border-slate-200 shadow-md'}`}>
+                                    <div className="relative z-10">
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className="p-2.5 bg-indigo-500/10 text-indigo-500 rounded-xl">
+                                                <CarFront className="w-5 h-5" />
+                                            </div>
+                                            <h3 className={`font-black text-sm uppercase tracking-wide ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Viaturas (VTR)</h3>
                                         </div>
-                                        <h3 className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>Assiduidade</h3>
+                                        <p className={`text-4xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{stats.activeVehicleLoans}</p>
+                                        <p className="text-[10px] uppercase font-bold text-slate-500 mt-2 tracking-wider">VTRs sob sua Cautela</p>
                                     </div>
-                                    <p className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                                        {(hasActiveFilters ? filteredStats.attendanceRate : stats.attendanceRate).toFixed(1)}%
-                                    </p>
-                                    <p className="text-xs text-slate-500 mt-1">Percentual de presença efetiva</p>
+                                    <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none"></div>
+                                </div>
+
+                                <div className={`relative overflow-hidden p-6 rounded-3xl border transition-all hover:scale-[1.02] ${isDarkMode ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700/50 shadow-lg' : 'bg-gradient-to-br from-white to-slate-50 border-slate-200 shadow-md'}`}>
+                                    <div className="relative z-10">
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className="p-2.5 bg-purple-500/10 text-purple-500 rounded-xl">
+                                                <CheckCircle2 className="w-5 h-5" />
+                                            </div>
+                                            <h3 className={`font-black text-sm uppercase tracking-wide ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Assiduidade</h3>
+                                        </div>
+                                        <p className={`text-4xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                            {(hasActiveFilters ? filteredStats.attendanceRate : stats.attendanceRate).toFixed(1)}<span className="text-2xl text-slate-500">%</span>
+                                        </p>
+                                        <p className="text-[10px] uppercase font-bold text-slate-500 mt-2 tracking-wider">Presença Efetiva</p>
+                                    </div>
+                                    <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl pointer-events-none"></div>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {/* Chart */}
-                                <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-white border-slate-200'}`}>
-                                    <h3 className={`font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Tipos de Missão {hasActiveFilters && '(Filtrado)'}</h3>
+                                <div className={`p-8 rounded-3xl border ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 backdrop-blur-sm' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                    <h3 className={`font-black uppercase tracking-widest text-sm mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Tipos de Missão {hasActiveFilters && '(Filtrado)'}</h3>
                                     <div className="h-64 w-full">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
@@ -593,38 +651,84 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                                 </div>
 
                                 {/* List */}
-                                <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-white border-slate-200'}`}>
-                                    <h3 className={`font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                <div className={`p-8 rounded-3xl border flex flex-col ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 backdrop-blur-sm' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                    <h3 className={`font-black uppercase tracking-widest text-sm mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                                         {hasActiveFilters ? 'Missões no Período' : 'Últimas Missões'}
                                     </h3>
-                                    <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin">
+                                    <div className="space-y-3 flex-1 overflow-y-auto pr-2 min-h-[300px]">
                                         {(hasActiveFilters ? filteredStats.recentMissions : stats.recentMissions).map((mission: any) => (
-                                            <div key={mission.id} className={`flex items-start gap-3 p-3 rounded-lg ${isDarkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
-                                                <div className="mt-1 p-2 bg-blue-100 text-blue-600 rounded-lg flex-shrink-0">
+                                            <div key={mission.id} className={`flex items-start gap-4 p-4 rounded-2xl transition-colors hover:bg-opacity-80 ${isDarkMode ? 'bg-slate-900/50 border border-slate-800' : 'bg-slate-50 border border-slate-100'}`}>
+                                                <div className="mt-0.5 p-2.5 bg-blue-500/10 text-blue-500 rounded-xl flex-shrink-0 shadow-inner">
                                                     <Calendar className="w-4 h-4" />
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <h4 className={`font-bold text-sm truncate ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
+                                                    <h4 className={`font-black text-sm truncate ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
                                                         {mission.mission}
-                                                        <span className="text-xs font-normal text-slate-500 ml-2">({mission.omis_number})</span>
+                                                        <span className="text-xs font-bold text-slate-500 ml-2">#{mission.omis_number}</span>
                                                     </h4>
-                                                    <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
-                                                        <MapPin className="w-3 h-3" />
+                                                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 mt-1.5">
+                                                        <MapPin className="w-3.5 h-3.5 text-slate-400" />
                                                         <span className="truncate">{mission.location}</span>
                                                     </div>
-                                                    <p className="text-xs text-slate-400 mt-1">{new Date(mission.date).toLocaleDateString()}</p>
+                                                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mt-1.5">{new Date(mission.date).toLocaleDateString()}</p>
                                                 </div>
                                             </div>
                                         ))}
                                         {(hasActiveFilters ? filteredStats.recentMissions : stats.recentMissions).length === 0 && (
-                                            <p className="text-slate-500 text-sm italic py-4 text-center">Nenhuma missão encontrada com estes filtros.</p>
+                                            <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+                                                <div className={`p-4 rounded-full mb-3 ${isDarkMode ? 'bg-slate-800 text-slate-600' : 'bg-slate-100 text-slate-400'}`}>
+                                                    <FileText className="w-6 h-6" />
+                                                </div>
+                                                <p className="text-slate-500 text-sm font-bold">Nenhuma missão no período.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Viaturas Cauteladas */}
+                                <div className={`p-8 rounded-3xl border flex flex-col ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 backdrop-blur-sm' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                    <h3 className={`font-black uppercase tracking-widest text-sm mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                        Minhas Viaturas Cauteladas
+                                    </h3>
+                                    <div className="space-y-3 flex-1 overflow-y-auto pr-2 min-h-[300px]">
+                                        {stats.myVehicles.filter((l: any) => l.status === 'Em Uso').map((loan: any) => (
+                                            <div key={loan.id} className={`flex items-start gap-4 p-4 rounded-2xl transition-colors hover:bg-opacity-80 ${isDarkMode ? 'bg-slate-900/50 border border-slate-800' : 'bg-slate-50 border border-slate-100'}`}>
+                                                <div className="mt-0.5 p-2.5 bg-indigo-500/10 text-indigo-500 rounded-xl flex-shrink-0 shadow-inner">
+                                                    <CarFront className="w-4 h-4" />
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <h4 className={`font-black text-sm truncate flex items-center justify-between ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
+                                                        {loan.vehicle?.brand} {loan.vehicle?.model}
+                                                        <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-500">
+                                                            {loan.status}
+                                                        </span>
+                                                    </h4>
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        <span className={`px-2 py-1 rounded text-xs font-black uppercase tracking-widest ${isDarkMode ? 'bg-slate-800 text-slate-300 border border-slate-700' : 'bg-white text-slate-700 border border-slate-200 shadow-sm'}`}>
+                                                            {loan.vehicle?.plate || 'SEM PLACA'}
+                                                        </span>
+                                                        <span className="text-[10px] font-bold text-slate-500">Reg: {loan.vehicle?.reg_fab}</span>
+                                                    </div>
+                                                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mt-2">
+                                                        Cautelada em: {new Date(loan.departure_date).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {stats.myVehicles.filter((l: any) => l.status === 'Em Uso').length === 0 && (
+                                            <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+                                                <div className={`p-4 rounded-full mb-3 ${isDarkMode ? 'bg-slate-800 text-slate-600' : 'bg-slate-100 text-slate-400'}`}>
+                                                    <CarFront className="w-6 h-6" />
+                                                </div>
+                                                <p className="text-slate-500 text-sm font-bold">Nenhuma viatura sob sua cautela no momento.</p>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
 
                                 {/* Material Categories Chart */}
-                                <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-white border-slate-200'}`}>
-                                    <h3 className={`font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Categorias de Materiais Cautelados</h3>
+                                <div className={`p-8 rounded-3xl border ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 backdrop-blur-sm' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                    <h3 className={`font-black uppercase tracking-widest text-sm mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Categorias Cauteladas (MatBel)</h3>
                                     <div className="h-64 w-full">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
@@ -650,8 +754,8 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                                 </div>
 
                                 {/* Attendance Status Chart */}
-                                <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-white border-slate-200'}`}>
-                                    <h3 className={`font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Distribuição de Frequência</h3>
+                                <div className={`p-8 rounded-3xl border ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 backdrop-blur-sm' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                    <h3 className={`font-black uppercase tracking-widest text-sm mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Distribuição de Frequência</h3>
                                     <div className="h-64 w-full">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
@@ -677,33 +781,35 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                                 </div>
 
                                 {/* Attendance List */}
-                                <div className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-white border-slate-200'}`}>
-                                    <h3 className={`font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                                <div className={`p-8 rounded-3xl border flex flex-col md:col-span-2 lg:col-span-1 ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 backdrop-blur-sm' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                    <h3 className={`font-black uppercase tracking-widest text-sm mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                                         Últimas Chamadas
                                     </h3>
-                                    <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin">
+                                    <div className="space-y-3 flex-1 overflow-y-auto pr-2 max-h-[300px]">
                                         {(hasActiveFilters ? filteredStats.attendanceHistory : stats.attendanceHistory).slice(0, 10).map((record: any) => (
-                                            <div key={record.id} className={`flex items-center justify-between p-3 rounded-lg ${isDarkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`w-2 h-8 rounded-full ${['P', 'ESV', 'MIS', 'SV'].includes(record.status) ? 'bg-emerald-500' : 'bg-red-500'
+                                            <div key={record.id} className={`flex items-center justify-between p-4 rounded-2xl transition-colors hover:bg-opacity-80 ${isDarkMode ? 'bg-slate-900/50 border border-slate-800' : 'bg-slate-50 border border-slate-100'}`}>
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`w-1.5 h-10 rounded-full ${['P', 'ESV', 'MIS', 'SV'].includes(record.status) ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]'
                                                         }`} />
                                                     <div>
-                                                        <p className={`font-bold text-sm ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                                                        <p className={`font-black text-sm ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
                                                             {new Date(record.daily_attendance?.date || record.timestamp).toLocaleDateString()}
                                                         </p>
-                                                        <p className="text-xs text-slate-500">{record.daily_attendance?.call_type || 'Chamada'}</p>
+                                                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{record.daily_attendance?.call_type || 'Chamada'}</p>
                                                     </div>
                                                 </div>
-                                                <span className={`px-2 py-1 rounded text-[10px] font-black uppercase ${['P', 'ESV', 'MIS', 'SV'].includes(record.status)
-                                                    ? 'bg-emerald-100 text-emerald-700'
-                                                    : 'bg-red-100 text-red-700'
+                                                <span className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest ${['P', 'ESV', 'MIS', 'SV'].includes(record.status)
+                                                    ? 'bg-emerald-500/10 text-emerald-500'
+                                                    : 'bg-red-500/10 text-red-500'
                                                     }`}>
                                                     {record.status}
                                                 </span>
                                             </div>
                                         ))}
                                         {(hasActiveFilters ? filteredStats.attendanceHistory : stats.attendanceHistory).length === 0 && (
-                                            <p className="text-slate-500 text-sm italic py-4 text-center">Nenhum registro de frequência encontrado.</p>
+                                            <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+                                                <p className="text-slate-500 text-sm font-bold">Nenhum registro de frequência no período.</p>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
