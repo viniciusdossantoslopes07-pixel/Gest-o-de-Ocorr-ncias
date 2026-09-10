@@ -347,8 +347,14 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl max-w-5xl w-full h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+        <div 
+            className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm"
+            onClick={onClose}
+        >
+            <div 
+                className="bg-white rounded-2xl max-w-5xl w-full h-[90vh] overflow-hidden flex flex-col shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+            >
 
                 {/* Barra de controles */}
                 <div className="bg-white border-b border-slate-200 p-4 flex items-center justify-between z-20 shrink-0">
