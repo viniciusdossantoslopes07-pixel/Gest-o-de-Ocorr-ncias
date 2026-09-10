@@ -127,7 +127,7 @@ export const VehicleDamageDiagram: React.FC<VehicleDamageDiagramProps> = ({
   };
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-900/60 rounded-2xl p-4 border border-slate-200 dark:border-slate-800">
+    <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-xl">
@@ -154,7 +154,7 @@ export const VehicleDamageDiagram: React.FC<VehicleDamageDiagramProps> = ({
       </div>
 
       {!readOnly && (
-        <div className="mb-4 bg-white dark:bg-slate-800/80 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
+        <div className="mb-4 bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
           <div className="flex flex-col sm:flex-row gap-3 items-end">
             <div className="w-full sm:w-[28%] shrink-0">
               <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
@@ -366,7 +366,7 @@ export const VehicleDamageDiagram: React.FC<VehicleDamageDiagramProps> = ({
           </div>
 
           {damages.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-white dark:bg-slate-900/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-white dark:bg-slate-800 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
               <Check className="w-8 h-8 text-emerald-500 mb-2 opacity-80" />
               <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                 Nenhuma avaria assinalada
@@ -380,7 +380,7 @@ export const VehicleDamageDiagram: React.FC<VehicleDamageDiagramProps> = ({
               {damages.map((dmg) => (
                 <div
                   key={dmg.id}
-                  className="bg-white dark:bg-slate-850 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between gap-2 hover:border-amber-400 dark:hover:border-amber-500/50 transition-colors"
+                  className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between gap-2 hover:border-amber-400 dark:hover:border-amber-500/50 transition-colors"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className="w-7 h-7 rounded-lg bg-red-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
