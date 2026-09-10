@@ -688,18 +688,18 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                                 {/* Viaturas Cauteladas */}
                                 <div className={`p-8 rounded-3xl border flex flex-col ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50 backdrop-blur-sm' : 'bg-white border-slate-200 shadow-sm'}`}>
                                     <h3 className={`font-black uppercase tracking-widest text-sm mb-6 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                                        Minhas Viaturas Cauteladas
+                                        Histórico de Viaturas Cauteladas
                                     </h3>
                                     <div className="space-y-3 flex-1 overflow-y-auto pr-2 min-h-[300px]">
-                                        {stats.myVehicles.filter((l: any) => l.status === 'Em Uso').map((loan: any) => (
+                                        {stats.myVehicles.slice(0, 10).map((loan: any) => (
                                             <div key={loan.id} className={`flex items-start gap-4 p-4 rounded-2xl transition-colors hover:bg-opacity-80 ${isDarkMode ? 'bg-slate-900/50 border border-slate-800' : 'bg-slate-50 border border-slate-100'}`}>
-                                                <div className="mt-0.5 p-2.5 bg-indigo-500/10 text-indigo-500 rounded-xl flex-shrink-0 shadow-inner">
+                                                <div className={`mt-0.5 p-2.5 rounded-xl flex-shrink-0 shadow-inner ${loan.status === 'Em Uso' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-500/10 text-slate-500'}`}>
                                                     <CarFront className="w-4 h-4" />
                                                 </div>
                                                 <div className="min-w-0 flex-1">
                                                     <h4 className={`font-black text-sm truncate flex items-center justify-between ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
                                                         {loan.vehicle?.brand} {loan.vehicle?.model}
-                                                        <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-500">
+                                                        <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${loan.status === 'Em Uso' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-500/10 text-slate-500'}`}>
                                                             {loan.status}
                                                         </span>
                                                     </h4>
@@ -715,12 +715,12 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                                                 </div>
                                             </div>
                                         ))}
-                                        {stats.myVehicles.filter((l: any) => l.status === 'Em Uso').length === 0 && (
+                                        {stats.myVehicles.length === 0 && (
                                             <div className="h-full flex flex-col items-center justify-center p-6 text-center">
                                                 <div className={`p-4 rounded-full mb-3 ${isDarkMode ? 'bg-slate-800 text-slate-600' : 'bg-slate-100 text-slate-400'}`}>
                                                     <CarFront className="w-6 h-6" />
                                                 </div>
-                                                <p className="text-slate-500 text-sm font-bold">Nenhuma viatura sob sua cautela no momento.</p>
+                                                <p className="text-slate-500 text-sm font-bold">Nenhuma viatura sob sua cautela no histórico.</p>
                                             </div>
                                         )}
                                     </div>
