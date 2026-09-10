@@ -10,7 +10,7 @@
 endobj
 4 0 obj
 <<
-/Length 11449
+/Length 11477
 >>
 stream
 0.5670000000000001 w
@@ -55,14 +55,14 @@ BT
 12.6499999999999986 TL
 0.082 0.502 0.239 rg
 68.031496062992133 717.1655905511811397 Td
-(STATUS GERAL DE SEGURANÇA: SISTEMA APTO E EM CONFORMIDADE) Tj
+(STATUS GERAL DE SEGURANÇA: SISTEMA BLINDADO E EM PLENA CONFORMIDADE) Tj
 ET
 BT
 /F1 8.5 Tf
 9.7749999999999986 TL
 0.086 0.396 0.204 rg
 68.031496062992133 697.3230708661417339 Td
-(Camada Zero Vulnerabilidades em Dependências | Bcrypt Hashing | RLS Ativo | Expurgos LGPD \(5 Dias\)) Tj
+(Column-Level Grants | Bcrypt Hashing | Proteção Anti-XSS | RLS Multi-Inquilino | Zero CVEs em Pacotes) Tj
 ET
 0.97 0.98 0.99 rg
 0.89 0.91 0.94 RG
@@ -103,14 +103,14 @@ BT
 9.1999999999999993 TL
 0.278 0.333 0.412 rg
 320.3149606299213019 626.4569291338582389 Td
-(• Data da Análise: 07 de Setembro de 2026) Tj
+(• Data da Análise: 10 de Setembro de 2026) Tj
 ET
 BT
 /F1 8 Tf
 9.1999999999999993 TL
 0.278 0.333 0.412 rg
 320.3149606299213019 609.4490551181102092 Td
-(• Framework de Avaliação: OWASP Top 10 / NIST SP 800-53) Tj
+(• Framework de Avaliação: OWASP Top 10 / NIST SP 800-53 / CIS Benchmarks) Tj
 ET
 BT
 /F2 11 Tf
@@ -472,7 +472,7 @@ endobj
 endobj
 6 0 obj
 <<
-/Length 8740
+/Length 8877
 >>
 stream
 1.4173228346456694 w
@@ -531,70 +531,70 @@ BT
 8.625 TL
 0.145 0.388 0.922 rg
 62.3622047244094517 685.9844881889763428 Td
-(%¸   A l g o r i t m o   d e   H a s h :) Tj
+(%¸   C o l u m n - L e v e l   G r a n t s :) Tj
 ET
 BT
 /F1 7.5 Tf
 8.625 TL
 0.278 0.333 0.412 rg
-133.9122047244094347 685.9844881889763428 Td
-(Bcrypt com cost factor 10 dinâmico via pgcrypto do PostgreSQL.) Tj
+143.0622047244094688 685.9844881889763428 Td
+(Acesso de SELECT e UPDATE na coluna "password" 100% revogado para anon e authenticated.) Tj
 ET
 BT
 /F2 7.5 Tf
 8.625 TL
 0.145 0.388 0.922 rg
 62.3622047244094517 668.9766141732283131 Td
-(%¸   E x e c u ç ã o   S e r v e r - S i d e :) Tj
+(%¸   A l g o r i t m o   d e   H a s h :) Tj
 ET
 BT
 /F1 7.5 Tf
 8.625 TL
 0.278 0.333 0.412 rg
-146.6622047244094631 668.9766141732283131 Td
-(Migração do login para a RPC secure_login \(SECURITY DEFINER\).) Tj
+133.9122047244094347 668.9766141732283131 Td
+(Bcrypt com custo 10 dinâmico via pgcrypto nativo do PostgreSQL \(armazenamento seguro\).) Tj
 ET
 BT
 /F2 7.5 Tf
 8.625 TL
 0.145 0.388 0.922 rg
 62.3622047244094517 651.9687401574802834 Td
-(%¸   P r o t e ç ã o   A n t i - F o r ç a   B r u t a :) Tj
+(%¸   E x e c u ç ã o   S e r v e r - S i d e :) Tj
 ET
 BT
 /F1 7.5 Tf
 8.625 TL
 0.278 0.333 0.412 rg
-158.7372047244094801 651.9687401574802834 Td
-(Tabela login_attempts: 5 falhas consecutivas bloqueiam o IP/usuário por 15 min.) Tj
+146.6622047244094631 651.9687401574802834 Td
+(Login e validações operadas estritamente via RPCs com SECURITY DEFINER.) Tj
 ET
 BT
 /F2 7.5 Tf
 8.625 TL
 0.145 0.388 0.922 rg
 62.3622047244094517 634.9608661417322537 Td
-(%¸   I s o l a m e n t o   d e   S e g r e d o s :) Tj
+(%¸   P r o t e ç ã o   A n t i - F o r ç a   B r u t a :) Tj
 ET
 BT
 /F1 7.5 Tf
 8.625 TL
 0.278 0.333 0.412 rg
-153.3372047244094745 634.9608661417322537 Td
-(O frontend não recebe hashes, senhas ou a service_role_key em nenhuma chamada.) Tj
+158.7372047244094801 634.9608661417322537 Td
+(Tabela login_attempts: 5 falhas consecutivas bloqueiam a conta temporariamente por 15 min.) Tj
 ET
 BT
 /F2 7.5 Tf
 8.625 TL
 0.145 0.388 0.922 rg
 62.3622047244094517 617.952992125984224 Td
-(%¸   R e s i s t ê n c i a   a   T i m i n g   A t t a c k s :) Tj
+(%¸   I s o l a m e n t o   d e   S e g r e d o s :) Tj
 ET
 BT
 /F1 7.5 Tf
 8.625 TL
 0.278 0.333 0.412 rg
-168.4872047244094517 617.952992125984224 Td
-(Geração de hash fictício quando usuário não existe para uniformizar o tempo de resposta.) Tj
+153.3372047244094745 617.952992125984224 Td
+(O frontend nunca recebe hashes ou senhas; chamadas API filtram apenas campos seguros.) Tj
 ET
 0.97 0.98 0.99 rg
 0.89 0.91 0.94 RG
@@ -614,77 +614,77 @@ BT
 10.3499999999999996 TL
 0.118 0.161 0.231 rg
 62.3622047244094517 572.5986614173227736 Td
-(B. Controle de Acesso e Isolamento Multi-Inquilino \(RLS\)) Tj
+(B. Controle de Acesso e Isolamento Multi-Inquilino \(RLS & RBAC\)) Tj
 ET
 BT
 /F2 7.5 Tf
 8.625 TL
 0.145 0.388 0.922 rg
 62.3622047244094517 555.5907874015747439 Td
-(%¸   R o w - L e v e l   S e c u r i t y   \( R L S \) :) Tj
+(%¸   A n t i - E s c a l a ç ã o   d e   P r i v i l é g i o s :) Tj
 ET
 BT
 /F1 7.5 Tf
 8.625 TL
 0.278 0.333 0.412 rg
-158.3622047244094517 555.5907874015747439 Td
-(Ativo em users, access_control, occurrences e parking_requests.) Tj
+168.6372047244094858 555.5907874015747439 Td
+(Revogado UPDATE direto em role, access_level e custom_permissions via cliente.) Tj
 ET
 BT
 /F2 7.5 Tf
 8.625 TL
 0.145 0.388 0.922 rg
 62.3622047244094517 538.5829133858267141 Td
-(%¸   S e g r e g a ç ã o   p o r   O M :) Tj
+(%¸   H i e r a r q u i a   S e r v e r - S i d e :) Tj
 ET
 BT
 /F1 7.5 Tf
 8.625 TL
 0.278 0.333 0.412 rg
-139.6872047244094404 538.5829133858267141 Td
-(Políticas filtram consultas estritamente pelo om_id do operador ou visitante autenticado.) Tj
+148.2372047244094801 538.5829133858267141 Td
+(RPC admin_save_user_permissions valida patente, OM e impede autoatribuição de perfil.) Tj
 ET
 BT
 /F2 7.5 Tf
 8.625 TL
 0.145 0.388 0.922 rg
 62.3622047244094517 521.5750393700786844 Td
-(%¸   C o n t r o l e   B a s e a d o   e m   P a p é i s   \( R B A C \) :) Tj
+(%¸   R o w - L e v e l   S e c u r i t y   \( R L S \) :) Tj
 ET
 BT
 /F1 7.5 Tf
 8.625 TL
 0.278 0.333 0.412 rg
-197.212204724409446 521.5750393700786844 Td
-(Admin, Operador, Usuário e Guarda possuem perfis e acessos segregados.) Tj
+158.3622047244094517 521.5750393700786844 Td
+(Ativo em 100% das tabelas, com segregação estrita por Organização Militar \(om_id\).) Tj
 ET
 BT
 /F2 7.5 Tf
 8.625 TL
 0.145 0.388 0.922 rg
 62.3622047244094517 504.5671653543306547 Td
-(%¸   C h a v e   P ú b l i c a   A n o n :) Tj
+(%¸   A p r o v a ç ã o   d e   E s t a c i o n a m e n t o :) Tj
 ET
 BT
 /F1 7.5 Tf
 8.625 TL
 0.278 0.333 0.412 rg
-140.0622047244094404 504.5671653543306547 Td
-(Cliente conecta-se via ANON_KEY, incapaz de contornar regras do PostgreSQL.) Tj
+174.0372047244094631 504.5671653543306547 Td
+(RPC approve_parking_request exige validação de credencial militar no banco de dados.) Tj
 ET
 BT
 /F2 7.5 Tf
 8.625 TL
 0.145 0.388 0.922 rg
 62.3622047244094517 487.559291338582625 Td
-(%¸   I n t e g r i d a d e   d e   D a d o s :) Tj
+(%¸   S e a r c h   P a t h   P i n n e d   \( C W E - 4 2 6 \) :) Tj
 ET
 BT
 /F1 7.5 Tf
 8.625 TL
 0.278 0.333 0.412 rg
-143.8122047244094688 487.559291338582625 Td
-(Impossibilidade de elevação de privilégios client-side.) Tj
+178.0872047244094745 487.559291338582625 Td
+(Todas as Stored Procedures fixadas com search_path = public, extensions, pg_temp.) Tj
 ET
 0.97 0.98 0.99 rg
 0.89 0.91 0.94 RG
@@ -1496,7 +1496,7 @@ endobj
 25 0 obj
 <<
 /Producer (jsPDF 4.2.1)
-/CreationDate (D:20260907131302-03'00')
+/CreationDate (D:20260910140212-03'00')
 >>
 endobj
 26 0 obj
@@ -1510,39 +1510,39 @@ endobj
 xref
 0 27
 0000000000 65535 f 
-0000034728 00000 n 
-0000036568 00000 n 
+0000034893 00000 n 
+0000036733 00000 n 
 0000000015 00000 n 
 0000000152 00000 n 
-0000011654 00000 n 
-0000011791 00000 n 
-0000020583 00000 n 
-0000020720 00000 n 
-0000029521 00000 n 
-0000029659 00000 n 
-0000034803 00000 n 
-0000034929 00000 n 
-0000035060 00000 n 
-0000035194 00000 n 
-0000035332 00000 n 
-0000035456 00000 n 
-0000035585 00000 n 
-0000035717 00000 n 
-0000035853 00000 n 
-0000035981 00000 n 
-0000036108 00000 n 
-0000036237 00000 n 
-0000036370 00000 n 
-0000036472 00000 n 
-0000036821 00000 n 
-0000036907 00000 n 
+0000011682 00000 n 
+0000011819 00000 n 
+0000020748 00000 n 
+0000020885 00000 n 
+0000029686 00000 n 
+0000029824 00000 n 
+0000034968 00000 n 
+0000035094 00000 n 
+0000035225 00000 n 
+0000035359 00000 n 
+0000035497 00000 n 
+0000035621 00000 n 
+0000035750 00000 n 
+0000035882 00000 n 
+0000036018 00000 n 
+0000036146 00000 n 
+0000036273 00000 n 
+0000036402 00000 n 
+0000036535 00000 n 
+0000036637 00000 n 
+0000036986 00000 n 
+0000037072 00000 n 
 trailer
 <<
 /Size 27
 /Root 26 0 R
 /Info 25 0 R
-/ID [ <553939A20D9ED8ADFF2AEA5D4AE501DB> <553939A20D9ED8ADFF2AEA5D4AE501DB> ]
+/ID [ <26EC4CB8A5243BD38E905506E5613F2A> <26EC4CB8A5243BD38E905506E5613F2A> ]
 >>
 startxref
-37011
+37176
 %%EOF

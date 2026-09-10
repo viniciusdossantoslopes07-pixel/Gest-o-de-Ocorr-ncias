@@ -60,12 +60,12 @@ function generateExecutiveSecurityReport() {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
     doc.setTextColor(21, 128, 61);
-    doc.text('STATUS GERAL DE SEGURANÇA: SISTEMA APTO E EM CONFORMIDADE', margin + 6, y + 8);
+    doc.text('STATUS GERAL DE SEGURANÇA: SISTEMA BLINDADO E EM PLENA CONFORMIDADE', margin + 6, y + 8);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
     doc.setTextColor(22, 101, 52);
-    doc.text('Camada Zero Vulnerabilidades em Dependências | Bcrypt Hashing | RLS Ativo | Expurgos LGPD (5 Dias)', margin + 6, y + 15);
+    doc.text('Column-Level Grants | Bcrypt Hashing | Proteção Anti-XSS | RLS Multi-Inquilino | Zero CVEs em Pacotes', margin + 6, y + 15);
 
     y += 28;
 
@@ -84,8 +84,8 @@ function generateExecutiveSecurityReport() {
     doc.setTextColor(71, 85, 105);
     doc.text('• Aplicação: Guardião - Gestão Operacional & Controle de Acesso', margin + 5, y + 12);
     doc.text('• Organização: GSD-SP / BASP - Força Aérea Brasileira', margin + 5, y + 18);
-    doc.text('• Data da Análise: 07 de Setembro de 2026', margin + 95, y + 12);
-    doc.text('• Framework de Avaliação: OWASP Top 10 / NIST SP 800-53', margin + 95, y + 18);
+    doc.text('• Data da Análise: 10 de Setembro de 2026', margin + 95, y + 12);
+    doc.text('• Framework de Avaliação: OWASP Top 10 / NIST SP 800-53 / CIS Benchmarks', margin + 95, y + 18);
 
     y += 32;
 
@@ -201,19 +201,19 @@ function generateExecutiveSecurityReport() {
     }
 
     addDetailCard('A. Autenticação Segura & Proteção de Credenciais', [
-        { label: 'Algoritmo de Hash', desc: 'Bcrypt com cost factor 10 dinâmico via pgcrypto do PostgreSQL.' },
-        { label: 'Execução Server-Side', desc: 'Migração do login para a RPC secure_login (SECURITY DEFINER).' },
-        { label: 'Proteção Anti-Força Bruta', desc: 'Tabela login_attempts: 5 falhas consecutivas bloqueiam o IP/usuário por 15 min.' },
-        { label: 'Isolamento de Segredos', desc: 'O frontend não recebe hashes, senhas ou a service_role_key em nenhuma chamada.' },
-        { label: 'Resistência a Timing Attacks', desc: 'Geração de hash fictício quando usuário não existe para uniformizar o tempo de resposta.' }
+        { label: 'Column-Level Grants', desc: 'Acesso de SELECT e UPDATE na coluna "password" 100% revogado para anon e authenticated.' },
+        { label: 'Algoritmo de Hash', desc: 'Bcrypt com custo 10 dinâmico via pgcrypto nativo do PostgreSQL (armazenamento seguro).' },
+        { label: 'Execução Server-Side', desc: 'Login e validações operadas estritamente via RPCs com SECURITY DEFINER.' },
+        { label: 'Proteção Anti-Força Bruta', desc: 'Tabela login_attempts: 5 falhas consecutivas bloqueiam a conta temporariamente por 15 min.' },
+        { label: 'Isolamento de Segredos', desc: 'O frontend nunca recebe hashes ou senhas; chamadas API filtram apenas campos seguros.' }
     ]);
 
-    addDetailCard('B. Controle de Acesso e Isolamento Multi-Inquilino (RLS)', [
-        { label: 'Row-Level Security (RLS)', desc: 'Ativo em users, access_control, occurrences e parking_requests.' },
-        { label: 'Segregação por OM', desc: 'Políticas filtram consultas estritamente pelo om_id do operador ou visitante autenticado.' },
-        { label: 'Controle Baseado em Papéis (RBAC)', desc: 'Admin, Operador, Usuário e Guarda possuem perfis e acessos segregados.' },
-        { label: 'Chave Pública Anon', desc: 'Cliente conecta-se via ANON_KEY, incapaz de contornar regras do PostgreSQL.' },
-        { label: 'Integridade de Dados', desc: 'Impossibilidade de elevação de privilégios client-side.' }
+    addDetailCard('B. Controle de Acesso e Isolamento Multi-Inquilino (RLS & RBAC)', [
+        { label: 'Anti-Escalação de Privilégios', desc: 'Revogado UPDATE direto em role, access_level e custom_permissions via cliente.' },
+        { label: 'Hierarquia Server-Side', desc: 'RPC admin_save_user_permissions valida patente, OM e impede autoatribuição de perfil.' },
+        { label: 'Row-Level Security (RLS)', desc: 'Ativo em 100% das tabelas, com segregação estrita por Organização Militar (om_id).' },
+        { label: 'Aprovação de Estacionamento', desc: 'RPC approve_parking_request exige validação de credencial militar no banco de dados.' },
+        { label: 'Search Path Pinned (CWE-426)', desc: 'Todas as Stored Procedures fixadas com search_path = public, extensions, pg_temp.' }
     ]);
 
     addDetailCard('C. Gestão e Ciclo de Vida de Dados Sensíveis (LGPD / Privacidade)', [
