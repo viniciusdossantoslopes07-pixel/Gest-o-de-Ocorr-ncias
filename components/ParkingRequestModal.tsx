@@ -262,7 +262,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
         }
     };
 
-    const handleClose = () => {
+    const handleClose = React.useCallback(() => {
         if (isLoading) return; // bloqueia fechar enquanto envia
         setParkSuccess(false);
         setParkData({ 
@@ -275,7 +275,19 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
         setCrlvFile(null);
         setError('');
         onClose();
-    };
+    }, [isLoading, initialOmId, onClose]);
+
+    // Fechar ao pressionar a tecla ESC
+    React.useEffect(() => {
+        if (!isOpen) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                handleClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, handleClose]);
 
     const input = `w-full ${dk ? 'bg-slate-800/90 border-slate-700 text-white placeholder-slate-500 focus:border-blue-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-blue-500'} border rounded-xl px-3 py-2 text-xs font-bold outline-none transition-all`;
     const label = `text-[11px] font-black ${dk ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`;
@@ -285,8 +297,18 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
     const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
 
     return (
-        <div className={`fixed inset-0 z-[250] flex items-center justify-center p-3 sm:p-5 pt-12 sm:pt-10 overflow-y-auto bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200`}>
-            <div className={`w-full max-w-[460px] max-h-[82vh] ${dk ? 'bg-slate-900 border border-slate-700/80' : 'bg-white border border-slate-200'} rounded-2xl shadow-2xl flex flex-col overflow-hidden my-auto animate-in zoom-in-95 duration-200`}>
+        <div 
+            onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                    handleClose();
+                }
+            }}
+            className={`fixed inset-0 z-[250] flex items-center justify-center p-3 sm:p-5 pt-12 sm:pt-10 overflow-y-auto bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200 cursor-pointer`}
+        >
+            <div 
+                onClick={(e) => e.stopPropagation()}
+                className={`w-full max-w-[460px] max-h-[82vh] ${dk ? 'bg-slate-900 border border-slate-700/80' : 'bg-white border border-slate-200'} rounded-2xl shadow-2xl flex flex-col overflow-hidden my-auto animate-in zoom-in-95 duration-200 cursor-default`}
+            >
 
                 {/* Header */}
                 <div className="bg-slate-900 border-b border-slate-800 p-3.5 sm:p-4 text-white flex justify-between items-center shrink-0">

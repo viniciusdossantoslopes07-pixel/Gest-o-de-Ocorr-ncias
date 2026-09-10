@@ -377,6 +377,17 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
         ...(canViewAllParking ? [{ id: 'estatisticas' as const, label: 'Estatísticas', icon: BarChart3 }] : []),
     ];
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                if (showingCoupon) setShowingCoupon(null);
+                if (printRequest) setPrintRequest(null);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [showingCoupon, printRequest]);
+
     if (loading) return <div className="text-center py-12 text-slate-400">Carregando solicitações...</div>;
 
     // ========== MAIN VIEW ==========
