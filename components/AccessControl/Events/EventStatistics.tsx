@@ -10,7 +10,7 @@ interface EventStatisticsProps {
 
 export default function EventStatistics({ isDarkMode = false }: EventStatisticsProps) {
     const dk = isDarkMode;
-    const card = dk ? 'bg-slate-800/80 border-slate-700/60 shadow-2xl' : 'bg-white border-slate-100 shadow-xl shadow-slate-200/50';
+    const card = dk ? 'bg-slate-900/60 backdrop-blur-2xl border-slate-700/50 shadow-2xl' : 'bg-white border-slate-100 shadow-xl shadow-slate-200/50';
     const textPrimary = dk ? 'text-white' : 'text-slate-900';
     const textSecondary = dk ? 'text-slate-300' : 'text-slate-600';
     const textMuted = dk ? 'text-slate-400' : 'text-slate-500';
@@ -103,12 +103,14 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
             value: totalEvents,
             icon: CalendarDays,
             color: 'blue',
-            darkBg: 'bg-blue-900/20 border-blue-800/30',
-            lightBg: 'bg-gradient-to-br from-blue-50 via-blue-50 to-blue-100/70 border-blue-200',
-            textDark: 'text-blue-300',
-            textLight: 'text-blue-800',
-            labelDark: 'text-blue-400',
-            labelLight: 'text-blue-600',
+            darkBg: 'bg-slate-800/40 backdrop-blur-xl border-slate-700/50',
+            lightBg: 'bg-white border-slate-200',
+            textDark: 'text-white',
+            textLight: 'text-slate-900',
+            labelDark: 'text-slate-400',
+            labelLight: 'text-slate-500',
+            iconColorDark: 'text-blue-400',
+            iconColorLight: 'text-blue-600',
             progressColor: '#3b82f6',
             progress: 100,
         },
@@ -117,12 +119,14 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
             value: totalGuests,
             icon: Users,
             color: 'indigo',
-            darkBg: 'bg-indigo-900/20 border-indigo-800/30',
-            lightBg: 'bg-gradient-to-br from-indigo-50 via-indigo-50 to-indigo-100/70 border-indigo-200',
-            textDark: 'text-indigo-300',
-            textLight: 'text-indigo-800',
-            labelDark: 'text-indigo-400',
-            labelLight: 'text-indigo-600',
+            darkBg: 'bg-slate-800/40 backdrop-blur-xl border-slate-700/50',
+            lightBg: 'bg-white border-slate-200',
+            textDark: 'text-white',
+            textLight: 'text-slate-900',
+            labelDark: 'text-slate-400',
+            labelLight: 'text-slate-500',
+            iconColorDark: 'text-indigo-400',
+            iconColorLight: 'text-indigo-600',
             progressColor: '#6366f1',
             progress: Math.min((totalGuests / Math.max(totalGuests, 1)) * 100, 100),
         },
@@ -131,12 +135,14 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
             value: `~${avgGuests}`,
             icon: TrendingUp,
             color: 'purple',
-            darkBg: 'bg-purple-900/20 border-purple-800/30',
-            lightBg: 'bg-gradient-to-br from-purple-50 via-purple-50 to-purple-100/70 border-purple-200',
-            textDark: 'text-purple-300',
-            textLight: 'text-purple-800',
-            labelDark: 'text-purple-400',
-            labelLight: 'text-purple-600',
+            darkBg: 'bg-slate-800/40 backdrop-blur-xl border-slate-700/50',
+            lightBg: 'bg-white border-slate-200',
+            textDark: 'text-white',
+            textLight: 'text-slate-900',
+            labelDark: 'text-slate-400',
+            labelLight: 'text-slate-500',
+            iconColorDark: 'text-purple-400',
+            iconColorLight: 'text-purple-600',
             progressColor: '#8b5cf6',
             progress: Math.min((avgGuests / 20) * 100, 100),
         },
@@ -145,12 +151,14 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
             value: approvedEvents,
             icon: CheckCircle,
             color: 'emerald',
-            darkBg: 'bg-emerald-900/20 border-emerald-800/30',
-            lightBg: 'bg-gradient-to-br from-emerald-50 via-emerald-50 to-emerald-100/70 border-emerald-200',
-            textDark: 'text-emerald-300',
-            textLight: 'text-emerald-800',
-            labelDark: 'text-emerald-400',
-            labelLight: 'text-emerald-600',
+            darkBg: 'bg-slate-800/40 backdrop-blur-xl border-slate-700/50',
+            lightBg: 'bg-white border-slate-200',
+            textDark: 'text-white',
+            textLight: 'text-slate-900',
+            labelDark: 'text-slate-400',
+            labelLight: 'text-slate-500',
+            iconColorDark: 'text-emerald-400',
+            iconColorLight: 'text-emerald-600',
             progressColor: '#10b981',
             progress: approvalRate,
             badge: approvalRate > 0 ? `${approvalRate}%` : null,
@@ -160,12 +168,14 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
             value: totalVehicles,
             icon: Car,
             color: 'orange',
-            darkBg: 'bg-orange-900/20 border-orange-800/30',
-            lightBg: 'bg-gradient-to-br from-orange-50 via-orange-50 to-orange-100/70 border-orange-200',
-            textDark: 'text-orange-300',
-            textLight: 'text-orange-800',
-            labelDark: 'text-orange-400',
-            labelLight: 'text-orange-600',
+            darkBg: 'bg-slate-800/40 backdrop-blur-xl border-slate-700/50',
+            lightBg: 'bg-white border-slate-200',
+            textDark: 'text-white',
+            textLight: 'text-slate-900',
+            labelDark: 'text-slate-400',
+            labelLight: 'text-slate-500',
+            iconColorDark: 'text-orange-400',
+            iconColorLight: 'text-orange-600',
             progressColor: '#f59e0b',
             progress: totalGuests > 0 ? Math.round((totalVehicles / totalGuests) * 100) : 0,
         },
@@ -174,12 +184,14 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
             value: pendingEvents,
             icon: Clock,
             color: 'amber',
-            darkBg: 'bg-amber-900/20 border-amber-800/30',
-            lightBg: 'bg-gradient-to-br from-amber-50 via-amber-50 to-amber-100/70 border-amber-200',
-            textDark: 'text-amber-300',
-            textLight: 'text-amber-800',
-            labelDark: 'text-amber-400',
-            labelLight: 'text-amber-600',
+            darkBg: 'bg-slate-800/40 backdrop-blur-xl border-slate-700/50',
+            lightBg: 'bg-white border-slate-200',
+            textDark: 'text-white',
+            textLight: 'text-slate-900',
+            labelDark: 'text-slate-400',
+            labelLight: 'text-slate-500',
+            iconColorDark: 'text-amber-400',
+            iconColorLight: 'text-amber-600',
             progressColor: '#f59e0b',
             progress: totalEvents > 0 ? Math.round((pendingEvents / totalEvents) * 100) : 0,
         },
@@ -256,34 +268,40 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
             ) : (
                 <>
                     {/* KPI Cards */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
                         {kpiCards.map((kpi, i) => {
                             const Icon = kpi.icon;
                             return (
                                 <div
                                     key={i}
-                                    className={`p-4 rounded-xl border relative overflow-hidden transition-all hover:scale-[1.03] hover:shadow-lg group cursor-default ${dk ? kpi.darkBg : kpi.lightBg}`}
+                                    className={`p-5 rounded-2xl border relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group cursor-default ${dk ? kpi.darkBg : kpi.lightBg}`}
                                 >
-                                    {/* Background icon */}
-                                    <Icon className={`absolute -right-3 -bottom-3 w-20 h-20 opacity-[0.07] transition-transform duration-300 group-hover:scale-110 ${dk ? kpi.textDark : kpi.textLight}`} />
+                                    <div className="flex justify-between items-start mb-4 relative z-10">
+                                        <div className={`p-2 rounded-xl ${dk ? 'bg-slate-800/80 shadow-inner border border-slate-700/50' : 'bg-slate-50 border border-slate-100'}`}>
+                                            <Icon className={`w-4 h-4 ${dk ? kpi.iconColorDark : kpi.iconColorLight}`} />
+                                        </div>
+                                        {kpi.badge && (
+                                            <span className={`text-[9px] font-black px-2 py-1 rounded-full shadow-sm ${dk ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}`}>
+                                                {kpi.badge}
+                                            </span>
+                                        )}
+                                    </div>
 
-                                    {/* Badge (optional) */}
-                                    {kpi.badge && (
-                                        <span className={`absolute top-2.5 right-2.5 text-[9px] font-black px-1.5 py-0.5 rounded-full ${dk ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-100 text-emerald-700'}`}>
-                                            {kpi.badge}
-                                        </span>
-                                    )}
-
-                                    <p className={`text-[9px] font-black uppercase tracking-wider mb-2 ${dk ? kpi.labelDark : kpi.labelLight}`}>{kpi.label}</p>
-                                    <p className={`text-2xl font-black leading-none mb-3 ${dk ? kpi.textDark : kpi.textLight}`}>{kpi.value}</p>
+                                    <div className="relative z-10">
+                                        <p className={`text-[10px] font-semibold uppercase tracking-widest mb-1 ${dk ? kpi.labelDark : kpi.labelLight}`}>{kpi.label}</p>
+                                        <p className={`text-2xl font-black tracking-tight leading-none mb-4 ${dk ? kpi.textDark : kpi.textLight}`}>{kpi.value}</p>
+                                    </div>
 
                                     {/* Progress bar */}
-                                    <div className={`w-full h-1 rounded-full overflow-hidden ${dk ? 'bg-slate-900/40' : 'bg-white/60'}`}>
+                                    <div className={`w-full h-1.5 rounded-full overflow-hidden relative z-10 ${dk ? 'bg-slate-800/80' : 'bg-slate-100'}`}>
                                         <div
                                             className="h-full rounded-full transition-all duration-1000 ease-out"
-                                            style={{ width: `${kpi.progress}%`, backgroundColor: kpi.progressColor, opacity: 0.8 }}
+                                            style={{ width: `${kpi.progress}%`, backgroundColor: kpi.progressColor }}
                                         />
                                     </div>
+                                    
+                                    {/* Subtle gradient glow behind */}
+                                    {dk && <div className="absolute -bottom-10 -right-10 w-24 h-24 rounded-full blur-3xl opacity-20 pointer-events-none" style={{ backgroundColor: kpi.progressColor }}></div>}
                                 </div>
                             );
                         })}
@@ -293,12 +311,12 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         {/* Chart 1: Locais */}
-                        <div className={`p-5 rounded-xl border flex flex-col ${dk ? 'bg-slate-700/30 border-slate-600/60' : 'bg-slate-50/80 border-slate-200'}`}>
-                            <div className="flex items-center gap-2 mb-6">
-                                <div className={`p-1.5 rounded-lg ${dk ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
-                                    <Layers className={`w-3.5 h-3.5 ${dk ? 'text-blue-400' : 'text-blue-600'}`} />
+                        <div className={`p-6 rounded-2xl border flex flex-col relative overflow-hidden ${dk ? 'bg-slate-800/40 backdrop-blur-xl border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'}`}>
+                            <div className="flex items-center gap-3 mb-6 relative z-10">
+                                <div className={`p-2 rounded-xl shadow-sm ${dk ? 'bg-slate-800 border border-slate-700' : 'bg-slate-50 border border-slate-100'}`}>
+                                    <Layers className={`w-4 h-4 ${dk ? 'text-blue-400' : 'text-blue-600'}`} />
                                 </div>
-                                <h3 className={`text-[11px] font-black uppercase tracking-wider ${textPrimary}`}>
+                                <h3 className={`text-xs font-black uppercase tracking-wider ${textPrimary}`}>
                                     Locais c/ Mais Eventos
                                 </h3>
                             </div>
@@ -358,15 +376,15 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
                         </div>
 
                         {/* Chart 2: Maiores Solicitantes */}
-                        <div className={`p-5 rounded-xl border flex flex-col ${dk ? 'bg-slate-700/30 border-slate-600/60' : 'bg-slate-50/80 border-slate-200'}`}>
-                            <div className="flex items-center gap-2 mb-6">
-                                <div className={`p-1.5 rounded-lg ${dk ? 'bg-emerald-500/20' : 'bg-emerald-100'}`}>
-                                    <TrendingUp className={`w-3.5 h-3.5 ${dk ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                        <div className={`p-6 rounded-2xl border flex flex-col relative overflow-hidden ${dk ? 'bg-slate-800/40 backdrop-blur-xl border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'}`}>
+                            <div className="flex items-center gap-3 mb-6 relative z-10">
+                                <div className={`p-2 rounded-xl shadow-sm ${dk ? 'bg-slate-800 border border-slate-700' : 'bg-slate-50 border border-slate-100'}`}>
+                                    <TrendingUp className={`w-4 h-4 ${dk ? 'text-emerald-400' : 'text-emerald-600'}`} />
                                 </div>
-                                <h3 className={`text-[11px] font-black uppercase tracking-wider ${textPrimary}`}>
+                                <h3 className={`text-xs font-black uppercase tracking-wider ${textPrimary}`}>
                                     Maiores Solicitantes
                                 </h3>
-                                <span className={`ml-auto text-[10px] font-black px-2 py-0.5 rounded-full ${dk ? 'bg-slate-600 text-slate-300' : 'bg-slate-200 text-slate-600'}`}>
+                                <span className={`ml-auto text-[10px] font-black px-3 py-1 rounded-full ${dk ? 'bg-slate-800/80 text-slate-400 border border-slate-700/50' : 'bg-slate-100 text-slate-500'}`}>
                                     TOP {requestersStats.length}
                                 </span>
                             </div>
@@ -446,12 +464,12 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
                     {/* New Charts Row: Participation & Vehicles */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                         {/* Chart 3: Média de Participantes por Local */}
-                        <div className={`p-5 rounded-xl border flex flex-col ${dk ? 'bg-slate-700/30 border-slate-600/60' : 'bg-slate-50/80 border-slate-200'}`}>
-                            <div className="flex items-center gap-2 mb-6">
-                                <div className={`p-1.5 rounded-lg ${dk ? 'bg-purple-500/20' : 'bg-purple-100'}`}>
-                                    <Users className={`w-3.5 h-3.5 ${dk ? 'text-purple-400' : 'text-purple-600'}`} />
+                        <div className={`p-6 rounded-2xl border flex flex-col relative overflow-hidden ${dk ? 'bg-slate-800/40 backdrop-blur-xl border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'}`}>
+                            <div className="flex items-center gap-3 mb-6 relative z-10">
+                                <div className={`p-2 rounded-xl shadow-sm ${dk ? 'bg-slate-800 border border-slate-700' : 'bg-slate-50 border border-slate-100'}`}>
+                                    <Users className={`w-4 h-4 ${dk ? 'text-purple-400' : 'text-purple-600'}`} />
                                 </div>
-                                <h3 className={`text-[11px] font-black uppercase tracking-wider ${textPrimary}`}>
+                                <h3 className={`text-xs font-black uppercase tracking-wider ${textPrimary}`}>
                                     Média de Participantes p/ Local
                                 </h3>
                             </div>
@@ -491,12 +509,12 @@ export default function EventStatistics({ isDarkMode = false }: EventStatisticsP
                         </div>
 
                         {/* Chart 4: Veículos por Local */}
-                        <div className={`p-5 rounded-xl border flex flex-col ${dk ? 'bg-slate-700/30 border-slate-600/60' : 'bg-slate-50/80 border-slate-200'}`}>
-                            <div className="flex items-center gap-2 mb-6">
-                                <div className={`p-1.5 rounded-lg ${dk ? 'bg-orange-500/20' : 'bg-orange-100'}`}>
-                                    <Car className={`w-3.5 h-3.5 ${dk ? 'text-orange-400' : 'text-orange-600'}`} />
+                        <div className={`p-6 rounded-2xl border flex flex-col relative overflow-hidden ${dk ? 'bg-slate-800/40 backdrop-blur-xl border-slate-700/50' : 'bg-white border-slate-200 shadow-sm'}`}>
+                            <div className="flex items-center gap-3 mb-6 relative z-10">
+                                <div className={`p-2 rounded-xl shadow-sm ${dk ? 'bg-slate-800 border border-slate-700' : 'bg-slate-50 border border-slate-100'}`}>
+                                    <Car className={`w-4 h-4 ${dk ? 'text-orange-400' : 'text-orange-600'}`} />
                                 </div>
-                                <h3 className={`text-[11px] font-black uppercase tracking-wider ${textPrimary}`}>
+                                <h3 className={`text-xs font-black uppercase tracking-wider ${textPrimary}`}>
                                     Distribuição de Veículos p/ Local
                                 </h3>
                             </div>
