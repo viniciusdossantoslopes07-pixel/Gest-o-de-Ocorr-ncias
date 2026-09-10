@@ -1,4 +1,4 @@
-import { type FC } from 'react';
+import { type FC, useEffect } from 'react';
 import { X, Printer, List } from 'lucide-react';
 import { useSectors } from '../../contexts/SectorsContext';
 
@@ -34,6 +34,16 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
 }) => {
     const { oms, omId } = useSectors();
     const activeOm = oms.find(o => o.id === omId);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [onClose]);
 
     const buildTableRows = () => records.map((r, idx) => {
         const date = new Date(r.timestamp).toLocaleDateString('pt-BR');
@@ -435,21 +445,21 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
                                 <tbody className="divide-y divide-slate-100">
                                     {records.length > 0 ? records.map((r, idx) => (
                                         <tr key={r.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                                            <td className="px-3 py-2 text-[10px]">
+                                            <td className="px-3 py-2 text-[10px] text-slate-900">
                                                 <div className="font-bold">{new Date(r.timestamp).toLocaleDateString('pt-BR')}</div>
-                                                <div className="text-[9px] text-slate-500">{new Date(r.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+                                                <div className="text-[9px] font-semibold text-slate-600">{new Date(r.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
                                             </td>
-                                            <td className="px-3 py-2 text-[10px]">
+                                            <td className="px-3 py-2 text-[10px] text-slate-900">
                                                 <div className="font-black uppercase">{r.name}</div>
-                                                <div className="text-[9px] font-bold text-slate-500">{r.identification || '-'}</div>
+                                                <div className="text-[9px] font-bold text-slate-600">{r.identification || '-'}</div>
                                             </td>
-                                            <td className="px-3 py-2 text-[10px] uppercase">
+                                            <td className="px-3 py-2 text-[10px] uppercase text-slate-900">
                                                 <div className="font-bold">{r.access_mode} • {r.characteristic}</div>
-                                                {r.access_mode === 'Veículo' && <div className="text-[9px] text-slate-600">{r.vehicle_model} — {r.vehicle_plate}</div>}
+                                                {r.access_mode === 'Veículo' && <div className="text-[9px] font-semibold text-slate-600">{r.vehicle_model} — {r.vehicle_plate}</div>}
                                             </td>
-                                            <td className="px-3 py-2 text-[10px] uppercase">
+                                            <td className="px-3 py-2 text-[10px] uppercase text-slate-900">
                                                 <div className="font-bold">{r.guard_gate.replace('PORTÃO ', '')}</div>
-                                                {r.destination && <div className="text-[9px] font-bold text-blue-600">DEST: {r.destination}</div>}
+                                                {r.destination && <div className="text-[9px] font-bold text-blue-700">DEST: {r.destination}</div>}
                                             </td>
                                             <td className="px-3 py-2 text-right">
                                                 <span className={`font-black uppercase px-2 py-0.5 rounded text-[9px] border ${r.access_category === 'Entrada' ? 'text-emerald-700 bg-emerald-50 border-emerald-600' : 'text-red-700 bg-red-50 border-red-600'}`}>
