@@ -1005,23 +1005,23 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
             {/* Modal de Cupom Digital */}
             {showingCoupon && (
-                <div className="fixed inset-0 z-[300] flex items-start sm:items-center justify-center p-4 sm:p-6 pt-[15vh] sm:pt-6">
-                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setShowingCoupon(null)}></div>
-                    <div className="relative w-full max-w-[360px] bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[80vh] flex flex-col">
+                <div className="fixed inset-0 z-[300] flex items-center justify-center p-3 sm:p-5 pt-14 sm:pt-12 overflow-y-auto">
+                    <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm" onClick={() => setShowingCoupon(null)}></div>
+                    <div className="relative w-full max-w-[340px] bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[78vh] flex flex-col my-auto border border-slate-200">
                         {/* Header do Cupom */}
-                        <div className="bg-slate-900 p-5 sm:p-6 text-center text-white relative shrink-0">
-                            <div className="absolute top-4 right-4 cursor-pointer text-slate-400 hover:text-white" onClick={() => setShowingCoupon(null)}>
-                                <XCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <div className="bg-slate-900 p-4 sm:p-5 text-center text-white relative shrink-0">
+                            <div className="absolute top-3.5 right-3.5 cursor-pointer text-slate-400 hover:text-white transition-colors" onClick={() => setShowingCoupon(null)}>
+                                <XCircle className="w-5 h-5" />
                             </div>
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg shadow-blue-600/20">
-                                <Car className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-1.5 shadow-md shadow-blue-600/25">
+                                <Car className="w-5 h-5 text-white" />
                             </div>
                             <h4 className="text-xs sm:text-sm font-black uppercase tracking-widest">Autorização Digital</h4>
-                            <p className="text-[9px] sm:text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tight">Base Aérea de São Paulo</p>
+                            <p className="text-[9px] text-slate-400 mt-0.5 uppercase font-bold tracking-tight">Comprovante de Estacionamento</p>
                         </div>
 
                         {/* Corpo do Cupom (Estilo Ticket) */}
-                        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 relative flex-1 overflow-y-auto custom-scrollbar">
+                        <div className="p-3.5 sm:p-4 space-y-3 relative flex-1 overflow-y-auto custom-scrollbar">
                             {/* Pontilhados laterais estilo cupom */}
                             <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-900 rounded-full z-10"></div>
                             <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-900 rounded-full z-10"></div>

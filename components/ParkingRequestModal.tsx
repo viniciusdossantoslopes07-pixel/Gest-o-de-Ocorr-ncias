@@ -277,64 +277,64 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
         onClose();
     };
 
-    const input = `w-full glass-input rounded-xl px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm font-bold outline-none transition-all`;
-    const label = `text-xs font-black ${dk ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`;
-    const section = `glass-panel p-3 sm:p-4 rounded-xl space-y-3 sm:space-y-4`;
-    const sectionTitle = `text-[10px] font-black ${dk ? 'text-slate-500 border-slate-700' : 'text-slate-400 border-slate-100'} uppercase tracking-widest border-b pb-2 mb-2`;
+    const input = `w-full ${dk ? 'bg-slate-800/90 border-slate-700 text-white placeholder-slate-500 focus:border-blue-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-blue-500'} border rounded-xl px-3 py-2 text-xs font-bold outline-none transition-all`;
+    const label = `text-[11px] font-black ${dk ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`;
+    const section = `${dk ? 'bg-slate-800/40 border-slate-700/60' : 'bg-slate-50/70 border-slate-200/80'} border p-3 rounded-xl space-y-2.5`;
+    const sectionTitle = `text-[9px] font-black ${dk ? 'text-slate-400 border-slate-700' : 'text-slate-500 border-slate-200'} uppercase tracking-widest border-b pb-1.5 mb-1.5`;
 
     const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
 
     return (
-        <div className={`fixed inset-0 z-[200] flex sm:items-center sm:justify-center bg-slate-900/40 sm:backdrop-blur-sm animate-in fade-in duration-300`}>
-            <div className={`w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-lg glass-panel sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden`}>
+        <div className={`fixed inset-0 z-[250] flex items-center justify-center p-3 sm:p-5 pt-12 sm:pt-10 overflow-y-auto bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200`}>
+            <div className={`w-full max-w-[460px] max-h-[82vh] ${dk ? 'bg-slate-900 border border-slate-700/80' : 'bg-white border border-slate-200'} rounded-2xl shadow-2xl flex flex-col overflow-hidden my-auto animate-in zoom-in-95 duration-200`}>
 
                 {/* Header */}
-                <div className="bg-slate-900/60 border-b border-white/10 backdrop-blur-xl p-3 sm:p-6 text-white flex justify-between items-center shrink-0 safe-top">
+                <div className="bg-slate-900 border-b border-slate-800 p-3.5 sm:p-4 text-white flex justify-between items-center shrink-0">
                     <div className="min-w-0">
-                        <h2 className="text-base sm:text-lg sm:text-xl font-bold truncate flex items-center gap-2">
-                            <Car className="w-5 h-5" />
+                        <h2 className="text-sm sm:text-base font-black truncate flex items-center gap-2">
+                            <Car className="w-4 h-4 text-blue-400" />
                             <span className="truncate">Solicitar Estacionamento</span>
                         </h2>
-                        <p className="text-slate-400 text-[10px] sm:text-xs mt-0.5 truncate hidden sm:block">Preencha os dados do veículo e período desejado</p>
+                        <p className="text-slate-400 text-[9px] sm:text-[10px] mt-0.5 truncate hidden sm:block">Preencha os dados do veículo e período desejado</p>
                     </div>
                     <button
                         type="button"
                         onClick={handleClose}
                         disabled={isLoading}
-                        className="hover:bg-slate-800 p-2 rounded-full transition-colors shrink-0 disabled:opacity-40"
+                        className="hover:bg-slate-800 p-1.5 rounded-xl text-slate-400 hover:text-white transition-colors shrink-0 disabled:opacity-40"
                     >
-                        <X className="w-6 h-6" />
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* Conteúdo com Scroll */}
                 <div className={`flex-1 overflow-y-auto custom-scrollbar`}>
                     {parkSuccess ? (
-                        <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-6 animate-in zoom-in-95 duration-300">
-                            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center shadow-lg shadow-emerald-100">
-                                <CheckCircle className="w-10 h-10 text-emerald-600" />
+                        <div className="h-full flex flex-col items-center justify-center p-6 text-center space-y-4 animate-in zoom-in-95 duration-300">
+                            <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center shadow-md shadow-emerald-100">
+                                <CheckCircle className="w-8 h-8 text-emerald-600" />
                             </div>
                             <div>
-                                <h3 className={`text-xl font-black ${dk ? 'text-white' : 'text-slate-800'} mb-2`}>Solicitação Enviada!</h3>
-                                <div className={`${dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} px-4 py-2 rounded-lg border inline-block shadow-sm`}>
-                                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Protocolo</p>
-                                    <p className="text-2xl font-black text-blue-600 tracking-tight">{parkProto}</p>
+                                <h3 className={`text-lg font-black ${dk ? 'text-white' : 'text-slate-800'} mb-1.5`}>Solicitação Enviada!</h3>
+                                <div className={`${dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} px-4 py-2 rounded-xl border inline-block shadow-sm`}>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Protocolo de Autorização</p>
+                                    <p className="text-xl font-black text-blue-600 tracking-tight">{parkProto}</p>
                                 </div>
                             </div>
-                            <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
-                                Sua solicitação será analisada pela SOP-03.<br />
-                                Aguarde o e-mail com o resultado da análise.
+                            <p className="text-[11px] text-slate-500 max-w-xs mx-auto leading-relaxed">
+                                Sua solicitação foi registrada e será analisada pela SOP-03.<br />
+                                Guarde o número do seu protocolo acima.
                             </p>
                             <button
                                 type="button"
                                 onClick={handleClose}
-                                className="w-full max-w-xs bg-blue-600 text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20"
+                                className="w-full max-w-xs bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-[11px] tracking-widest hover:bg-blue-700 transition-all shadow-md shadow-blue-600/25"
                             >
                                 Fechar
                             </button>
                         </div>
                     ) : (
-                        <div className="p-4 sm:p-6 space-y-5 pb-24 sm:pb-6">
+                        <div className="p-3.5 sm:p-4 space-y-3.5 pb-4">
 
                             {/* Erro */}
                             {error && (
@@ -610,12 +610,12 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
 
                 {/* Footer */}
                 {!parkSuccess && (
-                    <div className={`${dk ? 'bg-slate-900 border-slate-800 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.5)]' : 'bg-white border-slate-200 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]'} p-4 sm:p-6 border-t flex flex-col sm:flex-row justify-end gap-3 shrink-0 pb-6 sm:pb-6 z-10`}>
+                    <div className={`${dk ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} p-3 sm:p-4 border-t flex flex-row justify-end gap-2.5 shrink-0 z-10`}>
                         <button
                             type="button"
                             onClick={handleClose}
                             disabled={isLoading}
-                            className={`w-full sm:w-auto px-6 py-4 rounded-xl font-bold ${dk ? 'text-slate-400 bg-slate-800 hover:bg-slate-700' : 'text-slate-500 bg-slate-100 hover:bg-slate-200'} transition-colors order-2 sm:order-1 disabled:opacity-40`}
+                            className={`px-4 py-2.5 rounded-xl font-bold text-xs ${dk ? 'text-slate-400 bg-slate-800 hover:bg-slate-700' : 'text-slate-500 bg-slate-100 hover:bg-slate-200'} transition-colors disabled:opacity-40`}
                         >
                             Cancelar
                         </button>
@@ -623,11 +623,11 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                             type="button"
                             onClick={handleParkingSubmit}
                             disabled={isLoading}
-                            className="w-full sm:w-auto bg-blue-600 px-8 py-4 rounded-xl font-black text-white hover:bg-blue-700 shadow-xl shadow-blue-600/20 flex items-center justify-center gap-2 transition-all active:scale-95 order-1 sm:order-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="bg-blue-600 px-5 py-2.5 rounded-xl font-black text-xs text-white hover:bg-blue-700 shadow-md shadow-blue-600/25 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             {isLoading
-                                ? <><Loader2 className="w-5 h-5 animate-spin" /> {STEP_LABELS[uploadStep]}</>
-                                : <><Send className="w-5 h-5" /> ENVIAR SOLICITAÇÃO</>
+                                ? <><Loader2 className="w-4 h-4 animate-spin" /> {STEP_LABELS[uploadStep]}</>
+                                : <><Send className="w-4 h-4" /> ENVIAR SOLICITAÇÃO</>
                             }
                         </button>
                     </div>
