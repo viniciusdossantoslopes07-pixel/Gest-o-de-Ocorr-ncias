@@ -525,18 +525,18 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                         <div
                             key={ev.id}
                             onClick={() => setSelectedEvent(ev)}
-                            className={`p-4 rounded-xl border transition-all cursor-pointer hover:-translate-y-0.5 hover:shadow-lg relative ${dk
+                            className={`p-3 rounded-xl border transition-all cursor-pointer hover:-translate-y-0.5 hover:shadow-md relative ${dk
                                 ? 'bg-slate-700/40 border-slate-600 hover:border-blue-500/50'
                                 : 'bg-slate-50 border-slate-200 hover:border-blue-300'}`}
                         >
                             {/* "Meu evento" badge */}
                             {mine && (
-                                <span className={`absolute top-2 right-10 text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${dk ? 'bg-blue-900/60 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>
+                                <span className={`absolute top-2 right-10 text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${dk ? 'bg-blue-900/60 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>
                                     Meu
                                 </span>
                             )}
 
-                            <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-start justify-between mb-2">
                                 <div>
                                     <Badge status={ev.status} />
                                     <span className={`ml-2 text-[10px] font-mono font-black ${dk ? 'text-blue-400' : 'text-blue-600'}`}>
@@ -549,16 +549,16 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                                 </span>
                             </div>
 
-                            <h3 className={`font-black text-sm uppercase mb-1 ${tp}`}>
+                            <h3 className={`font-black text-xs uppercase mb-1 ${tp}`}>
                                 {ev.name ? `${ev.name}` : ''}{ev.name && ev.responsible_name ? ' - ' : ''}{ev.responsible_name}
                             </h3>
 
-                            <div className="flex items-center gap-1.5 mb-4">
-                                <MapPin className={`w-3.5 h-3.5 shrink-0 ${tm}`} />
-                                <span className={`text-[11px] font-bold uppercase line-clamp-1 ${ts}`}>{ev.location}</span>
+                            <div className="flex items-center gap-1.5 mb-3">
+                                <MapPin className={`w-3 h-3 shrink-0 ${tm}`} />
+                                <span className={`text-[10px] font-bold uppercase line-clamp-1 ${ts}`}>{ev.location}</span>
                             </div>
 
-                             <div className={`pt-3 border-t flex items-center justify-between ${dk ? 'border-slate-600' : 'border-slate-200'}`}>
+                             <div className={`pt-2 border-t flex items-center justify-between ${dk ? 'border-slate-600' : 'border-slate-200'}`}>
                                 <div className="flex items-center gap-3">
                                     <div className={`flex items-center gap-1.5 text-xs font-bold ${dk ? 'text-blue-400' : 'text-blue-600'}`}>
                                         <Users className="w-4 h-4" />
@@ -591,27 +591,27 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                     { id: 'stats' as const, label: 'Estatísticas', icon: BarChart3 },
                 ] as const).map(({ id, label, icon: Icon }) => (
                     <button key={id} onClick={() => setActiveView(id)}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-black uppercase tracking-wider rounded-lg transition-all
+                        className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-wider rounded-lg transition-all
                         ${activeView === id
                             ? (dk ? 'bg-slate-600 text-white shadow-sm' : 'bg-white text-blue-600 shadow-sm')
                             : (dk ? 'text-slate-400 hover:text-white hover:bg-slate-600/50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-200/50')}`}
                     >
-                        <Icon className="w-4 h-4" /> {label}
+                        <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {label}
                     </button>
                 ))}
             </div>
 
             {/* Content panes */}
             {activeView === 'list' && (
-                <div className={`p-4 md:p-6 rounded-2xl border ${card}`}>
+                <div className={`p-4 md:p-5 rounded-xl md:rounded-2xl border ${card}`}>
                     {/* List header */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
                         <div>
-                            <h2 className={`text-lg font-black uppercase tracking-tight ${tp}`}>
+                            <h2 className={`text-base font-black uppercase tracking-tight ${tp}`}>
                                 Eventos Programados
                             </h2>
-                            <p className={`text-xs font-bold uppercase ${tm}`}>
-                                Gerenciamento de acesso coletivo · Clique no seu evento para gerenciar
+                            <p className={`text-[10px] font-bold uppercase ${tm}`}>
+                                Gerenciamento de acesso coletivo · Clique no evento para gerenciar
                             </p>
                         </div>
 
@@ -619,9 +619,9 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                             <div className={`flex p-1 rounded-xl ${dk ? 'bg-slate-900/60' : 'bg-slate-100'}`}>
                                 {(['upcoming', 'history'] as const).map(mode => (
                                     <button key={mode} onClick={() => setViewMode(mode)}
-                                        className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wide transition-all whitespace-nowrap
+                                        className={`px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-wide transition-all whitespace-nowrap
                                         ${viewMode === mode
-                                            ? (mode === 'upcoming' ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-600 text-white shadow-md')
+                                            ? (mode === 'upcoming' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-600 text-white shadow-sm')
                                             : (dk ? 'text-slate-400 hover:text-white hover:bg-slate-700/60' : 'text-slate-500 hover:bg-white/60')}`}
                                     >
                                         {mode === 'upcoming' ? 'Próximos' : 'Histórico'}
@@ -629,7 +629,7 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                                 ))}
                             </div>
                             <button onClick={fetchEvents} disabled={loading}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase transition-all ${dk ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}>
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] sm:text-xs font-black uppercase transition-all ${dk ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}>
                                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Atualizar
                             </button>
                         </div>
