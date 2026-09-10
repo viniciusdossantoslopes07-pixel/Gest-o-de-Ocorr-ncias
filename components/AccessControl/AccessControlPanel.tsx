@@ -1605,8 +1605,8 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                             <p className={`text-sm ${textMuted}`}>Histórico de acesso e rastreamento de dados.</p>
                         </div>
                         
-                        <div className={`flex flex-col sm:flex-row gap-2 p-1.5 rounded-xl border shadow-sm ${dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-                            <div className="flex flex-wrap justify-center sm:justify-start gap-1 w-full sm:w-auto">
+                        <div className={`flex flex-col sm:flex-row gap-2 p-1 rounded-full border shadow-sm backdrop-blur-md ${dk ? 'bg-slate-800/80 border-slate-700/50' : 'bg-white/80 border-slate-200/50'}`}>
+                            <div className="flex flex-wrap justify-center sm:justify-start gap-1 w-full sm:w-auto p-0.5">
                                 {([
                                     { label: 'Hoje', value: 0 },
                                     { label: '7 Dias', value: 7 },
@@ -1616,17 +1616,17 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                     <button
                                         key={String(preset.value)}
                                         onClick={() => handleQuickDate(preset.value)}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex-1 sm:flex-none text-center ${activeQuickDate === preset.value
-                                            ? (dk ? 'bg-blue-900/40 text-blue-400 shadow-sm' : 'bg-blue-100 text-blue-700 shadow-sm')
-                                            : (dk ? 'text-slate-400 hover:bg-slate-700' : 'text-slate-500 hover:bg-slate-50')
+                                        className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap flex-1 sm:flex-none text-center ${activeQuickDate === preset.value
+                                            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                                            : (dk ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50')
                                             }`}
                                     >
                                         {preset.label}
                                     </button>
                                 ))}
                             </div>
-                            <div className={`w-px mx-1 hidden sm:block ${dk ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                            <div className="flex items-center justify-center sm:justify-start gap-2 px-2 pb-1 sm:pb-0">
+                            <div className={`w-px my-2 hidden sm:block ${dk ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                            <div className="flex items-center justify-center sm:justify-start gap-2 px-3 pb-1 sm:pb-0">
                                 <input
                                     type="date"
                                     value={searchStartDate}
@@ -1648,18 +1648,23 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
 
                     <div className={`p-4 md:p-6 rounded-2xl shadow-sm border space-y-4 ${card}`}>
                         {/* Search Input */}
-                        <div className="relative">
+                        <div className="relative group">
+                            <div className={`absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10`} />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="NOME, PLACA, MODELO, DOC OU DESTINO..."
-                                className={`w-full pl-10 md:pl-12 pr-4 py-3 md:py-4 border rounded-xl font-bold text-sm md:text-lg outline-none transition-all uppercase focus:ring-4 ${inputCls}`}
+                                className={`w-full pl-12 pr-12 py-4 border rounded-2xl font-black text-sm md:text-base tracking-wide outline-none transition-all uppercase focus:ring-4 focus:ring-blue-500/20 ${inputCls} shadow-sm`}
                                 autoFocus
                             />
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400" />
-                            {loadingSearch && (
+                            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${searchQuery ? 'text-blue-500' : 'text-slate-400'}`} />
+                            {loadingSearch ? (
                                 <RefreshCw className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-500 animate-spin" />
+                            ) : searchQuery && (
+                                <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                                    <X className="w-5 h-5" />
+                                </button>
                             )}
                         </div>
 
@@ -1667,8 +1672,8 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                         <div className="flex flex-col gap-3 pt-2">
                             <div className="flex flex-col md:flex-row gap-3 flex-wrap">
                                 {/* Gate Filter */}
-                                <div className={`flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 p-2 rounded-xl border ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-                                    <span className={`text-[10px] font-black uppercase pl-1 sm:pl-2 whitespace-nowrap ${textMuted}`}>Portão:</span>
+                                <div className={`flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 p-1.5 rounded-full border ${dk ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50/80 border-slate-200'}`}>
+                                    <span className={`text-[9px] font-black uppercase pl-2 whitespace-nowrap tracking-widest ${textMuted}`}>Portão</span>
                                     <div className="flex flex-wrap gap-1">
                                         {(['all', 'PORTÃO G1', 'PORTÃO G2', 'PORTÃO G3'] as const).map(gate => {
                                             const label = gate === 'all' ? 'Todos' : gate.replace('PORTÃO ', '');
@@ -1676,9 +1681,9 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                                 <button
                                                     key={gate}
                                                     onClick={() => setSearchFilterGate(gate)}
-                                                    className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${searchFilterGate === gate
-                                                        ? 'bg-violet-600 text-white shadow-sm'
-                                                        : (dk ? 'bg-slate-600 text-slate-300 hover:bg-slate-500 border border-slate-500' : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-200')
+                                                    className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${searchFilterGate === gate
+                                                        ? 'bg-violet-600 text-white shadow-md shadow-violet-500/20'
+                                                        : (dk ? 'bg-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'bg-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-200/60')
                                                         }`}
                                                 >
                                                     {label}
@@ -1689,16 +1694,16 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                                 </div>
 
                                 {/* Type Filter */}
-                                <div className={`flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 p-2 rounded-xl border ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-                                    <span className={`text-[10px] font-black uppercase pl-1 sm:pl-2 whitespace-nowrap ${textMuted}`}>Tipo:</span>
+                                <div className={`flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 p-1.5 rounded-full border ${dk ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50/80 border-slate-200'}`}>
+                                    <span className={`text-[9px] font-black uppercase pl-2 whitespace-nowrap tracking-widest ${textMuted}`}>Tipo</span>
                                 <div className="flex flex-wrap gap-1">
                                 {(['all', 'Pedestre', 'Veículo'] as const).map(type => (
                                     <button
                                         key={type}
                                         onClick={() => setSearchFilterType(type)}
-                                        className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${searchFilterType === type
-                                            ? 'bg-blue-600 text-white shadow-sm'
-                                            : (dk ? 'bg-slate-600 text-slate-300 hover:bg-slate-500 border border-slate-500' : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-200')
+                                        className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${searchFilterType === type
+                                            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                                            : (dk ? 'bg-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'bg-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-200/60')
                                             }`}
                                     >
                                         {type === 'all' ? 'Todos' : type}
@@ -1708,16 +1713,16 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                             </div>
 
                         {/* Category Filters */}
-                        <div className={`flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 p-2 rounded-xl border ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-                            <span className={`text-[10px] font-black uppercase pl-1 sm:pl-2 whitespace-nowrap ${textMuted}`}>Sentido:</span>
+                        <div className={`flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 p-1.5 rounded-full border ${dk ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50/80 border-slate-200'}`}>
+                            <span className={`text-[9px] font-black uppercase pl-2 whitespace-nowrap tracking-widest ${textMuted}`}>Sentido</span>
                             <div className="flex flex-wrap gap-1">
                                 {(['all', 'Entrada', 'Saída'] as const).map(cat => (
                                     <button
                                         key={cat}
                                         onClick={() => setSearchFilterCategory(cat)}
-                                        className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${searchFilterCategory === cat
-                                            ? (cat === 'Entrada' ? 'bg-emerald-600' : cat === 'Saída' ? 'bg-red-600' : 'bg-slate-800') + ' text-white shadow-sm'
-                                            : (dk ? 'bg-slate-600 text-slate-300 hover:bg-slate-500 border border-slate-500' : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-200')
+                                        className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${searchFilterCategory === cat
+                                            ? (cat === 'Entrada' ? 'bg-emerald-500 shadow-emerald-500/20' : cat === 'Saída' ? 'bg-red-500 shadow-red-500/20' : 'bg-slate-800 shadow-slate-800/20') + ' text-white shadow-md'
+                                            : (dk ? 'bg-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'bg-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-200/60')
                                             }`}
                                     >
                                         {cat === 'all' ? 'Todos' : cat}
@@ -1727,16 +1732,16 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                         </div>
 
                         {/* Characteristic Filter */}
-                        <div className={`flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 p-2 rounded-xl border ${dk ? 'bg-slate-700/40 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-                            <span className={`text-[10px] font-black uppercase pl-1 sm:pl-2 whitespace-nowrap ${textMuted}`}>Característica:</span>
+                        <div className={`flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 p-1.5 rounded-full border ${dk ? 'bg-slate-800/40 border-slate-700' : 'bg-slate-50/80 border-slate-200'}`}>
+                            <span className={`text-[9px] font-black uppercase pl-2 whitespace-nowrap tracking-widest ${textMuted}`}>Perfil</span>
                             <div className="flex flex-wrap gap-1">
                                 {(['all', 'CIVIL', 'MILITAR', 'DEPENDENTE', 'PRESTADOR', 'ENTREGADOR'] as const).map(char => (
                                     <button
                                         key={char}
                                         onClick={() => setSearchFilterCharacteristic(char)}
-                                        className={`px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap ${searchFilterCharacteristic === char
-                                            ? 'bg-amber-600 text-white shadow-sm'
-                                            : (dk ? 'bg-slate-600 text-slate-300 hover:bg-slate-500 border border-slate-500' : 'bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-700 border border-slate-200')
+                                        className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${searchFilterCharacteristic === char
+                                            ? 'bg-amber-500 text-white shadow-md shadow-amber-500/20'
+                                            : (dk ? 'bg-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'bg-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-200/60')
                                             }`}
                                     >
                                         {char === 'all' ? 'Todos' : char}
@@ -1749,7 +1754,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                             <button
                                 onClick={() => setShowPrintView(true)}
                                 disabled={searchResults.length === 0}
-                                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${dk ? 'bg-blue-900/40 border border-blue-800 text-blue-400 hover:bg-blue-800/60' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/20'} ${searchResults.length > 0 && !dk ? 'animate-pulse ring-2 ring-blue-600/30' : ''}`}
+                                className={`flex items-center gap-2 px-5 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${dk ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 shadow-blue-900/30' : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-blue-500/30'} ${searchResults.length > 0 && !dk ? 'animate-pulse' : ''}`}
                             >
                                 <Printer className="w-4 h-4" /> 
                                 Extrair Relatório
@@ -1779,24 +1784,30 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
                             <div className="space-y-4">
                                 {/* Search Statistics */}
                                 {searchResults.length > 0 && (
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3 animate-in auto-rows-fr fade-in slide-in-from-top-4">
-                                        <div className={`p-2.5 rounded-xl border flex flex-col justify-center items-center relative overflow-hidden ${dk ? 'bg-emerald-900/20 border-emerald-800/30' : 'bg-emerald-50 border-emerald-100'}`}>
-                                            <p className="text-[9px] sm:text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Entradas</p>
-                                            <p className="text-xl sm:text-2xl font-black text-emerald-700 leading-none mt-1">{searchResults.filter(r => r.access_category === 'Entrada').length}</p>
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 animate-in auto-rows-fr fade-in slide-in-from-top-4">
+                                        <div className={`p-4 rounded-2xl border flex flex-col justify-center items-center relative overflow-hidden shadow-sm transition-all hover:scale-[1.02] ${dk ? 'bg-gradient-to-br from-emerald-900/40 to-slate-900/40 border-emerald-800/50' : 'bg-gradient-to-br from-emerald-50 to-white border-emerald-100'}`}>
+                                            <div className={`absolute -right-4 -bottom-4 w-20 h-20 rounded-full blur-2xl opacity-20 ${dk ? 'bg-emerald-500' : 'bg-emerald-400'}`} />
+                                            <ArrowDownToLine className={`absolute -left-2 -bottom-2 w-12 h-12 opacity-5 ${dk ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                                            <p className={`text-[10px] font-black uppercase tracking-widest z-10 ${dk ? 'text-emerald-400' : 'text-emerald-600'}`}>Entradas</p>
+                                            <p className={`text-3xl font-black leading-none mt-1 z-10 ${dk ? 'text-emerald-300' : 'text-emerald-700'}`}>{searchResults.filter(r => r.access_category === 'Entrada').length}</p>
                                         </div>
-                                        <div className={`p-2.5 rounded-xl border flex flex-col justify-center items-center relative overflow-hidden ${dk ? 'bg-red-900/20 border-red-800/30' : 'bg-red-50 border-red-100'}`}>
-                                            <p className="text-[9px] sm:text-[10px] font-bold text-red-600 uppercase tracking-widest">Saídas</p>
-                                            <p className="text-xl sm:text-2xl font-black text-red-700 leading-none mt-1">{searchResults.filter(r => r.access_category === 'Saída').length}</p>
+                                        <div className={`p-4 rounded-2xl border flex flex-col justify-center items-center relative overflow-hidden shadow-sm transition-all hover:scale-[1.02] ${dk ? 'bg-gradient-to-br from-red-900/40 to-slate-900/40 border-red-800/50' : 'bg-gradient-to-br from-red-50 to-white border-red-100'}`}>
+                                            <div className={`absolute -right-4 -bottom-4 w-20 h-20 rounded-full blur-2xl opacity-20 ${dk ? 'bg-red-500' : 'bg-red-400'}`} />
+                                            <ArrowUpFromLine className={`absolute -left-2 -bottom-2 w-12 h-12 opacity-5 ${dk ? 'text-red-400' : 'text-red-600'}`} />
+                                            <p className={`text-[10px] font-black uppercase tracking-widest z-10 ${dk ? 'text-red-400' : 'text-red-600'}`}>Saídas</p>
+                                            <p className={`text-3xl font-black leading-none mt-1 z-10 ${dk ? 'text-red-300' : 'text-red-700'}`}>{searchResults.filter(r => r.access_category === 'Saída').length}</p>
                                         </div>
-                                        <div className={`p-2.5 rounded-xl border flex flex-col justify-center items-center relative overflow-hidden ${dk ? 'bg-blue-900/20 border-blue-800/30' : 'bg-blue-50 border-blue-100'}`}>
-                                            <Footprints className={`absolute -right-1 -bottom-1 w-10 h-10 opacity-10 ${dk ? 'text-blue-400' : 'text-blue-600'}`} />
-                                            <p className="text-[9px] sm:text-[10px] font-bold text-blue-600 uppercase tracking-widest">Pedestres</p>
-                                            <p className="text-xl sm:text-2xl font-black text-blue-700 leading-none mt-1">{searchResults.filter(r => r.access_mode === 'Pedestre').length}</p>
+                                        <div className={`p-4 rounded-2xl border flex flex-col justify-center items-center relative overflow-hidden shadow-sm transition-all hover:scale-[1.02] ${dk ? 'bg-gradient-to-br from-blue-900/40 to-slate-900/40 border-blue-800/50' : 'bg-gradient-to-br from-blue-50 to-white border-blue-100'}`}>
+                                            <div className={`absolute -right-4 -bottom-4 w-20 h-20 rounded-full blur-2xl opacity-20 ${dk ? 'bg-blue-500' : 'bg-blue-400'}`} />
+                                            <Footprints className={`absolute -left-2 -bottom-2 w-12 h-12 opacity-5 ${dk ? 'text-blue-400' : 'text-blue-600'}`} />
+                                            <p className={`text-[10px] font-black uppercase tracking-widest z-10 ${dk ? 'text-blue-400' : 'text-blue-600'}`}>Pedestres</p>
+                                            <p className={`text-3xl font-black leading-none mt-1 z-10 ${dk ? 'text-blue-300' : 'text-blue-700'}`}>{searchResults.filter(r => r.access_mode === 'Pedestre').length}</p>
                                         </div>
-                                        <div className={`p-2.5 rounded-xl border flex flex-col justify-center items-center relative overflow-hidden ${dk ? 'bg-violet-900/20 border-violet-800/30' : 'bg-violet-50 border-violet-100'}`}>
-                                            <Car className={`absolute -right-1 -bottom-1 w-10 h-10 opacity-10 ${dk ? 'text-violet-400' : 'text-violet-600'}`} />
-                                            <p className="text-[9px] sm:text-[10px] font-bold text-violet-600 uppercase tracking-widest">Veículos</p>
-                                            <p className="text-xl sm:text-2xl font-black text-violet-700 leading-none mt-1">{searchResults.filter(r => r.access_mode === 'Veículo').length}</p>
+                                        <div className={`p-4 rounded-2xl border flex flex-col justify-center items-center relative overflow-hidden shadow-sm transition-all hover:scale-[1.02] ${dk ? 'bg-gradient-to-br from-violet-900/40 to-slate-900/40 border-violet-800/50' : 'bg-gradient-to-br from-violet-50 to-white border-violet-100'}`}>
+                                            <div className={`absolute -right-4 -bottom-4 w-20 h-20 rounded-full blur-2xl opacity-20 ${dk ? 'bg-violet-500' : 'bg-violet-400'}`} />
+                                            <Car className={`absolute -left-2 -bottom-2 w-12 h-12 opacity-5 ${dk ? 'text-violet-400' : 'text-violet-600'}`} />
+                                            <p className={`text-[10px] font-black uppercase tracking-widest z-10 ${dk ? 'text-violet-400' : 'text-violet-600'}`}>Veículos</p>
+                                            <p className={`text-3xl font-black leading-none mt-1 z-10 ${dk ? 'text-violet-300' : 'text-violet-700'}`}>{searchResults.filter(r => r.access_mode === 'Veículo').length}</p>
                                         </div>
                                     </div>
                                 )}
@@ -1813,15 +1824,15 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
 
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left">
-                                        <thead className={`border-b ${dk ? 'bg-slate-700 border-slate-600' : 'bg-slate-50 border-slate-100'}`}>
+                                        <thead className={`border-b ${dk ? 'bg-slate-800/80 border-slate-700' : 'bg-slate-100/80 border-slate-200'}`}>
                                             <tr>
-                                                <th className={`px-4 py-3 text-[9px] font-black uppercase ${textMuted}`}>Data / Hora</th>
-                                                <th className={`px-4 py-3 text-[9px] font-black uppercase ${textMuted}`}>Local / Tipo</th>
-                                                <th className={`px-4 py-3 text-[9px] font-black uppercase ${textMuted}`}>Solicitante / Veículo</th>
-                                                <th className={`px-4 py-3 text-[9px] font-black uppercase text-right ${textMuted}`}>Status</th>
+                                                <th className={`px-4 py-4 text-[9px] font-black uppercase tracking-widest ${textMuted}`}>Data / Hora</th>
+                                                <th className={`px-4 py-4 text-[9px] font-black uppercase tracking-widest ${textMuted}`}>Local / Tipo</th>
+                                                <th className={`px-4 py-4 text-[9px] font-black uppercase tracking-widest ${textMuted}`}>Solicitante / Veículo</th>
+                                                <th className={`px-4 py-4 text-[9px] font-black uppercase tracking-widest text-right ${textMuted}`}>Status</th>
                                             </tr>
                                         </thead>
-                                        <tbody className={`divide-y ${dk ? 'divide-slate-700/50' : 'divide-slate-50'}`}>
+                                        <tbody className={`divide-y ${dk ? 'divide-slate-700/50' : 'divide-slate-100'}`}>
                                             {searchResults.length === 0 ? (
                                                 <tr>
                                                     <td colSpan={4} className="text-center py-8">
