@@ -23,14 +23,14 @@ function generateSecurityFeaturesReport() {
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(12);
         doc.setTextColor(255, 255, 255);
-        doc.text('SISTEMA GUARDIÃO — DOSSIÊ TÉCNICO DE SEGURANÇA DA INFORMAÇÃO', margin, 12);
+        doc.text('SISTEMA GUARDIÃO — RELATÓRIO TÉCNICO DE SEGURANÇA', margin, 12);
 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
         doc.setTextColor(148, 163, 184); // slate-400
-        doc.text('Grupo de Segurança e Defesa de São Paulo (GSD-SP) · Arquitetura de Defesa e Controles de Cibersegurança', margin, 19);
+        doc.text('Grupo de Segurança e Defesa (GSD-SP) · Arquitetura e Controles de Proteção do Aplicativo', margin, 19);
 
-        // Linha de acento azul aeronáutico
+        // Linha de acento azul
         doc.setDrawColor(37, 99, 235); // blue-600
         doc.setLineWidth(1.2);
         doc.line(0, 26, pageWidth, 26);
@@ -44,7 +44,7 @@ function generateSecurityFeaturesReport() {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(7.5);
         doc.setTextColor(148, 163, 184);
-        doc.text('DOCUMENTO DE USO OFICIAL · FORÇA AÉREA BRASILEIRA · SISTEMA GUARDIÃO GSD-SP', margin, pageHeight - 8);
+        doc.text('Sistema Guardião — Grupo de Segurança e Defesa (GSD-SP)', margin, pageHeight - 8);
         doc.text(`Página ${pageNum} de ${totalPages}`, pageWidth - margin - 20, pageHeight - 8);
     }
 
@@ -67,8 +67,8 @@ function generateSecurityFeaturesReport() {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(30, 64, 175);
-    doc.text('Este dossiê detalha a arquitetura técnica, os controles criptográficos, a segregação de privilégios e os', margin + 5, y + 13);
-    doc.text('mecanismos de defesa em profundidade operantes na plataforma, em conformidade com as diretrizes do COMAER e OWASP.', margin + 5, y + 17.5);
+    doc.text('Este relatório detalha a arquitetura técnica, os controles criptográficos, a segregação de acessos e os', margin + 5, y + 13);
+    doc.text('mecanismos de proteção operantes no aplicativo, com base em boas práticas de mercado e padrões OWASP.', margin + 5, y + 17.5);
 
     y += 26;
 
@@ -86,7 +86,7 @@ function generateSecurityFeaturesReport() {
     doc.setFontSize(7.5);
     doc.setTextColor(71, 85, 105);
     doc.text('• Sistema: Guardião (Controle de Acesso, Missões & Ocorrências)', margin + 4, y + 11.5);
-    doc.text('• Unidade Gestora: Grupo de Segurança e Defesa de São Paulo (GSD-SP)', margin + 4, y + 16.5);
+    doc.text('• Aplicação: Grupo de Segurança e Defesa (GSD-SP)', margin + 4, y + 16.5);
     doc.text('• Arquitetura: Zero Trust Client-Server / PostgREST / PostgreSQL Seguro', margin + 96, y + 11.5);
     doc.text('• Frameworks de Referência: OWASP ASVS v4.0 / NIST SP 800-53 / CIS PostgreSQL', margin + 96, y + 16.5);
 
@@ -159,7 +159,7 @@ function generateSecurityFeaturesReport() {
         ['OWASP Top 10 (2021)', 'Todos os 10 vetores de vulnerabilidade mitigados (Controle de Acesso, Criptografia, XSS, Injeções).', '100% ATENDIDO'],
         ['NIST SP 800-63B', 'Gerenciamento seguro de autenticadores digitais, hashing de senhas sem texto claro e expiração mandatória.', 'CONFORME'],
         ['CIS Benchmark PostgreSQL', 'Princípio do menor privilégio em roles, search_path imutável e revogação de privilégios públicos.', 'CONFORME'],
-        ['Legislação Militar & LGPD', 'Tratamento restrito a finalidades operacionais de serviço militar, rastreabilidade e expurgo de transitórios.', 'CONFORME']
+        ['Privacidade & LGPD', 'Tratamento restrito a finalidades operacionais legítimas, rastreabilidade e expurgo de transitórios.', 'CONFORME']
     ];
 
     doc.setFillColor(241, 245, 249);
@@ -479,13 +479,13 @@ function generateSecurityFeaturesReport() {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8.5);
     doc.setTextColor(21, 128, 61);
-    doc.text('PARECER TÉCNICO CONCLUSIVO: ARQUITETURA HOMOLOGADA E RESILIENTE', margin + 5, y + 6);
+    doc.text('CONCLUSÃO TÉCNICA: ARQUITETURA SEGURA E RESILIENTE', margin + 5, y + 6);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(22, 101, 52);
-    doc.text('O Sistema Guardião atende aos critérios modernos de cibersegurança e defesa em profundidade, provendo', margin + 5, y + 11);
-    doc.text('confidencialidade, integridade e disponibilidade às operações do Grupo de Segurança e Defesa de São Paulo.', margin + 5, y + 15);
+    doc.text('O aplicativo dispõe de controles modernos de segurança da informação e defesa em profundidade, provendo', margin + 5, y + 11);
+    doc.text('confidencialidade, integridade e rastreabilidade para as rotinas do Grupo de Segurança e Defesa (GSD-SP).', margin + 5, y + 15);
 
     y += 24;
 
@@ -504,11 +504,22 @@ function generateSecurityFeaturesReport() {
 
     addFooter(4);
 
-    // Salvar PDF
-    const outputPath = path.join(__dirname, '..', 'relatorio_recursos_seguranca_gsdsp.pdf');
+    // Salvar PDF com fallback se estiver aberto no visualizador do usuário
+    const primaryPath = path.join(__dirname, '..', 'relatorio_recursos_seguranca_gsdsp.pdf');
+    const fallbackPath = path.join(__dirname, '..', 'relatorio_seguranca_gsdsp.pdf');
     const pdfData = doc.output('arraybuffer');
-    fs.writeFileSync(outputPath, Buffer.from(pdfData));
-    console.log(`Relatório de recursos de segurança gerado com sucesso em: ${outputPath}`);
+
+    try {
+        fs.writeFileSync(primaryPath, Buffer.from(pdfData));
+        console.log(`Relatório de recursos de segurança gerado com sucesso em: ${primaryPath}`);
+    } catch (err) {
+        if (err.code === 'EBUSY') {
+            fs.writeFileSync(fallbackPath, Buffer.from(pdfData));
+            console.log(`Arquivo principal em uso. Relatório gerado com sucesso em: ${fallbackPath}`);
+        } else {
+            throw err;
+        }
+    }
 }
 
 generateSecurityFeaturesReport();
