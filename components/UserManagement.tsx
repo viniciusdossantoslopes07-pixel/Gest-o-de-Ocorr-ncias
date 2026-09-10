@@ -17,11 +17,12 @@ interface UserManagementProps {
   onRejectUserRegistration?: (id: string) => Promise<void> | void;
   onRefreshUsers?: () => void;
   onResetPassword?: (userId: string) => Promise<boolean>;
+  onDenyResetPassword?: (userId: string) => Promise<boolean>;
   currentUser: User | null;
   isDarkMode: boolean;
 }
 
-const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdateUser, onDeleteUser, onPermanentDeleteUser, onRejectUserRegistration, onRefreshUsers, onResetPassword, currentUser, isDarkMode }) => {
+const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdateUser, onDeleteUser, onPermanentDeleteUser, onRejectUserRegistration, onRefreshUsers, onResetPassword, onDenyResetPassword, currentUser, isDarkMode }) => {
   const { sectors, oms, omId } = useSectors();
   const [activeTab, setActiveTab] = useState<'users' | 'permissions' | 'sectors'>('users');
   const initialFormState = {
@@ -830,28 +831,42 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
                                 <div className="flex justify-end gap-2">
                                   <button
                                     onClick={async () => {
-                                      if (confirm(`Deseja resetar a senha do militar ${u.name} para o padrão '123456'?`)) {
+                                      if (confirm(`Deseja autorizar o reset de senha do militar ${u.warName || u.name} (SARAM: ${u.saram})? Será liberado o acesso provisório '123456' com troca obrigatória de senha no próximo login.`)) {
                                         if (onResetPassword) {
                                           const ok = await onResetPassword(u.id);
                                           if (ok) {
-                                            showResetFeedback('success', `Senha de ${u.warName || u.name} redefinida. Login: 123456.`);
+                                            showResetFeedback('success', `Reset autorizado para ${u.warName || u.name}. Acesso provisório: 123456 (expiração mandatória).`);
                                           } else {
-                                            showResetFeedback('error', 'Falha ao redefinir senha. Tente novamente.');
+                                            showResetFeedback('error', 'Falha ao autorizar reset de senha. Verifique as permissões.');
                                           }
                                         } else {
                                           onUpdateUser({ ...u, password: '123456', pending_password_reset: false, reset_password_at_login: true, password_status: 'EXPIRED' as any });
                                         }
                                       }
                                     }}
-                                    className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+                                    className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg text-xs font-bold transition-all flex items-center gap-2 shadow-sm"
+                                    title="Autoriza o acesso provisório (123456) com obrigação de troca no primeiro login"
                                   >
-                                    <Key className="w-3 h-3" /> Resetar para 123456
+                                    <Key className="w-3.5 h-3.5" /> Autorizar Reset (123456)
                                   </button>
                                   <button
-                                    onClick={() => onUpdateUser({ ...u, pending_password_reset: false })}
+                                    onClick={async () => {
+                                      if (confirm(`Deseja recusar a solicitação de reset do militar ${u.warName || u.name}?`)) {
+                                        if (onDenyResetPassword) {
+                                          const ok = await onDenyResetPassword(u.id);
+                                          if (ok) {
+                                            showResetFeedback('info', `Solicitação de reset de ${u.warName || u.name} recusada.`);
+                                          } else {
+                                            showResetFeedback('error', 'Erro ao recusar solicitação.');
+                                          }
+                                        } else {
+                                          onUpdateUser({ ...u, pending_password_reset: false });
+                                        }
+                                      }
+                                    }}
                                     className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${isDarkMode ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                                   >
-                                    <XCircle className="w-3 h-3" /> Negar
+                                    <XCircle className="w-3.5 h-3.5" /> Negar
                                   </button>
                                 </div>
                               </td>

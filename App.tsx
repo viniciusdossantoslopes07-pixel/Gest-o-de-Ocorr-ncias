@@ -663,20 +663,16 @@ const App: FC = () => {
 
   const onRequestPasswordReset = async (saram: string): Promise<boolean> => {
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id')
-        .eq('saram', saram)
-        .single();
+      const { data: res, error } = await supabase.rpc('request_password_reset', {
+        p_identifier: saram
+      });
 
-      if (error || !data) return false;
+      if (error) {
+        console.error('Error requesting password reset RPC:', error);
+        return false;
+      }
 
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ pending_password_reset: true })
-        .eq('id', data.id);
-
-      return !updateError;
+      return res?.success ?? true;
     } catch (err) {
       console.error('Error requesting password reset:', err);
       return false;
@@ -818,83 +814,21 @@ const App: FC = () => {
         ? username
         : username.replace(/\D/g, '');
 
-      const { data: rawUsers, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('username', cleanUsername)
-        .limit(1);
+      // Redefinição segura via RPC que valida status e aplica hash bcrypt
+      const { data: rpcRes, error: rpcError } = await supabase.rpc('complete_force_password_reset', {
+        p_username: cleanUsername,
+        p_new_password: newPassword
+      });
 
-      if (error || !rawUsers || rawUsers.length === 0) return false;
-      const user = rawUsers[0];
-
-      const { error: resetError } = await supabase
-        .from('users')
-        .update({
-          password: newPassword,
-          reset_password_at_login: false,
-          password_status: 'ACTIVE'
-        })
-        .eq('id', user.id);
-
-      if (resetError) return false;
-
-      // Log the user in
-      const mappedUser: User = {
-        id: user.id,
-        username: user.username,
-        name: user.name,
-        role: user.role as UserRole,
-        email: user.email,
-        rank: user.rank,
-        saram: user.saram,
-        sector: user.sector,
-        accessLevel: user.access_level,
-        approved: user.approved,
-        password: '',
-        warName: user.war_name,
-        militarId: user.militar_id,
-        phoneNumber: user.phone_number,
-        cpf: user.cpf,
-        displayOrder: user.display_order,
-        menu_order: user.menu_order,
-        home_order: user.home_order,
-        pending_password_reset: user.pending_password_reset,
-        reset_password_at_login: false,
-        password_status: 'ACTIVE',
-        photo_url: user.photo_url,
-        functionId: user.function_id,
-        customPermissions: user.custom_permissions,
-        biometric_credentials_id: user.biometric_credentials_id,
-        active: user.active,
-        specialty: user.specialty,
-        class_year: user.class_year,
-        service: user.service,
-        address: user.address,
-        enlistment_date: user.enlistment_date,
-        presentation_date: user.presentation_date,
-        last_promotion_date: user.last_promotion_date,
-        military_identity: user.military_identity,
-        rc: user.rc,
-        workplace: user.workplace,
-        emergency_contact: user.emergency_contact,
-        is_functional: !!user.is_functional
-      };
-
-      setCurrentUser(mappedUser);
-      const safeMappedUser = { ...mappedUser, password: '' };
-      localStorage.setItem('gsdsp_user_session', JSON.stringify(safeMappedUser));
-      localStorage.setItem('gsdsp_last_saram', username);
-      setActiveTab('home');
-
-      if (hasPermission(mappedUser, PERMISSIONS.MANAGE_USERS) ||
-        hasPermission(mappedUser, PERMISSIONS.MANAGE_PERSONNEL) ||
-        hasPermission(mappedUser, PERMISSIONS.VIEW_PERSONNEL) ||
-        hasPermission(mappedUser, PERMISSIONS.VIEW_DAILY_ATTENDANCE)) {
-        fetchUsers();
+      if (rpcError || !rpcRes?.success) {
+        console.error('Complete force password reset error:', rpcError || rpcRes?.message);
+        alert(rpcRes?.message || 'Erro ao redefinir nova senha.');
+        return false;
       }
 
-      return true;
-
+      // Autenticar com a nova senha para iniciar a sessão com credenciais atualizadas
+      const loginResult = await handleLogin(cleanUsername, newPassword);
+      return loginResult === true;
     } catch (err) {
       console.error('Reset error:', err);
       return false;
@@ -902,31 +836,32 @@ const App: FC = () => {
   };
 
   /**
-   * Redefine APENAS senha + flags de reset para um usuário pelo ID.
-   * Usado pelo admin em "Gerir Permissões > Usuários".
-   * Executa via RPC segura com hashing Bcrypt.
+   * Autoriza reset de senha gerando acesso provisório (123456) com troca mandatória.
+   * Usado pelo Oficial de Dia / Administrador da OM.
    */
   const handleAdminResetPassword = async (userId: string, adminPassword?: string): Promise<boolean> => {
     try {
       if (!currentUser) return false;
 
-      // Executar via RPC segura no banco
-      const { data: res, error } = await supabase.rpc('admin_reset_user_password', {
+      // 1. Tentar autorização de reset direto do Oficial de Dia / Admin
+      const { data: authRes, error: authErr } = await supabase.rpc('admin_authorize_password_reset', {
         p_admin_id: currentUser.id,
         p_target_user_id: userId,
-        p_admin_password: adminPassword || '',
-        p_new_password: '123456'
+        p_provisional_password: '123456'
       });
 
-      if (error || !res || !res.success) {
-        // Fallback para admin_set_user_password
-        const { data: fbRes, error: fbErr } = await supabase.rpc('admin_set_user_password', {
+      if (authErr || !authRes?.success) {
+        // Fallback para admin_reset_user_password / admin_set_user_password se aplicável
+        const { data: res, error } = await supabase.rpc('admin_reset_user_password', {
+          p_admin_id: currentUser.id,
           p_target_user_id: userId,
+          p_admin_password: adminPassword || '',
           p_new_password: '123456'
         });
-        if (fbErr || !fbRes?.success) {
-          console.error('Admin reset password error:', error || fbErr);
-          alert((res && res.message) || (fbRes && fbRes.message) || 'Erro ao redefinir senha.');
+
+        if (error || !res?.success) {
+          console.error('Admin reset password error:', authErr || error);
+          alert(authRes?.message || res?.message || 'Erro ao autorizar reset de senha.');
           return false;
         }
       }
@@ -941,6 +876,37 @@ const App: FC = () => {
       return true;
     } catch (err) {
       console.error('Admin reset password exception:', err);
+      return false;
+    }
+  };
+
+  /**
+   * Nega solicitação de reset de senha pelo Oficial de Dia / Admin
+   */
+  const handleAdminDenyResetPassword = async (userId: string): Promise<boolean> => {
+    try {
+      if (!currentUser) return false;
+
+      const { data: res, error } = await supabase.rpc('admin_deny_password_reset', {
+        p_admin_id: currentUser.id,
+        p_target_user_id: userId
+      });
+
+      if (error || !res?.success) {
+        console.error('Admin deny password reset error:', error);
+        alert(res?.message || 'Erro ao recusar solicitação de reset.');
+        return false;
+      }
+
+      setUsers(prev => prev.map(u =>
+        u.id === userId
+          ? { ...u, pending_password_reset: false }
+          : u
+      ));
+
+      return true;
+    } catch (err) {
+      console.error('Admin deny password reset exception:', err);
       return false;
     }
   };
@@ -1952,6 +1918,7 @@ const App: FC = () => {
               onRejectUserRegistration={handleRejectUserRegistration}
               onRefreshUsers={fetchUsers}
               onResetPassword={handleAdminResetPassword}
+              onDenyResetPassword={handleAdminDenyResetPassword}
               currentUser={currentUser}
               isDarkMode={isDarkMode}
             />

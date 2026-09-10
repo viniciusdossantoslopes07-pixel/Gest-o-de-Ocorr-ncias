@@ -123,7 +123,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
         if (onRequestPasswordReset) {
           const res = await onRequestPasswordReset(forgotSaram.replace(/\D/g, ''));
           if (res) {
-            setSuccess('Solicitação enviada! Aguarde a aprovação do administrador para o reset.');
+            setSuccess('Solicitação enviada com sucesso! Contate o Oficial de Dia / Administrador da sua OM para autorização do acesso provisório.');
             setTimeout(() => setView('login'), 5000);
           } else {
             setError('SARAM não encontrado ou erro na solicitação.');
@@ -377,7 +377,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
                 <div>
                   <label className={labelBase}>Informe seu SARAM</label>
                   <input required type="text" className={`${inputBase} px-3 py-3`} placeholder="0000000" value={forgotSaram} onChange={e => setForgotSaram(maskSaram(e.target.value))} />
-                  <p className={`text-[9px] ${dk ? 'text-slate-500' : 'text-slate-400'} font-bold uppercase mt-1.5`}>A redefinição será avaliada pelo administrador da BASP.</p>
+                  <p className={`text-[9px] ${dk ? 'text-slate-500' : 'text-slate-400'} font-bold uppercase mt-1.5`}>A autorização será confirmada pelo Oficial de Dia / Administrador da OM.</p>
                 </div>
 
                 <button type="submit" disabled={isLoading} className={`w-full ${dk ? 'bg-slate-800 hover:bg-slate-700 border border-slate-700' : 'bg-slate-900 hover:bg-slate-800'} text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all shadow-lg`}>
