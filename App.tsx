@@ -904,29 +904,37 @@ const App: FC = () => {
   /**
    * Redefine APENAS senha + flags de reset para um usuário pelo ID.
    * Usado pelo admin em "Gerir Permissões > Usuários".
-   * Opera diretamente no banco sem propagar outros campos (evita sobrescrever com undefined).
+   * Executa via RPC segura com hashing Bcrypt.
    */
-  const handleAdminResetPassword = async (userId: string): Promise<boolean> => {
+  const handleAdminResetPassword = async (userId: string, adminPassword?: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('users')
-        .update({
-          password: '123456',
-          reset_password_at_login: true,
-          pending_password_reset: false,
-          password_status: 'EXPIRED'
-        })
-        .eq('id', userId);
+      if (!currentUser) return false;
 
-      if (error) {
-        console.error('Admin reset password error:', error);
-        return false;
+      // Executar via RPC segura no banco
+      const { data: res, error } = await supabase.rpc('admin_reset_user_password', {
+        p_admin_id: currentUser.id,
+        p_target_user_id: userId,
+        p_admin_password: adminPassword || '',
+        p_new_password: '123456'
+      });
+
+      if (error || !res || !res.success) {
+        // Fallback para admin_set_user_password
+        const { data: fbRes, error: fbErr } = await supabase.rpc('admin_set_user_password', {
+          p_target_user_id: userId,
+          p_new_password: '123456'
+        });
+        if (fbErr || !fbRes?.success) {
+          console.error('Admin reset password error:', error || fbErr);
+          alert((res && res.message) || (fbRes && fbRes.message) || 'Erro ao redefinir senha.');
+          return false;
+        }
       }
 
-      // Atualiza estado local imediatamente
+      // Atualiza estado local imediatamente (sem reter senha em claro)
       setUsers(prev => prev.map(u =>
         u.id === userId
-          ? { ...u, password: '123456', reset_password_at_login: true, pending_password_reset: false, password_status: 'EXPIRED' as any }
+          ? { ...u, password: '', reset_password_at_login: true, pending_password_reset: false, password_status: 'EXPIRED' as any }
           : u
       ));
 
@@ -938,7 +946,8 @@ const App: FC = () => {
   };
 
   const fetchUsers = async () => {
-    let query = supabase.from('users').select('*').order('display_order', { ascending: true });
+    const SAFE_USER_COLUMNS = 'id, username, name, role, email, rank, saram, cpf, war_name, militar_id, sector, access_level, phone_number, approved, display_order, menu_order, home_order, photo_url, function_id, custom_permissions, biometric_credentials_id, pending_password_reset, reset_password_at_login, password_status, active, specialty, class_year, service, address, enlistment_date, presentation_date, last_promotion_date, military_identity, rc, workplace, emergency_contact, is_functional, external_service, external_om, external_sector, administrative_role, om_id';
+    let query = supabase.from('users').select(SAFE_USER_COLUMNS).order('display_order', { ascending: true });
     
     const actualOmId = getActualOmId();
     if (actualOmId === 'WAITING_CONTEXT') return;
@@ -950,8 +959,6 @@ const App: FC = () => {
     } else {
       query = query.eq('om_id', '00000000-0000-0000-0000-000000000000');
     }
-
-
 
     const { data } = await query;
     if (data) {
@@ -970,7 +977,7 @@ const App: FC = () => {
         accessLevel: u.access_level,
         phoneNumber: u.phone_number,
         approved: u.approved,
-        password: u.password,
+        password: '', // Expurgado por segurança: Frontend nunca armazena senhas
         displayOrder: u.display_order,
         menu_order: u.menu_order,
         home_order: u.home_order,
@@ -1292,12 +1299,22 @@ const App: FC = () => {
       }
     }
 
+    // Se a senha foi informada (ex: admin redefinindo no formulário de edição), atualizar via RPC segura
+    if (updatedUser.password && updatedUser.password.trim() !== '') {
+      try {
+        await supabase.rpc('admin_set_user_password', {
+          p_target_user_id: updatedUser.id,
+          p_new_password: updatedUser.password
+        });
+      } catch (passErr) {
+        console.error('Erro ao atualizar senha via RPC segura:', passErr);
+      }
+    }
+
     const { error } = await supabase
       .from('users')
       .update({
         username: updatedUser.username,
-        // Only update password if explicitly provided and not empty
-        ...(updatedUser.password ? { password: updatedUser.password } : {}),
         name: updatedUser.name,
         role: updatedUser.role,
         email: updatedUser.email,
@@ -1739,7 +1756,16 @@ const App: FC = () => {
   // Helper for User Update from Profile
   const handleUserProfileUpdate = async (userData: Partial<User>) => {
     if (!currentUser) return;
-    const updated = { ...currentUser, ...userData };
+    // Whitelist apenas campos inofensivos de autoatendimento para impedir escalação de privilégios:
+    const safeAllowedUpdates: Partial<User> = {};
+    if (userData.photo_url !== undefined) safeAllowedUpdates.photo_url = userData.photo_url;
+    if (userData.phoneNumber !== undefined) safeAllowedUpdates.phoneNumber = userData.phoneNumber;
+    if (userData.emergency_contact !== undefined) safeAllowedUpdates.emergency_contact = userData.emergency_contact;
+    if ((userData as any).emergencyContact !== undefined) safeAllowedUpdates.emergency_contact = (userData as any).emergencyContact;
+    if (userData.address !== undefined) safeAllowedUpdates.address = userData.address;
+    if (userData.biometric_credentials_id !== undefined) safeAllowedUpdates.biometric_credentials_id = userData.biometric_credentials_id;
+
+    const updated = { ...currentUser, ...safeAllowedUpdates };
     try {
       await handleUpdateUser(updated);
       // handleUpdateUser updates state on success

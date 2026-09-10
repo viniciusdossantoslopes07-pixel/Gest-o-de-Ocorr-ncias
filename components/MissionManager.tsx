@@ -121,7 +121,8 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
     const fetchUsers = async () => {
         try {
             const actualOmId = omId || user?.om_id;
-            let query = supabase.from('users').select('*');
+            const SAFE_USER_FIELDS = 'id, username, name, role, email, rank, saram, cpf, war_name, militar_id, sector, access_level, phone_number, approved, display_order, menu_order, home_order, photo_url, function_id, custom_permissions, biometric_credentials_id, active, specialty, class_year, service, address, administrative_role, om_id';
+            let query = supabase.from('users').select(SAFE_USER_FIELDS);
             
             if (actualOmId && legacyIds.includes(actualOmId)) {
                 query = query.in('om_id', legacyIds);

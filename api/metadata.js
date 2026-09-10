@@ -3,8 +3,34 @@ import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function sanitizeUrl(url) {
+  if (!url) return 'https://app-gsdsp.com/logo_gsd.png';
+  try {
+    const parsed = new URL(url, 'https://app-gsdsp.com');
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.href;
+    }
+  } catch (e) {}
+  return 'https://app-gsdsp.com/logo_gsd.png';
+}
+
 export default async function handler(req, res) {
-  const omAcronym = req.query?.om;
+  const rawOmAcronym = req.query?.om;
+  // Validação estrita de formato contra XSS / Injeção: apenas alfanuméricos e hífen/underline
+  const omAcronym = typeof rawOmAcronym === 'string' && /^[a-zA-Z0-9_-]{1,20}$/.test(rawOmAcronym)
+    ? rawOmAcronym.toUpperCase()
+    : null;
+
   const userAgent = req.headers['user-agent'] || '';
 
   // Lista de bots
@@ -16,21 +42,22 @@ export default async function handler(req, res) {
       const indexPath = path.join(process.cwd(), 'index.html');
       let html = fs.readFileSync(indexPath, 'utf8');
       
-      // Opcional: injetar o título da OM mesmo para humanos antes do React carregar para evitar flicker no título da aba
+      // Opcional: injetar o título da OM devidamente escapado antes do React carregar
       if (omAcronym) {
-         html = html.replace('<title>Guardião - Sistema de Gestão</title>', `<title>Guardião ${omAcronym.toUpperCase()}</title>`);
+         html = html.replace('<title>Guardião - Sistema de Gestão</title>', `<title>Guardião ${escapeHtml(omAcronym)}</title>`);
       }
 
       res.setHeader('Content-Type', 'text/html');
       return res.status(200).send(html);
     } catch (e) {
       console.error('Error reading index.html:', e);
-      // Fallback para o redirecionamento se falhar a leitura do arquivo
-      return res.status(200).send(`<html><head><script>window.location.replace("/?om=${omAcronym}&realApp=true");</script></head><body>Redirecionando...</body></html>`);
+      const safeParam = encodeURIComponent(omAcronym || '');
+      // Fallback seguro com encoding
+      return res.status(200).send(`<!DOCTYPE html><html><head><script>window.location.replace("/?om=${safeParam}&realApp=true");</script></head><body>Redirecionando...</body></html>`);
     }
   }
 
-  // Se CHEGOU AQUI, É UM BOT (ou falhou a detecção e caiu no bot-view, o que é seguro)
+  // Se CHEGOU AQUI, É UM BOT
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
   const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
@@ -43,8 +70,8 @@ export default async function handler(req, res) {
   try {
     const { data: om } = await supabase
       .from('military_organizations')
-      .select('*')
-      .eq('acronym', omAcronym.toUpperCase())
+      .select('acronym, name, logo_url')
+      .eq('acronym', omAcronym)
       .single();
 
     if (om) {
@@ -59,10 +86,9 @@ export default async function handler(req, res) {
 }
 
 function getDynamicHtml(om) {
-  const acronym = om.acronym || 'GSD';
-  const name = om.name || 'Sistema de Gestão';
-  const logo = om.logo_url || 'https://app-gsdsp.com/logo_gsd.png';
-  const imageUrl = logo.startsWith('http') ? logo : `https://app-gsdsp.com${logo}`;
+  const acronym = escapeHtml(om.acronym || 'GSD');
+  const name = escapeHtml(om.name || 'Sistema de Gestão');
+  const imageUrl = sanitizeUrl(om.logo_url);
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -79,7 +105,7 @@ function getDynamicHtml(om) {
 </head>
 <body style="background:#0f172a; color:white; font-family:sans-serif; display:flex; align-items:center; justify-content:center; height:100vh;">
   <div style="text-align:center">
-    <img src="${imageUrl}" width="150" height="150" />
+    <img src="${imageUrl}" width="150" height="150" alt="Logo" />
     <h1>Guardião ${acronym}</h1>
     <p>Carregando...</p>
   </div>
@@ -88,5 +114,6 @@ function getDynamicHtml(om) {
 }
 
 function getDefaultHtml() {
-  return `<html><head><title>Guardião</title></head><body>Carregando...</body></html>`;
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Guardião</title></head><body>Carregando...</body></html>`;
 }
+

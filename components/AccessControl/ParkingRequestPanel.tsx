@@ -199,34 +199,18 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
         setIsProcessing(true);
         try {
-            // Validação de senha segura via RPC no banco
-            const { data: isValidPassword, error: passError } = await supabase.rpc('verify_user_password', {
+            // Validação e aprovação atômica via RPC segura no banco
+            const { data: res, error: rpcError } = await supabase.rpc('approve_parking_request', {
+                p_request_id: approvingRequestId,
                 p_user_id: user.id,
-                p_password: passwordConfirm
+                p_password: passwordConfirm,
+                p_status: 'Aprovado'
             });
 
-            if (passError || !isValidPassword) {
-                alert("Senha incorreta. A aprovação não foi realizada.");
+            if (rpcError || !res || !res.success) {
+                alert((res && res.message) || rpcError?.message || "Erro ao aprovar solicitação.");
                 setIsProcessing(false);
                 return;
-            }
-            const now = new Date().toISOString();
-            const updatePayload = {
-                status: 'Aprovado',
-                aprovado_por: `${user.rank || ''} ${user.war_name || user.name || 'Desconhecido'}`.trim(),
-                aprovado_em: now
-            };
-
-            // DEBUG: Verificar se linhas foram afetadas
-            const { data, error } = await supabase.from('parking_requests')
-                .update(updatePayload)
-                .eq('id', approvingRequestId)
-                .select();
-
-            if (error) throw error;
-
-            if (!data || data.length === 0) {
-                alert("ALERTA DE DEPURAÇÃO: O comando foi enviado, mas o banco de dados ignorou a atualização (0 linhas afetadas). Isso indica um problema de Permissão (RLS) ou ID incorreto.");
             }
 
             setAnalysingRequest(null);
@@ -257,16 +241,21 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
         try {
             const rejeitadoPor = `${user.rank || ''} ${user.war_name || user.name || 'Desconhecido'}`.trim();
 
-            const { data, error } = await supabase.from('parking_requests')
-                .update({
-                    status: 'Rejeitado',
-                    observacao: rejectMotivo.trim(),
-                    aprovado_por: rejeitadoPor
-                })
-                .eq('id', rejectingRequestId)
-                .select('*, vehicle:parking_vehicles(*)');
+            const { data: res, error: rpcError } = await supabase.rpc('approve_parking_request', {
+                p_request_id: rejectingRequestId,
+                p_user_id: user.id,
+                p_password: '', // Rejeição não requer senha
+                p_status: 'Rejeitado',
+                p_observacao: rejectMotivo.trim()
+            });
 
-            if (error) throw error;
+            if (rpcError || !res || !res.success) {
+                throw new Error((res && res.message) || rpcError?.message || 'Falha ao rejeitar solicitação');
+            }
+
+            const { data } = await supabase.from('parking_requests')
+                .select('*, vehicle:parking_vehicles(*)')
+                .eq('id', rejectingRequestId);
 
             // Enviar e-mail com o motivo da rejeição
             const req = data?.[0];

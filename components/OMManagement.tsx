@@ -85,7 +85,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         // Fetch total global personnel (active users)
         const { count: globalCount } = await supabase
             .from('users')
-            .select('*', { count: 'exact', head: true })
+            .select('id', { count: 'exact', head: true })
             .eq('active', true);
         
         setGlobalPersonnel(globalCount || 0);
@@ -94,7 +94,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
 
         const newStats: any = {};
         for (const om of omList) {
-            let query = supabase.from('users').select('*', { count: 'exact', head: true }).eq('active', true);
+            let query = supabase.from('users').select('id', { count: 'exact', head: true }).eq('active', true);
             
             // Intelligent logic: Check by ID OR by Sector if it's GSD-SP or BASP
             if (om.acronym.toUpperCase() === 'GSD-SP') {

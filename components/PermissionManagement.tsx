@@ -203,18 +203,24 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
                 }
             }
 
-            // Atualizar APENAS campos de permissão no banco (não sobrescrever senha, etc.)
-            const { error } = await supabase
-                .from('users')
-                .update({
-                    function_id: selectedFunction,
-                    custom_permissions: userPermissions,
-                    role: newRole,
-                    access_level: newAccessLevel
-                })
-                .eq('id', selectedUser.id);
+            // Atualizar permissões via RPC segura no banco com validação de hierarquia
+            if (!currentAdmin) {
+                alert('Sessão administrativa não identificada.');
+                return;
+            }
 
-            if (error) throw error;
+            const { data: res, error } = await supabase.rpc('admin_save_user_permissions', {
+                p_admin_id: currentAdmin.id,
+                p_target_user_id: selectedUser.id,
+                p_role: newRole,
+                p_access_level: newAccessLevel,
+                p_function_id: selectedFunction || null,
+                p_custom_permissions: userPermissions
+            });
+
+            if (error || !res || !res.success) {
+                throw new Error((res && res.message) || error?.message || 'Falha ao salvar permissões');
+            }
 
             // Atualizar estado local
             if (onRefreshUsers) onRefreshUsers();
