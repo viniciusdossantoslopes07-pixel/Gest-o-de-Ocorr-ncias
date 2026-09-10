@@ -123,9 +123,36 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
     const [cnhFile, setCnhFile] = useState<File | null>(null);
     const [crlvFile, setCrlvFile] = useState<File | null>(null);
 
-    if (!isOpen) return null;
-
     const isLoading = uploadStep !== '';
+
+    const handleClose = React.useCallback(() => {
+        if (isLoading) return; // bloqueia fechar enquanto envia
+        setParkSuccess(false);
+        setParkData({ 
+            nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', om_id: initialOmId || '',
+            telefone: '', email: '', identidade: '', marcaModelo: '', placa: '', cor: '', 
+            inicio: '', termino: '', obs: '', isThirdParty: false, thirdPartyName: '', thirdPartyContact: '' 
+        });
+        setIdentityFile(null);
+        setCnhFile(null);
+        setCrlvFile(null);
+        setError('');
+        onClose();
+    }, [isLoading, initialOmId, onClose]);
+
+    // Fechar ao pressionar a tecla ESC
+    React.useEffect(() => {
+        if (!isOpen) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                handleClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, handleClose]);
+
+    if (!isOpen) return null;
 
     // ──────────────────── Handlers de arquivo ────────────────────
     const handleFile = (
@@ -261,33 +288,6 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
             setUploadStep('');
         }
     };
-
-    const handleClose = React.useCallback(() => {
-        if (isLoading) return; // bloqueia fechar enquanto envia
-        setParkSuccess(false);
-        setParkData({ 
-            nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', om_id: initialOmId || '',
-            telefone: '', email: '', identidade: '', marcaModelo: '', placa: '', cor: '', 
-            inicio: '', termino: '', obs: '', isThirdParty: false, thirdPartyName: '', thirdPartyContact: '' 
-        });
-        setIdentityFile(null);
-        setCnhFile(null);
-        setCrlvFile(null);
-        setError('');
-        onClose();
-    }, [isLoading, initialOmId, onClose]);
-
-    // Fechar ao pressionar a tecla ESC
-    React.useEffect(() => {
-        if (!isOpen) return;
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                handleClose();
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, handleClose]);
 
     const input = `w-full ${dk ? 'bg-slate-800/90 border-slate-700 text-white placeholder-slate-500 focus:border-blue-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-blue-500'} border rounded-xl px-3 py-2 text-xs font-bold outline-none transition-all`;
     const label = `text-[11px] font-black ${dk ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-wide`;
