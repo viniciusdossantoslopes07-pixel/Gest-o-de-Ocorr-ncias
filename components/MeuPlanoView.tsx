@@ -81,7 +81,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             }
 
             // 2. Busca de dados em paralelo para melhor performance
-            const [missionsRes, loansRes, attendanceRes] = await Promise.all([
+            const [missionsRes, loansRes, attendanceRes, vehiclesRes] = await Promise.all([
                 // Missões (OMIS)
                 supabase
                     .from('mission_orders')
