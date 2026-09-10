@@ -186,10 +186,10 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
         return (
             <div className={`p-4 md:p-5 rounded-2xl border ${card} animate-fade-in`}>
                 {/* Top action bar */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-5">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
                     <button
                         onClick={() => { setSelectedEvent(null); setShowAddGuest(false); setGuestSearch(''); }}
-                        className={`text-sm font-bold uppercase px-4 py-2 rounded-xl transition-all ${dk ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`}
+                        className={`text-xs font-bold uppercase px-3 py-1.5 rounded-xl transition-all ${dk ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'}`}
                     >
                         ← Voltar para lista
                     </button>
@@ -199,9 +199,9 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                         {owned && (
                             <button
                                 onClick={() => setIsPrinting(true)}
-                                className={`px-4 py-2 rounded-xl text-xs font-black uppercase flex items-center gap-2 transition-all ${dk ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}
+                                className={`px-3 py-1.5 rounded-xl text-[10px] sm:text-xs font-black uppercase flex items-center gap-1.5 transition-all ${dk ? 'bg-slate-700 hover:bg-slate-600 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}
                             >
-                                <Printer className="w-4 h-4" /> Imprimir Relação
+                                <Printer className="w-3.5 h-3.5" /> Imprimir Relação
                             </button>
                         )}
 
@@ -209,14 +209,14 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                         {selectedEvent.status !== 'FINALIZED' && (
                             <button
                                 onClick={() => copyLink(selectedEvent)}
-                                className={`px-4 py-2 rounded-xl text-xs font-black uppercase flex items-center gap-2 transition-all
+                                className={`px-3 py-1.5 rounded-xl text-[10px] sm:text-xs font-black uppercase flex items-center gap-1.5 transition-all
                                 ${copyFeedback === selectedEvent.id
                                     ? 'bg-emerald-500 text-white'
                                     : (dk ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600/30' : 'bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100')}`}
                             >
                                 {copyFeedback === selectedEvent.id
-                                    ? <><CheckCircle className="w-4 h-4" /> Copiado!</>
-                                    : <><Share2 className="w-4 h-4" /> Copiar Link</>}
+                                    ? <><CheckCircle className="w-3.5 h-3.5" /> Copiado!</>
+                                    : <><Share2 className="w-3.5 h-3.5" /> Copiar Link</>}
                             </button>
                         )}
 
@@ -228,7 +228,7 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                                 {selectedEvent.status !== 'APPROVED' && (
                                     <button
                                         onClick={() => handleStatusChange(selectedEvent, 'APPROVED')}
-                                        className="px-4 py-2 rounded-xl text-xs font-black uppercase bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20"
+                                        className="px-3 py-1.5 rounded-xl text-[10px] sm:text-xs font-black uppercase bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-sm"
                                     >
                                         Aprovar Evento
                                     </button>
@@ -237,7 +237,7 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                                 {selectedEvent.status !== 'REJECTED' && (
                                     <button
                                         onClick={() => handleStatusChange(selectedEvent, 'REJECTED')}
-                                        className="px-4 py-2 rounded-xl text-xs font-black uppercase bg-red-600 text-white hover:bg-red-700 transition-all shadow-lg shadow-red-500/20"
+                                        className="px-3 py-1.5 rounded-xl text-[10px] sm:text-xs font-black uppercase bg-red-600 text-white hover:bg-red-700 transition-all shadow-sm"
                                     >
                                         Rejeitar (Expirar Link)
                                     </button>
@@ -246,7 +246,7 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                                 {selectedEvent.status !== 'PENDING' && (
                                     <button
                                         onClick={() => handleStatusChange(selectedEvent, 'PENDING')}
-                                        className={`px-4 py-2 rounded-xl text-xs font-black uppercase transition-all ${dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-600'}`}
+                                        className={`px-3 py-1.5 rounded-xl text-[10px] sm:text-xs font-black uppercase transition-all ${dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-600'}`}
                                     >
                                         Voltar p/ Pendente
                                     </button>
@@ -262,7 +262,7 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                                                 setSelectedEvent(prev => prev?.id === selectedEvent.id ? { ...prev, status: 'FINALIZED' } : prev);
                                             } catch { alert('Erro ao finalizar evento.'); }
                                         }}
-                                        className="px-4 py-2 rounded-xl text-xs font-black uppercase bg-slate-900 text-white border border-slate-700 hover:bg-black transition-all"
+                                        className="px-3 py-1.5 rounded-xl text-[10px] sm:text-xs font-black uppercase bg-slate-900 text-white border border-slate-700 hover:bg-black transition-all"
                                     >
                                         Finalizar Evento
                                     </button>
@@ -274,7 +274,7 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                         {admin && (
                             <button
                                 onClick={() => handleDelete(selectedEvent.id)}
-                                className="px-4 py-2 rounded-xl text-xs font-black uppercase bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 transition-all"
+                                className="px-3 py-1.5 rounded-xl text-[10px] sm:text-xs font-black uppercase bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 transition-all"
                             >
                                 Apagar Evento
                             </button>
@@ -305,24 +305,24 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                     </div>
                 )}
 
-                <div className={`p-6 rounded-xl border mb-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 ${dk ? 'bg-slate-700/30 border-slate-600/50' : 'bg-slate-50 border-slate-200'}`}>
+                <div className={`p-4 sm:p-5 rounded-xl border mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-5 ${dk ? 'bg-slate-700/30 border-slate-600/50' : 'bg-slate-50 border-slate-200'}`}>
                     <div className="flex-1 w-full">
-                        <div className="flex flex-wrap items-center gap-2 mb-3">
-                             <div className={`text-[12px] font-black uppercase px-4 py-1.5 rounded-full border border-blue-500/30 shadow-lg ${dk ? 'bg-blue-500/20 text-blue-300' : 'bg-blue-600 text-white'}`}>
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                             <div className={`text-[10px] font-black uppercase px-3 py-1 rounded-full border border-blue-500/30 shadow-sm ${dk ? 'bg-blue-500/20 text-blue-300' : 'bg-blue-600 text-white'}`}>
                                 EVENTO #{selectedEvent.seq_id || selectedEvent.id.split('-')[0]}
                              </div>
                              <Badge status={selectedEvent.status} />
-                             <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${dk ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-white text-slate-600 border-slate-200'}`}>
+                             <div className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase border ${dk ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-white text-slate-600 border-slate-200'}`}>
                                 {(selectedEvent.guests || []).length} Convidados
                              </div>
                              {(selectedEvent.guests || []).filter(g => g.has_vehicle).length > 0 && (
-                                <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border flex items-center gap-1.5 ${dk ? 'bg-emerald-900/40 text-emerald-400 border-emerald-500/30' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                                <div className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase border flex items-center gap-1 ${dk ? 'bg-emerald-900/40 text-emerald-400 border-emerald-500/30' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
                                     <Car className="w-3 h-3" />
                                     {(selectedEvent.guests || []).filter(g => g.has_vehicle).length} Veículos
                                 </div>
                              )}
                         </div>
-                        <h2 className={`text-2xl font-black uppercase tracking-tight leading-tight ${tp}`}>
+                        <h2 className={`text-xl sm:text-2xl font-black uppercase tracking-tight leading-tight ${tp}`}>
                             {selectedEvent.name || 'Evento Sem Nome'}
                         </h2>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3">
@@ -409,20 +409,20 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                     </div>
                 )}
 
-                <div className="flex items-center justify-between mb-4 mt-2">
-                    <h4 className={`font-black text-sm uppercase tracking-wider flex items-center gap-2 ${tp}`}>
-                        <Users className="w-4 h-4" /> Lista de Convidados
+                <div className="flex items-center justify-between mb-3 mt-1">
+                    <h4 className={`font-black text-xs uppercase tracking-wider flex items-center gap-2 ${tp}`}>
+                        <Users className="w-3.5 h-3.5" /> Lista de Convidados
                     </h4>
                     
                     {owned && selectedEvent.status !== 'FINALIZED' && (
                         <button
                             onClick={() => setShowAddGuest(v => !v)}
-                            className={`px-4 py-2 rounded-xl text-xs font-black uppercase flex items-center gap-2 transition-all
+                            className={`px-3 py-1.5 rounded-xl text-[10px] sm:text-xs font-black uppercase flex items-center gap-1.5 transition-all
                             ${showAddGuest
                                 ? 'bg-indigo-600 text-white'
                                 : (dk ? 'bg-slate-700 text-slate-200 hover:bg-slate-600' : 'bg-slate-900 text-white hover:bg-black')}`}
                         >
-                            <UserPlus className="w-4 h-4" /> Adicionar Convidado
+                            <UserPlus className="w-3.5 h-3.5" /> Adicionar Convidado
                         </button>
                     )}
                 </div>
@@ -432,7 +432,7 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                     <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${tm}`} />
                     <input type="text" placeholder="Buscar por nome, CPF ou placa..."
                         value={guestSearch} onChange={e => setGuestSearch(e.target.value)}
-                        className={`w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${inputCls}`}
+                        className={`w-full pl-9 pr-3 py-2 border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 ${inputCls}`}
                     />
                 </div>
 
@@ -441,31 +441,31 @@ export default function EventControl({ user, isDarkMode = false }: EventControlP
                         <table className="w-full text-left">
                             <thead className={dk ? 'bg-slate-700/80' : 'bg-slate-50'}>
                                 <tr>
-                                    <th className={`px-4 py-3 text-[10px] font-black uppercase ${tm}`}>#</th>
-                                    <th className={`px-4 py-3 text-[10px] font-black uppercase ${tm}`}>Convidado</th>
-                                    <th className={`px-4 py-3 text-[10px] font-black uppercase ${tm}`}>CPF</th>
-                                    <th className={`px-4 py-3 text-[10px] font-black uppercase ${tm}`}>Idade</th>
-                                    <th className={`px-4 py-3 text-[10px] font-black uppercase text-right ${tm}`}>Veículo</th>
+                                    <th className={`px-3 py-2 text-[9px] sm:text-[10px] font-black uppercase ${tm}`}>#</th>
+                                    <th className={`px-3 py-2 text-[9px] sm:text-[10px] font-black uppercase ${tm}`}>Convidado</th>
+                                    <th className={`px-3 py-2 text-[9px] sm:text-[10px] font-black uppercase ${tm}`}>CPF</th>
+                                    <th className={`px-3 py-2 text-[9px] sm:text-[10px] font-black uppercase ${tm}`}>Idade</th>
+                                    <th className={`px-3 py-2 text-[9px] sm:text-[10px] font-black uppercase text-right ${tm}`}>Veículo</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredGuests.map((g, idx) => (
                                     <tr key={g.id || idx} className={`border-t transition-colors ${rowHover}`}>
-                                        <td className={`px-4 py-3 text-xs font-bold ${tm}`}>{idx + 1}</td>
-                                        <td className={`px-4 py-3 text-sm font-bold uppercase ${tp}`}>{g.name}</td>
-                                        <td className={`px-4 py-3 text-xs font-mono ${ts}`}>{g.cpf || '-'}</td>
-                                        <td className={`px-4 py-3 text-xs ${ts}`}>{g.age || '-'}</td>
-                                        <td className="px-4 py-3 text-right">
+                                        <td className={`px-3 py-2 text-xs font-bold ${tm}`}>{idx + 1}</td>
+                                        <td className={`px-3 py-2 text-xs font-bold uppercase ${tp}`}>{g.name}</td>
+                                        <td className={`px-3 py-2 text-xs font-mono ${ts}`}>{g.cpf || '-'}</td>
+                                        <td className={`px-3 py-2 text-xs ${ts}`}>{g.age || '-'}</td>
+                                        <td className="px-3 py-2 text-right">
                                             {g.has_vehicle ? (
                                                 <div className="flex flex-col items-end">
-                                                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">Sim</span>
+                                                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">Sim</span>
                                                     <div className="flex flex-col items-end mt-1">
-                                                        {g.vehicle_model && <span className="text-[10px] font-black leading-tight text-slate-700 dark:text-slate-200 uppercase">{g.vehicle_model}</span>}
-                                                        {g.vehicle_plate && <span className="text-[10px] font-mono font-bold text-slate-400">{g.vehicle_plate}</span>}
+                                                        {g.vehicle_model && <span className="text-[9px] font-black leading-tight text-slate-700 dark:text-slate-200 uppercase">{g.vehicle_model}</span>}
+                                                        {g.vehicle_plate && <span className="text-[9px] font-mono font-bold text-slate-400">{g.vehicle_plate}</span>}
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <span className={`text-[10px] font-bold uppercase ${tm}`}>Não</span>
+                                                <span className={`text-[9px] font-bold uppercase ${tm}`}>Não</span>
                                             )}
                                         </td>
                                     </tr>
