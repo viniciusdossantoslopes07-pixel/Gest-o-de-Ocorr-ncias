@@ -1074,16 +1074,11 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                                         </div>
 
                                                         <div className="text-right flex-shrink-0">
-                                                            <span className={`inline-block px-1 py-0.2 rounded text-[7px] font-mono font-bold ${
+                                                            <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-mono font-bold ${
                                                                 isSelected ? 'bg-white/20 text-white' : 'bg-slate-700/40 text-slate-400'
                                                             }`}>
-                                                                {reg.substring(0, 4)}
+                                                                {reg}
                                                             </span>
-                                                            <p className={`text-[9px] font-black mt-0.5 ${
-                                                                isSelected ? 'text-white' : occCount > 0 ? 'text-amber-400' : 'text-blue-400'
-                                                            }`}>
-                                                                {pCount} mil.
-                                                            </p>
                                                         </div>
                                                     </div>
                                                 </div>
