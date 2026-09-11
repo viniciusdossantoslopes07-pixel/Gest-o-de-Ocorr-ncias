@@ -1671,7 +1671,7 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
           onClick={() => setIsLoanModalOpen(false)}
         >
           <div
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-3xl max-h-[96vh] flex flex-col shadow-2xl overflow-hidden my-auto animate-in zoom-in-95 duration-200"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl w-full max-w-3xl max-h-[94dvh] flex flex-col shadow-2xl overflow-hidden my-auto animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 sm:p-6 bg-gradient-to-r from-blue-700 to-indigo-800 text-white flex items-center justify-between shrink-0">
@@ -2349,11 +2349,11 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
               </div>
             </div>
 
-            <div className="p-5 sm:p-6 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3 shrink-0">
+            <div className="p-3.5 sm:p-5 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 shrink-0">
               <button
                 type="button"
                 onClick={() => setIsLoanModalOpen(false)}
-                className="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-center"
               >
                 Cancelar
               </button>
@@ -2362,7 +2362,7 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
                 type="button"
                 onClick={handleConfirmLoan}
                 disabled={actionLoading}
-                className="px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/25 flex items-center gap-2 active:scale-95 transition-all disabled:opacity-50"
+                className="w-full sm:w-auto px-6 py-3 sm:py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
               >
                 {actionLoading ? 'Processando e Gerando PDF...' : 'Concluir Cautela e Gerar PDF'}
               </button>
@@ -2376,86 +2376,87 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
       {/* ========================================================================= */}
       {isReturnModalOpen && selectedLoanForReturn && (
         <div
-          className="fixed inset-0 z-[9999] bg-slate-950/80 flex items-center justify-center p-2 sm:p-4 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
+          className="fixed inset-0 z-[9999] bg-slate-950/85 flex items-center justify-center p-2 sm:p-4 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
           onClick={() => setIsReturnModalOpen(false)}
         >
           <div
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-3xl max-h-[96vh] flex flex-col shadow-2xl overflow-hidden my-auto animate-in zoom-in-95 duration-200"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl w-full max-w-3xl max-h-[94dvh] flex flex-col shadow-2xl overflow-hidden my-auto animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 sm:p-6 bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-white/10 rounded-2xl backdrop-blur-md">
-                  <RotateCcw className="w-6 h-6 text-white" />
+            <div className="p-3.5 sm:p-6 bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex items-center justify-between gap-3 shrink-0">
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div className="p-2 sm:p-2.5 bg-white/10 rounded-xl sm:rounded-2xl backdrop-blur-md shrink-0">
+                  <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <div>
-                  <h3 className="text-lg sm:text-xl font-black">
-                    Receber Devolução de Viatura (Checklist de Retorno)
+                <div className="min-w-0">
+                  <h3 className="text-base sm:text-xl font-black leading-tight truncate">
+                    Receber Devolução de Viatura
                   </h3>
-                  <p className="text-xs text-emerald-100">
+                  <p className="text-[11px] sm:text-xs text-emerald-100/90 leading-normal truncate">
                     Cautela: {selectedLoanForReturn.loan_number} • VTR: {selectedLoanForReturn.vehicle?.brand}{' '}
-                    {selectedLoanForReturn.vehicle?.model} (Placa: {selectedLoanForReturn.vehicle?.plate})
+                    {selectedLoanForReturn.vehicle?.model} ({selectedLoanForReturn.vehicle?.plate})
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsReturnModalOpen(false)}
-                className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+                className="p-1.5 sm:p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-colors shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1 text-slate-800 dark:text-slate-200">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs">
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+            <div className="p-3.5 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6 flex-1 text-slate-800 dark:text-slate-200 scrollbar-thin">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 p-3 sm:p-4 bg-slate-50 dark:bg-slate-950 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 text-xs">
+                <div className="min-w-0">
+                  <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">
                     Condutor
                   </span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">
+                  <span className="font-bold text-slate-800 dark:text-slate-200 block truncate text-[11px] sm:text-xs" title={`${selectedLoanForReturn.driver_rank} ${selectedLoanForReturn.driver_name}`}>
                     {selectedLoanForReturn.driver_rank} {selectedLoanForReturn.driver_name}
                   </span>
                 </div>
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                <div className="min-w-0">
+                  <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">
                     KM de Saída
                   </span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">
+                  <span className="font-bold text-slate-800 dark:text-slate-200 block truncate text-[11px] sm:text-xs">
                     {selectedLoanForReturn.departure_odometer} km
                   </span>
                 </div>
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                <div className="min-w-0">
+                  <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">
                     Combustível Saída
                   </span>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400 block truncate text-[11px] sm:text-xs">
                     {selectedLoanForReturn.departure_fuel_level || '8/8'}
                   </span>
                 </div>
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                <div className="min-w-0">
+                  <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">
                     Despachante Saída
                   </span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">
+                  <span className="font-bold text-slate-800 dark:text-slate-200 block truncate text-[11px] sm:text-xs" title={selectedLoanForReturn.dispatcher_name}>
                     {selectedLoanForReturn.dispatcher_name}
                   </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-2xl border border-emerald-200 dark:border-emerald-900/40">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3.5 sm:p-4 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-xl sm:rounded-2xl border border-emerald-200 dark:border-emerald-900/40">
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 mb-1">
                     Odômetro de Retorno (KM) *
                   </label>
                   <input
                     type="number"
+                    inputMode="numeric"
                     value={returnOdometer}
                     onChange={(e) => setReturnOdometer(Number(e.target.value))}
                     min={selectedLoanForReturn.departure_odometer}
-                    className="w-full text-base font-black p-3 rounded-xl bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                    className="w-full text-base sm:text-base font-black p-2.5 sm:p-3 rounded-xl bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none"
                   />
                   <div className="mt-1.5 flex items-center justify-between text-xs">
-                    <span className="text-slate-500">Distância Percorrida:</span>
+                    <span className="text-slate-500 text-[11px] sm:text-xs">Distância Percorrida:</span>
                     <span className="font-black text-emerald-600 dark:text-emerald-400 text-sm">
                       {Math.max(0, returnOdometer - selectedLoanForReturn.departure_odometer)} km
                     </span>
@@ -2466,13 +2467,13 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 mb-1">
                     Combustível de Retorno *
                   </label>
-                  <div className="grid grid-cols-4 gap-1 mt-1">
+                  <div className="grid grid-cols-4 gap-1 sm:gap-1.5 mt-1">
                     {FUEL_LEVELS.map((fuel) => (
                       <button
                         key={fuel}
                         type="button"
                         onClick={() => setReturnFuelLevel(fuel)}
-                        className={`py-2 rounded-xl text-xs font-bold transition-all ${
+                        className={`py-2 rounded-xl text-xs font-bold transition-all active:scale-95 touch-manipulation ${
                           returnFuelLevel === fuel
                             ? 'bg-emerald-600 text-white shadow-xs'
                             : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100'
@@ -2485,21 +2486,21 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
+              <div className="space-y-2.5 sm:space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     Conferência de Itens no Retorno
                   </label>
                   <button
                     type="button"
                     onClick={() => handleMarkAllItemsOk(false)}
-                    className="px-3 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold hover:bg-emerald-200 transition-colors flex items-center gap-1"
+                    className="px-2.5 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[11px] sm:text-xs font-bold hover:bg-emerald-200 transition-colors flex items-center gap-1 active:scale-95"
                   >
                     <Check className="w-3.5 h-3.5" /> Marcar Todos como OK
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-slate-50 dark:bg-slate-950/60 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 bg-slate-50 dark:bg-slate-950/60 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800">
                   {Object.entries(returnItems).map(([key, val]) => {
                     const styles = getChecklistItemStyle(val);
                     return (
@@ -2507,13 +2508,13 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
                         key={key}
                         type="button"
                         onClick={() => handleToggleChecklistItem(key, false)}
-                        className={`p-2.5 rounded-xl border text-left flex items-center justify-between transition-all ${styles.bg} ${styles.border} ${styles.text}`}
+                        className={`p-2 sm:p-2.5 rounded-xl border text-left flex items-center justify-between transition-all active:scale-98 touch-manipulation min-w-0 ${styles.bg} ${styles.border} ${styles.text}`}
                       >
-                        <span className="text-[11px] font-medium capitalize truncate pr-1">
+                        <span className="text-[10px] sm:text-[11px] font-semibold capitalize truncate pr-1">
                           {key.replace(/_/g, ' ')}
                         </span>
                         <span
-                          className={`text-[10px] font-black px-1.5 py-0.5 rounded ${styles.badgeBg} ${styles.badgeText}`}
+                          className={`text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded shrink-0 ${styles.badgeBg} ${styles.badgeText}`}
                         >
                           {val}
                         </span>
@@ -2530,7 +2531,7 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
                   readOnly={false}
                   headerActions={
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <label className="text-[11px] font-bold px-2.5 py-1.5 rounded-xl text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800/60 shadow-xs">
+                      <label className="text-[11px] font-bold px-2.5 py-1.5 rounded-xl text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800/60 shadow-xs active:scale-95">
                         <Camera className="w-3.5 h-3.5" /> Tirar Foto
                         <input
                           type="file"
@@ -2541,7 +2542,7 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
                         />
                       </label>
 
-                      <label className="text-[11px] font-bold px-2.5 py-1.5 rounded-xl text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors cursor-pointer flex items-center gap-1.5 border border-blue-200 dark:border-blue-800/60 shadow-xs">
+                      <label className="text-[11px] font-bold px-2.5 py-1.5 rounded-xl text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors cursor-pointer flex items-center gap-1.5 border border-blue-200 dark:border-blue-800/60 shadow-xs active:scale-95">
                         <Paperclip className="w-3.5 h-3.5" /> Anexar Fotos
                         <input
                           type="file"
@@ -2625,11 +2626,11 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
               </div>
             </div>
 
-            <div className="p-5 sm:p-6 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3 shrink-0">
+            <div className="p-3.5 sm:p-5 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 shrink-0">
               <button
                 type="button"
                 onClick={() => setIsReturnModalOpen(false)}
-                className="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-center"
               >
                 Cancelar
               </button>
@@ -2638,7 +2639,7 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
                 type="button"
                 onClick={handleConfirmReturn}
                 disabled={actionLoading}
-                className="px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/25 flex items-center gap-2 active:scale-95 transition-all disabled:opacity-50"
+                className="w-full sm:w-auto px-6 py-3 sm:py-2.5 rounded-xl text-xs sm:text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
               >
                 {actionLoading ? 'Processando Devolução...' : 'Concluir Devolução e Gerar PDF'}
               </button>
