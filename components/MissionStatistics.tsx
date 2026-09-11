@@ -396,16 +396,26 @@ export default function MissionStatistics({ orders, missions = [], users = [], i
 
     // Ranking de Militares
     const allPersonnelData = useMemo(() => {
-        const counts: Record<string, { count: number; name: string; rank: string }> = {};
+        const counts: Record<string, { count: number; name: string; rank: string; saram: string }> = {};
         const validOrders = filteredOrders.filter(o => !['CANCELADA', 'REJEITADA'].includes(o.status || ''));
         
         validOrders.forEach(o => {
             o.personnel?.forEach(p => {
-                const key = p.saram || p.id || p.warName;
+                const saramStr = p.saram ? String(p.saram).trim() : '';
+                const warNameStr = p.warName ? String(p.warName).trim().toUpperCase() : '';
+                const rankStr = p.rank ? String(p.rank).trim().toUpperCase() : '';
+
+                // Agrupa com prioridade para o SARAM do militar; se ausente, agrupa por posto + nome de guerra
+                const key = saramStr || (warNameStr ? `${rankStr}_${warNameStr}` : p.id);
                 if (!key) return;
                 
                 if (!counts[key]) {
-                    counts[key] = { count: 0, name: p.warName || p.id, rank: p.rank };
+                    counts[key] = {
+                        count: 0,
+                        name: p.warName ? p.warName.trim() : (p.id || 'N/I'),
+                        rank: p.rank || '',
+                        saram: saramStr
+                    };
                 }
                 counts[key].count += 1;
             });

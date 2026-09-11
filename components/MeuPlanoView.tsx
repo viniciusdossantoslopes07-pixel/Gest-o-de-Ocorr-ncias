@@ -80,13 +80,38 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
                 }
             }
 
-            // 2. Busca de dados em paralelo para melhor performance
-            const [missionsRes, loansRes, attendanceRes, vehiclesRes] = await Promise.all([
-                // Missões (OMIS)
-                supabase
-                    .from('mission_orders')
-                    .select('*'),
+            // 2. Busca de ordens de missão com paginação completa (evita o corte padrão de 1000 registros do PostgREST)
+            let allMissionOrders: any[] = [];
+            let mFrom = 0;
+            const mPageSize = 1000;
+            let mHasMore = true;
 
+            while (mHasMore) {
+                const { data: mData, error: mError } = await supabase
+                    .from('mission_orders')
+                    .select('id, omis_number, date, mission, status, personnel, location, mission_category, is_internal')
+                    .range(mFrom, mFrom + mPageSize - 1)
+                    .order('created_at', { ascending: false });
+
+                if (mError) {
+                    console.error('Missions error:', mError);
+                    break;
+                }
+
+                if (mData && mData.length > 0) {
+                    allMissionOrders = allMissionOrders.concat(mData);
+                    if (mData.length < mPageSize) {
+                        mHasMore = false;
+                    } else {
+                        mFrom += mPageSize;
+                    }
+                } else {
+                    mHasMore = false;
+                }
+            }
+
+            // Busca paralela das demais entidades
+            const [loansRes, attendanceRes, vehiclesRes] = await Promise.all([
                 // Cautelas (Material em Uso)
                 supabase
                     .from('movimentacao_cautela')
@@ -130,21 +155,29 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
             ]);
 
             // Verificação de erros individuais
-            if (missionsRes.error) console.error('Missions error:', missionsRes.error);
             if (loansRes.error) console.error('Loans error:', loansRes.error);
             if (attendanceRes.error) console.error('Attendance error:', attendanceRes.error);
             if (vehiclesRes.error) console.error('Vehicles error:', vehiclesRes.error);
 
-            // Filtramos as missões onde o usuário está no pessoal (via stringify para ser robusto)
-            const userMissions = (missionsRes.data || []).filter(m => {
-                try {
-                    const personnelStr = JSON.stringify(m.personnel || []);
-                    return personnelStr.includes(`"saram":"${userSaramStr}"`) ||
-                        personnelStr.includes(`"saram":${userSaramStr}`) ||
-                        personnelStr.includes(`"SARAM":"${userSaramStr}"`);
-                } catch (e) {
+            // Filtramos as missões onde o usuário está no pessoal
+            const userMissions = allMissionOrders.filter(m => {
+                if (!Array.isArray(m.personnel)) return false;
+                return m.personnel.some((p: any) => {
+                    const pSaram = String(p.saram || '').trim();
+                    if (pSaram && pSaram === userSaramStr) return true;
+
+                    // Fallback para quando o saram estiver ausente mas coincidir posto e nome de guerra
+                    if (user?.war_name && user?.rank && p.warName && p.rank) {
+                        const pName = String(p.warName).trim().toUpperCase();
+                        const uName = String(user.war_name).trim().toUpperCase();
+                        const pRank = String(p.rank).trim().toUpperCase();
+                        const uRank = String(user.rank).trim().toUpperCase();
+                        if (pName === uName && pRank === uRank) {
+                            return true;
+                        }
+                    }
                     return false;
-                }
+                });
             });
 
             setAllMissions(userMissions);
@@ -165,12 +198,10 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
     };
 
     const processAndSetStats = (missions: any[], loans: any[], attendance: any[], vehicles: any[]) => {
-        // Filtro de missões pendentes/concluídas (case insensitive e robusto)
+        // Filtro de missões válidas (não canceladas ou rejeitadas)
         const concludedMissions = missions.filter(m => {
             const status = (m.status || '').toUpperCase().trim();
-            return status === 'CONCLUIDA' ||
-                status === 'CONCLUÍDA' ||
-                status === 'FINALIZADA';
+            return status !== 'CANCELADA' && status !== 'REJEITADA';
         });
 
         const totalMissions = concludedMissions.length;
@@ -308,9 +339,7 @@ export default function MeuPlanoView({ user, isDarkMode = false }: MeuPlanoViewP
 
         const filteredMissionsCount = filtered.filter(m => {
             const status = (m.status || '').toUpperCase().trim();
-            return status === 'CONCLUIDA' ||
-                status === 'CONCLUÍDA' ||
-                status === 'FINALIZADA';
+            return status !== 'CANCELADA' && status !== 'REJEITADA';
         }).length;
 
         return {

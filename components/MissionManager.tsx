@@ -182,22 +182,41 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
     const fetchOrders = async () => {
         try {
             const actualOmId = omId || user?.om_id;
-            let query = supabase
-                .from('mission_orders')
-                .select('*');
-            
-            if (actualOmId && legacyIds.includes(actualOmId)) {
-                query = query.in('om_id', legacyIds);
-            } else if (actualOmId) {
-                query = query.eq('om_id', actualOmId);
-            } else {
-                query = query.eq('om_id', '00000000-0000-0000-0000-000000000000');
+            let allOrders: any[] = [];
+            let from = 0;
+            const pageSize = 1000;
+            let hasMore = true;
+
+            while (hasMore) {
+                let query = supabase
+                    .from('mission_orders')
+                    .select('*')
+                    .range(from, from + pageSize - 1);
+                
+                if (actualOmId && legacyIds.includes(actualOmId)) {
+                    query = query.in('om_id', legacyIds);
+                } else if (actualOmId) {
+                    query = query.eq('om_id', actualOmId);
+                } else {
+                    query = query.eq('om_id', '00000000-0000-0000-0000-000000000000');
+                }
+
+                const { data, error } = await query.order('created_at', { ascending: false });
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    allOrders = allOrders.concat(data);
+                    if (data.length < pageSize) {
+                        hasMore = false;
+                    } else {
+                        from += pageSize;
+                    }
+                } else {
+                    hasMore = false;
+                }
             }
 
-            const { data, error } = await query.order('created_at', { ascending: false });
-            if (error) throw error;
-
-            const mappedOrders = (data || []).map((o: any) => ({
+            const mappedOrders = allOrders.map((o: any) => ({
                 ...o,
                 omisNumber: o.omis_number,
                 isInternal: o.is_internal,
