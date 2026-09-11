@@ -43,7 +43,8 @@ import {
   Building2,
   MapPin,
   Trash2,
-  Camera
+  Camera,
+  Paperclip
 } from 'lucide-react';
 
 interface VehicleManagerProps {
@@ -2182,28 +2183,20 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
                   onChange={setDepartureDamages}
                   readOnly={false}
                   headerActions={
-                    <label className="text-[11px] font-bold px-3 py-1.5 rounded-xl text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800/60 shadow-xs">
-                      <Camera className="w-3.5 h-3.5" /> Tirar / Anexar Fotos
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        className="hidden"
-                        onChange={(e) => handlePhotoUpload(e, 'departure')}
-                      />
-                    </label>
-                  }
-                />
-                
-                {departurePhotos.length > 0 && (
-                  <div className="space-y-2.5 p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
-                        <Camera className="w-3.5 h-3.5 text-emerald-500" />
-                        <span>Fotos Anexadas na Saída ({departurePhotos.length})</span>
-                      </span>
-                      <label className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1">
-                        <Plus className="w-3.5 h-3.5" /> Adicionar Mais
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <label className="text-[11px] font-bold px-2.5 py-1.5 rounded-xl text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800/60 shadow-xs">
+                        <Camera className="w-3.5 h-3.5" /> Tirar Foto
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          className="hidden"
+                          onChange={(e) => handlePhotoUpload(e, 'departure')}
+                        />
+                      </label>
+
+                      <label className="text-[11px] font-bold px-2.5 py-1.5 rounded-xl text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors cursor-pointer flex items-center gap-1.5 border border-blue-200 dark:border-blue-800/60 shadow-xs">
+                        <Paperclip className="w-3.5 h-3.5" /> Anexar Fotos
                         <input
                           type="file"
                           accept="image/*"
@@ -2212,6 +2205,40 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
                           onChange={(e) => handlePhotoUpload(e, 'departure')}
                         />
                       </label>
+                    </div>
+                  }
+                />
+                
+                {departurePhotos.length > 0 && (
+                  <div className="space-y-2.5 p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                        <Camera className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>Fotos Anexadas na Saída ({departurePhotos.length})</span>
+                      </span>
+                      <div className="flex items-center gap-3">
+                        <label className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer flex items-center gap-1">
+                          <Camera className="w-3.5 h-3.5" /> Tirar Foto
+                          <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            className="hidden"
+                            onChange={(e) => handlePhotoUpload(e, 'departure')}
+                          />
+                        </label>
+                        <span className="text-slate-300 dark:text-slate-700">•</span>
+                        <label className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1">
+                          <Paperclip className="w-3.5 h-3.5" /> Anexar Mais
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => handlePhotoUpload(e, 'departure')}
+                          />
+                        </label>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -2502,28 +2529,20 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
                   onChange={setReturnDamages}
                   readOnly={false}
                   headerActions={
-                    <label className="text-[11px] font-bold px-3 py-1.5 rounded-xl text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800/60 shadow-xs">
-                      <Camera className="w-3.5 h-3.5" /> Tirar / Anexar Fotos
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        className="hidden"
-                        onChange={(e) => handlePhotoUpload(e, 'return')}
-                      />
-                    </label>
-                  }
-                />
-                
-                {returnPhotos.length > 0 && (
-                  <div className="space-y-2.5 p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
-                        <Camera className="w-3.5 h-3.5 text-emerald-500" />
-                        <span>Fotos Anexadas na Devolução ({returnPhotos.length})</span>
-                      </span>
-                      <label className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1">
-                        <Plus className="w-3.5 h-3.5" /> Adicionar Mais
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <label className="text-[11px] font-bold px-2.5 py-1.5 rounded-xl text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800/60 shadow-xs">
+                        <Camera className="w-3.5 h-3.5" /> Tirar Foto
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          className="hidden"
+                          onChange={(e) => handlePhotoUpload(e, 'return')}
+                        />
+                      </label>
+
+                      <label className="text-[11px] font-bold px-2.5 py-1.5 rounded-xl text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors cursor-pointer flex items-center gap-1.5 border border-blue-200 dark:border-blue-800/60 shadow-xs">
+                        <Paperclip className="w-3.5 h-3.5" /> Anexar Fotos
                         <input
                           type="file"
                           accept="image/*"
@@ -2532,6 +2551,40 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
                           onChange={(e) => handlePhotoUpload(e, 'return')}
                         />
                       </label>
+                    </div>
+                  }
+                />
+                
+                {returnPhotos.length > 0 && (
+                  <div className="space-y-2.5 p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                        <Camera className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>Fotos Anexadas na Devolução ({returnPhotos.length})</span>
+                      </span>
+                      <div className="flex items-center gap-3">
+                        <label className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer flex items-center gap-1">
+                          <Camera className="w-3.5 h-3.5" /> Tirar Foto
+                          <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            className="hidden"
+                            onChange={(e) => handlePhotoUpload(e, 'return')}
+                          />
+                        </label>
+                        <span className="text-slate-300 dark:text-slate-700">•</span>
+                        <label className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1">
+                          <Paperclip className="w-3.5 h-3.5" /> Anexar Mais
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => handlePhotoUpload(e, 'return')}
+                          />
+                        </label>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
