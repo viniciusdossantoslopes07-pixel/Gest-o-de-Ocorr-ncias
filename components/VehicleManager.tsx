@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../services/supabase';
 import { Vehicle, VehicleLoan, VehicleChecklistItems, VehicleDamagePoint } from '../types';
 import { VehicleDamageDiagram } from './VehicleDamageDiagram';
@@ -1665,13 +1666,13 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
       {/* ========================================================================= */}
       {/* MODAL 1: CAUTELAR VTR (SAÍDA RÁPIDA PARA O DESPACHANTE)                   */}
       {/* ========================================================================= */}
-      {isLoanModalOpen && (
+      {isLoanModalOpen && createPortal(
         <div
-          className="fixed inset-0 z-[9999] bg-slate-950/80 flex items-center justify-center p-2 sm:p-4 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
+          className="fixed inset-0 z-[99999] bg-slate-950/85 flex items-start sm:items-center justify-center p-2.5 sm:p-4 pt-3 sm:pt-4 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
           onClick={() => setIsLoanModalOpen(false)}
         >
           <div
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl w-full max-w-3xl max-h-[94dvh] flex flex-col shadow-2xl overflow-hidden my-auto animate-in zoom-in-95 duration-200"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl w-full max-w-3xl max-h-[90dvh] sm:max-h-[94dvh] flex flex-col shadow-2xl overflow-hidden my-auto animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 sm:p-6 bg-gradient-to-r from-blue-700 to-indigo-800 text-white flex items-center justify-between shrink-0">
@@ -2368,31 +2369,32 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ========================================================================= */}
       {/* MODAL 2: RECEBER DEVOLUÇÃO (CHECKLIST RETORNO + MAPA DE AVARIAS MOVIDA)    */}
       {/* ========================================================================= */}
-      {isReturnModalOpen && selectedLoanForReturn && (
+      {isReturnModalOpen && selectedLoanForReturn && createPortal(
         <div
-          className="fixed inset-0 z-[9999] bg-slate-950/85 flex items-center justify-center p-2 sm:p-4 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
+          className="fixed inset-0 z-[99999] bg-slate-950/85 flex items-start sm:items-center justify-center p-2.5 sm:p-4 pt-3 sm:pt-4 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
           onClick={() => setIsReturnModalOpen(false)}
         >
           <div
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl w-full max-w-3xl max-h-[94dvh] flex flex-col shadow-2xl overflow-hidden my-auto animate-in zoom-in-95 duration-200"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl w-full max-w-3xl max-h-[90dvh] sm:max-h-[94dvh] flex flex-col shadow-2xl overflow-hidden my-auto animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-3.5 sm:p-6 bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex items-center justify-between gap-3 shrink-0">
+            <div className="p-3 sm:p-5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex items-center justify-between gap-2.5 sm:gap-3 shrink-0 shadow-xs">
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                 <div className="p-2 sm:p-2.5 bg-white/10 rounded-xl sm:rounded-2xl backdrop-blur-md shrink-0">
                   <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-base sm:text-xl font-black leading-tight truncate">
+                  <h3 className="text-sm sm:text-lg font-black leading-tight truncate">
                     Receber Devolução de Viatura
                   </h3>
-                  <p className="text-[11px] sm:text-xs text-emerald-100/90 leading-normal truncate">
+                  <p className="text-[10px] sm:text-xs text-emerald-100/90 leading-tight truncate mt-0.5">
                     Cautela: {selectedLoanForReturn.loan_number} • VTR: {selectedLoanForReturn.vehicle?.brand}{' '}
                     {selectedLoanForReturn.vehicle?.model} ({selectedLoanForReturn.vehicle?.plate})
                   </p>
@@ -2401,13 +2403,14 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
               <button
                 onClick={() => setIsReturnModalOpen(false)}
                 className="p-1.5 sm:p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-colors shrink-0"
+                aria-label="Fechar modal"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-3.5 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6 flex-1 text-slate-800 dark:text-slate-200 scrollbar-thin">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 p-3 sm:p-4 bg-slate-50 dark:bg-slate-950 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 text-xs">
+            <div className="p-3 sm:p-6 overflow-y-auto space-y-3.5 sm:space-y-6 flex-1 text-slate-800 dark:text-slate-200 scrollbar-thin">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 p-2.5 sm:p-4 bg-slate-50 dark:bg-slate-950 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 text-xs">
                 <div className="min-w-0">
                   <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">
                     Condutor
@@ -2645,7 +2648,8 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ========================================================================= */}

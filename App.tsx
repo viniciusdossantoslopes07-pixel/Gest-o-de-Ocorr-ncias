@@ -1813,7 +1813,8 @@ const App: FC = () => {
                                             activeTab === 'vacation-management' ? 'Gestão de Férias' :
                                               activeTab === 'vacation-stats' ? 'Estatísticas de Férias' :
                                                 activeTab === 'settings' ? 'Minhas Configurações' : 
-                                                  activeTab === 'om-management' ? 'Gestão de OM\'s' : 'Arquivo Digital'}
+                                                  activeTab === 'om-management' ? 'Gestão de OM\'s' :
+                                                    activeTab === 'vehicles' ? 'Gestão de Viaturas' : 'Arquivo Digital'}
                 </h2>
               </div>
             </div>
@@ -1831,7 +1832,7 @@ const App: FC = () => {
           </header>
         )}
 
-        <div className="p-3 lg:p-6 flex-1 w-full min-w-0 overflow-y-auto overflow-x-hidden custom-scrollbar relative z-0">
+        <div className="p-3 lg:p-6 flex-1 w-full min-w-0 overflow-y-auto overflow-x-hidden custom-scrollbar relative">
           {/* --- CONTENT AREA START --- */}
           <Suspense fallback={<LazyFallback />}>
 
