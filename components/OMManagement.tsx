@@ -379,7 +379,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         };
     }, []);
 
-    // Inicialização do Mapa Tático Leaflet
+    // Inicialização do Mapa Leaflet com OpenStreetMap Padrão (Sem API Key)
     const initMap = () => {
         const L = (window as any).L;
         if (!L || !document.getElementById('c2-tactical-map')) return;
@@ -396,15 +396,10 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
 
         mapRef.current = map;
 
-        // Camada Tática: Dark Matter do CartoDB para ambiente escuro ou OpenStreetMap clássico
-        const isDark = isDarkMode || mapTileStyle === 'dark';
-        const tileUrl = isDark
-            ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-            : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-
-        L.tileLayer(tileUrl, {
+        // Tile padrão e gratuito do OpenStreetMap (sem marcas d'água e sem restrição de API)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
-            attribution: isDark ? '&copy; CartoDB &copy; OpenStreetMap' : '&copy; OpenStreetMap contributors'
+            attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
         // Grupo de marcadores
@@ -413,7 +408,7 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
 
         setTimeout(() => {
             map.invalidateSize();
-        }, 250);
+        }, 200);
     };
 
     const renderMarkers = () => {
@@ -981,74 +976,68 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
 
                 {/* ABA 1: SITUAÇÃO TÁTICA (MAPA C2) */}
                 {activeTab === 'tactical' && (
-                    <div className="grid grid-cols-12 gap-6">
-                        {/* COLUNA ESQUERDA: LISTA FILTRÁVEL DE UNIDADES */}
-                        <div className="col-span-12 lg:col-span-4 xl:col-span-3 space-y-4">
-                            <div className={`p-5 rounded-3xl border ${
+                    <div className="grid grid-cols-12 gap-5">
+                        {/* COLUNA ESQUERDA: LISTA FILTRÁVEL DE UNIDADES (MENU COMPACTO E PROPORCIONAL) */}
+                        <div className="col-span-12 lg:col-span-3 xl:col-span-3">
+                            <div className={`p-4 rounded-3xl border ${
                                 isDarkMode ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200'
-                            } backdrop-blur-xl shadow-xl flex flex-col h-[700px]`}>
+                            } backdrop-blur-xl shadow-xl flex flex-col h-[580px]`}>
                                 
-                                <div className="flex items-center justify-between mb-3">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                                        <Activity className="w-4 h-4 text-blue-400" />
+                                <div className="flex items-center justify-between mb-2.5">
+                                    <h3 className="text-[11px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                                        <Activity className="w-3.5 h-3.5 text-blue-400" />
                                         <span>Unidades Monitoradas</span>
                                     </h3>
-                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-500/20 text-blue-400">
+                                    <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-black bg-blue-500/20 text-blue-400">
                                         {filteredOms.length} / {oms.length}
                                     </span>
                                 </div>
 
-                                {/* Busca Rápida */}
-                                <div className="relative mb-3">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                {/* Busca Rápida Compacta */}
+                                <div className="relative mb-2.5">
+                                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
                                     <input 
                                         type="text"
-                                        placeholder="Buscar por sigla ou sede..."
+                                        placeholder="Buscar sigla ou sede..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className={`w-full pl-9 pr-3 py-2 rounded-xl text-xs font-semibold outline-none border transition-all ${
+                                        className={`w-full pl-8 pr-7 py-1.5 rounded-xl text-[11px] font-semibold outline-none border transition-all ${
                                             isDarkMode 
                                                 ? 'bg-slate-800/80 border-slate-700 text-white focus:border-blue-500' 
                                                 : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-blue-500'
                                         }`}
                                     />
                                     {searchTerm && (
-                                        <button onClick={() => setSearchTerm('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">
-                                            <X className="w-3.5 h-3.5" />
+                                        <button onClick={() => setSearchTerm('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">
+                                            <X className="w-3 h-3" />
                                         </button>
                                     )}
                                 </div>
 
-                                {/* Filtro por Região */}
-                                <div className="mb-3 space-y-1.5">
-                                    <div className="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400">
-                                        <span>Região Militar</span>
-                                        {selectedRegion !== 'ALL' && (
-                                            <button onClick={() => setSelectedRegion('ALL')} className="text-blue-400 hover:underline">Limpar</button>
-                                        )}
-                                    </div>
-                                    <div className="flex flex-wrap gap-1">
+                                {/* Filtro por Região Compacto */}
+                                <div className="mb-2.5">
+                                    <div className="flex items-center gap-1 overflow-x-auto pb-1 custom-scrollbar">
                                         {['ALL', 'Norte', 'Nordeste', 'Centro-Oeste', 'Sudeste', 'Sul'].map(reg => (
                                             <button
                                                 key={reg}
                                                 onClick={() => setSelectedRegion(reg)}
-                                                className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase transition-all ${
+                                                className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-tight transition-all whitespace-nowrap ${
                                                     selectedRegion === reg
-                                                        ? 'bg-blue-600 text-white'
+                                                        ? 'bg-blue-600 text-white shadow-sm'
                                                         : isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                                 }`}
                                             >
-                                                {reg === 'ALL' ? 'Todas' : reg}
+                                                {reg === 'ALL' ? 'Todas' : reg.substring(0, 5)}
                                             </button>
                                         ))}
                                     </div>
                                 </div>
 
-                                {/* Lista com Scroll */}
-                                <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                                {/* Lista de OMs com Scroll Otimizado */}
+                                <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
                                     {filteredOms.length === 0 ? (
-                                        <div className="p-8 text-center text-slate-500 text-xs italic">
-                                            Nenhuma unidade militar encontrada com os filtros selecionados.
+                                        <div className="p-6 text-center text-slate-500 text-[11px] italic">
+                                            Nenhuma unidade militar encontrada.
                                         </div>
                                     ) : (
                                         filteredOms.map(om => {
@@ -1061,36 +1050,36 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                                 <div
                                                     key={om.id}
                                                     onClick={() => handleSelectOm(om)}
-                                                    className={`w-full p-3 rounded-2xl border text-left cursor-pointer transition-all ${
+                                                    className={`w-full p-2 rounded-xl border text-left cursor-pointer transition-all ${
                                                         isSelected
-                                                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 border-blue-400 text-white shadow-lg'
+                                                            ? 'bg-blue-600 border-blue-400 text-white shadow-md'
                                                             : isDarkMode 
-                                                                ? 'bg-slate-800/40 border-slate-700/60 hover:bg-slate-800/80 text-slate-200' 
+                                                                ? 'bg-slate-800/40 border-slate-700/50 hover:bg-slate-800/70 text-slate-200' 
                                                                 : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-800'
                                                     }`}
                                                 >
-                                                    <div className="flex items-center justify-between gap-2">
-                                                        <div className="flex items-center gap-2.5 overflow-hidden">
-                                                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs flex-shrink-0 ${
+                                                    <div className="flex items-center justify-between gap-1.5">
+                                                        <div className="flex items-center gap-2 overflow-hidden">
+                                                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-black text-[10px] flex-shrink-0 ${
                                                                 isSelected ? 'bg-white/20 text-white' : 'bg-blue-500/10 text-blue-400'
                                                             }`}>
                                                                 {om.acronym.substring(0, 3)}
                                                             </div>
                                                             <div className="overflow-hidden">
-                                                                <p className="font-black text-xs uppercase tracking-tight truncate">{om.acronym}</p>
-                                                                <p className={`text-[9px] uppercase truncate ${isSelected ? 'text-white/80' : 'text-slate-400'}`}>
+                                                                <p className="font-black text-[11px] uppercase tracking-tight truncate leading-tight">{om.acronym}</p>
+                                                                <p className={`text-[8px] uppercase truncate ${isSelected ? 'text-white/80' : 'text-slate-400'}`}>
                                                                     {om.host_unit || om.name}
                                                                 </p>
                                                             </div>
                                                         </div>
 
                                                         <div className="text-right flex-shrink-0">
-                                                            <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-mono font-bold ${
+                                                            <span className={`inline-block px-1 py-0.2 rounded text-[7px] font-mono font-bold ${
                                                                 isSelected ? 'bg-white/20 text-white' : 'bg-slate-700/40 text-slate-400'
                                                             }`}>
-                                                                {reg}
+                                                                {reg.substring(0, 4)}
                                                             </span>
-                                                            <p className={`text-[10px] font-black mt-0.5 ${
+                                                            <p className={`text-[9px] font-black mt-0.5 ${
                                                                 isSelected ? 'text-white' : occCount > 0 ? 'text-amber-400' : 'text-blue-400'
                                                             }`}>
                                                                 {pCount} mil.
@@ -1106,158 +1095,144 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                         </div>
 
                         {/* COLUNA DIREITA: MAPA TÁTICO & DOSSIÊ DA OM SELECIONADA */}
-                        <div className="col-span-12 lg:col-span-8 xl:col-span-9 space-y-4">
-                            <div className={`relative h-[700px] rounded-3xl overflow-hidden border shadow-2xl ${
+                        <div className="col-span-12 lg:col-span-9 xl:col-span-9">
+                            <div className={`relative h-[580px] rounded-3xl overflow-hidden border shadow-xl ${
                                 isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
                             }`}>
-                                {/* Controles do Mapa */}
-                                <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
-                                    <div className={`px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider backdrop-blur-md ${
+                                {/* Badge Discreto de Situação Operacional */}
+                                <div className="absolute top-3.5 left-3.5 z-10">
+                                    <div className={`px-3 py-1 rounded-xl border text-[9px] font-black uppercase tracking-wider backdrop-blur-md shadow-sm ${
                                         isDarkMode ? 'bg-slate-900/90 border-slate-700 text-slate-200' : 'bg-white/90 border-slate-300 text-slate-800'
                                     }`}>
                                         📡 MAPA DE SITUAÇÃO OPERACIONAL
                                     </div>
-                                    <button
-                                        onClick={() => {
-                                            setMapTileStyle(prev => prev === 'dark' ? 'standard' : 'dark');
-                                        }}
-                                        className={`px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider backdrop-blur-md transition-all flex items-center gap-1.5 ${
-                                            isDarkMode ? 'bg-slate-900/90 hover:bg-slate-800 border-slate-700 text-slate-300' : 'bg-white/90 hover:bg-slate-100 border-slate-300 text-slate-700'
-                                        }`}
-                                    >
-                                        <Layers className="w-3.5 h-3.5 text-blue-400" />
-                                        <span>{mapTileStyle === 'dark' ? 'Visão Satélite/Padrão' : 'Visão Tática Dark'}</span>
-                                    </button>
                                 </div>
 
                                 {/* Container do Leaflet */}
                                 <div id="c2-tactical-map" className="w-full h-full z-0"></div>
 
-                                {/* DOSSIÊ LATERAL FLUTUANTE DA OM SELECIONADA */}
+                                {/* DOSSIÊ LATERAL FLUTUANTE DA OM SELECIONADA (COMPACTO E ELEGANTE) */}
                                 {selectedOm && (
-                                    <div className="absolute top-4 right-4 bottom-4 w-96 max-w-[calc(100vw-3rem)] p-6 bg-slate-900/95 backdrop-blur-2xl border border-slate-700/80 rounded-3xl z-10 shadow-2xl text-white overflow-y-auto custom-scrollbar animate-in slide-in-from-right-4 duration-300">
-                                        {/* Header do Dossiê */}
-                                        <div className="flex items-start justify-between gap-3 mb-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex -space-x-2">
-                                                    {selectedOm.logo_url ? (
-                                                        <img src={selectedOm.logo_url} alt="Logo OM" className="w-12 h-12 object-contain bg-white rounded-xl p-1 border border-white/20 relative z-10" />
-                                                    ) : (
-                                                        <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-sm">
-                                                            {selectedOm.acronym.substring(0, 3)}
-                                                        </div>
-                                                    )}
-                                                    {selectedOm.host_logo_url && (
-                                                        <img src={selectedOm.host_logo_url} alt="Logo Sede" className="w-12 h-12 object-contain bg-white rounded-xl p-1 border border-white/20" />
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <h3 className="text-xl font-black uppercase tracking-tight text-white">{selectedOm.acronym}</h3>
-                                                        <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase bg-blue-500/30 text-blue-300 border border-blue-500/40">
-                                                            {selectedOm.category || 'NIL'}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-[10px] text-slate-400 uppercase tracking-wider line-clamp-1">{selectedOm.host_unit || selectedOm.name}</p>
-                                                </div>
-                                            </div>
-                                            <button 
-                                                onClick={() => setSelectedOm(null)}
-                                                className="p-1.5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors"
-                                            >
-                                                <X className="w-5 h-5" />
-                                            </button>
-                                        </div>
-
-                                        {/* Comandante */}
-                                        <div className="p-3 bg-white/5 border border-white/10 rounded-2xl mb-4">
-                                            <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Comandante da Unidade</p>
-                                            {selectedOm.commander_id && commanders[selectedOm.commander_id] ? (
+                                    <div className="absolute top-3.5 right-3.5 bottom-3.5 w-80 max-w-[calc(100vw-2.5rem)] p-4 bg-slate-900/95 backdrop-blur-2xl border border-slate-700/80 rounded-2xl z-10 shadow-2xl text-white overflow-y-auto custom-scrollbar animate-in slide-in-from-right-3 duration-200 flex flex-col justify-between">
+                                        <div>
+                                            {/* Header do Dossiê */}
+                                            <div className="flex items-start justify-between gap-2 mb-3">
                                                 <div className="flex items-center gap-2.5">
-                                                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-black text-xs text-white">
-                                                        {commanders[selectedOm.commander_id].rank.substring(0, 2)}
+                                                    <div className="flex -space-x-1.5">
+                                                        {selectedOm.logo_url ? (
+                                                            <img src={selectedOm.logo_url} alt="Logo OM" className="w-10 h-10 object-contain bg-white rounded-lg p-0.5 border border-white/20 relative z-10" />
+                                                        ) : (
+                                                            <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center font-black text-white text-xs">
+                                                                {selectedOm.acronym.substring(0, 3)}
+                                                            </div>
+                                                        )}
+                                                        {selectedOm.host_logo_url && (
+                                                            <img src={selectedOm.host_logo_url} alt="Logo Sede" className="w-10 h-10 object-contain bg-white rounded-lg p-0.5 border border-white/20" />
+                                                        )}
                                                     </div>
                                                     <div>
-                                                        <p className="text-xs font-black text-white">
-                                                            {commanders[selectedOm.commander_id].rank} {commanders[selectedOm.commander_id].warName || commanders[selectedOm.commander_id].name}
-                                                        </p>
-                                                        <p className="text-[9px] text-slate-400">Designado oficialmente</p>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <h3 className="text-base font-black uppercase tracking-tight text-white">{selectedOm.acronym}</h3>
+                                                            <span className="px-1.5 py-0.2 rounded text-[7px] font-black uppercase bg-blue-500/30 text-blue-300 border border-blue-500/40">
+                                                                {selectedOm.category || 'NIL'}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-[9px] text-slate-400 uppercase tracking-wider line-clamp-1">{selectedOm.host_unit || selectedOm.name}</p>
                                                     </div>
                                                 </div>
-                                            ) : (
-                                                <p className="text-xs font-bold text-amber-400 italic">Comandante não vinculado</p>
-                                            )}
-                                        </div>
-
-                                        {/* Métricas da OM */}
-                                        <div className="grid grid-cols-2 gap-3 mb-4">
-                                            <div className="p-3 bg-white/5 border border-white/10 rounded-2xl">
-                                                <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Efetivo Alocado</p>
-                                                <p className="text-lg font-black text-blue-400">{stats[selectedOm.id]?.personnelCount || 0}</p>
-                                            </div>
-                                            <div className="p-3 bg-white/5 border border-white/10 rounded-2xl">
-                                                <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-1">Ocorrências</p>
-                                                <p className={`text-lg font-black ${stats[selectedOm.id]?.occurrencesCount ? 'text-amber-400' : 'text-emerald-400'}`}>
-                                                    {stats[selectedOm.id]?.occurrencesCount || 0}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        {/* Portões de Acesso */}
-                                        <div className="mb-4">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Portões de Acesso</p>
                                                 <button 
-                                                    onClick={() => setGateModalOm(selectedOm)}
-                                                    className="text-[9px] font-bold text-blue-400 hover:underline uppercase"
+                                                    onClick={() => setSelectedOm(null)}
+                                                    className="p-1 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
                                                 >
-                                                    + Gerenciar
+                                                    <X className="w-4 h-4" />
                                                 </button>
                                             </div>
-                                            <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1 custom-scrollbar">
-                                                {allGates.filter(g => g.om_id === selectedOm.id).length === 0 ? (
-                                                    <p className="text-[10px] text-slate-500 italic">Nenhum portão cadastrado</p>
-                                                ) : (
-                                                    allGates.filter(g => g.om_id === selectedOm.id).map(gate => (
-                                                        <div key={gate.id} className="flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/5 text-[10px]">
-                                                            <span className="font-bold">{gate.name}</span>
-                                                            <button
-                                                                onClick={() => handleToggleGate(gate)}
-                                                                className={`px-2 py-0.5 rounded-md font-black uppercase text-[8px] transition-all ${
-                                                                    gate.is_active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
-                                                                }`}
-                                                            >
-                                                                {gate.is_active ? 'Ativo' : 'Inativo'}
-                                                            </button>
+
+                                            {/* Comandante */}
+                                            <div className="p-2.5 bg-white/5 border border-white/10 rounded-xl mb-3">
+                                                <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Comandante da Unidade</p>
+                                                {selectedOm.commander_id && commanders[selectedOm.commander_id] ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center font-black text-[10px] text-white">
+                                                            {commanders[selectedOm.commander_id].rank.substring(0, 2)}
                                                         </div>
-                                                    ))
+                                                        <div>
+                                                            <p className="text-[11px] font-black text-white leading-tight">
+                                                                {commanders[selectedOm.commander_id].rank} {commanders[selectedOm.commander_id].warName || commanders[selectedOm.commander_id].name}
+                                                            </p>
+                                                            <p className="text-[8px] text-slate-400">Designado oficialmente</p>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-[10px] font-bold text-amber-400 italic">Comandante não vinculado</p>
                                                 )}
                                             </div>
-                                        </div>
 
-                                        {/* Endereço & Fundação */}
-                                        <div className="p-3 bg-white/5 border border-white/10 rounded-2xl mb-4 text-[10px] text-slate-300 space-y-1">
-                                            <p className="flex items-start gap-1.5">
-                                                <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
-                                                <span>{selectedOm.address || 'Endereço não cadastrado'}</span>
-                                            </p>
-                                            {selectedOm.founded_at && (
-                                                <p className="text-slate-400 text-[9px]">
-                                                    Criada em: {new Date(selectedOm.founded_at + 'T00:00:00').toLocaleDateString('pt-BR')}
+                                            {/* Métricas da OM */}
+                                            <div className="grid grid-cols-2 gap-2 mb-3">
+                                                <div className="p-2.5 bg-white/5 border border-white/10 rounded-xl">
+                                                    <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Efetivo Alocado</p>
+                                                    <p className="text-base font-black text-blue-400">{stats[selectedOm.id]?.personnelCount || 0}</p>
+                                                </div>
+                                                <div className="p-2.5 bg-white/5 border border-white/10 rounded-xl">
+                                                    <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Ocorrências</p>
+                                                    <p className={`text-base font-black ${stats[selectedOm.id]?.occurrencesCount ? 'text-amber-400' : 'text-emerald-400'}`}>
+                                                        {stats[selectedOm.id]?.occurrencesCount || 0}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* Portões de Acesso */}
+                                            <div className="mb-3">
+                                                <div className="flex items-center justify-between mb-1.5">
+                                                    <p className="text-[8px] font-black uppercase tracking-widest text-slate-400">Portões de Acesso</p>
+                                                    <button 
+                                                        onClick={() => setGateModalOm(selectedOm)}
+                                                        className="text-[8px] font-bold text-blue-400 hover:underline uppercase"
+                                                    >
+                                                        + Gerenciar
+                                                    </button>
+                                                </div>
+                                                <div className="space-y-1 max-h-24 overflow-y-auto pr-1 custom-scrollbar">
+                                                    {allGates.filter(g => g.om_id === selectedOm.id).length === 0 ? (
+                                                        <p className="text-[9px] text-slate-500 italic">Nenhum portão cadastrado</p>
+                                                    ) : (
+                                                        allGates.filter(g => g.om_id === selectedOm.id).map(gate => (
+                                                            <div key={gate.id} className="flex items-center justify-between p-1.5 rounded-lg bg-white/5 border border-white/5 text-[9px]">
+                                                                <span className="font-bold truncate max-w-[130px]">{gate.name}</span>
+                                                                <button
+                                                                    onClick={() => handleToggleGate(gate)}
+                                                                    className={`px-1.5 py-0.5 rounded font-black uppercase text-[7px] transition-all ${
+                                                                        gate.is_active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+                                                                    }`}
+                                                                >
+                                                                    {gate.is_active ? 'Ativo' : 'Inativo'}
+                                                                </button>
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Endereço */}
+                                            <div className="p-2 bg-white/5 border border-white/10 rounded-xl mb-3 text-[9px] text-slate-300">
+                                                <p className="flex items-start gap-1 line-clamp-2">
+                                                    <MapPin className="w-3 h-3 text-slate-400 flex-shrink-0 mt-0.5" />
+                                                    <span>{selectedOm.address || 'Endereço não cadastrado'}</span>
                                                 </p>
-                                            )}
+                                            </div>
                                         </div>
 
                                         {/* Botões de Ação Operacional */}
-                                        <div className="space-y-2">
+                                        <div className="space-y-1.5 pt-2 border-t border-slate-800">
                                             {hasPermission(currentUser, PERMISSIONS.NAVIGATE_OMS) && (
                                                 <button 
                                                     onClick={() => {
                                                         window.location.search = `?om=${selectedOm.acronym}`;
                                                     }}
-                                                    className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all"
+                                                    className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md transition-all"
                                                 >
-                                                    <Activity className="w-4 h-4" />
+                                                    <Activity className="w-3.5 h-3.5" />
                                                     <span>Visualização Tática OM</span>
                                                 </button>
                                             )}
@@ -1269,9 +1244,9 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                                     }
                                                     setActiveTab('comparative');
                                                 }}
-                                                className="w-full py-2.5 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-200 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
+                                                className="w-full py-1.5 bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-200 rounded-xl text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all"
                                             >
-                                                <ArrowRightLeft className="w-4 h-4 text-indigo-400" />
+                                                <ArrowRightLeft className="w-3 h-3 text-indigo-400" />
                                                 <span>Comparar com Outras OMs</span>
                                             </button>
 
@@ -1280,18 +1255,18 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
                                                     href={`https://${selectedOm.url.replace(/^https?:\/\//, '')}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all no-underline"
+                                                    className="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 rounded-xl text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all no-underline"
                                                 >
-                                                    <ExternalLink className="w-4 h-4" />
-                                                    <span>Acessar Link de Produção</span>
+                                                    <ExternalLink className="w-3 h-3" />
+                                                    <span>Link de Produção</span>
                                                 </a>
                                             )}
 
                                             <button 
                                                 onClick={() => startEditing(selectedOm)}
-                                                className="w-full py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
+                                                className="w-full py-1.5 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl text-[9px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all"
                                             >
-                                                <Pencil className="w-3.5 h-3.5" />
+                                                <Pencil className="w-3 h-3" />
                                                 <span>Editar Diretrizes</span>
                                             </button>
                                         </div>
