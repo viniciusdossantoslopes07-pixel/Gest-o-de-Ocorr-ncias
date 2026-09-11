@@ -392,29 +392,58 @@ export const generateVehicleChecklistPdf = async (
   addFooter();
 
   // ------------------------------------------------------------
-  // SEÇÃO DE FOTO DA VIATURA (ANEXO)
+  // SEÇÃO DE FOTOS DA VIATURA (ANEXOS)
   // ------------------------------------------------------------
   const photos = isReturn ? loan.return_photos : loan.departure_photos;
-  if (photos && photos.length > 0 && photos[0]) {
-    doc.addPage();
-    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.rect(margin, 20, contentWidth, 6.5, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(255, 255, 255);
-    doc.text('ANEXO: FOTOGRAFIA DA VIATURA', pageWidth / 2, 24.5, { align: 'center' });
+  const validPhotos = (photos || []).filter((p) => typeof p === 'string' && p.startsWith('data:image'));
 
-    try {
-      const imgData = photos[0];
-      // Define a box constraints for the image
-      const maxImgWidth = contentWidth;
-      const maxImgHeight = 150;
-      doc.addImage(imgData, 'JPEG', margin, 32, maxImgWidth, maxImgHeight, undefined, 'FAST');
-    } catch (e) {
-      console.error('Erro ao adicionar foto no PDF', e);
+  if (validPhotos.length > 0) {
+    const photosPerPage = 2;
+    const totalPhotoPages = Math.ceil(validPhotos.length / photosPerPage);
+
+    for (let pageIdx = 0; pageIdx < totalPhotoPages; pageIdx++) {
+      doc.addPage();
+      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.rect(margin, 18, contentWidth, 6.5, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8.5);
+      doc.setTextColor(255, 255, 255);
+      const pageTitle = totalPhotoPages > 1
+        ? `ANEXO: REGISTRO FOTOGRÁFICO DA VIATURA (PÁGINA ${pageIdx + 1}/${totalPhotoPages})`
+        : 'ANEXO: REGISTRO FOTOGRÁFICO DA VIATURA';
+      doc.text(pageTitle, pageWidth / 2, 22.5, { align: 'center' });
+
+      const startIndex = pageIdx * photosPerPage;
+      const pagePhotos = validPhotos.slice(startIndex, startIndex + photosPerPage);
+
+      pagePhotos.forEach((photoData, itemIdx) => {
+        const globalIdx = startIndex + itemIdx + 1;
+        const yOffset = itemIdx === 0 ? 28 : 152;
+        const boxHeight = pagePhotos.length === 1 ? 190 : 110;
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.setTextColor(slateText[0], slateText[1], slateText[2]);
+        doc.text(`FOTOGRAFIA #${globalIdx} - REGISTRO DE ${isReturn ? 'DEVOLUÇÃO' : 'SAÍDA'}`, margin, yOffset);
+
+        try {
+          doc.addImage(
+            photoData,
+            'JPEG',
+            margin,
+            yOffset + 2.5,
+            contentWidth,
+            boxHeight,
+            undefined,
+            'FAST'
+          );
+        } catch (e) {
+          console.error(`Erro ao adicionar foto #${globalIdx} no PDF`, e);
+        }
+      });
+
+      addFooter();
     }
-    
-    addFooter();
   }
 
   // Salvar ou retornar documento

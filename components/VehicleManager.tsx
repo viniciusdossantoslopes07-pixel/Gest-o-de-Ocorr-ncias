@@ -180,7 +180,7 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
   const [signatureCanvasData, setSignatureCanvasData] = useState<string>('');
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [departurePhoto, setDeparturePhoto] = useState<string | null>(null);
+  const [departurePhotos, setDeparturePhotos] = useState<string[]>([]);
 
   // Estados do Formulário de Devolução (Retorno)
   const [returnOdometer, setReturnOdometer] = useState<number>(0);
@@ -188,7 +188,7 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
   const [returnItems, setReturnItems] = useState<VehicleChecklistItems>({ ...DEFAULT_CHECKLIST });
   const [returnDamages, setReturnDamages] = useState<VehicleDamagePoint[]>([]);
   const [returnNotes, setReturnNotes] = useState('');
-  const [returnPhoto, setReturnPhoto] = useState<string | null>(null);
+  const [returnPhotos, setReturnPhotos] = useState<string[]>([]);
   const [actionLoading, setActionLoading] = useState(false);
 
   // Estados do Formulário de Cadastro de Nova Viatura
@@ -528,7 +528,7 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
     setDepartureItems({ ...DEFAULT_CHECKLIST });
     setDepartureDamages([]);
     setDepartureNotes('');
-    setDeparturePhoto(null);
+    setDeparturePhotos([]);
     setDriverAuthPassword('');
     setSignatureCanvasData('');
     setIsLoanModalOpen(true);
@@ -652,28 +652,53 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
     setSignatureCanvasData('');
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'departure' | 'return') => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'departure' | 'return') => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 800;
-        const scaleSize = MAX_WIDTH / img.width;
-        canvas.width = MAX_WIDTH;
-        canvas.height = img.height * scaleSize;
-        const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-        if (type === 'departure') setDeparturePhoto(dataUrl);
-        else setReturnPhoto(dataUrl);
-      };
-      img.src = event.target?.result as string;
+    const fileList = Array.from(files);
+
+    const processFile = (file: File): Promise<string> => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 900;
+            const scaleSize = Math.min(1, MAX_WIDTH / img.width);
+            canvas.width = img.width * scaleSize;
+            canvas.height = img.height * scaleSize;
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', 0.75));
+          };
+          img.src = event.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+      });
     };
-    reader.readAsDataURL(file);
+
+    try {
+      const newPhotos = await Promise.all(fileList.map(processFile));
+      if (type === 'departure') {
+        setDeparturePhotos((prev) => [...prev, ...newPhotos]);
+      } else {
+        setReturnPhotos((prev) => [...prev, ...newPhotos]);
+      }
+    } catch (err) {
+      console.error('Erro ao processar imagens:', err);
+    } finally {
+      e.target.value = '';
+    }
+  };
+
+  const handleRemovePhoto = (index: number, type: 'departure' | 'return') => {
+    if (type === 'departure') {
+      setDeparturePhotos((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      setReturnPhotos((prev) => prev.filter((_, i) => i !== index));
+    }
   };
 
   // Submeter Cautela (Saída de VTR)
@@ -733,7 +758,7 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
         departure_items: departureItems,
         departure_damages: departureDamages,
         departure_notes: departureNotes.trim() || null,
-        departure_photos: departurePhoto ? [departurePhoto] : null
+        departure_photos: departurePhotos.length > 0 ? departurePhotos : null
       };
 
       const { data: createdLoan, error: loanErr } = await supabase
@@ -782,7 +807,7 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
     setReturnItems(loan.departure_items ? { ...loan.departure_items } : { ...DEFAULT_CHECKLIST });
     setReturnDamages(loan.departure_damages ? [...loan.departure_damages] : []);
     setReturnNotes('');
-    setReturnPhoto(null);
+    setReturnPhotos([]);
     setIsReturnModalOpen(true);
   };
 
@@ -816,7 +841,7 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
           return_items: returnItems,
           return_damages: returnDamages,
           return_notes: returnNotes.trim() || null,
-          return_photos: returnPhoto ? [returnPhoto] : null,
+          return_photos: returnPhotos.length > 0 ? returnPhotos : null,
           return_signature: true,
           updated_at: new Date().toISOString()
         })
@@ -2156,29 +2181,56 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
                   onChange={setDepartureDamages}
                   readOnly={false}
                   headerActions={
-                    <label className="text-[11px] font-bold px-2.5 py-1 rounded-lg text-emerald-600 bg-emerald-100 dark:bg-emerald-950/60 hover:bg-emerald-200 transition-colors cursor-pointer flex items-center gap-1 border border-emerald-200 dark:border-emerald-800/60 shadow-sm">
-                      <Camera className="w-3.5 h-3.5" /> Tirar Foto
+                    <label className="text-[11px] font-bold px-3 py-1.5 rounded-xl text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800/60 shadow-xs">
+                      <Camera className="w-3.5 h-3.5" /> Tirar / Anexar Fotos
                       <input
                         type="file"
                         accept="image/*"
-                        capture="environment"
+                        multiple
                         className="hidden"
                         onChange={(e) => handlePhotoUpload(e, 'departure')}
                       />
                     </label>
                   }
                 />
-                {departurePhoto && (
-                  <div className="relative inline-block border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
-                    <img src={departurePhoto} alt="Viatura" className="w-48 h-auto object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => setDeparturePhoto(null)}
-                      className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 shadow-md transition-colors"
-                      title="Remover Foto"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                
+                {departurePhotos.length > 0 && (
+                  <div className="space-y-2.5 p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                        <Camera className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>Fotos Anexadas na Saída ({departurePhotos.length})</span>
+                      </span>
+                      <label className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1">
+                        <Plus className="w-3.5 h-3.5" /> Adicionar Mais
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={(e) => handlePhotoUpload(e, 'departure')}
+                        />
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                      {departurePhotos.map((photo, idx) => (
+                        <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm aspect-video bg-black/5 dark:bg-black/40">
+                          <img src={photo} alt={`Foto Saída ${idx + 1}`} className="w-full h-full object-cover" />
+                          <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/70 text-[9px] font-mono text-white font-bold backdrop-blur-xs">
+                            #{idx + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemovePhoto(idx, 'departure')}
+                            className="absolute top-1.5 right-1.5 p-1 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow-md transition-all"
+                            title="Remover Foto"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -2449,12 +2501,12 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
                   onChange={setReturnDamages}
                   readOnly={false}
                   headerActions={
-                    <label className="text-[11px] font-bold px-2.5 py-1 rounded-lg text-emerald-600 bg-emerald-100 dark:bg-emerald-950/60 hover:bg-emerald-200 transition-colors cursor-pointer flex items-center gap-1 border border-emerald-200 dark:border-emerald-800/60 shadow-sm">
-                      <Camera className="w-3.5 h-3.5" /> Tirar Foto
+                    <label className="text-[11px] font-bold px-3 py-1.5 rounded-xl text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800/60 shadow-xs">
+                      <Camera className="w-3.5 h-3.5" /> Tirar / Anexar Fotos
                       <input
                         type="file"
                         accept="image/*"
-                        capture="environment"
+                        multiple
                         className="hidden"
                         onChange={(e) => handlePhotoUpload(e, 'return')}
                       />
@@ -2462,17 +2514,43 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
                   }
                 />
                 
-                {returnPhoto && (
-                  <div className="relative inline-block border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
-                    <img src={returnPhoto} alt="Viatura Devolução" className="w-48 h-auto object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => setReturnPhoto(null)}
-                      className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 shadow-md transition-colors"
-                      title="Remover Foto"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                {returnPhotos.length > 0 && (
+                  <div className="space-y-2.5 p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                        <Camera className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>Fotos Anexadas na Devolução ({returnPhotos.length})</span>
+                      </span>
+                      <label className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1">
+                        <Plus className="w-3.5 h-3.5" /> Adicionar Mais
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={(e) => handlePhotoUpload(e, 'return')}
+                        />
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                      {returnPhotos.map((photo, idx) => (
+                        <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm aspect-video bg-black/5 dark:bg-black/40">
+                          <img src={photo} alt={`Foto Devolução ${idx + 1}`} className="w-full h-full object-cover" />
+                          <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/70 text-[9px] font-mono text-white font-bold backdrop-blur-xs">
+                            #{idx + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemovePhoto(idx, 'return')}
+                            className="absolute top-1.5 right-1.5 p-1 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow-md transition-all"
+                            title="Remover Foto"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
