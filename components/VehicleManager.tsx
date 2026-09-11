@@ -306,22 +306,12 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
         }
       }
 
-      // Atualização e limpeza dos dados oficiais (Garante MARCA MITSUBISHI e MODELO L200, sem descrições no modelo)
-      for (const official of OFFICIAL_FAB_VEHICLES) {
-        const found = currentList.find((v) => v.reg_fab.toUpperCase() === official.reg_fab.toUpperCase());
-        if (found) {
-          found.description = official.description;
-          const isOutdated =
-            found.brand !== official.brand ||
-            found.model !== official.model ||
-            found.model.includes('(') ||
-            found.model.includes('CARRO') ||
-            found.model.includes('CAMINHÃO') ||
-            found.model.toLowerCase().includes('duster') ||
-            found.brand.toLowerCase().includes('renault') ||
-            forceSync;
-
-          if (isOutdated) {
+      // Se forceSync for explicitamente true, sincroniza os dados com a tabela oficial da FAB.
+      // Em requisições normais, respeita 100% as alterações salvas pelo usuário no banco de dados.
+      if (forceSync) {
+        for (const official of OFFICIAL_FAB_VEHICLES) {
+          const found = currentList.find((v) => v.reg_fab.toUpperCase() === official.reg_fab.toUpperCase());
+          if (found) {
             try {
               await supabase
                 .from('vehicles')
@@ -334,13 +324,24 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
                 })
                 .eq('id', found.id);
             } catch (e) {
-              console.warn('Erro ao atualizar marca/modelo no banco:', e);
+              console.warn('Erro ao atualizar marca/modelo no banco via forceSync:', e);
             }
             found.brand = official.brand;
             found.model = official.model;
             found.category = official.category;
             found.status = official.status;
             found.notes = official.notes;
+            found.description = official.description;
+          }
+        }
+      } else {
+        // Enriquecer apenas o campo opcional description em memória caso esteja nulo, sem alterar o banco
+        for (const vtr of currentList) {
+          if (!vtr.description) {
+            const official = OFFICIAL_FAB_VEHICLES.find((o) => o.reg_fab.toUpperCase() === vtr.reg_fab.toUpperCase());
+            if (official?.description) {
+              vtr.description = official.description;
+            }
           }
         }
       }
