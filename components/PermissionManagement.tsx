@@ -12,6 +12,7 @@ import {
     Briefcase,
     Crown,
     BadgeCheck,
+    ShieldCheck,
     X,
     Lock,
     ShieldAlert,
@@ -61,7 +62,7 @@ const getRankCategory = (rank: string | null | undefined): 'OFICIAIS' | 'GRADUAD
 export default function PermissionManagement({ users, onUpdateUser, onRefreshUsers, currentAdmin, isDarkMode }: PermissionManagementProps) {
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState<'TODOS' | 'OFICIAIS' | 'GRADUADOS' | 'PRACAS'>('TODOS');
+    const [selectedCategory, setSelectedCategory] = useState<'TODOS' | 'ADMIN_TOTAL' | 'ADMIN_OM' | 'OFICIAIS' | 'GRADUADOS' | 'PRACAS'>('TODOS');
     const [filterSector, setFilterSector] = useState('');
     const [filterFunction, setFilterFunction] = useState('');
     const [sortMode, setSortMode] = useState<'hierarchy' | 'alpha'>('hierarchy');
@@ -126,41 +127,54 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
         );
     }, [allFunctions, assignableFunctionIds]);
 
-    // Contadores dinâmicos por categoria
+    // Contadores dinâmicos por categoria e por tipo de administração
     const counts = useMemo(() => {
         let oficiais = 0;
         let graduados = 0;
         let pracas = 0;
+        let adminTotal = 0;
+        let adminOm = 0;
         users.forEach(u => {
             const cat = getRankCategory(u.rank);
             if (cat === 'OFICIAIS') oficiais++;
             else if (cat === 'GRADUADOS') graduados++;
             else if (cat === 'PRACAS') pracas++;
+
+            if (u.functionId === 'ADMIN_TOTAL') {
+                adminTotal++;
+            } else if (u.functionId === 'ADMIN_OM') {
+                adminOm++;
+            }
         });
         return {
             total: users.length,
             oficiais,
             graduados,
-            pracas
+            pracas,
+            adminTotal,
+            adminOm
         };
     }, [users]);
 
     // Estatísticas de funções para governança da OM
     const functionStats = useMemo(() => {
-        let admins = 0;
+        let adminTotal = 0;
+        let adminOm = 0;
         let specialized = 0;
         let padrao = 0;
         users.forEach(u => {
             const fId = u.functionId || 'PADRAO';
-            if (fId === 'ADMIN_TOTAL' || fId === 'ADMIN_OM' || u.role === UserRole.ADMIN) {
-                admins++;
+            if (fId === 'ADMIN_TOTAL') {
+                adminTotal++;
+            } else if (fId === 'ADMIN_OM') {
+                adminOm++;
             } else if (fId !== 'PADRAO') {
                 specialized++;
             } else {
                 padrao++;
             }
         });
-        return { admins, specialized, padrao, total: users.length };
+        return { adminTotal, adminOm, specialized, padrao, total: users.length };
     }, [users]);
 
     // Motor de busca e filtragem aprimorado
@@ -169,8 +183,12 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
         const tokens = queryNorm.split(/\s+/).filter(Boolean);
 
         return users.filter(user => {
-            // Filtro por Categoria (Posto)
-            if (selectedCategory !== 'TODOS') {
+            // Filtro por Administrador ou Categoria Hierárquica
+            if (selectedCategory === 'ADMIN_TOTAL') {
+                if (user.functionId !== 'ADMIN_TOTAL') return false;
+            } else if (selectedCategory === 'ADMIN_OM') {
+                if (user.functionId !== 'ADMIN_OM') return false;
+            } else if (selectedCategory !== 'TODOS') {
                 const cat = getRankCategory(user.rank);
                 if (cat !== selectedCategory) return false;
             }
@@ -551,23 +569,51 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
 
                 {/* Métricas Rápidas no Topo */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-slate-200/40 dark:border-slate-800">
-                    <div className={`p-3 rounded-2xl border ${subCardBg} flex items-center gap-3`}>
+                    <div 
+                        onClick={() => setSelectedCategory('TODOS')}
+                        className={`p-3 rounded-2xl border ${subCardBg} flex items-center gap-3 cursor-pointer hover:border-blue-500/50 transition-all ${
+                            selectedCategory === 'TODOS' ? 'ring-2 ring-blue-500 border-blue-500 bg-blue-500/10' : ''
+                        }`}
+                        title="Ver todos os militares"
+                    >
                         <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
                             <Users className="w-4 h-4" />
                         </div>
                         <div className="min-w-0">
-                            <p className={`text-[10px] font-black uppercase tracking-wider ${textSecondary}`}>Total Militares</p>
+                            <p className={`text-[10px] font-black uppercase tracking-wider ${textSecondary}`}>Total Efetivo</p>
                             <p className={`text-lg font-black ${textPrimary}`}>{functionStats.total}</p>
                         </div>
                     </div>
 
-                    <div className={`p-3 rounded-2xl border ${subCardBg} flex items-center gap-3`}>
-                        <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                    <div 
+                        onClick={() => setSelectedCategory('ADMIN_TOTAL')}
+                        className={`p-3 rounded-2xl border ${subCardBg} flex items-center gap-3 cursor-pointer hover:border-amber-500/50 transition-all ${
+                            selectedCategory === 'ADMIN_TOTAL' ? 'ring-2 ring-amber-500 border-amber-500 bg-amber-500/10' : ''
+                        }`}
+                        title="Filtrar militares com ADMIN TOTAL (Global)"
+                    >
+                        <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center shrink-0">
                             <Crown className="w-4 h-4" />
                         </div>
                         <div className="min-w-0">
-                            <p className={`text-[10px] font-black uppercase tracking-wider ${textSecondary}`}>Administradores</p>
-                            <p className={`text-lg font-black text-amber-500`}>{functionStats.admins}</p>
+                            <p className={`text-[10px] font-black uppercase tracking-wider ${textSecondary}`}>Admin Total (Global)</p>
+                            <p className="text-lg font-black text-amber-400">{functionStats.adminTotal}</p>
+                        </div>
+                    </div>
+
+                    <div 
+                        onClick={() => setSelectedCategory('ADMIN_OM')}
+                        className={`p-3 rounded-2xl border ${subCardBg} flex items-center gap-3 cursor-pointer hover:border-indigo-500/50 transition-all ${
+                            selectedCategory === 'ADMIN_OM' ? 'ring-2 ring-indigo-500 border-indigo-500 bg-indigo-500/10' : ''
+                        }`}
+                        title="Filtrar militares com ADMIN OM (Local)"
+                    >
+                        <div className="w-9 h-9 rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className={`text-[10px] font-black uppercase tracking-wider ${textSecondary}`}>Admin OM (Local)</p>
+                            <p className="text-lg font-black text-indigo-400">{functionStats.adminOm}</p>
                         </div>
                     </div>
 
@@ -576,18 +622,8 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
                             <BadgeCheck className="w-4 h-4" />
                         </div>
                         <div className="min-w-0">
-                            <p className={`text-[10px] font-black uppercase tracking-wider ${textSecondary}`}>Funções Especiais</p>
-                            <p className={`text-lg font-black text-emerald-500`}>{functionStats.specialized}</p>
-                        </div>
-                    </div>
-
-                    <div className={`p-3 rounded-2xl border ${subCardBg} flex items-center gap-3`}>
-                        <div className="w-9 h-9 rounded-xl bg-slate-500/10 text-slate-500 flex items-center justify-center shrink-0">
-                            <Shield className="w-4 h-4" />
-                        </div>
-                        <div className="min-w-0">
-                            <p className={`text-[10px] font-black uppercase tracking-wider ${textSecondary}`}>Acesso Padrão</p>
-                            <p className={`text-lg font-black ${textPrimary}`}>{functionStats.padrao}</p>
+                            <p className={`text-[10px] font-black uppercase tracking-wider ${textSecondary}`}>Demais Funções</p>
+                            <p className={`text-lg font-black text-emerald-500`}>{functionStats.specialized + functionStats.padrao}</p>
                         </div>
                     </div>
                 </div>
@@ -620,34 +656,46 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
                                 )}
                             </div>
 
-                            {/* Filtros por Categoria Militar com Contadores */}
+                            {/* Filtros Rápidos (ADMIN_TOTAL, ADMIN_OM e Categorias Militares) */}
                             <div className="flex flex-wrap items-center gap-1.5">
                                 {[
                                     { id: 'TODOS' as const, label: 'Todos', count: counts.total, icon: Users },
+                                    { id: 'ADMIN_TOTAL' as const, label: 'Admin Total', count: counts.adminTotal, icon: Crown },
+                                    { id: 'ADMIN_OM' as const, label: 'Admin OM', count: counts.adminOm, icon: ShieldCheck },
                                     { id: 'OFICIAIS' as const, label: 'Oficiais', count: counts.oficiais, icon: Crown },
                                     { id: 'GRADUADOS' as const, label: 'Graduados', count: counts.graduados, icon: BadgeCheck },
                                     { id: 'PRACAS' as const, label: 'Praças', count: counts.pracas, icon: Shield }
-                                ].map(tab => (
-                                    <button
-                                        key={tab.id}
-                                        onClick={() => setSelectedCategory(tab.id)}
-                                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all ${
-                                            selectedCategory === tab.id
-                                                ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-600/25 scale-[1.02]'
-                                                : dk
-                                                    ? 'bg-slate-800/80 border-slate-700 text-slate-400 hover:text-white hover:border-slate-600'
-                                                    : 'bg-slate-100 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
-                                        }`}
-                                    >
-                                        <tab.icon className="w-3 h-3" />
-                                        <span>{tab.label}</span>
-                                        <span className={`px-1.5 py-0.2 text-[9px] font-black rounded-full ${
-                                            selectedCategory === tab.id ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
-                                        }`}>
-                                            {tab.count}
-                                        </span>
-                                    </button>
-                                ))}
+                                ].map(tab => {
+                                    const isCurrent = selectedCategory === tab.id;
+                                    let activeStyle = 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-600/25 scale-[1.02]';
+                                    if (tab.id === 'ADMIN_TOTAL') {
+                                        activeStyle = 'bg-amber-600 border-amber-500 text-white shadow-md shadow-amber-600/30 scale-[1.02]';
+                                    } else if (tab.id === 'ADMIN_OM') {
+                                        activeStyle = 'bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-600/30 scale-[1.02]';
+                                    }
+
+                                    return (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setSelectedCategory(tab.id)}
+                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all ${
+                                                isCurrent
+                                                    ? activeStyle
+                                                    : dk
+                                                        ? 'bg-slate-800/80 border-slate-700 text-slate-400 hover:text-white hover:border-slate-600'
+                                                        : 'bg-slate-100 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
+                                            }`}
+                                        >
+                                            <tab.icon className={`w-3 h-3 ${!isCurrent && tab.id === 'ADMIN_TOTAL' ? 'text-amber-400' : !isCurrent && tab.id === 'ADMIN_OM' ? 'text-indigo-400' : ''}`} />
+                                            <span>{tab.label}</span>
+                                            <span className={`px-1.5 py-0.2 text-[9px] font-black rounded-full ${
+                                                isCurrent ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                                            }`}>
+                                                {tab.count}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
                             </div>
 
                             {/* Filtros Auxiliares (Setor e Ordenação) */}
@@ -809,19 +857,37 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
 
                                             {/* Tag da Função Atual */}
                                             <div className="flex flex-col items-end shrink-0 pl-2">
-                                                <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border ${
-                                                    isSelected
-                                                        ? 'bg-white/20 border-white/30 text-white'
-                                                        : isAdminFunc
-                                                            ? 'bg-amber-500/10 border-amber-500/30 text-amber-500'
+                                                {currentFuncId === 'ADMIN_TOTAL' ? (
+                                                    <span className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border shadow-xs ${
+                                                        isSelected
+                                                            ? 'bg-amber-400 text-slate-950 border-amber-300'
+                                                            : 'bg-amber-500/15 border-amber-500/40 text-amber-400'
+                                                    }`}>
+                                                        <Crown className="w-2.5 h-2.5" />
+                                                        ADMIN TOTAL
+                                                    </span>
+                                                ) : currentFuncId === 'ADMIN_OM' ? (
+                                                    <span className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border shadow-xs ${
+                                                        isSelected
+                                                            ? 'bg-indigo-400 text-slate-950 border-indigo-300'
+                                                            : 'bg-indigo-500/15 border-indigo-500/40 text-indigo-400'
+                                                    }`}>
+                                                        <ShieldCheck className="w-2.5 h-2.5" />
+                                                        ADMIN OM
+                                                    </span>
+                                                ) : (
+                                                    <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border ${
+                                                        isSelected
+                                                            ? 'bg-white/20 border-white/30 text-white'
                                                             : currentFuncId !== 'PADRAO'
                                                                 ? 'bg-blue-500/10 border-blue-500/30 text-blue-500'
                                                                 : dk
                                                                     ? 'bg-slate-800 border-slate-700 text-slate-400'
                                                                     : 'bg-slate-100 border-slate-200 text-slate-600'
-                                                }`}>
-                                                    {currentFunc?.name || currentFuncId}
-                                                </span>
+                                                    }`}>
+                                                        {currentFunc?.name || currentFuncId}
+                                                    </span>
+                                                )}
                                                 <span className={`text-[9px] font-bold mt-0.5 ${
                                                     isSelected ? 'text-blue-100' : 'text-slate-400'
                                                 }`}>
