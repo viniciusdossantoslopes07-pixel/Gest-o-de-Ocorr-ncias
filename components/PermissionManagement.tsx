@@ -368,8 +368,16 @@ export default function PermissionManagement({ users, onUpdateUser, onRefreshUse
             setSelectedUser(updatedUserData);
             setSaveSuccessMsg('Permissões e nível de acesso atualizados com sucesso!');
 
-            if (onRefreshUsers) onRefreshUsers();
-            await onUpdateUser(updatedUserData);
+            // Notifica atualização e recarrega os dados sem requisições REST redundantes
+            if (onRefreshUsers) {
+                onRefreshUsers();
+            } else if (onUpdateUser) {
+                try {
+                    await onUpdateUser(updatedUserData);
+                } catch (err) {
+                    console.warn('Sincronização de usuário pós-RPC:', err);
+                }
+            }
 
             setTimeout(() => setSaveSuccessMsg(''), 4000);
         } catch (error: any) {
