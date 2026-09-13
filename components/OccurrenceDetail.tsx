@@ -11,6 +11,7 @@ import { analyzeOccurrenceWithAI } from '../services/geminiService';
 import { Combobox } from './Combobox';
 import { PERMISSIONS, hasPermission } from '../constants/permissions';
 import { useSectors } from '../contexts/SectorsContext';
+import { escapeHtml, sanitizeUrl } from '../utils/security';
 
 interface OccurrenceDetailProps {
   occurrence: Occurrence;
@@ -84,15 +85,29 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
 
     const timelineHtml = occurrence.timeline.map(t => `
       <div style="margin-bottom: 10px; border-left: 2px solid #ccc; padding-left: 10px;">
-        <p style="margin: 0; font-weight: bold;">${t.status}</p>
-        <p style="margin: 0; font-size: 0.9em; color: #666;">Por: ${t.updatedBy} em ${new Date(t.timestamp).toLocaleString()}</p>
-        <p style="margin: 5px 0 0 0;">${t.comment}</p>
+        <p style="margin: 0; font-weight: bold;">${escapeHtml(t.status)}</p>
+        <p style="margin: 0; font-size: 0.9em; color: #666;">Por: ${escapeHtml(t.updatedBy)} em ${escapeHtml(new Date(t.timestamp).toLocaleString())}</p>
+        <p style="margin: 5px 0 0 0;">${escapeHtml(t.comment)}</p>
       </div>
     `).join('');
 
+    const logoUrl = sanitizeUrl(activeOm?.logo_url, '/logo_gsd.png');
+    const omAcronym = escapeHtml(activeOm?.acronym || 'GSD-SP');
+    const occurrenceId = escapeHtml(occurrence.id);
+    const title = escapeHtml(occurrence.title);
+    const type = escapeHtml(occurrence.type);
+    const dateStr = escapeHtml(new Date(occurrence.date).toLocaleString());
+    const location = escapeHtml(occurrence.location);
+    const creator = escapeHtml(occurrence.creator);
+    const urgency = escapeHtml(occurrence.urgency);
+    const description = escapeHtml(occurrence.description);
+    const sanitizedAiAnalysis = escapeHtml(aiAnalysis || 'Não disponível.');
+
     printWindow.document.write(`
-      <html>
+      <!DOCTYPE html>
+      <html lang="pt-BR">
         <head>
+          <meta charset="UTF-8" />
           <title>Relatório de Ocorrência - Comando</title>
           <style>
             body { font-family: sans-serif; padding: 40px; line-height: 1.5; color: #333; }
@@ -101,35 +116,35 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
             .header p { margin: 5px 0 0 0; font-weight: bold; }
             .section { margin-bottom: 25px; }
             .section-title { font-weight: bold; text-transform: uppercase; background: #f0f0f0; padding: 5px 10px; margin-bottom: 10px; border: 1px solid #ddd; }
-            .grid { display: grid; grid-template-cols: 1fr 1fr; gap: 20px; }
+            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
             .ai-box { background: #f9f9f9; padding: 15px; border: 1px dashed #3b82f6; color: #1e3a8a; }
             @media print { .no-print { display: none; } }
           </style>
         </head>
         <body>
           <div class="header">
-            <img src="${activeOm?.logo_url || '/logo_gsd.png'}" alt="Logo OM" style="width: 80px; height: auto; margin-bottom: 10px;" />
-            <h1>GUARDIÃO ${activeOm?.acronym || 'GSD-SP'} - SISTEMA DE DEFESA</h1>
+            <img src="${logoUrl}" alt="Logo OM" style="width: 80px; height: auto; margin-bottom: 10px;" />
+            <h1>GUARDIÃO ${omAcronym} - SISTEMA DE DEFESA</h1>
             <p>RELATÓRIO TÉCNICO DE OCORRÊNCIA PARA O COMANDO DA UNIDADE</p>
-            <p style="font-size: 12px; margin-top: 10px;">ID: ${occurrence.id}</p>
+            <p style="font-size: 12px; margin-top: 10px;">ID: ${occurrenceId}</p>
           </div>
           <div class="section">
             <div class="section-title">Dados Gerais</div>
             <div class="grid">
               <div>
-                <p><strong>Título:</strong> ${occurrence.title}</p>
-                <p><strong>Tipo:</strong> ${occurrence.type}</p>
-                <p><strong>Data:</strong> ${new Date(occurrence.date).toLocaleString()}</p>
+                <p><strong>Título:</strong> ${title}</p>
+                <p><strong>Tipo:</strong> ${type}</p>
+                <p><strong>Data:</strong> ${dateStr}</p>
               </div>
               <div>
-                <p><strong>Local:</strong> ${occurrence.location}</p>
-                <p><strong>Relator:</strong> ${occurrence.creator}</p>
-                <p><strong>Urgência:</strong> ${occurrence.urgency}</p>
+                <p><strong>Local:</strong> ${location}</p>
+                <p><strong>Relator:</strong> ${creator}</p>
+                <p><strong>Urgência:</strong> ${urgency}</p>
               </div>
             </div>
           </div>
-          <div class="section"><div class="section-title">Descrição</div><p>${occurrence.description}</p></div>
-          <div class="section"><div class="section-title">Análise IA</div><div class="ai-box">${aiAnalysis || "Não disponível."}</div></div>
+          <div class="section"><div class="section-title">Descrição</div><p>${description}</p></div>
+          <div class="section"><div class="section-title">Análise IA</div><div class="ai-box">${sanitizedAiAnalysis}</div></div>
           <div class="section"><div class="section-title">Timeline</div>${timelineHtml}</div>
         </body>
       </html>

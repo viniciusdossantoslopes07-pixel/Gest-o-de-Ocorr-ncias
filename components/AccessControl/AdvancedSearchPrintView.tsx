@@ -1,6 +1,7 @@
 import { type FC, useEffect } from 'react';
 import { X, Printer, List } from 'lucide-react';
 import { useSectors } from '../../contexts/SectorsContext';
+import { escapeHtml, sanitizeUrl } from '../../utils/security';
 
 interface AccessRecord {
     id: string;
@@ -46,13 +47,23 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
     }, [onClose]);
 
     const buildTableRows = () => records.map((r, idx) => {
-        const date = new Date(r.timestamp).toLocaleDateString('pt-BR');
-        const time = new Date(r.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const date = escapeHtml(new Date(r.timestamp).toLocaleDateString('pt-BR'));
+        const time = escapeHtml(new Date(r.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
         const isEntrada = r.access_category === 'Entrada';
         const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
         const badgeBg = isEntrada ? '#dcfce7' : '#fee2e2';
         const badgeColor = isEntrada ? '#15803d' : '#b91c1c';
         const badgeBorder = isEntrada ? '#16a34a' : '#dc2626';
+
+        const safeName = escapeHtml(r.name);
+        const safeIdent = escapeHtml(r.identification || '-');
+        const safeMode = escapeHtml(r.access_mode);
+        const safeChar = escapeHtml(r.characteristic);
+        const safeModel = escapeHtml(r.vehicle_model);
+        const safePlate = escapeHtml(r.vehicle_plate);
+        const safeGate = escapeHtml(r.guard_gate.replace('PORTÃO ', ''));
+        const safeDest = r.destination ? escapeHtml(r.destination) : '';
+        const safeCategory = escapeHtml(r.access_category);
 
         return `
         <tr style="background:${rowBg}; page-break-inside:avoid;">
@@ -61,16 +72,16 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
                 <div style="font-size:9px; color:#64748b;">${time}</div>
             </td>
             <td style="padding:8px 10px; border-bottom:1px solid #e2e8f0; vertical-align:top;">
-                <div style="font-weight:800; font-size:11px; text-transform:uppercase;">${r.name}</div>
-                <div style="font-size:9px; font-weight:600; color:#64748b;">${r.identification || '-'}</div>
+                <div style="font-weight:800; font-size:11px; text-transform:uppercase;">${safeName}</div>
+                <div style="font-size:9px; font-weight:600; color:#64748b;">${safeIdent}</div>
             </td>
             <td style="padding:8px 10px; border-bottom:1px solid #e2e8f0; vertical-align:top; text-transform:uppercase;">
-                <div style="font-weight:700; font-size:10px;">${r.access_mode} • ${r.characteristic}</div>
-                ${r.access_mode === 'Veículo' ? `<div style="font-size:9px; color:#475569;">${r.vehicle_model} — ${r.vehicle_plate}</div>` : ''}
+                <div style="font-weight:700; font-size:10px;">${safeMode} • ${safeChar}</div>
+                ${r.access_mode === 'Veículo' ? `<div style="font-size:9px; color:#475569;">${safeModel} — ${safePlate}</div>` : ''}
             </td>
             <td style="padding:8px 10px; border-bottom:1px solid #e2e8f0; vertical-align:top; text-transform:uppercase;">
-                <div style="font-weight:700; font-size:10px;">${r.guard_gate.replace('PORTÃO ', '')}</div>
-                ${r.destination ? `<div style="font-size:9px; font-weight:700; color:#2563eb;">DEST: ${r.destination}</div>` : ''}
+                <div style="font-weight:700; font-size:10px;">${safeGate}</div>
+                ${safeDest ? `<div style="font-size:9px; font-weight:700; color:#2563eb;">DEST: ${safeDest}</div>` : ''}
             </td>
             <td style="padding:8px 10px; border-bottom:1px solid #e2e8f0; vertical-align:top; text-align:right;">
                 <span style="
@@ -79,7 +90,7 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
                     border:1px solid ${badgeBorder};
                     padding:2px 7px; border-radius:4px;
                     white-space:nowrap;
-                ">${r.access_category}</span>
+                ">${safeCategory}</span>
             </td>
         </tr>`;
     }).join('');
@@ -98,11 +109,22 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
         const totalSaidas = records.filter(r => r.access_category === 'Saída').length;
         const origin = window.location.origin;
 
+        const safeStartLabel = escapeHtml(startLabel);
+        const safeEndLabel = escapeHtml(endLabel);
+        const safeEmitDate = escapeHtml(emitDate);
+        const safeEmitTime = escapeHtml(emitTime);
+        const safeSearchQuery = escapeHtml(searchQuery || 'Todos os Registros');
+        const hostLogoUrl = sanitizeUrl(activeOm?.host_logo_url, '/logo_basp_optimized.png');
+        const omLogoUrl = sanitizeUrl(activeOm?.logo_url, '/logo_gsd.png');
+        const safeHostUnit = escapeHtml(activeOm?.host_unit || 'Base Aérea de São Paulo');
+        const safeOmName = escapeHtml(activeOm?.name || 'Grupo de Segurança e Defesa de São Paulo');
+        const safeOmAcronym = escapeHtml(activeOm?.acronym || 'GSD-SP');
+
         const html = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Relatório de Controle de Acesso — ${activeOm?.acronym || 'GSD-SP'}</title>
+    <title>Relatório de Controle de Acesso — ${safeOmAcronym}</title>
     <style>
         @page { size: A4; margin: 10mm 12mm; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -242,31 +264,31 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
 
         <!-- CABEÇALHO -->
         <div class="header">
-            <img src="${activeOm?.host_logo_url || '/logo_basp_optimized.png'}" alt="Logo Unidade Sediadora" />
+            <img src="${hostLogoUrl}" alt="Logo Unidade Sediadora" />
             <div class="header-center">
                 <div class="ministry">Ministério da Defesa</div>
                 <div class="cmd">Comando da Aeronáutica</div>
-                <div class="base">${activeOm?.host_unit || 'Base Aérea de São Paulo'}</div>
-                <div class="gsd">${activeOm?.name || 'Grupo de Segurança e Defesa de São Paulo'}</div>
+                <div class="base">${safeHostUnit}</div>
+                <div class="gsd">${safeOmName}</div>
                 <span class="badge">Relatório de Controle de Acesso</span>
             </div>
-            <img src="${activeOm?.logo_url || '/logo_gsd.png'}" alt="Logo OM" />
+            <img src="${omLogoUrl}" alt="Logo OM" />
         </div>
 
         <!-- FILTROS -->
         <div class="filters-grid">
             <div class="filter-item" style="border-left:4px solid #2563eb;">
                 <div class="filter-label">Filtros de Período</div>
-                <div class="filter-value">${startLabel} ATÉ ${endLabel}</div>
+                <div class="filter-value">${safeStartLabel} ATÉ ${safeEndLabel}</div>
             </div>
             <div class="filter-item" style="border-left:4px solid #94a3b8;">
                 <div class="filter-label">Termo de Busca</div>
-                <div class="filter-value">${searchQuery || 'Todos os Registros'}</div>
+                <div class="filter-value">${safeSearchQuery}</div>
             </div>
             <div class="filter-item" style="border-left:4px solid #94a3b8;">
                 <div class="filter-label">Data de Emissão</div>
-                <div class="filter-value">${emitDate}</div>
-                <div class="filter-sub">${emitTime}h</div>
+                <div class="filter-value">${safeEmitDate}</div>
+                <div class="filter-sub">${safeEmitTime}h</div>
             </div>
         </div>
 
@@ -323,7 +345,7 @@ const AdvancedSearchPrintView: FC<AdvancedSearchPrintViewProps> = ({
         </div>
 
         <div class="doc-footer">
-            Documento gerado eletronicamente pelo Sistema Guardião ${activeOm?.acronym || 'GSD-SP'} em ${new Date().toLocaleString('pt-BR')}
+            Documento gerado eletronicamente pelo Sistema Guardião ${safeOmAcronym} em ${safeEmitDate} às ${safeEmitTime}h
         </div>
 
     </div>

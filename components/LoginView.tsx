@@ -11,6 +11,7 @@ import { SearchableSelect } from './Common/SearchableSelect';
 
 interface LoginViewProps {
   onLogin: (username: string, password: string) => Promise<boolean | string> | boolean | string;
+  onBiometricLoginSuccess?: (userData: any) => void;
   onRegister: (user: User) => Promise<{ success: boolean; error?: string }> | { success: boolean; error?: string };
   onPublicAccess: () => void;
   onViewEvents?: () => void;
@@ -20,7 +21,7 @@ interface LoginViewProps {
   urlOm?: string | null;
 }
 
-const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, onViewEvents, onRequestPasswordReset, onForcePasswordReset, isDarkMode, urlOm }) => {
+const LoginView: FC<LoginViewProps> = ({ onLogin, onBiometricLoginSuccess, onRegister, onPublicAccess, onViewEvents, onRequestPasswordReset, onForcePasswordReset, isDarkMode, urlOm }) => {
   const { sectorNames, oms, omId, loading } = useSectors();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -213,19 +214,25 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onRegister, onPublicAccess, on
 
       const success = await authenticateBiometrics(savedCredentialId);
       if (success) {
-        const { data: userData, error } = await supabase
-          .from('users')
-          .select('username, password')
-          .eq('biometric_credentials_id', savedCredentialId)
-          .single();
+        const { data: rpcRes, error: rpcErr } = await supabase.rpc('secure_biometric_login', {
+          p_credential_id: savedCredentialId
+        });
 
-        if (error || !userData) throw new Error('Credencial não encontrada ou inválida.');
+        if (rpcErr || !rpcRes || !rpcRes.success) {
+          throw new Error(rpcRes?.message || 'Credencial biométrica não reconhecida ou inativa.');
+        }
 
-        await onLogin(userData.username, userData.password);
+        if (onBiometricLoginSuccess) {
+          onBiometricLoginSuccess(rpcRes.user);
+        } else {
+          localStorage.setItem('gsdsp_user_session', JSON.stringify(rpcRes.user));
+          localStorage.setItem('gsdsp_last_saram', rpcRes.user.username);
+          window.location.reload();
+        }
       }
-    } catch (err) {
-      console.error(err);
-      setError('Falha na autenticação biométrica.');
+    } catch (err: any) {
+      console.error('Biometric login error:', err);
+      setError(err?.message || 'Falha na autenticação biométrica.');
     } finally {
       setIsLoading(false);
     }

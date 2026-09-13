@@ -9,6 +9,7 @@ import { VehicleChecklistPrintModal } from './VehicleChecklistPrintModal';
 import { generateVehicleChecklistPdf } from '../services/vehiclePdfService';
 import { useSectors } from '../contexts/SectorsContext';
 import { OFFICIAL_FAB_VEHICLES } from '../constants/fabVehiclesData';
+import { validateFileUpload } from '../utils/security';
 import {
   Car,
   Plus,
@@ -660,21 +661,54 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
     if (!files || files.length === 0) return;
 
     const fileList = Array.from(files);
+    const validFiles: File[] = [];
 
-    const processFile = (file: File): Promise<string> => {
+    for (const f of fileList) {
+      const validation = validateFileUpload(f, {
+        maxSizeMB: 10,
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'webp'],
+        allowedMimeTypes: ['image/*']
+      });
+
+      if (!validation.valid) {
+        alert(validation.error || 'Arquivo de imagem inválido.');
+        continue;
+      }
+      validFiles.push(f);
+    }
+
+    if (validFiles.length === 0) {
+      e.target.value = '';
+      return;
+    }
+
+    const processFile = (file: File): Promise<string | null> => {
       return new Promise((resolve) => {
         const reader = new FileReader();
+        reader.onerror = () => {
+          console.error('Falha ao ler arquivo de foto:', file.name);
+          resolve(null);
+        };
         reader.onload = (event) => {
           const img = new Image();
+          img.onerror = () => {
+            console.error('Falha ao carregar imagem:', file.name);
+            resolve(null);
+          };
           img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 900;
-            const scaleSize = Math.min(1, MAX_WIDTH / img.width);
-            canvas.width = img.width * scaleSize;
-            canvas.height = img.height * scaleSize;
-            const ctx = canvas.getContext('2d');
-            ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL('image/jpeg', 0.75));
+            try {
+              const canvas = document.createElement('canvas');
+              const MAX_WIDTH = 900;
+              const scaleSize = Math.min(1, MAX_WIDTH / img.width);
+              canvas.width = img.width * scaleSize;
+              canvas.height = img.height * scaleSize;
+              const ctx = canvas.getContext('2d');
+              ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+              resolve(canvas.toDataURL('image/jpeg', 0.75));
+            } catch (err) {
+              console.error('Erro ao renderizar imagem no canvas:', err);
+              resolve(null);
+            }
           };
           img.src = event.target?.result as string;
         };
@@ -683,7 +717,9 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
     };
 
     try {
-      const newPhotos = await Promise.all(fileList.map(processFile));
+      const processedResults = await Promise.all(validFiles.map(processFile));
+      const newPhotos = processedResults.filter((p): p is string => p !== null);
+
       if (type === 'departure') {
         setDeparturePhotos((prev) => [...prev, ...newPhotos]);
       } else {

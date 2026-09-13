@@ -16,6 +16,7 @@ import { notificationService } from '../services/notificationService';
 import { formatDisplayDate } from '../utils/formatters';
 import { useSectors } from '../contexts/SectorsContext';
 import { parseOmisPdf } from '../utils/omisParser';
+import { validateFileUpload } from '../utils/security';
 
 const legacyIds = ['e5418770-62bd-49d7-9229-a608e3a2895b', 'a74eee21-c495-4a12-8bcd-f89e9cb0aa7c'];
 
@@ -246,6 +247,18 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
     const handleImportPdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+
+        const validation = validateFileUpload(file, {
+            maxSizeMB: 15,
+            allowedExtensions: ['pdf'],
+            allowedMimeTypes: ['application/pdf']
+        });
+
+        if (!validation.valid) {
+            alert(validation.error || 'Arquivo PDF inválido.');
+            if (e.target) e.target.value = '';
+            return;
+        }
 
         setIsParsing(true);
         try {

@@ -3,6 +3,7 @@ import { useState, useEffect, type FC } from 'react';
 import { OCCURRENCE_CATEGORIES, TYPES_BY_CATEGORY } from '../constants';
 import { Urgency, Status, Occurrence, User } from '../types';
 import { MapPin, Camera, Upload, Send, X, FileText, ChevronDown } from 'lucide-react';
+import { validateFileUpload } from '../utils/security';
 
 interface OccurrenceFormProps {
   user: User;
@@ -43,9 +44,34 @@ const OccurrenceForm: React.FC<OccurrenceFormProps> = ({ user, onSubmit, onCance
   }, [formData.category]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setAttachments(prev => [...prev, ...Array.from(e.target.files!)]);
+    if (!e.target.files) return;
+    const incomingFiles = Array.from(e.target.files);
+    
+    if (attachments.length + incomingFiles.length > 5) {
+      alert('Limite de segurança: é permitido anexar no máximo 5 arquivos por ocorrência.');
+      e.target.value = '';
+      return;
     }
+
+    const validFiles: File[] = [];
+    for (const f of incomingFiles) {
+      const validation = validateFileUpload(f, {
+        maxSizeMB: 10,
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
+        allowedMimeTypes: ['image/*', 'application/pdf']
+      });
+
+      if (!validation.valid) {
+        alert(validation.error || 'Arquivo inválido.');
+        continue;
+      }
+      validFiles.push(f);
+    }
+
+    if (validFiles.length > 0) {
+      setAttachments(prev => [...prev, ...validFiles]);
+    }
+    e.target.value = '';
   };
 
   const removeAttachment = (index: number) => {
@@ -224,7 +250,13 @@ const OccurrenceForm: React.FC<OccurrenceFormProps> = ({ user, onSubmit, onCance
               <label className={`cursor-pointer border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center transition-all group ${dk ? 'bg-slate-800 border-slate-600 hover:bg-slate-700 hover:border-blue-500' : 'bg-white border-slate-300 hover:bg-slate-50 hover:border-blue-400'}`}>
                 <Camera className={`w-8 h-8 mb-2 group-hover:text-blue-500 transition-colors ${dk ? 'text-slate-500' : 'text-slate-300'}`} />
                 <span className={`text-[10px] font-bold uppercase tracking-tighter group-hover:text-blue-500 transition-colors ${dk ? 'text-slate-400' : 'text-slate-400'}`}>Capturar / Subir</span>
-                <input type="file" multiple className="hidden" onChange={handleFileChange} />
+                <input 
+                  type="file" 
+                  multiple 
+                  accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf" 
+                  className="hidden" 
+                  onChange={handleFileChange} 
+                />
               </label>
 
               {attachments.map((file, i) => (

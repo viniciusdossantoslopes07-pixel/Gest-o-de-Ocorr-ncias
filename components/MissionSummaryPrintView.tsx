@@ -5,6 +5,7 @@ import { MissionOrder, User } from '../types';
 import { formatDisplayDate } from '../utils/formatters';
 import { OmPrintHeader } from './Common/OmPrintHeader';
 import { MilitaryOrganization } from '../types';
+import { escapeHtml } from '../utils/security';
 
 interface MissionSummaryPrintViewProps {
     orders: MissionOrder[];
@@ -54,7 +55,7 @@ const MissionSummaryPrintView: FC<MissionSummaryPrintViewProps> = ({ orders, use
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
-<title>resumo_missoes_${label}</title>
+<title>resumo_missoes_${escapeHtml(label)}</title>
 <style>
 *,*::before,*::after{box-sizing:border-box}
 body{margin:0;padding:6mm 8mm;font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:8pt}

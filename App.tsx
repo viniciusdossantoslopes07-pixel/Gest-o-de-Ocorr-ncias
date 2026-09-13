@@ -363,9 +363,11 @@ const App: FC = () => {
     const root = window.document.documentElement;
     if (isDarkMode) {
       root.classList.add('dark');
+      document.body.classList.add('dark');
       localStorage.setItem('theme', 'dark');
     } else {
       root.classList.remove('dark');
+      document.body.classList.remove('dark');
       localStorage.setItem('theme', 'light');
     }
   }, [isDarkMode]);
@@ -806,6 +808,61 @@ const App: FC = () => {
       console.error('Login error:', err);
       return false;
     }
+  };
+
+  const handleBiometricLoginSuccess = (rawUserData: any) => {
+    if (!rawUserData) return;
+    const user: User = {
+      id: rawUserData.id,
+      username: rawUserData.username,
+      name: rawUserData.name,
+      role: rawUserData.role as UserRole,
+      email: rawUserData.email,
+      rank: rawUserData.rank,
+      saram: rawUserData.saram,
+      sector: rawUserData.sector,
+      accessLevel: rawUserData.access_level,
+      approved: rawUserData.approved,
+      password: '',
+      warName: rawUserData.war_name,
+      militarId: rawUserData.militar_id,
+      phoneNumber: rawUserData.phone_number,
+      cpf: rawUserData.cpf,
+      displayOrder: rawUserData.display_order,
+      menu_order: rawUserData.menu_order,
+      home_order: rawUserData.home_order,
+      pending_password_reset: rawUserData.pending_password_reset,
+      reset_password_at_login: rawUserData.reset_password_at_login,
+      password_status: rawUserData.password_status,
+      photo_url: rawUserData.photo_url,
+      functionId: rawUserData.function_id,
+      customPermissions: rawUserData.custom_permissions,
+      biometric_credentials_id: rawUserData.biometric_credentials_id,
+      active: rawUserData.active,
+      specialty: rawUserData.specialty,
+      classYear: rawUserData.class_year,
+      service: rawUserData.service,
+      address: rawUserData.address,
+      enlistmentDate: rawUserData.enlistment_date,
+      presentationDate: rawUserData.presentation_date,
+      lastPromotionDate: rawUserData.last_promotion_date,
+      militaryIdentity: rawUserData.military_identity,
+      rc: rawUserData.rc,
+      workplace: rawUserData.workplace,
+      emergencyContact: rawUserData.emergency_contact,
+      is_functional: rawUserData.is_functional,
+      external_service: rawUserData.external_service,
+      external_om: rawUserData.external_om,
+      external_sector: rawUserData.external_sector,
+      administrativeRole: rawUserData.administrative_role,
+      om_id: rawUserData.om_id
+    };
+
+    setCurrentUser(user);
+    const safeUser = { ...user, password: '' };
+    localStorage.setItem('gsdsp_user_session', JSON.stringify(safeUser));
+    localStorage.setItem('gsdsp_last_saram', user.username);
+    setActiveTab('home');
   };
 
   const handleForcePasswordReset = async (username: string, newPassword: string): Promise<boolean> => {
@@ -1352,29 +1409,45 @@ const App: FC = () => {
   };
 
   const handlePermanentDeleteUser = async (id: string) => {
+    if (!currentUser) return;
     if (!confirm('AVISO CRÍTICO: Esta ação removerá o militar PERMANENTEMENTE do banco de dados. Isso pode quebrar estatísticas se os dados não foram salvos em texto. Deseja continuar?')) return;
 
-    const { error } = await supabase.from('users').delete().eq('id', id);
-    if (!error) {
-      setUsers(users.filter(u => u.id !== id));
-      alert('Militar excluído definitivamente.');
-    } else {
-      alert('Erro ao excluir usuário: ' + error.message);
+    try {
+      const { data: res, error } = await supabase.rpc('admin_delete_user', {
+        p_admin_id: currentUser.id,
+        p_target_user_id: id
+      });
+
+      if (error || !res || !res.success) {
+        alert(res?.message || error?.message || 'Erro ao excluir usuário.');
+        return;
+      }
+
+      setUsers(prev => prev.filter(u => u.id !== id));
+      alert(res.message || 'Militar excluído definitivamente.');
+    } catch (err: any) {
+      console.error('Erro ao excluir usuário:', err);
+      alert('Falha ao processar exclusão: ' + (err?.message || 'Erro de conexão.'));
     }
   };
 
   const handleRejectUserRegistration = async (id: string) => {
-    if (!confirm('Deseja realmente recusar este cadastro? O registro será excluído permanentemente da base de dados.')) {
+    if (!currentUser) return;
+    if (!confirm('Deseja realmente recusar este cadastro? O registro será excluído da base de dados.')) {
       return;
     }
 
     try {
-      const { error } = await supabase.from('users').delete().eq('id', id);
-      if (!error) {
+      const { data: res, error } = await supabase.rpc('admin_delete_user', {
+        p_admin_id: currentUser.id,
+        p_target_user_id: id
+      });
+
+      if (!error && res && res.success) {
         setUsers(prev => prev.filter(u => u.id !== id));
-        alert('Cadastro recusado e excluído da base de dados com sucesso.');
+        alert(res.message || 'Cadastro recusado e excluído com sucesso.');
       } else {
-        console.error('Erro ao excluir usuário recusado:', error);
+        console.error('Erro ao excluir usuário recusado via RPC:', error || res);
         // Fallback defensivo: desativar e desaprovar caso haja restrição de FK
         await supabase.from('users').update({ approved: false, active: false }).eq('id', id);
         setUsers(prev => prev.filter(u => u.id !== id));
@@ -1758,6 +1831,7 @@ const App: FC = () => {
       <div className={isDarkMode ? 'dark' : ''}>
         <LoginView
           onLogin={handleLogin}
+          onBiometricLoginSuccess={handleBiometricLoginSuccess}
           onRegister={handleRegister}
           onPublicAccess={handlePublicAccess}
           onViewEvents={() => setShowPublicEvents(true)}
@@ -1772,7 +1846,7 @@ const App: FC = () => {
   }
 
   return (
-    <div className={`min-h-screen flex ${isDarkMode ? 'bg-slate-950 text-slate-100 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black' : 'bg-slate-50 text-slate-900 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-50/50 via-slate-50 to-slate-100'}`}>
+    <div className={`min-h-screen flex ${isDarkMode ? 'dark bg-slate-950 text-slate-100 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black' : 'bg-slate-50 text-slate-900 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-50/50 via-slate-50 to-slate-100'}`}>
 
       {/* NEW SIDEBAR COMPONENT */}
       <SideMenu
@@ -1893,7 +1967,7 @@ const App: FC = () => {
             </div>
           )}
 
-          {activeTab === 'kanban' && canViewServiceQueue && <KanbanBoard occurrences={occurrences} onSelect={setSelectedOccurrence} />}
+          {activeTab === 'kanban' && canViewServiceQueue && <KanbanBoard occurrences={occurrences} onSelect={setSelectedOccurrence} isDarkMode={isDarkMode} />}
           {activeTab === 'dashboard' && canViewDashboard && <Dashboard occurrences={occurrences} isDarkMode={isDarkMode} />}
 
           {activeTab === 'mission-request' && canRequestMission && (
@@ -2183,6 +2257,7 @@ const App: FC = () => {
               occurrences={occurrences}
               missionRequests={missionRequests}
               missionOrders={missionOrders}
+              isDarkMode={isDarkMode}
               onDownloadOrder={(order) => {
                 alert("Para imprimir, acesse a Central de Missões.");
               }}
@@ -2200,7 +2275,7 @@ const App: FC = () => {
           {activeTab === 'mission-management' && canManageMissions && (
             <div className="space-y-8">
               <MissionDashboard orders={missionOrders} requests={missionRequests} user={currentUser!} users={users} />
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} rounded-2xl border shadow-sm overflow-hidden`}>
                 {/* ... */}
                 <MissionRequestList
                   missions={missionRequests.filter(r => r.status !== 'FINALIZADA')}
