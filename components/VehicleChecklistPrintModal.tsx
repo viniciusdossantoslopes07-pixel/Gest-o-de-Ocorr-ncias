@@ -13,6 +13,7 @@ import {
   Fuel,
   Shield,
 } from 'lucide-react';
+import { supabase } from '../services/supabase';
 
 interface VehicleChecklistPrintModalProps {
   loan: VehicleLoan;
@@ -98,6 +99,7 @@ function injectPrintStyle() {
         box-shadow: none !important;
         border: none !important;
         border-radius: 0 !important;
+        break-after: page;
       }
       /* Evita cortar a tabela de itens no meio */
       .vtr-checklist-items-table {
@@ -140,8 +142,30 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
   onClose,
   om
 }) => {
-  const isReturn = type === 'return' || (type === 'complete' && loan.status === 'Devolvido');
-  const vtr = loan.vehicle;
+  const [currentLoan, setCurrentLoan] = React.useState<VehicleLoan>(loan);
+  const isReturn = type === 'return' || (type === 'complete' && currentLoan.status === 'Devolvido');
+  const vtr = currentLoan.vehicle;
+
+  // Se fotos não estão presentes no objeto recebido, busca pontualmente apenas deste registro (ultra rápido)
+  useEffect(() => {
+    setCurrentLoan(loan);
+    if (loan?.id && loan.departure_photos === undefined && loan.return_photos === undefined) {
+      supabase
+        .from('vehicle_loans')
+        .select('departure_photos, return_photos')
+        .eq('id', loan.id)
+        .single()
+        .then(({ data, error }) => {
+          if (!error && data) {
+            setCurrentLoan((prev) => ({
+              ...prev,
+              departure_photos: data.departure_photos || [],
+              return_photos: data.return_photos || []
+            }));
+          }
+        });
+    }
+  }, [loan]);
 
   // Injeta estilo global de impressão ao montar e remove ao desmontar
   useEffect(() => {
@@ -160,7 +184,7 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
   };
 
   const handleDownloadPdf = async () => {
-    await generateVehicleChecklistPdf(loan, type, { download: true });
+    await generateVehicleChecklistPdf(currentLoan, type, { download: true });
   };
 
   const formatDate = (dateStr?: string) => {
@@ -179,10 +203,10 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
     }
   };
 
-  const checklistItems = isReturn && loan.return_items ? loan.return_items : loan.departure_items || {};
-  const currentFuel = isReturn ? loan.return_fuel_level || loan.departure_fuel_level : loan.departure_fuel_level;
-  const damages = isReturn && loan.return_damages ? loan.return_damages : loan.departure_damages || [];
-  const photos = isReturn && loan.return_photos ? loan.return_photos : loan.departure_photos || [];
+  const checklistItems = isReturn && currentLoan.return_items ? currentLoan.return_items : currentLoan.departure_items || {};
+  const currentFuel = isReturn ? currentLoan.return_fuel_level || currentLoan.departure_fuel_level : currentLoan.departure_fuel_level;
+  const damages = isReturn && currentLoan.return_damages ? currentLoan.return_damages : currentLoan.departure_damages || [];
+  const photos = isReturn && currentLoan.return_photos ? currentLoan.return_photos : currentLoan.departure_photos || [];
 
   const content = (
     <div
@@ -205,7 +229,7 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
               {isReturn ? 'Checklist de Retorno da Viatura' : 'Checklist de Saída da Viatura'}
             </h3>
             <p className="text-xs text-slate-400">
-              Termo Nº: <strong>{loan.loan_number}</strong> • VTR: <strong>{vtr?.reg_fab}</strong> ({vtr?.brand} {vtr?.model})
+              Termo Nº: <strong>{currentLoan.loan_number}</strong> • VTR: <strong>{vtr?.reg_fab}</strong> ({vtr?.brand} {vtr?.model})
             </p>
           </div>
         </div>
@@ -276,7 +300,7 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
         <div className="border border-slate-300 rounded-xl overflow-hidden mb-2 text-xs">
           <div className="bg-slate-100 font-bold px-3 py-1.5 border-b border-slate-300 text-slate-700 uppercase tracking-wider text-[10px] flex items-center justify-between">
             <span>1. DADOS DA CAUTELA E VIATURA</span>
-            <span>Nº {loan.loan_number}</span>
+            <span>Nº {currentLoan.loan_number}</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 divide-x divide-y divide-slate-200 text-[9px]">
@@ -302,52 +326,52 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
 
             <div className="p-1.5">
               <span className="text-[9px] font-bold text-slate-500 uppercase block">Militar Condutor</span>
-              <strong className="font-bold text-slate-900">{loan.driver_rank} {loan.driver_name}</strong>
-              <span className="text-[10px] text-slate-500 block">SARAM: {loan.driver_saram}</span>
+              <strong className="font-bold text-slate-900">{currentLoan.driver_rank} {currentLoan.driver_name}</strong>
+              <span className="text-[10px] text-slate-500 block">SARAM: {currentLoan.driver_saram}</span>
             </div>
 
             <div className="p-1.5">
               <span className="text-[9px] font-bold text-slate-500 uppercase block">Despachante da Saída</span>
-              <strong className="font-bold text-slate-900">{loan.dispatcher_name}</strong>
-              <span className="text-[10px] text-slate-500 block">SARAM: {loan.dispatcher_saram}</span>
+              <strong className="font-bold text-slate-900">{currentLoan.dispatcher_name}</strong>
+              <span className="text-[10px] text-slate-500 block">SARAM: {currentLoan.dispatcher_saram}</span>
             </div>
 
             <div className="p-1.5">
               <span className="text-[9px] font-bold text-slate-500 uppercase block">Data e Hora de Saída</span>
-              <strong className="font-bold text-slate-900">{formatDate(loan.departure_date)}</strong>
+              <strong className="font-bold text-slate-900">{formatDate(currentLoan.departure_date)}</strong>
             </div>
 
             <div className="p-1.5">
               <span className="text-[9px] font-bold text-slate-500 uppercase block">Destino da Missão</span>
-              <strong className="font-bold text-blue-800">{loan.destination || 'BASP'}</strong>
-              {loan.mission_reason && (
-                <span className="text-[10px] text-slate-500 block truncate">Motivo: {loan.mission_reason}</span>
+              <strong className="font-bold text-blue-800">{currentLoan.destination || 'BASP'}</strong>
+              {currentLoan.mission_reason && (
+                <span className="text-[10px] text-slate-500 block truncate">Motivo: {currentLoan.mission_reason}</span>
               )}
             </div>
 
             <div className="p-1.5 bg-slate-50">
               <span className="text-[9px] font-bold text-slate-500 uppercase block">Odômetro de Saída</span>
-              <strong className="font-black text-slate-900 text-xs">{loan.departure_odometer} km</strong>
+              <strong className="font-black text-slate-900 text-xs">{currentLoan.departure_odometer} km</strong>
             </div>
 
             <div className="p-1.5 bg-slate-50">
               <span className="text-[9px] font-bold text-slate-500 uppercase block">Combustível de Saída</span>
-              <strong className="font-black text-blue-700 text-xs">{loan.departure_fuel_level || '8/8'}</strong>
+              <strong className="font-black text-blue-700 text-xs">{currentLoan.departure_fuel_level || '8/8'}</strong>
             </div>
 
             {isReturn && (
               <>
                 <div className="p-1.5 bg-emerald-50/60">
                   <span className="text-[9px] font-bold text-slate-500 uppercase block">Odômetro de Retorno</span>
-                  <strong className="font-black text-emerald-800 text-xs">{loan.return_odometer || '—'} km</strong>
-                  {loan.distance_traveled !== undefined && (
-                    <span className="text-[10px] text-emerald-700 font-bold block">Percorrido: {loan.distance_traveled} km</span>
+                  <strong className="font-black text-emerald-800 text-xs">{currentLoan.return_odometer || '—'} km</strong>
+                  {currentLoan.distance_traveled !== undefined && (
+                    <span className="text-[10px] text-emerald-700 font-bold block">Percorrido: {currentLoan.distance_traveled} km</span>
                   )}
                 </div>
 
                 <div className="p-1.5 bg-emerald-50/60">
                   <span className="text-[9px] font-bold text-slate-500 uppercase block">Combustível Retorno</span>
-                  <strong className="font-black text-emerald-800 text-xs">{loan.return_fuel_level || '—'}</strong>
+                  <strong className="font-black text-emerald-800 text-xs">{currentLoan.return_fuel_level || '—'}</strong>
                 </div>
               </>
             )}
@@ -399,7 +423,7 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
               <div key={i} className="border border-slate-300 rounded-xl overflow-hidden shadow-sm">
                 <img src={photo} alt="Evidência" className="w-full h-auto object-cover max-h-64" />
                 <div className="bg-slate-100 p-2 text-[10px] text-slate-600 font-bold border-t border-slate-300">
-                  Evidência Fotográfica ({isReturn ? 'Retorno' : 'Saída'}) - Placa: {vtr?.plate} - {formatDate(isReturn ? loan.return_date : loan.departure_date)}
+                  Evidência Fotográfica ({isReturn ? 'Retorno' : 'Saída'}) - Placa: {vtr?.plate} - {formatDate(isReturn ? currentLoan.return_date : currentLoan.departure_date)}
                 </div>
               </div>
             ))}
@@ -412,7 +436,7 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
             4. Observações da Missão
           </h4>
           <p className="text-[11px] text-slate-700 italic mt-1">
-            {loan.departure_notes || loan.return_notes || 'Sem observações adicionais registradas.'}
+            {currentLoan.departure_notes || currentLoan.return_notes || 'Sem observações adicionais registradas.'}
           </p>
         </div>
 
@@ -426,9 +450,9 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
         <div className="vtr-signatures-block grid grid-cols-2 gap-8 pt-4 border-t-2 border-slate-300 text-center">
           <div>
             <div className="min-h-[50px] flex items-center justify-center mb-1">
-              {loan.driver_signature_data && loan.driver_signature_data.startsWith('data:image') ? (
+              {currentLoan.driver_signature_data && currentLoan.driver_signature_data.startsWith('data:image') ? (
                 <img
-                  src={loan.driver_signature_data}
+                  src={currentLoan.driver_signature_data}
                   alt="Assinatura do Condutor"
                   className="max-h-12 max-w-[180px] object-contain"
                 />
@@ -440,10 +464,10 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
             </div>
             <div className="border-t border-slate-800 pt-1">
               <strong className="font-bold text-xs uppercase text-slate-900 block">
-                {loan.driver_rank} {loan.driver_name}
+                {currentLoan.driver_rank} {currentLoan.driver_name}
               </strong>
               <span className="text-[10px] text-slate-500 uppercase block">
-                Militar Condutor • SARAM: {loan.driver_saram}
+                Militar Condutor • SARAM: {currentLoan.driver_saram}
               </span>
             </div>
           </div>

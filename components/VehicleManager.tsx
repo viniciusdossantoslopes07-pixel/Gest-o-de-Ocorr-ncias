@@ -374,16 +374,59 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
   const fetchLoans = async () => {
     try {
       setLoading(true);
+      // Selecionamos campos essenciais excluindo 'departure_photos' e 'return_photos' (imagens pesadas em Base64)
+      // para carregar em milissegundos, evitando estouro de timeout do banco de dados (erro 57014)
       let query = supabase
         .from('vehicle_loans')
         .select(`
-          *,
+          id,
+          loan_number,
+          vehicle_id,
+          om_id,
+          driver_id,
+          driver_name,
+          driver_rank,
+          driver_saram,
+          driver_signature,
+          driver_signature_data,
+          dispatcher_id,
+          dispatcher_name,
+          dispatcher_saram,
+          departure_date,
+          expected_return_date,
+          destination,
+          mission_reason,
+          status,
+          departure_odometer,
+          departure_fuel_level,
+          departure_items,
+          departure_damages,
+          departure_notes,
+          return_date,
+          return_dispatcher_id,
+          return_dispatcher_name,
+          return_dispatcher_saram,
+          return_odometer,
+          distance_traveled,
+          return_fuel_level,
+          return_items,
+          return_damages,
+          return_notes,
+          return_signature,
+          return_signature_data,
+          created_at,
+          updated_at,
           vehicle:vehicles(*)
         `);
+
       if (currentOmId) {
         query = query.or(`om_id.eq.${currentOmId},om_id.is.null`);
       }
-      const { data, error } = await query.order('created_at', { ascending: false });
+
+      const { data, error } = await query
+        .order('created_at', { ascending: false })
+        .limit(300);
+
       if (error) throw error;
       setLoans(data || []);
     } catch (err) {
@@ -391,6 +434,12 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRefresh = async () => {
+    setLoading(true);
+    await Promise.all([fetchVehicles(), fetchLoans(), fetchSystemUsers()]);
+    setLoading(false);
   };
 
   const fetchSystemUsers = async () => {
@@ -419,10 +468,11 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
     }
   };
 
-  // Viaturas disponíveis para cautela
+  // Viaturas disponíveis para cautela (status Disponível e que não estejam com cautela 'Em Uso' ativa)
   const availableVehicles = useMemo(() => {
-    return vehicles.filter((v) => v.status === 'Disponível');
-  }, [vehicles]);
+    const activeVehicleIds = new Set(loans.filter((l) => l.status === 'Em Uso').map((l) => l.vehicle_id));
+    return vehicles.filter((v) => v.status === 'Disponível' && !activeVehicleIds.has(v.id));
+  }, [vehicles, loans]);
 
   // Viatura atualmente selecionada para cautela
   const selectedVehicle = useMemo(() => {
@@ -698,13 +748,13 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
           img.onload = () => {
             try {
               const canvas = document.createElement('canvas');
-              const MAX_WIDTH = 900;
+              const MAX_WIDTH = 800;
               const scaleSize = Math.min(1, MAX_WIDTH / img.width);
-              canvas.width = img.width * scaleSize;
-              canvas.height = img.height * scaleSize;
+              canvas.width = Math.round(img.width * scaleSize);
+              canvas.height = Math.round(img.height * scaleSize);
               const ctx = canvas.getContext('2d');
               ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-              resolve(canvas.toDataURL('image/jpeg', 0.75));
+              resolve(canvas.toDataURL('image/jpeg', 0.65));
             } catch (err) {
               console.error('Erro ao renderizar imagem no canvas:', err);
               resolve(null);
@@ -1065,8 +1115,16 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ user, isDarkMode
             </p>
           </div>
 
-          {/* Botão de Ação Primária do Despachante */}
-          <div className="flex items-center gap-3 shrink-0">
+          {/* Botões de Ação do Despachante */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              onClick={() => handleRefresh()}
+              disabled={loading}
+              title="Atualizar dados da frota e cautelas"
+              className="p-3.5 rounded-2xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 shadow-md active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-blue-400' : ''}`} />
+            </button>
             <button
               onClick={() => handleOpenLoanModal()}
               disabled={availableVehicles.length === 0}
