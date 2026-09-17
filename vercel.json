@@ -32,6 +32,10 @@
     ],
     "rewrites": [
         {
+            "source": "/supabase-api/(.*)",
+            "destination": "http://2.25.229.18:8000/$1"
+        },
+        {
             "source": "/",
             "has": [
                 { "type": "query", "key": "om" }
@@ -43,7 +47,7 @@
             "destination": "/api/$1"
         },
         {
-            "source": "/((?!api/).*)",
+            "source": "/((?!api/|supabase-api/).*)",
             "destination": "/index.html"
         }
     ]

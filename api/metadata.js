@@ -58,10 +58,15 @@ export default async function handler(req, res) {
   }
 
   // Se CHEGOU AQUI, É UM BOT
-  const supabaseUrl = process.env.VITE_SUPABASE_URL;
-  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+  let supabaseUrl = process.env.VITE_SUPABASE_URL || 'http://2.25.229.18:8000';
+  let supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzg5NjAwNDYxLCJleHAiOjIxMDQ5NjA0NjF9.OFcLnCPS3h5j_AySCPElhGxG0L7EbTO_I0fyJFUeJOI';
 
-  if (!omAcronym || !supabaseUrl || !supabaseKey) {
+  if (!supabaseUrl || supabaseUrl.includes('ipbzdgkbrozrjeohonbo')) {
+    supabaseUrl = 'http://2.25.229.18:8000';
+    supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzg5NjAwNDYxLCJleHAiOjIxMDQ5NjA0NjF9.OFcLnCPS3h5j_AySCPElhGxG0L7EbTO_I0fyJFUeJOI';
+  }
+
+  if (!omAcronym) {
     return res.status(200).send(getDefaultHtml());
   }
 

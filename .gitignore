@@ -30,3 +30,10 @@ data/
 
 # Supabase CLI temp files
 supabase/.temp/
+
+# VPS & Backups
+vps_credentials.json
+backups/
+scripts/
+*.sql
+
