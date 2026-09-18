@@ -24,7 +24,7 @@ interface ParkingRequest {
 }
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
-const TOTAL_VAGAS = 32;
+const TOTAL_VAGAS = 60;
 
 const getLocalDate = (d: Date = new Date()) => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

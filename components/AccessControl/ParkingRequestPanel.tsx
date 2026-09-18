@@ -55,7 +55,7 @@ interface ParkingRequest {
     email?: string;
 }
 
-const TOTAL_VAGAS = 32;
+const TOTAL_VAGAS = 60;
 
 const formatDateTime = (dateStr?: string) => {
     if (!dateStr) return '—';
