@@ -992,13 +992,6 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
 
                             <div className={`mt-5 pt-4 border-t ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'} flex items-center justify-between gap-1.5 relative z-10`}>
                                 <div className="flex gap-1.5">
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); setSelectedMission(m); setShowMissionCard(true); }}
-                                        className={`p-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800/50 text-slate-300 hover:bg-blue-600 hover:text-white border border-slate-700/50' : 'bg-white text-slate-700 hover:bg-blue-600 hover:text-white border border-slate-200'}`}
-                                        title="Analisar Detalhes"
-                                    >
-                                        <Eye className="w-3.5 h-3.5" />
-                                    </button>
                                     {(user.role === UserRole.ADMIN || user.sector === 'CH-SOP') && (
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleDeleteRequest(m); }}

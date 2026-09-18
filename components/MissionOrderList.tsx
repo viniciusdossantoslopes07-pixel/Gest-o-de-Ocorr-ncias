@@ -118,13 +118,6 @@ const MissionOrderList: FC<MissionOrderListProps> = ({ orders, onCreate, onEdit,
 
                                 <div className="grid grid-cols-3 md:flex md:flex-col gap-2 mt-2 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-slate-100">
                                     <button
-                                        onClick={() => onView(order)}
-                                        className="h-10 md:h-9 md:w-9 flex items-center justify-center text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all active:scale-95"
-                                        title="Visualizar"
-                                    >
-                                        <Eye className="w-5 h-5 md:w-4 md:h-4" />
-                                    </button>
-                                    <button
                                         onClick={() => onEdit(order)}
                                         className="h-10 md:h-9 md:w-9 flex items-center justify-center text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-all active:scale-95"
                                         title="Editar"
