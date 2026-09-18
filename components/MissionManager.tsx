@@ -877,13 +877,6 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                 )}
                                 <div className="flex gap-2">
                                     <button
-                                        onClick={() => handlePrintOrder(order)}
-                                        className={`p-3 rounded-xl transition-all flex items-center justify-center active:scale-95 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-blue-600 hover:text-white border border-slate-700' : 'bg-white text-slate-700 hover:bg-blue-600 hover:text-white border border-slate-200'}`}
-                                        title="Visualizar"
-                                    >
-                                        <Eye className="w-4 h-4" />
-                                    </button>
-                                    <button
                                         onClick={(e) => { e.stopPropagation(); handleCloneOrder(order); }}
                                         className={`p-3 rounded-xl transition-all flex items-center justify-center active:scale-95 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white border border-slate-700' : 'bg-white text-slate-700 hover:bg-indigo-600 hover:text-white border border-slate-200'}`}
                                         title="Clonar Missão"
@@ -1066,13 +1059,6 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                             
                             <div className={`mt-5 pt-4 border-t ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'} flex items-center justify-between gap-1.5 relative z-10`}>
                                 <div className="flex gap-1.5">
-                                    <button 
-                                        onClick={() => handlePrintOrder(o)}
-                                        className={`p-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800/50 text-slate-300 hover:bg-blue-600 hover:text-white border border-slate-700/50' : 'bg-white text-slate-700 hover:bg-blue-600 hover:text-white border border-slate-200'}`}
-                                        title="Visualizar"
-                                    >
-                                        <Eye className="w-3.5 h-3.5" />
-                                    </button>
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); handleCloneOrder(o); }}
                                         className={`p-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800/50 text-slate-300 hover:bg-indigo-600 hover:text-white border border-slate-700/50' : 'bg-white text-slate-700 hover:bg-indigo-600 hover:text-white border border-slate-200'}`}
@@ -1437,13 +1423,6 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                             )}
                                             <div className="flex gap-2 w-full">
                                                 <button
-                                                    onClick={(e) => { e.stopPropagation(); handlePrintOrder(order); }}
-                                                    className={`flex-1 p-3.5 rounded-xl transition-all active:scale-95 flex items-center justify-center border shadow-sm ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-blue-600 hover:border-blue-500 hover:text-white border-slate-700' : 'bg-white text-slate-700 hover:bg-blue-600 hover:border-blue-600 hover:text-white border-slate-200'}`}
-                                                    title="Visualizar"
-                                                >
-                                                    <Eye className="w-4.5 h-4.5" />
-                                                </button>
-                                                <button
                                                     onClick={(e) => { e.stopPropagation(); handleCloneOrder(order); }}
                                                     className={`flex-1 p-3.5 rounded-xl transition-all active:scale-95 flex items-center justify-center border shadow-sm ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:border-indigo-500 hover:text-white border-slate-700' : 'bg-white text-slate-700 hover:bg-indigo-600 hover:border-indigo-600 hover:text-white border-slate-200'}`}
                                                     title="Clonar Missão"
@@ -1798,13 +1777,6 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                                     </div>
                                                     <div className="flex flex-col sm:flex-col gap-2.5 w-full sm:w-auto mt-2 sm:mt-0">
                                                         <div className="flex sm:flex-col gap-2 w-full">
-                                                            <button
-                                                                onClick={(e) => { e.stopPropagation(); handlePrintOrder(order); }}
-                                                                className={`flex-1 p-3 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-blue-600 hover:text-white' : 'bg-white text-slate-700 hover:bg-blue-600 hover:text-white border border-slate-200'}`}
-                                                                title="Visualizar"
-                                                            >
-                                                                <Eye className="w-4 h-4" />
-                                                            </button>
                                                             <button
                                                                 onClick={(e) => { e.stopPropagation(); handleCloneOrder(order); }}
                                                                 className={`flex-1 p-3 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white' : 'bg-white text-slate-700 hover:bg-indigo-600 hover:text-white border border-slate-200'}`}
