@@ -30,16 +30,20 @@ function formatPhone(value: string): string {
 }
 
 function friendlyStorageError(err: any): string {
-    const msg: string = err?.message || err?.error || String(err);
+    const msg: string = err?.message || err?.error || (typeof err === 'string' ? err : JSON.stringify(err));
     if (msg.toLowerCase().includes('payload too large') || msg.toLowerCase().includes('413') || msg.toLowerCase().includes('exceeded the max'))
         return 'Um dos arquivos é muito grande. O limite é 5 MB por documento.';
     if (msg.toLowerCase().includes('duplicate') || msg.toLowerCase().includes('already exists'))
         return 'Erro de duplicidade ao enviar o arquivo. Tente novamente.';
+    if (msg.toLowerCase().includes('row-level security') || msg.toLowerCase().includes('violates') || msg.toLowerCase().includes('policy'))
+        return 'Permissão negada ao salvar solicitação. Tente novamente ou contate a SOP-03.';
+    if (msg.toLowerCase().includes('mime') || msg.toLowerCase().includes('media type'))
+        return 'Formato de arquivo não suportado pelo servidor. Envie arquivos PDF, JPG ou PNG.';
     if (msg.toLowerCase().includes('storage') || msg.toLowerCase().includes('bucket'))
         return 'Erro ao enviar documentos. Verifique sua conexão e tente novamente.';
     if (msg.toLowerCase().includes('network') || msg.toLowerCase().includes('fetch'))
         return 'Erro de conexão. Verifique sua internet e tente novamente.';
-    return 'Ocorreu um erro inesperado. Tente novamente ou entre em contato com a SOP-03.';
+    return err?.message || 'Ocorreu um erro inesperado. Tente novamente ou entre em contato com a SOP-03.';
 }
 
 type UploadStep = '' | 'identidade' | 'cnh' | 'crlv' | 'salvando';
@@ -60,13 +64,25 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
     const [parkProto, setParkProto] = useState('');
 
     const { oms } = useSectors();
+
+    const resolveDefaultOmId = React.useCallback(() => {
+        if (initialOmId) return initialOmId;
+        if (user?.om_id) return user.om_id;
+        if (oms && oms.length > 0) {
+            const gsd = oms.find(o => o.acronym === 'GSD-SP');
+            if (gsd) return gsd.id;
+            return oms[0].id;
+        }
+        return 'e5418770-62bd-49d7-9229-a608e3a2895b'; // GSD-SP UUID fallback
+    }, [initialOmId, user, oms]);
+
     const [parkData, setParkData] = useState({
         nome: '',
         posto: '',
         forca: 'FAB',
         tipo: 'Militar',
         om: '',
-        om_id: initialOmId || '',
+        om_id: resolveDefaultOmId(),
         telefone: '',
         email: '',
         identidade: '',
@@ -81,25 +97,15 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
         thirdPartyContact: ''
     });
 
-    // Efeito para definir a OM automaticamente com base no link ou fallback para GSD-SP
+    // Efeito para definir a OM automaticamente sempre que o modal abre ou os dados mudam
     React.useEffect(() => {
-        if (oms.length > 0) {
-            let targetOm;
-            if (initialOmId) {
-                targetOm = oms.find(o => o.id === initialOmId);
-            } else {
-                // Fallback para GSD-SP se estiver no domínio raiz sem parâmetro ?om=
-                targetOm = oms.find(o => o.acronym === 'GSD-SP');
-            }
-
-            if (targetOm) {
-                setParkData(prev => ({
-                    ...prev,
-                    om_id: targetOm!.id,
-                }));
-            }
-        }
-    }, [initialOmId, oms]);
+        if (!isOpen) return;
+        const targetOmId = resolveDefaultOmId();
+        setParkData(prev => ({
+            ...prev,
+            om_id: prev.om_id || targetOmId
+        }));
+    }, [isOpen, resolveDefaultOmId]);
 
     // Pré-preenchimento automático para militar logado na plataforma
     React.useEffect(() => {
@@ -114,10 +120,10 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                 identidade: prev.identidade || user.saram || user.cpf || '',
                 telefone: prev.telefone || (user.phoneNumber ? formatPhone(user.phoneNumber) : ''),
                 email: prev.email || user.email || '',
-                om_id: prev.om_id || user.om_id || initialOmId || ''
+                om_id: prev.om_id || user.om_id || initialOmId || resolveDefaultOmId()
             }));
         }
-    }, [isOpen, user, initialOmId]);
+    }, [isOpen, user, initialOmId, resolveDefaultOmId]);
 
     const [identityFile, setIdentityFile] = useState<File | null>(null);
     const [cnhFile, setCnhFile] = useState<File | null>(null);
@@ -127,9 +133,10 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
 
     const handleClose = React.useCallback(() => {
         if (isLoading) return; // bloqueia fechar enquanto envia
+        const defaultOm = resolveDefaultOmId();
         setParkSuccess(false);
         setParkData({ 
-            nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', om_id: initialOmId || '',
+            nome: '', posto: '', forca: 'FAB', tipo: 'Militar', om: '', om_id: defaultOm,
             telefone: '', email: '', identidade: '', marcaModelo: '', placa: '', cor: '', 
             inicio: '', termino: '', obs: '', isThirdParty: false, thirdPartyName: '', thirdPartyContact: '' 
         });
@@ -138,7 +145,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
         setCrlvFile(null);
         setError('');
         onClose();
-    }, [isLoading, initialOmId, onClose]);
+    }, [isLoading, resolveDefaultOmId, onClose]);
 
     // Fechar ao pressionar a tecla ESC
     React.useEffect(() => {
@@ -181,7 +188,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
         setError('');
 
         // 1. Campos obrigatórios
-        if (!parkData.nome.trim() || !parkData.marcaModelo.trim() || !parkData.placa.trim() || !parkData.inicio || !parkData.termino || !parkData.email.trim() || !parkData.om_id) {
+        if (!parkData.nome.trim() || !parkData.marcaModelo.trim() || !parkData.placa.trim() || !parkData.inicio || !parkData.termino || !parkData.email.trim()) {
             setError('Preencha todos os campos obrigatórios (marcados com *).');
             return;
         }
@@ -225,28 +232,51 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
             return;
         }
 
+        const getFileMime = (file: File) => {
+            if (file.type && file.type.length > 0) return file.type;
+            const ext = file.name.split('.').pop()?.toLowerCase();
+            if (ext === 'pdf') return 'application/pdf';
+            if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg';
+            if (ext === 'png') return 'image/png';
+            return 'application/pdf';
+        };
+
+        const finalOmId = parkData.om_id || resolveDefaultOmId();
+
         // ── Uploads ──
         try {
             const uid = `${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
             // Upload Identidade
             setUploadStep('identidade');
-            const idExt = identityFile.name.split('.').pop();
-            const { error: idError } = await supabase.storage.from('parking-docs').upload(`identity_${uid}.${idExt}`, identityFile);
+            const idExt = identityFile.name.split('.').pop()?.toLowerCase() || 'pdf';
+            const { error: idError } = await supabase.storage.from('parking-docs').upload(
+                `identity_${uid}.${idExt}`,
+                identityFile,
+                { contentType: getFileMime(identityFile), upsert: true }
+            );
             if (idError) throw idError;
             const idUrl = supabase.storage.from('parking-docs').getPublicUrl(`identity_${uid}.${idExt}`).data.publicUrl;
 
             // Upload CNH
             setUploadStep('cnh');
-            const cnhExt = cnhFile.name.split('.').pop();
-            const { error: cnhError } = await supabase.storage.from('parking-docs').upload(`cnh_${uid}.${cnhExt}`, cnhFile);
+            const cnhExt = cnhFile.name.split('.').pop()?.toLowerCase() || 'pdf';
+            const { error: cnhError } = await supabase.storage.from('parking-docs').upload(
+                `cnh_${uid}.${cnhExt}`,
+                cnhFile,
+                { contentType: getFileMime(cnhFile), upsert: true }
+            );
             if (cnhError) throw cnhError;
             const cnhUrl = supabase.storage.from('parking-docs').getPublicUrl(`cnh_${uid}.${cnhExt}`).data.publicUrl;
 
             // Upload CRLV
             setUploadStep('crlv');
-            const crlvExt = crlvFile.name.split('.').pop();
-            const { error: crlvError } = await supabase.storage.from('parking-docs').upload(`crlv_${uid}.${crlvExt}`, crlvFile);
+            const crlvExt = crlvFile.name.split('.').pop()?.toLowerCase() || 'pdf';
+            const { error: crlvError } = await supabase.storage.from('parking-docs').upload(
+                `crlv_${uid}.${crlvExt}`,
+                crlvFile,
+                { contentType: getFileMime(crlvFile), upsert: true }
+            );
             if (crlvError) throw crlvError;
             const crlvUrl = supabase.storage.from('parking-docs').getPublicUrl(`crlv_${uid}.${crlvExt}`).data.publicUrl;
 
@@ -262,7 +292,7 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
                 telefone: parkData.telefone,
                 email: parkData.email.trim().toLowerCase(),
                 identidade: parkData.identidade.trim().toUpperCase() || null,
-                om_id: parkData.om_id || null,
+                om_id: finalOmId,
                 ext_marca_modelo: parkData.marcaModelo.trim().toUpperCase(),
                 ext_placa: parkData.placa.trim().toUpperCase(),
                 ext_cor: parkData.cor.trim().toUpperCase(),

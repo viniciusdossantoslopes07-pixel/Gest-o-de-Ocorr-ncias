@@ -23,6 +23,7 @@ interface LoginViewProps {
 
 const LoginView: FC<LoginViewProps> = ({ onLogin, onBiometricLoginSuccess, onRegister, onPublicAccess, onViewEvents, onRequestPasswordReset, onForcePasswordReset, isDarkMode, urlOm }) => {
   const { sectorNames, oms, omId, loading } = useSectors();
+  const effectiveOmId = omId || (urlOm ? oms.find(o => o.acronym?.toUpperCase() === urlOm?.toUpperCase())?.id : null) || oms.find(o => o.acronym === 'GSD-SP')?.id || 'e5418770-62bd-49d7-9229-a608e3a2895b';
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -574,7 +575,7 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onBiometricLoginSuccess, onReg
         isOpen={showParkingModal} 
         onClose={() => setShowParkingModal(false)} 
         isDarkMode={isDarkMode} 
-        initialOmId={omId}
+        initialOmId={effectiveOmId}
       />
     </div>
   );
