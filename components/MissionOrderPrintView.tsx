@@ -10,7 +10,7 @@ import html2canvas from 'html2canvas-pro';
 interface MissionOrderPrintViewProps {
     order: MissionOrder;
     onClose: () => void;
-    onSign?: () => void;
+    onSign?: (role: 'CH_SOP' | 'CMT') => void;
     onForceActivate?: () => void;
     canSign?: boolean;
     users?: any[];
@@ -473,28 +473,56 @@ ${content.outerHTML}
                         </div>
 
                         {/* Signature Block - Only if digitally signed */}
-                        {order.chSopSignature && order.chSopSignature.includes('ASSINADO DIGITALMENTE') && (
-                            <div className="mb-6 border border-blue-100 bg-blue-50/30 rounded-xl p-6 mt-8 flex flex-col items-center">
+                        {((order.chSopSignature && order.chSopSignature.includes('ASSINADO DIGITALMENTE')) ||
+                          (order.cmtSignature && order.cmtSignature.includes('ASSINADO DIGITALMENTE'))) && (
+                            <div className="mb-6 border border-blue-100 bg-blue-50/30 rounded-xl p-4 sm:p-5 mt-6 flex flex-col items-center">
                                 <div className="flex items-center gap-2 mb-2">
                                     <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
                                     <p className="text-[10px] font-black uppercase text-blue-900 tracking-widest">Documento Autenticado Digitalmente</p>
                                 </div>
-                                <p className="text-[9px] font-bold uppercase text-slate-500 mb-2">CH SOP - GSD-SP</p>
-                                <div className="flex flex-col items-center gap-1">
-                                    <p className="font-mono text-[9px] text-blue-800 bg-white px-4 py-1.5 rounded-lg border border-blue-100 shadow-sm select-all">
-                                        {order.chSopSignature}
-                                    </p>
-                                    <p className="text-[8px] text-slate-400 mt-1 italic leading-tight text-center">
-                                        A autenticidade deste documento pode ser validada via QR Code ou sistema interno do GSD-SP.<br />
-                                        Assinado em: {new Date(order.updatedAt).toLocaleString('pt-BR')}
-                                    </p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl mt-1">
+                                    {order.chSopSignature && order.chSopSignature.includes('ASSINADO DIGITALMENTE') && (
+                                        <div className="bg-white p-2.5 rounded-lg border border-blue-100 text-center shadow-xs">
+                                            <p className="text-[8px] font-black uppercase text-blue-700">CH SOP - GSD-SP</p>
+                                            <p className="font-mono text-[8px] text-slate-700 mt-1 select-all break-words leading-tight">
+                                                {order.chSopSignature}
+                                            </p>
+                                        </div>
+                                    )}
+                                    {order.cmtSignature && order.cmtSignature.includes('ASSINADO DIGITALMENTE') && (
+                                        <div className="bg-white p-2.5 rounded-lg border border-blue-100 text-center shadow-xs">
+                                            <p className="text-[8px] font-black uppercase text-orange-700">CMT DO {activeOm?.acronym || 'GSD-SP'}</p>
+                                            <p className="font-mono text-[8px] text-slate-700 mt-1 select-all break-words leading-tight">
+                                                {order.cmtSignature}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
+                                <p className="text-[8px] text-slate-400 mt-2 italic leading-tight text-center">
+                                    A autenticidade deste documento pode ser validada via sistema interno e controle de autenticidade do {activeOm?.acronym || 'GSD-SP'}.
+                                </p>
                             </div>
                         )}
 
-                        {/* Static Signatures */}
-                        <div className="mt-16 sm:mt-24 mb-4 flex justify-between px-2 sm:px-8 text-center print:mt-20 signature-block avoid-break">
+                        {/* Static Signatures (com suporte a Rubrica desenhada ou Selo Digital) */}
+                        <div className="mt-12 sm:mt-16 mb-4 flex justify-between px-2 sm:px-8 text-center print:mt-14 signature-block avoid-break">
+                            {/* Assinatura Chefe de Operações */}
                             <div className="flex flex-col items-center w-1/2 px-2">
+                                <div className="min-h-[50px] flex items-end justify-center mb-1">
+                                    {order.chSopSignature && order.chSopSignature.startsWith('data:image') ? (
+                                        <img
+                                            src={order.chSopSignature}
+                                            alt="Rubrica Chefe Operações"
+                                            className="max-h-12 max-w-[170px] object-contain mb-[-6px]"
+                                        />
+                                    ) : order.chSopSignature && order.chSopSignature.includes('ASSINADO DIGITALMENTE') ? (
+                                        <div className="text-[8px] sm:text-[9px] font-black text-blue-800 border border-blue-300 bg-blue-50/90 px-2.5 py-0.5 rounded tracking-wider uppercase mb-1">
+                                            ✓ Assinado Digitalmente
+                                        </div>
+                                    ) : (
+                                        <div className="h-6"></div>
+                                    )}
+                                </div>
                                 <div className="w-48 h-px bg-slate-400 mb-2"></div>
                                 <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">
                                     {(() => {
@@ -511,7 +539,6 @@ ${content.outerHTML}
                                             if (currentChSopName) {
                                                 nameToDisplay = currentChSopName;
                                             } else {
-                                                // Fallback para datas antigas
                                                 nameToDisplay = order.date < '2026-05-01' ? 'JOÃO GABRIEL PICCOLI E SOUZA Maj Inf' : '________________________________________';
                                             }
                                         }
@@ -521,7 +548,24 @@ ${content.outerHTML}
                                 </p>
                                 <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase">CHEFE DA SEÇÃO DE OPERAÇÕES</p>
                             </div>
+
+                            {/* Assinatura Comandante */}
                             <div className="flex flex-col items-center w-1/2 px-2">
+                                <div className="min-h-[50px] flex items-end justify-center mb-1">
+                                    {order.cmtSignature && order.cmtSignature.startsWith('data:image') ? (
+                                        <img
+                                            src={order.cmtSignature}
+                                            alt="Rubrica Comandante"
+                                            className="max-h-12 max-w-[170px] object-contain mb-[-6px]"
+                                        />
+                                    ) : order.cmtSignature && order.cmtSignature.includes('ASSINADO DIGITALMENTE') ? (
+                                        <div className="text-[8px] sm:text-[9px] font-black text-blue-800 border border-blue-300 bg-blue-50/90 px-2.5 py-0.5 rounded tracking-wider uppercase mb-1">
+                                            ✓ Assinado Digitalmente
+                                        </div>
+                                    ) : (
+                                        <div className="h-6"></div>
+                                    )}
+                                </div>
                                 <div className="w-48 h-px bg-slate-400 mb-2"></div>
                                 <p className="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase">
                                     {(() => {
@@ -531,14 +575,12 @@ ${content.outerHTML}
                                         const cmtUser = users?.find(u => u.administrativeRole === 'CMT_GSD_SP');
                                         const currentCmtName = cmtUser ? `${cmtUser.name || cmtUser.warName || ''} ${cmtUser.rank || ''}`.trim() : '';
 
-                                        // Verifica se o nome atual no documento é considerado "não identificado" ou vazio
                                         const isUnidentified = !nameToDisplay || nameToDisplay.trim() === '' || nameToDisplay.includes('_____') || nameToDisplay.toUpperCase().includes('IDENTIFICADO') || nameToDisplay.toLowerCase().includes('chefe') || nameToDisplay.toLowerCase().includes('cmt do');
                                         
                                         if (isUnidentified) {
                                             if (currentCmtName) {
                                                 nameToDisplay = currentCmtName;
                                             } else {
-                                                // Fallback para datas antigas
                                                 nameToDisplay = order.date < '2026-05-01' ? 'FELIPE BARBOSA ALVARENGA Ten Cel Inf' : '________________________________________';
                                             }
                                         }
@@ -584,33 +626,44 @@ ${content.outerHTML}
                         </p>
                     </div>
                     
-                    <div className="flex flex-row items-center gap-2 w-full sm:w-auto">
+                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                         {order.status === 'AGUARDANDO_ASSINATURA' && canSign && onForceActivate && (
                             <button
                                 onClick={onForceActivate}
-                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-emerald-600 text-white rounded-xl font-black text-[10px] sm:text-sm hover:bg-emerald-700 shadow-lg shadow-emerald-500/30 transition-all active:scale-95"
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-emerald-600 text-white rounded-xl font-black text-[10px] sm:text-xs hover:bg-emerald-700 shadow-md shadow-emerald-500/20 transition-all active:scale-95"
                             >
-                                <Zap className="w-4 h-4" />
+                                <Zap className="w-3.5 h-3.5" />
                                 <span>Iniciar</span>
                             </button>
                         )}
                         {(order.status === 'EM_MISSAO' || order.status === 'PRONTA_PARA_EXECUCAO') && onSendNotifications && (
                             <button
                                 onClick={() => onSendNotifications(order)}
-                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-indigo-600 text-white rounded-xl font-black text-[10px] sm:text-sm hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 transition-all active:scale-95"
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-indigo-600 text-white rounded-xl font-black text-[10px] sm:text-xs hover:bg-indigo-700 shadow-md shadow-indigo-500/20 transition-all active:scale-95"
                             >
                                 <Mail className="w-3.5 h-3.5" />
                                 <span className="whitespace-nowrap">Comunicação</span>
                             </button>
                         )}
-                        {order.status === 'AGUARDANDO_ASSINATURA' && canSign && onSign && (
-                            <button
-                                onClick={onSign}
-                                className="flex-2 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-black text-[10px] sm:text-sm hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30 transition-all active:scale-95 relative group overflow-hidden"
-                            >
-                                <FileSignature className="w-4 h-4 relative z-10" />
-                                <span className="relative z-10">Assinar</span>
-                            </button>
+                        {canSign && onSign && (
+                            <>
+                                <button
+                                    onClick={() => onSign('CH_SOP')}
+                                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-black text-[10px] sm:text-xs hover:from-orange-600 hover:to-orange-700 shadow-md shadow-orange-500/25 transition-all active:scale-95"
+                                    title="Assinar como Chefe da Seção de Operações"
+                                >
+                                    <FileSignature className="w-3.5 h-3.5" />
+                                    <span className="whitespace-nowrap">Assinar Chefe Operações</span>
+                                </button>
+                                <button
+                                    onClick={() => onSign('CMT')}
+                                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-xl font-black text-[10px] sm:text-xs hover:from-amber-700 hover:to-amber-800 shadow-md shadow-amber-600/25 transition-all active:scale-95"
+                                    title={`Assinar como CMT ${activeOm?.acronym || 'GSD-SP'}`}
+                                >
+                                    <FileSignature className="w-3.5 h-3.5" />
+                                    <span className="whitespace-nowrap">Assinar CMT {activeOm?.acronym || 'GSD-SP'}</span>
+                                </button>
+                            </>
                         )}
                         <button
                             onClick={handleDownloadPdf}

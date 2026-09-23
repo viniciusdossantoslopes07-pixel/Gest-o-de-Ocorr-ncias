@@ -1,12 +1,12 @@
 
 import { useState, useEffect, type FC, type FormEvent } from 'react';
 import { MissionOrder, MissionOrderPersonnel, MissionOrderSchedule } from '../types';
-import { Save, X, Plus, Trash2, Search, Shield, Loader2, FileText } from 'lucide-react';
+import { Save, X, Plus, Trash2, Search, Shield, Loader2, FileText, FileSignature, CheckCircle2 } from 'lucide-react';
 import { RANKS, ARMAMENT_OPTIONS, MISSION_FUNCTIONS, TIPOS_MISSAO } from '../constants';
 
 interface MissionOrderFormProps {
     order?: MissionOrder;
-    onSubmit: (order: Partial<MissionOrder>) => void;
+    onSubmit: (order: Partial<MissionOrder>, andSignRole?: 'CH_SOP' | 'CMT') => void;
     onCancel: () => void;
     currentUser: string;
     users: { id: string; name: string; rank: string; warName?: string; saram: string; phoneNumber?: string; administrativeRole?: string | null }[];
@@ -140,8 +140,8 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
         }));
     };
 
-    const handleSubmit = (e: FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = (e?: FormEvent, andSignRole?: 'CH_SOP' | 'CMT') => {
+        if (e && e.preventDefault) e.preventDefault();
 
         if (!formData.mission || !formData.location || !formData.requester || !formData.description) {
             alert('Preencha todos os campos obrigatórios.');
@@ -161,8 +161,10 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
             createdBy: currentUser,
             cmtName: order?.cmtName || cmtNameStr,
             chSopName: order?.chSopName || chSopNameStr,
+            chSopSignature: order?.chSopSignature,
+            cmtSignature: order?.cmtSignature,
             updatedAt: new Date().toISOString()
-        });
+        }, andSignRole);
     };
 
     const currentCmt = users.find(u => u.administrativeRole === 'CMT_GSD_SP');
@@ -984,46 +986,108 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
 
             {/* Signatures */}
             <div className={`${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} rounded-xl p-6 border space-y-4`}>
-                <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest`}>Assinaturas</h3>
-                <p className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                    As assinaturas abaixo serão utilizadas na geração da OMIS. Elas são atribuídas automaticamente de acordo com as funções cadastradas no perfil dos militares.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
-                    <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'} text-center`}>
-                        <div className="w-full h-px bg-slate-300 dark:bg-slate-600 mb-3 mx-auto w-3/4"></div>
-                        <p className={`text-[10px] sm:text-xs font-black uppercase ${chSopNameStr ? (isDarkMode ? 'text-slate-200' : 'text-slate-800') : 'text-red-500'}`}>
-                            {chSopNameStr || 'ATENÇÃO: NENHUM CHEFE SOP ATRIBUÍDO'}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest`}>Assinaturas e Autorizações</h3>
+                        <p className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} mt-0.5`}>
+                            As assinaturas autorizam a execução da OMIS. Você pode salvar a ordem e assiná-la nos botões abaixo.
                         </p>
-                        <p className={`text-[9px] sm:text-[10px] font-bold mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>CHEFE DA SEÇÃO DE OPERAÇÕES</p>
                     </div>
-                    <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'} text-center`}>
-                        <div className="w-full h-px bg-slate-300 dark:bg-slate-600 mb-3 mx-auto w-3/4"></div>
-                        <p className={`text-[10px] sm:text-xs font-black uppercase ${cmtNameStr ? (isDarkMode ? 'text-slate-200' : 'text-slate-800') : 'text-red-500'}`}>
-                            {cmtNameStr || `ATENÇÃO: NENHUM CMT ${activeOm?.acronym || 'GSD-SP'} ATRIBUÍDO`}
-                        </p>
-                        <p className={`text-[9px] sm:text-[10px] font-bold mt-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>CMT DO {activeOm?.acronym || 'GSD-SP'}</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
+                    {/* Chefe SOP */}
+                    <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'} text-center flex flex-col justify-between`}>
+                        <div className="min-h-[46px] flex items-center justify-center mb-2">
+                            {order?.chSopSignature && order.chSopSignature.startsWith('data:image') ? (
+                                <div className="flex flex-col items-center">
+                                    <img src={order.chSopSignature} alt="Rubrica Ch SOP" className="max-h-10 max-w-[150px] object-contain" />
+                                    <span className="text-[8px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mt-0.5">✓ Rubrica Concluída</span>
+                                </div>
+                            ) : order?.chSopSignature && order.chSopSignature.includes('ASSINADO DIGITALMENTE') ? (
+                                <span className="px-2.5 py-1 text-[9px] font-black text-blue-700 bg-blue-100 dark:bg-blue-900/40 dark:text-blue-300 rounded-md uppercase tracking-wider">
+                                    ✓ Assinado Digitalmente
+                                </span>
+                            ) : (
+                                <span className="px-2.5 py-1 text-[9px] font-bold text-slate-500 bg-slate-200/60 dark:bg-slate-700/60 rounded-md uppercase tracking-wider">
+                                    Pendente de Assinatura
+                                </span>
+                            )}
+                        </div>
+                        <div>
+                            <div className="w-full h-px bg-slate-300 dark:bg-slate-600 mb-2 mx-auto w-3/4"></div>
+                            <p className={`text-[10px] sm:text-xs font-black uppercase ${chSopNameStr ? (isDarkMode ? 'text-slate-200' : 'text-slate-800') : 'text-red-500'}`}>
+                                {chSopNameStr || 'ATENÇÃO: NENHUM CHEFE SOP ATRIBUÍDO'}
+                            </p>
+                            <p className={`text-[9px] sm:text-[10px] font-bold mt-0.5 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>CHEFE DA SEÇÃO DE OPERAÇÕES</p>
+                        </div>
+                    </div>
+
+                    {/* CMT */}
+                    <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'} text-center flex flex-col justify-between`}>
+                        <div className="min-h-[46px] flex items-center justify-center mb-2">
+                            {order?.cmtSignature && order.cmtSignature.startsWith('data:image') ? (
+                                <div className="flex flex-col items-center">
+                                    <img src={order.cmtSignature} alt="Rubrica CMT" className="max-h-10 max-w-[150px] object-contain" />
+                                    <span className="text-[8px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mt-0.5">✓ Rubrica Concluída</span>
+                                </div>
+                            ) : order?.cmtSignature && order.cmtSignature.includes('ASSINADO DIGITALMENTE') ? (
+                                <span className="px-2.5 py-1 text-[9px] font-black text-blue-700 bg-blue-100 dark:bg-blue-900/40 dark:text-blue-300 rounded-md uppercase tracking-wider">
+                                    ✓ Assinado Digitalmente
+                                </span>
+                            ) : (
+                                <span className="px-2.5 py-1 text-[9px] font-bold text-slate-500 bg-slate-200/60 dark:bg-slate-700/60 rounded-md uppercase tracking-wider">
+                                    Pendente de Assinatura
+                                </span>
+                            )}
+                        </div>
+                        <div>
+                            <div className="w-full h-px bg-slate-300 dark:bg-slate-600 mb-2 mx-auto w-3/4"></div>
+                            <p className={`text-[10px] sm:text-xs font-black uppercase ${cmtNameStr ? (isDarkMode ? 'text-slate-200' : 'text-slate-800') : 'text-red-500'}`}>
+                                {cmtNameStr || `ATENÇÃO: NENHUM CMT ${activeOm?.acronym || 'GSD-SP'} ATRIBUÍDO`}
+                            </p>
+                            <p className={`text-[9px] sm:text-[10px] font-bold mt-0.5 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>CMT DO {activeOm?.acronym || 'GSD-SP'}</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2.5">
                 <button
-                    type="submit"
+                    type="button"
                     disabled={isSubmitting}
-                    className={`w-full sm:flex-1 py-4 ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500 shadow-xl shadow-blue-900/20' : 'bg-slate-900 hover:bg-slate-800'} text-white rounded-2xl font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    onClick={() => handleSubmit()}
+                    className={`flex-1 min-w-[160px] py-3.5 ${isDarkMode ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700' : 'bg-slate-900 hover:bg-slate-800 text-white'} rounded-2xl font-black uppercase tracking-wider text-xs transition-all flex items-center justify-center gap-2 active:scale-95 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
-                    {isSubmitting ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                        <Save className="w-5 h-5" />
-                    )}
-                    {isSubmitting ? (order && order.id ? 'Salvando...' : 'Gerando...') : (order && order.id ? 'Salvar Alterações' : 'Criar Ordem de Missão')}
+                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    <span>{order && order.id ? 'Salvar Alterações' : 'Criar Ordem'}</span>
                 </button>
+
+                <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => handleSubmit(undefined, 'CH_SOP')}
+                    className="flex-1 min-w-[210px] py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-2xl font-black uppercase tracking-wider text-xs transition-all shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+                >
+                    <FileSignature className="w-4 h-4" />
+                    <span>Salvar e Assinar (Chefe Operações)</span>
+                </button>
+
+                <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => handleSubmit(undefined, 'CMT')}
+                    className="flex-1 min-w-[210px] py-3.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white rounded-2xl font-black uppercase tracking-wider text-xs transition-all shadow-md shadow-amber-600/20 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+                >
+                    <FileSignature className="w-4 h-4" />
+                    <span>Salvar e Assinar (CMT {activeOm?.acronym || 'GSD-SP'})</span>
+                </button>
+
                 <button
                     type="button"
                     onClick={onCancel}
-                    className={`w-full sm:w-auto sm:px-10 py-4 ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'} rounded-2xl font-black uppercase tracking-widest transition-all`}
+                    className={`w-full sm:w-auto px-6 py-3.5 ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'} rounded-2xl font-bold uppercase tracking-wider text-xs transition-all`}
                 >
                     Cancelar
                 </button>

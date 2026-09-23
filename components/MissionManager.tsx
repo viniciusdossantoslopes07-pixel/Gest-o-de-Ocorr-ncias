@@ -11,6 +11,7 @@ import MissionRequestCard from './MissionRequestCard';
 import { PERMISSIONS, hasPermission } from '../constants/permissions';
 
 import MissionOrderPrintView from './MissionOrderPrintView';
+import MissionSignatureModal, { MissionSignatureRole } from './MissionSignatureModal';
 import MissionRequestList from './MissionRequestList';
 import { notificationService } from '../services/notificationService';
 import { formatDisplayDate } from '../utils/formatters';
@@ -43,7 +44,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
 
     // Signature Modal State
     const [showSignatureModal, setShowSignatureModal] = useState(false);
-    const [signaturePassword, setSignaturePassword] = useState('');
+    const [signatureInitialRole, setSignatureInitialRole] = useState<MissionSignatureRole>('CH_SOP');
     const [orderToSign, setOrderToSign] = useState<MissionOrder | null>(null);
 
     // End Mission Modal State
@@ -233,6 +234,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                 cmtName: o.cmt_name,
                 chSopName: o.ch_sop_name,
                 chSopSignature: o.ch_sop_signature,
+                cmtSignature: o.cmt_signature,
                 startTime: o.start_time,
                 endTime: o.end_time,
                 missionReport: o.mission_report,
@@ -487,15 +489,12 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
         setShowOrderForm(true);
     };
 
-    // 2. Submit Order (SOP) -> Moves to AGUARDANDO_ASSINATURA
-    const handleOrderSubmit = async (orderData: Partial<MissionOrder>) => {
+    // 2. Submit Order (SOP) -> Moves to AGUARDANDO_ASSINATURA ou abre para assinar
+    const handleOrderSubmit = async (orderData: Partial<MissionOrder>, andSignRole?: 'CH_SOP' | 'CMT') => {
         setIsSaving(true);
         try {
             const omisNumber = orderData.omisNumber || await generateOMISNumber();
 
-            // Map to snake_case for DB
-            // Ensure mission_commander_id is a valid UUID or null. 
-            // Empty strings or invalid formats cause "invalid input syntax for type uuid" error in Postgres.
             let missionCommanderId = orderData.missionCommanderId;
             if (!missionCommanderId || missionCommanderId.trim() === '' || missionCommanderId.length < 10) {
                 missionCommanderId = null;
@@ -510,6 +509,17 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
 
             const isEditing = !!selectedOrder && !!selectedOrder.id;
             const orderId = isEditing ? selectedOrder!.id : generateId();
+
+            const existingChSopSignature = orderData.chSopSignature || (isEditing ? selectedOrder?.chSopSignature : null) || null;
+            const existingCmtSignature = orderData.cmtSignature || (isEditing ? selectedOrder?.cmtSignature : null) || null;
+
+            // Determinar status apropriado
+            let currentStatus = orderData.status || (isEditing ? selectedOrder?.status : null) || 'AGUARDANDO_ASSINATURA';
+            if (existingChSopSignature || existingCmtSignature) {
+                if (currentStatus === 'AGUARDANDO_ASSINATURA') {
+                    currentStatus = 'PRONTA_PARA_EXECUCAO';
+                }
+            }
 
             const dbOrder = {
                 id: orderId,
@@ -532,11 +542,13 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                 external_commander_name: orderData.externalCommanderName,
                 start_time: orderData.startTime || null,
                 end_time: orderData.endTime || null,
-                status: 'AGUARDANDO_ASSINATURA', // Ready for CH-SOP
+                status: currentStatus,
                 created_at: isEditing ? selectedOrder!.createdAt : new Date().toISOString(),
                 created_by: isEditing ? selectedOrder!.createdBy : user.name,
                 cmt_name: orderData.cmtName || null,
                 ch_sop_name: orderData.chSopName || null,
+                ch_sop_signature: existingChSopSignature,
+                cmt_signature: existingCmtSignature,
                 updated_at: new Date().toISOString(),
                 om_id: omId || user.om_id
             };
@@ -553,68 +565,105 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
             if (selectedMission) {
                 const { error: updateError } = await supabase
                     .from('missoes_gsd')
-                    .update({ status: 'ATRIBUIDA' }) // Changed from APROVADA to ATRIBUIDA since OMIS is created
+                    .update({ status: 'ATRIBUIDA' })
                     .eq('id', selectedMission.id);
 
                 if (updateError) {
                     console.error('Erro ao atualizar status da solicitação:', updateError);
-                    alert('Aviso: Ordem gerada, mas houve erro ao atualizar status da solicitação: ' + updateError.message);
                 }
             }
 
-            alert(`Ordem de Missão ${omisNumber} gerada e enviada para assinatura do Ch SOP.`);
+            const savedOrder: MissionOrder = {
+                ...dbOrder,
+                omisNumber: dbOrder.omis_number,
+                isInternal: dbOrder.is_internal,
+                missionCategory: dbOrder.mission_category as any,
+                createdAt: dbOrder.created_at,
+                createdBy: dbOrder.created_by,
+                updatedAt: dbOrder.updated_at,
+                permanentOrders: dbOrder.permanent_orders,
+                specialOrders: dbOrder.special_orders,
+                missionCommanderId: dbOrder.mission_commander_id,
+                isExternalCommander: dbOrder.is_external_commander,
+                externalCommanderName: dbOrder.external_commander_name,
+                cmtName: dbOrder.cmt_name,
+                chSopName: dbOrder.ch_sop_name,
+                chSopSignature: dbOrder.ch_sop_signature,
+                cmtSignature: dbOrder.cmt_signature,
+                startTime: dbOrder.start_time,
+                endTime: dbOrder.end_time,
+                missionReport: (selectedOrder as any)?.missionReport || '',
+                observation: (selectedOrder as any)?.observation || ''
+            } as MissionOrder;
 
             setShowOrderForm(false);
             setSelectedMission(null);
             fetchData();
 
+            if (andSignRole) {
+                // Abre o modal de assinatura imediatamente
+                handleOpenSignatureModal(savedOrder, andSignRole);
+            } else {
+                alert(`Ordem de Missão ${omisNumber} salva com sucesso.`);
+            }
+
         } catch (error: any) {
             console.error('Erro detalhado:', error);
-            alert('Erro ao criar OM: ' + error.message);
+            alert('Erro ao salvar OM: ' + error.message);
         } finally {
             setIsSaving(false);
         }
     };
 
-    // 3. Sign Order (CH-SOP) - Open Modal
-    const handleChSopSign = (order: MissionOrder) => {
+    // 3. Abrir Modal de Assinatura
+    const handleOpenSignatureModal = (order: MissionOrder, role: MissionSignatureRole = 'CH_SOP') => {
         setOrderToSign(order);
-        setSignaturePassword('');
+        setSignatureInitialRole(role);
         setShowSignatureModal(true);
     };
 
-    const confirmSignature = async (isBiometricAuth: boolean = false) => {
+    // 4. Confirmar Assinatura Digital (Canvas, Senha ou Biometria)
+    const handleConfirmSignature = async (data: {
+        role: MissionSignatureRole;
+        signatureType: 'CANVAS' | 'PASSWORD' | 'BIOMETRIC';
+        signatureValue: string;
+        signerName: string;
+    }) => {
         if (!orderToSign) return;
 
-        if (!isBiometricAuth) {
-            const { data: isValid, error } = await supabase.rpc('verify_user_password', {
-                p_user_id: user.id,
-                p_password: signaturePassword
-            });
-            if (error || !isValid) {
-                alert('Senha incorreta. Assinatura não realizada.');
-                return;
-            }
-        }
-
         try {
-            const signature = `ASSINADO DIGITALMENTE POR ${user.name} EM ${new Date().toLocaleString()}`;
+            const isChSop = data.role === 'CH_SOP';
+            const roleTitle = isChSop ? 'Chefe da Seção de Operações' : `Comandante do ${activeOmData?.acronym || 'GSD-SP'}`;
+
+            const updatePayload: any = {
+                updated_at: new Date().toISOString()
+            };
+
+            if (isChSop) {
+                updatePayload.ch_sop_signature = data.signatureValue;
+                updatePayload.ch_sop_name = data.signerName;
+            } else {
+                updatePayload.cmt_signature = data.signatureValue;
+                updatePayload.cmt_name = data.signerName;
+            }
+
+            // Ao receber assinatura, a OM fica pronta para execução
+            updatePayload.status = 'PRONTA_PARA_EXECUCAO';
+
             const { error } = await supabase
                 .from('mission_orders')
-                .update({
-                    status: 'PRONTA_PARA_EXECUCAO', // Ready to start
-                    ch_sop_signature: signature,
-                    updated_at: new Date().toISOString()
-                })
+                .update(updatePayload)
                 .eq('id', orderToSign.id);
 
             if (error) throw error;
-            alert('OMIS assinada e liberada para execução.');
+
+            alert(`OM #${orderToSign.omisNumber} assinada com sucesso como ${roleTitle}!`);
             setShowSignatureModal(false);
             setOrderToSign(null);
             fetchOrders();
         } catch (e: any) {
-            alert('Erro na assinatura: ' + e.message);
+            console.error('Erro na assinatura:', e);
+            alert('Erro ao registrar assinatura: ' + e.message);
         }
     };
 
@@ -1085,7 +1134,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                                                 <Zap className="w-3.5 h-3.5" /> Iniciar
                                             </button>
                                             <button 
-                                                onClick={(e) => { e.stopPropagation(); handleChSopSign(o); }} 
+                                                onClick={(e) => { e.stopPropagation(); handleOpenSignatureModal(o, 'CH_SOP'); }} 
                                                 className="flex-1 px-1 py-2.5 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl text-[8px] font-black uppercase tracking-wider hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/25 active:scale-95 flex items-center justify-center gap-1" 
                                                 title="Assinar Digitalmente"
                                             >
@@ -1802,9 +1851,9 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                     }}
                     canSign={canSign}
                     users={users}
-                    onSign={() => {
+                    onSign={(role?: 'CH_SOP' | 'CMT') => {
                         setShowPrintView(false);
-                        handleChSopSign(selectedOrder);
+                        handleOpenSignatureModal(selectedOrder, role || 'CH_SOP');
                     }}
                     onForceActivate={() => {
                         setShowPrintView(false);
@@ -1816,101 +1865,20 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
                 />
             )}
 
-            {/* Signature Modal */}
-            {showSignatureModal && orderToSign && (
-                <div 
-                    className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4"
-                    style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 9999 }}
-                    onClick={(e) => {
-                        if (e.target === e.currentTarget) setShowSignatureModal(false);
-                    }}
-                >
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2rem] w-full max-w-md flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-                        {/* Premium Gradient Header */}
-                        <div className="p-5 sm:p-6 bg-gradient-to-r from-orange-500 to-amber-600 text-white flex items-center justify-between shrink-0">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-white/20 rounded-2xl backdrop-blur-md shadow-inner">
-                                    <FileSignature className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg sm:text-xl font-black">Assinatura Digital</h3>
-                                    <p className="text-xs text-orange-100 font-medium">Confirme sua identidade para assinar</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setShowSignatureModal(false)}
-                                className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <div className="p-6 space-y-5">
-                            <div className={`${isDarkMode ? 'bg-slate-950/50 border-slate-800' : 'bg-slate-50 border-slate-200'} p-4 rounded-2xl border text-sm shadow-inner`}>
-                                <div className="grid grid-cols-2 gap-y-3">
-                                    <span className={`font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase text-[9px] tracking-widest`}>Documento:</span>
-                                    <span className={`font-black tracking-tight ${isDarkMode ? 'text-blue-400' : 'text-slate-800'}`}>OM #{orderToSign.omisNumber}</span>
-
-                                    <span className={`font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase text-[9px] tracking-widest`}>Assinante:</span>
-                                    <span className={`font-bold ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>{user.name}</span>
-
-                                    <span className={`font-black ${isDarkMode ? 'text-slate-500' : 'text-slate-400'} uppercase text-[9px] tracking-widest`}>Função:</span>
-                                    <span className={`font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-800'}`}>{user.rank} - {user.sector}</span>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className={`block text-xs font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-600'} mb-2 uppercase tracking-tighter`}>Senha de Confirmação</label>
-                                <input
-                                    type="password"
-                                    value={signaturePassword}
-                                    onChange={(e) => setSignaturePassword(e.target.value)}
-                                    className={`w-full px-5 py-4 border ${isDarkMode ? 'border-slate-700 bg-slate-800/50 text-white focus:bg-slate-800' : 'border-slate-300 bg-white text-slate-900'} rounded-2xl focus:ring-4 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all placeholder:text-slate-600`}
-                                    placeholder="Digite sua senha de login..."
-                                    autoFocus
-                                />
-                            </div>
-
-                            <div className="pt-2">
-                                <button
-                                    onClick={() => confirmSignature()}
-                                    className="w-full py-4 bg-orange-600 text-white font-black uppercase tracking-[0.2em] text-xs rounded-2xl hover:bg-orange-500 shadow-xl shadow-orange-600/20 hover:shadow-orange-500/40 transition-all active:scale-[0.98]"
-                                >
-                                    Confirmar Assinatura
-                                </button>
-
-                                <button
-                                    onClick={() => setShowSignatureModal(false)}
-                                    className={`w-full py-2 mt-2 text-xs font-bold ${isDarkMode ? 'text-slate-500 hover:text-slate-400' : 'text-slate-400 hover:text-slate-500'} transition-colors`}
-                                >
-                                    Cancelar
-                                </button>
-                            </div>
-
-                            {localStorage.getItem('gsdsp_biometric_id') && (
-                                <button
-                                    onClick={async () => {
-                                        try {
-                                            const credentialId = localStorage.getItem('gsdsp_biometric_id');
-                                            if (!credentialId) return;
-                                            const success = await authenticateBiometrics(credentialId);
-                                            if (success) {
-                                                confirmSignature(true);
-                                            }
-                                        } catch (err) {
-                                            console.error(err);
-                                            alert('Falha na autenticação biométrica.');
-                                        }
-                                    }}
-                                    className={`w-full mt-3 py-4 ${isDarkMode ? 'bg-emerald-900/20 text-emerald-400 border-emerald-800/50 hover:bg-emerald-800/30' : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'} rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] flex items-center justify-center gap-3 transition-all border shadow-lg shadow-emerald-950/20`}
-                                >
-                                    <Fingerprint className="w-5 h-5 animate-pulse" /> Assinar com Biometria
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Mission Signature Modal (Canvas touch padrão + Senha + Biometria) */}
+            <MissionSignatureModal
+                isOpen={showSignatureModal}
+                onClose={() => {
+                    setShowSignatureModal(false);
+                    setOrderToSign(null);
+                }}
+                order={orderToSign}
+                user={user}
+                initialRole={signatureInitialRole}
+                isDarkMode={isDarkMode}
+                activeOmAcronym={activeOmData?.acronym || user.om?.acronym || 'GSD-SP'}
+                onConfirm={handleConfirmSignature}
+            />
 
             {/* Mission Request Card Modal */}
             {

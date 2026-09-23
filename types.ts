@@ -206,6 +206,7 @@ export interface MissionOrder {
   externalCommanderName?: string;
   observation?: string;
   chSopSignature?: string;
+  cmtSignature?: string;
   cmtName?: string;
   chSopName?: string;
   startTime?: string;
