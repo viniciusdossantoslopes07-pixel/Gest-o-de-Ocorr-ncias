@@ -646,24 +646,14 @@ ${content.outerHTML}
                             </button>
                         )}
                         {canSign && onSign && (
-                            <>
-                                <button
-                                    onClick={() => onSign('CH_SOP')}
-                                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-black text-[10px] sm:text-xs hover:from-orange-600 hover:to-orange-700 shadow-md shadow-orange-500/25 transition-all active:scale-95"
-                                    title="Assinar como Chefe da Seção de Operações"
-                                >
-                                    <FileSignature className="w-3.5 h-3.5" />
-                                    <span className="whitespace-nowrap">Assinar Chefe Operações</span>
-                                </button>
-                                <button
-                                    onClick={() => onSign('CMT')}
-                                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-amber-600 to-amber-700 text-white rounded-xl font-black text-[10px] sm:text-xs hover:from-amber-700 hover:to-amber-800 shadow-md shadow-amber-600/25 transition-all active:scale-95"
-                                    title={`Assinar como CMT ${activeOm?.acronym || 'GSD-SP'}`}
-                                >
-                                    <FileSignature className="w-3.5 h-3.5" />
-                                    <span className="whitespace-nowrap">Assinar CMT {activeOm?.acronym || 'GSD-SP'}</span>
-                                </button>
-                            </>
+                            <button
+                                onClick={() => onSign('CH_SOP')}
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-black text-[10px] sm:text-xs hover:from-orange-600 hover:to-orange-700 shadow-md shadow-orange-500/25 transition-all active:scale-95"
+                                title="Assinar Ordem de Missão"
+                            >
+                                <FileSignature className="w-3.5 h-3.5" />
+                                <span className="whitespace-nowrap">Assinar</span>
+                            </button>
                         )}
                         <button
                             onClick={handleDownloadPdf}
