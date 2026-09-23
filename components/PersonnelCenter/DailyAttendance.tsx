@@ -16,7 +16,7 @@ interface DailyAttendanceProps {
     users: User[];
     currentUser: User;
     attendanceHistory: DailyAttendance[];
-    onSaveAttendance: (attendance: DailyAttendance) => void;
+    onSaveAttendance: (attendance: DailyAttendance) => Promise<void> | void;
     onSaveJustification: (justification: AbsenceJustification) => void;
     onMoveUser: (userId: string, newSector: string) => void;
     onExcludeUser: (userId: string) => void;
@@ -553,6 +553,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     const [dateToSign, setDateToSign] = useState<string | null>(null);
     const [passwordInput, setPasswordInput] = useState('');
     const [passwordError, setPasswordError] = useState(false);
+    const [isSigning, setIsSigning] = useState(false);
 
     const [soldierToMove, setSoldierToMove] = useState<User | null>(null);
     const [targetSector, setTargetSector] = useState('');
@@ -871,9 +872,10 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
     };
 
     const confirmSignature = async () => {
-        if (!dateToSign || !callToSign) return;
+        if (!dateToSign || !callToSign || isSigning) return;
 
         try {
+            setIsSigning(true);
             const { data: isValidPassword, error: passError } = await supabase.rpc('verify_user_password', {
                 p_user_id: currentUser.id,
                 p_password: passwordInput
@@ -881,6 +883,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
             if (passError || !isValidPassword) {
                 setPasswordError(true);
+                setIsSigning(false);
                 return;
             }
 
@@ -935,7 +938,7 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                     om_id: currentUser.om_id
                 };
             }
-            onSaveAttendance(attendanceToSave);
+            await onSaveAttendance(attendanceToSave);
             
             // Limpar overrides do dia assinado (banco agora é a fonte de verdade)
             setLocalOverrides(prev => {
@@ -949,12 +952,17 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
                 return nextOverrides;
             });
 
+            const currentCallType = callToSign;
             setShowPasswordModal(false);
-            setDateToSign(null); setCallToSign(null); setPasswordInput('');
-            alert(`${CALL_TYPES[callToSign]} assinada com sucesso!`);
-        } catch (err) {
-            console.error("Erro na verificação de senha:", err);
-            setPasswordError(true);
+            setDateToSign(null); 
+            setCallToSign(null); 
+            setPasswordInput('');
+            alert(`${CALL_TYPES[currentCallType]} assinada com sucesso!`);
+        } catch (err: any) {
+            console.error("Erro na assinatura:", err);
+            alert(`Erro ao registrar assinatura: ${err?.message || 'Verifique a conexão com o servidor'}`);
+        } finally {
+            setIsSigning(false);
         }
     };
 
@@ -2037,16 +2045,25 @@ const DailyAttendanceView: FC<DailyAttendanceProps> = ({
 
                                     <div className="grid grid-cols-2 gap-3 pt-4">
                                         <button
-                                            onClick={() => setShowPasswordModal(false)}
-                                            className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                                            disabled={isSigning}
+                                            onClick={() => {
+                                                if (!isSigning) {
+                                                    setShowPasswordModal(false);
+                                                    setDateToSign(null);
+                                                    setCallToSign(null);
+                                                    setPasswordInput('');
+                                                }
+                                            }}
+                                            className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${isDarkMode ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'} ${isSigning ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         >
                                             Cancelar
                                         </button>
                                         <button
+                                            disabled={isSigning}
                                             onClick={confirmSignature}
-                                            className="py-4 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/30 active:scale-95"
+                                            className={`py-4 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/30 active:scale-95 ${isSigning ? 'opacity-70 cursor-wait' : ''}`}
                                         >
-                                            Confirmar
+                                            {isSigning ? 'Assinando...' : 'Confirmar'}
                                         </button>
                                     </div>
                                 </div>

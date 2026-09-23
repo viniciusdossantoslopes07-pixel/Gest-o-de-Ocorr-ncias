@@ -840,16 +840,16 @@ const App: FC = () => {
       biometric_credentials_id: rawUserData.biometric_credentials_id,
       active: rawUserData.active,
       specialty: rawUserData.specialty,
-      classYear: rawUserData.class_year,
+      class_year: rawUserData.class_year,
       service: rawUserData.service,
       address: rawUserData.address,
-      enlistmentDate: rawUserData.enlistment_date,
-      presentationDate: rawUserData.presentation_date,
-      lastPromotionDate: rawUserData.last_promotion_date,
-      militaryIdentity: rawUserData.military_identity,
+      enlistment_date: rawUserData.enlistment_date,
+      presentation_date: rawUserData.presentation_date,
+      last_promotion_date: rawUserData.last_promotion_date,
+      military_identity: rawUserData.military_identity,
       rc: rawUserData.rc,
       workplace: rawUserData.workplace,
-      emergencyContact: rawUserData.emergency_contact,
+      emergency_contact: rawUserData.emergency_contact,
       is_functional: rawUserData.is_functional,
       external_service: rawUserData.external_service,
       external_om: rawUserData.external_om,
@@ -2113,11 +2113,11 @@ const App: FC = () => {
 
                   if (attErr) {
                     console.error('Error saving attendance header via upsert:', attErr);
-                    return;
+                    throw new Error(`Erro ao salvar cabeçalho da chamada: ${attErr.message || attErr.details || 'Falha de conexão'}`);
                   }
 
                   const attendanceId = upsertedAttendance?.id;
-                  if (!attendanceId) return;
+                  if (!attendanceId) throw new Error('Falha ao obter ID da chamada');
 
                   // BATCH UPSERT for records
                   const recordsToUpsert = a.records.map(record => ({
@@ -2137,6 +2137,7 @@ const App: FC = () => {
 
                   if (batchErr) {
                     console.error('Error batch saving attendance records:', batchErr);
+                    throw new Error(`Erro ao salvar registros da chamada: ${batchErr.message || batchErr.details || 'Falha de conexão'}`);
                   }
 
                   // Patch no local state se o ID mudou ou foi criado
@@ -2144,9 +2145,16 @@ const App: FC = () => {
                     const idx = prev.findIndex(
                       x => x.date === a.date && x.sector === a.sector && x.callType === a.callType
                     );
-                    if (idx >= 0 && prev[idx].id !== attendanceId) {
+                    if (idx >= 0) {
                       const next = [...prev];
-                      next[idx] = { ...next[idx], id: attendanceId };
+                      next[idx] = { 
+                        ...next[idx], 
+                        ...a, 
+                        id: attendanceId, 
+                        signedBy: a.signedBy, 
+                        signedAt: a.signedAt, 
+                        responsible: a.responsible 
+                      };
                       return next;
                     }
                     return prev;
@@ -2154,6 +2162,7 @@ const App: FC = () => {
 
                 } catch (e) {
                   console.error('Timeout or fail on SaveAttendance:', e);
+                  throw e;
                 }
               }}
               onSaveJustification={async (j) => {
