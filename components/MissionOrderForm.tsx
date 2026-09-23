@@ -990,7 +990,7 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                     <div>
                         <h3 className={`text-sm font-black ${isDarkMode ? 'text-slate-300' : 'text-slate-700'} uppercase tracking-widest`}>Assinaturas e Autorizações</h3>
                         <p className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} mt-0.5`}>
-                            As assinaturas autorizam a execução da OMIS. Você pode salvar a ordem e assiná-la nos botões abaixo.
+                            As assinaturas autorizam a execução da OMIS. Você pode salvar a ordem e assiná-la no botão Assinar abaixo.
                         </p>
                     </div>
                 </div>
@@ -1068,20 +1068,11 @@ const MissionOrderForm: FC<MissionOrderFormProps> = ({ order, onSubmit, onCancel
                     type="button"
                     disabled={isSubmitting}
                     onClick={() => handleSubmit(undefined, 'CH_SOP')}
-                    className="flex-1 min-w-[210px] py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-2xl font-black uppercase tracking-wider text-xs transition-all shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+                    className="flex-1 min-w-[160px] py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-2xl font-black uppercase tracking-wider text-xs transition-all shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+                    title="Salvar e abrir card de assinatura digital"
                 >
                     <FileSignature className="w-4 h-4" />
-                    <span>Salvar e Assinar (Chefe Operações)</span>
-                </button>
-
-                <button
-                    type="button"
-                    disabled={isSubmitting}
-                    onClick={() => handleSubmit(undefined, 'CMT')}
-                    className="flex-1 min-w-[210px] py-3.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white rounded-2xl font-black uppercase tracking-wider text-xs transition-all shadow-md shadow-amber-600/20 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
-                >
-                    <FileSignature className="w-4 h-4" />
-                    <span>Salvar e Assinar (CMT {activeOm?.acronym || 'GSD-SP'})</span>
+                    <span>Assinar</span>
                 </button>
 
                 <button
