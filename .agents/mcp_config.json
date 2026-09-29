@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "hostinger-hosting": {
+      "command": "npx.cmd",
+      "args": ["--package=@hostinger/mcp@latest", "hostinger-hosting-mcp"]
+    },
+    "hostinger-domains": {
+      "command": "npx.cmd",
+      "args": ["--package=@hostinger/mcp@latest", "hostinger-domains-mcp"]
+    },
+    "hostinger-dns": {
+      "command": "npx.cmd",
+      "args": ["--package=@hostinger/mcp@latest", "hostinger-dns-mcp"]
+    },
+    "hostinger-billing": {
+      "command": "npx.cmd",
+      "args": ["--package=@hostinger/mcp@latest", "hostinger-billing-mcp"]
+    },
+    "hostinger-reach": {
+      "command": "npx.cmd",
+      "args": ["--package=@hostinger/mcp@latest", "hostinger-reach-mcp"]
+    }
+  }
+}
