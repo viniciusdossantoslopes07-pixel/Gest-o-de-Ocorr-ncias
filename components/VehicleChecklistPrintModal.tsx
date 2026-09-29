@@ -95,27 +95,30 @@ function injectPrintStyle() {
         width: 100% !important;
         max-width: none !important;
         margin: 0 !important;
-        padding: 12mm !important;
+        padding: 6mm 10mm !important;
         box-shadow: none !important;
         border: none !important;
         border-radius: 0 !important;
-        break-after: page;
       }
-      /* Evita cortar a tabela de itens no meio */
+      /* Evita cortar blocos importantes no meio da página */
+      .vtr-no-break {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+      }
       .vtr-checklist-items-table {
-        break-inside: avoid-page;
-        page-break-inside: avoid;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
       }
-      /* Força nova página antes das avarias/assinaturas */
+      /* Força nova página para a seção de avarias e fotos na sequência */
       .vtr-page-break-before {
-        break-before: page;
-        page-break-before: always;
-        padding-top: 15mm;
+        break-before: page !important;
+        page-break-before: always !important;
+        padding-top: 6mm !important;
       }
       /* Impede quebra dentro do bloco de assinaturas */
       .vtr-signatures-block {
-        break-inside: avoid;
-        page-break-inside: avoid;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
       }
     }
   `;
@@ -409,47 +412,29 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
           </div>
         </div>
 
-        {/* QUEBRA DE PÁGINA: Avarias, Observações, Termo e Assinaturas vão para a 2ª folha */}
-        <div className="vtr-page-break-before">
-        {/* Registro de Avarias / Danos de Lataria com Diagrama Visual */}
-        <div className="mb-5 border border-slate-300 rounded-xl overflow-hidden vtr-signatures-block">
-          <VehicleDamageDiagram damages={damages} readOnly={true} onChange={() => {}} />
-        </div>
-
-        {/* Fotos de Evidência */}
-        {photos && photos.length > 0 && (
-          <div className="mb-5 grid grid-cols-2 gap-4 vtr-signatures-block">
-            {photos.map((photo, i) => (
-              <div key={i} className="border border-slate-300 rounded-xl overflow-hidden shadow-sm">
-                <img src={photo} alt="Evidência" className="w-full h-auto object-cover max-h-64" />
-                <div className="bg-slate-100 p-2 text-[10px] text-slate-600 font-bold border-t border-slate-300">
-                  Evidência Fotográfica ({isReturn ? 'Retorno' : 'Saída'}) - Placa: {vtr?.plate} - {formatDate(isReturn ? currentLoan.return_date : currentLoan.departure_date)}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="border border-slate-300 rounded-xl p-3 text-xs bg-slate-50 mb-5">
-          <h4 className="font-bold text-[10px] uppercase text-slate-600 mb-1 flex items-center gap-1.5">
+        {/* 3. OBSERVAÇÕES DA MISSÃO (FOLHA 1) */}
+        <div className="border border-slate-300 rounded-xl p-2.5 text-xs bg-slate-50 mb-2 vtr-no-break">
+          <h4 className="font-bold text-[10px] uppercase text-slate-700 mb-0.5 flex items-center gap-1.5">
             <Shield className="w-3.5 h-3.5 text-blue-600" />
-            4. Observações da Missão
+            3. Observações da Missão
           </h4>
-          <p className="text-[11px] text-slate-700 italic mt-1">
+          <p className="text-[10px] text-slate-700 italic">
             {currentLoan.departure_notes || currentLoan.return_notes || 'Sem observações adicionais registradas.'}
           </p>
         </div>
 
-        {/* TERMO DE RESPONSABILIDADE FORMAL */}
-        <div className="p-3 bg-blue-50/60 border border-blue-200 rounded-xl text-[10px] text-slate-700 leading-relaxed mb-6">
-          <strong className="text-slate-900 block mb-0.5">TERMO DE RESPONSABILIDADE DO CONDUTOR:</strong>
+        {/* TERMO DE RESPONSABILIDADE FORMAL (FOLHA 1) */}
+        <div className="p-2.5 bg-blue-50/60 border border-blue-200 rounded-xl text-[9.5px] text-slate-700 leading-snug mb-3 vtr-no-break">
+          <strong className="text-slate-900 block mb-0.5 font-bold uppercase tracking-tight">
+            Termo de Responsabilidade do Condutor:
+          </strong>
           Declaro ter recebido a viatura militar acima descrita nas condições especificadas neste checklist, assumindo inteira responsabilidade pela sua fiel guarda, manutenção, condução segura e uso estritamente em serviço operacional, nos termos das normas e regulamentos do Comando da Aeronáutica.
         </div>
 
-        {/* ASSINATURAS MILITARES */}
-        <div className="vtr-signatures-block grid grid-cols-2 gap-8 pt-4 border-t-2 border-slate-300 text-center">
+        {/* ASSINATURAS MILITARES (FOLHA 1) */}
+        <div className="vtr-signatures-block grid grid-cols-2 gap-8 pt-3 border-t-2 border-slate-300 text-center mb-2">
           <div>
-            <div className="min-h-[50px] flex items-center justify-center mb-1">
+            <div className="min-h-[46px] flex items-center justify-center mb-1">
               {currentLoan.driver_signature_data && currentLoan.driver_signature_data.startsWith('data:image') ? (
                 <img
                   src={currentLoan.driver_signature_data}
@@ -457,7 +442,7 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
                   className="max-h-12 max-w-[180px] object-contain"
                 />
               ) : (
-                <div className="text-[10px] font-bold text-blue-700 border border-blue-300 bg-blue-50 px-3 py-1 rounded">
+                <div className="text-[9px] font-bold text-blue-700 border border-blue-300 bg-blue-50 px-3 py-1 rounded">
                   ASSINADO DIGITALMENTE
                 </div>
               )}
@@ -473,8 +458,8 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
           </div>
 
           <div>
-            <div className="min-h-[50px] flex items-center justify-center mb-1">
-              <div className="text-[10px] font-bold text-slate-700 border border-slate-300 bg-slate-100 px-3 py-1 rounded">
+            <div className="min-h-[46px] flex items-center justify-center mb-1">
+              <div className="text-[9px] font-bold text-slate-700 border border-slate-300 bg-slate-100 px-3 py-1 rounded">
                 AUTENTICADO PELO DESPACHANTE
               </div>
             </div>
@@ -490,10 +475,73 @@ export const VehicleChecklistPrintModal: FC<VehicleChecklistPrintModalProps> = (
           </div>
         </div>
 
-        {/* RODAPÉ OFICIAL */}
-        <div className="mt-8 pt-3 border-t border-slate-200 text-center text-[9px] text-slate-400">
-          Guardião GSD-SP • Central de Viaturas • Documento emitido em {new Date().toLocaleString('pt-BR')} • Cautela: {loan.loan_number}
+        {/* RODAPÉ OFICIAL DA FOLHA 1 */}
+        <div className="mt-4 pt-2 border-t border-slate-200 text-center text-[8.5px] text-slate-400 vtr-no-break">
+          Guardião GSD-SP • Central de Viaturas • Documento emitido em {new Date().toLocaleString('pt-BR')} • Cautela: {loan.loan_number} • Folha 1/2
         </div>
+
+        {/* SEGUNDA FOLHA: INSPEÇÃO VISUAL DE AVARIAS E FOTOS NA SEQUÊNCIA */}
+        <div className="vtr-page-break-before">
+          {/* FAIXA DE IDENTIFICAÇÃO DA FOLHA 2 */}
+          <div className="flex items-center justify-between gap-3 mb-3 bg-slate-900 text-white p-3 rounded-xl border border-slate-950 vtr-no-break">
+            <div>
+              <span className="text-[9px] font-black uppercase tracking-[0.15em] text-blue-400 block">
+                CENTRAL DE VIATURAS • ANEXO COMPLEMENTAR
+              </span>
+              <h3 className="text-sm sm:text-base font-black tracking-tight uppercase">
+                INSPEÇÃO VISUAL DE AVARIAS E REGISTRO FOTOGRÁFICO
+              </h3>
+            </div>
+            <div className="text-right text-[10px] text-slate-300">
+              <div>Cautela Nº: <strong className="text-white">{currentLoan.loan_number}</strong></div>
+              <div>VTR: <strong className="text-white">{vtr?.reg_fab || 'N/I'}</strong> • Placa: <strong className="text-white">{vtr?.plate || 'FAB'}</strong></div>
+            </div>
+          </div>
+
+          {/* 4. INSPEÇÃO VISUAL DE AVARIAS / DANOS DE LATARIA */}
+          <div className="mb-4 border border-slate-300 rounded-xl overflow-hidden vtr-no-break">
+            <div className="bg-slate-100 font-bold px-3 py-1.5 border-b border-slate-300 text-slate-700 uppercase tracking-wider text-[10px] flex items-center justify-between">
+              <span>4. INSPEÇÃO VISUAL DE AVARIAS DE LATARIA</span>
+              <span className="text-slate-500 font-normal">DIAGRAMA DO VEÍCULO</span>
+            </div>
+            <div className="p-2">
+              <VehicleDamageDiagram damages={damages} readOnly={true} onChange={() => {}} />
+            </div>
+          </div>
+
+          {/* 5. REGISTRO FOTOGRÁFICO (FOTOS) */}
+          <div className="mb-4 border border-slate-300 rounded-xl overflow-hidden vtr-no-break">
+            <div className="bg-slate-100 font-bold px-3 py-1.5 border-b border-slate-300 text-slate-700 uppercase tracking-wider text-[10px] flex items-center justify-between">
+              <span>5. REGISTRO FOTOGRÁFICO DA VIATURA</span>
+              <span className="text-slate-500 font-normal">
+                {photos && photos.length > 0 ? `${photos.length} EVIDÊNCIA(S)` : 'NENHUMA FOTO REGISTRADA'}
+              </span>
+            </div>
+            <div className="p-3">
+              {photos && photos.length > 0 ? (
+                <div className="grid grid-cols-2 gap-3">
+                  {photos.map((photo, i) => (
+                    <div key={i} className="border border-slate-300 rounded-xl overflow-hidden shadow-xs">
+                      <img src={photo} alt={`Evidência ${i + 1}`} className="w-full h-44 object-cover" />
+                      <div className="bg-slate-100 p-1.5 text-[9px] text-slate-600 font-bold border-t border-slate-300 flex items-center justify-between">
+                        <span>Evidência #{i + 1} ({isReturn ? 'Retorno' : 'Saída'})</span>
+                        <span>{formatDate(isReturn ? currentLoan.return_date : currentLoan.departure_date)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[10px] text-slate-500 italic text-center py-4">
+                  Nenhum registro fotográfico complementar anexado a este checklist.
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* RODAPÉ OFICIAL DA FOLHA 2 */}
+          <div className="mt-4 pt-2 border-t border-slate-200 text-center text-[8.5px] text-slate-400 vtr-no-break">
+            Guardião GSD-SP • Central de Viaturas • Documento emitido em {new Date().toLocaleString('pt-BR')} • Cautela: {loan.loan_number} • Folha 2/2
+          </div>
         </div>{/* fim vtr-page-break-before */}
       </div>
     </div>

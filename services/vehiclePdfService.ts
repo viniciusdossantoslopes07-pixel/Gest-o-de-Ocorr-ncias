@@ -227,25 +227,146 @@ export const generateVehicleChecklistPdf = async (
     doc.setTextColor(30, 41, 59);
   }
 
-  y += Math.ceil(itemsMap.length / 3) * rowHeight + 8;
+  y += Math.ceil(itemsMap.length / 3) * rowHeight + 6;
 
   // ------------------------------------------------------------
-  // SEÇÃO DE AVARIAS / DANOS (Similar às páginas 3 e 4 do anexo)
+  // SEÇÃO 3. OBSERVAÇÕES DA MISSÃO (FOLHA 1)
   // ------------------------------------------------------------
-  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.rect(margin, y, contentWidth, 6.5, 'F');
+  const obsNotes = [
+    loan.destination ? `Destino: ${loan.destination}` : '',
+    loan.mission_reason ? `Motivo: ${loan.mission_reason}` : '',
+    loan.departure_notes ? `Obs. Saída: ${loan.departure_notes}` : '',
+    loan.return_notes ? `Obs. Retorno: ${loan.return_notes}` : ''
+  ].filter(Boolean).join(' | ');
+
+  doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
+  doc.rect(margin, y, contentWidth, 5, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(30, 41, 59);
+  doc.text('3. OBSERVAÇÕES DA MISSÃO', margin + 3, y + 3.5);
+
+  y += 7;
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(7);
+  doc.setTextColor(51, 65, 85);
+  const splitObs = doc.splitTextToSize(obsNotes || 'Sem observações adicionais registradas.', contentWidth - 4);
+  doc.text(splitObs, margin + 2, y);
+  y += Math.max(splitObs.length * 3.5, 6) + 2;
+
+  // ------------------------------------------------------------
+  // TERMO DE RESPONSABILIDADE FORMAL (FOLHA 1)
+  // ------------------------------------------------------------
+  doc.setFillColor(240, 249, 255);
+  doc.rect(margin, y, contentWidth, 11, 'F');
+  doc.setDrawColor(186, 230, 253);
+  doc.setLineWidth(0.25);
+  doc.rect(margin, y, contentWidth, 11, 'D');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.5);
+  doc.setTextColor(15, 23, 42);
+  doc.text('TERMO DE RESPONSABILIDADE DO CONDUTOR:', margin + 3, y + 3.5);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(5.8);
+  doc.setTextColor(51, 65, 85);
+  const termoTxt = 'Declaro ter recebido a viatura militar acima descrita nas condições especificadas neste checklist, assumindo inteira responsabilidade pela sua fiel guarda, manutenção, condução segura e uso estritamente em serviço operacional, nos termos das normas e regulamentos do Comando da Aeronáutica.';
+  const splitTermo = doc.splitTextToSize(termoTxt, contentWidth - 6);
+  doc.text(splitTermo, margin + 3, y + 6.8);
+
+  y += 14;
+
+  // ------------------------------------------------------------
+  // SEÇÃO DE ASSINATURAS (FOLHA 1)
+  // ------------------------------------------------------------
+  doc.setFillColor(darkNavy[0], darkNavy[1], darkNavy[2]);
+  doc.rect(margin, y, contentWidth, 5, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(255, 255, 255);
+  doc.text('ASSINATURAS MILITARES', pageWidth / 2, y + 3.5, { align: 'center' });
+
+  y += 16;
+
+  const colSigWidth = contentWidth / 2 - 10;
+
+  // Assinatura Militar Condutor
+  doc.setDrawColor(100, 116, 139);
+  doc.setLineWidth(0.4);
+  doc.line(margin + 5, y, margin + 5 + colSigWidth, y);
+
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(15, 23, 42);
+  doc.text('Militar Condutor', margin + 5 + colSigWidth / 2, y + 3.5, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.text(
+    `${loan.driver_rank} ${loan.driver_name}`,
+    margin + 5 + colSigWidth / 2,
+    y + 6.8,
+    { align: 'center' }
+  );
+  doc.text(
+    `SARAM: ${loan.driver_saram}`,
+    margin + 5 + colSigWidth / 2,
+    y + 10,
+    { align: 'center' }
+  );
+
+  // Assinatura Despachante
+  const dispX = pageWidth - margin - colSigWidth - 5;
+  doc.line(dispX, y, dispX + colSigWidth, y);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.text('Despachante da Viatura', dispX + colSigWidth / 2, y + 3.5, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.text(
+    `${isReturn && loan.return_dispatcher_name ? loan.return_dispatcher_name : loan.dispatcher_name}`,
+    dispX + colSigWidth / 2,
+    y + 6.8,
+    { align: 'center' }
+  );
+  doc.text(
+    `SARAM: ${isReturn && loan.return_dispatcher_saram ? loan.return_dispatcher_saram : loan.dispatcher_saram}`,
+    dispX + colSigWidth / 2,
+    y + 10,
+    { align: 'center' }
+  );
+
+  // Rodapé Folha 1
+  const addFooter = (pageNum: number, total: number = 2) => {
+    doc.setFontSize(6.5);
+    doc.setTextColor(148, 163, 184);
+    const footerText = `Guardião GSD-SP • Central de Viaturas • Documento emitido em ${new Date().toLocaleString('pt-BR')} • Cautela: ${loan.loan_number} • Folha ${pageNum}/${total}`;
+    doc.text(footerText, pageWidth / 2, pageHeight - 6, { align: 'center' });
+  };
+  addFooter(1, 2);
+
+  // ------------------------------------------------------------
+  // SEGUNDA FOLHA: AVARIAS E REGISTRO FOTOGRÁFICO NA SEQUÊNCIA
+  // ------------------------------------------------------------
+  doc.addPage();
+  y = 15;
+
+  // Faixa de cabeçalho da Folha 2
+  doc.setFillColor(darkNavy[0], darkNavy[1], darkNavy[2]);
+  doc.rect(margin, y, contentWidth, 8, 'F');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
   doc.setTextColor(255, 255, 255);
-  doc.text('AVARIAS REGISTRADAS', pageWidth / 2, y + 4.5, { align: 'center' });
+  doc.text('4. INSPEÇÃO VISUAL DE AVARIAS DE LATARIA', margin + 5, y + 5.2);
 
-  y += 10;
+  y += 13;
   const damages = isReturn
     ? loan.return_damages || loan.departure_damages || []
     : loan.departure_damages || [];
 
   if (damages.length === 0) {
-    doc.setFont('helvetica', 'normal');
+    doc.setFont('helvetica', 'italic');
     doc.setFontSize(8);
     doc.setTextColor(100, 116, 139);
     doc.text(
@@ -255,12 +376,11 @@ export const generateVehicleChecklistPdf = async (
     );
     y += 10;
   } else {
-    // Tabela resumida das avarias apontadas no diagrama
+    // Tabela resumida das avarias
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7.5);
     doc.setTextColor(15, 23, 42);
 
-    // Cabeçalho da tabelinha de avarias
     doc.setFillColor(241, 245, 249);
     doc.rect(margin, y - 2, contentWidth, 6, 'F');
     doc.text('CÓD', margin + 3, y + 2);
@@ -292,104 +412,7 @@ export const generateVehicleChecklistPdf = async (
     y += 4;
   }
 
-  // Observações gerais da missão / cautela
-  if (loan.mission_reason || loan.destination || loan.departure_notes || loan.return_notes) {
-    y += 2;
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
-    doc.setTextColor(30, 41, 59);
-    doc.text('OBSERVAÇÕES ADICIONAIS:', margin, y);
-    y += 4;
-    doc.setFont('helvetica', 'normal');
-    const obsText = [
-      loan.destination ? `Destino: ${loan.destination}` : '',
-      loan.mission_reason ? `Motivo: ${loan.mission_reason}` : '',
-      loan.departure_notes ? `Obs. Saída: ${loan.departure_notes}` : '',
-      loan.return_notes ? `Obs. Retorno: ${loan.return_notes}` : ''
-    ].filter(Boolean).join(' | ');
-
-    const splitObs = doc.splitTextToSize(obsText, contentWidth);
-    doc.text(splitObs, margin, y);
-    y += splitObs.length * 4 + 4;
-  }
-
-  // ------------------------------------------------------------
-  // SEÇÃO DE ASSINATURAS (Página 5 do anexo da MOVIDA)
-  // ------------------------------------------------------------
-  // Verificar se precisa de nova página para assinaturas caberem confortavelmente
-  if (y > pageHeight - 55) {
-    doc.addPage();
-    y = 20;
-  } else {
-    y = Math.max(y + 6, pageHeight - 50);
-  }
-
-  doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-  doc.rect(margin, y, contentWidth, 6.5, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(255, 255, 255);
-  doc.text('ASSINATURAS', pageWidth / 2, y + 4.5, { align: 'center' });
-
-  y += 20;
-
-  // Linhas para assinatura do Militar e Despachante
-  const colSigWidth = contentWidth / 2 - 10;
-
-  // Assinatura Militar Condutor
-  doc.setDrawColor(100, 116, 139);
-  doc.setLineWidth(0.4);
-  doc.line(margin + 5, y, margin + 5 + colSigWidth, y);
-
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(15, 23, 42);
-  doc.text('Militar Condutor', margin + 5 + colSigWidth / 2, y + 4, { align: 'center' });
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.text(
-    `${loan.driver_rank} ${loan.driver_name}`,
-    margin + 5 + colSigWidth / 2,
-    y + 7.5,
-    { align: 'center' }
-  );
-  doc.text(
-    `SARAM: ${loan.driver_saram}`,
-    margin + 5 + colSigWidth / 2,
-    y + 11,
-    { align: 'center' }
-  );
-
-  // Assinatura Despachante
-  const dispX = pageWidth - margin - colSigWidth - 5;
-  doc.line(dispX, y, dispX + colSigWidth, y);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.text('Despachante da Viatura', dispX + colSigWidth / 2, y + 4, { align: 'center' });
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.text(
-    `${isReturn && loan.return_dispatcher_name ? loan.return_dispatcher_name : loan.dispatcher_name}`,
-    dispX + colSigWidth / 2,
-    y + 7.5,
-    { align: 'center' }
-  );
-  doc.text(
-    `SARAM: ${isReturn && loan.return_dispatcher_saram ? loan.return_dispatcher_saram : loan.dispatcher_saram}`,
-    dispX + colSigWidth / 2,
-    y + 11,
-    { align: 'center' }
-  );
-
-  // Rodapé com hash / carimbo do sistema da última página (antes dos anexos)
-  const addFooter = () => {
-    doc.setFontSize(6.5);
-    doc.setTextColor(148, 163, 184);
-    const footerText = `Guardião GSD-SP • Central de Viaturas • Documento emitido em ${new Date().toLocaleString('pt-BR')} • Cautela: ${loan.loan_number}`;
-    doc.text(footerText, pageWidth / 2, pageHeight - 6, { align: 'center' });
-  };
-  addFooter();
+  addFooter(2, 2);
 
   // ------------------------------------------------------------
   // SEÇÃO DE FOTOS DA VIATURA (ANEXOS)
@@ -400,6 +423,7 @@ export const generateVehicleChecklistPdf = async (
   if (validPhotos.length > 0) {
     const photosPerPage = 2;
     const totalPhotoPages = Math.ceil(validPhotos.length / photosPerPage);
+    const totalPages = 2 + totalPhotoPages;
 
     for (let pageIdx = 0; pageIdx < totalPhotoPages; pageIdx++) {
       doc.addPage();
@@ -423,7 +447,7 @@ export const generateVehicleChecklistPdf = async (
 
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(7.5);
-        doc.setTextColor(slateText[0], slateText[1], slateText[2]);
+        doc.setTextColor(30, 41, 59);
         doc.text(`FOTOGRAFIA #${globalIdx} - REGISTRO DE ${isReturn ? 'DEVOLUÇÃO' : 'SAÍDA'}`, margin, yOffset);
 
         try {
@@ -442,7 +466,7 @@ export const generateVehicleChecklistPdf = async (
         }
       });
 
-      addFooter();
+      addFooter(2 + pageIdx + 1, totalPages);
     }
   }
 
