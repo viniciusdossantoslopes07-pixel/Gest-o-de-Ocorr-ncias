@@ -1326,6 +1326,7 @@ const App: FC = () => {
     if (updatedUser.password && updatedUser.password.trim() !== '') {
       try {
         await supabase.rpc('admin_set_user_password', {
+          p_admin_id: currentUser.id,
           p_target_user_id: updatedUser.id,
           p_new_password: updatedUser.password
         });

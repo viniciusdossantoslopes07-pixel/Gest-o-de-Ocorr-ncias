@@ -618,7 +618,12 @@ export default function OMManagement({ currentUser, isDarkMode }: OMManagementPr
         const file = type === 'om' ? logoFile : hostLogoFile;
         if (!file) return null;
         try {
-            const ext = file.name.split('.').pop();
+            const ext = file.name.split('.').pop()?.toLowerCase();
+            const allowedLogoExts = ['png', 'jpg', 'jpeg', 'webp'];
+            if (!ext || !allowedLogoExts.includes(ext) || file.type === 'image/svg+xml') {
+                alert('Formato de logo inválido. Selecione apenas imagens PNG, JPG ou WEBP.');
+                return null;
+            }
             const prefix = type === 'om' ? 'logo' : 'host_logo';
             const filePath = `${omId}/${prefix}_${Date.now()}.${ext}`;
             const { error } = await supabase.storage.from('om_logos').upload(filePath, file, { upsert: true });

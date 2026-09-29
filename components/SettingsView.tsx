@@ -37,9 +37,11 @@ export default function SettingsView({ user, onUpdateUser, onUpdatePassword, isD
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            alert('Por favor, selecione apenas imagens (JPG, PNG, etc.).');
+        // Validate file type and extension (prevenção Stored XSS via SVG/HTML)
+        const ext = file.name.split('.').pop()?.toLowerCase();
+        const allowedImageExts = ['jpg', 'jpeg', 'png', 'webp'];
+        if (!ext || !allowedImageExts.includes(ext) || file.type === 'image/svg+xml' || !file.type.startsWith('image/')) {
+            alert('Formato de arquivo não permitido. Selecione apenas imagens JPG, PNG ou WEBP.');
             return;
         }
 

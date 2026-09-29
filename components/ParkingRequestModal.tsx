@@ -232,12 +232,32 @@ export const ParkingRequestModal: React.FC<ParkingRequestModalProps> = ({ isOpen
             return;
         }
 
+        const allowedDocExts = ['pdf', 'jpg', 'jpeg', 'png', 'webp'];
+        const validateDocFile = (f: File, label: string) => {
+            const ext = f.name.split('.').pop()?.toLowerCase();
+            if (!ext || !allowedDocExts.includes(ext) || f.type === 'image/svg+xml' || f.type.includes('html')) {
+                throw new Error(`Arquivo inválido para ${label}. Formatos permitidos: PDF, JPG, PNG e WEBP.`);
+            }
+            if (f.size > 10 * 1024 * 1024) {
+                throw new Error(`O arquivo de ${label} excede o limite máximo de 10MB.`);
+            }
+        };
+
+        try {
+            validateDocFile(identityFile, 'Identidade');
+            validateDocFile(cnhFile, 'CNH');
+            validateDocFile(crlvFile, 'CRLV');
+        } catch (valErr: any) {
+            setError(valErr.message);
+            return;
+        }
+
         const getFileMime = (file: File) => {
-            if (file.type && file.type.length > 0) return file.type;
             const ext = file.name.split('.').pop()?.toLowerCase();
             if (ext === 'pdf') return 'application/pdf';
             if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg';
             if (ext === 'png') return 'image/png';
+            if (ext === 'webp') return 'image/webp';
             return 'application/pdf';
         };
 
