@@ -467,14 +467,20 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                             className={`rounded-xl border p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all cursor-pointer group ${dk ? 'bg-slate-800 border-amber-700/50 hover:border-amber-500 hover:bg-slate-800/80' : 'bg-white border-amber-200 hover:border-amber-400 hover:shadow-md'}`}
                                         >
                                             <div className="flex-1 w-full">
-                                                <div className="flex items-center justify-between gap-3 mb-2">
-                                                    <div>
+                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                                                    <div className="min-w-0 pr-2">
                                                         <p className={`font-black text-xs sm:text-sm uppercase truncate ${textPrimary}`}>{req.nome_completo}</p>
                                                         <p className={`text-[10px] sm:text-[11px] font-bold uppercase truncate ${dk ? 'text-slate-400' : 'text-slate-500'}`}>{req.posto_graduacao} • {req.forca}</p>
                                                     </div>
-                                                    <span className={`px-2 py-1 text-[9px] font-black uppercase rounded-lg shrink-0 ${dk ? 'bg-amber-900/40 text-amber-500' : 'bg-amber-100 text-amber-700'}`}>
-                                                        Pendente
-                                                    </span>
+                                                    <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+                                                        <div className={`px-2.5 py-1 rounded-lg border text-[10px] sm:text-xs font-black tracking-wider uppercase flex items-center gap-1.5 shrink-0 ${dk ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' : 'bg-blue-50 border-blue-200 text-blue-700'}`} title="Número do Protocolo">
+                                                            <span className="text-[8px] sm:text-[9px] font-bold text-slate-400">PROTO:</span>
+                                                            <span className="font-mono font-black">{req.numero_autorizacao ? `#${req.numero_autorizacao}` : `#${req.id.substring(0, 6).toUpperCase()}`}</span>
+                                                        </div>
+                                                        <span className={`px-2 py-1 text-[9px] font-black uppercase rounded-lg shrink-0 ${dk ? 'bg-amber-900/40 text-amber-500' : 'bg-amber-100 text-amber-700'}`}>
+                                                            Pendente
+                                                        </span>
+                                                    </div>
                                                 </div>
 
                                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-3">
@@ -580,16 +586,22 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                     onClick={() => setShowingCoupon(req)}
                                 >
                                     <div className="flex-1 w-full space-y-4">
-                                        <div className="flex items-start justify-between gap-2">
+                                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                                             <div className="min-w-0 pr-2">
                                                 <p className={`font-black text-sm uppercase truncate ${textPrimary}`}>{req.nome_completo}</p>
                                                 <p className={`text-[10px] sm:text-xs font-bold uppercase truncate mt-1 ${isAproved ? 'text-emerald-500' : isRejected ? 'text-red-500' : textMuted}`}>{req.posto_graduacao} • {req.forca}</p>
                                             </div>
-                                            <div className={`shrink-0 px-2 py-1 rounded-lg text-[9px] font-black uppercase flex items-center gap-1.5 ${isAproved ? (dk ? 'bg-emerald-900/40 text-emerald-500' : 'bg-emerald-100 text-emerald-700') : isRejected ? (dk ? 'bg-red-900/40 text-red-500' : 'bg-red-100 text-red-700') : (dk ? 'bg-amber-900/40 text-amber-500' : 'bg-amber-100 text-amber-700')}`}>
-                                                {isAproved && <CheckCircle2 className="w-3 h-3" />}
-                                                {isRejected && <XCircle className="w-3 h-3" />}
-                                                {!isAproved && !isRejected && <Clock className="w-3 h-3" />}
-                                                {req.status}
+                                            <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+                                                <div className={`px-2.5 py-1 rounded-lg border text-[10px] sm:text-xs font-black tracking-wider uppercase flex items-center gap-1.5 shrink-0 ${dk ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' : 'bg-blue-50 border-blue-200 text-blue-700'}`} title="Número do Protocolo">
+                                                    <span className="text-[8px] sm:text-[9px] font-bold text-slate-400">PROTO:</span>
+                                                    <span className="font-mono font-black">{req.numero_autorizacao ? `#${req.numero_autorizacao}` : `#${req.id.substring(0, 6).toUpperCase()}`}</span>
+                                                </div>
+                                                <div className={`shrink-0 px-2 py-1 rounded-lg text-[9px] font-black uppercase flex items-center gap-1.5 ${isAproved ? (dk ? 'bg-emerald-900/40 text-emerald-500' : 'bg-emerald-100 text-emerald-700') : isRejected ? (dk ? 'bg-red-900/40 text-red-500' : 'bg-red-100 text-red-700') : (dk ? 'bg-amber-900/40 text-amber-500' : 'bg-amber-100 text-amber-700')}`}>
+                                                    {isAproved && <CheckCircle2 className="w-3 h-3" />}
+                                                    {isRejected && <XCircle className="w-3 h-3" />}
+                                                    {!isAproved && !isRejected && <Clock className="w-3 h-3" />}
+                                                    {req.status}
+                                                </div>
                                             </div>
                                         </div>
                                         
@@ -1028,6 +1040,10 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                             <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-900 rounded-full z-10"></div>
 
                             <div className="text-center space-y-1">
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-xs font-black font-mono tracking-wider mb-1">
+                                    <span className="text-[9px] text-slate-400 font-bold">PROTOCOLO:</span>
+                                    <span>#{showingCoupon.numero_autorizacao ? showingCoupon.numero_autorizacao : showingCoupon.id.slice(0, 6).toUpperCase()}</span>
+                                </div>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase">Solicitante</p>
                                 <p className="text-sm sm:text-base font-black text-slate-800">{showingCoupon.nome_completo}</p>
                                 <p className="text-[10px] sm:text-[11px] font-bold text-blue-600 uppercase">{showingCoupon.posto_graduacao} • {showingCoupon.om}</p>
