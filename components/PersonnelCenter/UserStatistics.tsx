@@ -136,9 +136,14 @@ const UserStatistics: React.FC<UserStatisticsProps> = ({ users, attendanceHistor
                     unit: sectors.find(s => s.name === name && s.om_id === data.om_id)?.unit || (data.om_id === BASP_ID ? 'BASP' : 'GSD-SP')
                 };
             })
+            .filter(item => {
+                if (activeUnitFilter === 'GSD-SP') return item.unit === 'GSD-SP';
+                if (activeUnitFilter === 'BASP') return item.unit === 'BASP';
+                return true;
+            })
             .sort((a, b) => b.count - a.count)
             .slice(0, 8);
-    }, [statsUsers, sectors, total]);
+    }, [statsUsers, sectors, total, activeUnitFilter]);
 
     const maxSectorCount = Math.max(...sectorStats.map(s => s.count), 1);
 
