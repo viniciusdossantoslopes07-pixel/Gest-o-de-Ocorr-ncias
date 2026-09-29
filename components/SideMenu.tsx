@@ -72,13 +72,12 @@ export default function SideMenu({
     // Admin / Occurrences
     const canManageUsers = hasPermission(currentUser, PERMISSIONS.MANAGE_USERS);
     const canManageOccurrences = hasPermission(currentUser, PERMISSIONS.MANAGE_OCCURRENCES);
-    const userRoleUpper = currentUser.role?.toUpperCase() || '';
-    const isAdmin = userRoleUpper === 'GESTOR MASTER / OSD' || userRoleUpper === 'ADMIN' || currentUser.role === UserRole.ADMIN;
+    const isAdmin = currentUser.functionId === 'ADMIN_TOTAL' || currentUser.functionId === 'ADMIN_OM';
     
     // Vehicles
-    const canViewVehicles = hasPermission(currentUser, PERMISSIONS.VIEW_VEHICLES) || isAdmin;
+    const canViewVehicles = hasPermission(currentUser, PERMISSIONS.VIEW_VEHICLES);
 
-    const showEmergencyButton = currentUser.is_functional || isAdmin;
+    const showEmergencyButton = currentUser.is_functional || isAdmin || canManageOccurrences;
 
     // Supabase realtime channel for emergency
     React.useEffect(() => {

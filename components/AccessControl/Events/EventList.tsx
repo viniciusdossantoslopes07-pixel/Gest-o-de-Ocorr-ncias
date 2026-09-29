@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, AccessEvent } from '../../../types';
+import { PERMISSIONS, hasPermission } from '../../../constants/permissions';
 import { eventService } from '../../../services/eventService';
 import { supabase } from '../../../services/supabase';
 import { Calendar, MapPin, Users, ChevronRight, RefreshCw, Info, CalendarDays, Printer, Camera, Car } from 'lucide-react';
@@ -42,11 +43,11 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
         }
     };
 
+    const canManageEvent = hasPermission(user, PERMISSIONS.MANAGE_ACCESS_CONTROL) || user.functionId === 'ADMIN_TOTAL' || user.functionId === 'ADMIN_OM';
+
     const handleStatusChange = async (eventId: string, currentStatus: string) => {
-        // Apenas COMANDANTE aprova manualmente se estiver pendente?
-        // ou ADMIN/OSD também. Vamos assumir que Commander ou Admin.
-        if (user.role !== 'Comandante OM' && user.role !== 'Gestor Master / OSD') {
-            alert('Apenas o Comandante ou Oficial Superior de Dia (OSD) podem alterar o status aprovação de eventos grandes.');
+        if (!canManageEvent) {
+            alert('Apenas usuários autorizados com permissão de Controle de Acesso podem alterar o status de aprovação de eventos.');
             return;
         }
 
@@ -66,8 +67,8 @@ export default function EventList({ user, isDarkMode = false }: EventListProps) 
     }
 
     const handleDelete = async (eventId: string) => {
-        if (user.role !== 'Gestor Master / OSD' && user.role !== 'Comandante OM') {
-            alert('Apenas Gestor/Admin pode excluir um evento.');
+        if (!canManageEvent) {
+            alert('Apenas administradores com permissão de Controle de Acesso podem excluir eventos.');
             return;
         }
         if (!window.confirm('Tem certeza que deseja apagar este evento e TODOS os seus convidados? Essa ação é vitalícia.')) return;

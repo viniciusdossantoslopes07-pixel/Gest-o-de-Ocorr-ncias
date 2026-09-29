@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User, UserRole } from '../types';
+import { PERMISSIONS, hasPermission } from '../constants/permissions';
 import {
     User as UserIcon,
     Settings,
@@ -187,37 +188,41 @@ export default function UserMenu({
 
                         <div className={`my-2 border-t ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`} />
 
-                        {/* Configurações Avançadas (Admin Only) */}
-                        {(currentUser.role === UserRole.ADMIN || currentUser.accessLevel === 'OM') && (
+                        {/* Configurações Avançadas (RBAC Estrito) */}
+                        {(hasPermission(currentUser, PERMISSIONS.MANAGE_PERMISSIONS) || hasPermission(currentUser, PERMISSIONS.NAVIGATE_OMS) || hasPermission(currentUser, PERMISSIONS.MANAGE_ACCESS_CONTROL)) && (
                             <>
                                 <div className="px-3 py-2">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         <Settings className="w-3 h-3" /> Configurações
                                     </p>
                                 </div>
-                                <button
-                                    onClick={() => handleAction(() => setActiveTab('om-management'))}
-                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${isDarkMode ? 'text-blue-300 hover:bg-blue-900/20' : 'text-blue-700 hover:bg-blue-50'}`}
-                                >
-                                    <Building2 className="w-4 h-4 text-blue-500" />
-                                    Gerir OM's
-                                </button>
-                                <button
-                                    onClick={() => handleAction(() => setActiveTab('users'))}
-                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${isDarkMode ? 'text-blue-300 hover:bg-blue-900/20' : 'text-blue-700 hover:bg-blue-50'}`}
-                                >
-                                    <Shield className="w-4 h-4 text-blue-500" />
-                                    Gerir Permissões
-                                </button>
-
-
-                                <button
-                                    onClick={() => handleAction(() => setActiveTab('access-temp'))}
-                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${isDarkMode ? 'text-slate-200 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-100'}`}
-                                >
-                                    <QrCode className="w-4 h-4" />
-                                    Acessos Temporários
-                                </button>
+                                {(hasPermission(currentUser, PERMISSIONS.NAVIGATE_OMS) || hasPermission(currentUser, PERMISSIONS.MANAGE_PERMISSIONS)) && (
+                                    <button
+                                        onClick={() => handleAction(() => setActiveTab('om-management'))}
+                                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${isDarkMode ? 'text-blue-300 hover:bg-blue-900/20' : 'text-blue-700 hover:bg-blue-50'}`}
+                                    >
+                                        <Building2 className="w-4 h-4 text-blue-500" />
+                                        Gerir OM's
+                                    </button>
+                                )}
+                                {hasPermission(currentUser, PERMISSIONS.MANAGE_PERMISSIONS) && (
+                                    <button
+                                        onClick={() => handleAction(() => setActiveTab('users'))}
+                                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${isDarkMode ? 'text-blue-300 hover:bg-blue-900/20' : 'text-blue-700 hover:bg-blue-50'}`}
+                                    >
+                                        <Shield className="w-4 h-4 text-blue-500" />
+                                        Gerir Permissões
+                                    </button>
+                                )}
+                                {hasPermission(currentUser, PERMISSIONS.MANAGE_ACCESS_CONTROL) && (
+                                    <button
+                                        onClick={() => handleAction(() => setActiveTab('access-temp'))}
+                                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${isDarkMode ? 'text-slate-200 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-100'}`}
+                                    >
+                                        <QrCode className="w-4 h-4" />
+                                        Acessos Temporários
+                                    </button>
+                                )}
 
                                 <div className={`my-2 border-t ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`} />
                             </>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { User, AccessEvent, EventGuest, UserRole } from '../../../types';
+import { PERMISSIONS, hasPermission } from '../../../constants/permissions';
 import { eventService } from '../../../services/eventService';
 import { supabase } from '../../../services/supabase';
 import {
@@ -18,7 +19,7 @@ interface EventControlProps {
 }
 
 const isAdmin = (user: User) =>
-    user.role === UserRole.ADMIN || user.role === UserRole.COMMANDER;
+    hasPermission(user, PERMISSIONS.MANAGE_ACCESS_CONTROL) || user.functionId === 'ADMIN_TOTAL' || user.functionId === 'ADMIN_OM';
 
 export default function EventControl({ user, isDarkMode = false }: EventControlProps) {
     const dk = isDarkMode;

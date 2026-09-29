@@ -50,15 +50,15 @@ const OccurrenceDetail: React.FC<OccurrenceDetailProps> = ({
     }
   };
 
-  const isAdmin = user.role === UserRole.ADMIN;
+  const isAdmin = user.functionId === 'ADMIN_TOTAL' || user.functionId === 'ADMIN_OM';
   // Refactored to use Granular Permissions (Centralized)
 
-  const canTriage = hasPermission(user, PERMISSIONS.TRIAGE_OCCURRENCES) || user.accessLevel === 'N1' || isAdmin;
-  const canEscalate = hasPermission(user, PERMISSIONS.ESCALATE_OCCURRENCES) || user.accessLevel === 'N2' || isAdmin;
-  const canResolve = hasPermission(user, PERMISSIONS.RESOLVE_OCCURRENCES) || user.accessLevel === 'N3' || isAdmin;
+  const canTriage = hasPermission(user, PERMISSIONS.TRIAGE_OCCURRENCES) || isAdmin;
+  const canEscalate = hasPermission(user, PERMISSIONS.ESCALATE_OCCURRENCES) || isAdmin;
+  const canResolve = hasPermission(user, PERMISSIONS.RESOLVE_OCCURRENCES) || isAdmin;
 
   // OM is special, has all + command console
-  const isOM = user.accessLevel === 'OM' || isAdmin;
+  const isOM = (user.accessLevel === 'OM' && isAdmin) || isAdmin;
   const isClosed = occurrence.status === Status.CLOSED || occurrence.status === Status.FINALIZED;
 
   // Encontrar Posto/Grad e Nome de Guerra do relator

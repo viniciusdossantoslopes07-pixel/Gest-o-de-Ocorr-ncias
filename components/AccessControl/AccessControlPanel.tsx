@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../../services/supabase';
 import { User, UserRole } from '../../types';
+import { PERMISSIONS, hasPermission } from '../../constants/permissions';
 import {
     DoorOpen, Car, Footprints, ArrowDownToLine, ArrowUpFromLine, Shield, UserCheck, Search, Calendar, RefreshCw, Plus, X,
     ChevronDown, Clock, Filter, Truck, Building2, BadgeCheck, Database, Info, Check,
@@ -134,8 +135,7 @@ export default function AccessControlPanel({ user, isDarkMode = false }: AccessC
     const [newGateName, setNewGateName] = useState('');
     const [isManagingGates, setIsManagingGates] = useState(false);
     const [editingGateId, setEditingGateId] = useState<string | null>(null);
-    const [editingGateName, setEditingGateName] = useState('');
-    const isAdmin = user.role === UserRole.ADMIN;
+    const isAdmin = hasPermission(user, PERMISSIONS.MANAGE_ACCESS_CONTROL) || user.functionId === 'ADMIN_TOTAL' || user.functionId === 'ADMIN_OM';
 
     // Filter state (for the list)
     const [filterGate, setFilterGate] = useState('');

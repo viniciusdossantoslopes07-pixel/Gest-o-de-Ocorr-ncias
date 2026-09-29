@@ -143,6 +143,116 @@ const App: FC = () => {
     return null;
   });
 
+  const handleLogout = useCallback(() => {
+    setCurrentUser(null);
+    localStorage.removeItem('gsdsp_user_session');
+    setActiveTab('home');
+    setIsSidebarOpen(false);
+  }, []);
+
+  // Sincronização em tempo real do perfil e permissões do usuário com o PostgreSQL
+  const syncCurrentUserProfile = useCallback(async (userId: string) => {
+    if (!userId || userId === PUBLIC_USER.id) return;
+
+    try {
+      const { data: dbUser, error } = await supabase
+        .from('users')
+        .select('id, name, username, war_name, rank, saram, role, access_level, function_id, custom_permissions, administrative_role, sector, om_id, active, approved, photo_url, is_functional, military_organizations(*)')
+        .eq('id', userId)
+        .single();
+
+      if (error || !dbUser) {
+        console.warn('[RBAC Sync] Usuário não encontrado no banco de dados:', error);
+        return;
+      }
+
+      if (dbUser.approved === false || dbUser.active === false) {
+        alert('Seu acesso foi desativado ou está pendente de aprovação.');
+        handleLogout();
+        return;
+      }
+
+      setCurrentUser(prevUser => {
+        if (!prevUser || prevUser.id !== userId) return prevUser;
+
+        const updatedUser: User = {
+          ...prevUser,
+          name: dbUser.name ?? prevUser.name,
+          warName: dbUser.war_name ?? prevUser.warName,
+          rank: dbUser.rank ?? prevUser.rank,
+          saram: dbUser.saram ?? prevUser.saram,
+          role: dbUser.role as UserRole ?? prevUser.role,
+          accessLevel: dbUser.access_level as any ?? prevUser.accessLevel,
+          functionId: dbUser.function_id ?? prevUser.functionId,
+          customPermissions: dbUser.custom_permissions ?? prevUser.customPermissions,
+          administrativeRole: dbUser.administrative_role ?? prevUser.administrativeRole,
+          sector: dbUser.sector ?? prevUser.sector,
+          om_id: dbUser.om_id ?? prevUser.om_id,
+          om: dbUser.military_organizations ?? prevUser.om,
+          is_functional: dbUser.is_functional ?? prevUser.is_functional,
+          photo_url: dbUser.photo_url ?? prevUser.photo_url,
+          password: ''
+        };
+
+        const safeUser = { ...updatedUser, password: '' };
+        localStorage.setItem('gsdsp_user_session', JSON.stringify(safeUser));
+
+        return updatedUser;
+      });
+    } catch (err) {
+      console.error('[RBAC Sync] Falha ao sincronizar permissões:', err);
+    }
+  }, [handleLogout]);
+
+  // Efeito de sincronização contínua (mount, visibilidade de aba e Realtime do Supabase)
+  useEffect(() => {
+    if (!currentUser?.id || currentUser.id === PUBLIC_USER.id) return;
+
+    const userId = currentUser.id;
+
+    // Sincronização inicial no carregamento
+    syncCurrentUserProfile(userId);
+
+    // Revalidação ao focar na janela ou mudar aba
+    let lastSyncTime = Date.now();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const now = Date.now();
+        if (now - lastSyncTime > 10000) {
+          lastSyncTime = now;
+          syncCurrentUserProfile(userId);
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleVisibilityChange);
+
+    // Canal Realtime Supabase para escutar alterações de permissões em tempo real
+    const channelName = `user-rbac-sync-${userId}`;
+    const userChannel = supabase.channel(channelName)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'users',
+          filter: `id=eq.${userId}`
+        },
+        () => {
+          console.log('[RBAC Realtime] Alteração de permissões detectada, atualizando sessão imediatamente...');
+          syncCurrentUserProfile(userId);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleVisibilityChange);
+      supabase.removeChannel(userChannel);
+    };
+  }, [currentUser?.id, syncCurrentUserProfile]);
+
+
   // Fast Metadata Setup - Immediately apply cached branding to avoid flicker
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -271,8 +381,8 @@ const App: FC = () => {
   });
 
   // Access Control (memoizado para evitar recálculo a cada render)
-  const isAdmin = currentUser?.role === UserRole.ADMIN;
-  const isOM = currentUser?.accessLevel === 'OM';
+  const isAdmin = currentUser?.functionId === 'ADMIN_TOTAL' || currentUser?.functionId === 'ADMIN_OM';
+  const isOM = currentUser?.functionId === 'ADMIN_OM' || currentUser?.functionId === 'ADMIN_TOTAL' || currentUser?.accessLevel === 'OM';
   const isPublic = currentUser?.role === UserRole.PUBLIC;
 
   // RBAC memoizado — só recalcula quando currentUser muda
@@ -292,10 +402,29 @@ const App: FC = () => {
       canManageOccurrences: hasPermission(currentUser, PERMISSIONS.MANAGE_OCCURRENCES),
       canViewServiceQueue: hasPermission(currentUser, PERMISSIONS.VIEW_SERVICE_QUEUE),
       canViewDashboard: hasPermission(currentUser, PERMISSIONS.VIEW_DASHBOARD),
+      canViewVehicles: hasPermission(currentUser, PERMISSIONS.VIEW_VEHICLES),
+      canManagePermissions: hasPermission(currentUser, PERMISSIONS.MANAGE_PERMISSIONS),
+      canNavigateOms: hasPermission(currentUser, PERMISSIONS.NAVIGATE_OMS),
     };
   }, [currentUser]);
 
-  const { canRequestMission, canManageMissions, canManageUsers, canManageMaterial, canViewMaterialPanel, canManagePersonnel, canViewAttendance, canViewPersonnel, canViewAccessControl, canManageOccurrences, canViewServiceQueue, canViewDashboard } = permissions;
+  const {
+    canRequestMission,
+    canManageMissions,
+    canManageUsers,
+    canManageMaterial,
+    canViewMaterialPanel,
+    canManagePersonnel,
+    canViewAttendance,
+    canViewPersonnel,
+    canViewAccessControl,
+    canManageOccurrences,
+    canViewServiceQueue,
+    canViewDashboard,
+    canViewVehicles,
+    canManagePermissions,
+    canNavigateOms
+  } = permissions;
   
   // Helper centralizado para obter a OM correta considerando URL override
   const getActualOmId = useCallback(() => {
@@ -1129,13 +1258,6 @@ const App: FC = () => {
     setCurrentUser(PUBLIC_USER);
     localStorage.setItem('gsdsp_user_session', JSON.stringify(PUBLIC_USER));
     setActiveTab('new');
-  };
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem('gsdsp_user_session');
-    setActiveTab('home');
-    setIsSidebarOpen(false);
   };
 
   const handleCreateUser = async (newUser: User) => {
@@ -2032,7 +2154,7 @@ const App: FC = () => {
             <VacationManagement currentUser={currentUser} isDarkMode={isDarkMode} users={users} />
           )}
 
-          {activeTab === 'emergency-logs' && (
+          {activeTab === 'emergency-logs' && canManageOccurrences && (
             <EmergencyLogs currentUser={currentUser} />
           )}
 
@@ -2239,7 +2361,7 @@ const App: FC = () => {
             <ParkingRequestPanel user={currentUser} isDarkMode={isDarkMode} />
           )}
 
-          {activeTab === 'om-management' && (isAdmin || isOM) && (
+          {activeTab === 'om-management' && (canNavigateOms || canManagePermissions) && (
             <OMManagement currentUser={currentUser} isDarkMode={isDarkMode} />
           )}
 
@@ -2296,7 +2418,7 @@ const App: FC = () => {
           )}
 
           {/* Mission Orders (Form View mainly) */}
-          {activeTab === 'mission-orders' && (isOM || canManageMissions) && (
+          {activeTab === 'mission-orders' && canManageMissions && (
             <>
               {showMissionOrderForm ? (
                 <MissionOrderForm
@@ -2344,13 +2466,11 @@ const App: FC = () => {
             <SAP03Panel user={currentUser} isDarkMode={isDarkMode} />
           )}
 
-          {activeTab === 'vehicles' && !isPublic && (
+          {activeTab === 'vehicles' && canViewVehicles && (
             <VehicleManager user={currentUser} isDarkMode={isDarkMode} />
           )}
 
-
-
-          {activeTab === 'list' && !isPublic && (
+          {activeTab === 'list' && canManageOccurrences && (
             <div className="space-y-4">
               {/* Desktop View - Search Bar Only (Title is already in header) */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-4 mb-2">

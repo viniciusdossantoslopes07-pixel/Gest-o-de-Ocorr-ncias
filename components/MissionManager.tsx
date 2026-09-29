@@ -72,9 +72,9 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
 
     // Permission checks
     // Refactored to use granular permissions instead of AccessLevel
-    const canApprove = hasPermission(user, PERMISSIONS.APPROVE_MISSION) || user.role === UserRole.ADMIN;
-    const canSign = hasPermission(user, PERMISSIONS.SIGN_MISSION) || user.role === UserRole.ADMIN;
-    const canManage = hasPermission(user, PERMISSIONS.MANAGE_MISSIONS) || user.role === UserRole.ADMIN;
+    const canApprove = hasPermission(user, PERMISSIONS.APPROVE_MISSION);
+    const canSign = hasPermission(user, PERMISSIONS.SIGN_MISSION);
+    const canManage = hasPermission(user, PERMISSIONS.MANAGE_MISSIONS);
 
     // Legacy mapping for existing logic compatibility (to be gradually replaced)
     // isSop used to mean "Can Analyze/Approve"
@@ -824,8 +824,8 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
 
     // Helper to check if user can manage (start/end) a mission
     const canManageMission = (order: MissionOrder) => {
-        // 1. SOP/CH-SOP or ADMIN (Chefia e Setores Técnicos)
-        if (isSop || isChSop || user.role === UserRole.ADMIN || user.role === UserRole.COMMANDER) return true;
+        // 1. SOP/CH-SOP or ADMIN (Chefia e Setores Técnicos via RBAC)
+        if (isSop || isChSop || canManage || user.functionId === 'ADMIN_TOTAL' || user.functionId === 'ADMIN_OM') return true;
 
         // 2. Mission Commander (Responsável)
         if (order.missionCommanderId === user.id) return true;
@@ -1041,7 +1041,7 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
 
                             <div className={`mt-5 pt-4 border-t ${isDarkMode ? 'border-slate-800/50' : 'border-slate-100'} flex items-center justify-between gap-1.5 relative z-10`}>
                                 <div className="flex gap-1.5">
-                                    {(user.role === UserRole.ADMIN || user.sector === 'CH-SOP') && (
+                                    {(canManage || user.functionId === 'ADMIN_TOTAL' || user.functionId === 'ADMIN_OM') && (
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleDeleteRequest(m); }}
                                             className={`p-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center ${isDarkMode ? 'bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white border border-red-500/20' : 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-100'}`}
@@ -1069,8 +1069,8 @@ export default function MissionManager({ user, isDarkMode, urlOm }: MissionManag
         const waiting = orders.filter(o => o.status === 'AGUARDANDO_ASSINATURA');
         if (waiting.length === 0) return null;
 
-        // Permissions: Only CH-SOP, CMT-GSD-SP or ADMIN can sign
-        const canSign = user.role === UserRole.ADMIN || user.sector === 'CH-SOP' || user.sector === 'CMT-GSD-SP';
+        // Permissions: Only authorized signers via RBAC can sign
+        const canSignThis = canSign || user.functionId === 'ADMIN_TOTAL' || user.functionId === 'ADMIN_OM';
 
         return (
             <div className="space-y-4 mt-12">

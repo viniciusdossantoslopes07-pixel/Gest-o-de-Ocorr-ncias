@@ -110,8 +110,8 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
     const [searchQuery, setSearchQuery] = useState('');
     const printDocRef = useRef<HTMLDivElement>(null);
 
-    const isAdmin = user?.role === 'Gestor Master / OSD' || user?.role === 'Comandante OM' || (user?.sector && user.sector.includes('SOP'));
-    const canViewAllParking = isAdmin || hasPermission(user, PERMISSIONS.VIEW_ACCESS_PARKING);
+    const canViewAllParking = hasPermission(user, PERMISSIONS.VIEW_ACCESS_PARKING) || hasPermission(user, PERMISSIONS.MANAGE_ACCESS_CONTROL) || user?.functionId === 'ADMIN_TOTAL' || user?.functionId === 'ADMIN_OM';
+    const isAdmin = canViewAllParking;
 
     useEffect(() => {
         const fetchData = async () => {

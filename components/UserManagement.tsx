@@ -65,8 +65,8 @@ const UserManagement: FC<UserManagementProps> = ({ users, onCreateUser, onUpdate
     setTimeout(() => setResetToast(null), 4000);
   };
 
-  const canManagePermissions = currentUser ? (hasPermission(currentUser, PERMISSIONS.MANAGE_PERMISSIONS) || currentUser.role === UserRole.ADMIN) : false;
-  const canManageSectors = currentUser?.role === UserRole.ADMIN;
+  const canManagePermissions = currentUser ? (hasPermission(currentUser, PERMISSIONS.MANAGE_PERMISSIONS) || currentUser.functionId === 'ADMIN_TOTAL' || currentUser.functionId === 'ADMIN_OM') : false;
+  const canManageSectors = currentUser ? (hasPermission(currentUser, PERMISSIONS.MANAGE_USERS) || canManagePermissions) : false;
 
   // Rank Categories for Filtering (Consistent with PermissionManagement)
   const RANK_CATEGORIES = {
