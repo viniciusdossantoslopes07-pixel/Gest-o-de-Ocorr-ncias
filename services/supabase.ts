@@ -1,7 +1,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const VPS_SUPABASE_URL = 'http://2.25.229.18:8000';
+const VPS_SUPABASE_URL = 'https://api.app-gsdsp.com';
 const VPS_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzg5NjAwNDYxLCJleHAiOjIxMDQ5NjA0NjF9.OFcLnCPS3h5j_AySCPElhGxG0L7EbTO_I0fyJFUeJOI';
 
 let envUrl = import.meta.env.VITE_SUPABASE_URL || VPS_SUPABASE_URL;

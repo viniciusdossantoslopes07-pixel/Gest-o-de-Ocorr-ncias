@@ -58,11 +58,11 @@ export default async function handler(req, res) {
   }
 
   // Se CHEGOU AQUI, É UM BOT
-  let supabaseUrl = process.env.VITE_SUPABASE_URL || 'http://2.25.229.18:8000';
+  let supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://api.app-gsdsp.com';
   let supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzg5NjAwNDYxLCJleHAiOjIxMDQ5NjA0NjF9.OFcLnCPS3h5j_AySCPElhGxG0L7EbTO_I0fyJFUeJOI';
 
   if (!supabaseUrl || supabaseUrl.includes('ipbzdgkbrozrjeohonbo')) {
-    supabaseUrl = 'http://2.25.229.18:8000';
+    supabaseUrl = 'https://api.app-gsdsp.com';
     supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzg5NjAwNDYxLCJleHAiOjIxMDQ5NjA0NjF9.OFcLnCPS3h5j_AySCPElhGxG0L7EbTO_I0fyJFUeJOI';
   }
 

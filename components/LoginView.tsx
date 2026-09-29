@@ -187,12 +187,14 @@ const LoginView: FC<LoginViewProps> = ({ onLogin, onBiometricLoginSuccess, onReg
       setIsLoading(true);
       const credential = await registerBiometrics(lastLoggedInUser.name, lastLoggedInUser.id);
 
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ biometric_credentials_id: credential.id })
-        .eq('id', lastLoggedInUser.id);
+      const { data: rpcRes, error: updateError } = await supabase.rpc('register_biometric_credential', {
+        p_user_id: lastLoggedInUser.id,
+        p_credential_id: credential.id
+      });
 
-      if (updateError) throw updateError;
+      if (updateError || (rpcRes && !rpcRes.success)) {
+        throw new Error(updateError?.message || rpcRes?.message || 'Falha ao vincular biometria.');
+      }
 
       localStorage.setItem('gsdsp_biometric_id', credential.id);
       localStorage.setItem('gsdsp_last_saram', lastLoggedInUser.saram);
