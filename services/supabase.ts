@@ -15,10 +15,17 @@ if (envUrl.includes('ipbzdgkbrozrjeohonbo')) {
 
 let supabaseUrl = envUrl;
 
-// Se estiver rodando no navegador sob HTTPS em produção e a URL for HTTP pura,
-// utiliza o proxy reverso (/supabase-api) configurado no vercel.json para evitar erro de Mixed Content
-if (typeof window !== 'undefined' && window.location.protocol === 'https:' && envUrl.startsWith('http://')) {
-    supabaseUrl = `${window.location.origin}/supabase-api`;
+// Detecção automática de ambiente Intranet ou Cloud
+if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    const isIntranetOrLocal = host === 'localhost' || host === '127.0.0.1' || host.startsWith('10.') || host.startsWith('192.168.') || host.endsWith('.intraer') || host.endsWith('.mil.br');
+    
+    if (isIntranetOrLocal) {
+        // Na intranet da FAB, conecta diretamente através da portaria interna /supabase-api do Nginx
+        supabaseUrl = `${window.location.origin}/supabase-api`;
+    } else if (window.location.protocol === 'https:' && envUrl.startsWith('http://')) {
+        supabaseUrl = `${window.location.origin}/supabase-api`;
+    }
 }
 
 export const supabase = createClient(supabaseUrl, envKey);

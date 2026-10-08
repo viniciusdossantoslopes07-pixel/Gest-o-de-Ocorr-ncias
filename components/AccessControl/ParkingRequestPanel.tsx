@@ -4,7 +4,8 @@ import {
     Car, Clock, Shield, Users, TrendingUp, Building2, UserCircle, Calendar,
     Filter, ChevronDown, ChevronUp, AlertTriangle, Search, Info, CheckCircle2,
     XCircle, Printer, Download, Plus, FileText, Send, Mail, MailCheck, Ticket,
-    List, BarChart3, Eye, CheckCircle, History, ChevronRight, Loader2, Lock, ShieldCheck
+    List, BarChart3, Eye, CheckCircle, History, ChevronRight, Loader2, Lock, ShieldCheck,
+    CheckCheck, Check
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas-pro';
@@ -53,6 +54,8 @@ interface ParkingRequest {
     crlv_url?: string;
     identidade_url?: string;
     email?: string;
+    email_enviado?: boolean;
+    email_enviado_em?: string;
 }
 
 const TOTAL_VAGAS = 60;
@@ -146,18 +149,35 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [printRequest, showingCoupon, analysingRequest, showPasswordModal, rejectingRequestId]);
 
+    const mergeSentStatus = (list: ParkingRequest[]): ParkingRequest[] => {
+        try {
+            const sentMap = JSON.parse(localStorage.getItem('parking_sent_emails') || '{}');
+            return list.map(r => {
+                const isSentLocal = sentMap[r.id]?.sent;
+                const sentAtLocal = sentMap[r.id]?.sent_at;
+                return {
+                    ...r,
+                    email_enviado: Boolean(r.email_enviado || isSentLocal),
+                    email_enviado_em: r.email_enviado_em || sentAtLocal
+                };
+            });
+        } catch {
+            return list;
+        }
+    };
+
     const fetchMyRequests = async () => {
         let query = supabase.from('parking_requests').select('*, vehicle:parking_vehicles(*)').eq('user_id', user.id).order('created_at', { ascending: false }).limit(500);
         if (currentOmId) query = query.eq('om_id', currentOmId);
         const { data } = await query;
-        if (data) setRequests(data);
+        if (data) setRequests(mergeSentStatus(data));
     };
 
     const fetchAllRequests = async () => {
         let query = supabase.from('parking_requests').select('*, vehicle:parking_vehicles(*)').order('created_at', { ascending: false }).limit(500);
         if (currentOmId) query = query.eq('om_id', currentOmId);
         const { data } = await query;
-        if (data) setAllRequests(data);
+        if (data) setAllRequests(mergeSentStatus(data));
     };
 
     const vagasOcupadas = (() => {
@@ -342,7 +362,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
 
             const pdfBase64 = doc.output('datauristring').split(',')[1];
 
-            await notificationService.sendParkingAuthorizationNotification({
+            const sendSuccess = await notificationService.sendParkingAuthorizationNotification({
                 militarEmail: req.email,
                 militarName: req.nome_completo,
                 vehicleModel: req.vehicle?.marca_modelo || req.ext_marca_modelo || '—',
@@ -358,7 +378,44 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                     }
                 ]
             });
-            alert('E-mail enviado com sucesso com a autorização em anexo!');
+
+            if (sendSuccess) {
+                const nowIso = new Date().toISOString();
+
+                // 1. Tentar persistir na VPS via RPC segura
+                try {
+                    await supabase.rpc('mark_parking_email_sent', { p_request_id: req.id });
+                } catch (rpcErr) {
+                    console.warn('Falha RPC mark_parking_email_sent, tentando update direto:', rpcErr);
+                    try {
+                        await supabase.from('parking_requests').update({
+                            email_enviado: true,
+                            email_enviado_em: nowIso
+                        }).eq('id', req.id);
+                    } catch (_) {}
+                }
+
+                // 2. Persistir localmente no localStorage como cache e fallback
+                try {
+                    const sentMap = JSON.parse(localStorage.getItem('parking_sent_emails') || '{}');
+                    sentMap[req.id] = { sent: true, sent_at: nowIso };
+                    localStorage.setItem('parking_sent_emails', JSON.stringify(sentMap));
+                } catch (_) {}
+
+                // 3. Atualizar estado em tempo real no app
+                setRequests(prev => prev.map(r => r.id === req.id ? { ...r, email_enviado: true, email_enviado_em: nowIso } : r));
+                setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, email_enviado: true, email_enviado_em: nowIso } : r));
+                if (printRequest && printRequest.id === req.id) {
+                    setPrintRequest(prev => prev ? { ...prev, email_enviado: true, email_enviado_em: nowIso } : null);
+                }
+                if (showingCoupon && showingCoupon.id === req.id) {
+                    setShowingCoupon(prev => prev ? { ...prev, email_enviado: true, email_enviado_em: nowIso } : null);
+                }
+
+                alert('E-mail enviado com sucesso com a autorização em anexo!');
+            } else {
+                alert('Falha ao enviar e-mail. Tente novamente.');
+            }
         } catch (error) {
             console.error('Erro ao enviar e-mail:', error);
             alert('Falha ao enviar e-mail. Tente novamente.');
@@ -370,6 +427,49 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
     const handleSendEmail = async (req: ParkingRequest) => {
         // Abre o modal de impressão para que o usuário envie de lá
         setPrintRequest(req);
+    };
+
+    const handleToggleEmailStatus = async (req: ParkingRequest, e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
+        const newStatus = !req.email_enviado;
+        const nowIso = newStatus ? new Date().toISOString() : undefined;
+
+        // 1. Atualização otimista e imediata no React
+        setRequests(prev => prev.map(r => r.id === req.id ? { ...r, email_enviado: newStatus, email_enviado_em: nowIso } : r));
+        setAllRequests(prev => prev.map(r => r.id === req.id ? { ...r, email_enviado: newStatus, email_enviado_em: nowIso } : r));
+        if (printRequest && printRequest.id === req.id) {
+            setPrintRequest(prev => prev ? { ...prev, email_enviado: newStatus, email_enviado_em: nowIso } : null);
+        }
+        if (showingCoupon && showingCoupon.id === req.id) {
+            setShowingCoupon(prev => prev ? { ...prev, email_enviado: newStatus, email_enviado_em: nowIso } : null);
+        }
+
+        // 2. Persistir localmente no localStorage
+        try {
+            const sentMap = JSON.parse(localStorage.getItem('parking_sent_emails') || '{}');
+            if (newStatus) {
+                sentMap[req.id] = { sent: true, sent_at: nowIso };
+            } else {
+                delete sentMap[req.id];
+            }
+            localStorage.setItem('parking_sent_emails', JSON.stringify(sentMap));
+        } catch (_) {}
+
+        // 3. Persistir no banco de dados da VPS
+        try {
+            await supabase.rpc('set_parking_email_status', {
+                p_request_id: req.id,
+                p_status: newStatus
+            });
+        } catch (err) {
+            console.warn('Fallback update direto:', err);
+            try {
+                await supabase.from('parking_requests').update({
+                    email_enviado: newStatus,
+                    email_enviado_em: nowIso || null
+                }).eq('id', req.id);
+            } catch (_) {}
+        }
     };
 
     const tabs = [
@@ -605,7 +705,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                             </div>
                                         </div>
                                         
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-center border-t pt-4 ${dk ? 'border-slate-700' : 'border-slate-100'}">
+                                        <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 items-center border-t pt-4 ${dk ? 'border-slate-700' : 'border-slate-100'}`}>
                                             <div>
                                                 <p className={`text-[9px] font-bold uppercase mb-0.5 ${textMuted}`}>Placa</p>
                                                 <p className={`font-black text-xs sm:text-sm tracking-tight truncate ${dk ? 'text-slate-300' : 'text-slate-700'}`}>{vPlate}</p>
@@ -626,7 +726,7 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                         </div>
                                     </div>
 
-                                    <div className="shrink-0 w-full sm:w-auto flex sm:flex-col gap-2 pt-4 sm:pt-0 mt-4 sm:mt-0 sm:pl-4 border-t sm:border-t-0 sm:border-l ${dk ? 'border-slate-700' : 'border-slate-200'}" onClick={(e) => e.stopPropagation()}>
+                                    <div className={`shrink-0 w-full sm:w-auto flex sm:flex-col gap-2 pt-4 sm:pt-0 mt-4 sm:mt-0 sm:pl-4 border-t sm:border-t-0 sm:border-l ${dk ? 'border-slate-700' : 'border-slate-200'}`} onClick={(e) => e.stopPropagation()}>
                                         {req.status !== 'Rejeitado' && (
                                             <button
                                                 onClick={() => setPrintRequest(req)}
@@ -640,10 +740,34 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                             <button
                                                 onClick={() => handleSendEmail(req)}
                                                 disabled={isSending}
-                                                className={`w-full sm:w-auto px-4 py-2.5 flex items-center justify-center rounded-lg font-bold text-[10px] uppercase gap-2 transition-all ${isSending ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : (dk ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-slate-900 text-white hover:bg-slate-800')}`}
-                                                title="Enviar por e-mail"
+                                                className={`w-full sm:w-auto px-4 py-2.5 flex items-center justify-center rounded-lg font-bold text-[10px] uppercase gap-1.5 transition-all ${
+                                                    isSending 
+                                                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                                                        : req.email_enviado
+                                                            ? (dk 
+                                                                ? 'bg-sky-950/40 border border-sky-500/40 text-sky-300 hover:bg-sky-900/60 hover:border-sky-400 shadow-[0_0_12px_rgba(52,183,241,0.15)]' 
+                                                                : 'bg-sky-50 border border-sky-300 text-sky-700 hover:bg-sky-100 shadow-sm'
+                                                              )
+                                                            : (dk ? 'bg-slate-700 text-white hover:bg-slate-600' : 'bg-slate-900 text-white hover:bg-slate-800')
+                                                }`}
+                                                title={req.email_enviado 
+                                                    ? (req.email_enviado_em ? `E-mail enviado em ${formatDateTime(req.email_enviado_em)}. Clique para reenviar.` : 'E-mail já enviado. Clique para reenviar.') 
+                                                    : 'Enviar por e-mail'
+                                                }
                                             >
-                                                {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Mail className="w-4 h-4" /> Enviar</>}
+                                                {isSending ? (
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                ) : req.email_enviado ? (
+                                                    <>
+                                                        <CheckCheck className="w-4 h-4 text-[#34B7F1] stroke-[2.5]" />
+                                                        <span className="font-black text-[#34B7F1]">Enviado</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Mail className="w-4 h-4" />
+                                                        <span>Enviar</span>
+                                                    </>
+                                                )}
                                             </button>
                                         )}
                                     </div>
@@ -1003,10 +1127,16 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                             <button
                                 onClick={() => handleSendEmailFromPrint(printRequest)}
                                 disabled={sendingFromPrint}
-                                className="w-full sm:w-auto shadow-xl px-6 py-4 sm:py-3 bg-emerald-600 text-white rounded-2xl sm:rounded-xl font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                                className={`w-full sm:w-auto shadow-xl px-6 py-4 sm:py-3 rounded-2xl sm:rounded-xl font-bold transition-all flex items-center justify-center gap-2.5 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm ${
+                                    printRequest.email_enviado
+                                        ? 'bg-sky-600 text-white hover:bg-sky-700 shadow-sky-600/25'
+                                        : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-600/25'
+                                }`}
                             >
                                 {sendingFromPrint ? (
                                     <><Loader2 className="w-5 h-5 sm:w-4 sm:h-4 animate-spin" /> Enviando...</>
+                                ) : printRequest.email_enviado ? (
+                                    <><CheckCheck className="w-5 h-5 sm:w-4 sm:h-4 text-[#34B7F1] stroke-[2.5]" /> Reenviar por E-mail</>
                                 ) : (
                                     <><Send className="w-5 h-5 sm:w-4 sm:h-4" /> Enviar por E-mail</>
                                 )}
@@ -1172,10 +1302,16 @@ export default function ParkingRequestPanel({ user, isDarkMode = false }: { user
                                 <button
                                     onClick={() => handleSendEmail(showingCoupon)}
                                     disabled={sendingEmailId === showingCoupon.id}
-                                    className="flex-1 bg-blue-600 py-2.5 rounded-xl font-bold text-xs text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+                                    className={`flex-1 py-2.5 rounded-xl font-bold text-xs text-white transition-all shadow-lg flex items-center justify-center gap-2 ${
+                                        showingCoupon.email_enviado
+                                            ? 'bg-sky-600 hover:bg-sky-700 shadow-sky-600/20'
+                                            : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20'
+                                    }`}
                                 >
                                     {sendingEmailId === showingCoupon.id ? (
                                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    ) : showingCoupon.email_enviado ? (
+                                        <><CheckCheck className="w-4 h-4 text-[#34B7F1] stroke-[2.5]" /> Reenviar</>
                                     ) : (
                                         <><Send className="w-4 h-4" /> Enviar</>
                                     )}

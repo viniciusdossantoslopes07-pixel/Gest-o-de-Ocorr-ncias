@@ -36,4 +36,5 @@ vps_credentials.json
 backups/
 scripts/
 *.sql
+*.zip
 
